@@ -2771,6 +2771,7 @@ public abstract class EDD {
             ".largePdfInfo".equals(fileTypeName))
             return ".json";
 
+        System.out.println("Bout to throw exception.");
         throw new SimpleException("Error: fileType=" + fileTypeName + 
                 " is not supported by this dataset.");
     }
@@ -7074,7 +7075,7 @@ public abstract class EDD {
                 tUnitsLC.equals("mg o2/min")? "mg O2/min" :   //???
                 //tUnits.equals("mi")? "" :  mL???
                 tUnitsLC.equals("micormoles per kilogram")? "micromoles/kilogram" : //or
-                tUnitsLC.equals("micro atmospheres")? "µatmospheres" :
+                tUnitsLC.equals("micro atmospheres")? "ï¿½atmospheres" :
                 tUnitsLC.equals("microgram/kilogram")? "microgram/kilogram" :
                 tUnitsLC.equals("micromolar")? "micromoles/liter" : //case
                 tUnitsLC.equals("microsiemens per centimeter")? "microSiemens per centimeter" : //case
@@ -7116,11 +7117,11 @@ public abstract class EDD {
                 tUnitsLC.equals("text")? "" :
                 tUnitsLC.equals("this quantity is unitless")? "" :
                 tUnitsLC.equals("time")? "" :  //??  HHmm?
-                tUnitsLC.equals("ug/l as n")? "µg/L as N" :
-                tUnitsLC.equals("umole")? "µmole" :
-                tUnits.equals(  "um")? "µm" :  
-                tUnits.equals(  "uM")? "µmole/liter" :  //not meters
-                tUnitsLC.equals("umol/kg")? "µmole/kg" :
+                tUnitsLC.equals("ug/l as n")? "ï¿½g/L as N" :
+                tUnitsLC.equals("umole")? "ï¿½mole" :
+                tUnits.equals(  "um")? "ï¿½m" :  
+                tUnits.equals(  "uM")? "ï¿½mole/liter" :  //not meters
+                tUnitsLC.equals("umol/kg")? "ï¿½mole/kg" :
                 tUnitsLC.equals("unitless")? "" :
                 tUnitsLC.equals("volts")? "volts" :
                 tUnitsLC.equals("whole number")? "count" :
@@ -7394,7 +7395,7 @@ public abstract class EDD {
             tUnits = "degree_C";
         else if (tUnitsLC.equals("kelvins")) 
             tUnits = "degree_K";
-        else if (tUnitsLC.equals("°k")) 
+        else if (tUnitsLC.equals("ï¿½k")) 
             tUnits = "degree_K";
         else if (tUnits.equals("u M") || tUnits.equals("uM")) 
             tUnits = "umoles L-1";
@@ -7519,7 +7520,7 @@ public abstract class EDD {
 
         //isDegreesC
         boolean isDegreesC = 
-            testUnits.equals("°c")                  ||
+            testUnits.equals("ï¿½c")                  ||
             testUnits.equals("celsius")             ||
             testUnits.equals("degree|centigrade")   ||
             testUnits.equals("degree|celsius")      ||
@@ -7538,7 +7539,7 @@ public abstract class EDD {
 
         //isDegreesF
         boolean isDegreesF = 
-            testUnits.equals("°f")                  ||
+            testUnits.equals("ï¿½f")                  ||
             testUnits.equals("fahrenheit")          ||
             testUnits.equals("degree|fahrenheit")   ||
             testUnits.equals("degrees|fahrenheit")  ||

@@ -157,7 +157,7 @@ public abstract class EDDTable extends EDD {
     public final static String[] dataFileTypeNames = {  
         //If add new type and not actual-data type (e.g., .das), 
         //  add to graphsAccessibleToFileTypeNames below
-        ".asc", ".csv", ".csvp", ".csv0", ".das", ".dds", 
+        ".asc", ".csv", ".csvp", ".csv0", ".dataTable", ".dataTableMap", ".dataTableTimeSeries", ".das", ".dds",
         ".dods", ".esriCsv", ".fgdc", ".geoJson", ".graph", ".help", ".html", 
         ".htmlTable", ".iso19115", ".itx", ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
         ".nc", ".ncHeader", ".ncCF", ".ncCFHeader", ".ncCFMA", ".ncCFMAHeader", 
@@ -166,7 +166,7 @@ public abstract class EDDTable extends EDD {
         ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
         ".wav", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
-        ".asc", ".csv", ".csv", ".csv", ".das", ".dds", 
+        ".asc", ".csv", ".csv", ".csv", ".json", ".json", ".json", ".das", ".dds",
         ".dods", ".csv", ".xml", ".json", ".html", ".html", ".html", 
         ".html", ".xml", ".itx", ".json", ".jsonl", ".jsonl", ".mat", 
         ".nc", ".txt", ".nc", ".txt", ".nc", ".txt", 
@@ -180,6 +180,9 @@ public abstract class EDDTable extends EDD {
         EDStatic.fileHelp_csv,
         EDStatic.fileHelp_csvp,
         EDStatic.fileHelp_csv0,
+        EDStatic.fileHelp_dataTable,
+        EDStatic.fileHelp_dataTableMap,
+        EDStatic.fileHelp_dataTableTimeSeries,
         EDStatic.fileHelp_das,
         EDStatic.fileHelp_dds,
         EDStatic.fileHelp_dods,
@@ -221,7 +224,10 @@ public abstract class EDDTable extends EDD {
         //csv: also see http://www.ietf.org/rfc/rfc4180.txt
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
-        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
+        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+        "https://developers.google.com/chart/interactive/docs/reference#dataparam",
+        "https://developers.google.com/chart/interactive/docs/gallery/geochart#markers-mode-format",
+        "https://developers.google.com/chart/interactive/docs/reference#dataparam",
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", //das
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
@@ -2527,7 +2533,6 @@ public abstract class EDDTable extends EDD {
         String loggedInAs,
         String requestUrl, String userDapQuery, 
         OutputStreamSource outputStreamSource, String fileTypeName) throws Throwable {
-
         throw new SimpleException(EDStatic.queryError +
             MessageFormat.format(EDStatic.queryErrorFileType, fileTypeName));
     }
@@ -2778,7 +2783,10 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".esriCsv")) 
             tableWriter = new TableWriterEsriCsv(this, tNewHistory, outputStreamSource);
         else if (fileTypeName.equals(".geoJson") || 
-                 fileTypeName.equals(".json") || 
+                 fileTypeName.equals(".json") ||
+                 fileTypeName.equals(".dataTable") ||
+                 fileTypeName.equals(".dataTableMap") ||
+                 fileTypeName.equals(".dataTableTimeSeries") ||
                  fileTypeName.equals(".jsonlCSV") || 
                  fileTypeName.equals(".jsonlKVP") ||
                  fileTypeName.equals(".ncoJson")) {
@@ -2794,6 +2802,12 @@ public abstract class EDDTable extends EDD {
                 tableWriter = new TableWriterGeoJson(this, tNewHistory, outputStreamSource, jsonp);
             else if (fileTypeName.equals(".json"))
                 tableWriter = new TableWriterJson(this, tNewHistory, outputStreamSource, jsonp, true); //writeUnits
+            else if (fileTypeName.equals(".dataTable"))
+                tableWriter = new TableWriterDataTable(this, tNewHistory, outputStreamSource, true); //writeUnits
+            else if (fileTypeName.equals(".dataTableMap"))
+                tableWriter = new TableWriterDataTableMap(this, tNewHistory, outputStreamSource, true); //writeUnits
+            else if (fileTypeName.equals(".dataTableTimeSeries"))
+                tableWriter = new TableWriterDataTableTimeSeries(this, tNewHistory, outputStreamSource, true); //writeUnits
             else if (fileTypeName.equals(".jsonlCSV"))
                 tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, jsonp); //writeKVP=false
             else if (fileTypeName.equals(".jsonlKVP"))
@@ -7323,7 +7337,7 @@ public abstract class EDDTable extends EDD {
             "  <p><a rel=\"bookmark\" href=\"https://pyoceans.github.io/erddapy/\">erddapy" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python)</a>\n" +
-            "    is a Python library that \"takes advantage of ERDDAP’s RESTful web services and creates the\n" +
+            "    is a Python library that \"takes advantage of ERDDAPï¿½s RESTful web services and creates the\n" +
             "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n" +
             //
             //Python/Jupyter Notebook
