@@ -58,6 +58,7 @@ import java.util.GregorianCalendar;
  */
 public class TableWriterDataTableTimeSeries extends TableWriterDataTable {
 
+    int timeColumnIndex = -1;
     /**
      * The constructor.
      *
@@ -102,7 +103,7 @@ public class TableWriterDataTableTimeSeries extends TableWriterDataTable {
 
         //do firstTime stuff
 
-        int timeColumnIndex = -1;
+
         if (firstTime) {
 
             isTimeStamp = new boolean[nColumns];
@@ -179,6 +180,10 @@ public class TableWriterDataTableTimeSeries extends TableWriterDataTable {
         totalNRows += nRows;
         EDStatic.ensureArraySizeOkay(totalNRows, "json");
 
+        if ( rowsWritten ) {
+            // Some rows already written. Need a comma.
+            writer.write(",");
+        }
         // Add the new rows to the data table.
 
         for (int row = 0; row < nRows; row++) {
@@ -206,17 +211,8 @@ public class TableWriterDataTableTimeSeries extends TableWriterDataTable {
                 } else {
                     writer.write(",");
                     String s = pas[col].getString(row);
-                    if ( s.length() == 0 ) {
-                        writer.write("{\"v\":\"null\",\"f\":null}");
-                    } else {
-                        if ( pas[col].elementClassString().equals("double") ) {
-                            double dv = Double.valueOf(s).doubleValue();
-                            writer.write("{\"v\":"+dv+",\"f\":null}");
-                        } else {
-                            float f = Float.valueOf(s).floatValue();
-                            writer.write("{\"v\":"+f+",\"f\":null}");
-                        }
-                    }
+                    String eclass = pas[col].elementClassString();
+                    writeNumber(s, eclass);
                 }
             }
             if ( row < nRows-1 ) { 

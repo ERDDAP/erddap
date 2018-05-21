@@ -160,8 +160,13 @@ public class TableWriterDataTable extends TableWriter {
         totalNRows += nRows;
         EDStatic.ensureArraySizeOkay(totalNRows, "json");
 
+        if ( rowsWritten ) {
+            // Some rows already written. Need a comma.
+            writer.write(",");
+        }
         // Add the new rows to the data table.
         for (int row = 0; row < nRows; row++) {
+
 
             writer.write("{\"c\":[");
 
@@ -249,7 +254,7 @@ public class TableWriterDataTable extends TableWriter {
 
     protected void writeNumber(String s, String elementClass) throws IOException {
         if ( s.length() == 0 ) {
-            writer.write("{\"v\":\"null\",\"f\":null}");
+            writer.write("{\"v\":null,\"f\":null}");
         } else {
             if ( elementClass.equals("double") ) {
                 double dv = Double.valueOf(s).doubleValue();
