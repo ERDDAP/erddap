@@ -61,6 +61,8 @@ public class TableWriterDataTableMap extends TableWriterDataTable {
 
     List<String> latUnits;
     List<String> lonUnits;
+    int latColIndex = -1;
+    int lonColIndex = -1;
 
     /**
      * The constructor.
@@ -111,8 +113,7 @@ public class TableWriterDataTableMap extends TableWriterDataTable {
 
         //do firstTime stuff
 
-        int latColIndex = -1;
-        int lonColIndex = -1;
+
         if (firstTime) {
 
             isTimeStamp = new boolean[nColumns];
@@ -191,6 +192,10 @@ public class TableWriterDataTableMap extends TableWriterDataTable {
         totalNRows += nRows;
         EDStatic.ensureArraySizeOkay(totalNRows, "json");
 
+        if ( rowsWritten ) {
+            // Some rows already written. Need a comma.
+            writer.write(",");
+        }
         // Add the new rows to the data table.
 
         for (int row = 0; row < nRows; row++) {
