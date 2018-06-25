@@ -1708,8 +1708,6 @@ TableWriter tw;
 TableWriterAll twa;
 TableWriterAllWithMetadata twawm;
 TableWriterDataTable twdt;
-TableWriterDataTableMap twdtmap;
-TableWriterDataTableTimeSeries twdtts;
 TableWriterDistinct twdis;
 TableWriterDods twd;
 TableWriterDodsAscii twda;

@@ -2771,7 +2771,6 @@ public abstract class EDD {
             ".largePdfInfo".equals(fileTypeName))
             return ".json";
 
-        System.out.println("Bout to throw exception.");
         throw new SimpleException("Error: fileType=" + fileTypeName + 
                 " is not supported by this dataset.");
     }

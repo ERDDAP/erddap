@@ -830,8 +830,6 @@ public static boolean developmentMode = false;
         fileHelp_csvp,
         fileHelp_csv0,
         fileHelp_dataTable,
-        fileHelp_dataTableMap,
-        fileHelp_dataTableTimeSeries,
         fileHelp_das,
         fileHelp_dds,
         fileHelp_dods,
@@ -2187,9 +2185,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               errorInMethod);
         fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              errorInMethod);
         fileHelp_csv0              = messages.getNotNothingString("fileHelp_csv0",              errorInMethod);
-        fileHelp_dataTable         = messages.getNotNothingString("fileHelp_dataTable", errorInMethod);
-        fileHelp_dataTableMap      = messages.getNotNothingString("fileHelp_dataTableMap", errorInMethod);
-        fileHelp_dataTableTimeSeries = messages.getNotNothingString("fileHelp_dataTableTimeSeries", errorInMethod);
+        fileHelp_dataTable         = messages.getNotNothingString("fileHelp_dataTable",         errorInMethod);
         fileHelp_das               = messages.getNotNothingString("fileHelp_das",               errorInMethod);
         fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               errorInMethod);
         fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              errorInMethod);
