@@ -106,6 +106,8 @@ public class TableWriterDataTable extends TableWriter {
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null &&
                         (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                isCharOrString[col] = pas[col].elementClass() == char.class ||
+                                      pas[col].elementClass() == String.class;
                 if (isTimeStamp[col]) {
                     //just keep time_precision if it includes fractional seconds 
                     String tp = catts.getString(EDV.TIME_PRECISION);
@@ -127,25 +129,29 @@ public class TableWriterDataTable extends TableWriter {
                     writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"datetime\"}");
                 } else {
                     if (type.equals("String") ) {
-                        if ( writeUnits) {
+                        if ( writeUnits && u != null ) {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"string\"}");
                         } else {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+ "\",\"pattern\":\"\",\"type\":\"string\"}");
                         }
                     } else if (type.equals("float")) {
-                        if ( writeUnits ) {
+                        if ( writeUnits && u != null) {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
                         } else {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
                         }
                     } else if (type.equals("double")) {
-                        if ( writeUnits ) {
+                        if ( writeUnits && u != null ) {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
                         } else {
                             writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
                         }
-                    } else {
-                        throw new SimpleException("Column "+name+" is of unknown type.");
+                    } else { // Assume numeric, will be long at this point
+                        if ( writeUnits && u != null ) {
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
+                        } else {
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
+                        }
                     }
                 }
             }
@@ -176,16 +182,23 @@ public class TableWriterDataTable extends TableWriter {
                 if ( isTimeStamp[col] ) {
                     double d = pas[col].getDouble(row);
 
-                    GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
+                    if (!Double.isNaN(d) ) {
 
-                    int year = gc.get(Calendar.YEAR);
-                    int month = gc.get(Calendar.MONTH);
-                    int day = gc.get(Calendar.DAY_OF_MONTH);
-                    int hour = gc.get(Calendar.HOUR_OF_DAY);
-                    int minute = gc.get(Calendar.MINUTE);
-                    int second = gc.get(Calendar.SECOND);
-                    int milli = gc.get(Calendar.MILLISECOND);
-                    writer.write("{\"v\":\"Date(" + year + ", " + month + ", " + day + ", " + hour + ", " + minute + ", " + second + ", " + milli + ")\",\"f\":null}");
+                        GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
+
+                        int year = gc.get(Calendar.YEAR);
+                        int month = gc.get(Calendar.MONTH);
+                        int day = gc.get(Calendar.DAY_OF_MONTH);
+                        int hour = gc.get(Calendar.HOUR_OF_DAY);
+                        int minute = gc.get(Calendar.MINUTE);
+                        int second = gc.get(Calendar.SECOND);
+                        int milli = gc.get(Calendar.MILLISECOND);
+                        writer.write("{\"v\":\"Date(" + year + ", " + month + ", " + day + ", " + hour + ", " + minute + ", " + second + ", " + milli + ")\",\"f\":null}");
+
+                    } else {
+                        String s = pas[col].getString(row);
+                        writeNumber(s, pas[col].elementClassString());
+                    }
                 } else if (isCharOrString[col]) {
                     String value = pas[col].getString(row);
                     writer.write("{\"v\":\""+value+"\",\"f\":null}");
@@ -259,8 +272,11 @@ public class TableWriterDataTable extends TableWriter {
             if ( elementClass.equals("double") ) {
                 double dv = Double.valueOf(s).doubleValue();
                 writer.write("{\"v\":"+dv+",\"f\":null}");
-            } else {
+            } else if ( elementClass.equals("float") ) {
                 float f = Float.valueOf(s).floatValue();
+                writer.write("{\"v\":"+f+",\"f\":null}");
+            } else {
+                int f = Integer.valueOf(s).intValue();
                 writer.write("{\"v\":"+f+",\"f\":null}");
             }
         }
