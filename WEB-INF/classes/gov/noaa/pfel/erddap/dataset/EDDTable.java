@@ -157,7 +157,7 @@ public abstract class EDDTable extends EDD {
     public final static String[] dataFileTypeNames = {  
         //If add new type and not actual-data type (e.g., .das), 
         //  add to graphsAccessibleToFileTypeNames below
-        ".asc", ".csv", ".csvp", ".csv0", ".dataTable", ".dataTableMap", ".dataTableTimeSeries", ".das", ".dds",
+        ".asc", ".csv", ".csvp", ".csv0", ".dataTable", ".das", ".dds",
         ".dods", ".esriCsv", ".fgdc", ".geoJson", ".graph", ".help", ".html", 
         ".htmlTable", ".iso19115", ".itx", ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
         ".nc", ".ncHeader", ".ncCF", ".ncCFHeader", ".ncCFMA", ".ncCFMAHeader", 
@@ -166,7 +166,7 @@ public abstract class EDDTable extends EDD {
         ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
         ".wav", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
-        ".asc", ".csv", ".csv", ".csv", ".json", ".json", ".json", ".das", ".dds",
+        ".asc", ".csv", ".csv", ".csv", ".json", ".das", ".dds",
         ".dods", ".csv", ".xml", ".json", ".html", ".html", ".html", 
         ".html", ".xml", ".itx", ".json", ".jsonl", ".jsonl", ".mat", 
         ".nc", ".txt", ".nc", ".txt", ".nc", ".txt", 
@@ -181,8 +181,6 @@ public abstract class EDDTable extends EDD {
         EDStatic.fileHelp_csvp,
         EDStatic.fileHelp_csv0,
         EDStatic.fileHelp_dataTable,
-        EDStatic.fileHelp_dataTableMap,
-        EDStatic.fileHelp_dataTableTimeSeries,
         EDStatic.fileHelp_das,
         EDStatic.fileHelp_dds,
         EDStatic.fileHelp_dods,
@@ -225,8 +223,6 @@ public abstract class EDDTable extends EDD {
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-        "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-        "https://developers.google.com/chart/interactive/docs/gallery/geochart#markers-mode-format",
         "https://developers.google.com/chart/interactive/docs/reference#dataparam",
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", //das
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
@@ -2785,8 +2781,6 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".geoJson") || 
                  fileTypeName.equals(".json") ||
                  fileTypeName.equals(".dataTable") ||
-                 fileTypeName.equals(".dataTableMap") ||
-                 fileTypeName.equals(".dataTableTimeSeries") ||
                  fileTypeName.equals(".jsonlCSV") || 
                  fileTypeName.equals(".jsonlKVP") ||
                  fileTypeName.equals(".ncoJson")) {
@@ -2804,10 +2798,6 @@ public abstract class EDDTable extends EDD {
                 tableWriter = new TableWriterJson(this, tNewHistory, outputStreamSource, jsonp, true); //writeUnits
             else if (fileTypeName.equals(".dataTable"))
                 tableWriter = new TableWriterDataTable(this, tNewHistory, outputStreamSource, true); //writeUnits
-            else if (fileTypeName.equals(".dataTableMap"))
-                tableWriter = new TableWriterDataTableMap(this, tNewHistory, outputStreamSource, true); //writeUnits
-            else if (fileTypeName.equals(".dataTableTimeSeries"))
-                tableWriter = new TableWriterDataTableTimeSeries(this, tNewHistory, outputStreamSource, true); //writeUnits
             else if (fileTypeName.equals(".jsonlCSV"))
                 tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, jsonp); //writeKVP=false
             else if (fileTypeName.equals(".jsonlKVP"))

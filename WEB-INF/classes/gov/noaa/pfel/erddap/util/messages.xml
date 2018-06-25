@@ -1917,8 +1917,6 @@ If you want the examples to point to your ERDDAP, the easiest method is:
 <fileHelp_csvp>Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
 <fileHelp_csv0>Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.</fileHelp_csv0>
 <fileHelp_dataTable>A JSON file formatted for use with the Google Visualization client library (Google Charts). Variables in order as listed.</fileHelp_dataTable>
-<fileHelp_dataTableMap>A JSON file formatted for use with the Google Visualization client library (Google Charts). Lat/Lon first as required for GeoChart plots.</fileHelp_dataTableMap>
-<fileHelp_dataTableTimeSeries>A JSON file formatted for use with the Google Visualization client library (Google Charts). Time is the first column as required for timeseries plots.</fileHelp_dataTableTimeSeries>
 <fileHelp_das>View the dataset's metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
 <fileHelp_dds>View the dataset's structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
 <fileHelp_dods>OPeNDAP clients use this to download the data in the DODS binary format.</fileHelp_dods>
