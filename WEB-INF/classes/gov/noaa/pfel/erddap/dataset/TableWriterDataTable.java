@@ -275,6 +275,9 @@ public class TableWriterDataTable extends TableWriter {
             } else if ( elementClass.equals("float") ) {
                 float f = Float.valueOf(s).floatValue();
                 writer.write("{\"v\":"+f+",\"f\":null}");
+            } else if ( elementClass.equals("long") ) {
+                long f = Long.valueOf(s).longValue();
+                writer.write("{\"v\":"+f+",\"f\":null}");
             } else {
                 int f = Integer.valueOf(s).intValue();
                 writer.write("{\"v\":"+f+",\"f\":null}");
