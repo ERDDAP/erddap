@@ -7327,7 +7327,7 @@ public abstract class EDDTable extends EDD {
             "  <p><a rel=\"bookmark\" href=\"https://pyoceans.github.io/erddapy/\">erddapy" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python)</a>\n" +
-            "    is a Python library that \"takes advantage of ERDDAP�s RESTful web services and creates the\n" +
+            "    is a Python library that \"takes advantage of ERDDAP's RESTful web services and creates the\n" +
             "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n" +
             //
             //Python/Jupyter Notebook
