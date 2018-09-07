@@ -53,7 +53,9 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -542,6 +544,13 @@ public static boolean developmentMode = false;
         //downloadDirUrl,
         computerName; //e.g., coastwatch (or "")
     public static Subscriptions subscriptions;
+    
+    public static String  angularDegreeUnits = "angular_degree,angular_degrees,arcdeg,arcdegs,degree,degreeE,degree_E,degree_east,"
+            +"degreeN,degree_N,degree_north,degrees,degreesE,degrees_E,degrees_east,degreesN,degrees_N,degrees_north,"
+            +"degreesT,degrees_T,degrees_Tangular_degree,degrees_true,degreesW,degrees_W,degrees_west,degreeT,degree_T,"
+            +"degree_true,degreeW,degree_W,degree_west";
+    public static Set<String> angularDegreeUnitsSet = new HashSet<String>(Arrays.asList(String2.split(angularDegreeUnits,',')));;
+
 
 
     /** These values are loaded from the [contentDirectory]messages.xml file (if present)
@@ -1888,6 +1897,8 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
         advancedSearchFewerCriteria= messages.getNotNothingString("advancedSearchFewerCriteria",errorInMethod);
         advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
+        angularDegreeUnits         = setup.getString("angularDegreeUnits", angularDegreeUnits);
+        angularDegreeUnitsSet      = new HashSet<String>(Arrays.asList(String2.split(angularDegreeUnits,',')));
         autoRefresh                = messages.getNotNothingString("autoRefresh",                errorInMethod);
         blacklistMsg               = messages.getNotNothingString("blacklistMsg",               errorInMethod);
         PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          errorInMethod);
@@ -2507,6 +2518,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    errorInMethod);
         queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      errorInMethod);
         Table.ORDER_BY_CLOSEST_ERROR=messages.getNotNothingString("queryErrorOrderByClosest",   errorInMethod);
+        //Table.ORDER_BY_MEAN_ERROR  =messages.getNotNothingString("queryErrorOrderByMean",   errorInMethod);
         Table.ORDER_BY_LIMIT_ERROR = messages.getNotNothingString("queryErrorOrderByLimit",     errorInMethod);
         queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  errorInMethod);
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  errorInMethod);
