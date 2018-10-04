@@ -85,6 +85,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         if (verbose) String2.log("\n*** constructing EDDTableFromErddap(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
+        Attributes tGlobalAttributes = new Attributes();
         String tAccessibleTo = null;
         String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
@@ -111,9 +112,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             String localTags = tags.substring(startOfTagsLength);
 
             //try to make the tag names as consistent, descriptive and readable as possible
-            if      (localTags.equals( "<reloadEveryNMinutes>")) {}
-            else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
-
+            if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
+            else if (localTags.equals( "<reloadEveryNMinutes>")) {}
+            else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content);
             //Since this erddap can never be logged in to the remote ERDDAP, 
             //it can never get dataset info from the remote erddap dataset (which should have restricted access).
             //Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
@@ -149,8 +150,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         return new EDDTableFromErddap(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
-            tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes,
+            tGlobalAttributes, tLocalSourceUrl, tSubscribeToRemoteErddapDataset,
+            tRedirect);
     }
 
     /**
@@ -180,7 +182,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
-        int tReloadEveryNMinutes, 
+        int tReloadEveryNMinutes, Attributes tGlobalAttributes,
         String tLocalSourceUrl, boolean tSubscribeToRemoteErddapDataset,
         boolean tRedirect) throws Throwable {
 
@@ -201,8 +203,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
-        addGlobalAttributes = new Attributes();
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        addGlobalAttributes = tGlobalAttributes;
         localSourceUrl = tLocalSourceUrl;
         if (tLocalSourceUrl.indexOf("/griddap/") > 0)
             throw new RuntimeException(
