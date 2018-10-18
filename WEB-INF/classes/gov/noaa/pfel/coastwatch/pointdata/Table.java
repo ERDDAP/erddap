@@ -203,6 +203,11 @@ public class Table  {
         "(each of which must be in the list of results variables) plus the " +
         "interval for the last orderBy variable (e.g., \"stationID,time,10 minutes\").";
     //EDStatic replaces this with queryErrorOrderByLimit from messages.xml 
+    public static String ORDER_BY_MEAN_ERROR = 
+            "For orderByMean, you must specify a CSV list of orderBy column names " +
+            "(each of which must be in the list of results variables) and optionally the " +
+            "interval for the last orderBy variable (e.g., \"stationID,time,10 minutes\").";
+
     public static String ORDER_BY_LIMIT_ERROR = 
         "For orderByLimit, you must specify a CSV list of orderBy column names " +
         "(each of which must be in the list of results variables, but 0 names is okay) plus the " +

@@ -136,19 +136,19 @@ public abstract class EDDTable extends EDD {
      * No codes depends on the specific order/positions, except [0]="". */
     public static String orderByOptions[] = { "",
         "orderBy", "orderByClosest", "orderByCount", "orderByLimit", 
-        "orderByMax", "orderByMin", "orderByMinMax"};
+        "orderByMax", "orderByMin", "orderByMinMax", "orderByMean"};
     public static String DEFAULT_ORDERBYCLOSEST = "1 hour";
     public static String DEFAULT_ORDERBYLIMIT   = "100";
     /** These are used on web pages when a user changes orderBy. 
      *  They parallel the orderByOptions. */    
     public static String orderByExtraDefaults[] = { "",
         "", DEFAULT_ORDERBYCLOSEST,         "",      DEFAULT_ORDERBYLIMIT,          
-        "",                     "",         ""};
+        "",                     "",         "", ""};
      /** This is the minimum number of orderBy variables that must be specified
        (not counting the orderByExtra item). */
     public static byte minOrderByVariables[] = { 0,
         1,        1,       0,      0,
-        1,        1,       1};
+        1,        1,       1,      0};
 
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
@@ -1899,7 +1899,7 @@ public abstract class EDDTable extends EDD {
                     tVar = tVar.substring(period + 1);
 
                 //is it a valid destinationName?
-                int po = String2.indexOf(dataVariableDestinationNames(), tVar);
+                int po = String2.indexOf(dataVariableDestinationNames(), tVar.split("/")[0]);
                 if (po < 0) {
                     if (!repair) {
                         if (tVar.equals(SEQUENCE_NAME))
@@ -2014,6 +2014,28 @@ public abstract class EDDTable extends EDD {
                     }
                     // ??? verify that next to last item is numeric?
                     // ??? verify that last item is interval?
+                }
+                continue;
+            }
+
+            //special case: server-side functions: special orderByMean(varCSV)
+            if (constraint.endsWith("\")") &&
+                 (constraint.startsWith("orderByMean(\""))) {
+
+                //ensure all orderBy vars are in resultsVariables
+                if (!repair) {
+                    int ppo = constraint.indexOf("(\"");
+                    StringArray obv = StringArray.fromCSV(constraint.substring(
+                        ppo + 2, constraint.length() - 2));
+                    int last = obv.size(); // last may be time interval...
+                    for (int obvi = 0; obvi < last; obvi++) {
+                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                    	String item = obvParts[0];
+                        if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
+                            throw new SimpleException(EDStatic.queryError +
+                                Table.ORDER_BY_MEAN_ERROR + 
+                                " (col=" + obv.get(obvi) + " not in results variables)");
+                    }
                 }
                 continue;
             }
@@ -3141,6 +3163,11 @@ public abstract class EDDTable extends EDD {
                             Table.ORDER_BY_CLOSEST_ERROR + 
                             " (unknown column name=" + twobc.orderBy[ob] + ")");
                 }
+            } else if (p.startsWith("orderByMean(\"") && p.endsWith("\")")) {
+                TableWriterOrderByMean twobm = 
+                        new TableWriterOrderByMean(this, tNewHistory, 
+                            dir, fileName, tableWriter, p.substring(13, p.length() - 2));
+                    tableWriter = twobm;
             } else if (p.startsWith("orderByCount(\"") && p.endsWith("\")")) {
                 TableWriterOrderByCount twobc = new TableWriterOrderByCount(this, tNewHistory, 
                     dir, fileName, tableWriter, p.substring(14, p.length() - 2));
@@ -6749,28 +6776,41 @@ public abstract class EDDTable extends EDD {
             orderBy = tOrderBy;
         }
         writer.write("\n<tr><td>"); //not nowrap.  allow wrapping if varNames are long
+        String divComboStyle =   "<div style='position:relative;float: left;width:180px;height:21px;border:0;padding:0;margin:0;'>";
+        String divNoComboStyle = "<div style='position:relative;float: left;width:160px;height:21px;border:0;padding:0;margin:0;'>";
+        String textstyle = "style='position:absolute;top:0px;left:0px;width:160px;height:19px;border:1px solid #A9A9A9'";
+        String selectstyle = "style='position:absolute;top:0px;left:0px;width:180px; height:21px;line-height:20px;margin:0;padding:0;'";
+        writer.write(divComboStyle);
         writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, 
-            "onChange='" + //orderByExtraDefaults won't conflict with ' 
+            selectstyle + " onChange='" + //orderByExtraDefaults won't conflict with ' 
               " var ov=" + String2.toJsonArray(orderByExtraDefaults) + ";" +
               " if (this.selectedIndex>=0) document." + formName + ".orderByExtra.value=ov[this.selectedIndex];" +
               "'"));
-        writer.write(EDStatic.htmlTooltipImage(loggedInAs, 
-            "<div class=\"standard_max_width\">" + EDStatic.functionOrderByTooltip +
-            "</div>"));
-        writer.write("(\"");       
-        for (int ob = 0; ob < nOrderByDropdown; ob++) {
+        writer.write("</div>");
+        writer.write("<span style='float: left;'>");       
+        writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByTooltip));
+        writer.write("(\"");
+        writer.write("</span>");
+		for (int ob = 0; ob < nOrderByDropdown; ob++) {
+            writer.write(divComboStyle);
             //if (ob > 0) writer.write(",\n"); 
-            writer.write(widgets.select("orderBy" + ob,                 
-                MessageFormat.format(EDStatic.functionOrderBySort, important[ob]), // was + \n
+            String tooltip =  MessageFormat.format(EDStatic.functionOrderBySort, important[ob]);
+            writer.write(widgets.select("orderByDropdown" + ob,                 
+               tooltip, // was + \n
                 1, dvList0, 
                 Math.max(0, dvNames0.indexOf(ob < orderBy.length? orderBy[ob] : "")),
-                ""));
+                selectstyle
+                + " onchange=\"this.parentNode.querySelector('input').value=this.options[this.selectedIndex].text;this.selectedIndex=0;\""));
+            writer.write(widgets.textField("orderBy" + ob, tooltip, 20, 40, "", textstyle));
+            writer.write("</div>");
             writer.write("<wbr>");
         }
         writer.write("\n"); //gap to distinguish orderByExtra
+        writer.write(divNoComboStyle);
         writer.write(widgets.textField("orderByExtra", 
-            EDStatic.functionOrderByExtra, 8, 25, orderByExtra, ""));
-        writer.write("\")");       
+            EDStatic.functionOrderByExtra, 8, 25, orderByExtra, textstyle));
+        writer.write("</div>");
+        writer.write("<span style='float: left;'>\")</span>");       
         writer.write("</td></tr>\n");
 
         writer.write(widgets.endTable());
@@ -6794,10 +6834,11 @@ public abstract class EDDTable extends EDD {
             "      var tq2 = \"\\x26\" + ObO + \"(%22\";\n" +  // &orderBy...("
             "      for (var ob = 0; ob < " + nOrderByDropdown + "; ob++) {\n" +
             "        var tOb = eval(\"d." + formName + ".orderBy\" + ob);\n" +
-            "        var obVar = tOb.options[tOb.selectedIndex].text;\n" +
+			"        var obVar = tOb.value;\n" +
             "        if (obVar != \"\") {\n" +             
             "          tq2 += (nActiveOb++ == 0? \"\" : \"%2C\") + obVar;\n" +  // ,obVar
-            "          if (rv.indexOf(obVar) < 0) rv.push(obVar);\n" +
+            "          obVarNoInterval = obVar.split(\"/\")[0].trim();\n" +  // ,obVar
+            "          if (rv.indexOf(obVarNoInterval) < 0) rv.push(obVarNoInterval);\n" +
             "        }\n" +
             "      }\n" +  
             //valid?
@@ -6808,6 +6849,8 @@ public abstract class EDDTable extends EDD {
             "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
             "      } else if (ObO == \"orderByLimit\") {\n" + 
             "        if (obev.length > 0)\n" +
+            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
+            "      }  else if (ObO == \"orderByMean\") {\n" +
             "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
             //orderByCount can have nActiveOb = 0, all others require nActiveOb > 0
             "      } else if (ObO == \"orderByCount\" || nActiveOb > 0) {\n" +
@@ -7839,6 +7882,23 @@ public abstract class EDDTable extends EDD {
             "      the query as well as in the orderByClosest list of variables (the .html and .graph\n" +
             "      forms will do this for you).\n" +
             "      This is the closest thing in tabledap to stride values in a griddap request.\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByMean\" href=\"#orderByMean\" rel=\"bookmark\"><kbd>&amp;orderByMean(\"<i>comma-separated list</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated list lets you specify how the results table will be sorted (zero or more\n" +
+            "      variable names) each with an optional interval (with the format as <i>/n</i> or <i>/n[timeUnits]</i>, e.g., 1 day).\n"+
+            "      An offset may be included with the interval, for example <i>month/6:1</i> if months were numbered 1-12.\n" +
+            "      Within each sort group, the mean will be kept.  For example,\n" +
+            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMean(\"stationID,time/1 day\")</kbd>\n" +
+            "      <br>will sort by stationID and time, but only return the daily mean for each stationID.\n" +
+            "      If ordering with timeUnits of n months or years,\n" +
+            "      n must be an integer and ERDDAP will increment by calendar months or years (not a\n" +
+            "      fixed length of time).\n" +
+            "      In general, the last orderBy column may be any numeric column (e.g., depth) and n\n" +
+            "      may be a floating point number (with the units of that variable (e.g., meters) implied).\n" +
+            "      The orderByMean variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByMean list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      The mean values are generally returned as doubles (unless all are integers); any requested\n"+
+            "      string or character variables not in the orderByMean list by are discarded (unless the value does not vary).\n" +
             "    <li><a class=\"selfLink\" id=\"orderByCount\" href=\"#orderByCount\" rel=\"bookmark\"><kbd>&amp;orderByCount(\"<i>comma-separated list of 0 or more variable names</i>\")</kbd></a>\n" +
             "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
             "      table (starting with the first variable, then using the second variable if the first\n" +
