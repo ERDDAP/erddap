@@ -126,7 +126,13 @@ import dods.dap.*;
  * @author Bob Simons (bob.simons@noaa.gov) 2005-12-05
  */
 public class Table  {
-
+    
+    public static interface Rounder{
+        double round(Double value) throws Exception;
+     }
+    private static interface WithColumnNames{
+    	void apply(String[] columnNames) throws Exception;
+    }
     /**
      * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -21156,7 +21162,7 @@ String2.log(table.dataToString());
             } else if (part.equals("orderByCount(\"") && part.endsWith("\")")) {
                 orderByCount(StringArray.arrayFromCSV(part.substring(14, partL-2)));
             } else if (part.equals("orderByLimit(\"") && part.endsWith("\")")) {
-                orderByClosest(part.substring(14, partL-2));
+                orderByLimit(part.substring(14, partL-2));
             } else if (part.equals("orderByMin(\"") && part.endsWith("\")")) {
                 orderByMin(StringArray.arrayFromCSV(part.substring(12, partL-2)));
             } else if (part.equals("orderByMax(\"") && part.endsWith("\")")) {
@@ -21844,7 +21850,7 @@ String2.log(table.dataToString());
      * @return an array of column numbers
      * @throws SimpleException if name not found
      */
-    public int[] keyColumnNamesToNumbers(String responsible, String keyColumnNames[]) {
+    public int[] keyColumnNamesToNumbers(String responsible, String[] keyColumnNames) {
         //find the key column numbers
         int keys[] = new int[keyColumnNames.length];
         for (int kc = 0; kc < keyColumnNames.length; kc++) {
@@ -21856,6 +21862,13 @@ String2.log(table.dataToString());
         }
         return keys;
     }
+    
+    /*
+     * private syntax sugar for the other KeyColumnNamesToNumber
+     */
+    public int keyColumnNameToNumber(final String responsible, final String keyColumnName) {
+        return keyColumnNamesToNumbers(responsible, new String[] { keyColumnName })[0];
+    }
 
     /**
      * Like the other orderByCount, but based on keyColumnNames.
@@ -21864,7 +21877,9 @@ String2.log(table.dataToString());
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByCount(String keyColumnNames[]) throws Exception {
-        orderByCount(keyColumnNamesToNumbers("orderByCount", keyColumnNames));
+        withRounding("orderByCount", keyColumnNames, true,
+            (keyColNames) -> orderByCount(keyColumnNamesToNumbers("orderByCount", keyColNames))
+        );
     }
 
     /**
@@ -21874,8 +21889,73 @@ String2.log(table.dataToString());
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMax(String keyColumnNames[]) throws Exception {
-        orderByMax(keyColumnNamesToNumbers("orderByMax", keyColumnNames));
+        withRounding("orderByMax", keyColumnNames, false,
+            (keyColNames) -> orderByMax(keyColumnNamesToNumbers("orderByMax", keyColNames))
+        );
     }
+
+    /*
+     * Apply any rounding defined in the keyColumnNames, eg time/1day.
+     * Method is private as temporary columns may be created and must be cleaned up afterwards by calling this.removeTempOrderByColumns();
+     * @param responsible    name of the function responsible
+     * @param keyColumnNames    an array of the column names used as keys, each maybe having rounding
+     * @return the keyColumnNames without rounding directive.
+     */
+    private void withRounding(final String responsible, String[] keyColumnNames, final boolean isOutputRounded, final WithColumnNames action) throws Exception {
+    	final List<Integer> tempOrderByCols = new ArrayList<Integer>();
+        final String[] sortKeyColumnNames = deriveActualColumnNames(keyColumnNames);
+        final int nRows = nRows();
+        for(int i=0;i<keyColumnNames.length;i++) {
+            if(sortKeyColumnNames[i] == keyColumnNames[i].trim()) {
+                continue;
+            }
+            final int srcColNumber = keyColumnNameToNumber(responsible,sortKeyColumnNames[i]);
+            final PrimitiveArray srcColumn = getColumn(srcColNumber);
+            int targetColNumber = srcColNumber;
+            if(! isOutputRounded) {
+            	final String keyColumnName = keyColumnNames[i].replaceAll("\\W", "."); // eg time/1day -> time.1day
+            	targetColNumber = findColumnNumber(keyColumnName);//eg time/1day
+            	DoubleArray roundedArray = new DoubleArray(srcColumn);
+            	if(targetColNumber < 0) {
+            		targetColNumber = this.addColumn(keyColumnName, roundedArray);
+            		tempOrderByCols.add(0, targetColNumber);
+            	}else {
+            		this.setColumn(targetColNumber, roundedArray);
+            	}
+            	sortKeyColumnNames[i] = keyColumnName;
+            }
+            final PrimitiveArray targetColumn = getColumn(targetColNumber);
+            if(!(targetColumn.isFloatingPointType() || targetColumn.isIntegerType())) {
+                // cannot apply rounding to this.
+                throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                        " cannot apply rounding to "+keyColumnNames[i]+" because it is not a numeric data type.");
+            }
+            final Rounder rounder = createRounder(responsible, keyColumnNames[i]);
+            for(int row = 0; row < nRows; row++) {
+                double value = targetColumn.getDouble(row);
+                if(value != Double.NaN) {
+                    try {
+                        final double rounded = rounder.round(value);
+                        if(rounded != value) {
+                            targetColumn.setDouble(row, rounded);
+                        }
+                    }catch(Exception e) {
+                        throw new SimpleException(responsible+" problem rounding "+keyColumnNames[i]+" for value="+value+" because "+e,e);
+                    }
+                }
+            }
+
+        }
+        try {
+            action.apply(sortKeyColumnNames);
+        }finally {
+            while(tempOrderByCols.size()>0) {
+            	this.removeColumn(tempOrderByCols.remove(0));
+            }
+        }
+    }
+
+
 
     /**
      * Like the other orderByMin, but based on keyColumnNames.
@@ -21884,17 +21964,23 @@ String2.log(table.dataToString());
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMin(String keyColumnNames[]) throws Exception {
-        orderByMin(keyColumnNamesToNumbers("orderByMin", keyColumnNames));
+            withRounding("orderByMin", keyColumnNames, false, 
+                (keyColNames) -> orderByMin(keyColumnNamesToNumbers("orderByMin", keyColNames))
+            );
     }
 
-    /**
+
+
+	/**
      * Like the other orderByMinMax, but based on keyColumnNames.
      *
      * @param keyColumnNames  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMinMax(String keyColumnNames[]) throws Exception {
-        orderByMinMax(keyColumnNamesToNumbers("orderByMinMax", keyColumnNames));
+        withRounding("orderByMinMax", keyColumnNames, false,
+            (keyColNames) -> orderByMinMax(keyColumnNamesToNumbers("orderByMinMax", keyColNames))
+        );
     }
 
     /** This tests orderByMax, orderByMin, orderByMinMax */
@@ -22556,34 +22642,23 @@ String2.log(table.dataToString());
         if (csv.length == 0)
             throw new SimpleException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
                 " (csv.length=0)");
-
         int nKeyCols = csv.length - 1;
-        int keyCols[] = new int[nKeyCols];
-        for (int k = 0; k < nKeyCols; k++) {
-            keyCols[k] = findColumnNumber(csv[k]);
-            if (keyCols[k] < 0)
-                throw new SimpleException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
-                    " (unknown orderBy column=" + csv[k] + ")");
-        }
+        int limitN = String2.parseInt(csv[nKeyCols]);
+        String[] keyColumnNames = new String[csv.length - 1];
+        System.arraycopy(csv, 0, keyColumnNames, 0, keyColumnNames.length);
 
-        orderByLimit(keyCols, String2.parseInt(csv[nKeyCols]));
+        withRounding("orderByLimit", keyColumnNames, false, 
+            (keyColNames) -> orderByLimit(keyColumnNamesToNumbers("orderByLimit", keyColNames),limitN)
+        );
     }
 
     /** 
      * This is a higher level orderByLimit.
      */
     public void orderByLimit(String orderBy[], int limitN) throws Exception {
-
-        int nKeyCols = orderBy.length;
-        int keyCols[] = new int[nKeyCols];
-        for (int k = 0; k < nKeyCols; k++) {
-            keyCols[k] = findColumnNumber(orderBy[k]);
-            if (keyCols[k] < 0)
-                throw new SimpleException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
-                    " (unknown orderBy column=" + orderBy[k] + ")");
-        }
-
-        orderByLimit(keyCols, limitN);
+        withRounding("orderByLimit", orderBy, false, 
+            (keyColNames) -> orderByLimit(keyColumnNamesToNumbers("orderByLimit", keyColNames),limitN)
+        );
     }
 
     /**
@@ -28933,6 +29008,125 @@ readAsNcCF?
         String2.log("\n***** Table.test finished successfully");
 
     }
+    /**
+     * Parse the orderByCsv string into an array of strings. If the final string begins with a number (eg. 2days)
+     * it is appended to the last field eg, time/2days.
+     * @param tOrderByCsv from the query
+     * @return an array of strings representing the column names.
+     */
+    public static String[] parseOrderByColumnNamesCsvString(final String errorMessage, final String tOrderByCsv) {
+        if ((tOrderByCsv == null || tOrderByCsv.trim().length() == 0))
+            throw new SimpleException(QUERY_ERROR + errorMessage + 
+                " (no csv)");
+        String[] cols = String2.split(tOrderByCsv, ',');
+        // filter out the blanks.
+        cols =  Arrays.stream(cols).filter(value -> value.trim().length() > 0).toArray(size -> new String[size]);
+        if (cols.length == 0)
+            throw new SimpleException(QUERY_ERROR + errorMessage + 
+                " (csv.length=0)");
+        
+        // support the old format where interval was the last field.
+        if(cols.length > 1 && cols[cols.length-1].trim().matches("^\\d")) {
+            cols[cols.length - 2] += "/" + cols[cols.length-1];
+            cols = Arrays.copyOf(cols, cols.length - 1);
+        }
+        return cols;
+    }
+    
+    private static String[] splitColNameForRounders(String colName) {
+        String split[] = colName.split("/",2); // split on '/'
+        Arrays.stream(split).forEach(s -> s.trim()); // remove outer whitespace
+        return Arrays.stream(split).filter( s -> s.length() > 0).toArray(size -> new String[size]); // discard blanks.
+    }
+
+    /**
+     * Derive the actual column names by removing the rounding part eg time/1day =&gt; time.
+     * @param keyColumnNames
+     * @return
+     */
+    public static String[] deriveActualColumnNames(String[] keyColumnNames) {
+        final String[] actualKeyColumnNames = new String[keyColumnNames.length];
+        for(int i=0;i<keyColumnNames.length;i++) {
+            actualKeyColumnNames[i] = deriveActualColumnName(keyColumnNames[i]);
+        }
+        return actualKeyColumnNames;
+    }
+
+    public static String deriveActualColumnName(String colName) {
+        return splitColNameForRounders(colName)[0];
+    }
+    
+    private final static Pattern alphaPattern = Pattern.compile("\\p{Alpha}");
+
+    public static Table.Rounder createRounder(final String responsible, final String param) {
+        String[] split = splitColNameForRounders(param);
+        if(split.length == 1) {
+            return (d)->(d); // nothing to be done.
+        }
+        String str = split[1];
+        try {
+            str = str.replaceAll("\\s", "");
+            String[] parts = str.split(":",2);
+            Matcher alphaMatcher = alphaPattern.matcher(parts[0]);
+            if(alphaMatcher.find()) { // eg: 2days.
+                if(parts.length == 2) {
+                    throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                            " could not parse "+param+", offset not allowed with date intervals");
+                }
+                return createTimeRounder(responsible, str, param);
+            } else {
+                final double numberOfUnits = Double.parseDouble(parts[0]);
+                if(parts.length == 2) {
+                    final double offset = Double.parseDouble(parts[1]);
+                    return (d)->(Math.floor((d-offset)  / numberOfUnits));
+                }
+                return (d)->(Math.floor(d  / numberOfUnits));
+            }
+        }catch(IllegalArgumentException e) {
+            throw e;
+        }catch(Throwable t) {
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                    " could not parse "+param+", format should be variable[/interval[:offset]]");        
+        }
+    }
 
 
+    private static Table.Rounder createTimeRounder(final String responsible, String str, String param) {
+        final double[] numberTimeUnits = Calendar2.parseNumberTimeUnits(str);
+        if (numberTimeUnits.length != 2)
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " +  
+                "could not parse "+param+", (numberTimeUnits.length must be 2)"); 
+        if (!Double.isFinite(numberTimeUnits[0]) || 
+            !Double.isFinite(numberTimeUnits[1]))
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                "could not parse "+param+", (numberTimeUnits values can't be NaNs)"); 
+        if (numberTimeUnits[0] <= 0 || numberTimeUnits[1] <= 0)
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " +  
+                "could not parse "+param+", (numberTimeUnits values must be positive numbers)"); 
+        final double simpleInterval = numberTimeUnits[0] * numberTimeUnits[1];
+        final int field = 
+            numberTimeUnits[1] ==  30 * Calendar2.SECONDS_PER_DAY? Calendar2.MONTH :
+            numberTimeUnits[1] == 360 * Calendar2.SECONDS_PER_DAY? Calendar2.YEAR : //but see getYear below
+            Integer.MAX_VALUE;
+        final int intNumber = Math2.roundToInt(numberTimeUnits[0]); //used for Month and Year
+        if (field != Integer.MAX_VALUE &&
+            (intNumber < 1 || intNumber != numberTimeUnits[0])) 
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                "could not parse "+param+", (The number of months or years must be a positive integer.)"); 
+        if (field == Calendar2.MONTH && (intNumber == 5 || intNumber > 6)) 
+            throw new IllegalArgumentException(Table.QUERY_ERROR + " "+ responsible+ " " + 
+                "could not parse "+param+", (The number of months must be one of 1,2,3,4, or 6.)");
+        
+        if(field == Integer.MAX_VALUE) {
+            return (d) -> d - d % simpleInterval;
+        }else {
+            return (d) -> {
+                GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
+                Calendar2.clearSmallerFields(gc, field);
+                while ((field == Calendar2.YEAR? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0)
+                     gc.add(field, -1);
+                return Calendar2.gcToEpochSeconds(gc);
+            };
+        }
+       }
 }
