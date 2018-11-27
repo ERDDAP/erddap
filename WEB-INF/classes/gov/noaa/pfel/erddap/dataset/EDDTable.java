@@ -1943,10 +1943,26 @@ public abstract class EDDTable extends EDD {
             if (constraint.startsWith("."))
                 continue;
 
-            //special case: server-side functions: standard orderBy (varCSV)
             if (constraint.endsWith("\")") &&
-                 (constraint.startsWith("orderBy(\"") ||
-                  constraint.startsWith("orderByCount(\"") ||
+                    constraint.startsWith("orderBy(\"")) {
+                   //ensure all orderBy vars are in resultsVariables
+                   //TableWriters for orderBy... do additional checking
+                   if (!repair) {
+                       int ppo = constraint.indexOf("(\"");
+                       StringArray obv = StringArray.fromCSV(constraint.substring(
+                           ppo + 2, constraint.length() - 2));
+                       for (int obvi = 0; obvi < obv.size(); obvi++) {
+                           if (resultsVariables.indexOf(obv.get(obvi)) < 0)
+                               throw new SimpleException(EDStatic.queryError +
+                                   MessageFormat.format(
+                                       EDStatic.queryErrorOrderByVariable, obv.get(obvi)));
+                       }
+                   }
+                   continue;
+               }
+            //special case: server-side functions: standard orderBySomething (varCSV)
+            if (constraint.endsWith("\")") &&
+                 (constraint.startsWith("orderByCount(\"") ||
                   constraint.startsWith("orderByMax(\"") ||
                   constraint.startsWith("orderByMin(\"") ||
                   constraint.startsWith("orderByMinMax(\""))) {
@@ -1959,7 +1975,9 @@ public abstract class EDDTable extends EDD {
                     StringArray obv = StringArray.fromCSV(constraint.substring(
                         ppo + 2, constraint.length() - 2));
                     for (int obvi = 0; obvi < obv.size(); obvi++) {
-                        if (resultsVariables.indexOf(obv.get(obvi)) < 0)
+                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                    	String item = obvParts[0];
+                        if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 MessageFormat.format(
                                     EDStatic.queryErrorOrderByVariable, obv.get(obvi)));
@@ -1981,7 +1999,9 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_CLOSEST_ERROR + " (csv.length<2)");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is interval
-                        if (resultsVariables.indexOf(obv.get(obvi)) < 0)
+                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                    	String item = obvParts[0];
+                        if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_CLOSEST_ERROR + 
                                 " (col=" + obv.get(obvi) + " not in results variables)");
@@ -2005,7 +2025,9 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_LIMIT_ERROR + " (csv.length=0)");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is limitN
-                        if (resultsVariables.indexOf(obv.get(obvi)) < 0)
+                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                    	String item = obvParts[0];
+                        if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_LIMIT_ERROR + 
                                 " (col=" + obv.get(obvi) + " not in results variables)");
@@ -3154,7 +3176,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobc;
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobc.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_CLOSEST_ERROR + 
                             " (unknown column name=" + twobc.orderBy[ob] + ")");
@@ -3170,7 +3192,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobc;
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobc.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByCount' variable=" + twobc.orderBy[ob] + " isn't in the dataset.");
                 }
@@ -3181,7 +3203,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobl;
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobl.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobl.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobl.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_LIMIT_ERROR + 
                             " (unknown column name=" + twobl.orderBy[ob] + ")");
@@ -3192,7 +3214,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
@@ -3202,7 +3224,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMin' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
@@ -3213,7 +3235,7 @@ public abstract class EDDTable extends EDD {
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
+                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMinMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
