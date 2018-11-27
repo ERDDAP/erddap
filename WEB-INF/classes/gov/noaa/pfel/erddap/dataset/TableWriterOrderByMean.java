@@ -59,13 +59,9 @@ public class TableWriterOrderByMean extends TableWriterAll {
 	private int timeCol = -1;
 	private boolean configured = false;
 	private Table meansTable;
-	private final Map<String,Rounder> rounders = new HashMap<String,Rounder>();
-	private final Pattern alphaPattern = Pattern.compile("\\p{Alpha}");
+	private final Map<String,Table.Rounder> rounders = new HashMap<String,Table.Rounder>();
 	
 
-    private static interface Rounder{
-       double round(Double time) throws Exception;
-    }
     /**
      * The constructor.
      *
@@ -82,94 +78,15 @@ public class TableWriterOrderByMean extends TableWriterAll {
 
         super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
-        String[] cols = (tOrderByCsv == null || tOrderByCsv.trim().length() == 0) ? new String[]{} : String2.split(tOrderByCsv, ',');
-        // filter out the blanks.
-        cols =  Arrays.stream(cols).filter(value -> value.trim().length() > 0).toArray(size -> new String[size]);
-        // support the old format where interval was the last field.
-        int last = cols.length;
-        if(cols.length > 1 && cols[cols.length-1].trim().matches("^\\d")) {
-        	last--;
-        	cols[cols.length - 2] += "/" + cols[cols.length-1];
-        }
-    	orderBy = new String[last];
-        for(int col=0; col<last; col++) {
-        	String[] parts = cols[col].split("/",2);
-        	String colName = parts[0].trim();
-        	orderBy[col] = colName;
-        	if(parts.length == 2) {
-        		rounders.put(colName, createRounder(parts[1],cols[col]));
+        final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_MEAN_ERROR, tOrderByCsv);
+    	orderBy = new String[cols.length];
+        for(int col=0; col < cols.length; col++) {
+        	orderBy[col] = Table.deriveActualColumnName(cols[col]);
+        	if( orderBy[col] != cols[col]) {
+        		rounders.put(orderBy[col], Table.createRounder("orderByMean", cols[col]));
         	}
         }
     }
-
-
-	private Rounder createRounder(String str,String param) {
-		try {
-			str = str.replaceAll("\\s", "");
-			String[] parts = str.split(":",2);
-			Matcher alphaMatcher = alphaPattern.matcher(parts[0]);
-			if(alphaMatcher.find()) { // eg: 2days.
-				if(parts.length == 2) {
-					throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-		                    " could not parse "+param+", offset not allowed with date intervals");
-				}
-				return createTimeRounder(str, param);
-			} else {
-				final double numberOfUnits = Double.parseDouble(parts[0]);
-				if(parts.length == 2) {
-					final double offset = Double.parseDouble(parts[1]);
-					return (d)->(Math.floor((d-offset)  / numberOfUnits));
-				}
-				return (d)->(Math.floor(d  / numberOfUnits));
-			}
-		}catch(IllegalArgumentException e) {
-			throw e;
-		}catch(Throwable t) {
-			throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-                    " could not parse "+param+", format should be variable[/interval[:offset]]");		
-		}
-	}
-
-
-    private Rounder createTimeRounder(String str, String param) {
-    	final double[] numberTimeUnits = Calendar2.parseNumberTimeUnits(str);
-        if (numberTimeUnits.length != 2)
-            throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-                "could not parse "+param+", (numberTimeUnits.length must be 2)"); 
-        if (!Double.isFinite(numberTimeUnits[0]) || 
-            !Double.isFinite(numberTimeUnits[1]))
-            throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-            	"could not parse "+param+", (numberTimeUnits values can't be NaNs)"); 
-        if (numberTimeUnits[0] <= 0 || numberTimeUnits[1] <= 0)
-            throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-            	"could not parse "+param+", (numberTimeUnits values must be positive numbers)"); 
-        final double simpleInterval = numberTimeUnits[0] * numberTimeUnits[1];
-        final int field = 
-            numberTimeUnits[1] ==  30 * Calendar2.SECONDS_PER_DAY? Calendar2.MONTH :
-            numberTimeUnits[1] == 360 * Calendar2.SECONDS_PER_DAY? Calendar2.YEAR : //but see getYear below
-            Integer.MAX_VALUE;
-        final int intNumber = Math2.roundToInt(numberTimeUnits[0]); //used for Month and Year
-        if (field != Integer.MAX_VALUE &&
-            (intNumber < 1 || intNumber != numberTimeUnits[0])) 
-            throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-            	"could not parse "+param+", (The number of months or years must be a positive integer.)"); 
-        if (field == Calendar2.MONTH && (intNumber == 5 || intNumber > 6)) 
-            throw new IllegalArgumentException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-            	"could not parse "+param+", (The number of months must be one of 1,2,3,4, or 6.)");
-        
-        if(field == Integer.MAX_VALUE) {
-            return (d) -> d - d % simpleInterval;
-        }else {
-        	return (d) -> {
-        		GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
-        		Calendar2.clearSmallerFields(gc, field);
-                while ((field == Calendar2.YEAR? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0)
-                     gc.add(field, -1);
-                return Calendar2.gcToEpochSeconds(gc);
-        	};
-        }
-       }
-
 
 	/**
      * This adds the current contents of table (a chunk of data) to the OutputStream.
@@ -191,6 +108,8 @@ public class TableWriterOrderByMean extends TableWriterAll {
         }
         StringBuilder sbKey = new StringBuilder();
         int nCols = table.nColumns();
+        double[] roundedValue = new double[nCols];
+        BitSet isRounded = new BitSet(nCols);
         ROW:
         for(int row = 0; row < nRows; row++) {
         	sbKey.setLength(0);
@@ -206,6 +125,8 @@ public class TableWriterOrderByMean extends TableWriterAll {
         					continue ROW;
         				}
         				value = this.rounders.get(columnName).round(value);
+        				isRounded.set(col);
+        				roundedValue[col] = value;
         			}
         			sbKey.append(value);
         		}else {
@@ -243,7 +164,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         			this.meansTable.setStringData(col, idx, column.getRawString(row));
         			continue;
         		}
-        		double value = table.getDoubleData(col, row);
+        		double value = isRounded.get(col) ? roundedValue[col] : table.getDoubleData(col, row);
         		if(value == Double.NaN) {
         			continue;
         		}

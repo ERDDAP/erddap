@@ -2186,7 +2186,7 @@ public abstract class EDD {
     public EDV findDataVariableByDestinationName(String tDestinationName) 
         throws Throwable {
 
-        int which = String2.indexOf(dataVariableDestinationNames(), tDestinationName);
+        int which = String2.indexOf(dataVariableDestinationNames(), tDestinationName.split("/")[0]);
         if (which < 0) throw new SimpleException(
             MessageFormat.format(EDStatic.errorNotFound, 
                 "destinationVariableName=" + tDestinationName));
