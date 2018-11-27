@@ -11,6 +11,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -101,7 +102,9 @@ public class TableWriterOrderByCount extends TableWriterAll {
         //combine results
         int nRows = cumTable.nRows();
         int nCols = cumTable.nColumns();
-        int keyCols[] = cumTable.keyColumnNamesToNumbers("orderByCount", orderBy);
+        int keyCols[] = cumTable.keyColumnNamesToNumbers("orderByCount",
+                // just get the column names, ignoring runding e.g. time not time/1day		
+                Arrays.stream(orderBy).map((s)->s.split("/")[0]).toArray(size -> new String[size]));
         int nKeyCols = keyCols.length;
 
         //sort based on keys
