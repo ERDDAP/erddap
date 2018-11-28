@@ -159,6 +159,8 @@ public class Erddap extends HttpServlet {
         {".csv0", ".tsv0"};
     public final static String FILE_TYPES_176[] = 
         {".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"};
+    public final static String FILE_TYPES_184[] = 
+        {".dataTable", ".jsonlCSV1"};
 
     public final static String REQUESTED_RANGE_NOT_SATISFIABLE = 
                               "REQUESTED_RANGE_NOT_SATISFIABLE: ";
@@ -4085,7 +4087,7 @@ writer.write(
             //jsonp
             String jsonp = null;
             if (fileTypeName.equals(".geoJson") ||
-                fileTypeName.startsWith(".json") || 
+                fileTypeName.startsWith(".json") || //e.g., .jsonlCSV .jsonlKVP
                 fileTypeName.startsWith(".ncoJson")) {  
                 //did query include &.jsonp= ?
                 String parts[] = Table.getDapQueryParts(userDapQuery); //decoded
@@ -4093,8 +4095,8 @@ writer.write(
                 if (jsonp != null) {
                     jsonp = jsonp.substring(7);
                     if (!fileTypeName.equals(".geoJson") && 
-                        !fileTypeName.equals(".json") && 
-                        !fileTypeName.equals(".ncoJson")) //e.g., .jsonlCSV .jsonlKVP
+                        !fileTypeName.equals(".json") && //e.g., .jsonlCSV .jsonlKVP
+                        !fileTypeName.equals(".ncoJson")) 
                         throw new SimpleException(EDStatic.errorJsonpNotAllowed);
                     if (!String2.isJsonpNameSafe(jsonp))
                         throw new SimpleException(EDStatic.errorJsonpFunctionName);
@@ -4120,6 +4122,8 @@ writer.write(
                     (sourceVersion < 174 && fileTypeName.equals(".itx")) ||
                     (sourceVersion < 176 && String2.indexOf(FILE_TYPES_176, fileTypeName) >= 0) ||
                     (sourceVersion < 182 && jsonp != null) ||
+                    (sourceVersion < 184 && userDapQuery.indexOf("orderByMean") >= 0) ||
+                    (sourceVersion < 184 && String2.indexOf(FILE_TYPES_184, fileTypeName) >= 0) ||
                     fileTypeName.equals(".subset")) { 
                     //handle locally
                 } else {
