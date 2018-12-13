@@ -120,7 +120,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         		if(column.isFloatingPointType() || column.isIntegerType()) {
         			double value = column.getDouble(row);
         			if(this.rounders.containsKey(columnName)) {
-        				if(value == Double.NaN) {
+        				if(Double.isNaN(value)) {
         					// No value, cannot group by this...
         					continue ROW;
         				}
@@ -165,7 +165,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         			continue;
         		}
         		double value = isRounded.get(col) ? roundedValue[col] : table.getDoubleData(col, row);
-        		if(value == Double.NaN) {
+        		if(Double.isNaN(value)) {
         			continue;
         		}
         		if(this.degreesCol.get(col)) {

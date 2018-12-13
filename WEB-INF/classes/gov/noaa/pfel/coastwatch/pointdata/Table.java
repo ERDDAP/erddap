@@ -21933,7 +21933,7 @@ String2.log(table.dataToString());
             final Rounder rounder = createRounder(responsible, keyColumnNames[i]);
             for(int row = 0; row < nRows; row++) {
                 double value = targetColumn.getDouble(row);
-                if(value != Double.NaN) {
+                if(!Double.isNaN(value)) {
                     try {
                         final double rounded = rounder.round(value);
                         if(rounded != value) {
