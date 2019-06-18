@@ -70,7 +70,11 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs for processing, 
+     *   then back to destinationMV and FV when finished.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -80,7 +84,7 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
         //to save time and disk space, this just does a partial job 
         //  (remove non-min/max rows from this partial table)
         //  and leaves perfect job to finish()
-        table.orderByMinMax(orderBy);
+        table.orderByMinMax(orderBy); //this handles missingValues and _FillValues temporarily
 
         //ensure the table's structure is the same as before
         //and write to dataOutputStreams
@@ -102,7 +106,7 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
-        cumulativeTable.orderByMinMax(orderBy);
+        cumulativeTable.orderByMinMax(orderBy); //this handles missingValues and _FillValues temporarily
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
@@ -121,7 +125,7 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
             tCumulativeTable.removeAllRows();
             return;
         }
-        tCumulativeTable.orderByMinMax(orderBy);
+        tCumulativeTable.orderByMinMax(orderBy); //this handles missingValues and _FillValues temporarily
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;
     }

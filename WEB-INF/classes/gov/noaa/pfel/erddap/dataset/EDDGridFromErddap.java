@@ -51,7 +51,7 @@ import java.util.Enumeration;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;  //only Array is needed; all other ucar is for testing netcdf-java
 
@@ -100,6 +100,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        boolean tDimensionValuesInMemory = true;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -146,6 +148,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
+            else if (localTags.equals( "<dimensionValuesInMemory>")) {}
+            else if (localTags.equals("</dimensionValuesInMemory>")) tDimensionValuesInMemory = String2.parseBoolean(content);
             else if (localTags.equals( "<redirect>")) {}
             else if (localTags.equals("</redirect>")) 
                 tRedirect = String2.parseBoolean(content);
@@ -156,7 +162,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
+            tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect, 
+            tnThreads, tDimensionValuesInMemory);
     }
 
     /**
@@ -184,7 +191,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tLocalSourceUrl, boolean tSubscribeToRemoteErddapDataset,
-        boolean tRedirect) 
+        boolean tRedirect, int tnThreads, boolean tDimensionValuesInMemory) 
         throws Throwable {
 
         if (verbose) String2.log(
@@ -216,6 +223,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
         subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
         redirect = tRedirect;
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        dimensionValuesInMemory = tDimensionValuesInMemory; 
 
         //quickRestart
         Attributes quickRestartAttributes = null;       
@@ -244,8 +253,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
 
         //setup via info.json
-        //source http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
-        //json   http://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
+        //source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
+        //json   https://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
         String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
 
         byte sourceInfoBytes[] = quickRestartAttributes == null?
@@ -300,12 +309,14 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     //guess ioos_category   (alternative is always assign "Unknown")
                     Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
                         null, //sourceGlobalAtts not yet known
-                        tSourceAttributes, null, varName, false, true); //tryToAddColorBarMinMax, tryToFindLLAT
+                        tSourceAttributes, null, varName, 
+                            true, //tryToAddStandardName
+                            false, true); //tryToAddColorBarMinMax, tryToFindLLAT
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
                 //make an axisVariable
-                tAxisVariables.add(makeAxisVariable(-1, 
+                tAxisVariables.add(makeAxisVariable(tDatasetID, -1, 
                     varName, varName, tSourceAttributes, tAddAttributes, 
                     tSourceValues));
 
@@ -323,7 +334,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     //guess ioos_category   (alternative is always assign "Unknown")
                     Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
                         null, //sourceGlobalAtts not yet known
-                        tSourceAttributes, null, varName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
+                        tSourceAttributes, null, varName, 
+                            false, //tryToAddStandardName  since just getting ioos_category
+                            false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
@@ -416,13 +429,18 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         }
 
         //try to subscribe to the remote ERDDAP dataset
-        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset);
+        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset, localSourceUrl);
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromErddap " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+
+        //very last thing: saveDimensionValuesInFile
+        if (!dimensionValuesInMemory)
+            saveDimensionValuesInFile();
+
     }
 
     /**
@@ -675,7 +693,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             shareInfo? onChange : (StringArray)onChange.clone(), 
             "", "", "", "", //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
             getReloadEveryNMinutes(), getUpdateEveryNMillis(), tLocalSourceUrl,
-            subscribeToRemoteErddapDataset, redirect);
+            subscribeToRemoteErddapDataset, redirect, nThreads, dimensionValuesInMemory);
 
         //if shareInfo, point to same internal data
         if (shareInfo) {
@@ -722,6 +740,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
+     * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
      * @param tConstraints  int[nAxisVariables*3] 
      *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
@@ -733,7 +753,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+        EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //build String form of the constraint
@@ -760,9 +781,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
                 //request should be valid, so any other error is trouble with dataset
                 String2.log(MustBe.throwableToString(t));
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
-                    t); 
+                throw t instanceof WaitThenTryAgainException? t : 
+                    new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                        "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", t); 
             }
             if (pa.length != axisVariables.length + 1) 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
@@ -793,7 +814,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * The XML can then be edited by hand (if desired) and added to the datasets.xml file.
      *
      * @param url the base url for the dataset, e.g., 
-     *   "http://coastwatch.pfeg.noaa.gov/erddap"
+     *   "https://coastwatch.pfeg.noaa.gov/erddap"
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
@@ -823,7 +844,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 "   send an email to the admin asking that s/he add onChange tags to the datasets.\n" +
 "   See the EDDGridFromErddap documentation.\n" + 
 " * The XML needed for EDDGridFromErddap in datasets.xml has few options.  See\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap .\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap .\n" +
 "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
 "   use EDDGridFromDap to access the dataset instead of EDDGridFromErddap.\n" +
 "-->\n");
@@ -938,6 +959,8 @@ expected =
 
             //ensure it is ready-to-use by making a dataset from it
             try {
+                String tDatasetID = "localhost_b73a_a4a6_4f4a";
+                EDD.deleteCachedDatasetInfo(tDatasetID);
                 EDD edd = oneFromXmlFragment(null, results);    
                 String2.log(
                     "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
@@ -946,7 +969,7 @@ expected =
                     "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
                 Test.ensureEqual(edd.title(), 
                     "Audio data from a local source.", "");
-                Test.ensureEqual(edd.datasetID(), "localhost_b73a_a4a6_4f4a", "");
+                Test.ensureEqual(edd.datasetID(), tDatasetID, "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                     "channel_1", "");
             } catch (Exception e) {
@@ -956,7 +979,8 @@ expected =
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl); //in tests, always non-https url
+                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl + 
+                "\nThis test requires |testGridWav|erdBAssta5day|rMHchla8day in the localhost ERDDAP.\n"); //in tests, always non-https url
         }
 
     }
@@ -1106,25 +1130,25 @@ expected2 =
 "    String satellite \"Aqua\";\n" +
 "    String sensor \"MODIS\";\n" +
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
-"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"    String sourceUrl \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "    Float64 Southernmost_Northing -90.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "    String time_coverage_end \"20.{8}T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
-"    String title \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"    String title \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
             try {
                 tPo = results.indexOf("history \"NASA GSFC (OBPG)");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
+                Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
                     "\nresults=\n" + results);
 
                 tPo = results.indexOf("    String infoUrl ");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                Test.ensureLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
+                Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
@@ -1134,12 +1158,12 @@ expected2 =
                     results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
                     tPo = results.indexOf("history \"NASA GSFC (OBPG)");
                     Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                    Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
+                    Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
                         "\nresults=\n" + results);
 
                     tPo = results.indexOf("    String infoUrl ");
                     Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                    Test.ensureLinesMatch(results.substring(tPo), expected2, 
+                    Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, 
                         "\nresults=\n" + results);
                 }
             } catch (Throwable t) {
@@ -1167,18 +1191,18 @@ expected2 =
     "      Float64 longitude\\[longitude = 8640\\];\n" +
     "  \\} chlorophyll;\n" +
     "\\} rMHchla8day;\n";
-            Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+            Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseStringUnchanged(localUrl + ".dds");
-                Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+                Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
             }
 
             //********************************************** test getting axis data
 
             //.asc
             String2.log("\n*** EDDGridFromErddap test get .ASC axis data\n");
-            query = "time[0:100:200],longitude[last]";
+            query = "time%5B0:100:200%5D,longitude%5Blast%5D";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".asc"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1198,6 +1222,10 @@ expected2 =
             Test.ensureEqual(results, expected + "r" + expected2, "RESULTS=\n" + results);
      
             if (testLocalErddapToo) {
+                //2018-08-08 this is an important test of SSR.getUrlResponseStringUnchanged
+                //  following a redirect from http to https, 
+                //  which was previously not supported in SSR
+                query = "time%5B0:100:200%5D,longitude%5Blast%5D";
                 results = SSR.getUrlResponseStringUnchanged(localUrl + ".asc?" + query);
                 Test.ensureEqual(results, expected + "erd" + expected2, "\nresults=\n" + results);
             }
@@ -1360,9 +1388,8 @@ expected2 =
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
         expected2 = 
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 360.0; // double\n" +
-" data:\n" +
 "}\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
@@ -1377,7 +1404,7 @@ expected2 =
                 }
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n*** THIS WILL FAIL UNTIL AFTER RELEASE 1.48."); 
+                    "\n*** THIS WILL FAIL UNTIL AFTER RELEASE 2.00."); 
             }
 
             //********************************************** test getting grid data
@@ -1387,15 +1414,15 @@ expected2 =
                 gridDataset.className() + "_Data", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  //missing values are "NaN"
-/* pre 2010-10-26 was 
-"time, altitude, latitude, longitude, chlorophyll\n" +
-"UTC, m, degrees_north, degrees_east, mg m-3\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; */
+// pre 2010-10-26 was 
+//"time, altitude, latitude, longitude, chlorophyll\n" +
+//"UTC, m, degrees_north, degrees_east, mg m-3\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; 
 "time,altitude,latitude,longitude,chlorophyll\n" +
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
@@ -1431,15 +1458,15 @@ expected2 =
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
-/* pre 2010-10-26 was 
-"time, altitude, latitude, longitude, chlorophyll\n" +
-"UTC, m, degrees_north, degrees_east, mg m-3\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; */
+// pre 2010-10-26 was 
+//"time, altitude, latitude, longitude, chlorophyll\n" +
+//"UTC, m, degrees_north, degrees_east, mg m-3\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
+//"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; 
 "time,altitude,latitude,longitude,chlorophyll\n" +
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
@@ -1473,7 +1500,7 @@ expected2 =
             String2.log("\n*** EDDGridFromErddap test get .NC data\n");
             tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Data", ".nc"); 
-            results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
+            results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
             expected = 
 "netcdf EDDGridFromErddap_Data.nc \\{\n" +
 "  dimensions:\n" +
@@ -1571,7 +1598,7 @@ expected2 =
 "  :history = \"NASA GSFC \\(OBPG\\)";
         tPo = results.indexOf(":history = \"NASA GSFC (OBPG)");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureLinesMatch(results.substring(0, tPo + 28), expected, "RESULTS=\n" + results);
+        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 28), expected, "RESULTS=\n" + results);
 
         expected = //note original missing values
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
@@ -1600,13 +1627,13 @@ expected2 =
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 224.98437319134158; // double\n" +
 " data:\n" +
 "time =\n" +
@@ -1631,7 +1658,8 @@ expected2 =
             if (tPo < 0 || tPo2 < 0)
                 String2.log("tPo=" + tPo + " tPo2=" + tPo2 + " results=\n" + results);
 
-            Test.ensureLinesMatch(results.substring(tPo, tPo2 + 9), expected, "RESULTS=\n" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(tPo, tPo2 + 9), expected, "RESULTS=\n" + results);
+        /* */
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 

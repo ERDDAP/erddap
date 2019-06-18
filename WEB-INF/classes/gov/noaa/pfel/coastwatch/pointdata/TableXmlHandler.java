@@ -96,6 +96,8 @@ public class TableXmlHandler extends DefaultHandler {
         //  (rowElementXPath split into parts)
         Test.ensureTrue(rowElementXPath.startsWith("/"), 
             errorInMethod + "rowElementXPath=" + rowElementXPath + " must start with '/'.");
+        if (rowElementXPath.length() > 1 && rowElementXPath.endsWith("/"))
+            rowElementXPath = rowElementXPath.substring(0, rowElementXPath.length() - 1);
         rowStack = String2.split(rowElementXPath.substring(1), '/'); //substring(1) because first char is '/'
         rowStackSize = rowStack.length;
         if (verbose) String2.log("TableXmlHandler rowStack=" + String2.toCSSVString(rowStack));
@@ -321,7 +323,7 @@ public class TableXmlHandler extends DefaultHandler {
      * @param table a Table, perhaps already containing some columns and rows.
      *    This does not call table.clear().
      * @param validate indicates if the XML parser should validate the xml
-     *    in a simple sense (see http://www.w3.org/TR/REC-xml#proc-types).
+     *    in a simple sense (see https://www.w3.org/TR/REC-xml#proc-types).
      *    true or false, the XMLReader always insists that the document be well formed.
      *    true or false, the XMLReader doesn't validate against a schema.
      *    The validate parameter will be ignored if the XMLReader doesn't support

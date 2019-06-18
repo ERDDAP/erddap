@@ -24,7 +24,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -53,28 +53,28 @@ public class DataHelper  {
     public static String UNITLESS = "unitless";
 
     /** The creatorEmail for CoastWatch */
-    public static String CW_CREATOR_EMAIL = "dave.foley@noaa.gov";  
+    public static String CW_CREATOR_EMAIL = "erd.data@noaa.gov";  
 
     /** The creatorName for CoastWatch */
     public static String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node"; 
 
     /** The creatorUrl for CoastWatch */
-    public static String CW_CREATOR_URL = "http://coastwatch.pfeg.noaa.gov";
+    public static String CW_CREATOR_URL = "https://coastwatch.pfeg.noaa.gov";
 
     /** The project for CoastWatch */
-    public static String CW_PROJECT = "CoastWatch (http://coastwatch.noaa.gov/)";
+    public static String CW_PROJECT = "CoastWatch (https://coastwatch.noaa.gov/)";
 
     /** The creatorEmail for ERD */
-    public static String ERD_CREATOR_EMAIL = "Roy.Mendelssohn@noaa.gov";  
+    public static String ERD_CREATOR_EMAIL = "erd.data@noaa.gov";  
 
     /** The creatorName for ERD */
     public static String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
 
     /** The creatorUrl for ERD */
-    public static String ERD_CREATOR_URL = "http://www.pfel.noaa.gov";
+    public static String ERD_CREATOR_URL = "https://www.pfeg.noaa.gov";
 
     /** The project for ERD */
-    public static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (http://www.pfel.noaa.gov/)";
+    public static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)";
 
     /**
      * The standard variable names of the first 5 columns in the TableDataSet.makeSubset 
@@ -471,7 +471,9 @@ public class DataHelper  {
             Test.error(String2.ERROR + " in DataHelper.centerOfStartDateAndInclusiveEndDate:\n" +
                 "isoEndDate=" + isoEndDate + " has non-zero hh:mm:ss info!");
         double centerSeconds = (startSeconds + (endSeconds + Calendar2.SECONDS_PER_DAY)) / 2;
-        return Calendar2.epochSecondsToIsoStringSpace(centerSeconds);
+        String s = Calendar2.epochSecondsToIsoStringT(centerSeconds);
+        s = String2.replaceAll(s, 'T', ' ');
+        return s;
     }
     
     /**

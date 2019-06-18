@@ -476,7 +476,7 @@ public class GeoDateDialog extends JDialog
     int dayOfMonth = 1;
     while (curTime < endTime) {
       // Set labels in grid
-      if (dayOfMonth != 32) // October; daylight savings time causes bug
+      if (dayOfMonth != 32) // October; daylight saving time causes bug
         gridLabels[ dayOfWeek][ weekOfMonth ] = daysOfMonth[ dayOfMonth-1 ];
 
       dayOfWeek++;

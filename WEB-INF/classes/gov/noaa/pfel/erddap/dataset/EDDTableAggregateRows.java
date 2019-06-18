@@ -199,9 +199,7 @@ public class EDDTableAggregateRows extends EDDTable{
             if (tErddap != null && oChildren[c] instanceof EDDTableFromErddap) {
                 EDDTableFromErddap tFromErddap = (EDDTableFromErddap)oChildren[c];
                 String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
-                if (tSourceUrl.startsWith(EDStatic.baseUrl) ||   //normally
-                    tSourceUrl.startsWith("http://127.0.0.1") ||
-                    tSourceUrl.startsWith("http://localhost")) { //happens during testing
+                if (EDStatic.urlIsThisComputer(tSourceUrl)) {
                     String lcdid = File2.getNameNoExtension(tSourceUrl);
                     if (datasetID.equals(lcdid))
                         throw new RuntimeException(errorInMethod + 
@@ -370,7 +368,7 @@ public class EDDTableAggregateRows extends EDDTable{
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableAggregateRows " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
@@ -637,7 +635,7 @@ public class EDDTableAggregateRows extends EDDTable{
 "    String contributor_name \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "    String contributor_role \"Source of data.\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"    String creator_email \"dave.foley@noaa.gov\";\n" +
+"    String creator_email \"erd.data@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n" +
 "    Float64 Easternmost_Easting -75.402;\n" +
@@ -651,12 +649,12 @@ public class EDDTableAggregateRows extends EDDTable{
 "    String geospatial_vertical_positive \"down\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"NOAA NDBC\n";
-//2016-02-24T16:48:35Z http://www.ndbc.noaa.gov/
+//2016-02-24T16:48:35Z https://www.ndbc.noaa.gov/
 //2016-02-24T16:48:35Z http://localhost:8080/cwexperimental/tabledap/miniNdbc410.das";";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
 
 expected = 
-    "String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
+    "String infoUrl \"https://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC, CoastWatch WCN\";\n" +
 "    String keywords \"keyword1, keyword2\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -668,12 +666,12 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
-"    String NDBCMeasurementDescriptionUrl \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
+"    String NDBCMeasurementDescriptionUrl \"https://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "    Float64 Northernmost_Northing 35.006;\n" +
 "    String project \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "    String quality \"Automated QC checks with periodic manual QC\";\n" +
 "    String source \"station observation\";\n" +
-"    String sourceUrl \"http://www.ndbc.noaa.gov/\";\n" +
+"    String sourceUrl \"https://www.ndbc.noaa.gov/\";\n" +
 "    Float64 Southernmost_Northing 32.28;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"station, prefix, longitude, latitude\";\n" +
@@ -815,7 +813,7 @@ expected =
         query = "&time=2014-01-01&prefix=4103";
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "data4103", ".nc"); 
-        results = NcHelper.dumpString(dir + tName, true);
+        results = NcHelper.ncdump(dir + tName, "");
         expected = 
     "short wd(row=1);\n" + //1 row
 "      :_FillValue = 32767S; // short\n" +
@@ -836,7 +834,7 @@ expected =
         query = "&time=2014-01-01&prefix=4102";
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "data4102", ".nc"); 
-        results = NcHelper.dumpString(dir + tName, true);
+        results = NcHelper.ncdump(dir + tName, "");
         expected = 
     "short wd(row=3);\n" +  //3 rows
 "      :_FillValue = 32767S; // short\n" +

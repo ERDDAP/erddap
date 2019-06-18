@@ -32,7 +32,7 @@ import java.util.Map;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -80,12 +80,12 @@ public class Projects2  {
         sar = null; //gc
 
         String ip[] = {
-            "http://192.168.31.15:8080/", "http://coastwatch.pfeg.noaa.gov/", 
-            "http://192.168.31.18/"     , "http://oceanwatch.pfeg.noaa.gov/",
-            "http://192.168.31.27/"     , "http://thredds1.pfeg.noaa.gov/"  ,
-            "http://192.168.31.13/"     , "http://las.pfeg.noaa.gov/"       };
+            "https://192.168.31.15/", "https://coastwatch.pfeg.noaa.gov/", 
+            "https://192.168.31.18/", "https://oceanwatch.pfeg.noaa.gov/",
+            "https://192.168.31.27/", "https://thredds1.pfeg.noaa.gov/"  ,
+            "https://192.168.31.13/", "https://las.pfeg.noaa.gov/"       };
             //don't want to find the datasets on upwell
-            //"http://192.168.31.6/"      , "http://upwell.pfeg.noaa.gov/"    };
+            //"https://192.168.31.6/", "https://upwell.pfeg.noaa.gov/"    };
 
         int handXmlBasePo = 0;
         while (true) {
@@ -209,8 +209,8 @@ public class Projects2  {
      */
     public static String getKeywords(String datasetID) throws Throwable {
         String servers[] = {
-            "http://coastwatch.pfeg.noaa.gov/erddap/griddap/",
-            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/",
+            "https://coastwatch.pfeg.noaa.gov/erddap/griddap/",
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/",
             "http://upwell.pfeg.noaa.gov/erddap/griddap/",
             "http://upwell.pfeg.noaa.gov/erddap/tabledap/"};
 
@@ -287,7 +287,7 @@ public class Projects2  {
             String fileName = fileNames[f];
             String2.log("fileName=" + fileName);
             Table table = new Table();
-            table.readFlat0Nc(inDir + fileName, null, 1, -1); //1=unpack, -1=read all rows
+            table.readFlat0Nc(inDir + fileName, null, 1, -1); //standardizeWhat=1, -1=read all rows
             int nRows = table.nRows();
             String2.log(table.toString());
 

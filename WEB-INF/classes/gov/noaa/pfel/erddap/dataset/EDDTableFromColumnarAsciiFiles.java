@@ -49,6 +49,16 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     /** Used to ensure that all non-axis variables in all files have the same leftmost dimension. */
     //protected String dim0Name = null;
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
+
 
     /** 
      * The constructor. 
@@ -75,7 +85,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
-        boolean tRemoveMVRows) 
+        boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex)
         throws Throwable {
 
         super("EDDTableFromColumnarAsciiFiles", tDatasetID, 
@@ -89,7 +100,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
     }
 
     /**
@@ -99,7 +111,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -130,9 +142,13 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         }
 
         Table table = new Table();
-        table.readColumnarASCIIFile(fileDir + fileName, charset, 
+        table.readColumnarASCIIFile(tFileDir + tFileName, charset, 
             firstDataRow - 1, tLoadCol, tStartColumn, tStopColumn, tColClass);
         //String2.log(">> lowGetSourceData:\n" + table.dataToString(5));
+
+        //unpack
+        table.unpack(standardizeWhat);
+
         return table;
     }
 
@@ -274,6 +290,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, //String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.generateDatasetsXml" +
@@ -292,6 +309,11 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         firstDataRow = Math.max(1, firstDataRow); //1..
         if (charset == null || charset.length() == 0)
             charset = String2.ISO_8859_1;
@@ -322,6 +344,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         dataSourceTable.readColumnarASCIIFile(sampleFileName, charset, firstDataRow - 1,
             colNames.toArray(), start.toArray(), stop.toArray(), null); //null = simplify
 
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.unpack(tStandardizeWhat);
+
         //globalAttributes 
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
@@ -334,50 +360,43 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
         boolean dateTimeAlreadyFound = false;
-        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
         double maxTimeES = Double.NaN;
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
-            PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
+            PrimitiveArray sourcePA = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
 
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
-            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                null, //no source global attributes
-                sourceAtts, null, colName, 
-                true, true); //addColorBarMinMax, tryToFindLLAT
-            addAtts.add("startColumn", start.get(col));
-            addAtts.add("stopColumn", stop.get(col));
+            Attributes addAtts = new Attributes();
 
             //dateTime?
             boolean isDateTime = false;
-            if (pa instanceof StringArray) {
-                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
+            if (sourcePA instanceof StringArray) {
+                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)sourcePA, false); //evenIfPurelyNumeric
                 if (dtFormat.length() > 0) { 
                     isDateTime = true;
                     addAtts.set("units", dtFormat);
                 }
 
                 if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(dtFormat)) 
-                    maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    maxTimeES = Calendar2.tryToEpochSeconds(sourcePA.getString(sourcePA.size() - 1)); //NaN if trouble
             }
 
-            //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
-            //  even if StringArray
-            double stats[] = pa.calculateStats();
-            int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
-            if (whichMv9 < 0)
-                whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-            if (whichMv9 >= 0) {
-                addAtts.add("missing_value", 
-                    PrimitiveArray.factory(pa.elementClass(), 1, 
-                        "" + mv9.getInt(whichMv9)));
-                String2.log("ADDED missing_value=" + mv9.getInt(whichMv9) +
-                    " to col=" + colName);
-            }
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+
+            addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
+                sourceAtts, addAtts, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+            addAtts.add("startColumn", start.get(col));
+            addAtts.add("stopColumn", stop.get(col));
 
             //add to dataAddTable
-            dataAddTable.addColumn(col, colName, 
-                makeDestPAForGDX(pa, sourceAtts), addAtts);
+            dataAddTable.addColumn(col, colName, destPA, addAtts);
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, destPA, sourceAtts, addAtts);
 
             //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
@@ -445,10 +464,13 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -489,7 +511,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXmlFromEMLBatch(
         String emlDir, String startUrl, String emlFileNameRegex, 
-        boolean useLocalFilesIfPresent, String tAccessibleTo, String localTimeZone)  
+        boolean useLocalFilesIfPresent, String tAccessibleTo, String localTimeZone,
+        int tStandardizeWhat)  
         throws Throwable {
 
         boolean pauseForErrors = false;
@@ -498,7 +521,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         String2.log("\n*** generateDatasetsXmlFromEMLBatch\n" +
             "The results will also be in " + resultsFileName);
         emlDir = File2.addSlash(emlDir);
-        
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;      
+
         Table table = FileVisitorDNLS.oneStep(startUrl, 
             emlFileNameRegex, //"knb-lter-sbc\\.\\d+",
             false, ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
@@ -519,7 +544,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 String result = generateDatasetsXmlFromEML(
                     pauseForErrors, emlDir, 
                     startUrl + names.get(i), useLocalFilesIfPresent, 
-                    tAccessibleTo, localTimeZone) + "\n"; 
+                    tAccessibleTo, localTimeZone, tStandardizeWhat) + "\n"; //standardizeWhat
                 results.append(result);
                 String2.appendFile(resultsFileName, result);
                 String2.log(result);
@@ -552,16 +577,20 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXmlFromEML(boolean pauseForErrors,
         String emlDir, String emlFileName, 
-        boolean useLocalFilesIfPresent, String tAccessibleTo, String localTimeZone)  {
+        boolean useLocalFilesIfPresent, String tAccessibleTo, String localTimeZone,
+        int tStandardizeWhat)  {
 
         emlDir = File2.addSlash(emlDir);
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
         int whichDataTable = 1;
         StringBuilder results = new StringBuilder();
         while (true) {
             try {
                 String result = generateDatasetsXmlFromEML(
                     emlDir, emlFileName, whichDataTable++, 
-                    useLocalFilesIfPresent, tAccessibleTo, localTimeZone); 
+                    useLocalFilesIfPresent, tAccessibleTo, localTimeZone,
+                    tStandardizeWhat); 
                 String2.log(result);
                 results.append(result);
                 results.append('\n');
@@ -594,12 +623,14 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      * This is the underlying generateDatasetsXmlFromEML that just gets
      * data from one of the dataTables in the EML file.
      * EML 2.1.1 documentation:
-     *   https://knb.ecoinformatics.org/#external//emlparser/docs/eml-2.1.1/./eml-attribute.html
+     *   https://knb.ecoinformatics.org/external//emlparser/docs/eml-2.1.1/eml-attribute.html
      * Info about 2.0.1 to 2.1.0 transition:
      *   http://sbc.lternet.edu/external/InformationManagement/EML/docs/eml-2.1.0/eml-210info.html
      *
      * <p>See the documentation for this in /downloads/EDDTableFromEML.html.
      *
+     * @param tAccessibleTo If null or "null", there will be no 
+     *   &lt;accessibleTo&gt; tag in the output.
      * @param localTimeZone is a time zone name from the TZ column at
      *   https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
      *   which will be used whenever a column has "local" times.
@@ -613,7 +644,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     public static String generateDatasetsXmlFromEML(
         String emlDir, String emlFileName, int whichDataTable, 
         boolean useLocalFilesIfPresent, String tAccessibleTo, 
-        String localTimeZone) throws Throwable {
+        String localTimeZone, int tStandardizeWhat) throws Throwable {
 
         String2.log("\n*** EDDTableFromEML.generateDatasetsXmlFromEML " +
             "whichDataTable=" + whichDataTable +
@@ -631,6 +662,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES; 
         Table addTable = new Table();
         Attributes addGlobalAtts = addTable.globalAttributes();
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
 
         //if emlFileName is URL, download it
         //e.g., 
@@ -669,7 +702,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         int dataTablei = 0;
         StringBuilder individualName = new StringBuilder();
         HashSet<String> keywords = new HashSet();
-        StringBuilder license = new StringBuilder("Metadata Access Rights:\n");
+        StringBuilder license = new StringBuilder();
         StringBuilder licenseOther = new StringBuilder("");
         StringBuilder methods = new StringBuilder();
         int methodNumber = 0;
@@ -695,11 +728,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         if (!File2.isFile(emlDir + emlFileName))
             throw new IllegalArgumentException(
                 "Big ERROR: eml fileName=" + emlDir + emlFileName + " doesn't exist.");
-        InputStream inputStream = new FileInputStream(emlDir + emlFileName);
-        SimpleXMLReader xmlReader = null;
+        SimpleXMLReader xmlReader = new SimpleXMLReader(
+            File2.getDecompressedBufferedInputStream(emlDir + emlFileName), "eml:eml");
         try {                
 
-            xmlReader = new SimpleXMLReader(inputStream, "eml:eml");
             while (true) {
                 xmlReader.nextTag();
                 String tags = xmlReader.allTags();
@@ -866,7 +898,13 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
                 //intellectualRights
                 } else if (tags.equals("<eml:eml><dataset><intellectualRights>")) {
-                    String2.ifSomethingConcat(licenseOther, "\n", xmlReader.readDocBookAsPlainText());
+                    String s = xmlReader.readDocBookAsPlainText();
+                    //String2.pressEnterToContinue(">> intellectualRights=" + String2.annotatedString(s));
+                    if (s.startsWith("other\n\n"))
+                        s = s.substring(7);
+                    if (String2.isSomething(s))
+                        s = "Intellectual Rights:\n" + s.trim();
+                    String2.ifSomethingConcat(licenseOther, "\n", s);
 
                 //online distribute is too general, so not very useful
                 //<distribution><online><url function="information">http://sbc.lternet.edu/</url>
@@ -1094,7 +1132,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 //I'm not catching/dealing with <access order="allowFirst">
                 } else if (tags.equals("<eml:eml><dataset><dataTable><physical>" +
                     "<distribution><access>")) {
-                    license.append("\nData Access Rights:\n");
+                    //license.append("\nData Access Rights:\n");
 
                 } else if (tags.equals("<eml:eml><dataset><dataTable><physical>" +
                     "<distribution><access><allow></principal>")) {
@@ -1143,9 +1181,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     "</attribute>")) {
                     
                     //varType can use different standards.
-                    //They recommend: http://www.w3.org/2001/XMLSchema-datatypes
+                    //They recommend: https://www.w3.org/2001/XMLSchema-datatypes
                     //  and it is specified in each tag via 
-                    //  typeSystem="http://www.w3.org/2001/XMLSchema-datatypes"
+                    //  typeSystem="https://www.w3.org/2001/XMLSchema-datatypes"
                     //e.g., lterSbc storageType just uses float, string, decimal, integer, date, "", dateTime
                     //      lterSbc NumberType uses real, whole, integer, natural (positive integer)
                     Class tClass =
@@ -1240,7 +1278,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
                 } else if (
                     //This is the preferred source of the varType because it is fine-grained.
-                    //recommended: http://www.w3.org/2001/XMLSchema-datatypes
+                    //recommended: https://www.w3.org/2001/XMLSchema-datatypes
                     tags.equals("<eml:eml><dataset><dataTable><attributeList><attribute>" +
                         "</storageType>")) { 
 
@@ -1348,16 +1386,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             String2.log(String2.ERROR + " in " + emlFileName + " on line #" +
                 (xmlReader == null? -1 : xmlReader.lineNumber()) + ":\n" +
                 MustBe.throwableToString(t)); 
-            try {
-                if (xmlReader != null) {
-                    xmlReader.close();
-                    inputStream = null;
-                }
-            } catch (Throwable t2) {}
-            try {
-                if (inputStream != null) 
-                    inputStream.close();
-            } catch (Throwable t2) {}
+        } finally {
+            try {if (xmlReader != null) xmlReader.close(); } catch (Throwable t2) {}
         }
 
         if (dataTablei < whichDataTable)
@@ -1477,7 +1507,10 @@ boolean columnar = false;  // are there any? how detect?
 
             sourceTable.readColumnarASCIIFile(emlDir + dataFileName, charset, 
                 numHeaderLines - 1, //firstDataRow  (0..)
-                colNames.toArray(), colStart.toArray(), colStop.toArray(), null); //null = simplify
+                colNames.toArray(), colStart.toArray(), colStop.toArray(), null); //null = dest classes
+            sourceTable.convertIsSomething2();
+            sourceTable.simplify();
+            sourceTable.unpack(tStandardizeWhat);
 
         } else { 
             //read comma, space, or tab separated
@@ -1485,7 +1518,10 @@ boolean columnar = false;  // are there any? how detect?
                 emlDir + dataFileName, charset, 
                 numHeaderLines - 1, //namesRow (0..)  -1 for none
                 numHeaderLines, "", //dataRow  (0..)
-                null, null, null, null, true);  //simplify
+                null, null, null, null, false);  //simplify
+            sourceTable.convertIsSomething2();
+            sourceTable.simplify();
+            sourceTable.unpack(tStandardizeWhat);
         }
         if (verbose) String2.log(
             "\nlocal data file=" + emlDir + dataFileName + "\n" +
@@ -1582,18 +1618,21 @@ boolean columnar = false;  // are there any? how detect?
 
         //!!!USER CHOSE TO EQUATE COLS in SOURCE FILE with COLUMNS in EML, 1 to 1, SAME ORDER!!!
         addGlobalAtts.trimAndMakeValidUnicode();       
-        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
         for (int col = 0; col < addTable.nColumns(); col++) { //nCols changes, so always check
             String colName = addTable.getColumnName(col);
             String sourceVarName = sourceTable.getColumnName(col);
             Attributes sourceVarAtts = sourceTable.columnAttributes(col);
             sourceVarAtts.trimAndMakeValidUnicode();       
+            Class sourceClass = sourceTable.getColumn(col).elementClass(); //from file
+            Class destClass   =    addTable.getColumn(col).elementClass(); //as defined
 
             //make and apply revisions to the variable's addAtts
             Attributes addVarAtts = addTable.columnAttributes(col);
             addVarAtts.set(makeReadyToUseAddVariableAttributesForDatasetsXml(
-                addGlobalAtts, sourceVarAtts, addVarAtts, colName, 
-                true, true)); //addColorBarMinMax, tryToFindLLAT
+                addGlobalAtts, sourceVarAtts, addVarAtts, sourceVarName, 
+                destClass != String.class, //tryToAddStandardName
+                destClass != String.class, //addColorBarMinMax
+                true)); //tryToFindLLAT
             if (columnar) {
                 addVarAtts.add("startColumn", colStart.get(col));
                 addVarAtts.add("stopColumn",  colStop.get(col));
@@ -1622,9 +1661,7 @@ boolean columnar = false;  // are there any? how detect?
                 tUnits = "";
 
             //dataType
-            Class sourceClass = sourceTable.getColumn(col).elementClass(); //from file
-            Class destClass   =    addTable.getColumn(col).elementClass(); //as defined
-            if (tUnits.indexOf("yyyy") >= 0) { //was "yy"
+            if (Calendar2.isStringTimeUnits(tUnits)) { 
                 //force to be String
                 sourceClass = String.class;
                 destClass   = String.class;
@@ -1638,7 +1675,7 @@ boolean columnar = false;  // are there any? how detect?
                 //go with type found in file (from simplify)
                 String2.log("!!! WARNING: For datasetID=" + datasetID + 
                     ", for destinationColName=" + colName +
-                    ", I'm changing the data type from String " + 
+                    ", ERDDAP is changing the data type from String " + 
                     "(as specified in EML) to " + sourceClass + 
                     ". [observed in file]");
                 addTable.setColumn(col, 
@@ -1657,56 +1694,14 @@ boolean columnar = false;  // are there any? how detect?
                 addVarAtts.remove("colorBarMaximum");
                 addVarAtts.remove("colorBarScale");
 
-            } else {
-                //for numeric variables,
-                //remove missing_value or _FillValue if they evaluate to NaN
-                if (Double.isNaN(addVarAtts.getDouble("missing_value")))
-                                    addVarAtts.remove("missing_value");
-                if (Double.isNaN(addVarAtts.getDouble("_FillValue")))
-                                    addVarAtts.remove("_FillValue");
-            }
-
-            PrimitiveArray mvpa = addVarAtts.get("missing_value");
-            PrimitiveArray fvpa = addVarAtts.get("_FillValue");
-            if (mvpa == null ||
-                fvpa == null) {
-                //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 etc
-                //  even if StringArray
-                double stats[] = sourceTable.getColumn(col).calculateStats();
-                int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
-                if (whichMv9 < 0)
-                    whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-                if (whichMv9 >= 0) {
-                    int tmv = mv9.getInt(whichMv9);
-                    PrimitiveArray pa = PrimitiveArray.factory(destClass, 1, "" + tmv);
-                    String ts = "";
-                    if (mvpa == null && 
-                        (fvpa == null || (fvpa != null && fvpa.getDouble(0) != tmv))) 
-                         addVarAtts.add(ts = "missing_value", mvpa = pa);
-                    else if (fvpa == null && 
-                        (mvpa == null || (mvpa != null && mvpa.getDouble(0) != tmv))) 
-                        addVarAtts.add(ts = "_FillValue",    fvpa = pa);
-                    if (ts.length() > 0)
-                        String2.log("!!! WARNING: ADDED " + ts + "=" + tmv +
-                            " to col=" + colName + " datasetID=" + datasetID + 
-                            " dataFileName=" + dataFileName);
-                }
-            }
-
-            //convert missing_value and _FillValue to destClass
-            //and convert sourceTable values to standard mv
-            if (mvpa != null) {
-                addVarAtts.add("missing_value", PrimitiveArray.factory(destClass, mvpa));
-                sourceTable.getColumn(col).switchFromTo(mvpa.getString(0), "");
-            }
-            if (fvpa != null) {
-                addVarAtts.add("_FillValue",    PrimitiveArray.factory(destClass, fvpa));
-                sourceTable.getColumn(col).switchFromTo(fvpa.getString(0), "");
             }
 
             //last
             addVarAtts.trimAndMakeValidUnicode();       
         }
+
+        //add missing_value or _FillValue to numeric columns if needed
+        addMvFvAttsIfNeeded(sourceTable, addTable);            
 
         //look for LLAT
         //The regular ERDDAP system to look for LLAT doesn't work because:
@@ -1859,7 +1854,7 @@ boolean columnar = false;  // are there any? how detect?
                 if (tUnits == null)
                     tUnits = "";
                 //some vars don't qualify as isTimeUnits, but do have time info
-                if (tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
+                if (tUnits.indexOf("yyyy") >= 0 || tUnits.indexOf("uuuu") >= 0 ||  //was "yy"
                     tColNameLC.indexOf("year") >= 0) hasyyCol = true;
                 if (tUnits.indexOf("MM") >= 0 ||
                     tColNameLC.indexOf("month") >= 0) hasMMCol = true;
@@ -1868,7 +1863,7 @@ boolean columnar = false;  // are there any? how detect?
                     tColNameLC.indexOf("date") >= 0) hasddCol = true;
                 if (tUnits.indexOf("HH") >= 0) hasHHCol = true;
 
-                if (tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
+                if (tUnits.indexOf("yyyy") >= 0 || tUnits.indexOf("uuuu") >= 0 ||  //was "yy"
                     tUnits.indexOf("MM") >= 0 ||
                     tUnits.indexOf("dd") >= 0 ||
                     tUnits.indexOf("HH") >= 0 ||
@@ -1894,7 +1889,7 @@ boolean columnar = false;  // are there any? how detect?
                     (infoLC.indexOf("time") >= 0 ||   //knb-lter-sbc.1113
                      infoLC.indexOf("day") >= 0 || 
                      infoLC.indexOf("date") >= 0) &&
-                    infoLC.indexOf("yyyy") < 0 &&  //was "yy"
+                    Calendar2.isStringTimeUnits(infoLC) && 
                     infoLC.indexOf("mm") < 0 &&
                     infoLC.indexOf("dd") < 0 &&
                     infoLC.indexOf("hh") < 0) {
@@ -1959,7 +1954,7 @@ boolean columnar = false;  // are there any? how detect?
                 //        tUnits.startsWith("yyyyMMdd")) {
                 //because ERDDAP required that when searching minMaxTable.
                 //But that was fixed in ERDDAP v1.74.
-                if (tUnits.indexOf("yyyy") >= 0 &&  //was "yy"
+                if (Calendar2.isStringTimeUnits(tUnits) &&
                     tUnits.indexOf("MM") >= 0 &&
                     tUnits.indexOf("dd") >= 0) {
                     if (tUnits.indexOf("HH") < 0) { //no HH, just date 
@@ -1976,11 +1971,11 @@ boolean columnar = false;  // are there any? how detect?
                         }
                     }
                 } else if (
-                    tUnits.indexOf("yyyy") >= 0 &&  //was "yy"
+                    Calendar2.isStringTimeUnits(tUnits) &&  
                     tUnits.indexOf("MM") >= 0) {
                     if (goodStringMonthName == null)
                         goodStringMonthName = addName;
-                } else if (tUnits.indexOf("yyyy") >= 0) {  //was "yy"
+                } else if (Calendar2.isStringTimeUnits(tUnits)) {  
                     if (goodStringYearName == null)
                         goodStringYearName = addName;
                 }
@@ -2019,8 +2014,7 @@ boolean columnar = false;  // are there any? how detect?
                     String tNameLC = tName.toLowerCase();
                     String tUnits = addTable.columnAttributes(col).getString("units");
                     if (tUnits != null && 
-                        (Calendar2.isNumericTimeUnits(tUnits) ||
-                         tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
+                        (Calendar2.isTimeUnits(tUnits) ||
                          tUnits.indexOf("MM") >= 0 || 
                          tUnits.indexOf("dd") >= 0 || 
                          tUnits.indexOf("HH") >= 0 || 
@@ -2063,10 +2057,10 @@ boolean columnar = false;  // are there any? how detect?
             //Note: doing it here overrides naive suggestions in makeReadyToUseAddVariableAttributes
             if (destClass != String.class &&
                 "|longitude|latitude|altitude|depth|time|".indexOf("|" + destName + "|") < 0) {
-                double[] stats = sourceTable.getColumn(col).calculateStats();
+                double[] stats = sourceTable.getColumn(col).calculateStats(addTable.columnAttributes(col));
                 if (stats[PrimitiveArray.STATS_N] > 0) {
                     double lh[] = Math2.suggestLowHigh(
-                        stats[PrimitiveArray.STATS_MIN],
+                        destName.endsWith("_uM")? 0 : stats[PrimitiveArray.STATS_MIN],
                         stats[PrimitiveArray.STATS_MAX]);
                     addAtts.set("colorBarMinimum", lh[0]);
                     addAtts.set("colorBarMaximum", lh[1]);
@@ -2123,7 +2117,7 @@ boolean columnar = false;  // are there any? how detect?
             //"-->\n\n" +
             "<dataset type=\"EDDTableFrom" + (columnar? "Columnar" : "") + "AsciiFiles\" " +
               "datasetID=\"" + datasetID + "\" active=\"true\">\n" +
-            (tAccessibleTo == null? "" : 
+            (tAccessibleTo == null || tAccessibleTo == "null" ? "" : 
             "    <accessibleTo>" + tAccessibleTo + "</accessibleTo>\n") +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
@@ -2139,6 +2133,7 @@ boolean columnar = false;  // are there any? how detect?
             "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + numHeaderLines + "</columnNamesRow>\n" +
             "    <firstDataRow>" + (numHeaderLines + 1) + "</firstDataRow>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" + 
             //"    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -2165,7 +2160,7 @@ boolean columnar = false;  // are there any? how detect?
      * @throws Throwable if trouble
      */
     public static void batchFromEML(boolean useLocalFilesIfPresent, 
-        boolean pauseForErrors, String mode) throws Throwable {
+        boolean pauseForErrors, String mode, int tStandardizeWhat) throws Throwable {
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.batchFromEML()\n");
         testVerboseOn();
         String baseDataDir = "/u00/data/points/";
@@ -2215,7 +2210,7 @@ boolean columnar = false;  // are there any? how detect?
                 String result = generateDatasetsXmlFromEML(
                     pauseForErrors, emlDir, 
                     startUrl + names.get(i), useLocalFilesIfPresent, 
-                    tAccessibleTo, localTimeZone); 
+                    tAccessibleTo, localTimeZone, tStandardizeWhat); 
                 String2.appendFile(resultsFileName, result);
                 String2.log(result);
             }
@@ -2239,7 +2234,7 @@ boolean columnar = false;  // are there any? how detect?
      * @throws Throwable if trouble
      */
     public static String generateDatasetsXmlFromOneInEMLCollection(
-        String tAccessibleTo, int which) throws Throwable {
+        String tAccessibleTo, int which, int tStandardizeWhat) throws Throwable {
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromOneInEMLCollection()\n");
         testVerboseOn();
         String name, tName, results, expected, userDapQuery, tQuery;
@@ -2265,7 +2260,7 @@ boolean columnar = false;  // are there any? how detect?
 
         results = generateDatasetsXmlFromEML(false, emlDir, 
             startUrl, true, tAccessibleTo, //reuse local files if present
-            localTimeZone);
+            localTimeZone, tStandardizeWhat);
         String2.setClipboardString(results); 
         String2.log(results);
         String2.log("\n *** generateDatasetsXmlFromOneInEMLCollection finished successfully.");
@@ -2290,7 +2285,7 @@ boolean columnar = false;  // are there any? how detect?
             emlDir, 
             startUrl, 
             true, //useLocalFilesIfPresent, 
-            "lterSbc", "US/Pacific") + "\n"; //accessibleTo, local time_zone
+            "lterSbc", "US/Pacific", -1) + "\n"; //accessibleTo, local time_zone, standardizeWhat, 
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -2298,7 +2293,7 @@ boolean columnar = false;  // are there any? how detect?
             emlDir,
             startUrl,
             "true", //Use local files if present (true|false)"
-            "lterSbc", "US/Pacific"},  //accessibleTo, local time_zone
+            "lterSbc", "US/Pacific", "-1"},   //accessibleTo, local time_zone, defaultStandardizeWhat
             false); //doIt loop?
 
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
@@ -2318,14 +2313,15 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgement\">Funding: NSF Awards OCE-9982105, OCE-0620276, OCE-1232779</att>\n" +
@@ -2376,14 +2372,12 @@ String expected =
 "        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"language\">english</att>\n" +
-"        <att name=\"license\">Metadata Access Rights:\n" +
-"Metadata &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
+"        <att name=\"license\">Metadata &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
 "Metadata &quot;read&quot; access is allowed for principal=&quot;public&quot;.\n" +
-"\n" +
-"Data Access Rights:\n" +
 "Data &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
 "Data &quot;read&quot; access is allowed for principal=&quot;public&quot;.\n" +
 "\n" +
+"Intellectual Rights:\n" +
 "* The user of SBC LTER data agrees to contact the data owner (i.e., the SBC investigator responsible for data) prior to publishing. Where appropriate, users whose projects are integrally dependent on SBC LTER\n" +
 "data are encouraged to consider collaboration and/or co-authorship with the data owner.\n" +
 "\n" +
@@ -2455,7 +2449,7 @@ String expected =
 "        <att name=\"publisher_name\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, registered stations, all years. stream water chemistry at REGISTERED SBC stations. Registered stations are geo-located in metadata.</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
@@ -2516,7 +2510,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">600.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">nh4_uM</att>\n" +
 "            <att name=\"comment\">Ammonium (measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2534,7 +2528,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">no3_uM</att>\n" +
 "            <att name=\"comment\">Nitrate (measured as nitrite + nitrate measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2552,7 +2546,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-50.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">po4_uM</att>\n" +
 "            <att name=\"comment\">Phosphorus (measured as soluble reactive phosphorus SRP measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2570,7 +2564,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">3000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tdn_uM</att>\n" +
 "            <att name=\"comment\">Total dissolved nitrogen (dissolved organic nitrogen plus nitrate and nitrate plus ammonium measured in micro-moles per leter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2587,7 +2581,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-50.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tdp_uM</att>\n" +
 "            <att name=\"comment\">Total dissolved phosphorus (dissolved organic phosphorus plus phosphate measured in micro-moles per leter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2621,7 +2615,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-20000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tpn_uM</att>\n" +
 "            <att name=\"comment\">Total particulate nitrogen (which can be assumed to be particulate organic nitrogen measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2638,7 +2632,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">6000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-2000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tpp_uM</att>\n" +
 "            <att name=\"comment\">Total particulate phosphorus (measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2698,14 +2692,15 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgement\">Funding: NSF Awards OCE-9982105, OCE-0620276, OCE-1232779</att>\n" +
@@ -2756,14 +2751,12 @@ String expected =
 "        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, non, non-registered, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"language\">english</att>\n" +
-"        <att name=\"license\">Metadata Access Rights:\n" +
-"Metadata &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
+"        <att name=\"license\">Metadata &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
 "Metadata &quot;read&quot; access is allowed for principal=&quot;public&quot;.\n" +
-"\n" +
-"Data Access Rights:\n" +
 "Data &quot;all&quot; access is allowed for principal=&quot;uid=SBC,o=LTER,dc=ecoinformatics,dc=org&quot;.\n" +
 "Data &quot;read&quot; access is allowed for principal=&quot;public&quot;.\n" +
 "\n" +
+"Intellectual Rights:\n" +
 "* The user of SBC LTER data agrees to contact the data owner (i.e., the SBC investigator responsible for data) prior to publishing. Where appropriate, users whose projects are integrally dependent on SBC LTER\n" +
 "data are encouraged to consider collaboration and/or co-authorship with the data owner.\n" +
 "\n" +
@@ -2835,7 +2828,7 @@ String expected =
 "        <att name=\"publisher_name\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM, TPP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, non-registered stations, all years. stream water chemistry at NON_REGISTERED stations</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
@@ -2883,7 +2876,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">3000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">nh4_uM</att>\n" +
 "            <att name=\"comment\">Ammonium (measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2901,7 +2894,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-5000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">no3_uM</att>\n" +
 "            <att name=\"comment\">Nitrate (measured as nitrite + nitrate measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2919,7 +2912,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">1500.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-500.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">po4_uM</att>\n" +
 "            <att name=\"comment\">Phosphorus (measured as soluble reactive phosphorus SRP measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
@@ -2937,7 +2930,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-5000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tdn_uM</att>\n" +
 "            <att name=\"comment\">Total dissolved nitrogen (dissolved organic nitrogen plus nitrate and nitrate plus ammonium measured in micro-moles per leter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2954,7 +2947,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">1500.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-500.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tdp_uM</att>\n" +
 "            <att name=\"comment\">Total dissolved phosphorus (dissolved organic phosphorus plus phosphate measured in micro-moles per leter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2971,7 +2964,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">800000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-200000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tpc_uM</att>\n" +
 "            <att name=\"comment\">Total particulate carbon (particulate organic carbon measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -3005,7 +2998,7 @@ String expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-2000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"columnNameInSourceFile\">tpp_uM</att>\n" +
 "            <att name=\"comment\">Total particulate phosphorus (measured in micro-moles per liter)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -3060,8 +3053,10 @@ String expected =
         }
 
         //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "knb_lter_sbc_6_t1";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
-        Test.ensureEqual(edd.datasetID(), "knb_lter_sbc_6_t1", "");
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
 
         String userDapQuery = "";
         String tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, 
@@ -3100,6 +3095,7 @@ String expected =
         //    String tColumnNameForExtract,    //no tSortedColumnSourceName,
         //    String tSortFilesBySourceNames, 
         //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        //    standardizeWhat, cacheFromUrl,
         //    Attributes externalAddGlobalAttributes)
         String results = generateDatasetsXml(
             EDStatic.unitTestDataDir,  "columnar.*\\.txt",
@@ -3107,7 +3103,8 @@ String expected =
             null, 3, 4, 1440,
             "", "", "", "",  
             "", 
-            "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+            -1, "", //defaultStandardizeWhat, cacheFromUrl
             externalAddAttributes) + "\n";
 
         //GenerateDatasetsXml
@@ -3118,7 +3115,8 @@ String expected =
             "", "3", "4", "1440",
             "", "", "", "",  
             "", 
-            "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+            "-1", ""}, //defaultStandardizeWhat, cacheFromUrl
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -3139,6 +3137,7 @@ directionsForGenerateDatasetsXml() +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>3</columnNamesRow>\n" +
 "    <firstDataRow>4</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -3149,8 +3148,8 @@ directionsForGenerateDatasetsXml() +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
@@ -3158,13 +3157,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
-"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
-"        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">aBoolean, aByte, aChar, aDouble, aFloat, aLong, anInt, aShort, aString, boolean, buoy, byte, center, char, data, double, float, int, long, national, ndbc, newer, noaa, short, string, title</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -3214,6 +3213,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Byte</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">24</att>\n" +
@@ -3227,6 +3227,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Short</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">30</att>\n" +
@@ -3240,6 +3241,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">An Int</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">37</att>\n" +
@@ -3266,6 +3268,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Float</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">57</att>\n" +
@@ -3279,6 +3282,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Double</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">66</att>\n" +
@@ -3290,8 +3294,10 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "erddapTest_4df3_40f4_29c6";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
-        Test.ensureEqual(edd.datasetID(), "erddapTest_4df3_40f4_29c6", "");
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), "The Newer Title!", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble", 
@@ -3403,7 +3409,7 @@ directionsForGenerateDatasetsXml() +
 "    String cdm_data_type \"Other\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"NOAA NDBC\";\n" +
-"    String creator_url \"http://www.ndbc.noaa.gov/\";\n" +
+"    String creator_url \"https://www.ndbc.noaa.gov/\";\n" +
 "    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -3411,7 +3417,7 @@ directionsForGenerateDatasetsXml() +
 //"2014-12-04T19:15:21Z (local files)
 //2014-12-04T19:15:21Z http://localhost:8080/cwexperimental/tabledap/testTableColumnarAscii.das";
 expected =
-"    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
+"    String infoUrl \"https://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
@@ -3422,7 +3428,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble, five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +
@@ -3549,7 +3555,8 @@ expected =
             "", 
             "https://coastwatch.glerl.noaa.gov/statistic/statistic.html", "NOAA GLERL", 
             "Daily lake average surface water temperature from Great Lakes Surface Environmental Analysis maps.", 
-            "Great Lakes Average Surface Water Temperature, Daily"},
+            "Great Lakes Average Surface Water Temperature, Daily", 
+            "-1", ""}, //defaultStandardizeWhat, cacheFromUrl
             false); //doIt loop?
         String2.setClipboardString(results); 
         //String2.pressEnterToContinue(results);
@@ -3563,7 +3570,8 @@ expected =
             "", 
             "https://coastwatch.glerl.noaa.gov/statistic/statistic.html", "NOAA GLERL", 
             "Daily lake average surface water temperature from Great Lakes Surface Environmental Analysis maps.", 
-            "Great Lakes Average Surface Water Temperature, Daily"},
+            "Great Lakes Average Surface Water Temperature, Daily", 
+            "-1", ""}, //defaultStandardizeWhat, cacheFromUrl
             false); //doIt loop?
         String2.setClipboardString(results); 
         //String2.pressEnterToContinue(results);
@@ -3603,7 +3611,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
                 eddTable.className() + "_" + year, ".nc"); 
             Table table = new Table();
-            table.readFlatNc(testDir + tName, null, 0);
+            table.readFlatNc(testDir + tName, null, 0); //standardizeWhat=0
             String2.log(table.dataToString());
             Test.ensureEqual(table.nRows(), 1, "year=" + year);
         }
@@ -3659,7 +3667,8 @@ expected =
             "", 
             "https://coastwatch.glerl.noaa.gov/statistic/statistic.html", "NOAA GLERL", 
             "Great Lakes long term average surface water temperature, daily.", 
-            "Great Lakes Long Term Average Surface Water Temperature, Daily"},
+            "Great Lakes Long Term Average Surface Water Temperature, Daily", 
+            "-1", ""}, //defaultStandardizeWhat, cacheFromUrl
             false); //doIt loop?
         String2.setClipboardString(results); 
         //String2.pressEnterToContinue(results);

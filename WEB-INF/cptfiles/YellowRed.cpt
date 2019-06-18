@@ -1,0 +1,15 @@
+# Derived from YlOrRd_09.cpt at
+# http://soliton.vm.bytemark.co.uk/pub/cpt-city/cb/seq/YlOrRd_09.cpt
+# This product includes color specifications and designs
+# developed by Cynthia Brewer (http://colorbrewer.org/).
+0	255	255	204	1	255	237	160
+1	255	237	160	2	254	217	118
+2	254	217	118	3	254	178	76
+3	254	178	76	4	253	141	60
+4	253	141	60	5	252	78	42
+5	252	78	42	6	227	26	28
+6	227	26	28	7	189	0	38
+7	189	0	38	8	128	0	38
+B	255	255	204
+F	128	0	38
+N	128	128	128

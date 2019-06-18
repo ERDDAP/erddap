@@ -141,12 +141,12 @@ public class TestData {
       values = getValues(axis, num, type, amp, off, per);
     } else {
       double log10 = Math.log(10.0);
-      double end10 = Math.log(range.end)/log10;
-      double start10 = Math.log(range.start)/log10;
-      double delta10 = Math.log(range.delta)/log10;
-      float amp10 = (float)(Math.log(amp)/log10);
-      float off10 = (float)(Math.log(off)/log10);
-      float per10 = (float)(Math.log(per)/log10);
+      double end10 = Math.log10(range.end);
+      double start10 = Math.log10(range.start);
+      double delta10 = Math.log10(range.delta);
+      float amp10 = (float)Math.log10(amp);
+      float off10 = (float)Math.log10(off);
+      float per10 = (float)Math.log10(per);
       int num = (int)((end10 - start10)/delta10) + 1;
       axis = new double[num];
 

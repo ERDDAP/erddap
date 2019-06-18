@@ -1140,7 +1140,7 @@ public class CWUser extends User  {
 
             if (File2.touch(sgtMapResultTableNcName)) {
                 sgtMapResultsTable = new Table();
-                sgtMapResultsTable.readFlatNc(sgtMapResultTableNcName, null, 1);
+                sgtMapResultsTable.readFlatNc(sgtMapResultTableNcName, null, 1); //standardizeWhat=1
             }
         } else {
             if (oneOf.verbose()) 
@@ -1353,13 +1353,13 @@ public class CWUser extends User  {
         if (latestStartEarliestEndCount[2] > 1 && 
             (tStart != latestStartEarliestEndCount[0] || tEnd != latestStartEarliestEndCount[1]))
             timePeriodsPerfectlySynchronized = false;
-        //String2.log("adjustStartEndCount tStart=" + Calendar2.epochSecondsToIsoStringT(tStart/1000) +
-        //    " tEnd=" + Calendar2.epochSecondsToIsoStringT(tEnd/1000) +
-        //    "\n latestStart=" + Calendar2.epochSecondsToIsoStringT(latestStartEarliestEndCount[0]/1000) +
-        //    " earliestEnd=" + Calendar2.epochSecondsToIsoString(TlatestStartEarliestEndCount[1]/1000) +
+        //String2.log("adjustStartEndCount tStart=" + Calendar2.epochSecondsToIsoStringTZ(tStart/1000) +
+        //    " tEnd=" + Calendar2.epochSecondsToIsoStringTZ(tEnd/1000) +
+        //    "\n latestStart=" + Calendar2.epochSecondsToIsoStringTZ(latestStartEarliestEndCount[0]/1000) +
+        //    " earliestEnd=" + Calendar2.epochSecondsToIsoStringTZ(latestStartEarliestEndCount[1]/1000) +
         //    " perfect=" + timePeriodsPerfectlySynchronized +
-        //    "\n earliestStart=" + Calendar2.epochSecondsToIsoStringT(latestStartEarliestEndCount[3]/1000) +
-        //    " latestEnd=" + Calendar2.epochSecondsToIsoStringT(latestStartEarliestEndCount[4]/1000));
+        //    "\n earliestStart=" + Calendar2.epochSecondsToIsoStringTZ(latestStartEarliestEndCount[3]/1000) +
+        //    " latestEnd=" + Calendar2.epochSecondsToIsoStringTZ(latestStartEarliestEndCount[4]/1000));
         return timePeriodsPerfectlySynchronized;
     }
 
@@ -1647,7 +1647,7 @@ public class CWUser extends User  {
         //add the pointVector graphDataLayer
         if (pointVectorScreen.plotData) {
             Table averageTable = new Table();
-            averageTable.readFlatNc(pointVectorScreen.fullAverageFileName, null, 1); //1=unpack
+            averageTable.readFlatNc(pointVectorScreen.fullAverageFileName, null, 1); //standardizeWhat=1
             String tUnits = oneOf.pointVectorInfo()[pointVectorScreen.absoluteDataSetIndex][OneOf.PVIUnits];
             graphDataLayers.add(new GraphDataLayer(
                 pointVectorScreen.editOption(), 
@@ -1766,8 +1766,8 @@ public class CWUser extends User  {
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 logoFileName,
-                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
-                gpl0.xIsTimeAxis, gpl0.yIsTimeAxis, 
+                Double.NaN, Double.NaN, true, gpl0.xIsTimeAxis, false, //isAscending, isTimeAxis, isLog
+                Double.NaN, Double.NaN, true, gpl0.yIsTimeAxis, false, 
                 graphGDLs,
                 g2D,
                 ulx, uly, areaWidth, areaHeight, 2, //graph width/height
@@ -1813,9 +1813,8 @@ public class CWUser extends User  {
                 oneOf.fullContextDirectory() + "images/", 
                 logoFileName,
                 gdl.xIsTimeAxis? minTime : Double.NaN, 
-                gdl.xIsTimeAxis? maxTime : Double.NaN, true,
-                Double.NaN, Double.NaN, true,
-                gdl.xIsTimeAxis, gdl.yIsTimeAxis,
+                gdl.xIsTimeAxis? maxTime : Double.NaN, true, gdl.xIsTimeAxis, false, //isAscending, isTime, isLog
+                Double.NaN, Double.NaN,                true, gdl.yIsTimeAxis, false,
                 tArrayList,
                 g2D,
                 ulx, tUly, areaWidth, tAreaHeight, 2, //graph width/height

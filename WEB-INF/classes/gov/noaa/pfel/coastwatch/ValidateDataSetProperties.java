@@ -34,7 +34,7 @@ public class ValidateDataSetProperties {
      */
     public static void main(String args[]) throws Exception {
 
-        String2.log("ValidatDataSetProperties (testing DataSet.properties validDataSets");
+        String2.log("ValidateDataSetProperties (testing DataSet.properties validDataSets");
 
         //find a browser properties file (e.g., CWBrowser.properties)
         String contextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
@@ -69,7 +69,7 @@ public class ValidateDataSetProperties {
             Test.ensureNotNull(infoUrl, seven + "InfoUrl is null.");
             SSR.getUrlResponseLines(infoUrlBaseUrl + infoUrl);  //on all computers except coastwatch, all are accessible as urls
         }
-        String2.log("  ValidatDataSetProperties successfully tested n=" + nDataSets + 
+        String2.log("  ValidateDataSetProperties successfully tested n=" + nDataSets + 
             " last=" + tDataSetList[nDataSets - 1]);
     }
 }

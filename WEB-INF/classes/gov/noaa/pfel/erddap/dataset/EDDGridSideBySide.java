@@ -90,6 +90,8 @@ public class EDDGridSideBySide extends EDDGrid {
         String tIso19115File = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        boolean tDimensionValuesInMemory = true;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -166,6 +168,10 @@ public class EDDGridSideBySide extends EDDGrid {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
+            else if (localTags.equals( "<dimensionValuesInMemory>")) {}
+            else if (localTags.equals("</dimensionValuesInMemory>")) tDimensionValuesInMemory = String2.parseBoolean(content);
 
             else xmlReader.unexpectedTagException();
         }
@@ -183,7 +189,8 @@ public class EDDGridSideBySide extends EDDGrid {
         return new EDDGridSideBySide(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS, 
             tMatchAxisNDigits, tOnChange, tFgdcFile, tIso19115File,
-            tDefaultDataQuery, tDefaultGraphQuery, tcds);
+            tDefaultDataQuery, tDefaultGraphQuery, tcds, 
+            tnThreads, tDimensionValuesInMemory);
 
     }
 
@@ -212,7 +219,7 @@ public class EDDGridSideBySide extends EDDGrid {
         int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
-        EDDGrid tChildDatasets[]) throws Throwable {
+        EDDGrid tChildDatasets[], int tnThreads, boolean tDimensionValuesInMemory) throws Throwable {
 
         if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID); 
         long constructionStartMillis = System.currentTimeMillis();
@@ -236,6 +243,7 @@ public class EDDGridSideBySide extends EDDGrid {
         int nChildren = tChildDatasets.length;
         childStopsAt = new int[nChildren];
         matchAxisNDigits = tMatchAxisNDigits;
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
 
         //check the siblings and create childStopsAt
         EDDGrid firstChild = childDatasets[0];
@@ -337,8 +345,9 @@ public class EDDGridSideBySide extends EDDGrid {
         System.arraycopy(firstChild.axisVariables, 1, axisVariables, 1, nAV - 1);
         //but make new axisVariables[0] with newAxis0Values
         EDVGridAxis fav = firstChild.axisVariables[0];
-        axisVariables[0] = makeAxisVariable(0, fav.sourceName(), fav.destinationName(),
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
+        axisVariables[0] = makeAxisVariable(tDatasetID, 
+            0, fav.sourceName(), fav.destinationName(),
+            fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
 
         //make combined dataVariables
         int nDv = childStopsAt[nChildren - 1] + 1;
@@ -359,9 +368,13 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridSideBySide " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+
+        //very last thing: saveDimensionValuesInFile
+        if (!dimensionValuesInMemory)
+            saveDimensionValuesInFile();
 
     }
 
@@ -452,6 +465,8 @@ public class EDDGridSideBySide extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
+     * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
      * @param tConstraints  int[nAxisVariables*3] 
      *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
@@ -463,7 +478,8 @@ public class EDDGridSideBySide extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+        EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //simple approach (not most efficient for tiny request, but fine for big requests):
@@ -552,7 +568,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 ttConstraints.set(0, cStart);
                 ttConstraints.set(1, cStride);
                 ttConstraints.set(2, cStop);
-                PrimitiveArray[] tResults = childDatasets[cn].getSourceData(
+                PrimitiveArray[] tResults = childDatasets[cn].getSourceData(null, null,
                     new EDV[]{tDataVariables[tdv]}, ttConstraints);
                 dvResults.append(tResults[nAv]); //append the first (and only) data variable's results
 
@@ -758,7 +774,7 @@ public class EDDGridSideBySide extends EDDGrid {
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
         String dapQuery;
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1306736E9), "2005-10-30T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1306736E9), "2005-10-30T12:00:00Z", "");
 
         EDDGrid qs1 = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress1day");
         dapQuery = "taux[0:11][0][(-20)][(40)],tauy[0:11][0][(-20)][(40)]";

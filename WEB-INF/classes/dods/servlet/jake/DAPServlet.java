@@ -44,13 +44,13 @@ public class DAPServlet extends DispatchServlet {
       das.print(out);
     }
     catch (FileNotFoundException e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.NO_SUCH_FILE,
 						 "file not found: " + docPath);
       de.print(out);
     }
     catch (Exception e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);
     }
@@ -77,13 +77,13 @@ public class DAPServlet extends DispatchServlet {
       dds.print(out);
     }
     catch (FileNotFoundException e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.NO_SUCH_FILE,
 						 "file not found: " + docPath);
       de.print(out);
     }
     catch (Exception e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);
     }
@@ -111,7 +111,7 @@ public class DAPServlet extends DispatchServlet {
     }
     catch (FileNotFoundException e) {
       res.setContentType("text/plain");
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       res.setHeader("Content-Encoding", "none");
       DODSException de = new DODSException(DODSException.NO_SUCH_FILE,
 						 "file not found: " + docPath);
@@ -119,7 +119,7 @@ public class DAPServlet extends DispatchServlet {
     }
     catch (Exception e) {
       res.setContentType("text/plain");
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       res.setHeader("Content-Encoding", "none");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);

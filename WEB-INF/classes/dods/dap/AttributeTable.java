@@ -63,7 +63,7 @@ public class AttributeTable implements Cloneable {
     private String name;
 
     /** Create a new empty <code>AttributeTable</code>. 
-	@deprecated */
+	@Deprecated */
     public AttributeTable() {
 	attr = new SortedTable();
     }

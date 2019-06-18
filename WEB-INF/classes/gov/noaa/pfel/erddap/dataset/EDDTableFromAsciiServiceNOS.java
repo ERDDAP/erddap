@@ -199,8 +199,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             throw new SimpleException(EDStatic.queryError + "Missing time>= constraint.");
         if (Double.isNaN(endSeconds))
             throw new SimpleException(EDStatic.queryError + "If present, the time<= constraint must be valid.");
-        String beginTime = Calendar2.epochSecondsToIsoStringT(beginSeconds).substring(0, 16);  //no seconds
-        String endTime   = Calendar2.epochSecondsToIsoStringT(  endSeconds).substring(0, 16);
+        String beginTime = Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16);  //no seconds
+        String endTime   = Calendar2.epochSecondsToIsoStringTZ(  endSeconds).substring(0, 16);
         if (beginSeconds > endSeconds)
             throw new SimpleException("time>=" + beginTime + " must be before time<=" + endTime);
         if (endSeconds - beginSeconds > 30 * Calendar2.SECONDS_PER_DAY)
@@ -245,48 +245,53 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 (datumIsFixedValue? "" : "&datum=" + SSR.minimalPercentEncode(datum));
 
             try {
+                String stationName = null;
+                Table table = null;
+                double tLongitude = Double.NaN;
+                double tLatitude = Double.NaN;
                 //Open the file
                 BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
-                String s = in.readLine();
+                try {
+                    String s = in.readLine();
 
-                //read stationName
-                String stationName = null;
-                while (s != null) {
-                    //custom find() because two options
-                    int po = s.indexOf("StationName");
-                    if (po < 0) po = s.indexOf("Station Name");
-                    if (po >= 0) {
-                        po = s.indexOf(":", po + 11);
-                        if (po < 0)
-                            throw new SimpleException("':' not found after \"Station Name\"");
-                        stationName = s.substring(po + 1).trim();
-                        //if (reallyVerbose) String2.log("  found stationName=" + stationName);
+                    while (s != null) {
+                        //custom find() because two options
+                        int po = s.indexOf("StationName");
+                        if (po < 0) po = s.indexOf("Station Name");
+                        if (po >= 0) {
+                            po = s.indexOf(":", po + 11);
+                            if (po < 0)
+                                throw new SimpleException("':' not found after \"Station Name\"");
+                            stationName = s.substring(po + 1).trim();
+                            //if (reallyVerbose) String2.log("  found stationName=" + stationName);
+                            s = in.readLine();
+                            break;
+                        }
                         s = in.readLine();
-                        break;
                     }
+                    if (stationName == null)
+                        throw new SimpleException("\"Station Name\" not found");
+
+                    //read latitude
+                    s = find(in, s, "Latitude",  "\"Latitude\" wasn't found");
+                    s = find(in, s, ":",         "\":\" wasn't found after \"Latitude\"");
+                    tLatitude = String2.parseDouble(s);
                     s = in.readLine();
+
+                    //read longitude
+                    s = find(in, s, "Longitude", "\"Longitude\" wasn't found");
+                    s = find(in, s, ":",         "\":\" wasn't found after \"Longitude\"");
+                    tLongitude = String2.parseDouble(s);
+                    s = in.readLine();
+
+                    //read beforeData
+                    s = findBeforeData(in, s);
+
+                    //read the data
+                    table = getTable(in, s); //table PA's have different sizes!
+                } finally {
+                    in.close();
                 }
-                if (stationName == null)
-                    throw new SimpleException("\"Station Name\" not found");
-
-                //read latitude
-                s = find(in, s, "Latitude",  "\"Latitude\" wasn't found");
-                s = find(in, s, ":",         "\":\" wasn't found after \"Latitude\"");
-                double tLatitude = String2.parseDouble(s);
-                s = in.readLine();
-
-                //read longitude
-                s = find(in, s, "Longitude", "\"Longitude\" wasn't found");
-                s = find(in, s, ":",         "\":\" wasn't found after \"Longitude\"");
-                double tLongitude = String2.parseDouble(s);
-                s = in.readLine();
-
-                //read beforeData
-                s = findBeforeData(in, s);
-
-                //read the data
-                Table table = getTable(in, s); //table PA's have different sizes!
-                in.close();
 
                 //table.makeColumnsSameSize();
                 //String2.log("\npre table=\n" + table.dataToString());
@@ -638,59 +643,61 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         String2.log(String2.readFromFile(fileName)[1].substring(0, 4000));
 
         //read from file
-        InputStream in = new FileInputStream(fileName);
-        SimpleXMLReader xmlReader = new SimpleXMLReader(in, "soapenv:Envelope");
-        while (true) {
-            xmlReader.nextTag();
-            String tag = xmlReader.topTag();
-            //String2.log("  tag=" + tag);
-            if (tag.equals("/soapenv:Envelope"))
-                break; 
+        SimpleXMLReader xmlReader = new SimpleXMLReader(File2.getDecompressedBufferedInputStream(fileName), "soapenv:Envelope");
+        try {
+            while (true) {
+                xmlReader.nextTag();
+                String tag = xmlReader.topTag();
+                //String2.log("  tag=" + tag);
+                if (tag.equals("/soapenv:Envelope"))
+                    break; 
 
-/*
-...
-<station ID="cb0102" name="Cape Henry LB 2CH">
-  <metadata><
-    project>Chesapeake Bay South PORTS</project>
-    <deploymentHistory>
-      <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
-      <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
-      <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
-      ...
-      <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
-      <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
-      <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
-    </deploymentHistory>
-  </metadata>
-</station>
-<station ID="cb0301" name="Thimble Shoal LB 18">
-*/
-            if (tag.equals("station")) {
-                tStationID   = xmlReader.attributeValue("ID");
-                tStationName = xmlReader.attributeValue("name");
-            } else if (tag.equals("/station")) {
-                String2.log(tStationID + " " + tStationName + " " + tLongitude + " " + tLatitude);
-                if (tStationID != null && tStationName != null &&
-                    !Double.isNaN(tLongitude) && !Double.isNaN(tLatitude))
-                stationID.add(tStationID);
-                stationName.add(tStationName);
-                longitude.add(tLongitude);
-                latitude.add(tLatitude);
-                dateEstablished.add(tDateEstablished == null? "" : tDateEstablished);
-                tDateEstablished = null;
-            } else if (tag.equals("deployment")) {
-                //there are usually several deployments, 
-                //  so get first deployed date, but last long,lat
-                if (!String2.isSomething(tDateEstablished)) {
-                    tDateEstablished = xmlReader.attributeValue("deployed");
-                    if (tDateEstablished != null && tDateEstablished.length() > 10)
-                        tDateEstablished = tDateEstablished.substring(0, 10);
+    /*
+    ...
+    <station ID="cb0102" name="Cape Henry LB 2CH">
+      <metadata><
+        project>Chesapeake Bay South PORTS</project>
+        <deploymentHistory>
+          <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
+          <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
+          <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
+          ...
+          <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
+          <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
+          <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
+        </deploymentHistory>
+      </metadata>
+    </station>
+    <station ID="cb0301" name="Thimble Shoal LB 18">
+    */
+                if (tag.equals("station")) {
+                    tStationID   = xmlReader.attributeValue("ID");
+                    tStationName = xmlReader.attributeValue("name");
+                } else if (tag.equals("/station")) {
+                    String2.log(tStationID + " " + tStationName + " " + tLongitude + " " + tLatitude);
+                    if (tStationID != null && tStationName != null &&
+                        !Double.isNaN(tLongitude) && !Double.isNaN(tLatitude))
+                    stationID.add(tStationID);
+                    stationName.add(tStationName);
+                    longitude.add(tLongitude);
+                    latitude.add(tLatitude);
+                    dateEstablished.add(tDateEstablished == null? "" : tDateEstablished);
+                    tDateEstablished = null;
+                } else if (tag.equals("deployment")) {
+                    //there are usually several deployments, 
+                    //  so get first deployed date, but last long,lat
+                    if (!String2.isSomething(tDateEstablished)) {
+                        tDateEstablished = xmlReader.attributeValue("deployed");
+                        if (tDateEstablished != null && tDateEstablished.length() > 10)
+                            tDateEstablished = tDateEstablished.substring(0, 10);
+                    }
+                    tLongitude = String2.parseDouble(xmlReader.attributeValue("long"));
+                    tLatitude  = String2.parseDouble(xmlReader.attributeValue("lat" ));
                 }
-                tLongitude = String2.parseDouble(xmlReader.attributeValue("long"));
-                tLatitude  = String2.parseDouble(xmlReader.attributeValue("lat" ));
             }
+        } finally {
+            xmlReader.close();
         }
-        in.close();
         table.leftToRightSort(1);
 
         String dir = "c:/programs/_tomcat/content/erddap/subset/";
@@ -752,13 +759,14 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/index.jsp
         table = lookForStations(""); 
         int nRows = table.oneStepApplyConstraint(0,
-            "stationID", "=~", "(9752619|9753216|9754228|9757809|9757112|9759394)");
+            "stationID", "=~", "(8762484|9752619|9753216|9754228|9757809)");
         table.saveAsJson(dir + "nosCoopsMRF.json", -1, false);
         try {
             Test.ensureEqual(nRows, 6, "Rain Fall");
         } catch (Throwable t) {
             String2.log(table.dataToString());
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                //2018-07-05 9759394 disappeared from web page, but another was added 
                 //"\n2015-02-02 2 of the 6 stations aren't in the stations file:\n" +
                 //"97557809 9757112, but they are still on the web page.\n" +
                 "\n2015-05-04 1 of the 6 stations isn't in the stations file:\n" +
@@ -798,10 +806,9 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         StringArray fromDeployment = (StringArray)fromTable.getColumn("deployment");
         
         // was based on soap response
-        //BufferedInputStream bis = new BufferedInputStream(
-        //    SSR.getUrlInputStream(
-        //    "https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities"));
-        //    //new FileInputStream("c:/programs/nos/stations.xml"));  //for testing
+        //BufferedInputStream bis = SSR.getUrlBufferedInputStream(
+        //    "https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities");
+        //    //File2.getDecompressedBufferedInputStream("c:/programs/nos/stations.xml"));  //for testing
         //Table table1 = EDDTableFromSOS.getStationTable(bis, 
         //    "http://mmisw.org/ont/cf/parameter/water_level");
         //bis.close();
@@ -1021,30 +1028,30 @@ These datasets were hard to work with:
         //EDD.debugMode=true;
         String results, query, tName, expected;
         //(0, 11) causes all of these to end in 'T'
-        String yesterday = Calendar2.epochSecondsToIsoStringT(  
+        String yesterday = Calendar2.epochSecondsToIsoStringTZ(  
             Calendar2.backNDays(1, Double.NaN)).substring(0, 11); 
-        String daysAgo5 = Calendar2.epochSecondsToIsoStringT(   
+        String daysAgo5 = Calendar2.epochSecondsToIsoStringTZ(   
             Calendar2.backNDays(5, Double.NaN)).substring(0, 11); 
-        String daysAgo10 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo10 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(10, Double.NaN)).substring(0, 11);
-        String daysAgo20 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo20 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(20, Double.NaN)).substring(0, 11);
-        String daysAgo30 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo30 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(30, Double.NaN)).substring(0, 11);
-        String daysAgo40 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo40 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(40, Double.NaN)).substring(0, 11);
-        String daysAgo70 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo70 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(70, Double.NaN)).substring(0, 11);
-        String daysAgo72 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo72 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(72, Double.NaN)).substring(0, 11);
-        String daysAgo90 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo90 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(90, Double.NaN)).substring(0, 11);
-        String daysAgo92 = Calendar2.epochSecondsToIsoStringT(
+        String daysAgo92 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(92, Double.NaN)).substring(0, 11);
 
-        String daysAhead5 = Calendar2.epochSecondsToIsoStringT(
+        String daysAhead5 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(-5, Double.NaN)).substring(0, 11);
-        String daysAhead7 = Calendar2.epochSecondsToIsoStringT(
+        String daysAhead7 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(-7, Double.NaN)).substring(0, 11);
 
         //Raw 6 minute          
@@ -1072,7 +1079,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:48:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:54:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "22:00:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t)); 
@@ -1104,7 +1111,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:09:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:10:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n";
 
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1141,7 +1148,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1177,7 +1184,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1209,7 +1216,7 @@ These datasets were hard to work with:
                 expected += 
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1243,7 +1250,7 @@ These datasets were hard to work with:
                 expected += 
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T08:48:00Z,MLLW,-0.03
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1285,7 +1292,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1326,7 +1333,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1364,7 +1371,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1403,7 +1410,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1448,7 +1455,7 @@ id + cityLL + daysAgo + "00:42:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "00:48:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "00:54:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1474,19 +1481,20 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //9752619,"Isabel Segunda, Vieques Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
+//2019-03-19 was -65.4438, now -65-4439
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mm,,\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1525,7 +1533,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1564,7 +1572,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1603,7 +1611,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1638,7 +1646,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 //8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.0311,30.6711,2010-10-24T00:00:00Z,5.4
 //8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712,2010-10-24T00:00:00Z,5.4
 "8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1675,7 +1683,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:45:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:51:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:57:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
@@ -1731,7 +1739,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
         //then copy [tomcat]/content/erddap/subset/nosCoops*.json files 
         //  to coastwatch ERDDAP /subset
         //  and UAF       ERDDAP /subset
-        //then flag all the datasets (use the list of flags)
+        //then flag all the nosCoops datasets on coastwatch (use the list of flags)
         if (makeSubsetFiles) {
             if (reloadSF) reloadStationsFile();
             makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
@@ -1748,7 +1756,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
         testNosCoops("nosCoopsWLTP60");
         testNosCoops("nosCoopsMAT");
         testNosCoops("nosCoopsMBP");
-        testNosCoops("nosCoopsMC");
+        testNosCoops("nosCoopsMC");  //not working 2019-05-20
         testNosCoops("nosCoopsMRF");
         testNosCoops("nosCoopsMRH");
         testNosCoops("nosCoopsMWT");

@@ -31,12 +31,21 @@ import gov.noaa.pfel.erddap.variable.*;
 
 /** 
  * This class represents a table of data from a collection of NCCSV files.
- * See https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html .
+ * See https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html .
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2017-04-17
  */
 public class EDDTableFromNccsvFiles extends EDDTableFromFiles { 
 
+
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
 
     /** 
      * The constructor just calls the super constructor. 
@@ -69,7 +78,9 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromNccsvFiles", tDatasetID, 
@@ -83,7 +94,8 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
     }
 
@@ -95,7 +107,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -106,7 +118,10 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
 
         //read the file
         Table table = new Table();
-        table.readNccsv(fileDir + fileName);
+        table.readNccsv(tFileDir + tFileName);
+
+        table.unpack(standardizeWhat);
+
         return table;
     }
 
@@ -150,6 +165,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, //String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromNccsvFiles.generateDatasetsXml" +
@@ -169,6 +185,11 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         //tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
@@ -185,16 +206,23 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         Table dataSourceTable = new Table();
         dataSourceTable.readNccsv(sampleFileName);
 
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.unpack(tStandardizeWhat);
+
         Table dataAddTable = new Table();
         double maxTimeES = Double.NaN;
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
-            dataAddTable.addColumn(c, colName, pa,
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+            dataAddTable.addColumn(c, colName, destPA, addAtts);
 
             //maxTimeES
             String tUnits = sourceAtts.getString("units");
@@ -203,15 +231,18 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
                     if (Calendar2.isNumericTimeUnits(tUnits)) {
                         double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
                         maxTimeES = Calendar2.unitsSinceToEpochSeconds(
-                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                            tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
                     } else { //string time units
-                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                        maxTimeES = Calendar2.tryToEpochSeconds(destPA.getString(destPA.size() - 1)); //NaN if trouble
                     }
                 } catch (Throwable t) {
                     String2.log("caught while trying to get maxTimeES: " + 
                         MustBe.throwableToString(t));
                 }
             }
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, sourcePA, sourceAtts, addAtts); //sourcePA since strongly typed
 
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -294,7 +325,10 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -336,7 +370,9 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
                 1440,
                 "","","","", 
                 "ship time", 
-                "", "", "", "", null) + "\n";
+                "", "", "", "", 
+                -1, null, //defaultStandardizeWhat
+                null) + "\n";
 
             String2.log(results);
 
@@ -349,7 +385,8 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
                 "1440",
                 "", "", "", "", 
                 "ship time", 
-                "", "", "", ""},
+                "", "", "", "", 
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -365,6 +402,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -380,18 +418,18 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_type\">person</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
 "        <att name=\"featureType\">trajectory</att>\n" +
-"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</att>\n" +
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</att>\n" +
 "        <att name=\"institution\">NOAA NMFS SWFSC ERD, NOAA PMEL</att>\n" +
 "        <att name=\"keywords\">NOAA, sea, ship, sst, surface, temperature, trajectory</att>\n" +
 "        <att name=\"license\">&quot;NCCSV Demonstration&quot; by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">ship</att>\n" +
 "        <att name=\"summary\">This is a paragraph or two describing the dataset.</att>\n" +
 "        <att name=\"title\">NCCSV Demonstration</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Trajectory</att>\n" +
@@ -475,8 +513,10 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test Long</att>\n" +
+"            <att name=\"missing_value\" type=\"long\">-9223372036854775808</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -499,10 +539,13 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
+"            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
+"&#39;z&quot;&#x20ac;</att>\n" +  
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -511,8 +554,10 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
+            String tDatasetID = "nccsv_9632_f0df_07b0";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "nccsv_9632_f0df_07b0", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "NCCSV Demonstration", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "ship, time, latitude, longitude, status, testLong, sst", 
@@ -547,13 +592,16 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(Float.MAX_VALUE + "", "3.4028235E38", "");
         Test.ensureEqual(String.valueOf(Float.MAX_VALUE), "3.4028235E38", "");
 
+        //long MIN_VALUE=-9,223,372,036,854,775,808 and MAX_VALUE=9,223,372,036,854,775,807
         LongArray la = new LongArray(new long[]{
-            -9223372036854775808L,-1234567890123456L,0,1234567890123456L,
+            -9223372036854775808L,-9007199254740992L,0,9007199254740992L,
              9223372036854775806L,9223372036854775807L});
         String2.log("la stats=" + PrimitiveArray.displayStats(la.calculateStats()));
         DoubleArray da = new DoubleArray(la);
+        double laStats[] = la.calculateStats();
         String2.log("da=" + da + "\n" +
-            "stats=" + PrimitiveArray.displayStats(la.calculateStats()));
+            "stats=" + PrimitiveArray.displayStats(laStats) +
+            "\nstats as doubles: " + String2.toCSSVString(laStats));
         //String2.pressEnterToContinue();
 
         String id = "testNccsvScalar"; //straight from generateDatasetsXml
@@ -616,8 +664,9 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Status\";\n" +
 "  }\n" +
 "  testLong {\n" +
-          //these are largest doubles that can round trip to longs
-"    Float64 actual_range -9.223372036854776e+18, 9.2233720368547748e+18;\n" +
+"    Float64 _FillValue NaN;\n" + //long MAX_VALUE, as a double, is always treated as NaN
+          //long MIN_VALUE and MAX_VALUE converted to doubles
+"    Float64 actual_range -9.223372036854776e+18, 9.2233720368547748e+18;\n" + 
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Test of Longs\";\n" +
 "    String units \"1\";\n" +
@@ -637,7 +686,7 @@ directionsForGenerateDatasetsXml() +
 "    Float64 testDoubles -1.7976931348623157e+308, 0.0, 1.7976931348623157e+308;\n" +
 "    Float32 testFloats -3.4028235e+38, 0.0, 3.4028235e+38;\n" +
 "    Int32 testInts -2147483648, 0, 2147483647;\n" +
-"    Float64 testLongs -9.223372036854776e+18, 9.2233720368547748e+18, NaN;\n" + //long -> double
+"    Float64 testLongs -9.223372036854776e+18, -9.007199254740992e+15, 9.007199254740992e+15, 9.2233720368547748e+18, NaN;\n" + //longs treated as doubles
 "    Int16 testShorts -32768, 0, 32767;\n" +
 "    String testStrings \" a\t~\u00fc,\n" + //important tests
 "'z\\\"?\";\n" + //important test of \\u20ac
@@ -666,7 +715,7 @@ directionsForGenerateDatasetsXml() +
 
 expected =
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
-"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";\n" +
+"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD, NOAA PMEL\";\n" +
 "    String keywords \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -674,7 +723,7 @@ expected =
 "    Float64 Northernmost_Northing 28.0003;\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 27.9998;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"ship, status, testLong\";\n" +
 "    String summary \"This is a paragraph or two describing the dataset.\";\n" +
 "    String time_coverage_end \"2017-03-23T23:45:00Z\";\n" +
@@ -722,10 +771,10 @@ expected =
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -752,10 +801,10 @@ expected =
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -768,11 +817,11 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on long constraint
-        userDapQuery = "&testLong=-1234567890123456";
+        userDapQuery = "&testLong=-9007199254740992";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1long", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -780,7 +829,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on harder long constraint
@@ -817,7 +866,7 @@ expected =
 "*GLOBAL*,geospatial_lon_max,-130.2576d\n" +
 "*GLOBAL*,geospatial_lon_min,-132.1591d\n" +
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -825,7 +874,7 @@ expected =
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,27.9998d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
@@ -871,7 +920,8 @@ expected =
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
 "testLong,*DATA_TYPE*,long\n" +
-"testLong,actual_range,-9223372036854775808L,9223372036854774784L\n" + //max is largest double that can round trip to a long
+"testLong,_FillValue,9223372036854775807L\n" +
+"testLong,actual_range,-9223372036854775808L,9223372036854774784L\n" + //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
@@ -888,7 +938,7 @@ expected =
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
-"sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
+"sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
 "sst,units,degree_C\n" +
@@ -926,7 +976,7 @@ expected =
 expected =        
 //T17:35:08Z (local files)\\n2017-04-18T17:35:08Z  
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -934,7 +984,7 @@ expected =
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,27.9998d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
@@ -976,6 +1026,7 @@ expected =
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
 "testLong,*DATA_TYPE*,long\n" +
+"testLong,_FillValue,9223372036854775807L\n" +
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
@@ -991,7 +1042,7 @@ expected =
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
-"sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
+"sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
 "sst,units,degree_C\n" +
@@ -999,10 +1050,10 @@ expected =
 "*END_METADATA*\n" +
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         tPo = results.indexOf(expected.substring(0, 40));
@@ -1040,7 +1091,7 @@ expected =
 expected =        
 //2017-04-18T17:41:53Z (local files)\\n2017-04-18T17:41:53Z 
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -1048,7 +1099,7 @@ expected =
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,27.9998d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
@@ -1079,7 +1130,7 @@ expected =
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
-"sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
+"sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
 "sst,units,degree_C\n" +
@@ -1137,13 +1188,13 @@ expected =
 "\" a[9]~[252],[10]\n" +
 "'z\\\"?\", 1.4902299E9, 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9[10]\n" +
 "\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902335E9, 28.0003, -130.3472, \"?\", -1234567890123456, [10]\n" +
+"'z\\\"?\", 1.4902335E9, 28.0003, -130.3472, \"?\", -9007199254740992, [10]\n" +
 "\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902371E9, 28.0001, -130.4305, \"[9]\", 0, 10.7[10]\n" +
+"'z\\\"?\", 1.4902371E9, 28.0001, -130.4305, \"[9]\", 9007199254740992, 10.7[10]\n" +
 "\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902731E9, 27.9998, -131.5578, \"\\\"\", 1234567890123456, 99.0[10]\n" +
+"'z\\\"?\", 1.4902731E9, 27.9998, -131.5578, \"\\\"\", 9223372036854775806, 99.0[10]\n" +
 "\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4903055E9, 28.0003, -132.0014, \"[252]\", 9223372036854775806, 10.0[10]\n" +
+"'z\\\"?\", 1.4903055E9, 28.0003, -132.0014, \"[252]\", , 10.0[10]\n" +
 "\" a[9]~[252],[10]\n" +
 "'z\\\"?\", 1.4903127E9, 28.0002, -132.1591, \"?\", , [10]\n" +
 "[end]";   
@@ -1161,10 +1212,10 @@ expected =
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN\n";        
         Test.ensureEqual(results, expected, "results=\n" + results);        
 //ship is " a\t~\u00fc,\n'z""\u20AC"
@@ -1180,10 +1231,10 @@ expected =
         expected = 
 "ship,time (UTC),latitude (degrees_north),longitude (degrees_east),status,testLong (1),sst (degree_C)\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN\n";        Test.ensureEqual(results, expected, "results=\n" + results);        
 //ship is " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -1197,10 +1248,10 @@ expected =
         //String2.log(results);
         expected = 
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN\n";        Test.ensureEqual(results, expected, "results=\n" + results);        
 //ship is " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -1248,10 +1299,10 @@ expected =
         expected = 
 "ship,date,time,Y,X,status,testLong,sst[10]\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,12:45:00 am,28.0002,-130.2576,A,-9223372036854775808,10.9[10]\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,1:45:00 am,28.0003,-130.3472,\\u20ac,-1234567890123456,-9999.0[10]\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,2:45:00 am,28.0001,-130.4305,\\t,0,10.7[10]\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,12:45:00 pm,27.9998,-131.5578,\"\"\"\",1234567890123456,-9999.0[10]\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,9:45:00 pm,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,1:45:00 am,28.0003,-130.3472,\\u20ac,-9007199254740992,-9999.0[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,2:45:00 am,28.0001,-130.4305,\\t,9007199254740992,10.7[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,12:45:00 pm,27.9998,-131.5578,\"\"\"\",9223372036854775806,-9999.0[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,9:45:00 pm,28.0003,-132.0014,\\u00fc,-9999,10.0[10]\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23,11:45:00 pm,28.0002,-132.1591,?,-9999,-9999.0[10]\n" +
 "[end]";
 //ship is " a\t~\u00fc,\n'z""\u20AC"
@@ -1291,7 +1342,7 @@ expected =
 "    \"ship\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\",[10]\n" +
 "    \"time\": \"2017-03-23T01:45:00Z\",[10]\n" +
 "    \"status\": \"\\u20ac\",[10]\n" +
-"    \"testLong\": -1234567890123456,[10]\n" +
+"    \"testLong\": -9007199254740992,[10]\n" +
 "    \"sst\": null }[10]\n" +
 "},[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
@@ -1302,7 +1353,7 @@ expected =
 "    \"ship\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\",[10]\n" +
 "    \"time\": \"2017-03-23T02:45:00Z\",[10]\n" +
 "    \"status\": \"\\t\",[10]\n" +
-"    \"testLong\": 0,[10]\n" +
+"    \"testLong\": 9007199254740992,[10]\n" +
 "    \"sst\": 10.7 }[10]\n" +
 "},[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
@@ -1313,7 +1364,7 @@ expected =
 "    \"ship\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\",[10]\n" +
 "    \"time\": \"2017-03-23T12:45:00Z\",[10]\n" +
 "    \"status\": \"\\\"\",[10]\n" +
-"    \"testLong\": 1234567890123456,[10]\n" +
+"    \"testLong\": 9223372036854775806,[10]\n" +
 "    \"sst\": null }[10]\n" +
 "},[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
@@ -1324,7 +1375,7 @@ expected =
 "    \"ship\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\",[10]\n" +
 "    \"time\": \"2017-03-23T21:45:00Z\",[10]\n" +
 "    \"status\": \"\\u00fc\",[10]\n" +
-"    \"testLong\": 9223372036854775806,[10]\n" +
+"    \"testLong\": null,[10]\n" +
 "    \"sst\": 10.0 }[10]\n" +
 "},[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
@@ -1384,7 +1435,7 @@ expected =
 "<td class=\"R\">28.0003\n" +
 "<td class=\"R\">-130.3472\n" +
 "<td>&#x20ac;\n" +
-"<td class=\"R\">-1234567890123456\n" +
+"<td class=\"R\">-9007199254740992\n" +
 "<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
@@ -1393,7 +1444,7 @@ expected =
 "<td class=\"R\">28.0001\n" +
 "<td class=\"R\">-130.4305\n" +
 "<td>\\t\n" +    //write tab as json \t
-"<td class=\"R\">0\n" +
+"<td class=\"R\">9007199254740992\n" +
 "<td class=\"R\">10.7\n" +
 "</tr>\n" +
 "<tr>\n" +
@@ -1402,7 +1453,7 @@ expected =
 "<td class=\"R\">27.9998\n" +
 "<td class=\"R\">-131.5578\n" +
 "<td>\\&quot;\n" +
-"<td class=\"R\">1234567890123456\n" +
+"<td class=\"R\">9223372036854775806\n" +
 "<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
@@ -1411,7 +1462,7 @@ expected =
 "<td class=\"R\">28.0003\n" +
 "<td class=\"R\">-132.0014\n" +
 "<td>&uuml;\n" +
-"<td class=\"R\">9223372036854775806\n" +
+"<td>\n" +
 "<td class=\"R\">10.0\n" +
 "</tr>\n" +
 "<tr>\n" +
@@ -1494,14 +1545,15 @@ expected =
 "WAVES/D testLong\n" +
 "BEGIN\n" +
 "-9223372036854775808\n" +
-"-1234567890123456\n" +
-"0\n" +
-"1234567890123456\n" +
+"-9007199254740992\n" +
+"9007199254740992\n" +
 "9223372036854775806\n" +
 "NaN\n" +
+"NaN\n" +
 "END\n" +
-    //these are largest doubles that can round trip to longs
-"X SetScale d -9.223372036854776E18,9.2233720368547748E18, \"1\", testLong\n" +
+    //these are largest consecutive longs that can round trip to doubles
+    // 2019-04-05 was               9.2233720368547748E18  why the change?  adoptOpenJdk
+"X SetScale d -9.223372036854776E18,9.223372036854776E18, \"1\", testLong\n" +
 "\n" +
 "WAVES/S sst\n" +
 "BEGIN\n" +
@@ -1531,14 +1583,31 @@ expected =
 "    \"columnUnits\": [null, \"UTC\", \"degrees_north\", \"degrees_east\", null, \"1\", \"degree_C\"],\n" +
 "    \"rows\": [\n" +
 "      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T00:45:00Z\", 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9],\n" +
-"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -1234567890123456, null],\n" +
-"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T02:45:00Z\", 28.0001, -130.4305, \"\\t\", 0, 10.7],\n" +
-"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T12:45:00Z\", 27.9998, -131.5578, \"\\\"\", 1234567890123456, null],\n" +
-"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T21:45:00Z\", 28.0003, -132.0014, \"\\u00fc\", 9223372036854775806, 10.0],\n" +
+"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -9007199254740992, null],\n" +
+"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T02:45:00Z\", 28.0001, -130.4305, \"\\t\", 9007199254740992, 10.7],\n" +
+"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T12:45:00Z\", 27.9998, -131.5578, \"\\\"\", 9223372036854775806, null],\n" +
+"      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T21:45:00Z\", 28.0003, -132.0014, \"\\u00fc\", null, 10],\n" +
 "      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T23:45:00Z\", 28.0002, -132.1591, \"?\", null, null]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n";
+//ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
+//source status chars are A\u20AC\t"\u00fc\uFFFF
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //*** getting jsonlCSV1
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_char", ".jsonlCSV1"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+"[\"ship\", \"time\", \"latitude\", \"longitude\", \"status\", \"testLong\", \"sst\"]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T00:45:00Z\", 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -9007199254740992, null]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T02:45:00Z\", 28.0001, -130.4305, \"\\t\", 9007199254740992, 10.7]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T12:45:00Z\", 27.9998, -131.5578, \"\\\"\", 9223372036854775806, null]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T21:45:00Z\", 28.0003, -132.0014, \"\\u00fc\", null, 10]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T23:45:00Z\", 28.0002, -132.1591, \"?\", null, null]\n";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
         Test.ensureEqual(results, expected, "results=\n" + results);        
@@ -1550,10 +1619,10 @@ expected =
         //String2.log(results);
         expected = 
 "[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T00:45:00Z\", 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9]\n" +
-"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -1234567890123456, null]\n" +
-"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T02:45:00Z\", 28.0001, -130.4305, \"\\t\", 0, 10.7]\n" +
-"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T12:45:00Z\", 27.9998, -131.5578, \"\\\"\", 1234567890123456, null]\n" +
-"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T21:45:00Z\", 28.0003, -132.0014, \"\\u00fc\", 9223372036854775806, 10.0]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -9007199254740992, null]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T02:45:00Z\", 28.0001, -130.4305, \"\\t\", 9007199254740992, 10.7]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T12:45:00Z\", 27.9998, -131.5578, \"\\\"\", 9223372036854775806, null]\n" +
+"[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T21:45:00Z\", 28.0003, -132.0014, \"\\u00fc\", null, 10]\n" +
 "[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T23:45:00Z\", 28.0002, -132.1591, \"?\", null, null]\n";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -1566,10 +1635,10 @@ expected =
         //String2.log(results);
         expected = 
 "{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T00:45:00Z\", \"latitude\":28.0002, \"longitude\":-130.2576, \"status\":\"A\", \"testLong\":-9223372036854775808, \"sst\":10.9}\n" +
-"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T01:45:00Z\", \"latitude\":28.0003, \"longitude\":-130.3472, \"status\":\"\\u20ac\", \"testLong\":-1234567890123456, \"sst\":null}\n" +
-"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T02:45:00Z\", \"latitude\":28.0001, \"longitude\":-130.4305, \"status\":\"\\t\", \"testLong\":0, \"sst\":10.7}\n" +
-"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T12:45:00Z\", \"latitude\":27.9998, \"longitude\":-131.5578, \"status\":\"\\\"\", \"testLong\":1234567890123456, \"sst\":null}\n" +
-"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T21:45:00Z\", \"latitude\":28.0003, \"longitude\":-132.0014, \"status\":\"\\u00fc\", \"testLong\":9223372036854775806, \"sst\":10.0}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T01:45:00Z\", \"latitude\":28.0003, \"longitude\":-130.3472, \"status\":\"\\u20ac\", \"testLong\":-9007199254740992, \"sst\":null}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T02:45:00Z\", \"latitude\":28.0001, \"longitude\":-130.4305, \"status\":\"\\t\", \"testLong\":9007199254740992, \"sst\":10.7}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T12:45:00Z\", \"latitude\":27.9998, \"longitude\":-131.5578, \"status\":\"\\\"\", \"testLong\":9223372036854775806, \"sst\":null}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T21:45:00Z\", \"latitude\":28.0003, \"longitude\":-132.0014, \"status\":\"\\u00fc\", \"testLong\":null, \"sst\":10}\n" +
 "{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T23:45:00Z\", \"latitude\":28.0002, \"longitude\":-132.1591, \"status\":\"?\", \"testLong\":null, \"sst\":null}\n";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -1587,7 +1656,7 @@ expected =
         //*** getting nc   and ncHeader
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".nc"); 
-        results = String2.annotatedString(NcHelper.dumpString(dir + tName, true));
+        results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
         expected = 
 "netcdf EDDTableFromNccsvFiles_char.nc {[10]\n" +
@@ -1641,8 +1710,10 @@ expected =
 "      :long_name = \"Status\";[10]\n" +
 "[10]\n" +
 "    double testLong(row=6);[10]\n" +
-                  //these are largest doubles that can round trip to longs
-"      :actual_range = -9.223372036854776E18, 9.2233720368547748E18; // double[10]\n" +
+"      :_FillValue = NaN; // double[10]\n" +
+                  //these are largest consecutive longs that can round trip to doubles
+                  //2019-04-05 max was 9.2233720368547748E18, now NaN   why???
+"      :actual_range = -9.223372036854776E18, NaN; // double[10]\n" + //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :long_name = \"Test of Longs\";[10]\n" +
 "      :units = \"1\";[10]\n" +
@@ -1660,8 +1731,8 @@ expected =
 "      :testDoubles = -1.7976931348623157E308, 0.0, 1.7976931348623157E308; // double[10]\n" +
 "      :testFloats = -3.4028235E38f, 0.0f, 3.4028235E38f; // float[10]\n" +
 "      :testInts = -2147483648, 0, 2147483647; // int[10]\n" +
-          //these are largest doubles that can round trip to longs
-"      :testLongs = -9.223372036854776E18, 9.2233720368547748E18, NaN; // double[10]\n" + 
+          //these are largest consecutive longs that can round trip to doubles
+"      :testLongs = -9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN; // double[10]\n" + 
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" +   //[8364], so unicode!
@@ -1692,8 +1763,8 @@ expected =
 //"2017-04-21T18:32:36Z 
 expected = 
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nc\";[10]\n" +
-"  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
-"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
+"  :id = \"testNccsvScalar\";[10]\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
@@ -1701,7 +1772,7 @@ expected =
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
 "  :sourceUrl = \"(local files)\";[10]\n" +
 "  :Southernmost_Northing = 27.9998; // double[10]\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";[10]\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";[10]\n" +
 "  :subsetVariables = \"ship, status, testLong\";[10]\n" +
 "  :summary = \"This is a paragraph or two describing the dataset.\";[10]\n" +
 "  :time_coverage_end = \"2017-03-23T23:45:00Z\";[10]\n" +
@@ -1725,7 +1796,7 @@ expected =
 "status =  \"A?[9]\"[252]?\"[10]\n" +  //source status chars are A\u20AC\t"\u00fc\uFFFF
 "testLong =[10]\n" +
     //these are largest doubles that can round trip to a long
-"  {-9.223372036854776E18, -1.234567890123456E15, 0.0, 1.234567890123456E15, 9.2233720368547748E18, NaN}[10]\n" + 
+"  {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" + 
 "sst =[10]\n" +
 "  {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
 "}[10]\n" +
@@ -1741,7 +1812,7 @@ expected =
         //*** getting ncCF   and ncCFHeader
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".ncCF"); 
-        results = String2.annotatedString(NcHelper.dumpString(dir + tName, true));
+        results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
         expected = 
 "netcdf EDDTableFromNccsvFiles_char.nc {[10]\n" +
@@ -1802,8 +1873,10 @@ expected =
 "      :long_name = \"Status\";[10]\n" +
 "[10]\n" +
 "    double testLong(obs=6);[10]\n" +
-      //these are largest doubles that can round trip to longs
-"      :actual_range = -9.223372036854776E18, 9.2233720368547748E18; // double[10]\n" +  
+"      :_FillValue = NaN; // double[10]\n" +  
+      //these are largest consecutive longs that can round trip to doubles
+      //2019-04-05 max was 9.2233720368547748E18, now NaN
+"      :actual_range = -9.223372036854776E18, NaN; // double[10]\n" +  //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "      :coordinates = \"time latitude longitude\";[10]\n" +  //?
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :long_name = \"Test of Longs\";[10]\n" +
@@ -1823,8 +1896,8 @@ expected =
 "      :testDoubles = -1.7976931348623157E308, 0.0, 1.7976931348623157E308; // double[10]\n" +
 "      :testFloats = -3.4028235E38f, 0.0f, 3.4028235E38f; // float[10]\n" +
 "      :testInts = -2147483648, 0, 2147483647; // int[10]\n" +
-          //these are largest doubles that can round trip to longs
-"      :testLongs = -9.223372036854776E18, 9.2233720368547748E18, NaN; // double[10]\n" + 
+          //these are largest consecutive longs that can round trip to doubles
+"      :testLongs = -9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN; // double[10]\n" + 
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" +  //[8364], so unicode!
@@ -1852,8 +1925,8 @@ expected =
         
 expected = 
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncCF\";[10]\n" +
-"  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
-"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
+"  :id = \"testNccsvScalar\";[10]\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
@@ -1861,7 +1934,7 @@ expected =
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
 "  :sourceUrl = \"(local files)\";[10]\n" +
 "  :Southernmost_Northing = 27.9998; // double[10]\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";[10]\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";[10]\n" +
 "  :subsetVariables = \"ship, status, testLong\";[10]\n" +
 "  :summary = \"This is a paragraph or two describing the dataset.\";[10]\n" +
 "  :time_coverage_end = \"2017-03-23T23:45:00Z\";[10]\n" +
@@ -1881,8 +1954,8 @@ expected =
 "  {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
 "status =  \"A?[9]\"[252]?\"[10]\n" + // source status chars are A\u20AC\t"\u00fc\uFFFF
 "testLong =[10]\n" +
-          //these are largest doubles that can round trip to longs
-"  {-9.223372036854776E18, -1.234567890123456E15, 0.0, 1.234567890123456E15, 9.2233720368547748E18, NaN}[10]\n" +
+          //these are largest consecutive longs that can round trip to doubles
+"  {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
 "sst =[10]\n" +
 "  {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
 "}[10]\n" +
@@ -1898,7 +1971,7 @@ expected =
         //*** getting ncCFMA   and ncCFMAHeader
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".ncCFMA"); 
-        results = String2.annotatedString(NcHelper.dumpString(dir + tName, true));
+        results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
         expected = 
 "netcdf EDDTableFromNccsvFiles_char.nc {[10]\n" +
@@ -1959,8 +2032,8 @@ expected =
 "[10]\n" +
 "    double testLong(trajectory=1, obs=6);[10]\n" +
 "      :_FillValue = NaN; // double[10]\n" +
-          //these are largest doubles that can round trip to longs
-"      :actual_range = -9.223372036854776E18, 9.2233720368547748E18; // double[10]\n" +
+          //these are largest consecutive longs that can round trip to doubles
+"      :actual_range = -9.223372036854776E18, NaN; // double[10]\n" + //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "      :coordinates = \"time latitude longitude\";[10]\n" +
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :long_name = \"Test of Longs\";[10]\n" +
@@ -1980,8 +2053,8 @@ expected =
 "      :testDoubles = -1.7976931348623157E308, 0.0, 1.7976931348623157E308; // double[10]\n" +
 "      :testFloats = -3.4028235E38f, 0.0f, 3.4028235E38f; // float[10]\n" +
 "      :testInts = -2147483648, 0, 2147483647; // int[10]\n" +
-          //these are largest doubles that can round trip to longs
-"      :testLongs = -9.223372036854776E18, 9.2233720368547748E18, NaN; // double[10]\n" +
+          //these are largest longs that can round trip to double
+"      :testLongs = -9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN; // double[10]\n" +
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" + //[8364], so unicode!
@@ -2009,8 +2082,8 @@ expected =
         
 expected = 
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncCFMA\";[10]\n" +
-"  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
-"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
+"  :id = \"testNccsvScalar\";[10]\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
@@ -2018,7 +2091,7 @@ expected =
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
 "  :sourceUrl = \"(local files)\";[10]\n" +
 "  :Southernmost_Northing = 27.9998; // double[10]\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";[10]\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";[10]\n" +
 "  :subsetVariables = \"ship, status, testLong\";[10]\n" +
 "  :summary = \"This is a paragraph or two describing the dataset.\";[10]\n" +
 "  :time_coverage_end = \"2017-03-23T23:45:00Z\";[10]\n" +
@@ -2043,8 +2116,8 @@ expected =
 "status =\"A?[9]\"[252]?\"[10]\n" +
 "testLong =[10]\n" +
 "  {[10]\n" +
-          //these are largest doubles that can round trip to longs
-"    {-9.223372036854776E18, -1.234567890123456E15, 0.0, 1.234567890123456E15, 9.2233720368547748E18, NaN}[10]\n" +
+          //these are largest consecutive longs that can round trip to doubles
+"    {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
 "  }[10]\n" +
 "sst =[10]\n" +
 "  {[10]\n" +
@@ -2092,7 +2165,7 @@ expected =
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
 expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
-"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
 "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
@@ -2100,7 +2173,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
 "    \"sourceUrl\": {\"type\": \"char\", \"data\": \"(local files)\"},[10]\n" +
 "    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},[10]\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},[10]\n" +
 "    \"subsetVariables\": {\"type\": \"char\", \"data\": \"ship, status, testLong\"},[10]\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"This is a paragraph or two describing the dataset.\"},[10]\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2017-03-23T23:45:00Z\"},[10]\n" +
@@ -2185,12 +2258,13 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"shape\": [\"row\"],[10]\n" +
 "      \"type\": \"int64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
-"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854774784]},[10]\n" +
+"        \"_FillValue\": {\"type\": \"int64\", \"data\": null},[10]\n" +
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, null]},[10]\n" +  //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
 "      },[10]\n" +
-"      \"data\": [-9223372036854775808, -1234567890123456, 0, 1234567890123456, 9223372036854775806, null][10]\n" +
+"      \"data\": [-9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, null, null][10]\n" +
 "    },[10]\n" +
 "    \"sst\": {[10]\n" +
 "      \"shape\": [\"row\"],[10]\n" +
@@ -2208,7 +2282,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "        \"testDoubles\": {\"type\": \"double\", \"data\": [-1.7976931348623157E308, 0.0, 1.7976931348623157E308]},[10]\n" +
 "        \"testFloats\": {\"type\": \"float\", \"data\": [-3.4028235E38, 0.0, 3.4028235E38]},[10]\n" +
 "        \"testInts\": {\"type\": \"int\", \"data\": [-2147483648, 0, null]},[10]\n" +
-"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
+"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, null]},[10]\n" +
 "        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
 "        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"degree_C\"}[10]\n" +
@@ -2251,7 +2325,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
 expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
-"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
 "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
@@ -2259,7 +2333,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
 "    \"sourceUrl\": {\"type\": \"char\", \"data\": \"(local files)\"},[10]\n" +
 "    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},[10]\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},[10]\n" +
 "    \"subsetVariables\": {\"type\": \"char\", \"data\": \"ship, status, testLong\"},[10]\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"This is a paragraph or two describing the dataset.\"},[10]\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2017-03-23T23:45:00Z\"},[10]\n" +
@@ -2344,12 +2418,13 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"shape\": [\"row\"],[10]\n" +
 "      \"type\": \"int64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
-"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854774784]},[10]\n" +
+"        \"_FillValue\": {\"type\": \"int64\", \"data\": null},[10]\n" +
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, null]},[10]\n" + //!!! max is wrong! calculated internally as double. max should be -9223372036854775806L
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
 "      },[10]\n" +
-"      \"data\": [-9223372036854775808, -1234567890123456, 0, 1234567890123456, 9223372036854775806, null][10]\n" +
+"      \"data\": [-9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, null, null][10]\n" +
 "    },[10]\n" +
 "    \"sst\": {[10]\n" +
 "      \"shape\": [\"row\"],[10]\n" +
@@ -2367,7 +2442,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "        \"testDoubles\": {\"type\": \"double\", \"data\": [-1.7976931348623157E308, 0.0, 1.7976931348623157E308]},[10]\n" +
 "        \"testFloats\": {\"type\": \"float\", \"data\": [-3.4028235E38, 0.0, 3.4028235E38]},[10]\n" +
 "        \"testInts\": {\"type\": \"int\", \"data\": [-2147483648, 0, null]},[10]\n" +
-"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
+"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, null]},[10]\n" +
 "        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
 "        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"degree_C\"}[10]\n" +
@@ -2388,19 +2463,19 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
             String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
-//"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</Creator>[10]\n" +
+//"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 1.81</Software>[10]\n" +
+"//<Software>ERDDAP - Version 1.83</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
 "Type:METAVAR:TEXT:2[9]Cruise:METAVAR:TEXT:2[9]Station:METAVAR:TEXT:2[9]ship:METAVAR:TEXT:12[9]yyyy-mm-ddThh:mm:ss.SSS[9]Latitude [degrees_north]:METAVAR:DOUBLE[9]Longitude [degrees_east]:METAVAR:DOUBLE[9]status:METAVAR:TEXT:2[9]testLong [1]:PRIMARYVAR:DOUBLE[9]sst [degree_C]:FLOAT[10]\n" +
 "*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
-"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9][10]\n" +
-"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
-"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]1234567890123456[9][10]\n" +
-"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]9223372036854775806[9]10.0[10]\n" +
+"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-9007199254740992[9][10]\n" +
+"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]9007199254740992[9]10.7[10]\n" +
+"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]9223372036854775806[9][10]\n" +
+"*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9][9]10.0[10]\n" +
 "*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9][9][10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -2417,10 +2492,10 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "ship[9]time[9]latitude[9]longitude[9]status[9]testLong[9]sst[10]\n" +
 "[9]UTC[9]degrees_north[9]degrees_east[9][9]1[9]degree_C[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]1234567890123456[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]9223372036854775806[9]10.0[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-9007199254740992[9]NaN[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]9007199254740992[9]10.7[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]9223372036854775806[9]NaN[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]NaN[9]10.0[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -2435,10 +2510,10 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 "ship[9]time (UTC)[9]latitude (degrees_north)[9]longitude (degrees_east)[9]status[9]testLong (1)[9]sst (degree_C)[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]1234567890123456[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]9223372036854775806[9]10.0[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-9007199254740992[9]NaN[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]9007199254740992[9]10.7[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]9223372036854775806[9]NaN[10]\n" +
+" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]NaN[9]10.0[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -2454,8 +2529,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>[10]\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"[10]\n" +
-"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">[10]\n" +
-"<html xmlns=\"http://www.w3.org/1999/xhtml\">[10]\n" +
+"  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">[10]\n" +
+"<html xmlns=\"https://www.w3.org/1999/xhtml\">[10]\n" +
 "<head>[10]\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />[10]\n" +
 "  <title>EDDTableFromNccsvFiles_char</title>[10]\n" +
@@ -2501,7 +2576,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">28.0003</td>[10]\n" +
 "<td class=\"R\">-130.3472</td>[10]\n" +
 "<td>&#x20ac;</td>[10]\n" +
-"<td class=\"R\">-1234567890123456</td>[10]\n" +
+"<td class=\"R\">-9007199254740992</td>[10]\n" +
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
@@ -2511,7 +2586,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">28.0001</td>[10]\n" +
 "<td class=\"R\">-130.4305</td>[10]\n" +
 "<td>&#9;</td>[10]\n" +
-"<td class=\"R\">0</td>[10]\n" +
+"<td class=\"R\">9007199254740992</td>[10]\n" +
 "<td class=\"R\">10.7</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
@@ -2521,7 +2596,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">27.9998</td>[10]\n" +
 "<td class=\"R\">-131.5578</td>[10]\n" +
 "<td>&quot;</td>[10]\n" +
-"<td class=\"R\">1234567890123456</td>[10]\n" +
+"<td class=\"R\">9223372036854775806</td>[10]\n" +
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
@@ -2531,7 +2606,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">28.0003</td>[10]\n" +
 "<td class=\"R\">-132.0014</td>[10]\n" +
 "<td>&#xfc;</td>[10]\n" +
-"<td class=\"R\">9223372036854775806</td>[10]\n" +
+"<td></td>[10]\n" +
 "<td class=\"R\">10.0</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
@@ -2595,7 +2670,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-    "2018-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+    "2019-06-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -2606,11 +2681,11 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,-25.0d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2018-01-02T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2019-06-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2650,10 +2725,11 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2018-01-02T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2019-06-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
+"time,point_spacing,even\n" +
 "time,standard_name,time\n" +
 "time,time_origin,01-JAN-1970 00:00:00\n" +
 "time,type,EVEN\n" +
@@ -2672,6 +2748,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "depth,type,EVEN\n" +
 "depth,units,m\n" +
 "T_25,*DATA_TYPE*,float\n" +
+"T_25,_FillValue,1.0E35f\n" +
 "T_25,actual_range,17.12f,35.4621f\n" +
 "T_25,colorBarMaximum,32.0d\n" +
 "T_25,colorBarMinimum,0.0d\n" +
@@ -2684,6 +2761,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "T_25,standard_name,sea_surface_temperature\n" +
 "T_25,units,degree_C\n" +
 "QT_5025,*DATA_TYPE*,float\n" +
+"QT_5025,_FillValue,1.0E35f\n" +
 "QT_5025,actual_range,0.0f,5.0f\n" +
 "QT_5025,colorBarContinuous,false\n" +
 "QT_5025,colorBarMaximum,6.0d\n" +
@@ -2696,6 +2774,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "QT_5025,missing_value,1.0E35f\n" +
 "QT_5025,name,QT\n" +
 "ST_6025,*DATA_TYPE*,float\n" +
+"ST_6025,_FillValue,1.0E35f\n" +
 "ST_6025,actual_range,0.0f,5.0f\n" +
 "ST_6025,colorBarContinuous,false\n" +
 "ST_6025,colorBarMaximum,8.0d\n" +
@@ -2744,7 +2823,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2018-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2019-06-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -2759,11 +2838,11 @@ expected2 =
 "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,-25.0d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2018-01-02T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2019-06-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2803,6 +2882,7 @@ expected2 =
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
+"time,point_spacing,even\n" +
 "time,standard_name,time\n" +
 "time,time_origin,01-JAN-1970 00:00:00\n" +
 "time,type,EVEN\n" +
@@ -2820,6 +2900,7 @@ expected2 =
 "depth,type,EVEN\n" +
 "depth,units,m\n" +
 "T_25,*DATA_TYPE*,float\n" +
+"T_25,_FillValue,1.0E35f\n" +
 "T_25,colorBarMaximum,32.0d\n" +
 "T_25,colorBarMinimum,0.0d\n" +
 "T_25,epic_code,25i\n" +
@@ -2831,6 +2912,7 @@ expected2 =
 "T_25,standard_name,sea_surface_temperature\n" +
 "T_25,units,degree_C\n" +
 "QT_5025,*DATA_TYPE*,float\n" +
+"QT_5025,_FillValue,1.0E35f\n" +
 "QT_5025,colorBarContinuous,false\n" +
 "QT_5025,colorBarMaximum,6.0d\n" +
 "QT_5025,colorBarMinimum,0.0d\n" +
@@ -2842,6 +2924,7 @@ expected2 =
 "QT_5025,missing_value,1.0E35f\n" +
 "QT_5025,name,QT\n" +
 "ST_6025,*DATA_TYPE*,float\n" +
+"ST_6025,_FillValue,1.0E35f\n" +
 "ST_6025,colorBarContinuous,false\n" +
 "ST_6025,colorBarMaximum,8.0d\n" +
 "ST_6025,colorBarMinimum,0.0d\n" +
@@ -2904,6 +2987,28 @@ expected2 =
         String2.log("\n*** EDDTableFromNccsvFiles.test()");
 
 /* for releases, this line should have open/close comment */
+        //long MIN_VALUE=-9223372036854775808  MAX_VALUE=9223372036854775807
+        //9007199254740992 (~9e15) see https://www.mathworks.com/help/matlab/ref/flintmax.html
+        for (long tl = 9007199254000000L; tl < Long.MAX_VALUE; tl++) {
+            double d = tl;
+            if (Math.round(d) != tl) {
+                String2.log("tl=" + tl + " d=" + d + " is the first large long that can't round trip to/from double");
+                break;
+            }
+        }
+        Test.ensureEqual(9007199254740992L, Math.round((double)9007199254740992L), "");
+
+        //-9007199254740992  see https://www.mathworks.com/help/matlab/ref/flintmax.html
+        for (long tl = -9007199254000000L; tl > Long.MIN_VALUE; tl--) {
+            double d = tl;
+            if (Math.round(d) != tl) {
+                String2.log("tl=" + tl + " d=" + d + "  is the first small long that can't round trip to/from double");
+                break;
+            }
+        }
+        Test.ensureEqual(-9007199254740992L, Math.round((double)-9007199254740992L), "");
+        //String2.pressEnterToContinue();
+
         testGenerateDatasetsXml();
         testBasic(true); //deleteCachedDatasetInfo
         testBasic(false); //deleteCachedDatasetInfo

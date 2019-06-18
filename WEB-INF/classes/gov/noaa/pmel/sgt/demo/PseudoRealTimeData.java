@@ -234,6 +234,20 @@ public class PseudoRealTimeData implements SGTLine, ActionListener {
     count_++;
   }
 
+
+    /** 
+     * Bob Simons added this to avoid memory leak problems.
+     */
+    public void releaseResources() throws Exception {
+        try {  
+            //???
+            //if (JPane.debug) String2.log("sgt.demo.PseudoRealTimeData.releaseResources() finished");
+        } catch (Throwable t) {
+            //String2.log(MustBe.throwableToString(t));
+            //if (JPane.debug) String2.pressEnterToContinue(); 
+        }
+    }
+
   private double tSeries(int val) {
     return A0_*Math.sin(omega0_*val)+A1_*Math.sin(omega1_*val)+A2_*Math.random();
   }

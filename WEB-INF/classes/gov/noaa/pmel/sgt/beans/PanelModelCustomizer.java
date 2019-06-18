@@ -668,7 +668,7 @@ public class PanelModelCustomizer extends JComponent implements Customizer, Prop
       }
       try {
         panelModel_.saveToXML(new BufferedOutputStream(
-                                       new FileOutputStream(outpath, false)));
+            new FileOutputStream(outpath, false)));
       } catch (FileNotFoundException fnfe) {
         JOptionPane.showMessageDialog(this, "Error creating file, rename and try again",
                                       "File Save Error", JOptionPane.ERROR_MESSAGE);

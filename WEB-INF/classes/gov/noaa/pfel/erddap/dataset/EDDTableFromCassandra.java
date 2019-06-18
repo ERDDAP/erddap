@@ -10,7 +10,38 @@
  * Startup cqlsh: cqlsh          
  * For Bob, Cassandra is at localhost:9160
 
-UPDATE CASSANDRA:
+INSTALL CASSANDRA on Lenovo in 2018:
+* get Cassandra from https://cassandra.apache.org/
+  2019-05-15: got 3.11.4 (released 2019-02-11)
+    decompressed into \programs\apache-cassandra-3.11.4      
+  2018: downloaded apache-cassandra-3.11.3-bin.tar.gz
+    decompressed into \programs\apache-cassandra-3.11.3
+* Make a snapshot of Dell M4700 data: 
+  cd c:\Program Files\DataStax-DDC\apache-cassandra\bin\
+  run: cqlsh.bat
+    DESCRIBE KEYSPACE bobKeyspace          //copy and paste that into text document
+    COPY bobkeyspace.statictest TO 'c:\backup\cassandra_statictest.txt';
+    COPY bobkeyspace.bobtable TO 'c:\backup\cassandra_bobtable.txt';
+* Recreate the keyspace and data
+  cd C:\programs\apache-cassandra-3.11.4\bin
+    was cd c:\Program Files\DataStax-DDC\apache-cassandra\bin\
+  run: cqlsh.bat
+    1) copy and paste c:\backup\cassandra_bobKeyspace.txt into shell
+    2) COPY bobkeyspace.statictest FROM 'c:\backup\cassandra_statictest.txt';
+    3) COPY bobkeyspace.bobtable FROM 'c:\backup\cassandra_bobtable.txt';
+
+RUN CASSANDRA on Lenovo in 2018:
+* Start it up: cd \programs\apache-cassandra-3.11.3\bin
+  For Java version changes: change JAVA_HOME in cassandra.bat, e.g., 
+    set "JAVA_HOME=C:\Program Files\Java\jre1.8.0_211"
+  type: cassandra.bat -f
+* Shut it down: ^C
+  There is still something running in the background. Restart computer?
+* CQL Shell (3.4.0): same directory, run or double click on cqlsh.bat
+(It requires Python 2, so I installed it 
+  and changed 2 instances of "python" in cqlsh.bat to "C:\Python2710\python".)
+
+UPDATE CASSANDRA on DELL M4700:
 2016:
 * http://cassandra.apache.org/download/
   2016 update: I got apache-cassandra-3.3-bin.tar.gz 
@@ -22,7 +53,7 @@ UPDATE CASSANDRA:
   So it isn't a Windows installed program with registry keys. It's just a bunch of files.
 * http://wiki.apache.org/cassandra/GettingStarted
 
-RUN CASSANDRA:
+RUN CASSANDRA on DELL M4700:
 2016:
 * Start it up: cd /Program Files/DataStax-DDC/apache-cassandra/bin
   type: cassandra.bat -f
@@ -701,7 +732,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
         if (verbose) 
             String2.log(
-                (reallyVerbose? "\n" + toString() : "") +
+                (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromCassandra " + datasetID + " constructor finished. TIME=" + 
                 (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
@@ -1047,7 +1078,7 @@ public class EDDTableFromCassandra extends EDDTable{
         if (partitionKeyCSV == null) {
             pkdTable = new Table();
             pkdTable.readFlatNc(datasetDir() + PartitionKeysDistinctTableName,
-                partitionKeyNames, 0);
+                partitionKeyNames, 0); //standardizeWhat=0
         } else {
             pkdTable = expandPartitionKeyCSV();
         }
@@ -1331,10 +1362,7 @@ public class EDDTableFromCassandra extends EDDTable{
                 String2.log(requestSB.toString());
 
             //get the data
-            //FUTURE: I think this could be parallelized.
-            //It is likely "easy" with a CompletableFuture option. See
-            //http://www.nurkiewicz.com/2013/05/java-8-definitive-guide-to.html
-            //http://www.vogella.com/tutorials/JavaConcurrency/article.html#threads-pools-with-the-executor-framework
+            //FUTURE: I think this could be parallelized. See EDDTableFromFiles.
             table = getDataForCassandraQuery(loggedInAs, requestUrl, userDapQuery,
                 resultsDVI, rvToResultsEDV, session, boundStatement, 
                 table, tableWriter, stats);
@@ -1725,16 +1753,44 @@ public class EDDTableFromCassandra extends EDDTable{
             if (sourceName.equals("lat")) destName = EDV.LAT_NAME;
             if (sourceName.equals("lon")) destName = EDV.LON_NAME;
 
-            PrimitiveArray pa = null;
+            PrimitiveArray sourcePA = null;
+            //https://stackoverflow.com/questions/34160748/upgrading-calls-to-datastax-java-apis-that-are-gone-in-3
+            isList[col] = cassType.getName() == DataType.Name.LIST;
+            //String2.log(sourceName + " isList=" + isList[col] + " javaClass=" + cassType.asJavaClass());
+            if (isList[col])
+                cassType = cassType.getTypeArguments().get(0); //the element type
+
             Attributes sourceAtts = new Attributes();
+            Attributes addAtts = new Attributes();
+            boolean isTimestamp = false;
+            if      (cassType == DataType.cboolean())   sourcePA = new ByteArray();
+            else if (cassType == DataType.cint())       sourcePA = new IntArray();
+            else if (cassType == DataType.bigint() ||
+                     cassType == DataType.counter() ||
+                     cassType == DataType.varint())     sourcePA = new LongArray();
+            else if (cassType == DataType.cfloat())     sourcePA = new FloatArray();
+            else if (cassType == DataType.cdouble() ||
+                     cassType == DataType.decimal())    sourcePA = new DoubleArray();
+            else if (cassType == DataType.timestamp()) {sourcePA = new DoubleArray();
+                isTimestamp = true;
+                addAtts.add("ioos_category", "Time");
+                addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");
+            } else                                      sourcePA = new StringArray(); //everything else
+
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+
             //lie, to trigger catching LLAT
             if (     destName.equals(EDV.LON_NAME))   sourceAtts.add("units", EDV.LON_UNITS);
             else if (destName.equals(EDV.LAT_NAME))   sourceAtts.add("units", EDV.LAT_UNITS);
             else if (destName.equals(EDV.ALT_NAME))   sourceAtts.add("units", EDV.ALT_UNITS);
             else if (destName.equals(EDV.DEPTH_NAME)) sourceAtts.add("units", EDV.DEPTH_UNITS);
-            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+            addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                sourceAtts, null, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
+                sourceAtts, addAtts, sourceName,
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+
             //but make it real here, and undo the lie
             if (     destName.equals(EDV.LON_NAME))   {
                 addAtts.add("units", EDV.LON_UNITS);
@@ -1751,29 +1807,13 @@ public class EDDTableFromCassandra extends EDDTable{
             }
             //time units already done above for all timestamp vars
 
-            //https://stackoverflow.com/questions/34160748/upgrading-calls-to-datastax-java-apis-that-are-gone-in-3
-            isList[col] = cassType.getName() == DataType.Name.LIST;
-            //String2.log(sourceName + " isList=" + isList[col] + " javaClass=" + cassType.asJavaClass());
-            if (isList[col])
-                cassType = cassType.getTypeArguments().get(0); //the element type
+            dataSourceTable.addColumn(col, sourceName, sourcePA, sourceAtts);
+            dataAddTable.addColumn(   col, destName,   destPA,   addAtts);
 
-            if      (cassType == DataType.cboolean())   pa = new ByteArray();
-            else if (cassType == DataType.cint())       pa = new IntArray();
-            else if (cassType == DataType.bigint() ||
-                     cassType == DataType.counter() ||
-                     cassType == DataType.varint())     pa = new LongArray();
-            else if (cassType == DataType.cfloat())     pa = new FloatArray();
-            else if (cassType == DataType.cdouble() ||
-                     cassType == DataType.decimal())    pa = new DoubleArray();
-            else if (cassType == DataType.timestamp()) {pa = new DoubleArray();
-                addAtts.add("ioos_category", "Time");
-                addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");
-            } else                                      pa = new StringArray(); //everything else
+            //add missing_value and/or _FillValue if needed
+            //but for Cassandra, I think no data, so no way to see mv's
+            addMvFvAttsIfNeeded(destName, destPA, sourceAtts, addAtts);
 
-            dataSourceTable.addColumn(col, sourceName, pa, sourceAtts);
-
-            dataAddTable.addColumn(col, destName, 
-                makeDestPAForGDX(pa, sourceAtts), addAtts);
         }
 
         //tryToFindLLAT
@@ -1962,7 +2002,9 @@ expected =
 "    AND speculative_retry = '99PERCENTILE'\n" +
 "    AND min_index_interval = 128\n" +
 "    AND max_index_interval = 2048\n" +
-"    AND crc_check_chance = 1.0;\n" +
+"    AND crc_check_chance = 1.0\n" + 
+"    AND cdc = false\n" +                      //added this 2018-08-10 with move to Lenovo
+"    AND memtable_flush_period_in_ms = 0;\n" + //added this 2018-08-30 with move to Lenovo
 "\n" +
 "CREATE INDEX ctext_index ON bobkeyspace.bobtable (ctext);\n" +
 "\n" +
@@ -1989,7 +2031,9 @@ expected =
 "    AND speculative_retry = '99PERCENTILE'\n" +
 "    AND min_index_interval = 128\n" +
 "    AND max_index_interval = 2048\n" +
-"    AND crc_check_chance = 1.0;\n";
+"    AND crc_check_chance = 1.0\n" +
+"    AND cdc = false\n" +                     //added this 2018-08-10 with move to Lenovo 
+"    AND memtable_flush_period_in_ms = 0;\n"; //added this 2018-08-30 with move to Lenovo 
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //generate the datasets.xml for one table
@@ -2042,8 +2086,8 @@ expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
@@ -2055,7 +2099,7 @@ expected =
 "        <att name=\"keywords\">bob, bobtable, canada, cascii, cassandra, cboolean, cbyte, cdecimal, cdouble, cfloat, cint, clong, cmap, cset, cshort, ctext, currents, cvarchar, data, date, depth, deviceid, networks, ocean, sampletime, test, time, title, u, v, velocity, vertical, w</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, time</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">The Title for Bob&#39;s Cassandra Test Data (bobTable)</att>\n" +
@@ -2094,6 +2138,7 @@ expected =
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Sampletime</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2346,8 +2391,8 @@ expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
@@ -2359,7 +2404,7 @@ expected =
 "        <att name=\"keywords\">canada, cassandra, data, date, depth, deviceid, latitude, longitude, networks, ocean, sampletime, static, test, time, u, v</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, time, latitude, longitude</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">Cassandra Static Test</att>\n" +
@@ -2398,6 +2443,7 @@ expected =
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Sampletime</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2664,7 +2710,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -2694,9 +2740,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
+//2018-08-10 disappeared with move to Lenovo:
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,10.7,-7.11,-7.12,-7.13\n" +
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,20.7,0.0,NaN,0.0\n" +
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,30.7,7.11,7.12,7.13\n" +
@@ -2721,8 +2768,9 @@ expected =
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\"\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
-"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n"; 
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2738,8 +2786,9 @@ expected =
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
-"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2793,7 +2842,8 @@ expected =
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
-"1001,\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,\n" +
 "1001,ascii1\n" +
 "1001,ascii2\n" +
 "1001,ascii3\n"; 
@@ -2812,7 +2862,8 @@ expected =
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
-"1001,2014-11-02T02:02:03Z,\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\n" +
 "1001,2014-11-01T01:02:03Z,ascii1\n" +
 "1001,2014-11-02T01:02:03Z,ascii1\n" +
 "1001,2014-11-01T02:02:03Z,ascii2\n" +
@@ -2870,9 +2921,10 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
@@ -2888,9 +2940,10 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
@@ -2915,20 +2968,21 @@ expected =
 
             //subset cboolean=1     
             query = "&cboolean=1";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
-                tedd.className() + "_boolean1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
-"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
-",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            if (pauseBetweenTests)
-                String2.pressEnterToContinue(
-                    "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats."); 
+//            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+//                tedd.className() + "_boolean1", ".csv"); 
+//            results = String2.directReadFrom88591File(dir + tName);
+//            expected =  
+//2018-08-10 disappeared with move to Lenovo
+//"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+//",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
+//            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+//            if (pauseBetweenTests)
+//                String2.pressEnterToContinue(
+//                    "\nTest query=" + query + "\n" +
+//                    "Paused to allow you to check the stats."); 
 
             //subset regex on set
             query = "&cset=~\".*set73.*\"";
@@ -3103,8 +3157,9 @@ expected =
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,ascii3\n" +
-"1001,2014-11-02T01:02:03Z,ascii1\n" +
-"1001,2014-11-02T02:02:03Z,\n"; 
+"1001,2014-11-02T01:02:03Z,ascii1\n";
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3307,7 +3362,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -3336,10 +3391,11 @@ expected =
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,30.3,3.11,3.12,3.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n";
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
+//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3356,8 +3412,9 @@ expected =
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\"\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
-"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3373,8 +3430,9 @@ expected =
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
-"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3390,7 +3448,8 @@ expected =
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
-"1001,\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,\n" +
 "1001,ascii1\n" +
 "1001,ascii2\n" +
 "1001,ascii3\n"; 
@@ -3409,7 +3468,8 @@ expected =
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
-"1001,2014-11-02T02:02:03Z,\n" +
+//2018-08-10 disappeared with move to Lenovo
+//"1001,2014-11-02T02:02:03Z,\n" +
 "1001,2014-11-01T01:02:03Z,ascii1\n" +
 "1001,2014-11-02T01:02:03Z,ascii1\n" +
 "1001,2014-11-01T02:02:03Z,ascii2\n" +
@@ -3666,7 +3726,7 @@ expected =
 "    Float64 Northernmost_Northing 34.0;\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
 "    Float64 Southernmost_Northing 33.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"deviceid, date, latitude, longitude\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Cassandra Static Test\";\n" +
@@ -3785,6 +3845,11 @@ expected =
 
         //tests usually run       
 /* for releases, this line should have open/close comment */
+        String s = String2.getStringFromSystemIn(
+            "\nThe tests of Cassandra require that Cassandra be running.\n" +
+            "Continue (y or Enter) or skip (s)? ");
+        if (s.startsWith("s"))
+            return;
         testGenerateDatasetsXml();
         testBasic(false); //pauseBetweenTests
         testMaxRequestFraction(false);  //pauseBetweenTests

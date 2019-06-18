@@ -72,16 +72,16 @@ files which follow these conventions are:
 <p>See the <a rel="bookmark" href="#Spreadsheets">Spreadsheet</a>
   section below for more information.
 
-<p><a class="selfLink" id="Streamable" href="#Streamable" rel="bookmark"><strong>Streamable</strong></a> - 
+<p><a class="selfLink" id="Streamable" href="#Streamable" rel="bookmark"><strong>Streamable</strong></a> &mdash; 
 Like CSV files in general, NCCSV files are streamable. 
 Thus, if an NCSV is generated on-the-fly by a data server such as 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
 >ERDDAP</a>, 
 the server can start to stream data to the requester before all of the data
-has been gathered. This is a useful and desireable feature. NetCDF files,
+has been gathered. This is a useful and desirable feature. NetCDF files,
 by contrast, are not streamable.
 
-<p><a class="selfLink" id="ERDDAP" href="#ERDDAP" rel="bookmark"><strong>ERDDAP</strong></a> - 
+<p><a class="selfLink" id="ERDDAP" href="#ERDDAP" rel="bookmark"><strong>ERDDAP</strong></a> &mdash; 
 This specification is designed so that NCCSV files and the .nc files
 that can be created from them can be used by an 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
@@ -101,7 +101,7 @@ and variable attributes, mostly based on CF and ACDD attributes (see
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes</a>).
 
-<p><a class="selfLink" id="Balance" href="#Balance" rel="bookmark"><strong>Balance</strong></a> - 
+<p><a class="selfLink" id="Balance" href="#Balance" rel="bookmark"><strong>Balance</strong></a> &mdash; 
 The design of the NCCSV format is a balance of several requirements:
 
 <ul>
@@ -129,32 +129,32 @@ see the related specification. Notably, this includes:
 href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
 >http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a> .
+        title="This link to an external website does not constitute an endorsement."></a> .
 <li>The Climate and Forecast (CF) metadata standard: 
 <br><a rel="bookmark"
 href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
 >http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a> .
+        title="This link to an external website does not constitute an endorsement."></a> .
 <li>The NetCDF User Guide (NUG):
 <br><a rel="bookmark" 
 href="http://www.unidata.ucar.edu/software/netcdf/docs/user_guide.html"
 >http://www.unidata.ucar.edu/software/netcdf/docs/user_guide.html<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a> .
+        title="This link to an external website does not constitute an endorsement."></a> .
 <li>The NetCDF software libraries like NetCDF-java and NetCDF-c: 
 <br><a rel="bookmark" 
 href="https://www.unidata.ucar.edu/software/netcdf/"
 >https://www.unidata.ucar.edu/software/netcdf/<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a> .
+        title="This link to an external website does not constitute an endorsement."></a> .
 These libraries cannot read NCCSV files, 
 but they can read .nc files created from NCCSV files. 
 <li>JSON: 
-<a rel="bookmark" href="http://www.json.org/"
->http://www.json.org/<img 
+<a rel="bookmark" href="https://www.json.org/"
+>https://www.json.org/<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>
+        title="This link to an external website does not constitute an endorsement."></a>
 </ul>
 
 <p><a class="selfLink" id="Notation" href="#Notation" rel="bookmark"><strong>Notation</strong></a> -
@@ -178,7 +178,7 @@ ERDDAP reads and writes NCCSV files with the ISO-8859-1 charset.
 or carriageReturn plus newline (\r\n) (which is common on Windows computers)
 as end-of-line markers, but not both.
 
-<p><a class="selfLink" id="nccsvMetadata" href="#nccsvMetadata" rel="bookmark">.nccsvMetadata</a> - 
+<p><a class="selfLink" id="nccsvMetadata" href="#nccsvMetadata" rel="bookmark">.nccsvMetadata</a> &mdash; 
 When both the creator and the reader are expecting it, 
 it is also possible and sometimes useful to make a variant of an NCCSV file
 which contains just the metadata section (including the <kbd>*END_METADATA*</kbd> line).
@@ -250,7 +250,7 @@ All attribute names must begin with a 7-bit ASCII letter or
 underscore and be composed of 7-bit ASCII letters, underscores,
 and 7-bit ASCII digits. 
 
-<p><a class="selfLink" id="SCALAR" href="#SCALAR" rel="bookmark"><kbd><strong>*SCALAR*</strong></kbd></a> - 
+<p><a class="selfLink" id="SCALAR" href="#SCALAR" rel="bookmark"><kbd><strong>*SCALAR*</strong></kbd></a> &mdash; 
 The special attributeName <kbd>*SCALAR*</kbd>
 can be used to create a
 scalar data variable and define its value. 
@@ -359,7 +359,7 @@ same data type and separated by commas, for example:
     href="https://en.wikipedia.org/wiki/Unicode"
     >https://en.wikipedia.org/wiki/Unicode<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a> 
+        title="This link to an external website does not constitute an endorsement."></a> 
     to find the hexadecimal numbers associated with specific Unicode characters,
     or use a software library.
   <li>If the String has a space at the beginning or end, or includes <kbd>"</kbd>
@@ -371,12 +371,13 @@ same data type and separated by commas, for example:
     We recommend: when in doubt, enclose the entire String in double quotes. 
     Spaces at the beginning or end of a String are strongly discouraged.
   <li>For now, the use of characters greater than #255 is discouraged. 
-    ERDDAP supports them internally and in some output file types 
-    (e.g., .json and .nccsv). 
-    NetCDF-3 files do not support such characters because NetCDF files 
+    NCCSV supports them. ERDDAP supports them internally. Some output file types 
+    support them (e.g., .json and .nccsv). 
+    But many output file types don't support them.
+    For example, NetCDF-3 files do not support such characters because NetCDF files 
     use 1-byte characters and CF currently does not have a system for 
     specifying how Unicode characters are encoded in NetCDF Strings (e.g., UTF-8).
-    This will probably change.
+    This will probably improve over time.
     <br>&nbsp;
   </ul>
 <li><a class="selfLink" id="char" href="#char" rel="bookmark"><kbd><strong>char</strong></kbd></a>
@@ -397,13 +398,13 @@ same data type and separated by commas, for example:
   is currently discouraged. 
 </ul>
 
-<p><a class="selfLink" id="Suffix" href="#Suffix" rel="bookmark"><strong>Suffix</strong></a> - 
+<p><a class="selfLink" id="Suffix" href="#Suffix" rel="bookmark"><strong>Suffix</strong></a> &mdash; 
 Note that in the attributes section of an NCCSV file, 
 all numeric attribute values must have a suffix letter (e.g., 'b')
 to identify the numeric data type (e.g., byte). 
 But in the data section of an NCCSV file,
 numeric data values must never have these suffix letters 
-(with the exception of 'L' for long integers) -- 
+(with the exception of 'L' for long integers) &mdash; 
 the data type is specified by the <kbd>*DATA_TYPE*</kbd> attribute for the variable.
 
 
@@ -555,34 +556,34 @@ String <kbd>*DATA_TYPE*</kbd> attribute and a <kbd>units</kbd> attribute
 which specifies a dateTime pattern as specified by the 
 Java DateTimeFormatter class 
 <br>(<a rel="bookmark"
-href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html"
-     >https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html<img 
+href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html"
+     >https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>). For example, 
+        title="This link to an external website does not constitute an endorsement."></a>). For example, 
 <br><kbd>time,units,yyyy-MM-dd'T'HH:mm:ssZ</kbd>
 <br>All dateTime values for a given data variable must use the same format.
 <br>In most cases, the dateTime pattern you need for the <kbd>units</kbd> 
 attribute will be a variation of one of these formats:
 
 <ul>
-<li>yyyy-MM-dd'T'HH:mm:ss.SSSZ - which is the ISO 8601:2004(E) dateTime format. 
+<li>yyyy-MM-dd'T'HH:mm:ss.SSSZ &mdash; which is the ISO 8601:2004(E) dateTime format. 
 You may need a shortened version of this,
 e.g., yyyy-MM-dd'T'HH:mm:ssZ (the only recommended format) or yyyy-MM-dd.
 If you are changing the format of your dateTime values,
 NCCSV strongly recommends that you change to this format (perhaps shortened).
 This is the format that ERDDAP will use when it writes NCCSV files.
-<li>yyyyMMddHHmmss.SSS - which is the compact version of the ISO 8601:2004
+<li>yyyyMMddHHmmss.SSS &mdash; which is the compact version of the ISO 8601:2004
 dateTime format. You may need a shortened version of this, e.g., yyyyMMdd.
-<li>M/d/yyyy H:mm:ss.SSS - which handles US-style dates and dateTimes like
+<li>M/d/yyyy H:mm:ss.SSS &mdash; which handles US-style dates and dateTimes like
 "3/23/2017 16:22:03.000". You may need a shortened version of this,
 e.g., M/d/yyyy .
-<li>yyyyDDDHHmmssSSS - which is the year plus the zero-padded
+<li>yyyyDDDHHmmssSSS &mdash; which is the year plus the zero-padded
 day of the year (e.g, 001 = Jan 1, 365 = Dec 31 in a non-leap year;
 this is sometimes erroneously called the Julian date).
 You may need a shortened version of this, e.g., yyyyDDD .
 </ul>
 
-<p><a class="selfLink" id="Precision" href="#Precision" rel="bookmark">Precision</a> - 
+<p><a class="selfLink" id="Precision" href="#Precision" rel="bookmark">Precision</a> &mdash; 
 When a software library converts an .nc file into an NCCSV file,
 all dateTime values will be written as Strings with the
 ISO 8601:2004(E) dateTime format, e.g., 1970-01-01T00:00:00Z . 
@@ -592,9 +593,9 @@ You can control the precision with the ERDDAP-specific attribute
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision</a>.
 
-<p><a class="selfLink" id="TimeZone" href="#TimeZone" rel="bookmark">Time Zone</a> - 
+<p><a class="selfLink" id="TimeZone" href="#TimeZone" rel="bookmark">Time Zone</a> &mdash; 
 The default time zone for dateTime values is the Zulu (or GMT) 
-time zone, which has no daylight savings time periods. 
+time zone, which has no daylight saving time periods. 
 If a dateTime variable has dateTime values from a different time zone,
 you must specify this with the ERDDAP-specific attribute <kbd>time_zone</kbd>.
 This is a requirement for ERDDAP (see 
@@ -619,7 +620,7 @@ An NCCSV file may contain CF Discrete Sampling Geometry
 <br>(<a rel="bookmark" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
 >http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>) data. It is the attributes that make this work:
+        title="This link to an external website does not constitute an endorsement."></a>) data. It is the attributes that make this work:
 
 <ol>
 <li>As required by CF, the NCCSV file must include a line in the 
@@ -654,12 +655,12 @@ Here is a sample file which demonstrates many of the features of an NCCSV file:
 *GLOBAL*,creator_type,person
 *GLOBAL*,creator_url,https://www.pfeg.noaa.gov
 *GLOBAL*,featureType,trajectory
-*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html
+*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html
 *GLOBAL*,institution,"NOAA NMFS SWFSC ERD, NOAA PMEL"
 *GLOBAL*,license,"""NCCSV Demonstration"" by Bob Simons and Steve Hankin is
     licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ ."
 *GLOBAL*,keywords,"NOAA, sea, ship, sst, surface, temperature, trajectory"
-*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29
+*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55
 *GLOBAL*,subsetVariables,"ship"
 *GLOBAL*,summary,"This is a paragraph or two describing the dataset."
 *GLOBAL*,title,"NCCSV Demonstration"
@@ -841,15 +842,26 @@ To import an NCCSV file into Google Sheets:
   Two ways to check are:
   <ul>
   <li>Print the contents of the .nc file with ncdump 
-  (<a  href="http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1/netcdf/ncdump.html"
-     >http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1/netcdf/ncdump.html<img 
+  <br>(<a  href="https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html"
+     >https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>
+        title="This link to an external website does not constitute an endorsement."></a>
      ).
   <li>View the contents of the data in ERDDAP.
   </ul>
 </ul>
 
+<br>&nbsp;
+<hr>
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2> 
+Questions, comments, suggestions?  Please send an email to 
+  <kbd>bob dot simons at noaa dot gov</kbd> .
+
+<br>&nbsp;
+<hr>
+<p>ERDDAP, Version 2.00
+<br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 </div>
 </body>
 </html>

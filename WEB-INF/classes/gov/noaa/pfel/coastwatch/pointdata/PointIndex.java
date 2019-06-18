@@ -154,18 +154,21 @@ public class PointIndex  {
         this.indexFileName = indexFileName;
         DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
             new FileOutputStream(indexFileName)));
-        //write the sorted index0 values to the file
-        rowsStartAt = 0;
-        for (int row = 0; row < nDataRows; row++) {
-            rowsStartAt += index0PA.writeDos(dos, rank[row]);
-            if (!Double.isNaN(index0PA.getDouble(rank[row])))
-                lastFiniteSortedIndex0 = row;
+        try {
+            //write the sorted index0 values to the file
+            rowsStartAt = 0;
+            for (int row = 0; row < nDataRows; row++) {
+                rowsStartAt += index0PA.writeDos(dos, rank[row]);
+                if (!Double.isNaN(index0PA.getDouble(rank[row])))
+                    lastFiniteSortedIndex0 = row;
+            }
+            //write the related row# in index file
+            if (verbose) String2.log("  save related row# in index file"); 
+            for (int row = 0; row < nDataRows; row++) 
+                dos.writeInt(rank[row]);
+        } finally {
+            dos.close();
         }
-        //write the related row# in index file
-        if (verbose) String2.log("  save related row# in index file"); 
-        for (int row = 0; row < nDataRows; row++) 
-            dos.writeInt(rank[row]);
-        dos.close();
         index0ElementType = index0PA.elementClass();
 
         //10,000,000 takes 6.7s to write, 22.6s total
@@ -271,66 +274,73 @@ public class PointIndex  {
 
         //search sorted index0 for first and last rows in range
         long tTime = System.currentTimeMillis();
+        int firstIndex0, lastIndex0;
         RandomAccessFile raf = new RandomAccessFile(indexFileName, "r");
-        int firstIndex0 = (int)PrimitiveArray.rafFirstGAE(raf, index0ElementType, //safe since reading an int
-            0,  //byte in file that values start at 
-            0, lastFiniteSortedIndex0, desiredMin[0], 5); //precision=5
-        if (firstIndex0 < 0)
-            return rowOk;
-        int lastIndex0 = (int)PrimitiveArray.rafLastLAE(raf, index0ElementType, //safe since reading an int
-            0,  //byte in file that values start at 
-            firstIndex0, lastFiniteSortedIndex0, desiredMax[0], 5); //precision=5
-        raf.close();
+        try {
+            firstIndex0 = (int)PrimitiveArray.rafFirstGAE(raf, index0ElementType, //safe since reading an int
+                0,  //byte in file that values start at 
+                0, lastFiniteSortedIndex0, desiredMin[0], 5); //precision=5
+            if (firstIndex0 < 0)
+                return rowOk;
+            lastIndex0 = (int)PrimitiveArray.rafLastLAE(raf, index0ElementType, //safe since reading an int
+                0,  //byte in file that values start at 
+                firstIndex0, lastFiniteSortedIndex0, desiredMax[0], 5); //precision=5
+        } finally {
+            raf.close();
+        }
         boolean fewTimesOk = (lastIndex0 - firstIndex0) < nDataRows / 2;
         String2.log("raf lookup firstIndex0=" + firstIndex0 +
             " lastIndex0=" + lastIndex0 + " fewTimesOk=" + fewTimesOk + 
             " time=" + (System.currentTimeMillis() - tTime) + "ms");
 
         //2 ways to set rowOk; to minimize lookups in indexFile 
-        DataInputStream dis = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(indexFileName)));
-        if (fewTimesOk) {
-            //few times are ok 
-            //start with rowOk all false
-            //set rows with true times to true
-            int skip = rowsStartAt + firstIndex0 * 4;
-            while (skip > 0) skip -= dis.skip(skip);
-            for (int i = firstIndex0; i <= lastIndex0; i++) 
-                rowOk.set(dis.readInt());
+        DataInputStream dis = new DataInputStream(
+            File2.getDecompressedBufferedInputStream(indexFileName));
+        try {
+            if (fewTimesOk) {
+                //few times are ok 
+                //start with rowOk all false
+                //set rows with true times to true
+                int skip = rowsStartAt + firstIndex0 * 4;
+                while (skip > 0) skip -= dis.skip(skip);
+                for (int i = firstIndex0; i <= lastIndex0; i++) 
+                    rowOk.set(dis.readInt());
 
-            //set rows of false groups to false
-            int group = groupOk.nextClearBit(0);
-            while (group >= 0 && group < nGroups) {
-                int groupFirstRow = firstRowIA.array[group]; 
-                int groupLastRow  = groupFirstRow + nFiniteIA.array[group]; //exclusive
-                rowOk.clear(groupFirstRow, groupLastRow);
-                group = groupOk.nextClearBit(group + 1);
-            }
-        } else {
-            //lots of times are ok 
-            //start with rowOk all false
-            //set rows of true groups to true
-            int group = groupOk.nextSetBit(0);
-            while (group >= 0) {
-                int groupFirstRow = firstRowIA.array[group]; 
-                int groupLastRow  = groupFirstRow + nFiniteIA.array[group]; //exclusive
-                rowOk.set(groupFirstRow, groupLastRow);
-                group = groupOk.nextSetBit(group + 1);
-            }
+                //set rows of false groups to false
+                int group = groupOk.nextClearBit(0);
+                while (group >= 0 && group < nGroups) {
+                    int groupFirstRow = firstRowIA.array[group]; 
+                    int groupLastRow  = groupFirstRow + nFiniteIA.array[group]; //exclusive
+                    rowOk.clear(groupFirstRow, groupLastRow);
+                    group = groupOk.nextClearBit(group + 1);
+                }
+            } else {
+                //lots of times are ok 
+                //start with rowOk all false
+                //set rows of true groups to true
+                int group = groupOk.nextSetBit(0);
+                while (group >= 0) {
+                    int groupFirstRow = firstRowIA.array[group]; 
+                    int groupLastRow  = groupFirstRow + nFiniteIA.array[group]; //exclusive
+                    rowOk.set(groupFirstRow, groupLastRow);
+                    group = groupOk.nextSetBit(group + 1);
+                }
 
-            //set rows with false times to false
-            //rows before firstIndex0 are false
-            int skip = rowsStartAt;
-            while (skip > 0) skip -= dis.skip(skip);
-            for (int i = 0; i < firstIndex0; i++) 
-                rowOk.clear(dis.readInt());
-            //rows after lastIndex0 are false
-            skip = (lastIndex0 - firstIndex0 + 1) * 4;
-            while (skip > 0) skip -= dis.skip(skip);
-            for (int i = lastIndex0 + 1; i < nDataRows; i++) 
-                rowOk.set(dis.readInt());
+                //set rows with false times to false
+                //rows before firstIndex0 are false
+                int skip = rowsStartAt;
+                while (skip > 0) skip -= dis.skip(skip);
+                for (int i = 0; i < firstIndex0; i++) 
+                    rowOk.clear(dis.readInt());
+                //rows after lastIndex0 are false
+                skip = (lastIndex0 - firstIndex0 + 1) * 4;
+                while (skip > 0) skip -= dis.skip(skip);
+                for (int i = lastIndex0 + 1; i < nDataRows; i++) 
+                    rowOk.set(dis.readInt());
+            }
+        } finally {
+            dis.close();
         }
-        dis.close();
 
         String2.log("PointIndex.subset time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);

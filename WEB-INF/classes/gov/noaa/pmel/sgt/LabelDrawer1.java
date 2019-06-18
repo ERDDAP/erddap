@@ -112,14 +112,16 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
       Graphics gbuf = buf.getGraphics();
 
       //bob simons added 2010-12-15   but irrelevant since LabelDrawer2 is used
-      try {
-          //if possible, set RenderingHints
-          //System.out.println("1! setting renderingHints");
-          Graphics2D g2 = (Graphics2D)gbuf;
-          g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,     RenderingHints.VALUE_ANTIALIAS_ON); 
-      } catch (Throwable t) {
-          //System.out.println("1! couldn't set renderingHints:" + t.toString());
-      }
+      //2019-02-08 This no longer sets RenderingHints.VALUE_ANTIALIAS_ON. 
+      //  It uses current RenderingHints from the Graphics object.
+      //try {
+      //    //if possible, set RenderingHints
+      //    //System.out.println("1! setting renderingHints");
+      //    Graphics2D g2 = (Graphics2D)gbuf;
+      //    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,     RenderingHints.VALUE_ANTIALIAS_ON); 
+      //} catch (Throwable t) {
+      //    //System.out.println("1! couldn't set renderingHints:" + t.toString());
+      //}
 
       gbuf.setFont(g.getFont());
       //

@@ -463,8 +463,14 @@ public class OpendapHelper  {
     public static PrimitiveArray[] getPrimitiveArrays(DConnect dConnect, String query) 
             throws Exception {
         long time = System.currentTimeMillis();
+        StringBuilder sb = new StringBuilder(query);
+        String2.replaceAll(sb, "[", "%5B"); 
+        String2.replaceAll(sb, "]", "%5D"); 
+        query = sb.toString();
         if (verbose)
-            String2.log("    OpendapHelper.getPrimitiveArrays " + query);
+            String2.log("    OpendapHelper.getPrimitiveArrays " + query
+            //+ "\n" + MustBe.stackTrace()
+            );
         DataDDS dataDds = dConnect.getData(query, null);
         if (verbose)
             String2.log("    OpendapHelper.getPrimitiveArrays done. TIME=" + 
@@ -995,7 +1001,7 @@ public class OpendapHelper  {
     /** 
      * This finds the vars with the most dimensions.
      * If there are more than 1 groups with the same number of dimensions,
-     * but different dimensions, the first group will be be found.
+     * but different dimensions, the first group will be found.
      *
      * <p>Currently, this won't find variables in a sequence.
      *
@@ -1062,7 +1068,7 @@ public class OpendapHelper  {
         /*
         //test of Sequence DAP dataset        
         String2.log("\n*** test of Sequence DAP dataset");
-        String sequenceUrl = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
+        String sequenceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
         dConnect = new DConnect(sequenceUrl, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
@@ -1073,7 +1079,8 @@ public class OpendapHelper  {
 
 
         //test of DArray DAP dataset
-        String dArrayUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+//2018-09-13 https: works in browser by not yet in Java
+        String dArrayUrl = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
         try {
         dConnect = new DConnect(dArrayUrl, true, 1, 1);
@@ -1084,7 +1091,8 @@ public class OpendapHelper  {
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                MustBe.throwableToString(t)); 
+                MustBe.throwableToString(t) +
+                "Known problem with https://tds.coaps.fsu.edu: \"unable to find valid certification path\"."); 
         }
 
 
@@ -1160,7 +1168,7 @@ public class OpendapHelper  {
         /*
         //test of Sequence DAP dataset        
         String2.log("\n*** test of Sequence DAP dataset");
-        url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
         dConnect = new DConnect(url, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
@@ -1171,6 +1179,7 @@ public class OpendapHelper  {
 
 
         //test of DArray DAP dataset
+//2018-09-13 https: works in browser by not yet in Java
         url = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + url);
         try {
@@ -1189,7 +1198,7 @@ public class OpendapHelper  {
 
         //***** test of DGrid DAP dataset
         String2.log("\n*** test of DGrid DAP dataset");
-        url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
         dConnect = new DConnect(url, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
@@ -1198,6 +1207,7 @@ public class OpendapHelper  {
         Test.ensureEqual(results, expected, "results=" + results);
 
         //***** test of NODC template dataset
+        try {
         String2.log("\n*** test of NODC template dataset");
         url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
         dConnect = new DConnect(url, true, 1, 1);
@@ -1209,10 +1219,14 @@ public class OpendapHelper  {
 "conductivity_qc, turbidity_qc, fluorescence_qc, instrument1, instrument2, " +
 "instrument3, ht_wgs84, ht_mllw, crs";
         Test.ensureEqual(results, expected, "results=" + results);
+        } catch (Exception e) {
+            String2.log("2018-06-18 file gone? server down? server decommissioned? ");
+            String2.pressEnterToContinue();
+        }
 
         //***** test of sequence dataset  (no vars should be found
         String2.log("\n*** test of sequence dataset");
-        url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatLY";
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatLY";
         dConnect = new DConnect(url, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
@@ -1276,11 +1290,10 @@ public class OpendapHelper  {
 
         //*** make ncOut.    If createNew fails, no clean up needed.
         File2.makeDirectory(File2.getDirectory(fullFileName));
+        boolean nc3Mode = true;
         NetcdfFileWriter ncOut =
             NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3,
                 fullFileName + randomInt);
-        boolean nc3Mode = true;
-
         try {
             Group rootGroup = ncOut.addGroup(null, "");
             ncOut.setFill(false);
@@ -1464,6 +1477,7 @@ public class OpendapHelper  {
 
             //if close throws Throwable, it is trouble
             ncOut.close(); //it calls flush() and doesn't like flush called separately
+            ncOut = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -1471,12 +1485,13 @@ public class OpendapHelper  {
             //diagnostic
             if (verbose) String2.log("  OpendapHelper.allDapToNc finished.  TIME=" + 
                 Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n");
-            //String2.log(NcHelper.dumpString(fullFileName, false));
+            //String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
         } catch (Throwable t) {
             //try to close the file
             try {
-                ncOut.close(); //it calls flush() and doesn't like flush called separately
+                if (ncOut != null)
+                    ncOut.close(); //it calls flush() and doesn't like flush called separately
             } catch (Throwable t2) {
                 //don't care
             }
@@ -1657,7 +1672,7 @@ public class OpendapHelper  {
             fileName = "profileWodObservedLevels.nc";
             url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/profile/wodObservedLevels.nc";
             allDapToNc(url, dir + fileName);
-            results = NcHelper.dumpString(dir + fileName, false);
+            results = NcHelper.ncdump(dir + fileName, "-h");
             String2.log(results);
             //expected = "zztop";
             //Test.ensureEqual(results, expected, "");
@@ -2091,6 +2106,7 @@ public class OpendapHelper  {
 
             //if close throws Throwable, it is trouble
             ncOut.close(); //it calls flush() and doesn't like flush called separately
+            ncOut = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -2098,12 +2114,13 @@ public class OpendapHelper  {
             //diagnostic
             if (verbose) String2.log("  OpendapHelper.dapToNc finished.  TIME=" + 
                 Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n");
-            //String2.log(NcHelper.dumpString(fullFileName, false));
+            //String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
         } catch (Throwable t) {
             //try to close the file
             try {
-                ncOut.close(); //it calls flush() and doesn't like flush called separately
+                if (ncOut != null)
+                    ncOut.close(); //it calls flush() and doesn't like flush called separately
             } catch (Throwable t2) {
                 //don't care
             }
@@ -2178,7 +2195,7 @@ public class OpendapHelper  {
                 //note that request for zztop is ignored (because not found)
                 new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
                 fileName, false); //jplMode
-            results = NcHelper.dumpString(fileName, true); //printData
+            results = NcHelper.ncdump(fileName, ""); //printData
             expected = 
 "netcdf testDapToNcDArray.nc {\n" +
 "  dimensions:\n" +
@@ -2315,7 +2332,7 @@ public class OpendapHelper  {
             dapToNc(dArraySubsetUrl, 
                 new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, "[0:10:99]", //projection
                 fileName, false); //jplMode
-            results = NcHelper.dumpString(fileName, true); //printData
+            results = NcHelper.ncdump(fileName, ""); //printData
             expected = 
 "netcdf testDapToNcDArraySubset.nc {\n" +
 " dimensions:\n" +
@@ -2468,12 +2485,12 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         fileName = SSR.getTempDirectory() + "testDapToNcDGrid.nc";
-        String dGridUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        String dGridUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
         dapToNc(dGridUrl, 
             //note that request for zztop is ignored (because not found)
             new String[] {"zztop", "x_wind", "y_wind"}, "[5][0][0:200:1200][0:200:2880]", //projection
             fileName, false); //jplMode
-        results = NcHelper.dumpString(fileName, true); //printData
+        results = NcHelper.ncdump(fileName, ""); //printData
         expected = 
 "netcdf testDapToNcDGrid.nc {\n" +
 "  dimensions:\n" +
@@ -2583,7 +2600,7 @@ expected =
 "  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T";  // + time " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
-//today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+//today + " https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 String expected2 = 
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
@@ -2613,11 +2630,11 @@ String expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT SeaWinds, 0.25°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.125°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "time =\n" +
@@ -2658,7 +2675,7 @@ String expected2 =
 "  }\n" +
 "}\n";
 /*From .asc request:
-http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.asc?x_wind[5][0][0:200:1200][0:200:2880],y_wind[5][0][0:200:1200][0:200:2880]
+https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.asc?x_wind[5][0][0:200:1200][0:200:2880],y_wind[5][0][0:200:1200][0:200:2880]
 x_wind.x_wind[1][1][7][15]
 [0][0][0], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0
 [0][0][1], 6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454, 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372, 5.775274, 6.8520603
@@ -2688,7 +2705,7 @@ y_wind.y_wind[1][1][7][15]
             new String[] {"zztop", "x_wind", "y_wind", "latitude"}, 
             "[5][0][0:200:1200][0:200:2880]", //projection
             fileName, false); //jplMode
-        results = NcHelper.dumpString(fileName, false); //printData
+        results = NcHelper.ncdump(fileName, "-h"); //printData
         expected = 
 "netcdf testDapToNcDGrid1D2D.nc {\n" +
 "  dimensions:\n" +
@@ -2798,7 +2815,7 @@ y_wind.y_wind[1][1][7][15]
 "  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T"; //time https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
-//today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+//today + time " https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 expected2 = 
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
@@ -2828,13 +2845,12 @@ expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT SeaWinds, 0.25°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.125°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
-" data:\n" +
 "}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
         po = results.indexOf("  :infoUrl =");
@@ -2963,6 +2979,7 @@ expected2 =
 
         String2.log("\n***** OpendapHelper.test finished successfully");
         Math2.incgc(2000); //in a test
+        /* */
     } 
 
 

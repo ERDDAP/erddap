@@ -57,8 +57,8 @@ public class MimeUtil {
         public static final int deflate = 1;
         public static final int x_plain = 2;
 
-        static String contentDescription[]={"unknown", "dods_das", "dods_dds", "dods_data",
-                                "dods_error", "web_error"};
+        static String contentDescription[]={"unknown", "dods-das", "dods-dds", "dods-data", //2019-03-29 Bob changed from "dods_...
+                                "dods-error", "web-error"};
 
         static String encoding[]={"unknown", "deflate", "x-plain"};
 

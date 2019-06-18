@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -28,11 +29,13 @@ import gov.noaa.pfel.erddap.variable.EDV;
 /**
  * TableWriterOrderByMean provides a way summarize the response table's rows,
  * and just keep the row where the values hold the mean.
- * For example, you could use orderBy(\"stationID,time,1 day\") to get the mean
+ * For example, you could use orderBy(\"stationID,time/1day\") to get the mean
  * daily values for each station.
  *
- * <p>This doesn't do anything to missing values and doesn't assume they are
- * stored as NaN or fake missing values.
+ * <p>This doesn't include _FillValues or missing_values in the calculations.
+ *
+ * <p>This uses the incremental-averaging algorithm to calculate the means, e.g.,
+ * https://math.stackexchange.com/questions/106700/incremental-averageing
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2018-09-11
  * @author Rob Fuller (rob.fuller@marine.ie) 2018-09-11
@@ -50,17 +53,22 @@ public class TableWriterOrderByMean extends TableWriterAll {
     // used when calculating degree means at the end, one key for each row.
     protected final StringArray keymap = new StringArray();
     protected final Map<String,DegreesAccumulator> degreesMap = new HashMap<String,DegreesAccumulator>();
+
+    protected Attributes oColumnAtts[] = null; //from incoming table or edd
     
-	private int[] keyCols;
-	private BitSet isKeyCol;
-	private BitSet cannotMeanCol;
-	private BitSet degreesCol;
-	private BitSet wasDecimalCol;
-	private int timeCol = -1;
-	private boolean configured = false;
-	private Table meansTable;
-	private final Map<String,Table.Rounder> rounders = new HashMap<String,Table.Rounder>();
-	
+    private int[] keyCols;
+    private String cellMethods = null;
+    private BitSet isKeyCol;
+    private BitSet cannotMeanCol;
+    private BitSet degreesCol;  
+    private BitSet degreesTrueCol;
+    private BitSet wasDecimalCol;
+    private int timeCol = -1;
+    private boolean configured = false;
+    private Table meansTable;
+    private final Map<String,Table.Rounder> rounders = new HashMap<String,Table.Rounder>();
+
+    
 
     /**
      * The constructor.
@@ -79,16 +87,23 @@ public class TableWriterOrderByMean extends TableWriterAll {
         super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_MEAN_ERROR, tOrderByCsv);
-    	orderBy = new String[cols.length];
-        for(int col=0; col < cols.length; col++) {
-        	orderBy[col] = Table.deriveActualColumnName(cols[col]);
-        	if( orderBy[col] != cols[col]) {
-        		rounders.put(orderBy[col], Table.createRounder("orderByMean", cols[col]));
-        	}
+        orderBy = new String[cols.length];
+
+        for (int col=0; col < cols.length; col++) {
+            orderBy[col] = Table.deriveActualColumnName(cols[col]);
+            if (orderBy[col].equals(cols[col])) {
+                if (cols[col].equals("time")) 
+                    cellMethods = "time: mean";
+            } else {
+                rounders.put(orderBy[col], Table.createRounder("orderByMean", cols[col]));                
+                Matcher m = Calendar2.TIME_N_UNITS_PATTERN.matcher(cols[col]);
+                if (m.matches()) 
+                    cellMethods = "time: mean (interval: " + m.group(1) + " " + m.group(2) + ")"; //hard to include other info
+            }
         }
     }
 
-	/**
+    /**
      * This adds the current contents of table (a chunk of data) to the OutputStream.
      * This calls ensureCompatible each time it is called.
      * If this is the first time this is called, this does first time things
@@ -96,260 +111,315 @@ public class TableWriterOrderByMean extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs for processing, 
+     *   then back to destinationMV and FV when finished.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
-    	int nRows = table.nRows();
+        int nRows = table.nRows();
         if (nRows == 0) 
             return;
-        if(!configured) {
+        if (!configured) {
             configured = configure(table);// throws Exception
         }
-        StringBuilder sbKey = new StringBuilder();
+
         int nCols = table.nColumns();
+        for (int col = 0; col < nCols; col++) {
+            //table atts may not have info so get from columnAttributes[].
+            Attributes atts = oColumnAtts[col];
+            PrimitiveArray fv = atts.get("_FillValue");
+            PrimitiveArray mv = atts.get("missing_value");
+            if (fv != null || mv != null) 
+                table.getColumn(col).convertToStandardMissingValues(fv.getDouble(0), fv.getDouble(0));
+            //note that metadata hasn't been changed yet
+        }
+
+        StringBuilder sbKey = new StringBuilder();
         double[] roundedValue = new double[nCols];
         BitSet isRounded = new BitSet(nCols);
         ROW:
-        for(int row = 0; row < nRows; row++) {
-        	sbKey.setLength(0);
-        	for(int i=0; i<this.keyCols.length; i++) {
-        		int col = this.keyCols[i];
-        		PrimitiveArray column = table.getColumn(col);
-        		String columnName = table.getColumnName(col);
-        		if(column.isFloatingPointType() || column.isIntegerType()) {
-        			double value = column.getDouble(row);
-        			if(this.rounders.containsKey(columnName)) {
-        				if(value == Double.NaN) {
-        					// No value, cannot group by this...
-        					continue ROW;
-        				}
-        				value = this.rounders.get(columnName).round(value);
-        				isRounded.set(col);
-        				roundedValue[col] = value;
-        			}
-        			sbKey.append(value);
-        		}else {
-        			sbKey.append(column.getString(row));
-        		}
-        		sbKey.append(":");
-        	}
-        	String key = sbKey.toString();
-        	int[] counts = this.counts.get(key);
-        	if(counts == null) {
-        		counts = new int[nCols];
-        		int idx = this.counts.size();
-        		this.counts.put(key, counts);
-        		for(int col=0;col<nCols;col++) {
-            		PrimitiveArray column = table.getColumn(col);
-            		String value = column.getRawString(row);
-            		this.meansTable.getColumn(col).addString(value);
-        		}
-        		this.rowmap.put(key, idx);
-        		this.keymap.add(key);
-        	}
-        	int idx = this.rowmap.get(key);
-        	for(int col=0;col<nCols;col++) {
-        		PrimitiveArray column = table.getColumn(col);
-        		if(this.cannotMeanCol.get(col)) {
-        			// Keep the value only if all rows are the same.
-        			String value = column.getRawString(row);
-        			String prev = this.meansTable.getColumn(col).getRawString(idx);
-        			if(!("".equals(prev)||prev.equals(value))) {
-        				this.meansTable.setStringData(col, idx, "");
-        			}
-        			continue;
-        		}
-        		if(!(column.isFloatingPointType() || column.isIntegerType())){
-        			this.meansTable.setStringData(col, idx, column.getRawString(row));
-        			continue;
-        		}
-        		double value = isRounded.get(col) ? roundedValue[col] : table.getDoubleData(col, row);
-        		if(value == Double.NaN) {
-        			continue;
-        		}
-        		if(this.degreesCol.get(col)) {
-        			// is the value constant?
-        			if(counts[col] == 0) {
-        				this.meansTable.setDoubleData(col, idx, value);
-        				counts[col]++;
-        				continue;
-        			}
-        			double oldValue = this.meansTable.getDoubleData(col, idx);
-        			if(counts[col] > 0 && value == oldValue) {
-        				counts[col]++;
-        				continue;
-        			}
-        			if(counts[col]>0) {
-        				for(int k = 0; k< counts[col]; k++) {
-                			this.accumulateDegrees( key + ":" + col,oldValue);
-        				}
-        				counts[col] = -1;
-        			}
-        			this.accumulateDegrees( key + ":" + col,value);
-        			continue;
-        		}
-        		counts[col] += 1;
-        		if(counts[col] == 1) {
-        			this.meansTable.setDoubleData(col, idx, value);
-        			continue;
-        		}
-        		double mean = this.meansTable.getDoubleData(col, idx);
-        		mean = mean + (value-mean)/counts[col];
-        		this.meansTable.setDoubleData(col, idx, mean);
-        	}
+        for (int row = 0; row < nRows; row++) {
+            sbKey.setLength(0);
+            for (int i=0; i<keyCols.length; i++) {
+                int col = keyCols[i];
+                PrimitiveArray column = table.getColumn(col);
+                String columnName = table.getColumnName(col);
+                if (column.isFloatingPointType() || column.isIntegerType()) {
+                    double value = column.getNiceDouble(row);
+                    if (rounders.containsKey(columnName)) {
+                        if (Double.isNaN(value)) {
+                            // No value, cannot group by this...
+                            continue ROW;
+                        }
+                        value = rounders.get(columnName).round(value);
+                        isRounded.set(col);
+                        roundedValue[col] = value;
+                    }
+                    sbKey.append(value);
+                } else {
+                    sbKey.append(column.getString(row));
+                }
+                sbKey.append(":");
+            }
+            String key = sbKey.toString();
+            int[] tCounts = counts.get(key);
+            if (tCounts == null) {
+                tCounts = new int[nCols];
+                int idx = counts.size();
+                counts.put(key, tCounts);
+                for (int col=0;col<nCols;col++) {
+                    PrimitiveArray column = table.getColumn(col);
+                    String value = column.getRawString(row);
+                    meansTable.getColumn(col).addString(value);
+                }
+                rowmap.put(key, idx);
+                keymap.add(key);
+            }
+            int idx = rowmap.get(key);
+            for (int col=0;col<nCols;col++) {
+                PrimitiveArray column = table.getColumn(col);
+                if (cannotMeanCol.get(col)) {
+                    // Keep the value only if all rows are the same.
+                    String value = column.getRawString(row);
+                    String prev = meansTable.getColumn(col).getRawString(idx);
+                    if (!("".equals(prev)||prev.equals(value))) {
+                        meansTable.setStringData(col, idx, "");
+                    }
+                    continue;
+                }
+                if (!(column.isFloatingPointType() || column.isIntegerType())){
+                    meansTable.setStringData(col, idx, column.getRawString(row));
+                    continue;
+                }
+                double value = isRounded.get(col) ? roundedValue[col] : table.getNiceDoubleData(col, row);
+                if (Double.isNaN(value)) {
+                    continue;
+                }
+                //String2.log(">> row=" + row + " col=" + col + " val=" + value + " mean=" + mean);
+                if (degreesTrueCol.get(col)) {
+                    accumulateDegreesTrue(key + ":" + col, value);
+                    continue;
+                }
+                if (degreesCol.get(col)) {
+                    accumulateDegrees(key + ":" + col, value);
+                    continue;
+                }
+                tCounts[col] += 1;
+                if (tCounts[col] == 1) {
+                    meansTable.setDoubleData(col, idx, value);
+                    continue;
+                }
+                double mean = meansTable.getDoubleData(col, idx);
+                mean += (value-mean)/tCounts[col];
+                meansTable.setDoubleData(col, idx, mean);
+            }
         }
     }
     
 
-	private boolean isTimeColumn(Table table, int col) {
-    	String units = table.columnAttributes(col).getString("units");
+    private boolean isTimeColumn(Table table, int col) {
+        String units = table.columnAttributes(col).getString("units");
         return "time".equals(table.getColumnName(col)) || EDV.TIME_UNITS.equals(units);
     }
     
     private boolean isDegreeUnitsColumn(Table table, int col) {
-    	String units = table.columnAttributes(col).getString("units");
+        String units = table.columnAttributes(col).getString("units");
         return units != null && EDStatic.angularDegreeUnitsSet.contains(units);
+    }
+    
+    private boolean isDegreeTrueUnitsColumn(Table table, int col) {
+        String units = table.columnAttributes(col).getString("units");
+        return units != null && EDStatic.angularDegreeTrueUnitsSet.contains(units);
     }
     
     /*
      * Find the key columns and possibly the time column.
      */
-	private boolean configure(Table table) throws SimpleException{
-		int nKeyCols = orderBy.length;
-		int ncols = table.nColumns();
-		ArrayList <Integer> keyCols= new ArrayList<Integer>();
-		this.isKeyCol = new BitSet(ncols);
-		this.cannotMeanCol = new BitSet(ncols);
-		this.degreesCol = new BitSet(ncols);
-		this.wasDecimalCol = new BitSet(ncols);
-		for (int k = 0; k < nKeyCols; k++) {
-		    int col = table.findColumnNumber(orderBy[k]);
-		    if (col < 0)
-		        throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-		            " (unknown orderBy column=" + orderBy[k] + ")");
-		    keyCols.add(col);
-		    isKeyCol.set(col);
-		}
-		this.rounders.keySet().forEach((columnName)-> {
-			PrimitiveArray column = table.getColumn(columnName);
-			if(!(column.isIntegerType() || column.isFloatingPointType())) {
-		        throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-			            " (cannot group numerically from column =" + columnName + ")");
-				
-			}
-		});
-		this.keyCols = keyCols.stream().mapToInt(i -> i).toArray();
-		String colName[] = new String[ncols];
-		String dataType[] = new String[ncols];
-		for(int col = 0; col<ncols; col++) {
-			colName[col] = table.getColumnName(col);
-			PrimitiveArray column = table.getColumn(col);
-			if(this.isKeyCol.get(col)) {
-				dataType[col] = column.elementClassString();
-			}else{
-			    if(isDegreeUnitsColumn(table,col)) {
-			    	degreesCol.set(col);
-			    }
-			    if(column.isFloatingPointType()) {
-			    	this.wasDecimalCol.set(col);
-			    }
-				if(column.isIntegerType() || column.isFloatingPointType()) {
-					dataType[col] = "double";
-				}else if(col!=timeCol) {
-					//include this in the output only if a single value
-					dataType[col] = column.elementClass() == char.class ? 
-						"char": column.elementClass() == byte.class ? "byte" : "String";
-					cannotMeanCol.set(col);
-				}
-			}
-		}
-		this.meansTable = Table.makeEmptyTable(colName, dataType);
-		return true;
-	}
+    private boolean configure(Table table) throws SimpleException{
+        int nKeyCols = orderBy.length;
+        int ncols = table.nColumns();
+        ArrayList <Integer> tKeyCols= new ArrayList<Integer>();
+        isKeyCol       = new BitSet(ncols);
+        cannotMeanCol  = new BitSet(ncols);
+        degreesCol     = new BitSet(ncols);
+        degreesTrueCol = new BitSet(ncols);
+        wasDecimalCol  = new BitSet(ncols);
+        for (int k = 0; k < nKeyCols; k++) {
+            int col = table.findColumnNumber(orderBy[k]);
+            if (col < 0)
+                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
+                    " (unknown orderBy column=" + orderBy[k] + ")");
+            tKeyCols.add(col);
+            isKeyCol.set(col);
+        }
+        rounders.keySet().forEach((columnName)-> {
+            PrimitiveArray column = table.getColumn(columnName);
+            if (!(column.isIntegerType() || column.isFloatingPointType())) {
+                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
+                        " (cannot group numerically for column=" + columnName + ")");
+                
+            }
+        });
+        keyCols = tKeyCols.stream().mapToInt(i -> i).toArray();
+        String colName[] = new String[ncols];
+        String dataType[] = new String[ncols];
+        oColumnAtts = new Attributes[ncols];
+        for (int col = 0; col<ncols; col++) {
+            colName[col] = table.getColumnName(col);
 
-	
+            //get oColumnAtts
+            if (edd == null) {
+                oColumnAtts[col] = table.columnAttributes(col);
+            } else {
+                EDV edv = edd.findDataVariableByDestinationName(colName[col]);  //exception if not found
+                oColumnAtts[col] = new Attributes(edv.combinedAttributes()); 
+            }
+
+            PrimitiveArray column = table.getColumn(col);
+            if (isKeyCol.get(col)) {
+                dataType[col] = column.elementClassString();
+            } else {
+                if (isDegreeTrueUnitsColumn(table,col)) {
+                    degreesTrueCol.set(col);
+                } else if (isDegreeUnitsColumn(table,col)) {
+                    degreesCol.set(col);
+                }
+                if (column.isFloatingPointType()) {
+                    wasDecimalCol.set(col);
+                }
+                if (column.isIntegerType() || column.isFloatingPointType()) {
+                    dataType[col] = "double";
+                } else if (col!=timeCol) {
+                    //include this in the output only if a single value
+                    dataType[col] = column.elementClass() == char.class ? 
+                        "char": column.elementClass() == byte.class ? "byte" : "String";
+                    cannotMeanCol.set(col);
+                }
+            }
+        }
+        meansTable = Table.makeEmptyTable(colName, dataType);
+        return true;
+    }
+
+    
     /*
      * Sometimes it makes sense to change the column type back to integer,
      * For example year and month. Only do this if all the values are integers.
      */
     private void useIntegersWhereSensible() {
-		int ncols = this.meansTable.nColumns();
-		for(int col = 0; col < ncols; col++) {
-			PrimitiveArray column = this.meansTable.getColumn(col);
-			if(this.wasDecimalCol.get(col) || !column.isFloatingPointType()) {
-				continue;
-			}
-			if(areAllValuesIntegers(column)) {
-				int nrows = column.size();
-				IntArray intArray = new IntArray();
-				for(int row=0; row<nrows; row++) {
-					intArray.add(column.getInt(row));
-				}
-				String name = this.meansTable.getColumnName(col);
-				this.meansTable.removeColumn(col);
-				this.meansTable.addColumn(col, name, intArray);
-			}
-		}
-
-		
-	}
+        //Currently disabled. Much debate: I think it is better to always present
+        //results as doubles: for consistency. Use can look at mean and decide to
+        //ceil/floor/round it as desired.
+        //Integers also cause problems with unexpected missing values (e.g., 32767)
+        //for groups that have no data values.
+        /*
+        int ncols = meansTable.nColumns();
+        for (int col = 0; col < ncols; col++) {
+            if (isKeyCol.get(col))  //never change data type of key columns
+                continue;
+            PrimitiveArray column = meansTable.getColumn(col);
+            if (wasDecimalCol.get(col) || !column.isFloatingPointType()) 
+                continue;
+            if (areAllValuesIntegers(column)) 
+                meansTable.setColumn(col, PrimitiveArray.factory(int.class, column));
+        } 
+        */
+    }
 
 
-	private boolean areAllValuesIntegers(PrimitiveArray column) {
-		int nrows = column.size();
-		for(int row=0; row<nrows; row++) {
-			if(column.getDouble(row) != column.getInt(row)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private boolean areAllValuesIntegers(PrimitiveArray column) {
+        //Disabled for now
+        return false;
+        /*
+        int nrows = column.size();
+        for (int row=0; row<nrows; row++) {
+            if (column.getDouble(row) != column.getInt(row)) {
+                return false;
+            }
+        }
+        return true;
+        */
+    }
 
 
-	private void accumulateDegrees(String key, double value) {
-    	DegreesAccumulator accum = degreesMap.get(key);
-    	if(accum == null) {
-    		accum = new DegreesAccumulator();
-    		degreesMap.put(key, accum);
-    	}
-    	accum.add(value);
-	}
+    private void accumulateDegrees(String key, double value) {
+        DegreesAccumulator accum = degreesMap.get(key);
+        if (accum == null) {
+            accum = new DegreesAccumulator(false); //not degrees true
+            degreesMap.put(key, accum);
+        }
+        //String2.log(">> accumulateDegrees " + key + " value=" + value);
+        accum.add(value);
+    }
+
+    private void accumulateDegreesTrue(String key, double value) {
+        DegreesAccumulator accum = degreesMap.get(key);
+        if (accum == null) {
+            accum = new DegreesAccumulator(true); //is degrees true
+            degreesMap.put(key, accum);
+        }
+        //String2.log(">> accumulateDegrees " + key + " value=" + value);
+        accum.add(value);
+    }
 
 
     
     private void calculateDegreeMeans() {
-    	if(meansTable == null || degreesCol.isEmpty()) {
-    		return;
-    	}
-    	int ncols = meansTable.nColumns();
-    	for(int col=0; col<ncols;col++) {
-    		if(this.degreesCol.get(col)) {
-    	    	int nRows = meansTable.nRows();
-    	        for(int row = 0; row < nRows; row++) {
-        			String key = keymap.get(row)+":"+col;
-        			if (this.degreesMap.containsKey(key)) {
-        				meansTable.setDoubleData(col, row, degreesMap.get(key).getMean());
-        			}
-    	        }
-    		}
-    	}		
-	}
+        if (meansTable == null || (degreesCol.isEmpty() && degreesTrueCol.isEmpty())) {
+            return;
+        }
+        int ncols = meansTable.nColumns();
+        for (int col=0; col<ncols;col++) {
+            if (degreesCol.get(col) ||
+                degreesTrueCol.get(col)) {
+                int nRows = meansTable.nRows();
+                for (int row = 0; row < nRows; row++) {
+                    String key = keymap.get(row)+":"+col;
+                    DegreesAccumulator accum = degreesMap.get(key); //will be null if 0 values for that group
+                    meansTable.setDoubleData(col, row, 
+                        accum == null? Double.NaN : accum.getMean());
+                    //String2.log(">> " + key + " row=" + row + (accum == null? " null" : " mean=" + accum.getMean()));
+                    //if (accum != null) 
+                    //    meansTable.setDoubleData(col, row, accum.getMean());
+                }
+            }
+        }        
+    }
 
     private class DegreesAccumulator{
-    	double x = 0.0;
-    	double y = 0.0;
-    	int count = 0;
-    	void add(double angleDegrees) {
-    		double angleR = Math.toRadians(angleDegrees);
-    		 x += Math.cos(angleR);
-    		 y += Math.sin(angleR);
-    		 count += 1;
-    	}
-    	public double getMean() {
-            double avgR = Math.atan2(y / count, x / count);
-            return Math.toDegrees(avgR);    		
-    	}
+        boolean isDegreesTrue;
+        boolean allSame = true;
+        double deg = Double.NaN; //the value if allSame
+        double meanx = Double.NaN;
+        double meany = Double.NaN;
+        int count = 0;
+        //constructor
+        DegreesAccumulator(boolean tIsDegreesTrue) {
+            isDegreesTrue = tIsDegreesTrue;
+        }
+        void add(double angleDegrees) {
+            count++;
+            double angleR = Math.toRadians(angleDegrees);
+            if (count == 1) {
+                deg = angleDegrees;
+                meanx = Math.cos(angleR);
+                meany = Math.sin(angleR);
+            } else {
+                if (allSame && angleDegrees != deg)
+                    allSame = false;
+                meanx += (Math.cos(angleR) - meanx) / count;
+                meany += (Math.sin(angleR) - meany) / count;
+            }
+        }
+        public double getMean() {
+            if (count == 0)
+                return Double.NaN;
+            double d = allSame? deg : Math.toDegrees(Math.atan2(meany, meanx));
+            return isDegreesTrue? Math2.angle0360(d) : Math2.anglePM180(d);
+        }
     }
     
     /**
@@ -361,40 +431,56 @@ public class TableWriterOrderByMean extends TableWriterAll {
     public void finish() throws Throwable {
         if (ignoreFinish) 
             return;
-
-        if(this.keyCols != null) {
-        	calculateDegreeMeans();
-        	useIntegersWhereSensible();
-            if(this.keyCols.length > 0) {
-                boolean yes[] = new boolean[this.keyCols.length];
-                for(int i=0;i<yes.length;i++) yes[i] = true;
-                meansTable.sort(this.keyCols, yes);
-            }
+       
+        if (keyCols != null) {
+            calculateDegreeMeans();
+            useIntegersWhereSensible();
+            if (keyCols.length > 0) 
+                meansTable.sort(keyCols);
             super.writeSome(meansTable);
         }
-        super.finish();
+        super.finish();  //this ensures there is data and thus configured=true
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
+
+        //improve metadata
+        int nColumns = cumulativeTable.nColumns();
+        for (int col = 0; col < nColumns; col++) {
+            if (!isKeyCol.get(col)) {
+                //convert mv fv to new data types
+                Class tClass = cumulativeTable.getColumn(col).elementClass();
+                Attributes atts = cumulativeTable.columnAttributes(col);
+                //String2.log(">> colName=" + cumulativeTable.getColumnName(col) + " tClass=" + tClass.toString());
+                atts.set(   "_FillValue", PrimitiveArray.factory(tClass, 1, ""));
+                if (cellMethods != null)
+                   atts.set("cell_methods", cellMethods);
+                atts.remove("cf_role");
+                atts.remove("missing_value");
+            }
+        }
+
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
         meansTable = null;
-        this.degreesMap.clear();
-        this.counts.clear();
-        this.rowmap.clear();
+        degreesMap.clear();
+        counts.clear();
+        rowmap.clear();
     }
 
 
-	/**
+    /**
      * If caller has the entire table, use this instead of repeated writeSome() + finish().
      * This overwrites the superclass method.
      *
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
-    	this.writeSome(tCumulativeTable);
-    	this.finish();
+        writeSome(tCumulativeTable);
+        if (ignoreFinish) 
+            return;
+        finish();
     }
 
 }

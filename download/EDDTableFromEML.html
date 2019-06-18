@@ -12,7 +12,7 @@
 <table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
   <tr> 
     <td style="text-align:center; width:80px;"><a rel="bookmark"
-      href="http://www.noaa.gov/"><img 
+      href="https://www.noaa.gov/"><img 
       title="National Oceanic and Atmospheric Administration" 
       src="../images/noaab.png" alt="NOAA"
       style="vertical-align:middle;"></a></td> 
@@ -24,9 +24,9 @@
       &nbsp; &nbsp;
       <br>Brought to you by 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
-      href="http://www.noaa.gov">NOAA</a>  
+      href="https://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark"
-      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
@@ -77,10 +77,10 @@ of XML needed for a given dataset based on some source of information about the 
 GenerateDatasetsXml has a special option, <strong>EDDTableFromEML</strong>,
 which uses the information in an 
 <a rel="help"
-  href="https://knb.ecoinformatics.org/#external//emlparser/docs/index.html"
+  href="https://knb.ecoinformatics.org/external//emlparser/docs/index.html"
   >Ecological Metadata Language (EML)<img 
   src="../images/external.png" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."></a>
+  title="This link to an external website does not constitute an endorsement."></a>
 XML file to generate the chunk of XML for datasets.xml 
 to create an 
 <a rel="help"
@@ -112,7 +112,7 @@ or a batch of EML files:
     EML and/or data files.
   <br>If the directory doesn't exist, it will be created.
 <li>(For EDDTableFromEML only) EML URL or local fileName?
-  <br>Enter the URL or local file name of an EML file.
+  <br>Enter the URL or local filename of an EML file.
 <li>(For EDDTableFromEMLBatch only) EML dir (URL or local)?
   <br>Enter the name of the directory with the EML files (a URL or a local dir).
   <br>For example: http://sbc.lternet.edu/data/eml/files/
@@ -125,8 +125,9 @@ or a batch of EML files:
   <br>Enter false to always re-download the EML files and/or data files.
 <li>accessibleTo?
   <br>If you want the new datasets to be private datasets in ERDDAP,
-  <br>specify the name of the group(s) that will be allowed access.
+    specify the name of the group(s) that will be allowed access.
   <br>Recommended for LTER groups: combine "lter" plus the group, e.g., lterSbc .
+  <br>If you enter "null", there will be no &lt;accessibleTo&gt; tag in the output.
   <br>See <a rel="help"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"
     >accessibleTo</a>.  
@@ -138,7 +139,7 @@ or a batch of EML files:
         href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         >TZ column list of time zone names<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>.  
+        title="This link to an external website does not constitute an endorsement."></a>.  
   <br>Note all of the easy-to-use "US/..." names at the end of the list.
   <br>If you later find that to be incorrect, you can change the time_zone
     in the chunk of datasets.xml.
@@ -151,13 +152,13 @@ give users more direct access to the wealth of
   href="https://knb.ecoinformatics.org/"
   >Knowledge Network for Biocomplexity (KNB)<img 
   src="../images/external.png" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."></a> 
+  title="This link to an external website does not constitute an endorsement."></a> 
 and 
 <a rel="help"
   href="https://lternet.edu/"
   >Long Term Ecological Research (LTER)<img 
   src="../images/external.png" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."></a>
+  title="This link to an external website does not constitute an endorsement."></a>
 data and help those projects meet the US government's 
 <a rel="help" 
   href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
@@ -188,17 +189,17 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   becomes ERDDAP datasetID=knb_lter_sbc_28_t1,
   <br>&nbsp;
 
-<li><a class="selfLink" id="emlVsCfAcdd" href="#emlVsCfAcdd" rel="bookmark">EML vs CF+ACDD</a>
+<li><a class="selfLink" id="emlVsCfAcdd" href="#emlVsCfAcdd" rel="bookmark">EML versus CF+ACDD</a>
   <br>Almost all of the metadata in the EML files gets into ERDDAP,
   but in a different format. ERDDAP uses the  
   <a rel="help"
   href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
   src="../images/external.png" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."></a>)
+  title="This link to an external website does not constitute an endorsement."></a>)
   and
   <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
   src="../images/external.png" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."></a>
+  title="This link to an external website does not constitute an endorsement."></a>
   metadata standards. They are complementary metadata systems that
   use key=value pairs for global metadata and for
   each variable's metadata. 
@@ -258,7 +259,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/"
   >UDUNITS formatting for units<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>.
+        title="This link to an external website does not constitute an endorsement."></a>.
   GenerateDatasetsXml is able to convert EML units to UDUNITS cleanly about
   95% of the time. The remaining 5% results in a readable description 
   of the units, e.g., 
@@ -312,7 +313,7 @@ Normally, the column order in the EML file is the same as the
 column order in the data file, even if the names vary slightly,
 but not always.
 GenerateDatasetsXml tries to match the column names.
-When it can't (which is common), it will stop, show you the EML/data file name pairs,
+When it can't (which is common), it will stop, show you the EML/data filename pairs,
 and ask if they are correctly aligned. If you enter 's' to skip
 a table, GeneratedDatasetsXml will print an error message
 and go on to the next table.
@@ -380,10 +381,10 @@ to match the column names in the data file.
   (I was previously wrong about this. I see the EML documentation 
   for formatString which appears to match the 
   <a rel="help"
-    href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html"
+    href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html"
     >Java DateTimeFormatter specification<img 
     src="../images/external.png" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."></a>,
+    title="This link to an external website does not constitute an endorsement."></a>,
   but which lacks the important guidelines about its use,
   with the result that formatString is often/usually improperly used.)
   There are several instances with incorrect case,
@@ -426,7 +427,7 @@ to match the column names in the data file.
   ERDDAP requires that time column data be understandable/convertible to 
   Zulu/UTC/GMT time zone dateTimes.
   [My belief is: using local times and different date/time formats
-  (2-digit years! mm/dd/yy vs dd/mm/yy vs... ) in data files forces 
+  (2-digit years! mm/dd/yy versus dd/mm/yy vs... ) in data files forces 
   the end user to do complicated conversions to Zulu time in order to 
   compare data from one dataset with data from another. 
   So ERDDAP standardizes all time data:
@@ -435,7 +436,7 @@ to match the column names in the data file.
   For numeric times, ERDDAP always uses "seconds since 1970-01-01T00:00:00Z". 
   ERDDAP always uses the Zulu (UTC, GMT) time zone to remove the 
   difficulties of working with different time zones and standard time 
-  vs. daylight saving time. 
+  versus daylight saving time. 
   So GenerateDatasetsXml seeks an EML dataTable column with date+time Zulu.
   This is hard because EML doesn't use a formal vocabulary/system
   (like   
@@ -443,7 +444,7 @@ to match the column names in the data file.
     href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
     >Java/Joda time format<img 
     src="../images/external.png" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."></a>)
+    title="This link to an external website does not constitute an endorsement."></a>)
     for specifying the dataTime format:
     <br>If there is a col with numeric time values (e.g., Matlab times) and
       Zulu timezone (or just dates, with no time columns), 
@@ -454,7 +455,7 @@ to match the column names in the data file.
     <br>Else if a col with just date information is found, it is used as 
       the "time" variable (with no time zone).
     <br>If there is a data column and a time column and no combined dateTime column,
-      the dataset is REJECTED -- but the dataset could be made usable
+      the dataset is REJECTED &mdash; but the dataset could be made usable
       by adding a combined dateTime column (preferrably, Zulu time zone) to the datafile 
       and adding its description in the EML file.
   <br>EXAMPLE from SBC LTER: 
@@ -462,7 +463,7 @@ to match the column names in the data file.
     href="http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10"
     >http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10<img 
     src="../images/external.png" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."></a>
+    title="This link to an external website does not constitute an endorsement."></a>
     dataTable #2.
 
   <p>It would be nice if EML/LTER required the inclusion of a column with
@@ -473,7 +474,7 @@ to match the column names in the data file.
         href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         >TZ column<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."></a>).
+        title="This link to an external website does not constitute an endorsement."></a>).
   
 <li><a class="selfLink" id="missingMissingValue" href="#missingMissingValue" rel="bookmark">Missing missing_value</a>
   <br>Some columns use a missing_value 
@@ -554,7 +555,7 @@ to match the column names in the data file.
     href="http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10 "
     >http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10 <img 
     src="../images/external.png" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."></a>
+    title="This link to an external website does not constitute an endorsement."></a>
   dataTable #3, see
   datafile=LTER_monthly_bottledata_registered_stations_20140429.txt
   <br>&nbsp;
@@ -569,7 +570,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.82
+<p>ERDDAP, Version 2.00
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

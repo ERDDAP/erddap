@@ -19,7 +19,7 @@ package  gov.noaa.pmel.util;
  * @version $Revision: 1.4 $, $Date: 2003/08/22 23:02:40 $
  * @since sgt 1.0
  *
- * @deprecated As of sgt 3.0, replaced by {@link gov.noaa.pmel.util.SoTPoint SoTPoint}.
+ * @Deprecated As of sgt 3.0, replaced by {@link gov.noaa.pmel.util.SoTPoint SoTPoint}.
  */
 public class TimePoint {
   /** Space coordinate  */

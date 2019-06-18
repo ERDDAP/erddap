@@ -30,7 +30,7 @@ import java.util.Map;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -81,7 +81,7 @@ public class FishBase  {
 
             //set generic attributes 
             Attributes gatts = new Attributes();
-            gatts.set("id", "null");
+            gatts.set("id", fName); //pre 2019-05-07 was "null" 
             gatts.set("observationDimension", "null");
             gatts.set("cdm_data_type", "Other");
             gatts.set("Conventions", "COARDS, CF-1.6, ACDD-1.3");
@@ -89,13 +89,13 @@ public class FishBase  {
                 today + " Reformatted for ERDDAP at NOAA SWFSC ERD by bob.simons@noaa.gov");
             gatts.set("infoUrl", "http://www.fishbase.org");
             gatts.set("institution", "FishBase");
-            gatts.set("license", "This work is licensed under a Creative Commons Attribution-Noncommercial 3.0 Unported License. (CC-BY-NC) You are welcome to include text, numbers and maps from FishBase in your own web sites for non-commercial use, given that such inserts are clearly identified as coming from FishBase, with a backward link to the respective source page. Photos and drawings belong to the indicated persons or organizations and have their own copyright statements. Photos and drawings with CC-BY or CC-BY-NC copyrights can be used without further permission, with full attribution to the person or organization and the indication 'from FishBase'.\n" +
+            gatts.set("license", "This work is licensed under a Creative Commons Attribution-Noncommercial 3.0 Unported License. (CC-BY-NC) You are welcome to include text, numbers and maps from FishBase in your own websites for non-commercial use, given that such inserts are clearly identified as coming from FishBase, with a backward link to the respective source page. Photos and drawings belong to the indicated persons or organizations and have their own copyright statements. Photos and drawings with CC-BY or CC-BY-NC copyrights can be used without further permission, with full attribution to the person or organization and the indication 'from FishBase'.\n" +
 "\n" +
 "DISCLAIMER: We cannot guarantee the accuracy or completeness of the information in FishBase. Neither ICLARM nor any of its collaborators will be liable for any direct or indirect damage arising out of the use of FishBase.\n" +
 "\n" +
 EDStatic.standardLicense);
             gatts.set("sourceUrl", "(local files)");
-            gatts.set("standard_name_vocabulary", "CF Standard Name Table v29");
+            gatts.set("standard_name_vocabulary", "CF Standard Name Table v55");
             String startReference = "To give due credit to the original authors, please cite:\n" +
 "Froese, R. and D. Pauly, Editors. 2004. FishBase 2004 DVD: the " + fName + " table.\n";
 
@@ -1022,11 +1022,13 @@ EDStatic.standardLicense);
             //generateDatasetsXml
             String2.log(EDDTableFromNcFiles.generateDatasetsXml(
                 "c:/data/FBNc/", fName + "\\.nc", 
-                "c:/data/FBNc/" + fName + ".nc", "", 1000000, 
+                "c:/data/FBNc/" + fName + ".nc", "", 
+                1000000, //reloadEvery
                 "", "", "", 
                 "", "", 
                 "", 
-                "", "", "", "", new Attributes()));
+                "", "", "", "", 0, "", //standardizeWhat, cacheFromUrl
+                new Attributes()));
 
         }
         String2.log("FishBase.convertHtmlToNc finished.");

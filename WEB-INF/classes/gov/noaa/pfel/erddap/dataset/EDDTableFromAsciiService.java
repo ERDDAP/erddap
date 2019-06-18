@@ -228,7 +228,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -389,7 +389,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** " + tDatasetType + " " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
@@ -420,11 +420,13 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      */
     public Table getTable(String encodedSourceUrl) throws Throwable {
         BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
-        String s = in.readLine();
-        s = findBeforeData(in, s);
-        Table table = getTable(in, s);
-        in.close();
-        return table;
+        try {
+            String s = in.readLine();
+            s = findBeforeData(in, s);
+            return getTable(in, s);
+        } finally {
+            in.close();
+        }
     }
 
 
@@ -495,8 +497,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      * @return a table where some of the PrimitiveArrays have data, some don't
      * @throws throwable if trouble
      */
-    protected Table getTable(BufferedReader in, 
-        String s) throws Throwable {
+    protected Table getTable(BufferedReader in, String s) throws Throwable {
 
         if (s != null && s.length() == 0)
             s = in.readLine();

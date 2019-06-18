@@ -198,7 +198,7 @@ public class dts extends DODSServlet {
 
         response.setContentType("application/octet-stream");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_data");
+        response.setHeader("Content-Description", "dods-data");
 
 
         ServletOutputStream sOut = response.getOutputStream();

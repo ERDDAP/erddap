@@ -73,7 +73,7 @@ public class SgtMap  {
     public static boolean reallyVerbose = false;
 
     /** The font family to use. */
-    public static String fontFamily = "Bitstream Vera Sans"; //"LucidaSansRegular", //"Luxi Sans", //"Dialog"; //"Lucida Sans"; //"SansSerif";
+    public static String fontFamily = "DejaVu Sans";  //"DejaVu Sans" "Bitstream Vera Sans"; //"LucidaSansRegular", //"Luxi Sans", //"Dialog"; //"Lucida Sans"; //"SansSerif";
     public static String fullPrivateDirectory = SSR.getTempDirectory();
     public static double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT; 
     public static double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT; 
@@ -456,6 +456,11 @@ public class SgtMap  {
         //g2.setColor(Color.red);            
         //g2.drawRect(0, 0, imageWidthPixels-1, imageHeightPixels-1);
       
+        if (legendTitle1 == null) 
+            legendTitle1 = "";
+        if (legendTitle2 == null) 
+            legendTitle2 = "";
+
         //set the clip region
         g2.setClip(baseULXPixel, baseULYPixel, imageWidthPixels, imageHeightPixels);
         {
@@ -528,7 +533,7 @@ public class SgtMap  {
                 maxBoldCharsPerLine = SgtUtil.maxBoldCharsPerLine(maxCharsPerLine);
 
                 double legendLineCount = 
-                    ((legendTitle1 == null && legendTitle2 == null)? -1 : 1); //for legend title   //???needs adjustment for larger font size
+                    String2.isSomething(legendTitle1 + legendTitle2)? 1 : -1; //for legend title   //???needs adjustment for larger font size
                             
                 if (plotGridData && gridBoldTitle != null) {
                     shortBoldLines = SgtUtil.makeShortLines(maxBoldCharsPerLine, gridBoldTitle, null, null);
@@ -649,9 +654,9 @@ public class SgtMap  {
             //but if transparent, turn antialiasing OFF (fuzzy pixels make a halo around things)
             Object originalAntialiasing = 
                 g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING); 
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,                  
-                transparent? RenderingHints.VALUE_ANTIALIAS_OFF : 
-                             RenderingHints.VALUE_ANTIALIAS_ON); 
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, transparent?
+                RenderingHints.VALUE_ANTIALIAS_OFF :
+                RenderingHints.VALUE_ANTIALIAS_ON); 
 
             //draw legend basics
             if (!transparent) {
@@ -662,13 +667,7 @@ public class SgtMap  {
                 g2.drawRect(legendBoxULX, legendBoxULY, legendBoxWidth - 1, legendBoxHeight - 1);
 
                 //legend titles
-                if (legendTitle1 == null && legendTitle2 == null) {
-                    //no legend title to draw
-                } else {
-                    if (legendTitle1 == null) 
-                        legendTitle1 = "";
-                    if (legendTitle2 == null) 
-                        legendTitle2 = "";
+                if (String2.isSomething(legendTitle1 + legendTitle2)) {
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -1705,7 +1704,7 @@ public class SgtMap  {
 
         //Coordinates in SGT:
         //   Graph - 'U'ser coordinates      (graph's axes' coordinates)
-        //   Layer - 'P'hysical coordinates  (e.g., psuedo-inches, 0,0 is lower left)
+        //   Layer - 'P'hysical coordinates  (e.g., pseudo-inches, 0,0 is lower left)
         //   JPane - 'D'evice coordinates    (pixels, 0,0 is upper left)
 
         if (!drawPoliticalBoundaries) {
@@ -2067,7 +2066,7 @@ public class SgtMap  {
         globalAttributes.set("title",                     BATHYMETRY_BOLD_TITLE);
         globalAttributes.set("summary",                   BATHYMETRY_SUMMARY);
         globalAttributes.set("keywords",                  "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
-        globalAttributes.set("id",                        "SampledFrom" + etopoFileName);
+        globalAttributes.set("id",                        "ETOPO"); //2019-05-07 was "SampledFrom" + etopoFileName);
         globalAttributes.set("naming_authority",          FileNameUtility.getNamingAuthority());
         globalAttributes.set("keywords_vocabulary",       FileNameUtility.getKeywordsVocabulary());
         globalAttributes.set("cdm_data_type",             FileNameUtility.getCDMDataType());
@@ -2091,8 +2090,8 @@ public class SgtMap  {
         globalAttributes.set("geospatial_lat_resolution", Math.abs(grid.latSpacing));
         globalAttributes.set("geospatial_lon_units",      FileNameUtility.getLonUnits());
         globalAttributes.set("geospatial_lon_resolution", Math.abs(grid.lonSpacing));
-        //globalAttributes.set("time_coverage_start",       Calendar2.formatAsISODateTimeT(FileNameUtility.getStartCalendar(name)) + "Z");
-        //globalAttributes.set("time_coverage_end",         Calendar2.formatAsISODateTimeT(FileNameUtility.getEndCalendar(name)) + "Z");
+        //globalAttributes.set("time_coverage_start",       Calendar2.formatAsISODateTimeTZ(FileNameUtility.getStartCalendar(name)));
+        //globalAttributes.set("time_coverage_end",         Calendar2.formatAsISODateTimeTZ(FileNameUtility.getEndCalendar(name)));
         //globalAttributes.set("time_coverage_resolution", "P12H"));
         globalAttributes.set("standard_name_vocabulary",  FileNameUtility.getStandardNameVocabulary());
         globalAttributes.set("license",                   FileNameUtility.getLicense());
@@ -3353,7 +3352,7 @@ String2.log("err: " + errCatcher.getString());
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             if (args != null && args.length > 0) 
-                String2.log(NcHelper.dumpString(args[0], true));
+                String2.log(NcHelper.ncdump(args[0], ""));
         }
         String2.pressEnterToContinue();
     }

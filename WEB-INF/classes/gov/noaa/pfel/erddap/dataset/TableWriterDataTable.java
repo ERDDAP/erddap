@@ -1,5 +1,5 @@
 /*
- * TableWriterJson Copyright 2007, NOAA.
+ * TableWriterDataTable Copyright 2018, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -21,8 +21,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * TableWriterDataTable provides a way to write a table to JSON which follows the conventions of a Google Charts
- * DataTable
+ * TableWriterDataTable provides a way to write a table to JSON which follows 
+ * the conventions of a Google Charts DataTable
  * (https://developers.google.com/chart/interactive/docs/reference#dataparam)
  * outputStream in chunks so that the whole table doesn't have to be in memory 
  * at one time.
@@ -71,11 +71,10 @@ public class TableWriterDataTable extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation converts them to NaNs and stores them as nulls.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs and stores them as nulls.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -94,7 +93,8 @@ public class TableWriterDataTable extends TableWriter {
         //do firstTime stuff
 
         if (firstTime) {
-            writer = new BufferedWriter(new OutputStreamWriter(outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+            writer = new BufferedWriter(new OutputStreamWriter(
+                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
             writer.write("{\"cols\":[");
             isTimeStamp = new boolean[nColumns];
             isCharOrString = new boolean[nColumns];
@@ -105,7 +105,7 @@ public class TableWriterDataTable extends TableWriter {
                 Attributes catts = table.columnAttributes(col);
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null &&
-                        (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                    (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
                 isCharOrString[col] = pas[col].elementClass() == char.class ||
                                       pas[col].elementClass() == String.class;
                 if (isTimeStamp[col]) {
@@ -119,47 +119,56 @@ public class TableWriterDataTable extends TableWriter {
 
             for (int col = 0; col < nColumns; col++) {
                 Attributes catts = table.columnAttributes(col);
-                String type = pas[col].elementClassString();
+                Class type = pas[col].elementClass();
                 String name = table.getColumnName(col);
                 String u = catts.getString("units");
                 if ( col > 0 ) {
                     writer.write(",");
                 }
                 if ( isTimeStamp[col] ) {
-                    writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"datetime\"}");
+                    writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                        "\",\"pattern\":\"\",\"type\":\"datetime\"}");
                 } else {
-                    if (type.equals("String") ) {
+                    if (type == String.class) {
                         if ( writeUnits && u != null ) {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"string\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                " (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"string\"}");
                         } else {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+ "\",\"pattern\":\"\",\"type\":\"string\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+ 
+                                "\",\"pattern\":\"\",\"type\":\"string\"}");
                         }
-                    } else if (type.equals("float")) {
+                    } else if (type == float.class) {
                         if ( writeUnits && u != null) {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                " (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
                         } else {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                "\",\"pattern\":\"\",\"type\":\"number\"}");
                         }
-                    } else if (type.equals("double")) {
+                    } else if (type == double.class) {
                         if ( writeUnits && u != null ) {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                " (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
                         } else {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                "\",\"pattern\":\"\",\"type\":\"number\"}");
                         }
                     } else { // Assume numeric, will be long at this point
                         if ( writeUnits && u != null ) {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+" (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                " (" + u + ") " + "\",\"pattern\":\"\",\"type\":\"number\"}");
                         } else {
-                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+"\",\"pattern\":\"\",\"type\":\"number\"}");
+                            writer.write("{\"id\":\""+name+"\",\"label\":\""+name+
+                                "\",\"pattern\":\"\",\"type\":\"number\"}");
                         }
                     }
                 }
             }
-            writer.write("],\"rows\": [");
+            writer.write("],\n\"rows\": [\n");
         }
 
         //*** do everyTime stuff
-        convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
+        table.convertToStandardMissingValues();  //to NaNs
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
@@ -172,7 +181,6 @@ public class TableWriterDataTable extends TableWriter {
         }
         // Add the new rows to the data table.
         for (int row = 0; row < nRows; row++) {
-
 
             writer.write("{\"c\":[");
 
@@ -193,24 +201,26 @@ public class TableWriterDataTable extends TableWriter {
                         int minute = gc.get(Calendar.MINUTE);
                         int second = gc.get(Calendar.SECOND);
                         int milli = gc.get(Calendar.MILLISECOND);
-                        writer.write("{\"v\":\"Date(" + year + ", " + month + ", " + day + ", " + hour + ", " + minute + ", " + second + ", " + milli + ")\",\"f\":null}");
+                        writer.write("{\"v\":\"Date(" + year + ", " + month + ", " +
+                            day + ", " + hour + ", " + minute + ", " + second + ", " +
+                            milli + ")\",\"f\":null}");
 
                     } else {
                         String s = pas[col].getString(row);
-                        writeNumber(s, pas[col].elementClassString());
+                        writeNumber(s, pas[col].elementClass());
                     }
                 } else if (isCharOrString[col]) {
                     String value = pas[col].getString(row);
                     writer.write("{\"v\":\""+value+"\",\"f\":null}");
                 } else {
                     String s = pas[col].getString(row);
-                    writeNumber(s, pas[col].elementClassString());
+                    writeNumber(s, pas[col].elementClass());
                 }
             }
             if ( row < nRows-1 ) {
-                writer.write("]},");
+                writer.write("]},\n");
             } else {
-                writer.write("]}");
+                writer.write("]}\n");
             }
         }
         if (nRows > 0) rowsWritten = true;
@@ -237,16 +247,14 @@ public class TableWriterDataTable extends TableWriter {
 
         //end of big array
         writer.write(
-                "\n" +
-                        "    ]\n" + //end of rows array
-                        "  }\n");
+            "    ]\n" + //end of rows array
+            "  }\n");
         writer.flush(); //essential
 
         //diagnostic
         if (verbose)
             String2.log("TableWriterJson done. TIME=" +
                     (System.currentTimeMillis() - time) + "ms\n");
-
     }
 
 
@@ -256,8 +264,8 @@ public class TableWriterDataTable extends TableWriter {
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
     public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table,
-                                         OutputStreamSource outputStreamSource, boolean writeUnits)
-            throws Throwable {
+        OutputStreamSource outputStreamSource, boolean writeUnits)
+        throws Throwable {
 
         TableWriterDataTable tdt = new TableWriterDataTable(tEdd, tNewHistory,
                 outputStreamSource, writeUnits);
@@ -265,17 +273,17 @@ public class TableWriterDataTable extends TableWriter {
     }
 
 
-    protected void writeNumber(String s, String elementClass) throws IOException {
+    protected void writeNumber(String s, Class elementClass) throws IOException {
         if ( s.length() == 0 ) {
             writer.write("{\"v\":null,\"f\":null}");
         } else {
-            if ( elementClass.equals("double") ) {
+            if ( elementClass == double.class ) {
                 double dv = Double.valueOf(s).doubleValue();
                 writer.write("{\"v\":"+dv+",\"f\":null}");
-            } else if ( elementClass.equals("float") ) {
+            } else if ( elementClass == float.class ) {
                 float f = Float.valueOf(s).floatValue();
                 writer.write("{\"v\":"+f+",\"f\":null}");
-            } else if ( elementClass.equals("long") ) {
+            } else if ( elementClass == long.class ) {
                 long f = Long.valueOf(s).longValue();
                 writer.write("{\"v\":"+f+",\"f\":null}");
             } else {

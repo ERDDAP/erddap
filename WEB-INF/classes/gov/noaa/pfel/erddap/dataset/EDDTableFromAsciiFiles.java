@@ -57,6 +57,15 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     /** Used to ensure that all non-axis variables in all files have the same leftmost dimension. */
     protected String dim0Name = null;
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
 
     /** 
      * The constructor just calls the super constructor. 
@@ -83,7 +92,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
-        boolean tRemoveMVRows) 
+        boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", tDatasetID, 
@@ -97,7 +107,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
-            tFileTableInMemory, tAccessibleViaFiles, tRemoveMVRows);
+            tFileTableInMemory, tAccessibleViaFiles, tRemoveMVRows, 
+            tStandardizeWhat, tNThreads, 
+            tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
     }
 
     /** The constructor for subclasses. */
@@ -116,7 +128,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
-        boolean tRemoveMVRows) 
+        boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
@@ -131,7 +144,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
             tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
     }
 
@@ -142,7 +156,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -155,7 +169,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         Table table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileDir + fileName, 
+        table.readASCII(tFileDir + tFileName, 
             charset, columnNamesRow - 1, firstDataRow - 1, columnSeparator, 
             null, null, null, //testColumns, testMin, testMax,
             sourceDataNames.toArray(), //loadColumns, 
@@ -188,6 +202,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 }
             }
         }
+
+        //unpack
+        table.unpack(standardizeWhat);
 
         return table;
     }
@@ -230,6 +247,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl, 
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromAsciiFiles.generateDatasetsXml" +
@@ -250,6 +268,11 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
@@ -260,6 +283,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             String2.log("Found/using sampleFileName=" +
                 (sampleFileName = FileVisitorDNLS.getSampleFileName(
                     tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -269,7 +294,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             charset = String2.ISO_8859_1;
         dataSourceTable.readASCII(sampleFileName, charset, 
             columnNamesRow-1, firstDataRow-1, columnSeparator, 
-            null, null, null, null, true);  //simplify
+            null, null, null, null, false);  //simplify
+        dataSourceTable.convertIsSomething2(); //convert e.g., "N/A" to ""
+        dataSourceTable.simplify();            
+        dataSourceTable.unpack(tStandardizeWhat);
 
         //globalAttributes 
         if (externalAddGlobalAttributes == null)
@@ -282,49 +310,40 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
-        boolean dateTimeAlreadyFound = false;
-        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+        boolean dateTimeAlreadyFound = false;        
         double maxTimeES = Double.NaN;
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
-            PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
-
-            Attributes sourceAtts = dataSourceTable.columnAttributes(col);
-            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                null, //no source global attributes
-                sourceAtts, null, colName, 
-                true, true); //addColorBarMinMax, tryToFindLLAT
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(col);
 
             //dateTime?
+            Attributes addAtts = new Attributes();
             boolean isDateTime = false;
-            if (pa instanceof StringArray) {
-                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
+            if (sourcePA instanceof StringArray) {
+                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)sourcePA, false); //evenIfPurelyNumeric
                 if (dtFormat.length() > 0) { 
                     isDateTime = true;
                     addAtts.set("units", dtFormat);
                 }
 
                 if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(dtFormat)) 
-                    maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    maxTimeES = Calendar2.tryToEpochSeconds(sourcePA.getString(sourcePA.size() - 1)); //NaN if trouble
             }
 
-            //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
-            //  even if StringArray
-            double stats[] = pa.calculateStats();
-            int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
-            if (whichMv9 < 0)
-                whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-            if (whichMv9 >= 0) {
-                addAtts.add("missing_value", 
-                    PrimitiveArray.factory(pa.elementClass(), 1, 
-                        "" + mv9.getInt(whichMv9)));
-                String2.log("\nADDED missing_value=" + mv9.getInt(whichMv9) +
-                    " to col=" + colName);
-            }
- 
+            Attributes sourceAtts = dataSourceTable.columnAttributes(col);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
+                sourceAtts, addAtts, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+
             //add to dataAddTable
-            dataAddTable.addColumn(col, colName, 
-                makeDestPAForGDX(pa, sourceAtts), addAtts);
+            dataAddTable.addColumn(col, colName, destPA, addAtts);
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, destPA, sourceAtts, addAtts);
 
             //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
@@ -333,8 +352,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 dateTimeAlreadyFound = true;
                 tSortedColumnSourceName = colName;
             }
-
-
         }
 
         //add the columnNameForExtract variable
@@ -402,7 +419,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnSeparator>" + XML.encodeAsXML(columnSeparator) + "</columnSeparator>\n" + 
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
@@ -450,8 +470,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 String2.ISO_8859_1, 1, 3, "", -1,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
-                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
-                externalAddAttributes) + "\n";
+                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+                -1, "", externalAddAttributes) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -461,7 +481,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 String2.ISO_8859_1, "1", "3", "", "-1",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
-                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
+                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -479,6 +500,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnSeparator></columnSeparator>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
@@ -494,8 +516,8 @@ directionsForGenerateDatasetsXml() +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
@@ -503,14 +525,14 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
-"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
-"        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">altitude, atmosphere, atmospheric, atmp, buoy, center, data, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, height, identifier, latitude, longitude, national, ndbc, newer, noaa, science, speed, station, stationID, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -578,7 +600,8 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -599,6 +622,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
@@ -613,6 +637,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
@@ -627,6 +652,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Atmp</att>\n" +
 "        </addAttributes>\n" +
@@ -638,6 +664,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Water Temperature</att>\n" +
 "        </addAttributes>\n" +
@@ -651,8 +678,10 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             //2014-12-24 no longer: this will fail with a specific error which is caught below
+            String tDatasetID = suggDatasetID;
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp",
@@ -681,7 +710,7 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
 
         try {
-            String sourceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-7days";
+            String sourceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-1year";
             String destDir = File2.getSystemTempDirectory();
             String destName = "latest41004.csv";
             String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml2()\n" +
@@ -696,8 +725,8 @@ directionsForGenerateDatasetsXml() +
                 String2.ISO_8859_1, 1, 3, "", -1,
                 "", "", "", "",
                 "", "", 
-                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
-                externalAddAttributes) + "\n";
+                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+                -1, "", externalAddAttributes) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -706,7 +735,8 @@ directionsForGenerateDatasetsXml() +
                 String2.ISO_8859_1, "1", "3", "", "-1",
                 "", "", "", "",
                 "", "", 
-                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
+                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -716,7 +746,7 @@ directionsForGenerateDatasetsXml() +
 "   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"Temp_c5d7_d791_02d6\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"Temp_2e43_7944_fda7\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + destDir + "</fileDir>\n" +
@@ -724,6 +754,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnSeparator></columnSeparator>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
@@ -739,8 +770,8 @@ directionsForGenerateDatasetsXml() +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
@@ -748,13 +779,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
-"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
-"        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">atmp, buoy, center, data, identifier, national, ndbc, newer, noaa, station, temperature, time, title, water, wtmp</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">station</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"testOutOfDate\">now-1day</att>\n" +
@@ -781,7 +812,8 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -791,6 +823,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Atmp</att>\n" +
 "        </addAttributes>\n" +
@@ -802,6 +835,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Water Temperature</att>\n" +
 "        </addAttributes>\n" +
@@ -814,8 +848,10 @@ directionsForGenerateDatasetsXml() +
             //    expected, "");
 
             //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = suggDatasetID;
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "station, time, atmp, wtmp",
@@ -825,6 +861,207 @@ directionsForGenerateDatasetsXml() +
             String msg = MustBe.throwableToString(t);
             String2.pressEnterToContinue(msg + 
                 "\nUnexpected error in generateDatasetsXml2."); 
+        }
+
+    }
+
+    /**
+     * testGenerateDatasetsXml
+     */
+    public static void testGenerateDatasetsXmlWithMV() throws Throwable {
+        testVerboseOn();
+
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlWithMV()");
+
+        try {
+            Attributes externalAddAttributes = new Attributes();
+            externalAddAttributes.add("title", "New Title!");
+            String suggDatasetID = suggestDatasetID(
+                EDStatic.unitTestDataDir + "ascii/mvTest\\.csv");
+            String results = generateDatasetsXml(
+                EDStatic.unitTestDataDir + "ascii/",  "mvTest\\.csv", "",
+                String2.ISO_8859_1, 1, 2, "", -1,
+                "", "", "", "",  //extract
+                "", "", 
+                "https://www.bco-dmo.org/", "BCO-DMO", "The new summary!", "The Newer Title!",
+                -1, "", externalAddAttributes) + "\n";
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+" * Since the source files don't have any metadata, you must add metadata\n" +
+"   below, notably 'units' for each of the dataVariables.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "ascii/</fileDir>\n" +
+"    <fileNameRegex>mvTest\\.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator></columnSeparator>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <preExtractRegex></preExtractRegex>\n" +
+"    <postExtractRegex></postExtractRegex>\n" +
+"    <extractRegex></extractRegex>\n" +
+"    <columnNameForExtract></columnNameForExtract>\n" +
+"    <sortedColumnSourceName></sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">info@bco-dmo.org</att>\n" +
+"        <att name=\"creator_name\">BCO-DMO</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.bco-dmo.org/</att>\n" +
+"        <att name=\"infoUrl\">https://www.bco-dmo.org/</att>\n" +
+"        <att name=\"institution\">BCO-DMO</att>\n" +
+"        <att name=\"keywords\">aByte, aDouble, aFloat, aFloat_with_NaN, aFloat_with_nd, aLong, anInt, aShort, aString, bco, bco-dmo, biological, byte, chemical, data, dmo, double, float, int, long, management, newer, oceanography, office, short, statistics, string, title, with</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"subsetVariables\">aFloat</att>\n" +
+"        <att name=\"summary\">The new summary! Biological and Chemical Oceanography Data Management Office (BCO-DMO) data from a local source.</att>\n" +
+"        <att name=\"title\">The Newer Title!</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aString</sourceName>\n" +
+"        <destinationName>aString</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A String</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aFloat</sourceName>\n" +
+"        <destinationName>aFloat</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Float</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aFloat_with_NaN</sourceName>\n" +
+"        <destinationName>aFloat_with_NaN</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"long_name\">A Float With Na N</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aFloat_with_nd</sourceName>\n" +
+"        <destinationName>aFloat_with_nd</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Float With Nd</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aDouble</sourceName>\n" +
+"        <destinationName>aDouble</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Double</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aLong</sourceName>\n" +         //note not caught as longs
+"        <destinationName>aLong</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Long</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>anInt</sourceName>\n" +
+"        <destinationName>anInt</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">An Int</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aShort</sourceName>\n" +
+"        <destinationName>aShort</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Short</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aByte</sourceName>\n" +
+"        <destinationName>aByte</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">A Byte</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+            //    expected, "");
+
+            //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = suggDatasetID;
+            EDD.deleteCachedDatasetInfo(tDatasetID);
+            EDD edd = oneFromXmlFragment(null, results);
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+            Test.ensureEqual(edd.title(), "The Newer Title!", "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+                "aString, aFloat, aFloat_with_NaN, aFloat_with_nd, aDouble, aLong, anInt, aShort, aByte",
+                "");
+
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+            String2.pressEnterToContinue(msg + 
+                "\nUnexpected error using generateDatasetsXml."); 
         }
 
     }
@@ -976,7 +1213,7 @@ expected =
 "    Float64 Northernmost_Northing 37.75;\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"station, longitude, latitude, altitude\";\n" +
 "    String summary \"The summary.\";\n" +
 "    String time_coverage_end \"2006-12-31T23:00:00Z\";\n" +
@@ -1194,7 +1431,7 @@ expected =
     "    Float64 Northernmost_Northing 30.368;\n" +
     "    String sourceUrl \"(local files)\";\n" +
     "    Float64 Southernmost_Northing 26.6255;\n" +
-    "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+    "    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
     (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
     "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
     "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
@@ -1257,6 +1494,7 @@ expected =
 "csvAscii,5.0,i,I,1,13,12003,12000,120000000,1.23,3.0E200\n" +
 "csvAscii,5.0,j,J,0,14,12004,1200,12000000,1.24,4.0E200\n" +
 "csvAscii,5.0,k,K,0,15,12005,120,1200000,1.25,5.0E200\n" +
+"csvAscii,5.0,\"BAD LINE: UNCLOSED QUOTE,K,false,15,12005,120,1200000,1.25,   5.5e200\",,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
 "csvAscii,5.0,l,L,0,16,12006,12,120000,1.26,6.0E200\n" +
 "csvAscii,5.0,m,M,0,17,12007,121,12000,1.27,7.0E200\n" +
 "csvAscii,5.0,n,N,1,18,12008,122,1200,1.28,8.0E200\n";
@@ -1330,7 +1568,7 @@ expected =
 "    String cdm_data_type \"Other\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"NOAA NDBC\";\n" +
-"    String creator_url \"http://www.ndbc.noaa.gov/\";\n" +
+"    String creator_url \"https://www.ndbc.noaa.gov/\";\n" +
 "    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -1338,7 +1576,7 @@ expected =
 //"2014-12-04T19:15:21Z (local files)
 //2014-12-04T19:15:21Z http://localhost:8080/cwexperimental/tabledap/testTableAscii.das";
 expected =
-"    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
+"    String infoUrl \"https://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
@@ -1349,7 +1587,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +
@@ -1428,12 +1666,12 @@ expected =
      *   Error messages will be included as comments.
      */
     public static String generateDatasetsXmlFromInPort(String xmlFileName, 
-        String tInputXmlDir, String typeRegex) {
+        String tInputXmlDir, String typeRegex, int tStandardizeWhat) {
 
         String main = null;
         try {
             main = generateDatasetsXmlFromInPort(xmlFileName, 
-                tInputXmlDir, typeRegex, 0, "", "") + "\n";
+                tInputXmlDir, typeRegex, 0, "", "", tStandardizeWhat) + "\n";
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             return "<!-- " + String2.replaceAll(msg, "--", "- - ") + " -->\n\n";
@@ -1443,7 +1681,7 @@ expected =
         for (int whichChild = 1; whichChild < 10000; whichChild++) {
             try {
                 children.append(generateDatasetsXmlFromInPort(xmlFileName, 
-                    tInputXmlDir, typeRegex, whichChild, "", "") + "\n");
+                    tInputXmlDir, typeRegex, whichChild, "", "", tStandardizeWhat) + "\n");
             } catch (Throwable t) {
                 String msg = MustBe.throwableToString(t);
                 if (msg.indexOf("ERROR: whichChild=") < 0 ||
@@ -1510,7 +1748,7 @@ expected =
      */
     public static String generateDatasetsXmlFromInPort(String xmlFileName, 
         String tInputXmlDir, String typeRegex, int whichChild, 
-        String tBaseDataDir, String tDataFileName) throws Throwable {
+        String tBaseDataDir, String tDataFileName, int tStandardizeWhat) throws Throwable {
 
         String2.log("\n*** inPortGenerateDatasetsXml(" + xmlFileName + 
             ", whichChild=" + whichChild + ")");
@@ -1519,6 +1757,9 @@ expected =
         Test.ensureTrue(whichChild >= 0, "whichChild must be >=0."); 
         //whichChild can be found as an entity-attribute, distribution, and/or child-item
         boolean whichChildFound = false;  
+
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
 
         if (String2.isSomething(tBaseDataDir)) {
             tBaseDataDir = File2.addSlash(File2.forwardSlashDir(tBaseDataDir));
@@ -1562,9 +1803,7 @@ expected =
 
         //create tables to hold results
         Table sourceTable = new Table();
-        Table addTable    = new Table();
         Attributes sourceAtts = sourceTable.globalAttributes();
-        Attributes gAddAtts   = addTable.globalAttributes();
         boolean isCreator2 = false, isCreator3 = false;
         String creatorName2 = null,  creatorName3 = null;
         String creatorEmail2 = null, creatorEmail3 = null;
@@ -1626,6 +1865,7 @@ expected =
         //childNRelationHM.put("RI", "other");
 
         //attributes that InPort doesn't help with
+        Attributes gAddAtts = new Attributes();
         String inportXmlUrl = "https://inport.nmfs.noaa.gov/inport-metadata/" +
             xmlFileName.substring("/u00/data/points/inportXml/".length()); 
         gAddAtts.add("cdm_data_type", "Other");
@@ -1633,11 +1873,11 @@ expected =
         gAddAtts.add("infoUrl", inportXmlUrl); 
         gAddAtts.add("InPort_xml_url", inportXmlUrl);
         gAddAtts.add("keywords_vocabulary", "GCMD Science Keywords");
-        gAddAtts.add("standard_name_vocabulary", "CF Standard Name Table v29");
+        gAddAtts.add("standard_name_vocabulary", "CF Standard Name Table v55");
 
         //process the inport.xml file 
         SimpleXMLReader xmlReader = new SimpleXMLReader(
-            new FileInputStream(xmlFileName));
+            File2.getDecompressedBufferedInputStream(xmlFileName));
         xmlReader.nextTag();
         String tags = xmlReader.allTags();
         String startTag = "<inport-metadata>";  //2017-08-09 version 0.9
@@ -1654,15 +1894,7 @@ expected =
             if (xmlReader.stackSize() == 1) 
                 break; //the startTag
             String topTag = xmlReader.tag(nTags - 1);
-            String contentLC = content.toLowerCase();
-            boolean hasContent = content.length() > 0 && 
-                !contentLC.equals("n/a") && 
-                !contentLC.equals("na") && 
-                !contentLC.startsWith("none") &&   //e.g. None.
-                !contentLC.equals("not applicable") && 
-                !contentLC.equals("other") && 
-                !contentLC.equals("unknown") && 
-                !contentLC.equals("unspecified") ;
+            boolean hasContent = String2.isSomething2(content);
             tags = tags.substring(startTagLength);
             if (debugMode) String2.log(">>  tags=" + tags + content);
             String attTags = 
@@ -1793,22 +2025,17 @@ expected =
                     //atts has tags after
                     //  <entity-attribute-information><entity><data-attributes><data-attribute>
                     //String2.log(">>attTags=" + attTags);
-                    int col = addTable.nColumns() - 1;  //0.. for actual columns
-                    Attributes varAddAtts = col >= 0? addTable.columnAttributes(col) : null;
+                    int col = sourceTable.nColumns() - 1;  //0.. for actual columns
+                    Attributes varAddAtts = col >= 0? sourceTable.columnAttributes(col) : null;
                     if (attTags.equals("")) {
                         //the start: add the column
                         varAddAtts = new Attributes();
                         col++;  //0..
                         String tName = "column" + col; //a placeholder
-                        sourceTable.addColumn(col, tName, new StringArray(), new Attributes());
-                        addTable.addColumn(   col, tName, new StringArray(), varAddAtts);
+                        sourceTable.addColumn(col, tName, new StringArray(), varAddAtts);
 
                     } else if (attTags.equals("</name>") && hasContent) {
                         sourceTable.setColumnName(col, content);                    
-                        content = String2.modifyToBeVariableNameSafe(content);
-                        //if (content.matches("[A-Z0-9_]+"))  //all uppercase
-                        //    content = content.toLowerCase();
-                        addTable.setColumnName(col, content);                        
 
                     } else if (attTags.equals("</data-storage-type>") && hasContent) {
                         //not reliable or useful. Use simplify.
@@ -1861,7 +2088,7 @@ expected =
                         //if it's a date time format, convertToJavaDateTimeFormat e.g., yyyy-MM-dd'T'HH:mm:ssZ
                         String newContent = Calendar2.convertToJavaDateTimeFormat(content);
                         if (!newContent.equals(content) ||  //it was changed, so it is a dateTime format
-                            newContent.indexOf("yyyy") >= 0) {
+                            Calendar2.isStringTimeUnits(newContent)) {
 
                             //These will be fixed up by makeReadyToUseAddVariableAttributes.
                             varAddAtts.set("units", content); 
@@ -2400,8 +2627,8 @@ expected =
                 "NEFSC".equals( acronym)? "https://www.nefsc.noaa.gov/":
                 "NWFSC".equals( acronym)? "https://www.nwfsc.noaa.gov/":
                 "OHC".equals(   acronym)? "http://www.habitat.noaa.gov/":
-                "OPR".equals(   acronym)? "http://www.nmfs.noaa.gov/pr/":
-                "OSF".equals(   acronym)? "http://www.nmfs.noaa.gov/sfa/":
+                "OPR".equals(   acronym)? "https://www.fisheries.noaa.gov/about/office-protected-resources":
+                "OSF".equals(   acronym)? "https://www.fisheries.noaa.gov/about/office-sustainable-fisheries":
                 "OST".equals(   acronym)? "https://www.st.nmfs.noaa.gov/":
                 "PIFSC".equals( acronym)? "https://www.pifsc.noaa.gov/":
                 "PIRO".equals(  acronym)? "http://www.fpir.noaa.gov/":
@@ -2493,7 +2720,7 @@ expected =
                     background.append(msg + "\n");
                     Table fileTable = new Table();
                     fileTable.readASCII(tDataDir + tDataFileName, 0, 1, 
-                        null, null, null, null, null, false);  //simplify?
+                        null, null, null, null, null, false);  //simplify?  (see below)
                     msg = "> dataFileTable columnNames=" + fileTable.getColumnNamesCSSVString(); 
                     String2.log(msg);
                     background.append(msg + "\n");
@@ -2505,9 +2732,6 @@ expected =
                             Attributes atts   = fileTable.columnAttributes(fcol);
                             PrimitiveArray pa = fileTable.getColumn(fcol);
                             sourceTable.addColumn(fcol, colName, 
-                                (PrimitiveArray)(pa.clone()),
-                                (Attributes)(atts.clone()));
-                            addTable.addColumn(fcol, colName, 
                                 (PrimitiveArray)(pa.clone()),
                                 (Attributes)(atts.clone()));
                         }
@@ -2522,14 +2746,12 @@ expected =
                                 if (String2.looselyEquals(colName, tryName)) {
                                     matched.set(icol);
                                     sourceTable.setColumn(icol, fileTable.getColumn(fcol));
-                                       addTable.setColumn(icol, (PrimitiveArray)(fileTable.getColumn(fcol).clone()));
                                     if (!colName.equals(tryName)) {
                                         msg = "> I changed InPort entity attribute colName=" + colName +
                                             " into ascii file colName=" + tryName;
                                         String2.log(msg);
                                         background.append(msg + "\n");
                                         sourceTable.setColumnName(icol, tryName);
-                                           addTable.setColumnName(icol, tryName);
                                     }
                                     fileTable.removeColumn(fcol);
                                     break;
@@ -2559,10 +2781,8 @@ expected =
                                     if (fcol >= 0) {
                                         fileTable.removeColumn(fcol);
                                         sourceTable.setColumn(icol, fileTable.getColumn(fcol));
-                                           addTable.setColumn(icol, (PrimitiveArray)(fileTable.getColumn(fcol).clone()));
                                     }
                                     sourceTable.setColumnName(icol, actual);
-                                       addTable.setColumnName(icol, actual);
                                 }
                             }
                         }
@@ -2577,7 +2797,6 @@ expected =
             //ensure all column have same number of values
             //they won't be same size if not all columns matched above
             sourceTable.makeColumnsSameSize();
-               addTable.makeColumnsSameSize();
         }
 
         //*** end stuff
@@ -2586,55 +2805,56 @@ expected =
         String tSortFilesBySourceNames = "";
         String tColumnNameForExtract   = "";
 
-        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+        //clean up sourceTable
+        sourceTable.convertIsSomething2();  //convert e.g., "N/A" to ""
+        sourceTable.simplify();
+        sourceTable.unpack(tStandardizeWhat);
+
+        //make addTable
+        Table addTable    = new Table();
+        for (int col = 0; col < sourceTable.nColumns(); col++) {
+            String colName = String2.modifyToBeVariableNameSafe(sourceTable.getColumnName(col));
+            //if (colName.matches("[A-Z0-9_]+"))  //all uppercase
+            //    colName = colName.toLowerCase();
+            addTable.addColumn(col, colName, 
+                (PrimitiveArray)(sourceTable.getColumn(col).clone()), 
+                (Attributes)(sourceTable.columnAttributes(col).clone())); //move from source to add
+            sourceTable.columnAttributes(col).clear();
+        }
+
         for (int col = 0; col < addTable.nColumns(); col++) {
             String colName = addTable.getColumnName(col);
-            PrimitiveArray pa = (PrimitiveArray)addTable.getColumn(col); 
-            pa.switchFromTo("null", "");  
-            pa.switchFromTo("NULL", ""); 
-            pa.switchFromTo("na", "");    
-            pa.switchFromTo("NA", ""); 
-            pa.switchFromTo("n/a", ""); 
-            pa.switchFromTo("N/A", ""); 
-            pa.switchFromTo(".", ""); 
-            pa.switchFromTo("-", ""); 
-            pa = pa.simplify();
-            sourceTable.setColumn(col, pa);
-            addTable.setColumn(col, (PrimitiveArray)(pa.clone()));
+            PrimitiveArray destPA = addTable.getColumn(col); 
+            //sourceAtts already in use as source global atts
+            Attributes addAtts    = addTable.columnAttributes(col);
 
-            //look for date columns
+            //then look for date columns  
             String tUnits = addTable.columnAttributes(col).getString("units");
             if (tUnits == null) tUnits = "";
             if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
-                pa.elementClass() != String.class) 
+                destPA.elementClass() != String.class) {
                 //convert e.g., yyyyMMdd columns from int to String
-                addTable.setColumn(col, new StringArray(pa));                       
-            if (pa.elementClass() == String.class) {
-                tUnits = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                destPA = new StringArray(destPA);   
+                addTable.setColumn(col, destPA);                       
+            }
+            if (destPA.elementClass() == String.class) {
+                tUnits = Calendar2.suggestDateTimeFormat((StringArray)destPA, false); //evenIfPurelyNumeric
                 if (tUnits.length() > 0)
-                    addTable.columnAttributes(col).set("units", tUnits);
+                    addAtts.set("units", tUnits);
                 //??? and if tUnits = "", set to ""???
             }
             boolean isDateTime = Calendar2.isTimeUnits(tUnits);
 
-            Attributes addColAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                gAddAtts, sourceTable.columnAttributes(col), addTable.columnAttributes(col), 
-                colName, true, true); //addColorBarMinMax, tryToFindLLAT
+            addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                gAddAtts, sourceTable.columnAttributes(col), addAtts, 
+                sourceTable.getColumnName(col), 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
 
-            //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
-            //  even if StringArray
-            double stats[] = pa.calculateStats();
-            int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
-            if (whichMv9 < 0)
-                whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-            if (whichMv9 >= 0) {
-                addColAtts.add("missing_value", 
-                    PrimitiveArray.factory(pa.elementClass(), 1, 
-                        "" + mv9.getInt(whichMv9)));
-                String2.log("\nADDED missing_value=" + mv9.getInt(whichMv9) +
-                    " to col=" + colName);
-            }
- 
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, destPA, sourceTable.columnAttributes(col), addAtts);
+
             //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
             if (tSortedColumnSourceName.length() == 0 && 
@@ -2648,12 +2868,13 @@ expected =
         tryToFindLLAT(sourceTable, addTable);
 
         //*** makeReadyToUseGlobalAtts
-        gAddAtts.set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
+        addTable.globalAttributes().set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
             sourceAtts, 
             hasLonLatTime(addTable)? "Point" : "Other",
             "(local files)", //???
             gAddAtts, 
             suggestKeywords(sourceTable, addTable)));
+        gAddAtts = addTable.globalAttributes();
 
         //subsetVariables
         if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
@@ -2716,6 +2937,7 @@ expected =
             "    <charset>ISO-8859-1</charset>\n" +
             "    <columnNamesRow>1</columnNamesRow>\n" +
             "    <firstDataRow>2</firstDataRow>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
             "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
             "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -2744,7 +2966,7 @@ expected =
                 ", nUrls=" + nUrls);
         if (!"Unclassified".equals(securityClass))
             String2.log("> WARNING! <security-class>=" + securityClass);
-        String2.log("\n* generateDatasetsXml finished successfully.\n-----\n");
+        String2.log("\n* generateDatasetsXmlFromInPort finished successfully.\n-----\n");
         return results.toString();
     }
 
@@ -2770,15 +2992,15 @@ expected =
         // see https://www.timeanddate.com/worldclock/converter.html
         epSec = 1112515200; //from 2005-04-03T08:00Z in convert / time
         Test.ensureEqual(
-            Calendar2.epochSecondsToIsoStringT(epSec), "2005-04-03T08:00:00", "");//8hrs 
+            Calendar2.epochSecondsToIsoStringTZ(epSec), "2005-04-03T08:00:00Z", "");//8hrs 
         Test.ensureEqual(
             Calendar2.isoStringToEpochSeconds("2005-04-03T00:00", timeZone),
             epSec, "");
 
-        //test summer/daylight savings time: 2005-04-03T05:00 Pacific
+        //test summer/daylight saving time: 2005-04-03T05:00 Pacific
         epSec = 1112529600; //from 2005-04-03T12:00Z in convert / time
         Test.ensureEqual(
-            Calendar2.epochSecondsToIsoStringT(epSec), "2005-04-03T12:00:00", "");//7hrs
+            Calendar2.epochSecondsToIsoStringTZ(epSec), "2005-04-03T12:00:00Z", "");//7hrs
         Test.ensureEqual(
             Calendar2.isoStringToEpochSeconds("2005-04-03T05:00", timeZone),
             epSec, "");
@@ -2860,7 +3082,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"Test time_zone\";\n" +
 "    String time_coverage_start \"2005-04-03T08:00:00Z\";\n" + //UTC
 "    String title \"Test time_zone\";\n" +
@@ -3007,7 +3229,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"testTimeMV\";\n" +
 "    String time_coverage_start \"2004-09-13T14:15:00Z\";\n" +  //UTC
 "    String title \"testTimeMV\";\n" +
@@ -3196,12 +3418,12 @@ expected =
 
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, xmlDir, ".*", whichChild, dataDir, "") + "\n";
+                xmlFile, xmlDir, ".*", whichChild, dataDir, "", -1) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, xmlDir, "" + whichChild, dataDir, ""},
+                xmlFile, xmlDir, "" + whichChild, dataDir, "", "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 String expected = 
@@ -3212,6 +3434,7 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n"+
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -3220,11 +3443,12 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
+"        <att name=\"archive_location\">Other</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
@@ -3235,12 +3459,13 @@ String expected =
 "        <att name=\"geospatial_lat_min\" type=\"double\">40.0</att>\n" +
 "        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
 "        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
-"        <att name=\"history\">Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+"        <att name=\"history\">archive_location=Other\n" +
+"Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
 "Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -3324,7 +3549,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "Metadata access constraints: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
 "        <att name=\"platform\">Windows</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">This dataset is consists of point data taken from numerous depth surveys from the last century.  These data were processed and imported into a geographic information system (GIS) platform to form a bathymetric map of the ocean floor.  Approximately 18.6 billion depth data points were synthesized from various data sources that have been collected and archived since 1901 and includes lead line surveys, trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF files, XYZ files, and MB-58 multi-beam files.  Bathymetric soundings from these datasets span almost all areas of the Arctic and includes Alaska and the surrounding international waters.  Most of the bathymetry data used for this effort is archived and maintained at the National Center for Environmental Information (National Centers for Environmental Information (NCEI)) https://www.ncei.noaa.gov.\n" +
 "\n" +
 "The purpose of our effort is to develop a high resolution bathymetry dataset for the entire Alaska Exclusive Economic Zone (AEEZ) and surrounding waters by combining and assimilating multiple sets of existing data from historical and recent ocean depth mapping surveys.</att>\n" +
@@ -3366,12 +3591,12 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
             String dataFile = "dummy.csv";  
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, xmlDir, ".*", whichChild, dataDir, dataFile) + "\n";
+                xmlFile, xmlDir, ".*", whichChild, dataDir, dataFile, -1) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, xmlDir, "" + whichChild, dataDir, dataFile},
+                xmlFile, xmlDir, "" + whichChild, dataDir, dataFile, "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 String expected = 
@@ -3382,6 +3607,7 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -3390,11 +3616,12 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
+"        <att name=\"archive_location\">Other</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
@@ -3405,12 +3632,13 @@ String expected =
 "        <att name=\"geospatial_lat_min\" type=\"double\">40.0</att>\n" +
 "        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
 "        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
-"        <att name=\"history\">Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+"        <att name=\"history\">archive_location=Other\n" +
+"Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
 "Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -3483,7 +3711,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "Metadata access constraints: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
 "        <att name=\"platform\">Windows</att>\n" +
 "        <att name=\"sourceUrl\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present, Variable, Description, Units</att>\n" +
 "        <att name=\"summary\">This dataset is consists of point data taken from numerous depth surveys from the last century.  These data were processed and imported into a geographic information system (GIS) platform to form a bathymetric map of the ocean floor.  Approximately 18.6 billion depth data points were synthesized from various data sources that have been collected and archived since 1901 and includes lead line surveys, trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF files, XYZ files, and MB-58 multi-beam files.  Bathymetric soundings from these datasets span almost all areas of the Arctic and includes Alaska and the surrounding international waters.  Most of the bathymetry data used for this effort is archived and maintained at the National Center for Environmental Information (National Centers for Environmental Information (NCEI)) https://www.ncei.noaa.gov.\n" +
 "\n" +
@@ -3531,6 +3759,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">AVE LAT</att>\n" +
 "        </addAttributes>\n" +
@@ -3564,6 +3793,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Avg Temp</att>\n" +
 "        </addAttributes>\n" +
@@ -3718,6 +3948,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Min</att>\n" +
 "        </addAttributes>\n" +
@@ -3729,6 +3960,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Max</att>\n" +
 "        </addAttributes>\n" +
@@ -3764,12 +3996,12 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
             int whichChild = 0;
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, "", ".*", whichChild, dataDir, fileName) + "\n";
+                xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, "", "" + whichChild, dataDir, fileName},
+                xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 String expected = 
@@ -3780,6 +4012,7 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -3788,8 +4021,8 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
@@ -3813,13 +4046,14 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
 "        <att name=\"InPort_child_item_1_title\">Pacific cod distribution</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
+"        <att name=\"InPort_dataset_maintenance_frequency\">None planned</att>\n" +
 "        <att name=\"InPort_dataset_presentation_form\">Table (digital)</att>\n" +
 "        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
 "        <att name=\"InPort_dataset_publish_date\">2012</att>\n" +
@@ -3859,7 +4093,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "Data use constraints: Must cite originator if used in publications, reports, presentations, etc., and must understand metadata prior to use.</att>\n" +
 "        <att name=\"platform\">Fishing vessel</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">This dataset is from a study that analyzed the late summer distribution of juvenile Pacific cod in the eastern Bering Sea for 6 cohorts (2004-2009), based on catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
 "\n" +
 "The purpose of this study was to examine distributional patterns of juvenile Pacific cod during a period of sginificant variation in cohort strength and thermal regime in the Bering Sea, which allowed the consideration of potential density-dependent effects and climate-induced changes in distribution at the northern limit of the species&#39; range, and evaluation of local scale habitat selection in relation to fish density and water temperature.</att>\n" +
@@ -3897,12 +4131,12 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
             int whichChild = 1;
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, "", ".*", whichChild, dataDir, fileName) + "\n";
+                xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, "", "" + whichChild, dataDir, fileName},
+                xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 String expected = 
@@ -3913,6 +4147,7 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -3921,8 +4156,8 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
@@ -3946,10 +4181,11 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
+"        <att name=\"InPort_dataset_maintenance_frequency\">None planned</att>\n" +
 "        <att name=\"InPort_dataset_presentation_form\">Table (digital)</att>\n" +
 "        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
 "        <att name=\"InPort_dataset_publish_date\">2012</att>\n" +
@@ -3978,13 +4214,13 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
 "        <att name=\"instrument\">CTD</att>\n" +
-"        <att name=\"keywords\">2004-2009, afsc, alaska, analyzed, area, ave, AVE_LAT, AVE_LONG, average, avg_temp, based, bering, bering sea, center, cod, cohorts, core, cpue, CPUE_km2, CPUE_km3, cpue_tow2, cpue_tow3, data, dataset, density, density-dependence, dependence, depth, distribution, eastern, effort, Effort_Area_km_2, Effort_Volume_km_3, fisheries, habitat, identifier, juvenile, km2, km3, late, long, marine, national, nmfs, noaa, ocean, oceans, pacific, pacific cod, pcod140, Pcod140_n, present, region, science, sea, service, station, Station_ID, statistics, study, summer, temperature, time, tow2, tow3, trawl, Trawl_Type, type, volume, year</att>\n" +
+"        <att name=\"keywords\">2004-2009, afsc, alaska, analyzed, area, ave, AVE_LAT, AVE_LONG, average, avg_temp, based, bering, bering sea, center, cod, cohorts, core, cpue, CPUE_km2, CPUE_km3, cpue_tow2, cpue_tow3, data, dataset, density, density-dependence, dependence, depth, distribution, eastern, effort, Effort_Area_km_2, Effort_Volume_km_3, fisheries, habitat, identifier, juvenile, km2, km3, km^2, km^3, late, long, marine, national, nmfs, noaa, ocean, oceans, pacific, pacific cod, pcod140, Pcod140_n, present, region, science, sea, service, station, Station_ID, statistics, study, summer, temperature, time, tow2, tow3, trawl, Trawl_Type, type, volume, year</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">Data access constraints: No restriction for accessing this dataset\n" +
 "Data use constraints: Must cite originator if used in publications, reports, presentations, etc., and must understand metadata prior to use.</att>\n" +
 "        <att name=\"platform\">Fishing vessel</att>\n" +
 "        <att name=\"sourceUrl\">https://noaa-fisheries-afsc.data.socrata.com/Ecosystem-Science/AFSC-RACE-FBEP-Hurst-Distributional-patterns-of-0-/e7r7-2x38</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present</att>\n" +
 "        <att name=\"summary\">This dataset is from a study that analyzed the late summer distribution of juvenile Pacific cod in the eastern Bering Sea for 6 cohorts (2004-2009), based on catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
 "\n" +
@@ -4041,6 +4277,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"allowed_values\">54.4715 - 70.05075</att>\n" +
 "            <att name=\"comment\">Latitude of mid-point of trawl</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
@@ -4085,6 +4322,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"allowed_values\">3 - 16.62</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
@@ -4121,7 +4359,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 //"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
 "            <att name=\"comment\">Area fished by trawl: length of trawl x net spread</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Effort Area Km 2</att>\n" +
+"            <att name=\"long_name\">Effort Area Km^2</att>\n" +
 "            <att name=\"units\">square kilometers</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -4137,7 +4375,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
 //"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
 "            <att name=\"comment\">Area fished by trawl: length of trawl x net spread x vertical opening</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Effort Volume Km 3</att>\n" +
+"            <att name=\"long_name\">Effort Volume Km^3</att>\n" +
 "            <att name=\"units\">cubic kilometers</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -4360,8 +4598,8 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //do numeric and string min/max time agree?
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(9.682848e+8),  "2000-09-07T00:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.4694912e+9), "2016-07-26T00:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(9.682848e+8),  "2000-09-07T00:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.4694912e+9), "2016-07-26T00:00:00Z", "");
 
         //data file is /u00/data/points/lterSbc/cover_all_years_20160907.csv
         //The file confirms that is probably the range (there's no data before 2000).
@@ -4423,7 +4661,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
      *   exceptions are caught and logged.
      */
     public static String generateDatasetsXmlFromBCODMO(boolean useLocalFilesIfPossible,
-        String catalogUrl, String baseDir, String datasetNumberRegex)
+        String catalogUrl, String baseDir, String datasetNumberRegex, int tStandardizeWhat)
         throws Throwable {
 
         baseDir = File2.addSlash(baseDir); //ensure trailing slash
@@ -4434,6 +4672,8 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
         File2.makeDirectory(baseDir);
         StringBuffer results = new StringBuffer();
         StringArray noTime = new StringArray();
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
 
         //for the sub files
         JSONArray subArray;
@@ -4479,27 +4719,27 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                 }
 
                 //Adam says dsNumber+compactVersionDate is a unique dataset identifier.
+                String tDatasetID = "bcodmo" + dsNumber + compactVersionDate; 
                 String dsDir = baseDir + dsNumber + compactVersionDate + "/";
                 File2.makeDirectory(dsDir);                
 
                 //standard things
-                gatts.add("institution",     "BCO-DMO");
+                gatts.add("id", tDatasetID);
+                gatts.add("naming_authority", "org.bco-dmo");
+                gatts.add("institution",      "BCO-DMO");
                 gatts.add("keywords", 
                     "Biological, Chemical, Oceanography, Data, Management, Office, " +
                     "BCO-DMO, NSF");
-                gatts.add("publisher_name",  "BCO-DMO");
-                gatts.add("publisher_email", "info@bco-dmo.org");
-                gatts.add("publisher_type",  "institution");
-                gatts.add("publisher_url",   "http://www.bco-dmo.org/");
+                gatts.add("publisher_name",   "BCO-DMO");
+                gatts.add("publisher_email",  "info@bco-dmo.org");
+                gatts.add("publisher_type",   "institution");
+                gatts.add("publisher_url",    "http://www.bco-dmo.org/");
 
                 //"doi":"10.1575\/1912\/bco-dmo.641155",
                 //Adam says "The uniqueness of records will be by this DOI 
                 //  (which is a proxy for the 'dataset' and 'version_date' keys combined)."
-                if (ds.has(   "doi")) {
+                if (ds.has("doi")) 
                     gatts.add("doi", ds.getString("doi"));
-                    gatts.add("id",  ds.getString("doi"));
-                    gatts.add("naming_authority", "org.bco-dmo"); //??? or doi type?
-                }
 
                 //"landing_page":"http:\/\/www.bco-dmo.org\/dataset\/549122",
                 if (ds.has(   "landing_page")) {
@@ -4584,6 +4824,12 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                 sourceTable.readASCII(tsvName, bcodmoCharset, 
                     colNamesRow, colNamesRow + 1, "\t",
                     null, null, null, null, false); //don't simplify until "nd" removed
+                //custom alternative to sourceTable.convertIsSomething2(); //convert e.g., "nd" to ""
+                for (int col = 0; col < sourceTable.nColumns(); col++) 
+                    sourceTable.getColumn(col).switchFromTo("nd", ""); //the universal BCO-DMO missing value?
+                sourceTable.simplify();  
+                sourceTable.unpack(tStandardizeWhat); 
+
                 Table addTable = (Table)(sourceTable.clone());
                 addTable.globalAttributes().add(gatts);
                 gatts = addTable.globalAttributes();
@@ -4926,23 +5172,19 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                 String tSortFilesBySourceNames = "";
                 String tColumnNameForExtract   = "";
 
-                DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
                 for (int col = 0; col < addTable.nColumns(); col++) {
                     String colName = addTable.getColumnName(col);
-                    PrimitiveArray pa = (PrimitiveArray)addTable.getColumn(col).clone(); //clone because going into addTable
-                    pa.switchFromTo("nd", ""); //the universal BCO-DMO missing value?
-                    pa = pa.simplify();
-                    addTable.setColumn(col, pa);
+                    PrimitiveArray destPA = addTable.getColumn(col); 
 
                     //look for date columns
                     String tUnits = addTable.columnAttributes(col).getString("units");
                     if (tUnits == null) tUnits = "";
                     if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
-                        pa.elementClass() != String.class) 
+                        destPA.elementClass() != String.class) 
                         //convert e.g., yyyyMMdd columns from int to String
-                        addTable.setColumn(col, new StringArray(pa));                       
-                    if (pa.elementClass() == String.class) {
-                        tUnits = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                        addTable.setColumn(col, new StringArray(destPA));                       
+                    if (destPA.elementClass() == String.class) {
+                        tUnits = Calendar2.suggestDateTimeFormat((StringArray)destPA, false); //evenIfPurelyNumeric
                         if (tUnits.length() > 0)
                             addTable.columnAttributes(col).set("units", tUnits);
                         //??? and if tUnits = "", set to ""???
@@ -4950,24 +5192,17 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                     boolean isDateTime = Calendar2.isTimeUnits(tUnits);
 
                     Attributes sourceAtts = sourceTable.columnAttributes(col); //none
-                    Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        gatts, sourceTable.columnAttributes(col), addTable.columnAttributes(col), 
-                        colName, true, true); //addColorBarMinMax, tryToFindLLAT
+                    Attributes addAtts    = addTable.columnAttributes(col);
+                    addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        gatts, sourceAtts, addAtts, 
+                        sourceTable.getColumnName(col), 
+                        destPA.elementClass() != String.class, //tryToAddStandardName
+                        destPA.elementClass() != String.class, //addColorBarMinMax
+                        true); //tryToFindLLAT
 
-                    //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
-                    //  even if StringArray
-                    double stats[] = pa.calculateStats();
-                    int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
-                    if (whichMv9 < 0)
-                        whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-                    if (whichMv9 >= 0) {
-                        addAtts.add("missing_value", 
-                            PrimitiveArray.factory(pa.elementClass(), 1, 
-                                "" + mv9.getInt(whichMv9)));
-                        String2.log("\nADDED missing_value=" + mv9.getInt(whichMv9) +
-                            " to col=" + colName);
-                    }
-         
+                    //add missing_value and/or _FillValue if needed
+                    addMvFvAttsIfNeeded(colName, destPA, sourceAtts, addAtts);
+
                     //files are likely sorted by first date time variable
                     //and no harm if files aren't sorted that way
                     if (tSortedColumnSourceName.length() == 0 && 
@@ -5035,8 +5270,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                     //" * Since the source files don't have any metadata, you must add metadata\n" +
                     //"   below, notably 'units' for each of the dataVariables.\n" +
                     //"-->\n\n" +
-                    "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo" + 
-                        dsNumber + compactVersionDate + //Adam says this is a unique combination
+                    "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + tDatasetID + 
                         "\" active=\"true\">\n" +
                     "    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
                     "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +  
@@ -5054,6 +5288,7 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
                     "    <charset>" + bcodmoCharset + "</charset>\n" +
                     "    <columnNamesRow>" + (colNamesRow + 1) + "</columnNamesRow>\n" +
                     "    <firstDataRow>" + (colNamesRow + 2) + "</firstDataRow>\n" +
+                    "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
                     //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
                     //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
                     //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -5113,12 +5348,12 @@ today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) con
             String numberRegex = "(549122)";
 
             String results = generateDatasetsXmlFromBCODMO(
-                useLocal, catalogUrl, dataDir, numberRegex) + "\n";
+                useLocal, catalogUrl, dataDir, numberRegex, -1) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromBCODMO",
-                useLocal + "", catalogUrl, dataDir, numberRegex},
+                useLocal + "", catalogUrl, dataDir, numberRegex, "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 String expected = 
@@ -5136,6 +5371,7 @@ String expected =
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortedColumnSourceName>BTL_ISO_DateTime_UTC</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>BTL_ISO_DateTime_UTC</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -5144,8 +5380,8 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acquisition_description\">SXRF samples were prepared from unfiltered water taken from GEOTRACES GO-Flo bottles at the shallowest depth and deep chlorophyll maximum. Cells were preserved with 0.25&#37; trace-metal clean buffered glutaraldehyde and centrifuged onto C/formvar-coated Au TEM grids. Grids were briefly rinsed with a drop of ultrapure water and dried in a Class-100 cabinet. SXRF analysis was performed using the 2-ID-E beamline at the Advanced Photon source (Argonne National Laboratory) following the protocols of Twining et al. (2011).</att>\n" +
@@ -5171,7 +5407,7 @@ String expected =
 "List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
 "Cruise track: [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator)\n" +
 "Additional information may still be available from the vessel operator: [ https://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
-"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-04 ] NSF R2R data catalog.\n" +
+"Cruise information and original data are available from the [ https://www.rvdata.us/search/cruise/KN199-04 ] NSF R2R data catalog.\n" +
 "ADCP data are available from the Currents ADCP group at the University of Hawaii: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04 ADCP</att>\n" +
 "        <att name=\"deployment_1_end_date\">2010-11-04</att>\n" +
 "        <att name=\"deployment_1_location\">Subtropical northern Atlantic Ocean</att>\n" +
@@ -5187,7 +5423,7 @@ String expected =
 "List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
 "[ http://data.bcodmo.org/GEOTRACES/cruises/Atlantic_2010/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator) --&gt;funding: NSF OCE award 0926423\n" +
 "[ https://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
-"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-05 ] NSF R2R data catalog.\n" +
+"Cruise information and original data are available from the [ https://www.rvdata.us/search/cruise/KN199-05 ] NSF R2R data catalog.\n" +
 "ADCP data are available from the Currents ADCP group at the University of Hawaii: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05 ADCP</att>\n" +
 "        <att name=\"deployment_2_end_date\">2010-11-26</att>\n" +
 "        <att name=\"deployment_2_location\">Subtropical northern Atlantic Ocean</att>\n" +
@@ -5201,7 +5437,7 @@ String expected =
 "Station spacing is concentrated along the western margin to evaluate the transport of trace elements and isotopes by western boundary currents. Stations across the gyre will allow scientists to examine trace element supply by Saharan dust, while also contrasting trace element and isotope distributions in the oligotrophic gyre with conditions near biologically productive ocean margins, both in the west, to be sampled now, and within the eastern boundary upwelling system off Mauritania, sampled last year.\n" +
 "The cruise was funded by NSF OCE awards 0926204, 0926433 and 0926659.\n" +
 "Additional information may be available from the vessel operator site, URL: [ https://www.whoi.edu/cruiseplanning/synopsis.do?id=1662 ] https://www.whoi.edu/cruiseplanning/synopsis.do?id=1662.\n" +
-"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN204-01 ] NSF R2R data catalog.\n" +
+"Cruise information and original data are available from the [ https://www.rvdata.us/search/cruise/KN204-01 ] NSF R2R data catalog.\n" +
 "ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
 "        <att name=\"deployment_3_end_date\">2011-12-11</att>\n" +
 "        <att name=\"deployment_3_location\">Subtropical northern Atlantic Ocean</att>\n" +
@@ -5209,7 +5445,7 @@ String expected =
 "        <att name=\"deployment_3_title\">KN204-01</att>\n" +
 "        <att name=\"deployment_3_webpage\">https://www.bco-dmo.org/deployment/58786</att>\n" +
 "        <att name=\"doi\">10.1575/1912/bco-dmo.641155</att>\n" +
-"        <att name=\"id\">10.1575/1912/bco-dmo.641155</att>\n" +
+"        <att name=\"id\">bcodmo549122v20150217</att>\n" +
 "        <att name=\"infoUrl\">https://www.bco-dmo.org/dataset/549122</att>\n" +
 "        <att name=\"institution\">BCO-DMO</att>\n" +
 "        <att name=\"instrument_1_type_description\">GO-FLO bottle cast used to collect water samples for pigment, nutrient, plankton, etc. The GO-FLO sampling bottle is specially designed to avoid sample contamination at the surface, internal spring contamination, loss of sample on deck (internal seals), and exchange of water from different depths.</att>\n" +
@@ -5279,7 +5515,7 @@ String expected =
 "        <att name=\"publisher_url\">https://www.bco-dmo.org/</att>\n" +
 "        <att name=\"restricted\">false</att>\n" +
 "        <att name=\"sourceUrl\">http://darchive.mblwhoilibrary.org/bitstream/handle/1912/7908/1/GT10_11_cellular_element_quotas.tsv</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">cruise_id, project, station_GEOTRC, sta_PI, latitude, longitude, cast_GEOTRC, event_GEOTRC, depth, depth_GEOTRC_CTD_round, sample_GEOTRC, sample_bottle_GEOTRC, bottle_GEOTRC, grid_type, grid_num, SXRF_run, cell_type, time</att>\n" +
 "        <att name=\"summary\">Individual phytoplankton cells were collected on the GEOTRACES North Atlantic Transect cruises were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer &amp; Lessard (2000). Trace metal concentrations are reported.\n" +
 "Download zipped images: [ http://data.bco-dmo.org/GEOTRACES/Twining/Chl_image.zip ] Chlorophyll [ http://data.bco-dmo.org/GEOTRACES/Twining/Light_image.zip ] Light [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_map.zip ] SXRF maps [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_spectra.zip ] SXRF spectra\n" +
@@ -5325,6 +5561,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"description\">GEOTRACES station number; ranges from 1 through 12 for KN199-04 and 1 through 24 for KN204-01. Stations 7 and 9 were skipped on KN204-01. Some GeoFish stations are denoted as X_to_Y indicating the tow occurred between stations X and Y. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Station GEOTRC</att>\n" +
@@ -5387,6 +5624,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"description\">Cast identifier; numbered consecutively within a station. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cast GEOTRC</att>\n" +
@@ -5401,6 +5639,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"description\">Unique identifying number for US GEOTRACES sampling events; ranges from 2001 to 2225 for KN199-04 events and from 3001 to 3282 for KN204-01 events. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Event GEOTRC</att>\n" +
@@ -5415,6 +5654,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
 "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
@@ -5434,6 +5674,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
 "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
@@ -5452,6 +5693,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"description\">Unique identifying number for US GEOTRACES samples; ranges from 5033 to 6078 for KN199-04 and from 6112 to 8148 for KN204-01. PI-supplied values were identical to those in the intermediate US GEOTRACES master file. Originally submitted as &#39;GEOTRACES #&#39;; this parameter name has been changed to conform to BCO-DMO&#39;s GEOTRACES naming conventions.</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Sample GEOTRC</att>\n" +
@@ -5466,6 +5708,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"description\">Unique identification numbers given to samples taken from bottles; ranges from 1 to 24; often used synonymously with bottle number. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Sample Bottle GEOTRC</att>\n" +
@@ -5564,6 +5807,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"description\">biovolume of each cell estimated from microscope measurements of cell dimensions</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Vol</att>\n" +
@@ -5578,6 +5822,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"description\">cellular C content  calculated from biovolume using the relationships of Menden-Deuer &amp; Lessard (2000)</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell C</att>\n" +
@@ -5592,6 +5837,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"description\">total elemental Si content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
@@ -5609,6 +5855,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental P content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell P</att>\n" +
@@ -5623,6 +5870,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"description\">total elemental S content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell S</att>\n" +
@@ -5637,6 +5885,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Mn content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Mn</att>\n" +
@@ -5651,6 +5900,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Fe content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Fe</att>\n" +
@@ -5665,6 +5915,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Co content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Co</att>\n" +
@@ -5679,6 +5930,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Ni content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Ni</att>\n" +
@@ -5693,6 +5945,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Cu content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Cu</att>\n" +
@@ -5707,6 +5960,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
 "            <att name=\"description\">total elemental Zn content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Zn</att>\n" +
@@ -5782,8 +6036,8 @@ String expected =
 "            <att name=\"long_name\">BTL ISO Date Time UTC</att>\n" +
 "            <att name=\"source_name\">BTL_ISO_DateTime_UTC</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" +
-"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSSZ</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00.00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss.SS&#39;Z&#39;</att>\n" +
 "            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550552</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5873,6 +6127,10 @@ String expected =
         testBasic(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
+        testGenerateDatasetsXmlFromInPort();
+        testGenerateDatasetsXmlFromInPort2();
+        testGenerateDatasetsXmlFromBCODMO();
+        testGenerateDatasetsXmlWithMV();
         testFixedValue();
         testBasic2();
         testTimeZone();
@@ -5880,9 +6138,6 @@ String expected =
         testTimeMV();
         testTimeRange();
         testTimeRange2();
-        testGenerateDatasetsXmlFromInPort();
-        testGenerateDatasetsXmlFromInPort2();
-        testGenerateDatasetsXmlFromBCODMO();
 
         /* */
 

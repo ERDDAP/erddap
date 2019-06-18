@@ -12,7 +12,7 @@
 <table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
   <tr> 
     <td style="text-align:center; width:80px;"><a rel="bookmark"
-      href="http://www.noaa.gov/"><img 
+      href="https://www.noaa.gov/"><img 
       title="National Oceanic and Atmospheric Administration" 
       src="../images/noaab.png" alt="NOAA"
       style="vertical-align:middle;"></a></td> 
@@ -24,9 +24,9 @@
       &nbsp; &nbsp;
       <br>Brought to you by 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
-      href="http://www.noaa.gov">NOAA</a>  
+      href="https://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark"
-      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
@@ -42,9 +42,11 @@
 <br><button type="button" onClick="history.go(-1);return true;">Back</button> -->
 
 <h1 style="text-align:center;">Embed a Graph in a Web Page</h1> 
-If you are a web page author, you can embed ERDDAP's Make A Graph image URLs directly in your web pages 
-with HTML &lt;img&gt; tags.
-
+If you are a web page author, you can embed an ERDDAP Make A Graph image URL directly 
+in one of your web pages with an HTML 
+<a rel="help" href="https://www.w3schools.com/tags/tag_img.asp">&lt;img&gt; tag<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
 <ol>
 <li>In ERDDAP, <!-- not a link; encourage users to use the erddap installation that got them here -->
    search for a dataset of interest.
@@ -62,9 +64,11 @@ with HTML &lt;img&gt; tags.
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands">griddap documentation</a> or
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands">tabledap documentation</a>.
   <br>&nbsp;
-<li>Replace all instances of <kbd>&amp;</kbd> in the URL with <kbd>&amp;amp;</kbd> .
+<li>In preparation for using the URL in the HTML &lt;img&gt; tag, 
+  you must encode all instances of <kbd>&amp;</kbd> in the URL as <kbd>&amp;amp;</kbd> .
   <br>&nbsp;
-<li><a class="selfLink" id="PercentEncoded" href="#PercentEncoded" rel="bookmark">You must</a>  
+<li><a class="selfLink" id="PercentEncoded" href="#PercentEncoded" rel="bookmark">In preparation for using the URL</a>
+    in the HTML &lt;img&gt; tag, you must  
     <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encode<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a> the special characters in the query part of the
@@ -81,7 +85,7 @@ with HTML &lt;img&gt; tags.
     <br>Note that percent encoding is generally required when you access ERDDAP
       via software other than a browser. Browsers usually handle percent encoding for you.
     <br>In some situations, you need to percent encode all characters other than
-    A-Za-z0-9_-!.~'()*, but still don't encode the initial '&amp;' or the main '='
+    A-Za-z0-9_-!.~'()*, but still don't percent encode the initial '&amp;' or the main '='
     in constraints.
     <br>Programming languages have tools to do this (for example, see Java's
       <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder<img 
@@ -92,7 +96,7 @@ with HTML &lt;img&gt; tags.
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>) 
       and there are
-    <br><a rel="help" href="http://www.url-encode-decode.com/">web sites that percent encode/decode for you<img 
+    <br><a rel="help" href="https://www.url-encode-decode.com/">web sites that percent encode/decode for you<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
   <br>&nbsp;
@@ -102,9 +106,14 @@ with HTML &lt;img&gt; tags.
   specific date/time.
   <p>Or, for tabular datasets, you may change the time constraint in the URL 
    to something like
-  <kbd>time&gt;"now-2days"</kbd> 
+  <kbd>time&gt;now-2days</kbd> 
   so that the image will always show the data from 2 days ago until now.
   (<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">more information</a>)
+  <p>Or, for tabular datasets, you may change the time constraint in the URL 
+   to something like
+  <kbd>time&gt;max(time)-2days</kbd> 
+  so that the image will always show the last 2 days worth of data from the dataset.
+  (<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#max">more information</a>)
 <li>Make an img tag in your HTML document which refers to that modified URL, 
   for example
 
@@ -147,7 +156,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.80
+<p>ERDDAP, Version 2.00
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

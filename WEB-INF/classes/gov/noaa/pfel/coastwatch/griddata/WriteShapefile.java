@@ -65,37 +65,40 @@ public class WriteShapefile {
         String2.log("WriteShapefile.write(" + fullAscName + ")");
         long time = System.currentTimeMillis();
         BufferedReader reader = new BufferedReader(new FileReader(fullAscName));
-        String s;
-        s = reader.readLine(); int nX = String2.parseInt(s.substring(s.indexOf(' ') + 1));
-        s = reader.readLine(); int nY = String2.parseInt(s.substring(s.indexOf(' ') + 1));
-        s = reader.readLine(); double x0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-        s = reader.readLine(); double y0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-        s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-        s = reader.readLine(); String mvString = s.substring(s.indexOf(' ') + 1);
-        float mv = String2.parseFloat(s); 
-        int x, y;
+        try {
+            String s;
+            s = reader.readLine(); int nX = String2.parseInt(s.substring(s.indexOf(' ') + 1));
+            s = reader.readLine(); int nY = String2.parseInt(s.substring(s.indexOf(' ') + 1));
+            s = reader.readLine(); double x0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+            s = reader.readLine(); double y0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+            s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+            s = reader.readLine(); String mvString = s.substring(s.indexOf(' ') + 1);
+            float mv = String2.parseFloat(s); 
+            int x, y;
 
-        //make the x and y arrays
-        double xValues[] = DataHelper.getRegularArray(nx, x0, incr);
-        double yValues[] = DataHelper.getRegularArray(ny, y0, incr);
+            //make the x and y arrays
+            double xValues[] = DataHelper.getRegularArray(nx, x0, incr);
+            double yValues[] = DataHelper.getRegularArray(ny, y0, incr);
 
-        //make the data array
-        double minM = Double.MAX_VALUE;
-        double maxM = -Double.MAX_VALUE; //not Double.MIN_VALUE which ~= 0
-        float m[][] = new float[nX][nY];  //M is shapefile term for "measure"
-        for (y = 0; y < nY; y++) {
-            for (x = 0; x < nX; x++) {
-                float f = String2.parseDouble(reader.readLine());
-                if (f == mv) {
-                    f = Float.NaN;
-                } else {
-                    minM = Math.min(minM, f);
-                    maxM = Math.max(maxM, f);
+            //make the data array
+            double minM = Double.MAX_VALUE;
+            double maxM = -Double.MAX_VALUE; //not Double.MIN_VALUE which ~= 0
+            float m[][] = new float[nX][nY];  //M is shapefile term for "measure"
+            for (y = 0; y < nY; y++) {
+                for (x = 0; x < nX; x++) {
+                    float f = String2.parseDouble(reader.readLine());
+                    if (f == mv) {
+                        f = Float.NaN;
+                    } else {
+                        minM = Math.min(minM, f);
+                        maxM = Math.max(maxM, f);
+                    }
+                    data[x][y] = f; 
                 }
-                data[x][y] = f; 
             }
+        } finally {
+            reader.close();
         }
-        reader.close();
         String2.log("time to read ascii file: " + (System.currentTimeMillis() - time));
 
         //write the shapefile header
@@ -134,30 +137,33 @@ public class WriteShapefile {
         //write a double matlab file
         String tempFile = "c:/temp/double.mat";       
         DataOutputStream das = getDataOutputStream(tempFile);
-        writeMatlabHeader(das);
-        double dLat[] = {1.1, 2.2, 3.3};
-        double dLon[] = {44.4, 55.5};
-        double dData[][] =  new double[3][2] {{1.11, 2.22}, {33.33, 44.44}, {555.55, 666.66}};
-        writeDoubleArray(das, "lon", dLon);
-        writeDoubleArray(das, "lat", dLat);
-        write2DDoubleArray(das, "MyData", dData);
-        das.close();
-        log(com.cohort.util.File2.hexDump(tempFile, 256));  //uses an external class!
+        try {
+            writeMatlabHeader(das);
+            double dLat[] = {1.1, 2.2, 3.3};
+            double dLon[] = {44.4, 55.5};
+            double dData[][] =  new double[3][2] {{1.11, 2.22}, {33.33, 44.44}, {555.55, 666.66}};
+            writeDoubleArray(das, "lon", dLon);
+            writeDoubleArray(das, "lat", dLat);
+            write2DDoubleArray(das, "MyData", dData);
+            das.close();
+            log(com.cohort.util.File2.hexDump(tempFile, 256));  //uses an external class!
 
-        //read it
-        readMatlabFile(tempFile);
+            //read it
+            readMatlabFile(tempFile);
 
-        //write a float matlab file
-        tempFile = "c:/temp/float.mat";       
-        das = getDataOutputStream(tempFile);
-        writeMatlabHeader(das);
-        float fLat[] = {1.1f, 2.2f, 3.3f};
-        float fLon[] = {44.4f, 55.5f};
-        float fData[][] = new float[3][2] {{1.11f, 2.22f}, {33.33f, 44.44f}, {555.55f, 666.66f}};
-        writeFloatArray(das, "lon", fLon);
-        writeFloatArray(das, "lat", fLat);
-        write2DFloatArray(das, "MyData", fData);      
-        das.close();
+            //write a float matlab file
+            tempFile = "c:/temp/float.mat";       
+            das = getDataOutputStream(tempFile);
+            writeMatlabHeader(das);
+            float fLat[] = {1.1f, 2.2f, 3.3f};
+            float fLon[] = {44.4f, 55.5f};
+            float fData[][] = new float[3][2] {{1.11f, 2.22f}, {33.33f, 44.44f}, {555.55f, 666.66f}};
+            writeFloatArray(das, "lon", fLon);
+            writeFloatArray(das, "lat", fLat);
+            write2DFloatArray(das, "MyData", fData);      
+        } finally {
+            das.close();
+        }
         log(com.cohort.util.File2.hexDump(tempFile, 256)); //uses an external class!
         
         //read it

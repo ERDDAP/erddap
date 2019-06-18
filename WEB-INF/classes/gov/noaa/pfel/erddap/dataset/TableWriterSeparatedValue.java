@@ -37,12 +37,12 @@ public class TableWriterSeparatedValue extends TableWriter {
     protected String nanString; 
 
     //set by firstTime
-    protected boolean isStringOrChar[];
-    protected boolean isTimeStamp[];
-    protected String time_precision[];
-    protected BufferedWriter writer;
+    protected volatile boolean isStringOrChar[];
+    protected volatile boolean isTimeStamp[];
+    protected volatile String time_precision[];
+    protected volatile BufferedWriter writer;
 
-    public long totalNRows = 0;
+    public volatile long totalNRows = 0;
 
     /**
      * The constructor.
@@ -86,11 +86,10 @@ public class TableWriterSeparatedValue extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation converts them to NaNs.
-     *
      * @param table with destinationValues
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -173,7 +172,7 @@ public class TableWriterSeparatedValue extends TableWriter {
         }
 
         //*** do everyTime stuff
-        convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
+        table.convertToStandardMissingValues();  //to NaNs
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();

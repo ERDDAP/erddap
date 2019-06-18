@@ -18,12 +18,12 @@ public interface FromErddap {
     public int intSourceErddapVersion();  //e.g., 176
 
     /**
-     * This returns the source ERDDAP's local url.
+     * This returns the source ERDDAP's local URL.
      */
     public String getLocalSourceErddapUrl();
 
     /**
-     * This returns the source ERDDAP's public url.
+     * This returns the source ERDDAP's public URL.
      */
     public String getPublicSourceErddapUrl();
 

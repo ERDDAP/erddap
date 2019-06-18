@@ -37,13 +37,12 @@ public class GraphicsTest extends JPanel {
     // /*  **********************************************************
     //Working example of AttributedString from 
     //http://www.java2s.com/ExampleCode/2D-Graphics-GUI/TextAttributecolorandfont.htm
-    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_ON);
+    //2019-02-08 Don't set Antialiasing. Go with current RenderingHints from the Graphics object.
+    //g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+    //    RenderingHints.VALUE_ANTIALIAS_ON);
     String s = "Java Source and Support";
     Dimension d = getSize();
 
-    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_ON);
     Font serifFont = new Font("Serif", Font.PLAIN, 48);
     Font sansSerifFont = new Font("Monospaced", Font.PLAIN, 48);
 

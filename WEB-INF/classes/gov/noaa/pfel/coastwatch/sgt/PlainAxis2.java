@@ -108,15 +108,15 @@ public class PlainAxis2 extends PlainAxis {
       istop = (int)((uRange_.end - xt)/delta + 0.00001); //safe? Denbo code
       x = xt;
       xp = graph_.getXUtoP(x);
-      drawSmallXTics(g, x, uRange_.start, -delta, yp);
+      drawSmallXTics(g, x, uRange_.start, -delta, yp, uRange_.start);
       drawXTic(g, xp, yp, largeTicHeight_);
       for(i=0; i < istop; i++) {
-        drawSmallXTics(g, x, uRange_.end, delta, yp);
+        drawSmallXTics(g, x, uRange_.end, delta, yp, uRange_.start);
         x += delta;
         xp = graph_.getXUtoP(x);
         drawXTic(g, xp, yp, largeTicHeight_);
       }
-      drawSmallXTics(g, x, uRange_.end, delta, yp);
+      drawSmallXTics(g, x, uRange_.end, delta, yp, uRange_.start);
       //
       if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
       //
@@ -190,15 +190,15 @@ public class PlainAxis2 extends PlainAxis {
       istop = (int)((uRange_.end - yt)/delta + 0.00001);
       y = yt;
       yp = graph_.getYUtoP(y);
-      drawSmallYTics(g, xp, y, uRange_.start, -delta);
+      drawSmallYTics(g, xp, y, uRange_.start, -delta, uRange_.start);
       drawYTic(g, xp, yp, largeTicHeight_);
       for(i=0; i < istop; i++) {
-        drawSmallYTics(g, xp, y, uRange_.end, delta);
+        drawSmallYTics(g, xp, y, uRange_.end, delta, uRange_.start);
         y += delta;
         yp = graph_.getYUtoP(y);
         drawYTic(g, xp, yp, largeTicHeight_);
       }
-      drawSmallYTics(g, xp, y, uRange_.end, delta);
+      drawSmallYTics(g, xp, y, uRange_.end, delta, uRange_.start);
       //
       if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
       //

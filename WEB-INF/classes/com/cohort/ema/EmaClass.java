@@ -11,8 +11,11 @@ import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
@@ -845,7 +848,7 @@ public class EmaClass extends HttpServlet {
         //I note that this 4.01 DOCTYPE tag causes radio buttons in Mac IE to have the 
         //wrong background color.  But I still think it is the proper thing to do.
         sb.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n" +
-            "\"http://www.w3.org/TR/html4/loose.dtd\">\n" +
+            "\"https://www.w3.org/TR/html4/loose.dtd\">\n" +
             "<html>\n" +
             "<head>\n");
         if (windowTitle.length() > 0) 
@@ -1050,8 +1053,10 @@ public class EmaClass extends HttpServlet {
         //output the response html page 
         response.setContentType("text/html");
         response.setCharacterEncoding(String2.UTF_8);
-        OutputStreamWriter out = new OutputStreamWriter(response.getOutputStream(), String2.UTF_8);
+        Writer out = new BufferedWriter(new OutputStreamWriter(
+            new BufferedOutputStream(response.getOutputStream()), String2.UTF_8));
         out.write(getHTMLPage(request, request.getContentLength() > 0)); //displayErrorMessages
+        out.flush(); //close it???
     }
 
     /**

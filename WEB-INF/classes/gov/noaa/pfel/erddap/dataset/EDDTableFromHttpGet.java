@@ -6,9 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
-import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
-import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -22,57 +20,36 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
-import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
-import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.coastwatch.util.Tally;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 
-import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-
-import java.time.*;
-import java.time.format.*;
-
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
-import ucar.nc2.*;
-import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
-import ucar.ma2.*;
 
 /** 
- * This class represents a table of data from a collection of 1-dimensional .nc data files
+ * This class represents a table of data from a collection of jsonlCSV data files
  * which are created by HTTP GET calls to ERDDAP.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2016-06-14
@@ -80,25 +57,84 @@ import ucar.ma2.*;
 public class EDDTableFromHttpGet extends EDDTableFromFiles { 
 
     //special column names   //DON'T EVER CHANGE ANY OF THESE!!!
-    public final static String TIMESTAMP = "timestamp"; //epSec as double
+    public final static String TIMESTAMP = "timestamp"; //epic seconds as double
     public final static String AUTHOR    = "author";    //String
-    public final static int    AUTHOR_STRLEN = 16;      // 
     public final static String COMMAND   = "command";   //byte
+    public final static String SPECIAL_VAR_NAMES[] = {TIMESTAMP,                    AUTHOR,   COMMAND};
+    public final static String SPECIAL_VAR_TYPES[] = {"double",                    "String", "byte"};
+    public final static String SPECIAL_VAR_UNITS[] = {Calendar2.SECONDS_SINCE_1970, null,     null};
+//COMMAND needs CF FLAG attributes 0=insert, 1=delete
     public final static byte INSERT_COMMAND = 0;
     public final static byte DELETE_COMMAND = 1;
 
-    private HashSet<String> keys = new HashSet();
-    private String[] sortedColumnSourceNames;
+    public final static String  NUMERIC_TIMESTAMP_REGEX = "numericTimestamp\":(\\d\\.\\d{2,12}E9),?\\n";
+    public final static Pattern NUMERIC_TIMESTAMP_PATTERN = Pattern.compile(NUMERIC_TIMESTAMP_REGEX);
 
-    //this has the parsed directoryStructure specification
-    //with 1 item per directory and the last item being for the file names
-    private String dirStructureColumnNames[]; //[i] has a var sourceName or ""
-    private int    dirStructureNs[];          //[i] has the number of Calendar items, or -1
-    private int    dirStructureCalendars[];   //[i] has the e.g., Calendar.MONTH, or -1
+    protected String         columnNames[];  //all, not just NEC
+    protected String         columnUnits[];
+    protected Class          columnClasses[];
+    protected PrimitiveArray columnMvFv[];
+
+    protected long lastSaveDirTableFileTableBadFiles = 0; //System.currentTimeMillis
+    //insertOrDelete calls saveDirTableFileTable if &gt;=5 seconds since last save
+    //This works quite well because 
+    //  infrequently changed datasets (&gt; every 5 seconds) will save the fileTable to disk every time there is a change,
+    //  but frequently changed datasets will just save fileTable every 5 seconds
+    //  (and shouldn't ever be much more than 5 seconds out-of-date,
+    //  except for weird case where the changes stop arriving for a while).
+    //The big issue/danger here is:
+    //  if there are frequent changes, 
+    //  and a new .insert leads to a new max or min for a variable, 
+    //  that change to the fileTable will be lost 
+    //  if the dataset is reloaded (using fileTable info from disk)
+    //  if the fileTable info on disk is out-of-date.
+    //  It is only at that handoff that very recent fileTable changes can be lost.
+    //  Having a smaller value here minimizes that risk,
+    //  but at the cost of slowing down .insert and .delete.
+    //A better solution: find a way for fileTableInMemory to be 
+    //  passed directly to the new EDDTableFromHttpGet when the dataset is reloaded
+    //  or to force the old version of the dataset to save fileTable info to disk
+    //  right before reading it for new dataset.
+    public static long saveDirTableFileTableBadFilesEveryMS = 5000; 
+
+    /**
+     * EDDTableFromHttpGet DOESN'T SUPPORT UNPACKWHAT OPTIONS (other than 0).
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     *
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
+    /**
+     * This extracts the numericTimestamp from the results.
+     * @return the numericTimestamp (else NaN if trouble).
+     */
+    public static double extractTimestamp(String results) {
+         Matcher matcher = NUMERIC_TIMESTAMP_PATTERN.matcher(results);
+         if (matcher.find()) 
+             return String2.parseDouble(matcher.group(1));
+         return Double.NaN;
+    }
+
+    /**
+     * For testing, insert/delete results will match this.
+     */
+    public static String resultsRegex(int nRows) {
+        return 
+            "\\{\n" +
+            "\"status\":\"success\",\n" +
+            "\"nRowsReceived\":" + nRows + ",\n" +
+            "\"stringTimestamp\":\"....-..-..T..:..:..\\....Z\",\n" +
+            "\"numericTimestamp\":.\\..{2,12}E9\n" +
+            "\\}\n";
+    }
 
 
     /** 
-     * The constructor just calls the super constructor. 
+     * The constructor. 
      *
      * <p>The sortedColumnSourceName can't be for a char/String variable
      *   because NcHelper binary searches are currently set up for numeric vars only.
@@ -128,7 +164,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromHttpGet", tDatasetID, 
@@ -140,170 +178,283 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
-            tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tSortedColumnSourceName, 
+            tSortFilesBySourceNames,
+            tSourceNeedsExpandedFP_EQ, 
+            tFileTableInMemory,
+            tAccessibleViaFiles,
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
-    }
+        //standardizeWhat must be 0 or absent
+        String msg = String2.ERROR + 
+            " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
+        if (standardizeWhat != 0)
+            throw new RuntimeException(msg + "'standardizeWhat' MUST be 0.");
 
-    /** 
-     * The constructor for subclasses.
-     */
-    public EDDTableFromHttpGet(String tClassName, 
-        String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
-        String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
-        Attributes tAddGlobalAttributes,
-        Object[][] tDataVariables,
-        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
-        String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
-        String tColumnNameForExtract,
-        String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
-        throws Throwable {
+        //cacheFromUrl must be null
+        msg = String2.ERROR + 
+            " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
+        if (cacheFromUrl != null)
+            throw new RuntimeException(msg + "'cacheFromUrl' MUST be null.");
 
-        super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
-            tDefaultDataQuery, tDefaultGraphQuery,
-            tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
-            tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
-            tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+        //columnNameForExtract can't be used
+        if (String2.isSomething(columnNameForExtract))
+            throw new RuntimeException(msg + 
+                "'columnNameForExtract' can't be used for EDDTableFromHttpGet datasets.");
 
-        //get/remove key's from global metadata
-        String attName = "HttpGetKeys";
-        String keyAr[] = StringArray.arrayFromCSV( //may be length=0
-            combinedGlobalAttributes.getString(attName));
-        sourceGlobalAttributes.remove(  attName);
-        addGlobalAttributes.remove(     attName);
-        combinedGlobalAttributes.remove(attName);
-        //create temporary hashset
-        HashSet<String> tKeys = new HashSet();
-        for (int i = 0; i < keyAr.length; i++) {
-            if (String2.isSomething(keyAr[i]))
-                tKeys.add(String2.canonical(keyAr[i]));
+        //sortedColumnSourceName must be ""
+        if (!"".equals(sortedColumnSourceName))
+            throw new RuntimeException(msg + 
+                "'sortedColumnSourceName' MUST be nothing.");
+
+        //Check last 3 var SPECIAL_VAR_NAMES: TIMESTAMP, AUTHOR, COMMAND
+        for (int i = 0; i < 3; i++) {
+            int which = String2.indexOf(dataVariableSourceNames, SPECIAL_VAR_NAMES[i]);
+            if (which < 0)
+                throw new SimpleException(msg +
+                    "One of the variables must have the name \"" +
+                    SPECIAL_VAR_NAMES[which] + "\".");
+
+            if (!SPECIAL_VAR_TYPES[i].equals(dataVariables[which].sourceDataType()))
+                throw new SimpleException(msg +
+                    "Variable=" + SPECIAL_VAR_NAMES[i] + 
+                    " must have dataType=" + SPECIAL_VAR_TYPES[i] + 
+                    ", not \"" + dataVariables[which].sourceDataType() + "\".");
+
+            if (SPECIAL_VAR_UNITS[i] != null &&
+                !SPECIAL_VAR_UNITS[i].equals(dataVariables[which].units()))
+                throw new SimpleException(msg +
+                    "Variable=" + SPECIAL_VAR_NAMES[i] + 
+                    " must have units=" + SPECIAL_VAR_UNITS[i] + 
+                    ", not \"" + dataVariables[which].units() + "\".");
         }
-        if (tKeys.size() == 0)
-            throw new SimpleException(String2.ERROR + " in constructor: " +
-                attName + " global attribute wasn't specified.");
-        //then swap into place atomically
-        keys = tKeys;
 
-        //no column sourceName can be COLUMN
-//        ...
+        int nDV = dataVariables.length;
+        columnNames   = new String[nDV];
+        columnUnits   = new String[nDV];
+        columnClasses = new Class[nDV];
+        columnMvFv    = new PrimitiveArray[nDV];
+        for (int dvi = 0; dvi < nDV; dvi++) {
+            EDV edv = dataVariables[dvi];
+            String sourceName = edv.sourceName();
+            String destName = edv.destinationName();         
+            columnNames[dvi] = sourceName;
+            columnUnits[dvi] = edv.addAttributes().getString("units"); //here, "source" units are in addAttributes!
+            columnClasses[dvi] = edv.sourceDataTypeClass();
+
+            // No char variables
+            if (columnClasses[dvi] == char.class)
+                throw new SimpleException(msg + "No dataVariable can have dataType=char.");
+
+            //! column sourceNames must equal destinationNames (unless "=something")
+            if (!sourceName.startsWith("=") &&
+                !sourceName.equals(destName))
+                throw new SimpleException(msg +
+                    "Every variable sourceName and destinationName must match (" +
+                    sourceName + " != " + destName + ").");
+
+            //columnMvFv
+            if (columnClasses[dvi] == String.class) {
+                StringArray tsa = new StringArray(2, false);
+                if (edv.stringMissingValue().length() > 0) tsa.add(edv.stringMissingValue());
+                if (edv.stringFillValue().length()    > 0) tsa.add(edv.stringFillValue());
+                columnMvFv[dvi] = tsa.size() == 0? null : tsa;
+            } else if (columnClasses[dvi] == long.class) {
+                StringArray tsa = new StringArray(2, false);
+                String ts = edv.combinedAttributes().getString("missing_value");
+                if (ts != null) tsa.add(ts);
+                ts = edv.combinedAttributes().getString("_FillValue");
+                if (ts != null) tsa.add(ts);
+                columnMvFv[dvi] = tsa.size() == 0? null : tsa;
+            } else {
+                DoubleArray tda = new DoubleArray(2, false);
+                if (!Double.isNaN(edv.sourceMissingValue())) tda.add(edv.sourceMissingValue());
+                if (!Double.isNaN(edv.sourceFillValue()   )) tda.add(edv.sourceFillValue());
+                columnMvFv[dvi] = tda.size() == 0? null : tda;
+            }
+        }
+
+        if (verbose) String2.log("*** EDDTableFromHttpGet constructor for datasetID=" +
+            datasetID + " finished successfully.");
     }
-
 
     /**
      * This gets source data from one file.
      * See documentation in EDDTableFromFiles.
      *
+     * @param sourceDataNames must be specified (not null or size=0)
+     * @param sourceDataTypes must be specified (not null or size=0)
      * @throws Throwable if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
-        double sortedSpacing, double minSorted, double maxSorted, 
+        double sortedSpacing, double minSorted, 
+        double maxSorted, //maxSorted is adulterated if time and close to NOW. Can't use for timestamp.
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
-        return readFile(fileDir + fileName, Double.MAX_VALUE, sortedColumnSourceNames);
+        boolean process = true;
+        double timestampSeconds = Double.MAX_VALUE; //i.e., don't constrain timestamp
+        if (sourceConVars != null) {
+            for (int i = 0; i < sourceConVars.size(); i++) {
+                String scVar = sourceConVars.get(i);
+                if (TIMESTAMP.equals(scVar)) {
+                    if (sourceConOps.get(i).indexOf('<') < 0) {  //timestamp= or >= or leads to no processing
+                        process = false;
+                        break;
+                    } else {
+                        double td = String2.parseDouble(sourceConValues.get(i));
+                        if (Double.isNaN(td))
+                            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (" + TIMESTAMP + " constraint)");
+                        timestampSeconds = Math.min(timestampSeconds - (sourceConOps.get(i).equals("<")?1:0), td);                     
+                    }
+                } else if (AUTHOR.equals(scVar) ||
+                    COMMAND.equals(scVar)) {
+                    process = false;
+                    break;
+                }
+            }
+        }              
+
+        return readFile(tFileDir + tFileName, sourceDataNames, sourceDataTypes, 
+            httpGetRequiredVariableNames, process, timestampSeconds); 
     }
 
 
     /**
-     * This gets the data from one file up to and including the specified timestamp value.
+     * This gets the data from one file and processes it (edits and deletes are applied)
+     * up to and including rows with the specified timestampSeconds value.
+     *
+     * @param sourceDataNames must be fully specified (not null or length=0)
+     * @param sourceDataClasses must be fully specified (not null or length=0)
+     * @param tRequiredVariableNames are the dataset's requiredVariableNames, e.g., stationID, time
+     * @param process If true, the log is processed.  If false, the raw data is returned.
+     * @param timestampSeconds the maximum timestampSeconds to be kept if process=true. 
+     *   Use Double.MAX_VALUE or Double.NaN to keep all rows.
+     * @return the processed data table from one file.
+     *   Char vars are stored as shorts in the file, but returned as chars here.
      */
     public static Table readFile(String fullFileName, 
-        double timestampMillis,
-        String[] tSortedColumns) throws Throwable {
+        StringArray sourceDataNames, String sourceDataTypes[],
+        String[] tRequiredVariableNames, boolean process, double timestampSeconds) throws Throwable {
 
-        //read all columns of the file (so UPDATE's and DELETE's WHERE can be processed)
-        Table oldTable = new Table();
-        oldTable.readFlatNc(fullFileName, null, 0);  //load all vars, don't unpack
-        //String2.log("  EDDTableFromHttpGet.lowGetSourceDataFromFile table.nRows=" + table.nRows());
+        //String2.log(">> EDDTableFromHttpGet.readFile process=" + process + " timestampSeconds=" + timestampSeconds);
+        //String2.directReadFrom88591File(fullFileName)); 
+
+        //read needed columns of the file (so UPDATE's and DELETE's can be processed)
+        Table table = new Table();
+        //synchronized: don't read from file during a file write in insertOrDelete
+        synchronized (fullFileName) {  //fullFileName is canonical: from ArrayString, so good to synchronize on
+            //but probably not too bad if in middle of write
+            table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
+        }
+        //String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
         //table.saveAsDDS(System.out, "s");
 
-        //make a new Table with a shallow copy of the oldTable's metadata and columns 
-        int onCols = oldTable.nColumns();
-        int onRows = oldTable.nRows();
-        Table newTable = new Table();
-        newTable.globalAttributes().add(oldTable.globalAttributes());  
-        PrimitiveArray oldPAs[] = new PrimitiveArray[onCols];
-        PrimitiveArray newPAs[] = new PrimitiveArray[onCols];
-        DoubleArray timestampPA = null;
-        ByteArray commandPA = null;
-        int tCol = 0;
-        for (int col = 0; col < onCols; col++) {
-            PrimitiveArray pa = oldTable.getColumn(col);
-            String colName = oldTable.getColumnName(col);
-
-            //grab the TIMESTAMP and COMMAND columns
-            if (colName.equals(TIMESTAMP)) {
-                timestampPA = (DoubleArray)pa;
-                continue;
-            }
-            if (colName.equals(COMMAND)) {
-                commandPA = (ByteArray)pa;
-                continue;
-            }
-            
-            //insert all the others in newTable
-            oldPAs[tCol] = pa;
-            newPAs[tCol] = PrimitiveArray.factory(pa.elementClass(), onRows, false);
-            newTable.addColumn(tCol++, //increment
-                colName, newPAs[col], 
-                oldTable.columnAttributes(col)); //not a clone
-        }
-        if (timestampPA == null ||
-            commandPA   == null) 
+        //gather info about the table
+        int nCols = table.nColumns();
+        int nRows = table.nRows();
+        PrimitiveArray pas[] = new PrimitiveArray[nCols];
+        for (int col = 0; col < nCols; col++) 
+            pas[col] = table.getColumn(col);
+        int timestampColi = table.findColumnNumber(TIMESTAMP);
+        int commandColi   = table.findColumnNumber(COMMAND);
+        if (timestampColi < 0 ||
+            commandColi   < 0) 
             throw new SimpleException(
                 String2.ERROR + " while reading " + fullFileName + ": " +
-                "columnName=" + 
-                (timestampPA == null? TIMESTAMP : commandPA) + 
-                " not found.");
+                "columnName=" + (timestampColi < 1? TIMESTAMP : COMMAND) + 
+                " not found in " + table.getColumnNamesCSVString() + ".");
 
-        //remove rows with timestamp > row's timestamp
-//        if () {
-//        }
+        if (timestampSeconds < Double.MAX_VALUE) {  //NaN -> false
+            //remove rows with timestamp > requested timestamp (whether process or not)
+ 
+            //timestampPA should be sorted in ascending order (perhaps with ties)
+            //BUT if computer's clock is rolled back, there is possibility of out-of-order.
+            //OR if different threads doing changes processed at different speeds could finish out-of-order.
+            //so sort by timestampColi first
+            table.ascendingSort(new int[]{timestampColi});
+            //String2.log(">>  timestamp values=" + table.getColumn(timestampColi));
 
-        //sort based on sortedCols+timestamp
-
-        //just keep last of each group of rows where sortedCols is same
-        //  and last row is INSERT (not DELETE)
-        BitSet justKeep = new BitSet();
-        for (int row = 0; row < onRows; row++) {
-//
+            int row = table.getColumn(timestampColi).binaryFindFirstGE(0, nRows - 1, 
+                timestampSeconds + 0.0005); // 1/2 milli later to avoid rounding problems, and because I just want > (not GE)
+            //String2.log("  timestamp constraint removed " + (nRows-row) + " rows. Now nRows=" + row);
+            if (row < nRows) {
+                table.removeRows(row, nRows);  //exclusive
+                nRows = row;
+            }
         }
-        newTable.justKeep(justKeep);
 
-        
+        if (!process || nRows == 0)
+            return table;
 
-        return newTable;
+        //process the file
+        //sort based on requiredVariableNames+timestamp  (e.g., stationID, time, timestamp)
+        //Except for revisions, the data should already be in this order or very close to it.
+        int nRCN = tRequiredVariableNames.length;
+        int sortBy[] = new int[nRCN + 1];
+        for (int i = 0; i < nRCN; i++) {
+            sortBy[i] = table.findColumnNumber(tRequiredVariableNames[i]);
+            if (sortBy[i] < 0) 
+                throw new SimpleException(
+                    String2.ERROR + " while reading " + fullFileName + ": " +
+                    "columnName=" + tRequiredVariableNames[i] + 
+                    " not found in " + table.getColumnNamesCSVString() + ".");
+        }
+        sortBy[nRCN] = timestampColi;
+        //I am confident that sorting by timestamp will be correct/exact.
+        //Although the numbers are 0.001, if bruised (0.000999999999),
+        //  they should be bruised the same way on different rows.
+        //If that is incorrect, then a solution is:
+        //  multiply time and timestamp by 1000 and round to integer before sorting
+        //  then divide by 1000 after justKeep() below.
+        table.ascendingSort(sortBy);
+
+        //Just keep last row of each group of rows where HttpGetRequiredVariables are same.
+        //But if that row is DELETE, then don't keep it either.
+        BitSet justKeep = new BitSet(nRows);  //all false
+        for (int row = 0; row < nRows; row++) { //look at row and row+1
+            if (row < nRows - 1) {
+                boolean allSame = true;           //not considering timestamp
+                for (int i = 0; i < nRCN; i++) {  //not considering timestamp
+                    if (pas[sortBy[i]].compare(row, row + 1) != 0) {
+                        allSame = false;
+                        break;
+                    }
+                }
+                if (allSame)   //all requiredVariableNames are same as next row
+                    continue;  //don't keep this row                
+            }
+
+            //this row is last of a group
+            //if last command is DELETE, then delete this row
+            if (pas[commandColi].getInt(row) == DELETE_COMMAND) 
+                continue; //don't keep this row
+
+            //else keep this row
+            justKeep.set(row);
+        }
+        table.justKeep(justKeep);      
+
+        return table;
     }
 
 
     /**
-     * This parses the directoryStructure specification.
+     * This parses the httpGetDirectoryStructure specification.
      *
      * @param specification e.g, stationID/10years/7days
      * @param dsSourceName will be filled, with [i] = a var sourceName or "".
      *    sourceNames haven't been tested to see if they are in the dataset.
      * @param dsN          will be filled, with [i] = the number of Calendar items, or -1
-     * @param dsCalendar will be filled, with [i] = the e.g., Calendar.MONTH, or -1
+     * @param dsCalendar   will be filled, with [i] = the e.g., Calendar.MONTH, or -1
      * @throws RuntimeException if trouble
      */ 
-    public static void parseDirectoryStructure(String specification, 
-         StringArray dsSourceName, IntArray dsN, IntArray dsCalendar) throws Exception {
+    public static void parseHttpGetDirectoryStructure(String specification, 
+         StringArray dsSourceName, IntArray dsN, IntArray dsCalendar) {
 
          dsSourceName.clear();
          dsN.clear();
@@ -312,13 +463,26 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
          Pattern pattern = Pattern.compile("(\\d+)([A-Za-z]+)");
          for (int p = 0; p < parts.length; p++) {
              Matcher matcher = pattern.matcher(parts[p]);
-             if (matcher.matches()) {
+             boolean isNUnits = matcher.matches(); //e.g., 5days
+             int cal = -1;
+             if (isNUnits) { //well, probably isNUnits
                  //e.g., 5days
-                 String units = matcher.group(2);
-                 int cal = Calendar2.unitsToConstant(units); //throws exception
-                 if (cal == Calendar.WEEK_OF_YEAR)
-                     throw new RuntimeException(String2.ERROR + " parsing directoryStructure: " +
-                         "units=" + units + " is invalid.");
+                 // but it may be a column name which matches the pattern accidentally,
+                 // so try/catch
+                 try {
+                     String units = matcher.group(2);
+                     cal = Calendar2.unitsToConstant(units); //throws exception
+                     if (cal == Calendar.WEEK_OF_YEAR)
+                         throw new RuntimeException(String2.ERROR + " parsing httpGetDirectoryStructure: " +
+                             "units=" + units + " is invalid.");
+                 } catch (Exception e) {
+                     isNUnits = false;
+                     String2.log("Treating httpGetDirectoryStructure part#" + p +"=" + parts[p] + 
+                         " as a columnName (" + e.toString() + ").");
+                 }
+             }
+                
+            if (isNUnits) {
                  dsSourceName.add("");
                  dsN.add(         String2.parseInt(matcher.group(1)));
                  dsCalendar.add(  cal);
@@ -328,6 +492,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                  dsCalendar.add(  -1);
              }
          }
+         dsSourceName.trimToSize();
+         dsN.trimToSize();
+         dsCalendar.trimToSize();
      }
 
 
@@ -338,7 +505,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * @param startDir with trailing slash
      * @param tDirStructureColumnNames For each part, the variable's source column name
      *   or "" if not used for this part.
-     *   Any column names here should be in requiredColumnNames.
+     *   Any column names here should be in requiredVariableNames.
      * @param tDirStructureNs     For each part, the number of YEAR, MONTH, ...
      *   or -1 if not used for this part
      * @param tDirStructureCalendars  For each part, 
@@ -350,9 +517,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      *    Only values on the specified row will be used.
      * @param row the value of the rightmost array of tColumnSourceValues
      * @param timeEpSec the time value, in epoch seconds.
-     *   It is usually a requiredColumn, but not always.
+     *   It is usually a requiredVariable, but not always.
      *   It is an error if it is needed here, but timeEpSec is NaN.
-     * @return the full file dir+name, starting with startDir.
+     * @return the full file dir+name, starting with startDir. The file may not 
+     *   exist yet.
      */
     public static String whichFile(String startDir, 
         StringArray tDirStructureColumnNames, 
@@ -374,7 +542,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 int sni = String2.indexOf(tColumnNames, tDirStructureColumnNames.get(i));
                 if (sni < 0)
                     throw new SimpleException(
-                        String2.ERROR + " in directoryStructure part#" + i + 
+                        String2.ERROR + " in httpGetDirectoryStructure part#" + i + 
                         ": column=" + tDirStructureColumnNames.get(i) + 
                         " isn't in columnNames=" + String2.toCSSVString(tColumnNames) + 
                         ".");
@@ -385,19 +553,20 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 nameSB.append(tp);                
 
             } else {
-                //Find the time part. Round down to n'th precision. 
+                //Find the time part. Truncate to n'th precision. 
                 //e.g., 17 seconds to 5seconds precision is 15 seconds.
                 //(MONTH is 0-based, so that works correctly as is.)
-                if (!Double.isFinite(timeEpSec)) 
+                if (timeEpSec >= 253402300800.0 || //10000-01-01
+                    timeEpSec <= -377711769600.0) //-10000-01-01
                     throw new SimpleException(
-                        String2.ERROR + " in directoryStructure part#" + i + 
-                        ": time value is NaN!");
+                        String2.ERROR + " in httpGetDirectoryStructure part#" + i + 
+                        ": invalid time value (timeEpSec=" + timeEpSec + ")!");
                 //need a new gc for each part since gc is modified
                 GregorianCalendar gc = Calendar2.epochSecondsToGc(timeEpSec); 
                 int n = tDirStructureNs.get(i);
                 gc.set(cal, (gc.get(cal) / n) * n);
                 //Get the ISO 8601 date/time string just to that precision/field.
-                String s = Calendar2.formatAsISODateTimeT3(gc); //to millis 
+                String s = Calendar2.formatAsISODateTimeT3Z(gc); //to millis 
                 int nChar = s.length();
                 if      (cal == Calendar.YEAR)        nChar = 4;
                 else if (cal == Calendar.MONTH)       nChar = 7;
@@ -405,7 +574,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 else if (cal == Calendar.HOUR_OF_DAY) nChar = 13;
                 else if (cal == Calendar.MINUTE)      nChar = 16;
                 else if (cal == Calendar.SECOND)      nChar = 19;
-                //else to millis precision
+                else nChar--; //to millis precision
                 String tp = s.substring(0, nChar);  
                 tp = String2.replaceAll(tp, ':', '-'); //make fileNameSafe
                 if (i < nParts - 1)
@@ -414,8 +583,79 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             }
         }
 
-        return dirSB.toString() + nameSB.toString() + ".nc";
+        return dirSB.toString() + nameSB.toString() + ".jsonl";
     }
+
+    /** 
+     * This is the non-static insertOrDelete method which calls the
+     * static insertOrDelete method.
+     *
+     * @return the response String
+     * @throws Throwable if any kind of trouble
+     */
+    public String insertOrDelete(byte command, String userDapQuery) throws Throwable {
+
+        if (cacheFromUrl != null) {
+            throw new SimpleException(
+                "For EDDTableFromHttpGet datasets, if cacheFromUrl is active, " +
+                ".insert and .delete are not allowed for this local dataset " +
+                "because any changes would be lost the next time the local dataset " +
+                "checks for files from the remote dataset.");
+        }
+
+        Table tDirTable  = dirTable;  //succeeds if fileTableInMemory (which it should always be)
+        Table tFileTable = fileTable;
+        if (tDirTable == null) 
+            tDirTable  = tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //may be null
+        if (tFileTable == null) 
+            tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); //may be null
+        if (tDirTable == null || tFileTable == null) {
+            requestReloadASAP();
+            throw new SimpleException("dirTable and/or fileTable are null!");
+        }
+
+        String response = insertOrDelete(fileDir, 
+            httpGetDirectoryStructureColumnNames, 
+            httpGetDirectoryStructureNs, 
+            httpGetDirectoryStructureCalendars,
+            httpGetKeys,
+            combinedGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,
+            httpGetRequiredVariableNames,
+            command, userDapQuery,
+            tDirTable, tFileTable);  
+
+//do more with badFileMap?
+
+        //do slow / background thing first:
+        //save dirTableFileTable to disk?
+        //there is always a change to fileTable and min max (e.g., timeStamp)
+        long tTime = System.currentTimeMillis();
+        if (!fileTableInMemory ||  
+            tTime - lastSaveDirTableFileTableBadFiles >= saveDirTableFileTableBadFilesEveryMS) { 
+            saveDirTableFileTableBadFiles(standardizeWhat, tDirTable, tFileTable,  //throws Throwable
+                null); //null so ignore badFilesMap
+            lastSaveDirTableFileTableBadFiles = tTime;
+        }
+
+        //then faster things 
+        Table tMinMaxTable = makeMinMaxTable((StringArray)(tDirTable.getColumn(0)), tFileTable);
+
+        //then, change secondary parts of instance variables
+        //e.g., update all variable destinationMinMax
+        updateDestinationMinMax(tMinMaxTable);
+
+        //then put in place as quickly/atomically as possible
+        minMaxTable = tMinMaxTable; //swap into place quickly
+        if (fileTableInMemory) {  //it will always be true
+            //quickly swap into place
+            dirTable  = tDirTable;
+            fileTable = tFileTable; 
+        }
+
+        return response;
+    }
+
 
     /** 
      * This is used to add insert or delete commands into a data file of this dataset. 
@@ -425,34 +665,53 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * The author will be kept and added to the 'author' column in the dataset.
      *
      * <p>INSERT works like SQL's INSERT and UPDATE.
-     * If the info matches existing values of sortColumnSourceNames,
+     * Effectively, if the info matches existing values of sortColumnSourceNames,
      * the previous data is updated/overwritten. Otherwise, it is inserted.
+     * (In reality, the info is just added to the log.)
      *
-     * <p>DELETE works like SQL's DELETE
+     * <p>DELETE works like SQL's DELETE, but just enters the deletion info in the log.
+     * The original info isn't actually deleted.
+     * 
+     * <p>Timings on my pathetic laptop, with Win 7 (2018-06-27):
+     * <br>nRows/insert  ms/insert
+     * <br>1             1.0025
+     * <br>10            1.835
+     * <br>100           2.9075
+     * <br>1000          12.69 (but sometimes longer)
+     * <br>So clearly, you can push vastly more data in if you do it in batches.
+     * <br>The limit is probably Tomcat query length, which you can change (default is 8KB?) 
+     * 
+     * <p>Having this static method do the actual work makes the system easier to test.
      *
      * @param tDirStructureColumnNames the column names for the parts of the 
-     *   dir and file names. All of these names must be in requiredColumnNames.
+     *   dir and file names. All of these names must be in requiredVariableNames.
      * @param keys the valid values of author= (to authenticate the author)
-     * @param columnNames the names of all of the dataset's source variables.
-     *   This does not include timestamp, author, or command.
-     *   The time variable must be named time.
+     * @param tGlobalAttributes  used when creating a new file
+     * @param columnNames the names of ALL of the dataset's source variables,
+     *   in the dataset's order,
+     *   including timestamp, author, or command.
+     *   The time variable, if any, must be named time.
+     *   For a given dataset, this must not change over time.
      * @param columnUnits any of them may be null or "".
      *   All timestamp columns (in the general sense) should have UDUNITS 
-     *   String time units (e.g., "yyyy-MM-dd'T'HH:mm:ss") 
+     *   String time units (e.g., "yyyy-MM-dd'T'HH:mm:ss'Z'") 
      *   or numeric time units (e.g., "days since 1985-01-01").
      *   For INSERT and DELETE calls, the time values must be in that format
      *   (you can't revert to ISO 8601 format as with data requests in the rest of ERDDAP).
-     * @param columnTypes the Java names for the types (e.g., double).
+     * @param columnClasses the Java types (e.g., double.class, long.class, char.class, String.class).
      *   The missing values are the default missing values for PrimitiveArrays.
-     *   All timestamp columns MUST be doubles.
-     *   'long' is not supported because .nc3 files don't support longs.
-     * @param columnStringLengths -1 if not a string column.
-     * @param requiredColumnNames the names which identify a unique row.
-     *   RequiredColumnNames MUST all be in columnNames.
-     *   Insert requests MUST have all of the requiredColumnNames and usually have all 
-     *     columnNames + author. Missing columns will get (standard PrimitiveArray) 
+     *   All timestamp columns (in the general sense) MUST be double.class.
+     * @param columnMvFv a PrimitiveArray of any suitable type
+     *   (all are used via pa.indexOf(String)).  
+     *   with the missing_value and/or _FillValue for each column (or null for each).
+     *   If mv or fv is the PrimitiveArray standard missing_value, 
+     *   it needn't be included in this PA.
+     * @param requiredVariableNames the variable names which identify a unique row.
+     *   All requiredVariableNames MUST be in columnNames.
+     *   Insert requests MUST have all of the requiredVariableNames and usually 
+     *     have all columnNames. Missing columns will get (standard PrimitiveArray) 
      *     missing values.
-     *   Delete requests MUST have all of the requiredColumnNames and, in addition,
+     *   Delete requests MUST have all of the requiredVariableNames and, in addition,
      *     usually have just author. Other columns are irrelevant.
      *   This should be as minimal as possible, and always includes time:  
      *   For TimeSeries: stationID, time.
@@ -471,113 +730,128 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         StringArray tDirStructureColumnNames, 
         IntArray tDirStructureNs, IntArray tDirStructureCalendars,
         HashSet<String> keys,
-        String columnNames[], String columnUnits[], String columnTypes[], 
-        int columnStringLengths[], 
-        String requiredColumnNames[],
+        Attributes tGlobalAttributes,
+        String columnNames[], String columnUnits[], Class columnClasses[], PrimitiveArray columnMvFv[],
+        String requiredVariableNames[],
         byte command, String userDapQuery,
         Table dirTable, Table fileTable) throws Throwable {
 
-        double timestamp = System.currentTimeMillis() / 1000.0;
+        double timestampSeconds = System.currentTimeMillis() / 1000.0;
         if (dirTable == null || fileTable == null) { //ensure both or neither
             dirTable = null;
             fileTable = null;
         }
 
-        //store values parallelling columnNames
+        //store things in data structures paralleling columnNames (i.e., [col])
         int nColumns = columnNames.length;
+        if (nColumns == 0)
+            throw new SimpleException(String2.ERROR + ": columnNames not specified.");
         PrimitiveArray columnValues[] = new PrimitiveArray[nColumns];
-        Class columnClasses[] = new Class[nColumns];
-        DataType columnDataTypes[] = new DataType[nColumns];
+        boolean columnIsFixed[]  = new boolean[nColumns];
         boolean columnIsString[] = new boolean[nColumns];
+        boolean columnIsLong[]   = new boolean[nColumns];
         int timeColumn = -1;         
-        DateTimeFormatter timeFormatter = null; //used if time variable is string
+        String timeFormat = null;               //used if time variable is string
         double timeBaseAndFactor[] = null;      //used if time variable is numeric
+        int timestampColumn = -1;
+        int authorColumn = -1;
+        int commandColumn = -1;
         for (int col = 0; col < nColumns; col++) {
+            columnIsFixed[ col] = columnNames[col].charAt(0) == '=';
+            columnIsString[col] = columnClasses[col] == String.class; //char treated as numeric
+            columnIsLong[  col] = columnClasses[col] == long.class;
+
             if (!String2.isSomething(columnUnits[col]))
                 columnUnits[col] = "";
 
             if (columnNames[col].equals(EDV.TIME_NAME)) {
                 timeColumn = col;
                 if (columnIsString[col]) {
-                    if (columnUnits[col].toLowerCase().indexOf("yyyy") < 0)  //was "yy"
+                    //string times
+                    if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
+                        String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
                         throw new SimpleException(EDStatic.queryError + 
                             "Invalid units for the string time variable. " +
                             "Units MUST specify the format of the time values.");
-                    timeFormatter = DateTimeFormat.forPattern(columnUnits[col]).withZone(ZoneId.of("UTC"));
-                } else { //numeric time values
+                    }
+                    timeFormat = columnUnits[col];
+                } else {
+                    //numeric times
                     timeBaseAndFactor = Calendar2.getTimeBaseAndFactor(
                         columnUnits[col]); //throws RuntimeException if trouble
                 }
-            }
-
-            if (columnTypes[col].equals("String")) {
-                columnClasses[col] = String.class;
-                columnDataTypes[col] = DataType.STRING;
-                columnIsString[col] = true;
-                if (columnStringLengths[col] < 1 || columnStringLengths[col] > 64000)
-                    throw new SimpleException(EDStatic.queryError + 
-                        "Invalid string length=" + columnStringLengths[col] + 
-                        " for column=" + columnNames[col] + ".");
-            } else {
-                columnClasses[col] = PrimitiveArray.elementStringToClass(columnTypes[col]);
-                columnDataTypes[col] = NcHelper.getDataType(columnClasses[col]);
+            } else if (columnNames[col].equals(TIMESTAMP)) { timestampColumn = col;
+            } else if (columnNames[col].equals(AUTHOR))    { authorColumn    = col;
+            } else if (columnNames[col].equals(COMMAND))   { commandColumn   = col;
             }
         }
+        columnValues[timestampColumn] = new DoubleArray(new double[]{timestampSeconds});
+        columnValues[commandColumn]   = new ByteArray(  new byte[]{command});
 
         //parse the userDapQuery's parts. Ensure it is valid. 
         String parts[] = String2.split(userDapQuery, '&');
         int nParts = parts.length;
         String author = null; //the part before '_'
         int arraySize = -1; //until an array is found
-        BitSet requiredColumnsFound = new BitSet();
+        BitSet requiredVariablesFound = new BitSet();
         for (int p = 0; p < nParts; p++) {
-            parts[p] = SSR.percentDecode(parts[p]);
             int eqPo = parts[p].indexOf('=');
             if (eqPo <= 0 || //no '=' or no name
                 "<>~!".indexOf(parts[p].charAt(eqPo-1)) >= 0) // <= >= != ~=
                 throw new SimpleException(EDStatic.queryError + 
                     "The \"" + parts[p] + "\" parameter isn't in the form name=value.");
-            String tName  = parts[p].substring(0, eqPo);
-            String tValue = parts[p].substring(eqPo + 1);            
-            if (tValue.startsWith("~")) // =~
-                throw new SimpleException(EDStatic.queryError + 
-                    "The \"" + parts[p] + "\" parameter isn't in the form name=value.");
+            String tName  = parts[p].substring(0, eqPo); //names should be varNames so not percent encoded
+            String tValue = SSR.percentDecode(parts[p].substring(eqPo + 1));            
+            //String2.log(">> tName=" + tName + " tValue=" + String2.annotatedString(tValue));
 
             //catch and verify author=
             if (tName.equals(AUTHOR)) {
-                if (author != null)
-                    throw new SimpleException(EDStatic.queryError + 
-                        "There are two parameters with name=author.");
-                if (!keys.contains(tValue))
-                    throw new SimpleException(EDStatic.queryError + 
-                        "Invalid author_key.");
+                if (tValue.startsWith("\"") && tValue.endsWith("\""))
+                    tValue = String2.fromJson(tValue);
+
                 if (p != nParts - 1)
                     throw new SimpleException(EDStatic.queryError + 
-                        "name=author must be the last parameter.");
-                int po = Math.max(0, tValue.indexOf('_'));
-                author = tValue.substring(0, po); //may be ""
+                        "author= must be the last parameter.");
+                if (!keys.contains(tValue))  //this tests validity of author_key (since checked when created)
+                    throw new SimpleException(EDStatic.queryError + 
+                        "Invalid author_key.");
+                int po = Math.max(0, tValue.indexOf('_')); 
+                author = tValue.substring(0, po); 
+                columnValues[authorColumn] = new StringArray(new String[]{author});
 
             } else { 
-                //is it a requiredColumn?
-                int whichRC = String2.indexOf(requiredColumnNames, tName);
+                //is it a requiredVariable?
+                int whichRC = String2.indexOf(requiredVariableNames, tName);
                 if (whichRC >= 0)
-                    requiredColumnsFound.set(whichRC);
+                    requiredVariablesFound.set(whichRC);
 
                 //whichColumn? 
                 int whichCol = String2.indexOf(columnNames, tName);
-                if (whichCol < 0)
+                if (whichCol < 0) {
+                    String2.log("columnNames=" + String2.toCSSVString(columnNames));
                     throw new SimpleException(EDStatic.queryError + 
-                        "Unknown columnName=" + tName);
+                        "Unknown variable name=" + tName);
+                } else if (whichCol == timestampColumn) {
+                    throw new SimpleException(EDStatic.queryError + 
+                        "An .insert or .delete request must not include " + TIMESTAMP + " as a parameter.");
+                } else if (whichCol == commandColumn) {
+                    throw new SimpleException(EDStatic.queryError + 
+                        "An .insert or .delete request must not include " + COMMAND + " as a parameter.");
+                }
+
                 if (columnValues[whichCol] != null) 
                     throw new SimpleException(EDStatic.queryError + 
-                        "There are two parameters with columnName=" + tName + "."); 
+                        "There are two parameters with variable name=" + tName + "."); 
 
                 //get the values
                 if (tValue.startsWith("[") &&
                     tValue.endsWith(  "]")) {
                     //deal with array of values: name=[valuesCSV]
-                    columnValues[whichCol] = PrimitiveArray.csvFactory(
-                        columnClasses[whichCol], tValue);
+
+                    StringArray sa = new StringArray(StringArray.arrayFromCSV(
+                        tValue.substring(1, tValue.length() - 1), ",", false)); //trim?
+                    columnValues[whichCol] = PrimitiveArray.factory(columnClasses[whichCol], sa); //does nothing if desired class is String
+                    //if (columnClasses[whichCol] == char.class || columnClasses[whichCol] == String.class) String2.log(">> writing var=" + tName + " pa=" + columnValues[whichCol]);
                     if (arraySize < 0)
                         arraySize = columnValues[whichCol].size();
                     else if (arraySize != columnValues[whichCol].size())
@@ -587,20 +861,34 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
                 } else {
                     //deal with single value: name=value
-                    columnValues[whichCol] = PrimitiveArray.csvFactory(
-                        columnClasses[whichCol], tValue);
-
-                    if (columnClasses[whichCol] == String.class &&
-                        (tValue.length() < 2 || 
-                         tValue.charAt(0) != '"' ||
-                         tValue.charAt(tValue.length() - 1) != '"'))
+                    if (tValue.startsWith("\"") && tValue.endsWith("\""))
+                        tValue = String2.fromJson(tValue);
+                    StringArray sa = new StringArray(
+                        //do it this way to deal with quotes, special chars, etc.
+                        StringArray.arrayFromCSV(tValue, ",", false)); //trim?  
+                    if (sa.size() > 1)
                         throw new SimpleException(EDStatic.queryError + 
-                            "The String value for columnName=" + tName + 
-                            " must start and end with \"'s.");
-                    if (columnValues[whichCol].size() != 1)
-                        throw new SimpleException(EDStatic.queryError + 
-                            "One value (not " + columnValues[whichCol].size() +
+                            "One value (not " + sa.size() +
                             ") expected for columnName=" + tName + ". (missing [ ] ?)");
+                    if (sa.size() == 0)
+                        sa.add("");
+                    columnValues[whichCol] = PrimitiveArray.factory(columnClasses[whichCol], sa); //does nothing if desired class is String
+
+                    //if (columnClasses[whichCol] == String.class &&
+                    //    (tValue.length() < 2 || 
+                    //     tValue.charAt(0) != '"' ||
+                    //     tValue.charAt(tValue.length() - 1) != '"'))
+                    //    throw new SimpleException(EDStatic.queryError + 
+                    //        "The String value for columnName=" + tName + 
+                    //        " must start and end with \"'s.");
+                }
+
+                //ensure required var has valid value
+                if (whichRC >= 0) {
+                    PrimitiveArray pa = columnValues[whichCol];
+                    if (pa.size() == 0 || pa.getString(0).length() == 0) //string="" number=NaN
+                        throw new SimpleException(EDStatic.queryError + 
+                            "requiredVariable=" + tName + " must have a valid value.");
                 }
             }
         }
@@ -609,25 +897,26 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (author == null)
             throw new SimpleException(EDStatic.queryError + 
                 "author= was not specified.");
-        int notFound = requiredColumnsFound.nextClearBit(0);
-        if (notFound < requiredColumnNames.length)
+        int notFound = requiredVariablesFound.nextClearBit(0);
+        if (notFound < requiredVariableNames.length)
             throw new SimpleException(EDStatic.queryError + 
-                "requiredColumnName=" + requiredColumnNames[notFound] + 
+                "requiredVariableName=" + requiredVariableNames[notFound] + 
                 " wasn't specified.");
 
         //make all columnValues the same size
-        //(timestamp, author, command are separate and have just 1 value)
         int maxSize = Math.max(1, arraySize);
         for (int col = 0; col < nColumns; col++) {
             PrimitiveArray pa = columnValues[col]; 
-            if (pa == null) {
-                //this var wasn't in the command, so use mv's
-                columnValues[col] = PrimitiveArray.factory(columnClasses[col],
-                    maxSize, "");
-            } else if (pa.size() == 1 && maxSize > 1) {
+
+            //If this var wasn't in the command, so use mv's
+            if (pa == null) 
+                pa = columnValues[col] = PrimitiveArray.factory(columnClasses[col],
+                    maxSize, ""); //if strings, "" is already UTF-8
+
+            //duplicate scalar n=maxSize times
+            if (pa.size() == 1 && maxSize > 1) 
                 columnValues[col] = PrimitiveArray.factory(columnClasses[col],
                     maxSize, pa.getString(0));
-            }
         }
 
         //figure out the fullFileName for each row
@@ -636,8 +925,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             //figure out the epochSeconds time value
             double tTime = 
                 timeColumn < 0? Double.NaN :                           //no time column
-                timeBaseAndFactor == null? Calendar2.toEpochSeconds(
-                    columnValues[timeColumn].getString(row), timeFormatter) : 
+                timeBaseAndFactor == null? Calendar2.parseToEpochSeconds(
+                    columnValues[timeColumn].getString(row), timeFormat) : 
                 Calendar2.unitsSinceToEpochSeconds(                    //numeric time
                     timeBaseAndFactor[0], timeBaseAndFactor[1], 
                     columnValues[timeColumn].getDouble(row));
@@ -649,174 +938,257 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //EVERYTHING SHOULD BE VALIDATED BY NOW. NO ERRORS AFTER HERE!
         //append each input row to the appropriate file
-        Array oneTimestampArray = Array.factory(new double[]{timestamp});
-//I reported to netcdf-java mailing list: this generated null pointer exception in 4.6.6:
-// String tsar[] = new String[]{author};
-// Array oneAuthorArray    = Array.factory(tsar); //new String[]{author});
-//This works:
-ArrayString.D1 oneAuthorArray = new ArrayString.D1(1);
-oneAuthorArray.set(0, author);
-
-        Array oneCommandArray   = Array.factory(new byte  []{command});
         int row = 0;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+        String  columnMinString[] = new String[nColumns];
+        String  columnMaxString[] = new String[nColumns];
+        long    columnMinLong[]   = new long[nColumns];
+        long    columnMaxLong[]   = new long[nColumns];
+        double  columnMinDouble[] = new double[nColumns];
+        double  columnMaxDouble[] = new double[nColumns];
+        boolean columnHasNaN[]    = new boolean[nColumns];
         while (row < maxSize) {
             //figure out which file
-            String fullFileName = fullFileNames.get(row);
+            //EFFICIENT: Code below handles all rows that use this fullFileName.               
+            String fullFileName = fullFileNames.get(row); //it is canonical
+            //String2.log(">> writing to " + fullFileName);
 
-            //open the file
-            NetcdfFileWriter file = null;
+            //figure out which rows go to this fullFileName
+            int startRow = row++;
+            while (row < maxSize && 
+                fullFileNames.get(row).equals(fullFileName))
+                row++;
+            int stopRow = row; //1 past end
+
+            //connect info for this file
+            baos.reset();
             boolean fileIsNew = false;
-            int[] origin = new int[1];    
+
             try {
 
-                Group rootGroup = null;
-                Dimension rowDim = null;
-                Variable vars[] =  new Variable[nColumns];
-                Variable timestampVar = null;
-                Variable authorVar    = null;
-                Variable commandVar   = null;
-                if (File2.isFile(fullFileName)) {
-                    file = NetcdfFileWriter.openExisting(fullFileName);
-                    rootGroup = file.addGroup(null, "");
-                    rowDim = rootGroup.findDimension("row");
-
-                    //find Variables for columnNames.   May be null, but shouldn't be.
-                    StringArray columnsNotFound = new StringArray();
-                    for (int col = 0; col < nColumns; col++) { 
-                        vars[col] = rootGroup.findVariable(columnNames[col]); 
-                        if (vars[col] == null) 
-                            columnsNotFound.add(columnNames[col]);
-                    }
-                    timestampVar  = rootGroup.findVariable(TIMESTAMP); 
-                    authorVar     = rootGroup.findVariable(AUTHOR); 
-                    commandVar    = rootGroup.findVariable(COMMAND); 
-                    if (timestampVar == null) columnsNotFound.add(TIMESTAMP);
-                    if (authorVar    == null) columnsNotFound.add(AUTHOR);
-                    if (commandVar   == null) columnsNotFound.add(COMMAND);
-                    if (columnsNotFound.size() > 0)
-                        throw new SimpleException(MustBe.InternalError + 
-                            ": column(s)=" + columnsNotFound + 
-                            " not found in " + fullFileName);
-
-                } else {
+                if (!File2.isFile(fullFileName)) {
                     //if file doesn't exist, create it
                     fileIsNew = true; //first
-                    file = NetcdfFileWriter.createNew(
-                        NetcdfFileWriter.Version.netcdf3, fullFileName);
-                    rootGroup = file.addGroup(null, "");
-                    rowDim = file.addUnlimitedDimension("row");
-                    ArrayList rowDimAL = new ArrayList();
-                    rowDimAL.add(rowDim);
+                    File2.makeDirectory(File2.getDirectory(fullFileName)); //throws exception if trouble
+                }
+                Writer writer = new BufferedWriter(new OutputStreamWriter(baos, String2.UTF_8));  
 
-                    //define Variables
+                if (fileIsNew) {
+                    //write the column names to the writer
+                    boolean somethingWritten = false;
                     for (int col = 0; col < nColumns; col++) {
-                        String cName = columnNames[col];
-                        String cType = columnTypes[col];
-                        if (columnIsString[col]) {
-                            vars[col] = file.addStringVariable(rootGroup, cName, 
-                                rowDimAL, columnStringLengths[col]);
-                        } else {
-                            vars[col] = file.addVariable(rootGroup, cName, 
-                                columnDataTypes[col], rowDimAL);
+                        if (!columnIsFixed[col]) {
+                            writer.write(somethingWritten? ',' : '[');
+                            writer.write(String2.toJson(columnNames[col]));
+                            somethingWritten = true;
+                        }
+                    }                        
+                    writer.write("]\n");
+                }
+
+                //write the data to the writer
+                for (int tRow = startRow; tRow < stopRow; tRow++) {
+                    boolean somethingWritten = false;
+                    for (int col = 0; col < nColumns; col++) {
+                        if (!columnIsFixed[col]) {
+                            writer.write(somethingWritten? ',' : '[');
+                            writer.write(columnValues[col].getJsonString(tRow));
+                            somethingWritten = true;
                         }
                     }
-                    timestampVar = file.addVariable(rootGroup, TIMESTAMP, 
-                        DataType.DOUBLE, rowDimAL);
-                    authorVar = file.addStringVariable(rootGroup, AUTHOR, 
-                        rowDimAL, AUTHOR_STRLEN);
-                    commandVar = file.addVariable(rootGroup, COMMAND, 
-                        DataType.BYTE, rowDimAL);
-
-                    // create the file
-                    file.create();
+                    writer.write("]\n");
                 }
 
-                //append the series of commands that go to this fullFileName
-                int startRow = row++;
-                while (row < maxSize && 
-                    fullFileNames.get(row).equals(fullFileName))
-                    row++;
-                int stopRow = row; //1 past end
 
-                //which row in the file table?
-                int fileTableRow = -1;
-                if (fileTable != null) {
-                    //already in fileTable?
-                    //fileTableRow = ...
+                //prepare to write everything to the file
+                writer.flush(); //should do nothing because already done 
+                byte bar[] = baos.toByteArray();
 
-                    //add to fileTable
-                }
-
-                //write the data to the file
-                origin[0] = rowDim.getLength();
-                for (int col = 0; col < nColumns; col++) {
-                    PrimitiveArray subsetPA = columnValues[col];
-                    if (startRow > 0 || stopRow != maxSize)
-                        subsetPA = subsetPA.subset(startRow, 1, stopRow-1); //inclusive
-                    file.write(vars[col], origin, Array.factory(subsetPA.toObjectArray()));
-
-                    //adjust min/max in fileTable
-                    if (fileTable != null && command == INSERT_COMMAND) {
-                        if (columnIsString[col]) {
-                            //fileTableRow...   
-                        } else {
-                            double stats[] = subsetPA.calculateStats();
-                            if (stats[PrimitiveArray.STATS_N] > 0) {  //has some non MVs
-                                //fileTableRow... Math.min(  , stats[PrimitiveArray.STATS_MIN]));
-                                //fileTableRow....Math.max(  , stats[PrimitiveArray.STATS_MAX]));
-                            }
-                            if (stats[PrimitiveArray.STATS_N] < stopRow-startRow) {
-                                //fileTableRow... hasMV
-                            }
-                        }
+                //As much as possible has been done ahead of time
+                //  so write info to file is 1 blast
+                //synchronized is ESSENTIAL: avoid problems with 2+ threads
+                //  writing or reading same file at same time
+                //synchronized is ESSENTIAL: fullFileName is canonical
+                //  (since from StringArray) so same object in different threads
+                //There were rare problems when writing to file with 4+ threads
+                //  before switching to this system of full prep, then full write.
+                synchronized (fullFileName) { //it is canonical, so synchronizing on it works across threads
+                    //No buffering
+                    BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(fullFileName, !fileIsNew)); //append?  
+                    try {
+                        fos.write(bar, 0, bar.length);  //entire write in 1 low level command
+                        fos.close(); //explicitly now, not by finalize() at some time in future
+                    } catch (Exception e) {
+                        try {fos.close();} catch (Exception e2) {}
+                        String2.log(String2.ERROR + 
+                            " in EDDTableFromHttpGet while writing to " + fullFileName + ":\n" +
+                            MustBe.throwableToString(e));
+                        throw e;
                     }
                 }
-                Array timestampArray = oneTimestampArray;
-                Array authorArray    = oneAuthorArray;
-                Array commandArray   = oneCommandArray;
-                if (stopRow - startRow > 1) {
-                    //double timestampAr[] = new double[stopRow - startRow]; 
-                    //String authorAr[]    = new String[stopRow - startRow];
-                    //byte   commandAr[]   = new byte  [stopRow - startRow];
-                    //Arrays.fill(timestampAr, timestamp);
-                    //Arrays.fill(authorAr,    author);
-                    //Arrays.fill(commandAr,   command);
-                    //timestampArray = Array.factory(timestampAr);
-                    //authorArray    = Array.factory(authorAr);
-                    //commandArray   = Array.factory(commandAr);
 
-                    int thisShape[] = new int[]{stopRow - startRow};
-                    timestampArray = Array.factoryConstant(double.class, thisShape, new Double(timestamp));
-                    authorArray    = Array.factoryConstant(String.class, thisShape, author);
-                    commandArray   = Array.factoryConstant(byte.class,   thisShape, new Byte(command));
-                }
-                file.write(          timestampVar, origin, timestampArray);
-                file.writeStringData(authorVar,    origin, authorArray);
-                file.write(          commandVar,   origin, commandArray);
-                
-                //adjust min/max in fileTable
+                //adjust min/max in fileTable if .insert
+                //(only .insert because only it adds values (and .delete only has required variables))
                 if (fileTable != null && command == INSERT_COMMAND) {
-                    //fileTableRow... Math.min(   , timestamp));
-                    //fileTableRow....Math.max(   , timestamp));
 
-                    //fileTableRow... Math.min(   , author));
-                    //fileTableRow....Math.max(   , author));
+                    //prepare to calculate statistics
+                    Arrays.fill(columnMinString, "\uFFFF"); 
+                    Arrays.fill(columnMaxString, "\u0000");
+                    Arrays.fill(columnMinLong,   Long.MAX_VALUE);   
+                    Arrays.fill(columnMaxLong,   Long.MIN_VALUE);   
+                    Arrays.fill(columnMinDouble, Double.MAX_VALUE);     
+                    Arrays.fill(columnMaxDouble, -Double.MAX_VALUE);     
+                    Arrays.fill(columnHasNaN,    false);   
 
-                    //fileTableRow... Math.min(   , command));
-                    //fileTableRow....Math.max(   , command));
-                }
+                    //calculate statistics
+                    for (int tRow = startRow; tRow < stopRow; tRow++) {
+                        for (int col = 0; col < nColumns; col++) {
+                            if (columnIsFixed[col]) {
+                                //do nothing
+                            } else if (columnIsString[col]) {
+                                String s = columnValues[col].getString(tRow); 
+                                if (s.length() == 0 ||
+                                    (columnMvFv[col] != null && columnMvFv[col].indexOf(s) >= 0)) 
+                                    columnHasNaN[col] = true;
+                                else {
+                                    if (s.compareTo(columnMinString[col]) < 0) columnMinString[col] = s;
+                                    if (s.compareTo(columnMaxString[col]) > 0) columnMaxString[col] = s;
+                                }
+                            } else if (columnIsLong[col]) {
+                                long d = columnValues[col].getLong(tRow); 
+                                if (d == Long.MAX_VALUE ||
+                                    (columnMvFv[col] != null && 
+                                     columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0)) 
+                                    columnHasNaN[col] = true;
+                                else {
+                                    if (d < columnMinLong[col]) columnMinLong[col] = d;
+                                    if (d > columnMaxLong[col]) columnMaxLong[col] = d;
+                                }
+                            } else {
+                                double d = columnValues[col].getDouble(tRow); 
+                                if (Double.isNaN(d) ||
+                                    (columnMvFv[col] != null && 
+                                     columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0)) 
+                                    columnHasNaN[col] = true;
+                                else {
+                                    if (d < columnMinDouble[col]) columnMinDouble[col] = d;
+                                    if (d > columnMaxDouble[col]) columnMaxDouble[col] = d;
+                                }
+                            }
+                        }
+                    }
 
-                //make it so!
-                file.flush(); //force file update
+                    //save statistics to fileTable
+                    synchronized (fileTable) {
+                        String fileDir  = File2.getDirectory(fullFileName);
+                        String fileName = File2.getNameAndExtension(fullFileName);
 
-                //close the file
-                file.close();
-                file = null;
+                        //which row in dirTable?
+                        int dirTableRow = ((StringArray)(dirTable.getColumn(0))).indexOf(fileDir);
+                        if (dirTableRow < 0) {
+                            dirTableRow = dirTable.getColumn(0).size();
+                            dirTable.getColumn(0).addString(fileDir);
+                        }
+
+                        //which row in the fileTable?
+                        int fileTableRow = 0;
+                        ShortArray fileTableDirPA   = (ShortArray)( fileTable.getColumn(FT_DIR_INDEX_COL));
+                        StringArray fileTableNamePA = (StringArray)(fileTable.getColumn(FT_FILE_LIST_COL));
+                        int fileTableNRows = fileTable.nRows();
+                        while (fileTableRow < fileTableNRows &&
+                               (fileTableDirPA.get(fileTableRow) != dirTableRow ||
+                                !fileTableNamePA.get(fileTableRow).equals(fileName))) {
+                            fileTableRow++;
+                        }
+
+                        if (fileTableRow == fileTableNRows) {
+                            //add row to fileTable
+                            fileTableDirPA.addInt(dirTableRow);
+                            fileTableNamePA.add(fileName);
+                            fileTable.getColumn(FT_LAST_MOD_COL).addLong(0); //will be updated below
+                            fileTable.getColumn(FT_SIZE_COL).addLong(0);     //will be updated below 
+                            fileTable.getColumn(FT_SORTED_SPACING_COL).addDouble(1); //irrelevant
+                            for (int col = 0; col < nColumns; col++) {
+                                int baseFTC = dv0 + col * 3; //first of 3 File Table Columns (min, max, hasNaN) for this col
+                                if (columnIsFixed[col]) {
+                                    fileTable.getColumn(baseFTC  ).addString(columnNames[col].substring(1)); //???
+                                    fileTable.getColumn(baseFTC+1).addString(columnNames[col].substring(1));
+                                } else if (columnIsString[col]) {
+                                    fileTable.getColumn(baseFTC  ).addString(columnMinString[col]); 
+                                    fileTable.getColumn(baseFTC+1).addString(columnMaxString[col]); 
+                                } else if (columnIsLong[col]) {
+                                    fileTable.getColumn(baseFTC  ).addLong(columnMinLong[col]); 
+                                    fileTable.getColumn(baseFTC+1).addLong(columnMaxLong[col]); 
+                                } else {
+                                    fileTable.getColumn(baseFTC  ).addDouble(columnMinDouble[col]);
+                                    fileTable.getColumn(baseFTC+1).addDouble(columnMaxDouble[col]);
+                                }
+                                fileTable.getColumn(baseFTC+2).addInt(columnHasNaN[col]? 1 : 0);   
+                            }
+
+                        } else {
+                            //adjust current row:
+                            //dir unchanged
+                            //name unchanged
+                            //lastMod will be updated below
+                            //size be updated below 
+                            //spacing unchanged/irrelevant
+                            for (int col = 0; col < nColumns; col++) {
+                                int baseFTC = dv0 + col * 3; //first of 3 File Table Columns (min, max, hasNaN) for this col
+                                PrimitiveArray minColPA = fileTable.getColumn(baseFTC  );
+                                PrimitiveArray maxColPA = fileTable.getColumn(baseFTC+1);
+                                if (columnIsFixed[col]) {
+                                    //already has fixed value
+                                } else if (columnIsString[col]) {
+                                    String tt = columnMinString[col];
+                                    if (!tt.equals("\uFFFF")) { //has data
+                                        if (tt.compareTo(minColPA.getString(fileTableRow)) < 0)
+                                                         minColPA.setString(fileTableRow, tt); 
+                                        tt = columnMaxString[col];
+                                        if (tt.compareTo(maxColPA.getString(fileTableRow)) > 0)
+                                                         maxColPA.setString(fileTableRow, tt); 
+                                    }
+                                } else if (columnIsLong[col]) {
+                                    long tt = columnMinLong[col];
+                                    if (tt != Long.MAX_VALUE) { //has data
+                                        if (tt < minColPA.getLong(fileTableRow))
+                                                 minColPA.setLong(fileTableRow, tt); 
+                                        if (tt > maxColPA.getLong(fileTableRow))
+                                                 maxColPA.setLong(fileTableRow, tt); 
+                                    }
+                                } else {
+                                    double tt = columnMinDouble[col];
+                                    if (!Double.isNaN(tt)) { //has data
+                                        if (tt < minColPA.getDouble(fileTableRow))
+                                                 minColPA.setDouble(fileTableRow, tt); 
+                                        if (tt > maxColPA.getDouble(fileTableRow))
+                                                 maxColPA.setDouble(fileTableRow, tt); 
+                                    }
+                                }
+                                if (columnHasNaN[col])
+                                    fileTable.getColumn(baseFTC+2).setInt(fileTableRow, 1);   
+                            }
+                        }  
+                        
+                        //update file's lastMod and size
+                        long tLastMod = -1;
+                        long tLength = -1; 
+                        try {
+                            File file = new File(fullFileName);
+                            tLastMod = file.lastModified();
+                            tLength = file.length();
+                        } catch (Exception e) {
+                            String2.log(String2.ERROR + 
+                                " in EDDTableFromHttpGet while getting lastModified and length of " + 
+                                fullFileName);
+                        }
+                        fileTable.getColumn(FT_LAST_MOD_COL).setLong(fileTableRow, tLastMod);
+                        fileTable.getColumn(FT_SIZE_COL    ).setLong(fileTableRow, tLength);
+                    } //end synchronized(fileTable)
+                } 
+
 
             } catch (Throwable t) {
-                if (file != null) {
-                    try {file.close();} catch (Throwable t2) {}
-                }
                 if (fileIsNew)
                     File2.delete(fullFileName);
                 String2.log(String2.ERROR + " while " +
@@ -828,24 +1200,35 @@ oneAuthorArray.set(0, author);
 
         //Don't ever change any of this (except adding somthing new to the end). 
         //Clients rely on it.
-        return "SUCCESS: Data received. No errors. timestamp=" + 
-            Calendar2.epochSecondsToIsoStringT3(timestamp) + "Z=" +
-            timestamp + " seconds since 1970-01-01T00:00:00Z.\n"; 
+        return "{\n" +
+            "\"status\":\"success\",\n" +
+            "\"nRowsReceived\":" + maxSize + ",\n" +
+            "\"stringTimestamp\":\"" + Calendar2.epochSecondsToIsoStringT3Z(timestampSeconds) + "\",\n" +
+            "\"numericTimestamp\":" + timestampSeconds + "\n" +
+            "}\n"; 
     }
 
 
     /**
      * This tests the static methods in this class.
+     * @param hammer 
+     *     If hammer&lt;0, this just runs the static tests 1 time.
+     *     If hammer&gt;0, this doesn't delete existing files and  
+     *       makes 10000 insertions with data values =hammer.
+     *     If hammer==0, this prints the hammer'd data file -- raw, no processing.
      */
     public static void testStatic() throws Throwable {
         String2.log("\n*** EDDTableFromHttpGet.testStatic");
         String results, expected;
+        int hammer = String2.parseInt(String2.getStringFromSystemIn(
+            "Enter -1 for static tests, 1... for a hammer test, 0 for results of hammer test?"));
+        if (hammer == Integer.MAX_VALUE) hammer = -1;
 
         //test parseDirectoryStructure
         StringArray dsColumnName = new StringArray();
         IntArray    dsN          = new IntArray();
         IntArray    dsCalendar   = new IntArray();
-        parseDirectoryStructure("5years/3MonTH/4DayS/5hr/6min/7sec/100millis/stationID", 
+        parseHttpGetDirectoryStructure("5years/3MonTH/4DayS/5hr/6min/7sec/100millis/stationID", 
             dsColumnName, dsN, dsCalendar);
         Test.ensureEqual(dsColumnName.toString(), ", , , , , , , stationID", "");
         Test.ensureEqual(dsN.toString(),          "5, 3, 4, 5, 6, 7, 100, -1", "");
@@ -866,50 +1249,413 @@ oneAuthorArray.set(0, author);
             "/ab/2015/2016-04/2016-06-20/2016-06-21T10/2016-06-21T14-12/" +
             "2016-06-21T14-15-14/2016-06-21T14-15-16.700/" +
                 "2015_2016-04_2016-06-20_2016-06-21T10_2016-06-21T14-12_" +
-            "2016-06-21T14-15-14_2016-06-21T14-15-16.700_46088.nc", "");
+            "2016-06-21T14-15-14_2016-06-21T14-15-16.700_46088.jsonl", "");
 
         //set up 
-        String startDir = EDStatic.fullTestCacheDirectory + "/httpGet/";
-        File2.deleteAllFiles(startDir, true, true); //recursive, deleteEmptySubdirectories
-        parseDirectoryStructure("stationID/2months", dsColumnName, dsN, dsCalendar);
+        String startDir = "/data/httpGet/";
+        if (hammer < 0)
+            File2.deleteAllFiles(startDir, true, true); //recursive, deleteEmptySubdirectories
+        parseHttpGetDirectoryStructure("stationID/2months", dsColumnName, dsN, dsCalendar);
         HashSet<String> keys = new HashSet();
         keys.add("bsimons_aSecret");
-        String columnNames[] = {         "stationID", "time",                 
-            "aByte",     "aChar",        "aShort",    "anInt",                 
-            "aFloat",    "aDouble",      "aString"};
-        String columnUnits[] = {         "",          "days since 1980-01-01", 
-            "",          "",             "m",         "days since 1985-01-01", 
-            "degree_C",  EDV.TIME_UNITS, null};
-        String columnTypes[] = {         "String",    "int",               
-            "byte",      "char",         "short",     "int", 
-            "float",     "double",       "String"}; 
-        int columnStringLengths[] = {    5,           -1,      
-            -1,          -1,             -1,          -1,
-            -1,          -1,             12};
-        String requiredColumnNames[] = {"stationID","time"};
+        Attributes tGlobalAttributes = new Attributes()
+            .add("Conventions", "CF-1.6, COARDS, ACDD-1.3")
+            .add("creator_name", "Bob Simons")
+            .add("title", "Test EDDTableFromHttpGet");
+        String columnNames[] = {          "stationID",   "time",                 
+            "aByte",      "aChar",        "aShort",      "anInt",                 
+            "aFloat",     "aDouble",      "aString",     "=123",
+            TIMESTAMP,    AUTHOR,         COMMAND};
+        StringArray columnNamesSA = new StringArray(columnNames);
+        String columnUnits[] = {          "",           "minutes since 1980-01-01", 
+            "",           "",             "m",          "days since 1985-01-01", 
+            "degree_C",   EDV.TIME_UNITS, null,         "m.s-1",
+            Calendar2.SECONDS_SINCE_1970, null, null};
+        Class columnClasses[] = {         String.class, double.class,               
+            byte.class,   char.class,     short.class,  int.class, 
+            float.class,  double.class,   String.class, int.class,
+            double.class, String.class,   byte.class}; 
+        int nCol = columnNames.length;
+        PrimitiveArray columnMvFv[] = new PrimitiveArray[nCol];               
+        String columnTypes[] = new String[nCol];
+        for (int col = 0; col < nCol; col++) 
+            columnTypes[col] = PrimitiveArray.elementClassToString(columnClasses[col]);
+        String requiredVariableNames[] = {"stationID","time"};
+
         Table table;
-        
-        //test insertOrDelete
+
+        //***  hammer the system with inserts
+        if (hammer > 0) {
+            long time = System.currentTimeMillis();
+            int n = 2000;
+            String tHammer = "" + hammer;
+            if (hammer >= 10) 
+                tHammer = "[" + 
+                    PrimitiveArray.factory(int.class, hammer, "" + hammer).toCSVString() +
+                    "]";
+            String2.log(">> tHammer=" + tHammer);
+            for (int i = 0; i < n; i++) {
+                //error will throw exception
+                results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                    keys, tGlobalAttributes,
+                    columnNames, columnUnits, columnClasses, columnMvFv,
+                    requiredVariableNames,
+                    INSERT_COMMAND, 
+                    "stationID=\"46088\"&time=" + hammer + "&aByte=" + tHammer + 
+                    "&aChar=" + (char)(65) +
+                    "&aShort=" + tHammer + "&anInt=" + tHammer + "&aFloat=" + tHammer + 
+                    "&aDouble=" + tHammer + "&aString=" + tHammer + 
+                    "&author=bsimons_aSecret",
+                    null, null); //Table dirTable, Table fileTable
+                if (i == 0)
+                    String2.log(">> results=" + results);
+            }
+            String2.log("\n*** hammer(" + hammer + ") n=" + n + " finished successfully. Avg time=" +
+                ((System.currentTimeMillis() - time) / (n + 0.0)) + "ms");
+            return;
+        }
+
+        //***  read the hammer data
+        if (hammer == 0) {
+            //test the read time
+            String name = startDir + "46088/46088_1980-01.jsonl";
+            table = readFile(name, columnNamesSA, columnTypes, requiredVariableNames, 
+                true, Double.NaN); 
+
+            File2.copy(name, name + ".txt");
+            SSR.displayInBrowser("file://" + name + ".txt");
+            return;
+        }
+
+        //****** from here on are the non-hammer, static tests
+        //*** test insertOrDelete
+        String2.log("\n>> insertOrDelete #1: insert 1 row");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
-            keys, columnNames, columnUnits, columnTypes, columnStringLengths, 
-            requiredColumnNames,
+            keys, tGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,  
+            requiredVariableNames,
             INSERT_COMMAND, 
-            "stationID=\"46088\"&time=3&aByte=17.1&aChar=g" +
+            "stationID=\"46088\"&time=3.3&aByte=17.1&aChar=g" +
             "&aShort=30000.1&anInt=2&aFloat=1.23" +
-            "&aDouble=1.2345678901234&aString=\"abcdefghijklmnop\"" + //string is too long
+            "&aDouble=1.2345678901234&aString=\"abcdefghijkl\"" + //string is nBytes long
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
-        Test.ensureEqual(results, "zztop", "results=" + results);
+        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        double timestamp1 = extractTimestamp(results);
+        String2.log(">> results=" + results + ">> timestamp1=" + timestamp1);
 
         //read the data
-        table = readFile(startDir + "46088/1980-01/46088_1980-01.nc", 
-            Double.MAX_VALUE, requiredColumnNames);
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, Double.NaN);
         results = table.dataToString();
-        expected = "zztop";
-        Test.ensureEqual(results, expected, "results=" + results);
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,17,g,30000,2,1.23,1.2345678901234,abcdefghijkl," + timestamp1 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+        Math2.sleep(1000);
+
+        //*** add 2 rows via array
+        String2.log("\n>> insertOrDelete #2: insert 2 rows via array");
+        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            keys, tGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,  
+            requiredVariableNames, INSERT_COMMAND, 
+            "stationID=\"46088\"&time=[4.4,5.5]&aByte=[18.2,18.8]&aChar=[\"\u20AC\",\" \"]" +  // unicode char
+            "&aShort=[30002.2,30003.3]&anInt=3&aFloat=[1.45,1.67]" +
+            "&aDouble=[1.3,1.4]&aString=[\" s\n\tÃ\u20AC123\",\" \\n\\u20AC \"]" + //string is nBytes long, unicode char
+            "&author=bsimons_aSecret",
+            null, null); //Table dirTable, Table fileTable
+        Test.repeatedlyTestLinesMatch(results, resultsRegex(2), "results=" + results);
+        double timestamp2 = extractTimestamp(results);
+        String2.log(">> results=" + results + ">> timestamp2=" + timestamp2);
+
+        //read the data
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, 
+            System.currentTimeMillis()/1000.0);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,17,g,30000,2,1.23,1.2345678901234,abcdefghijkl," + timestamp1 + ",bsimons,0\n" +
+"46088,4.4,18,\\u20ac,30002,3,1.45,1.3,\" s\\n\\t\\u00c3\\u20ac123\"," + timestamp2 + ",bsimons,0\n" +
+"46088,5.5,19,\" \",30003,3,1.67,1.4,\" \\n\\u20ac \"," + timestamp2 + ",bsimons,0\n"; 
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+        //read the data with timestamp from first insert
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, timestamp1);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,17,g,30000,2,1.23,1.2345678901234,abcdefghijkl," + timestamp1 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
 
 
-        
+        //*** change all values in a row
+        String2.log("\n>> insertOrDelete #3: change all values in a row");
+        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            keys, tGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,  
+            requiredVariableNames,
+            INSERT_COMMAND, 
+            "stationID=46088&time=3.3&aByte=19.9&aChar=¼" +  //stationID not in quotes    //the character itself
+            "&aShort=30009.9&anInt=9&aFloat=1.99" +
+            "&aDouble=1.999&aString=\"\"" + //empty string
+            "&author=\"bsimons_aSecret\"",  //author in quotes
+            null, null); //Table dirTable, Table fileTable
+        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        double timestamp3 = extractTimestamp(results);
+        String2.log(">> results=" + results + ">> timestamp3=" + timestamp3);
+
+        //read the data
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, 
+            System.currentTimeMillis()/1000.0);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,20,\\u00bc,30010,9,1.99,1.999,," + timestamp3 + ",bsimons,0\n" +
+"46088,4.4,18,\\u20ac,30002,3,1.45,1.3,\" s\\n\\t\\u00c3\\u20ac123\"," + timestamp2 + ",bsimons,0\n" +
+"46088,5.5,19,\" \",30003,3,1.67,1.4,\" \\n\\u20ac \"," + timestamp2 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+
+        //*** change values in a row but only specify a few
+        String2.log("\n>> insertOrDelete #4: change a few values in a row");
+        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            keys, tGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,  
+            requiredVariableNames,
+            INSERT_COMMAND, 
+            "stationID=\"46088\"&time=3.3&aByte=29.9&aChar=\" \"" + 
+            "&author=bsimons_aSecret",
+            null, null); //Table dirTable, Table fileTable
+        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        double timestamp4 = extractTimestamp(results);
+        String2.log(">> results=" + results + ">> timestamp3=" + timestamp4);
+
+        //read the data
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, 
+            System.currentTimeMillis()/1000.0);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,30,\" \",,,,,," + timestamp4 + ",bsimons,0\n" +   //only low byt kept
+"46088,4.4,18,\\u20ac,30002,3,1.45,1.3,\" s\\n\\t\\u00c3\\u20ac123\"," + timestamp2 + ",bsimons,0\n" +
+"46088,5.5,19,\" \",30003,3,1.67,1.4,\" \\n\\u20ac \"," + timestamp2 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+        //*** delete a row
+        String2.log("\n>> insertOrDelete #4: delete a row");
+        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            keys, tGlobalAttributes,
+            columnNames, columnUnits, columnClasses, columnMvFv,  
+            requiredVariableNames,
+            DELETE_COMMAND, 
+            "stationID=\"46088\"&time=3.3" +
+            "&author=bsimons_aSecret",
+            null, null); //Table dirTable, Table fileTable
+        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        double timestamp5 = extractTimestamp(results);
+        String2.log(">> results=" + results + ">> timestamp3=" + timestamp4);
+
+        //read the data
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, 
+            System.currentTimeMillis()/1000.0);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,4.4,18,\\u20ac,30002,3,1.45,1.3,\" s\\n\\t\\u00c3\\u20ac123\"," + timestamp2 + ",bsimons,0\n" +
+"46088,5.5,19,\" \",30003,3,1.67,1.4,\" \\n\\u20ac \"," + timestamp2 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+        //read the data with timestamp from first insert
+        table = readFile(startDir + "46088/46088_1980-01.jsonl", 
+            columnNamesSA, columnTypes, requiredVariableNames, true, timestamp1);
+        results = table.dataToString();
+        expected = 
+"stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
+"46088,3.3,17,g,30000,2,1.23,1.2345678901234,abcdefghijkl," + timestamp1 + ",bsimons,0\n";
+        Test.ensureEqual(results, expected, "results=" + results);        
+
+        //*** test errors
+        String2.log("\n>> insertOrDelete #5: expected errors");
+
+        results = "invalid author";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aDouble=1.999&aString=\"a\"" +
+                "&author=zzsimons_aSecret",  //zz
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Invalid author_key.", "");
+
+        results = "author not last";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&author=bsimons_aSecret" +  
+                "&aDouble=1.999&aString=\"a\"",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: author= must be the last parameter.", "");
+
+        results = "invalid secret";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecretzz",  //zz
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Invalid author_key.", "");
+
+        results = "invalid var name";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=9&aFloatzz=1.99" + //zz
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Query error: Unknown variable name=aFloatzz", "");
+
+        results = "missing required var";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "time=3.3&aByte=19.9&aChar=A" +     //no stationID
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: requiredVariableName=stationID wasn't specified.", "");
+
+        results = "invalid required var value";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"\"&time=3.3&aByte=19.9&aChar=A" +     //  ""
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: requiredVariable=stationID must have a valid value.", "");
+
+        results = "invalid time value";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=1e14&aByte=19.9&aChar=A" +     //time is invalid
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: " +
+            "ERROR in httpGetDirectoryStructure part#1: invalid time value (timeEpSec=6.0000003155328E15)!", "");
+
+        results = "different array sizes";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=[9,10]&aFloat=[1.99,2.99,3.99]" +  //2 and 3
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Different parameters with arrays have different sizes: 2!=3.", "");
+
+        results = "2 vars with same name";
+        try {
+            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                keys, tGlobalAttributes,
+                columnNames, columnUnits, columnClasses, columnMvFv,  
+                requiredVariableNames,
+                INSERT_COMMAND, 
+                "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
+                "&aShort=30009.9&anInt=9&aFloat=1.99" +
+                "&aShort=30009.9" +  //duplicate
+                "&aDouble=1.999&aString=\"a\"" + 
+                "&author=bsimons_aSecret",
+                null, null); //Table dirTable, Table fileTable
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: There are two parameters with variable name=aShort.", "");
+
+
      }
 
 
@@ -922,21 +1668,10 @@ oneAuthorArray.set(0, author);
      * to looks at (possibly) private .nc files on the server.
      *
      * @param tFileDir the starting (parent) directory for searching for files
-     * @param tFileNameRegex  the regex that each filename (no directory info) must match 
-     *    (e.g., ".*\\.nc")  (usually only 1 backslash; 2 here since it is Java code). 
-     *    If null or "", it is generated to catch the same extension as the sampleFileName
-     *    (usually ".*\\.nc").
      * @param sampleFileName the full file name of one of the files in the collection
-     * @param useDimensionsCSV If null or "", this finds the group of variables sharing the
-     *    highest number of dimensions. Otherwise, it find the variables using
-     *    these dimensions (plus related char variables).
-     * @param tReloadEveryNMinutes  e.g., 10080 for weekly
-     * @param tPreExtractRegex       part of info for extracting e.g., stationName from file name. Set to "" if not needed.
-     * @param tPostExtractRegex      part of info for extracting e.g., stationName from file name. Set to "" if not needed.
-     * @param tExtractRegex          part of info for extracting e.g., stationName from file name. Set to "" if not needed.
-     * @param tColumnNameForExtract  part of info for extracting e.g., stationName from file name. Set to "" if not needed.
-     * @param tSortedColumnSourceName   use "" if not known or not needed. 
-     * @param tSortFilesBySourceNames   This is useful, because it ultimately determines default results order.
+     * @param tHttpGetRequiredVariables
+     * @param tHttpGetDirectoryStructure
+     * @param tHttpGetKeys
      * @param tInfoUrl       or "" if in externalAddGlobalAttributes or if not available
      * @param tInstitution   or "" if in externalAddGlobalAttributes or if not available
      * @param tSummary       or "" if in externalAddGlobalAttributes or if not available
@@ -947,185 +1682,195 @@ oneAuthorArray.set(0, author);
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(
-        String tFileDir, String tFileNameRegex, String sampleFileName, 
-        String useDimensionsCSV, int tReloadEveryNMinutes, 
-        String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
-        String tColumnNameForExtract, String tSortedColumnSourceName,
-        String tSortFilesBySourceNames, 
+        String tFileDir, String sampleFileName,
+        String tHttpGetRequiredVariables, String tHttpGetDirectoryStructure,
+        String tHttpGetKeys,
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromHttpGet.generateDatasetsXml" +
-            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
-            "\nsampleFileName=" + sampleFileName +
-            "\nuseDimensionsCSV=" + useDimensionsCSV + 
-            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
-            "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + " regex=" + tExtractRegex +
-            " colName=" + tColumnNameForExtract +
-            "\nsortedColumn=" + tSortedColumnSourceName + 
-            " sortFilesBy=" + tSortFilesBySourceNames + 
-            "\ninfoUrl=" + tInfoUrl + 
-            "\ninstitution=" + tInstitution +
-            "\nsummary=" + tSummary +
-            "\ntitle=" + tTitle +
-            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
+            "\nfileDir=" + tFileDir + 
+            "\nsampleFileName=" + sampleFileName);
+
+        String tFileNameRegex = ".*\\.jsonl";
+        int tReloadEveryNMinutes = 1440;
 
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
-        String[] useDimensions = StringArray.arrayFromCSV(useDimensionsCSV);
+        //tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
+        //    tSortedColumnSourceName.trim() : "";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
-            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+            tReloadEveryNMinutes = 1440; 
         if (!String2.isSomething(sampleFileName)) 
             String2.log("Found/using sampleFileName=" +
                 (sampleFileName = FileVisitorDNLS.getSampleFileName(
                     tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
-        //show structure of sample file
-        String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
-        String2.log(NcHelper.dumpString(sampleFileName, false));
-
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
+        dataSourceTable.readJsonlCSV(sampleFileName, null, null, true); //read all and simplify        
+        //EDDTableFromHttpGet doesn't support standardizeWhat.
+        int tnCol = dataSourceTable.nColumns();
+
+        //3 required columns: TIMESTAMP, AUTHOR, COMMAND
+        for (int i = 0; i < 3; i++) {
+            int which = dataSourceTable.findColumnNumber(SPECIAL_VAR_NAMES[i]);
+            if (which < 0)
+                throw new SimpleException(
+                    "One of the variables must have the name \"" +
+                    SPECIAL_VAR_NAMES[which] + "\".");
+        }        
+
         Table dataAddTable = new Table();
-
-        //new way
-        StringArray varNames = new StringArray();
-        if (useDimensions.length > 0) {
-            //find the varNames
-            NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
-            try {
-
-                Group rootGroup = ncFile.getRootGroup();
-                List rootGroupVariables = rootGroup.getVariables(); 
-                for (int v = 0; v < rootGroupVariables.size(); v++) {
-                    Variable var = (Variable)rootGroupVariables.get(v);
-                    boolean isChar = var.getDataType() == DataType.CHAR;
-                    if (var.getRank() + (isChar? -1 : 0) == useDimensions.length) {
-                        boolean matches = true;
-                        for (int d = 0; d < useDimensions.length; d++) {
-                            if (!var.getDimension(d).getFullName().equals(useDimensions[d])) {
-                                matches = false;
-                                break;
-                            }
-                        }
-                        if (matches) 
-                            varNames.add(var.getFullName());
-                    }
-                }
-                ncFile.close(); 
-
-            } catch (Exception e) {
-                //make sure ncFile is explicitly closed
-                try {
-                    ncFile.close(); 
-                } catch (Exception e2) {
-                    //don't care
-                }
-                String2.log(MustBe.throwableToString(e)); 
-            }
-            Test.ensureTrue(varNames.size() > 0, 
-                "The file has no variables with dimensions: " + useDimensionsCSV);
-        }
-
-        //then read the file
-        dataSourceTable.readNDNc(sampleFileName, varNames.toStringArray(), 
-            null, 0, 0, true); //getMetadata
-        for (int c = 0; c < dataSourceTable.nColumns(); c++) {
+        double maxTimeES = Double.NaN;
+        for (int c = 0; c < tnCol; c++) {
             String colName = dataSourceTable.getColumnName(c);
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(sourceAtts, dataSourceTable.getColumn(c)),
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, null, 
-                    colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+            Attributes destAtts = new Attributes();
+            PrimitiveArray destPA;
+            //String2.log(">> colName=" + colName + " sourceClass=" + sourcePA.elementClassString());
+            if (colName.equals("time")) {
+                if (sourcePA.elementClass() == String.class) {
+                    String tFormat = Calendar2.suggestDateTimeFormat(
+                        (StringArray)sourcePA, true); //evenIfPurelyNumeric?   true since String data
+                    destAtts.add("units", 
+                        tFormat.length() > 0? tFormat : 
+                        "yyyy-MM-dd'T'HH:mm:ss'Z'"); //default, so valid, so var name remains 'time'
+                    destPA = new StringArray(sourcePA);
+                } else {
+                    destAtts.add("units", Calendar2.SECONDS_SINCE_1970);  //a guess
+                    destPA = new DoubleArray(sourcePA);
+                }
+            } else if (colName.equals("latitude")) {
+                destAtts.add("units", "degrees_north");
+                destPA = new DoubleArray(sourcePA);
+            } else if (colName.equals("longitude")) {
+                destAtts.add("units", "degrees_east");
+                destPA = new DoubleArray(sourcePA);
+            } else if (colName.equals("depth")) {
+                destAtts.add("units", "m");
+                destPA = new DoubleArray(sourcePA);
+            } else if (colName.equals("altitude")) {
+                destAtts.add("units", "m");
+                destPA = new DoubleArray(sourcePA);
+            } else if (colName.equals("timestamp")) {
+                destAtts.add("units", Calendar2.SECONDS_SINCE_1970);
+                destAtts.add("time_precision", "1970-01-01T00:00:00.000Z");
+                destPA = new DoubleArray(sourcePA);
+            } else if (colName.equals("author")) {
+                destAtts.add("ioos_category", "Identifier");
+                destPA = new StringArray(sourcePA);
+            } else if (colName.equals("command")) {
+                destAtts.add("flag_values", new byte[]{0, 1});
+                destAtts.add("flag_meanings", "insert delete");
+                destAtts.add("ioos_category", "Other");
+                destPA = new ByteArray(sourcePA);
+            } else if (sourcePA.elementClass() == String.class) {
+                destPA = new StringArray(sourcePA);
+            } else {  //non-StringArray
+                destAtts.add("units", "_placeholder");
+                destPA = (PrimitiveArray)(sourcePA.clone());
+            }
 
-            //if a variable has timeUnits, files are likely sorted by time
-            //and no harm if files aren't sorted that way
-            if (tSortedColumnSourceName.length() == 0 && 
-                EDVTimeStamp.hasTimeUnits(sourceAtts, null))
-                tSortedColumnSourceName = colName;
+            if (destPA.elementClass() != String.class) 
+                destAtts.add("missing_value", 
+                    PrimitiveArray.factory(destPA.elementClass(), 1,
+                        "" + destPA.missingValue()));
+            
+            //String2.log(">> in  colName= " + colName + " type=" + sourcePA.elementClassString() + " units=" + destAtts.get("units"));
+            destAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, destAtts, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                false); //tryToFindLLAT
+            //String2.log(">> out colName= " + colName + " units=" + destAtts.get("units"));
+
+            if ("_placeholder".equals(destAtts.getString("units")))
+                destAtts.add("units", "???");
+            dataAddTable.addColumn(c, colName, destPA, destAtts);
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, destPA, sourceAtts, destAtts);
+
         }
-        //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
-        //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
+        //String2.log(">> SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
+        //String2.log(">> DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
 
         //globalAttributes
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
-        if (tInfoUrl     != null && tInfoUrl.length()     > 0) externalAddGlobalAttributes.add("infoUrl",     tInfoUrl);
-        if (tInstitution != null && tInstitution.length() > 0) externalAddGlobalAttributes.add("institution", tInstitution);
-        if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
-        if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
-            "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
-
-        //tryToFindLLAT
-        tryToFindLLAT(dataSourceTable, dataAddTable);
-
-        //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+        if (String2.isSomething(tHttpGetRequiredVariables))  externalAddGlobalAttributes.add(HTTP_GET_REQUIRED_VARIABLES, tHttpGetRequiredVariables);
+        if (String2.isSomething(tHttpGetDirectoryStructure)) externalAddGlobalAttributes.add(HTTP_GET_DIRECTORY_STRUCTURE, tHttpGetDirectoryStructure);
+        if (String2.isSomething(tHttpGetKeys))               externalAddGlobalAttributes.add(HTTP_GET_KEYS, tHttpGetKeys);
+        if (String2.isSomething(tInfoUrl))                   externalAddGlobalAttributes.add("infoUrl",     tInfoUrl);
+        if (String2.isSomething(tInstitution))               externalAddGlobalAttributes.add("institution", tInstitution);
+        if (String2.isSomething(tSummary))                   externalAddGlobalAttributes.add("summary",     tSummary);
+        if (String2.isSomething(tTitle))                     externalAddGlobalAttributes.add("title",       tTitle);
+        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+        
         //after dataVariables known, add global attributes in the dataAddTable
-        dataAddTable.globalAttributes().set(
+        Attributes addGlobalAtts = dataAddTable.globalAttributes();
+        addGlobalAtts.set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
                 hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
-
-        //subsetVariables
-        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
-               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
-            externalAddGlobalAtts.add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
-
-        //add the columnNameForExtract variable
-        if (tColumnNameForExtract.length() > 0) {
-            Attributes atts = new Attributes();
-            atts.add("ioos_category", "Identifier");
-            atts.add("long_name", EDV.suggestLongName(null, tColumnNameForExtract, null));
-            //no units or standard_name
-            dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
-            dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
+        
+        if (String2.isSomething(tHttpGetRequiredVariables))  {
+            StringArray sa = StringArray.fromCSV(tHttpGetRequiredVariables);
+            if (sa.size() > 0)
+                addGlobalAtts.add("subsetVariables", sa.get(0));
+        } else {
+            addGlobalAtts.add(HTTP_GET_REQUIRED_VARIABLES,  "??? e.g., stationID, time");
         }
+        if (!String2.isSomething(tHttpGetDirectoryStructure)) 
+            addGlobalAtts.add(HTTP_GET_DIRECTORY_STRUCTURE, "??? e.g., stationID/2months");
+        if (!String2.isSomething(tHttpGetKeys)) 
+            addGlobalAtts.add(HTTP_GET_KEYS, "??? a CSV list of author_key");
+
+        addGlobalAtts.add("testOutOfDate", "now-1day");
 
         //write the information
         StringBuilder sb = new StringBuilder();
-        String suggestedRegex = (tFileNameRegex == null || tFileNameRegex.length() == 0)? 
-            ".*\\" + File2.getExtension(sampleFileName) :
-            tFileNameRegex;
-        if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = (tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : ", " + tSortedColumnSourceName)).trim();
         sb.append(
             directionsForGenerateDatasetsXml() +
+            "\nNOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+            "of datasets.xml below to add all of the metadata (especially \"units\").\n" +
             "-->\n\n" +
             "<dataset type=\"EDDTableFromHttpGet\" datasetID=\"" + 
-                suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
+                suggestDatasetID(tFileDir +  //dirs can't be made public
+                    String2.replaceAll(tFileNameRegex, '\\', '|') + //so escape chars not treated as subdirs
+                    "_EDDTableFromHttpGet") +  //so different dataset types -> different md5
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-            "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
-            "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
-            "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+            //"    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            "    <sortedColumnSourceName></sortedColumnSourceName>\n" +  //always nothing
+            "    <sortFilesBySourceNames>" +
+                (String2.isSomething(tHttpGetRequiredVariables)? XML.encodeAsXML(tHttpGetRequiredVariables) : "???") +
+                "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //safer. good for all except super frequent updates
+            "    <accessibleViaFiles>true</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, false));
+            "dataVariable", 
+            true, false)); //includeDataType, questionDestinationName
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1135,129 +1880,89 @@ oneAuthorArray.set(0, author);
         
     }
 
-
     /**
-     * testGenerateDatasetsXml
+     * testGenerateDatasetsXml.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
+        String dataDir = "/u00/data/points/testFromHttpGet/";
+        String sampleFile = dataDir + "testFromHttpGet.jsonl";
 
         try {
             String results = generateDatasetsXml(
-                "C:/u00/data/points/ndbcMet", "",
-                "C:/u00/data/points/ndbcMet/NDBC_41004_met.nc",
-                "",
-                1440,
-                "^.{5}", ".{7}$", ".*", "stationID", //just for test purposes; station is already a column in the file
-                "TIME", "stationID TIME", 
-                "", "", "", "", null) + "\n";
+                dataDir, sampleFile, 
+                "stationID, time",
+                "stationID/2months",
+                "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
+                "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
+                "NOAA NMFS SWFSC ERD",
+                "This is my great summary.",
+                "My Great Title",
+                null) + "\n";
+
+            String2.log(results);
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromHttpGet",
-                "C:/u00/data/points/ndbcMet", "",
-                "C:/u00/data/points/ndbcMet/NDBC_41004_met.nc",
-                "",
-                "1440",
-                "^.{5}", ".{7}$", ".*", "stationID", //just for test purposes; station is already a column in the file
-                "TIME", "stationID TIME", 
-                "", "", "", ""},
+                dataDir, sampleFile, 
+                "stationID, time",
+                "stationID/2months",
+                "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
+                "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
+                "NOAA NMFS SWFSC ERD",
+                "This is my great summary.",
+                "My Great Title"}, 
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 directionsForGenerateDatasetsXml() +
+"\n" +
+"NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+"of datasets.xml below to add all of the metadata (especially \"units\").\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromHttpGet\" datasetID=\"ndbcMet_5df7_b363_ad99\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromHttpGet\" datasetID=\"testFromHttpGet_25bf_9033_586b\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>C:/u00/data/points/ndbcMet/</fileDir>\n" +
-"    <fileNameRegex>.*\\.nc</fileNameRegex>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <fileDir>/u00/data/points/testFromHttpGet/</fileDir>\n" +
+"    <fileNameRegex>.*\\.jsonl</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
-"    <preExtractRegex>^.{5}</preExtractRegex>\n" +
-"    <postExtractRegex>.{7}$</postExtractRegex>\n" +
-"    <extractRegex>.*</extractRegex>\n" +
-"    <columnNameForExtract>stationID</columnNameForExtract>\n" +
-"    <sortedColumnSourceName>TIME</sortedColumnSourceName>\n" +
-"    <sortFilesBySourceNames>stationID, TIME</sortFilesBySourceNames>\n" +
+"    <sortedColumnSourceName></sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>stationID, time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <accessibleViaFiles>true</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"acknowledgement\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
-"        <att name=\"cdm_data_type\">Station</att>\n" +
-"        <att name=\"contributor_name\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
-"        <att name=\"contributor_role\">Source of data.</att>\n" +
-//2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
-"        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
-"        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
-"        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2015-07-20Z</att>\n" + //changes
-"        <att name=\"date_issued\">2015-07-20Z</att>\n" +  //changes
-"        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
-"        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
-"        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
-"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
-"        <att name=\"geospatial_lon_max\" type=\"float\">-79.099</att>\n" +
-"        <att name=\"geospatial_lon_min\" type=\"float\">-79.099</att>\n" +
-"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
-"        <att name=\"geospatial_vertical_max\" type=\"float\">0.0</att>\n" +
-"        <att name=\"geospatial_vertical_min\" type=\"float\">0.0</att>\n" +
-"        <att name=\"geospatial_vertical_positive\">down</att>\n" +
-"        <att name=\"geospatial_vertical_units\">m</att>\n" +
-"        <att name=\"history\">NOAA NDBC</att>\n" +
-"        <att name=\"id\">NDBC_41004_met</att>\n" +
-"        <att name=\"institution\">NOAA National Data Buoy Center and Participators in Data Assembly Center.</att>\n" +
-"        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans</att>\n" +
-"        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither NOAA, NDBC, CoastWatch, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
-"        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" +
-"        <att name=\"NDBCMeasurementDescriptionUrl\">http://www.ndbc.noaa.gov/measdes.shtml</att>\n" +
-"        <att name=\"Northernmost_Northing\" type=\"float\">32.501</att>\n" +
-"        <att name=\"project\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
-"        <att name=\"quality\">Automated QC checks with periodic manual QC</att>\n" +
-"        <att name=\"source\">station observation</att>\n" +
-"        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
-"\n" + //changes 2 places...  date is old, but this is what's in the file
-"This dataset has both historical data (quality controlled, before 2011-05-01T00:00:00) and near real time data (less quality controlled, from 2011-05-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2015-07-20T15:00:00Z</att>\n" + //changes
-"        <att name=\"time_coverage_resolution\">P1H</att>\n" +
-"        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
-"        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
-"        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
-cdmSuggestion() +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, Unidata Observation Dataset v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
-"        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere,\n" +
-"Atmosphere &gt; Air Quality &gt; Visibility,\n" +
-"Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, eastward, eastward_wind, GST, gust, height, identifier, LAT, latitude, layer, level, LON, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
-"Oceans &gt; Ocean Waves &gt; Swells,\n" +
-"Oceans &gt; Ocean Waves &gt; Wave Period,\n" +
-"participators, period, planetary, point, pressure, PTDY, quality, real, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
-"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-"        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
+"        <att name=\"httpGetDirectoryStructure\">stationID/2months</att>\n" +
+"        <att name=\"httpGetKeys\">JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key</att>\n" +
+"        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n" +
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html</att>\n" +
+"        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" +
+"        <att name=\"keywords\">air, airTemp, author, center, command, data, erd, fisheries, great, identifier, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"subsetVariables\">stationID</att>\n" +
+"        <att name=\"summary\">This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
+"        <att name=\"testOutOfDate\">now-1day</att>\n" +
+"        <att name=\"title\">My Great Title</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -1271,425 +1976,98 @@ cdmSuggestion() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>TIME</sourceName>\n" +
+"        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.4374044E9</att>\n" + //changes
-"            <att name=\"axis\">T</att>\n" +
-"            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
-"            <att name=\"point_spacing\">even</att>\n" +
-"            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"time_origin\">01-JAN-1970 00:00:00</att>\n" +
-"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.5E9</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Time</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>DEPTH</sourceName>\n" +
-"        <destinationName>depth</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_CoordinateAxisType\">Height</att>\n" +
-"            <att name=\"_CoordinateZisPositive\">down</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 0.0</att>\n" +
-"            <att name=\"axis\">Z</att>\n" +
-"            <att name=\"comment\">The depth of the station, nominally 0 (see station information for details).</att>\n" +
-"            <att name=\"long_name\">Depth</att>\n" +
-"            <att name=\"positive\">down</att>\n" +
-"            <att name=\"standard_name\">depth</att>\n" +
-"            <att name=\"units\">m</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
-"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>LAT</sourceName>\n" +
-"        <destinationName>latitude</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_CoordinateAxisType\">Lat</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">32.501 32.501</att>\n" +
-"            <att name=\"axis\">Y</att>\n" +
-"            <att name=\"comment\">The latitude of the station.</att>\n" +
-"            <att name=\"long_name\">Latitude</att>\n" +
-"            <att name=\"standard_name\">latitude</att>\n" +
-"            <att name=\"units\">degrees_north</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>LON</sourceName>\n" +
-"        <destinationName>longitude</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_CoordinateAxisType\">Lon</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-79.099 -79.099</att>\n" +
-"            <att name=\"axis\">X</att>\n" +
-"            <att name=\"comment\">The longitude of the station.</att>\n" +
-"            <att name=\"long_name\">Longitude</att>\n" +
-"            <att name=\"standard_name\">longitude</att>\n" +
-"            <att name=\"units\">degrees_east</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WD</sourceName>\n" +
-"        <destinationName>WD</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
-"            <att name=\"actual_range\" type=\"shortList\">0 359</att>\n" +
-"            <att name=\"comment\">Wind direction (the direction the wind is coming from in degrees clockwise from true N) during the same period used for WSPD. See Wind Averaging Methods.</att>\n" +
-"            <att name=\"long_name\">Wind Direction</att>\n" +
-"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
-"            <att name=\"standard_name\">wind_from_direction</att>\n" +
-"            <att name=\"units\">degrees_true</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WSPD</sourceName>\n" +
-"        <destinationName>WSPD</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 26.0</att>\n" +
-"            <att name=\"comment\">Wind speed (m/s) averaged over an eight-minute period for buoys and a two-minute period for land stations. Reported Hourly. See Wind Averaging Methods.</att>\n" +
-"            <att name=\"long_name\">Wind Speed</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">wind_speed</att>\n" +
-"            <att name=\"units\">m s-1</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>GST</sourceName>\n" +
-"        <destinationName>GST</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 33.9</att>\n" +
-"            <att name=\"comment\">Peak 5 or 8 second gust speed (m/s) measured during the eight-minute or two-minute period. The 5 or 8 second period can be determined by payload, See the Sensor Reporting, Sampling, and Accuracy section.</att>\n" +
-"            <att name=\"long_name\">Wind Gust Speed</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">wind_speed_of_gust</att>\n" +
-"            <att name=\"units\">m s-1</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WVHT</sourceName>\n" +
-"        <destinationName>WVHT</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 12.53</att>\n" +
-"            <att name=\"comment\">Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period. See the Wave Measurements section.</att>\n" +
-"            <att name=\"long_name\">Wave Height</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_significant_height</att>\n" +
-"            <att name=\"units\">m</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Surface Waves</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>DPD</sourceName>\n" +
-"        <destinationName>DPD</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" +
-"            <att name=\"comment\">Dominant wave period (seconds) is the period with the maximum wave energy. See the Wave Measurements section.</att>\n" +
-"            <att name=\"long_name\">Wave Period, Dominant</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_period</att>\n" +
-"            <att name=\"units\">s</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Surface Waves</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>APD</sourceName>\n" +
-"        <destinationName>APD</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 13.1</att>\n" +
-"            <att name=\"comment\">Average wave period (seconds) of all waves during the 20-minute period. See the Wave Measurements section.</att>\n" +
-"            <att name=\"long_name\">Wave Period, Average</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_period</att>\n" +
-"            <att name=\"units\">s</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Surface Waves</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>MWD</sourceName>\n" +
-"        <destinationName>MWD</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
-"            <att name=\"actual_range\" type=\"shortList\">0 359</att>\n" +
-"            <att name=\"comment\">Mean wave direction corresponding to energy of the dominant period (DOMPD). The units are degrees from true North just like wind direction. See the Wave Measurements section.</att>\n" +
-"            <att name=\"long_name\">Wave Direction</att>\n" +
-"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_to_direction</att>\n" +
-"            <att name=\"units\">degrees_true</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Surface Waves</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>BAR</sourceName>\n" +
-"        <destinationName>BAR</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">976.5 1041.5</att>\n" +
-"            <att name=\"comment\">Air pressure (hPa). (&#39;PRES&#39; on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>\n" +
-"            <att name=\"long_name\">Air Pressure</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" +
-"            <att name=\"units\">hPa</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" +
-"            <att name=\"ioos_category\">Pressure</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>ATMP</sourceName>\n" +
-"        <destinationName>ATMP</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-6.1 31.7</att>\n" +
-"            <att name=\"comment\">Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations.</att>\n" +
-"            <att name=\"long_name\">Air Temperature</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">air_temperature</att>\n" +
-"            <att name=\"units\">degree_C</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WTMP</sourceName>\n" +
-"        <destinationName>WTMP</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-6.1 32.2</att>\n" +
-"            <att name=\"comment\">Sea surface temperature (Celsius). For sensor depth, see Hull Description.</att>\n" +
-"            <att name=\"long_name\">SST</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
-"            <att name=\"units\">degree_C</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>DEWP</sourceName>\n" +
-"        <destinationName>DEWP</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-10.6 29.1</att>\n" +
-"            <att name=\"comment\">Dewpoint temperature taken at the same height as the air temperature measurement.</att>\n" +
-"            <att name=\"long_name\">Dewpoint Temperature</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">dew_point_temperature</att>\n" +
-"            <att name=\"units\">degree_C</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>VIS</sourceName>\n" +
-"        <destinationName>VIS</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 58.1</att>\n" +
-"            <att name=\"comment\">Station visibility (km, originally statute miles). Note that buoy stations are limited to reports from 0 to 1.9 miles.</att>\n" +
-"            <att name=\"long_name\">Station Visibility</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">visibility_in_air</att>\n" +
-"            <att name=\"units\">km</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Meteorology</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>PTDY</sourceName>\n" +
-"        <destinationName>PTDY</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-3.1 3.8</att>\n" +
-"            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
-"            <att name=\"long_name\">Pressure Tendency</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">tendency_of_air_pressure</att>\n" +
-"            <att name=\"units\">hPa</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-3.0</att>\n" +
-"            <att name=\"ioos_category\">Pressure</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>TIDE</sourceName>\n" +
-"        <destinationName>TIDE</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"comment\">The water level in meters (originally feet) above or below Mean Lower Low Water (MLLW).</att>\n" +
-"            <att name=\"long_name\">Water Level</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">surface_altitude</att>\n" +
-"            <att name=\"units\">m</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-5.0</att>\n" +
-"            <att name=\"ioos_category\">Sea Level</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WSPU</sourceName>\n" +
-"        <destinationName>WSPU</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-17.9 21.0</att>\n" +
-"            <att name=\"comment\">The zonal wind speed (m/s) indicates the u component of where the wind is going, derived from Wind Direction and Wind Speed.</att>\n" +
-"            <att name=\"long_name\">Wind Speed, Zonal</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">eastward_wind</att>\n" +
-"            <att name=\"units\">m s-1</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>WSPV</sourceName>\n" +
-"        <destinationName>WSPV</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-25.0 20.9</att>\n" +
-"            <att name=\"comment\">The meridional wind speed (m/s) indicates the v component of where the wind is going, derived from Wind Direction and Wind Speed.</att>\n" +
-"            <att name=\"long_name\">Wind Speed, Meridional</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">northward_wind</att>\n" +
-"            <att name=\"units\">m s-1</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>ID</sourceName>\n" +
-"        <destinationName>ID</destinationName>\n" +
 "        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"comment\">The station identifier.</att>\n" +
-"            <att name=\"long_name\">Station Identifier</att>\n" +
-"            <att name=\"standard_name\">station_id</att>\n" +
-"            <att name=\"units\">unitless</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Identifier</att>\n" +
-"            <att name=\"units\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
-"</dataset>\n" +
-"\n\n";
-
+"    <dataVariable>\n" +
+"        <sourceName>airTemp</sourceName>\n" +
+"        <destinationName>airTemp</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Air Temp</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>waterTemp</sourceName>\n" +
+"        <destinationName>waterTemp</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Water Temp</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>timestamp</sourceName>\n" +
+"        <destinationName>timestamp</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Timestamp</att>\n" +
+"            <att name=\"missing_value\" type=\"double\">NaN</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>author</sourceName>\n" +
+"        <destinationName>author</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Author</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>command</sourceName>\n" +
+"        <destinationName>command</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"flag_meanings\">insert delete</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Command</att>\n" +
+"            <att name=\"missing_value\" type=\"byte\">127</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n\n\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
 
-            //ensure it is ready-to-use by making a dataset from it
-            //with one small change to addAttributes:
-            results = String2.replaceAll(results, 
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n",
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-                "        <att name=\"cdm_data_type\">Other</att>\n");
-            String2.log(results);
+            String tDatasetID = "testFromHttpGet_25bf_9033_586b";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
+            //delete the data files (but not the seed data file)
+            File2.deleteAllFiles(dataDir + "station1", true, true);
+            File2.deleteAllFiles(dataDir + "station2", true, true);
 
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "ndbcMet_5df7_b363_ad99", "");
-            Test.ensureEqual(edd.title(), "NOAA NDBC Standard Meteorological", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+            Test.ensureEqual(edd.title(), "My Great Title", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "stationID, time, depth, latitude, longitude, WD, WSPD, GST, WVHT, " +
-                "DPD, APD, MWD, BAR, ATMP, WTMP, DEWP, VIS, PTDY, TIDE, WSPU, WSPV, ID", 
+                "stationID, time, airTemp, waterTemp, timestamp, author, command",
                 "");
 
         } catch (Throwable t) {
@@ -1699,161 +2077,169 @@ cdmSuggestion() +
 
     }
 
+
+
     /**
-     * This tests the methods in this class with a 1D dataset.
+     * This does basic tests of this class.
+     * Note that ü in utf-8 is \xC3\xBC or [195][188]
+     * Note that Euro is \\u20ac (and low byte is #172 is \\u00ac -- I worked to encode as '?')
      *
      * @throws Throwable if trouble
      */
-    public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
+    public static void testBasic() throws Throwable {
         String2.log("\n****************** EDDTableFromHttpGet.testBasic() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
+        String dataDir = "/u00/data/points/testFromHttpGet/";
         String dir = EDStatic.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        boolean oReallyVerbose = reallyVerbose;
+        reallyVerbose = true;
 
-        String id = "erdCinpKfmSFNH";
-        if (deleteCachedDatasetInfo)
-            deleteCachedDatasetInfo(id);
+        String id = "testFromHttpGet"; 
+        deleteCachedDatasetInfo(id);
+        //delete the data files (but not the seed data file)
+        File2.deleteAllFiles(dataDir + "station1", true, true);
+        File2.deleteAllFiles(dataDir + "station2", true, true);
+        File2.delete(dataDir + "station1");
+        File2.delete(dataDir + "station2");
+        //String2.pressEnterToContinue();
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+        EDDTableFromHttpGet eddTable = (EDDTableFromHttpGet)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        String2.log("\n****************** EDDTableFromHttpGet 1D test das and dds for entire dataset\n");
+        String2.log("\n*** EDDTableFromHttpGet.testBasic  test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
 " s {\n" +
-"  id {\n" +
+"  stationID {\n" +
 "    String cf_role \"timeseries_id\";\n" +
 "    String ioos_category \"Identifier\";\n" +
-"    String long_name \"Station Identifier\";\n" +
-"  }\n" +
-"  longitude {\n" +
-"    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -120.4, -118.4;\n" +
-"    String axis \"X\";\n" +
-"    Float64 colorBarMaximum -118.4;\n" +
-"    Float64 colorBarMinimum -120.4;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Longitude\";\n" +
-"    String standard_name \"longitude\";\n" +
-"    String units \"degrees_east\";\n" +
-"  }\n" +
-"  latitude {\n" +
-"    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 32.8, 34.05;\n" +
-"    String axis \"Y\";\n" +
-"    Float64 colorBarMaximum 34.5;\n" +
-"    Float64 colorBarMinimum 32.5;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Latitude\";\n" +
-"    String standard_name \"latitude\";\n" +
-"    String units \"degrees_north\";\n" +
-"  }\n" +
-"  depth {\n" +
-"    String _CoordinateAxisType \"Height\";\n" +
-"    String _CoordinateZisPositive \"down\";\n" +
-"    Float64 actual_range 5.0, 17.0;\n" +
-"    String axis \"Z\";\n" +
-"    Float64 colorBarMaximum 20.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Depth\";\n" +
-"    String positive \"down\";\n" +
-"    String standard_name \"depth\";\n" +
-"    String units \"m\";\n" +
+"    String long_name \"Station ID\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.89024e+8, 1.183248e+9;\n" +
+"    Float64 actual_range 1.529946e+9, 1.529946e+9;\n" +
 "    String axis \"T\";\n" +
-"    Float64 colorBarMaximum 1.183248e+9;\n" +
-"    Float64 colorBarMinimum 4.89024e+8;\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00Z\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
-"  common_name {\n" +
-"    String ioos_category \"Taxonomy\";\n" +
-"    String long_name \"Common Name\";\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 10.2, 10.2;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    Float64 missing_value NaN;\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
 "  }\n" +
-"  species_name {\n" +
-"    String ioos_category \"Taxonomy\";\n" +
-"    String long_name \"Species Name\";\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -150.3, -150.3;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    Float64 missing_value NaN;\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
 "  }\n" +
-"  size {\n" +
-"    Int16 actual_range 1, 385;\n" +
-"    String ioos_category \"Biology\";\n" +
-"    String long_name \"Size\";\n" +
-"    String units \"mm\";\n" +
+"  airTemp {\n" +
+"    Float32 actual_range 14.2, 14.2;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Air Temp\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  waterTemp {\n" +
+"    Float32 actual_range 12.2, 12.2;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Water Temp\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  timestamp {\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Timestamp\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00.000Z\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  author {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Author\";\n" +
+"  }\n" +
+"  command {\n" +
+"    Byte actual_range 0, 0;\n" +
+"    String flag_meanings \"insert delete\";\n" +
+"    Byte flag_values 0, 1;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Command\";\n" +
+"    Byte missing_value 127;\n" +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
-"    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD, Channel Islands National Park, National Park Service\";\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
-"    String cdm_timeseries_variables \"id, longitude, latitude\";\n" +
-"    String contributor_email \"David_Kushner@nps.gov\";\n" +
-"    String contributor_name \"Channel Islands National Park, National Park Service\";\n" +
-"    String contributor_role \"Source of data.\";\n" +
+"    String cdm_timeseries_variables \"stationID, latitude, longitude\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"    String creator_email \"Roy.Mendelssohn@noaa.gov\";\n" +
+"    String creator_email \"erd.data@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String creator_url \"http://www.pfel.noaa.gov\";\n" +
-"    String date_created \"2008-06-11T21:43:28Z\";\n" +
-"    String date_issued \"2008-06-11T21:43:28Z\";\n" +
-"    Float64 Easternmost_Easting -118.4;\n" +
+"    String creator_type \"institution\";\n" +
+"    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
+"    Float64 Easternmost_Easting -150.3;\n" +
 "    String featureType \"TimeSeries\";\n" +
-"    Float64 geospatial_lat_max 34.05;\n" +
-"    Float64 geospatial_lat_min 32.8;\n" +
+"    Float64 geospatial_lat_max 10.2;\n" +
+"    Float64 geospatial_lat_min 10.2;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max -118.4;\n" +
-"    Float64 geospatial_lon_min -120.4;\n" +
+"    Float64 geospatial_lon_max -150.3;\n" +
+"    Float64 geospatial_lon_min -150.3;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    Float64 geospatial_vertical_max 17.0;\n" +
-"    Float64 geospatial_vertical_min 5.0;\n" +
-"    String geospatial_vertical_positive \"down\";\n" +
-"    String geospatial_vertical_units \"m\";\n" +
-"    String history \"Channel Islands National Park, National Park Service\n" +
-"2008-06-11T21:43:28Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" + //will be SWFSC when reprocessed
-today;
+"    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
-//+ " (local files)\n" +
-//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 expected =
-"/tabledap/erdCinpKfmSFNH.das\";\n" +
-"    String infoUrl \"http://www.nps.gov/chis/naturescience/index.htm\";\n" +
-"    String institution \"CINP\";\n" +
-"    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
-"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
-"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n" +
-"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.  National Park Service Disclaimer: The National Park Service shall not be held liable for improper or incorrect use of the data described and/or contained herein. These data and related graphics are not legal documents and are not intended to be used as such. The information contained in these data is dynamic and may change over time. The data are not better than the original sources from which they were derived. It is the responsibility of the data user to use the data appropriately and consistent within the limitation of geospatial data in general and these data in particular. The related graphics are intended to aid the data user in acquiring relevant data; it is not appropriate to use the related graphics as data. The National Park Service gives no warranty, expressed or implied, as to the accuracy, reliability, or completeness of these data. It is strongly recommended that these data are directly acquired from an NPS server and not indirectly through other sources which may have changed the data in some way. Although these data have been processed successfully on computer systems at the National Park Service, no warranty expressed or implied is made regarding the utility of the data on other systems for general or scientific purposes, nor shall the act of distribution constitute any such warranty. This disclaimer applies both to individual use of the data and aggregate use with other data.\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
-"    Float64 Northernmost_Northing 34.05;\n" +
-"    String observationDimension \"row\";\n" + //2012-07-27 this should disappear soon
-"    String project \"NOAA NMFS SWFSC ERD (http://www.pfel.noaa.gov/)\";\n" +
-"    String references \"Channel Islands National Parks Inventory and Monitoring information: http://nature.nps.gov/im/units/medn . Kelp Forest Monitoring Protocols: http://www.nature.nps.gov/im/units/chis/Reports_PDF/Marine/KFM-HandbookVol1.pdf .\";\n" +
+"    String httpGetDirectoryStructure \"stationID/2months\";\n" +
+"    String httpGetRequiredVariables \"stationID, time\";\n" +
+"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html\";\n" +
+"    String institution \"NOAA NMFS SWFSC ERD\";\n" +
+"    String keywords \"air, airTemp, author, center, command, data, erd, fisheries, great, identifier, latitude, longitude, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    Float64 Northernmost_Northing 10.2;\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    Float64 Southernmost_Northing 32.8;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" + 
-"    String subsetVariables \"id, longitude, latitude, common_name, species_name\";\n" +
-"    String summary \"This dataset has measurements of the size of selected animal species at selected locations in the Channel Islands National Park. Sampling is conducted annually between the months of May-October, so the Time data in this file is July 1 of each year (a nominal value). The size frequency measurements were taken within 10 meters of the transect line at each site.  Depths at the site vary some, but we describe the depth of the site along the transect line where that station's temperature logger is located, a typical depth for the site.\";\n" +
-"    String time_coverage_end \"2007-07-01T00:00:00Z\";\n" +
-"    String time_coverage_start \"1985-07-01T00:00:00Z\";\n" +
-"    String title \"Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat\";\n" +
-"    Float64 Westernmost_Easting -120.4;\n" +
+"    Float64 Southernmost_Northing 10.2;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String subsetVariables \"stationID, longitude, latitude\";\n" +
+"    String summary \"This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.\";\n" +
+"    String testOutOfDate \"now-1day\";\n" +
+"    String time_coverage_end \"2018-06-25T17:00:00Z\";\n" +
+"    String time_coverage_start \"2018-06-25T17:00:00Z\";\n" +
+"    String title \"My Great Title\";\n" +
+"    Float64 Westernmost_Easting -150.3;\n" +
 "  }\n" +
 "}\n";
-        int tPo = results.indexOf(expected.substring(0, 17));
+        int tPo = results.indexOf(expected.substring(0, 40));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
@@ -1862,146 +2248,224 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
-"    String id;\n" +
-"    Float64 longitude;\n" +
-"    Float64 latitude;\n" +
-"    Float64 depth;\n" +
+"    String stationID;\n" +
 "    Float64 time;\n" +
-"    String common_name;\n" +
-"    String species_name;\n" +
-"    Int16 size;\n" +
+"    Float64 latitude;\n" +
+"    Float64 longitude;\n" +
+"    Float32 airTemp;\n" +
+"    Float32 waterTemp;\n" +
+"    Float64 timestamp;\n" +
+"    String author;\n" +
+"    Byte command;\n" +
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
         //*** test make data files
-        String2.log("\n****************** EDDTableFromHttpGet.test 1D make DATA FILES\n");       
+        String2.log("\n*** EDDTableFromHttpGet.testBasic make DATA FILES\n");       
 
-        //.csv    for one lat,lon,time
-        userDapQuery = "" +
-            "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
+        //.csv  all data (just the seed data)
+        userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_1Station", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
+            eddTable.className() + "_all", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"id,longitude,latitude,depth,time,common_name,species_name,size\n" +
-",degrees_east,degrees_north,m,UTC,,,mm\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = //last 3 lines
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,15\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,23\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,19\n";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
-
-
-        //.csv    for one lat,lon,time      via lon > <
-        userDapQuery = "" +
-            "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
-        //String2.log(results);
-        expected = 
-"id,longitude,latitude,depth,time,common_name,species_name,size\n" +
-",degrees_east,degrees_north,m,UTC,,,mm\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = //last 3 lines
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,15\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,23\n" +
-"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,19\n";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
-
-
-        //.csv for test requesting all stations, 1 time, 1 species
-        userDapQuery = "" +
-            "&time=2005-07-01&common_name=\"Red+abalone\"";
-        long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_eq", ".csv"); 
-        String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
-        //String2.log(results);
-        expected = 
-"id,longitude,latitude,depth,time,common_name,species_name,size\n" +
-",degrees_east,degrees_north,m,UTC,,,mm\n" +
-"San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = //last 3 lines
-"Santa Rosa (South Point),-120.116666666667,33.8833333333333,13.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,185\n" +
-"Santa Rosa (Trancion Canyon),-120.15,33.9,9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,198\n" +
-"Santa Rosa (Trancion Canyon),-120.15,33.9,9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,85\n";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
-
-
-        //.csv for test requesting all stations, 1 time, 1 species    String !=
-        userDapQuery = "" +
-            "&time=2005-07-01&id!=\"San+Miguel+(Hare+Rock)\"&common_name=\"Red+abalone\"";
-        time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_NE", ".csv"); 
-        String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
-        //String2.log(results);
-        expected = 
-"id,longitude,latitude,depth,time,common_name,species_name,size\n" +
-",degrees_east,degrees_north,m,UTC,,,mm\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n" +
-"San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = //last 3 lines
-"Santa Rosa (South Point),-120.116666666667,33.8833333333333,13.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,185\n" +
-"Santa Rosa (Trancion Canyon),-120.15,33.9,9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,198\n" +
-"Santa Rosa (Trancion Canyon),-120.15,33.9,9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,85\n";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
-
-
-        //.csv for test requesting all stations, 1 time, 1 species   String > <
-        userDapQuery = "" +
-            "&time=2005-07-01&id>\"San+Miguel+(G\"&id<=\"San+Miguel+(I\"&common_name=\"Red+abalone\"";
-        time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_gtlt", ".csv"); 
-        String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
-        //String2.log(results);
-        expected = 
-"id,longitude,latitude,depth,time,common_name,species_name,size\n" +
-",degrees_east,degrees_north,m,UTC,,,mm\n" +
-"San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n";
+"stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
+",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
+"myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //initial file table
+        Table tFileTable = eddTable.tryToLoadDirFileTable(datasetDir(id) + FILE_TABLE_FILENAME); 
+        results = tFileTable.dataToString();
+        String2.log(results);
+        expected = 
+"dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
+"0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,,,,,,,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "");
 
-        //.csv for test requesting all stations, 1 time, 1 species     REGEX
-        userDapQuery = "longitude,latitude,depth,time,id,species_name,size" + //no common_name
-            "&time=2005-07-01&id=~\"(zztop|.*Hare+Rock.*)\"&common_name=\"Red+abalone\"";   //but common_name here
-        time = System.currentTimeMillis();
+        //push a bunch of data into the dataset: 2 stations, 2 time periods
+        for (int i = 0; i < 4; i++) {
+            //apr
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station1&time=2016-04-29T0" + i + ":00:00Z" +
+                "&airTemp=10." + i + 
+                "&waterTemp=11." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert1_" + i, ".insert"); 
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station2&time=2016-04-29T0" + i + ":00:00Z" +
+                "&airTemp=12." + i + 
+                "&waterTemp=13." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert2_" + i, ".insert");
+
+            //may
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station1&time=2016-05-29T0" + i + ":00:00Z" +
+                "&airTemp=14." + i + 
+                "&waterTemp=15." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert3_" + i, ".insert"); 
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station2&time=2016-05-29T0" + i + ":00:00Z" +
+                "&airTemp=16." + i + 
+                "&waterTemp=17." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert4_" + i, ".insert");
+        }
+
+        //look at last response file
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log(results);
+        expected = 
+"\\{\n" +
+"\"status\":\"success\",\n" +
+"\"nRowsReceived\":1,\n" +
+"\"stringTimestamp\":\"" + today + "\\d{2}:\\d{2}\\.\\d{3}Z\",\n" +
+"\"numericTimestamp\":1\\.\\d{10,12}+E9\n" +  //possible but unlikely that millis=0 by chance; if so, try again
+"\\}\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "");
+
+        tFileTable = eddTable.tryToLoadDirFileTable(datasetDir(id) + FILE_TABLE_FILENAME); 
+        results = tFileTable.dataToString();
+        String2.log(results);
+        expected = 
+"dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
+"0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,,,,,,,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n" +
+"1,station1_2016-03.jsonl,15\\d+,37.,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-03.jsonl,15\\d+,37.,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"1,station1_2016-05.jsonl,15\\d+,37.,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-05.jsonl,15\\d+,37.,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "");
+
+
+        //.csv  all data 
+        userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_regex", ".csv"); 
-        String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName)).toArray());
+            eddTable.className() + "_all2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log(results);
+        long versioningTime = System.currentTimeMillis();
+        Math2.sleep(1);
+        String versioningExpected =
+"stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
+",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
+"myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n" +
+"station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
+"station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n";
+        Test.repeatedlyTestLinesMatch(results, versioningExpected, "\nresults=\n" + results);
+
+
+        //overwrite and delete a bunch of data
+        for (int i = 0; i < 2; i++) {
+            //overwrite the first 2
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station1&time=2016-04-29T0" + i + ":00:00Z" +
+                "&airTemp=20." + i + 
+                "&waterTemp=21." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert5_" + i, ".insert"); 
+            //delete the first 2
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station2&time=2016-04-29T0" + i + ":00:00Z" +
+                "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_delete6_" + i, ".delete");
+
+            //overwrite the first 2
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station1&time=2016-05-29T0" + i + ":00:00Z" +
+                "&airTemp=22." + i + 
+                "&waterTemp=23." + i + "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_insert7_" + i, ".insert"); 
+            //delete the first 2
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "stationID=station2&time=2016-05-29T0" + i + ":00:00Z" +
+                "&author=JohnSmith_JohnSmithKey", 
+                dir, eddTable.className() + "_delete8_" + i, ".delete");
+        }
+
+        //.csv  all data (with processing)
+        userDapQuery = "";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_all3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"longitude,latitude,depth,time,id,species_name,size\n" +
-"degrees_east,degrees_north,m,UTC,,,mm\n" +
-"-120.35,34.05,5.0,2005-07-01T00:00:00Z,San Miguel (Hare Rock),Haliotis rufescens,13\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+"stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
+",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
+"myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n" +
+"station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n" +  //changed
+"station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n" + //hours 00 01 deleted
+"station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n" + //changed
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n" + //hours 00 01 deleted
+"station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+
+        //similar: versioning as of now
+        userDapQuery = "&timestamp<=" + (System.currentTimeMillis()/1000.0);    //as millis
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_all3b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+
+        //similar: versioning as of now
+        userDapQuery = "&timestamp<=" + 
+            Calendar2.epochSecondsToIsoStringT3Z(System.currentTimeMillis()/1000.0);    //as ISO
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_all3c", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+
+        //raw read a data file 
+        results = String2.directReadFromUtf8File(
+            "/u00/data/points/testFromHttpGet/station2/station2_2016-05.jsonl");
+        //String2.log(results);
+        expected = 
+"\\[\"stationID\",\"time\",\"airTemp\",\"waterTemp\",\"timestamp\",\"author\",\"command\"\\]\n" +
+"\\[\"station2\",\"2016-05-29T00:00:00Z\",16,17,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T01:00:00Z\",16.1,17.1,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T02:00:00Z\",16.2,17.2,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T03:00:00Z\",16.3,17.3,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T00:00:00Z\",null,null,1.5\\d+E9,\"JohnSmith\",1\\]\n" +
+"\\[\"station2\",\"2016-05-29T01:00:00Z\",null,null,1.5\\d+E9,\"JohnSmith\",1\\]\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+
+
+        //.csv  (versioning: as of previous time)
+        userDapQuery = "&timestamp<=" + (versioningTime/1000.0);
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_all5", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        Test.repeatedlyTestLinesMatch(results, versioningExpected, "\nresults=\n" + results);
+
+        
+        /* */
+        reallyVerbose = oReallyVerbose;
 
     }
 
@@ -2013,10 +2477,16 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-/* */
-        testStatic();
-        testBasic(false); //deleteCachedDatasetInfo
+/* for releases, this line should have open/close comment */
+
+//FUTURE: command=2=addIfNew: adds a row if it is a new combination of
+//  requiredVariables (after processing the jsonl file)
+//  E.g., Use addIfNew to "add" all of the data from NdbcMet last5days file.
+
+        testStatic(); 
         testGenerateDatasetsXml();
+        testBasic(); 
+        /* */
     }
 }
 

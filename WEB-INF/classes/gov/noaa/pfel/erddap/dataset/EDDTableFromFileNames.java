@@ -234,7 +234,7 @@ public class EDDTableFromFileNames extends EDDTable{
      *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -316,7 +316,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 long tCreationTime = File2.getLastModified(qrName); //0 if trouble
                 if (verbose)
                     String2.log("  quickRestart " + tDatasetID + " previous=" + 
-                        Calendar2.millisToIsoZuluString(tCreationTime) + "Z");
+                        Calendar2.millisToIsoStringTZ(tCreationTime));
 
                 //use cached info
                 tCachedDNLSTable = getCachedDNLSTable();
@@ -473,7 +473,7 @@ public class EDDTableFromFileNames extends EDDTable{
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableFromFileNames " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
@@ -493,7 +493,7 @@ public class EDDTableFromFileNames extends EDDTable{
      */
     public Table getCachedDNLSTable() throws Exception {
         Table table = new Table();
-        table.readFlatNc(quickRestartFullFileName(), null, 0); 
+        table.readFlatNc(quickRestartFullFileName(), null, 0); //standardizeWhat=0 
         table.setColumn(2, new LongArray(table.getColumn(2))); //double -> long
         table.setColumn(3, new LongArray(table.getColumn(3))); //double -> long
         return table;
@@ -889,13 +889,15 @@ directionsForGenerateDatasetsXml() +
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromFileNames",
             tDir, tRegex, "" + tRecursive, "-1", 
-            tInfoUrl, tInstitution, tSummary, tTitle},
+            tInfoUrl, tInstitution, tSummary, tTitle, 
+            "-1"}, //defaultStandardizeWhat
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, 
             "Unexpected results from GenerateDatasetsXml.doIt.");
 
         //ensure it is ready-to-use by making a dataset from it
         String2.log("results=\n" + results);
+        EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), tTitle, "");
@@ -1047,13 +1049,15 @@ directionsForGenerateDatasetsXml() +
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromFileNames",
             tDir, tRegex, "" + tRecursive, "-1", 
-            tInfoUrl, tInstitution, tSummary, tTitle},
+            tInfoUrl, tInstitution, tSummary, tTitle,
+            "-1"}, //defaultStandardizeWhat
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, 
             "Unexpected results from GenerateDatasetsXml.doIt.");
 
         //ensure it is ready-to-use by making a dataset from it
         String2.log("results=\n" + results);
+        EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), tTitle, "");
@@ -1167,7 +1171,7 @@ directionsForGenerateDatasetsXml() +
 "    String title \"JPL MUR SST Images\";\n" +
 "  \\}\n" +
 "\\}\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
@@ -1176,9 +1180,9 @@ directionsForGenerateDatasetsXml() +
         expected = 
 "five,url,name,time,day,lastModified,size,fileType\n" +
 "m,,,UTC,,UTC,bytes,\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T22:54:04Z,46482.0,.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T22:22:18Z,46586.0,.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T22:21:44Z,46549.0,.png\n";
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test that min and max are being set by the constructor
@@ -1191,8 +1195,8 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(edv.destinationMax(), 5, "max");
 
         edv = tedd.findVariableByDestinationName("lastModified");
-        Test.ensureEqual(edv.destinationMinString(), "2015-01-07T22:21:44Z", "min");
-        Test.ensureEqual(edv.destinationMaxString(), "2015-01-14T22:54:04Z", "max");
+        Test.ensureEqual(edv.destinationMinString(), "2015-01-07T21:21:44Z", "min"); //2018-08-09 these changed by 1 hr with switch to lenovo
+        Test.ensureEqual(edv.destinationMaxString(), "2015-01-14T21:54:04Z", "max");
 
         edv = tedd.findVariableByDestinationName("size");
         Test.ensureEqual(edv.destinationMin(), 46482, "min");
@@ -1303,13 +1307,20 @@ directionsForGenerateDatasetsXml() +
 "    String infoUrl \"https://nex.nasa.gov/nex/\";\n" +
 "    String institution \"NASA Earth Exchange\";\n" +
 "    String keywords \"data, earth, exchange, file, great, identifier, lastModified, modified, name, nasa, size, time, title\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(remote files\\)\";\n" +
 "    String subsetVariables \"fileType\";\n" +
 "    String summary \"File Names from http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
 "    String title \"File Names from Amazon AWS S3 NASA NEX tasmin Files\";\n" +
 "  \\}\n" +
 "\\}\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 

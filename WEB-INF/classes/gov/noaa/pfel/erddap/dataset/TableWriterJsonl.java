@@ -34,16 +34,15 @@ public class TableWriterJsonl extends TableWriter {
 
     //set by constructor
     protected String jsonp;
-    protected boolean writeKVP;
+    protected boolean writeColNames, writeKVP;
 
     //set by firstTime
-    protected boolean isCharOrString[];
-    protected boolean isTimeStamp[];
-    protected String time_precision[];
-    protected BufferedWriter writer;
+    protected volatile boolean isTimeStamp[];
+    protected volatile String time_precision[];
+    protected volatile BufferedWriter writer;
 
     //other
-    public long totalNRows = 0;
+    public volatile long totalNRows = 0;
 
     /**
      * The constructor.
@@ -56,14 +55,17 @@ public class TableWriterJsonl extends TableWriter {
      * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results 
      *     (or null if none).
      *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
-     *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
-     *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
+     *     and https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
+     *     and https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/ .
      *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
+     *     ! I think jsonp never makes sense for jsonl output, which isn't one json object.
      */
     public TableWriterJsonl(EDD tEdd, String tNewHistory, 
-        OutputStreamSource tOutputStreamSource, boolean tWriteKVP, String tJsonp) {
+        OutputStreamSource tOutputStreamSource, boolean tWriteColNames,
+        boolean tWriteKVP, String tJsonp) {
 
         super(tEdd, tNewHistory, tOutputStreamSource);
+        writeColNames = tWriteColNames;
         writeKVP = tWriteKVP;
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
@@ -79,11 +81,10 @@ public class TableWriterJsonl extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation converts them to NaNs and stores them as nulls.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs and stores them as nulls.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -121,18 +122,23 @@ public class TableWriterJsonl extends TableWriter {
             writer = new BufferedWriter(new OutputStreamWriter(
                 outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));  //a requirement
             if (jsonp != null) 
-                writer.write(jsonp + "(\n");
+                writer.write(jsonp + "(\n"); //I think this never makes sense for jsonl
 
-            //detect isString columns   
-            isCharOrString = new boolean[nColumns];
-            for (int col = 0; col < nColumns; col++) {
-                isCharOrString[col] = pas[col].elementClass() == char.class ||
-                                      pas[col].elementClass() == String.class;
+            //write the column names
+            if (writeColNames && !writeKVP) {
+                writer.write('[');
+                for (int col = 0; col < nColumns; col++) {
+                    if (col > 0)
+                        writer.write(", ");
+                    writer.write(String2.toJson(table.getColumnName(col)));
+                }
+                writer.write("]\n");
             }
+
         }
 
         //*** do everyTime stuff
-        convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
+        table.convertToStandardMissingValues();  //to NaNs
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
@@ -153,14 +159,8 @@ public class TableWriterJsonl extends TableWriter {
                     writer.write(Double.isNaN(d)? "null" : 
                         "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
                         time_precision[col], d, "") + "\"");
-                } else if (isCharOrString[col]) {
-                    writer.write(String2.toJson(pas[col].getString(row)));
                 } else {
-                    String s = pas[col].getString(row);
-                    //represent NaN as null? yes, that is what json library does
-                    //If I go to https://jsonlint.com/ and enter [1, 2.0, 1e30], it says it is valid.
-                    //If I enter [1, 2.0, NaN, 1e30], it says NaN is not valid.
-                    writer.write(s.length() == 0? "null" : s); 
+                    writer.write(pas[col].getJsonString(row));
                 }
             }
             writer.write(writeKVP? "}\n" : "]\n"); //endRow    //recommended: always just \n
@@ -207,11 +207,12 @@ public class TableWriterJsonl extends TableWriter {
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
     public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
-        OutputStreamSource outputStreamSource, boolean tWriteKVP, String tJsonp)
+        OutputStreamSource outputStreamSource, 
+        boolean tWriteColNames, boolean tWriteKVP, String tJsonp)
         throws Throwable {
 
         TableWriterJsonl twjl = new TableWriterJsonl(tEdd, tNewHistory, 
-            outputStreamSource, tWriteKVP, tJsonp);
+            outputStreamSource, tWriteColNames, tWriteKVP, tJsonp);
         twjl.writeAllAndFinish(table);
     }
 

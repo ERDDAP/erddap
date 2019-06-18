@@ -43,10 +43,12 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     protected double sourceTimeBase = Double.NaN;   //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
     protected boolean parseISOWithCalendar2;
-    protected DateTimeFormatter dateTimeFormatter;  //set if !sourceTimeIsNumeric
+    protected String dateTimeFormat; //only used if !sourceTimeIsNumeric, which currently is never
+    protected DateTimeFormatter dateTimeFormatter;  //currently never used: for generating source time if !sourceTimeIsNumeric
     protected String time_precision; //see Calendar2.epochSecondsToLimitedIsoStringT
     protected boolean superConstructorIsFinished = false;
-    protected String time_zone; //if not specified, will be Zulu
+    protected String timeZoneString; //if not specified, will be Zulu
+    protected TimeZone timeZone; //if not specified, will be Zulu
 
     /**
      * The constructor.
@@ -65,6 +67,9 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * has been converted to destinationDataType with scaleFactor and addOffset 
      * applied.
      * 
+     * @param tParentDatasetID This is needed if dimensionValuesInMemory is false,
+     *   so sourceValues sometimes need to be read from 
+     *   [cacheDirectory(tParentDatasetID)]/dimensionSourceValues.nc
      * @param tSourceName the name of the axis variable in the dataset source
      *    (usually with no spaces).
      * @param tDestinationName should be "time" for *the* destination variable 
@@ -81,12 +86,14 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      *    There must be at least one element.
      * @throws Throwable if trouble
      */
-    public EDVTimeStampGridAxis(String tSourceName, String tDestinationName,
+    public EDVTimeStampGridAxis(String tParentDatasetID, 
+        String tSourceName, String tDestinationName,
         Attributes tSourceAttributes, Attributes tAddAttributes,
         PrimitiveArray tSourceValues) 
         throws Throwable {
 
-        super(tSourceName, tDestinationName, tSourceAttributes, tAddAttributes, tSourceValues); 
+        super(tParentDatasetID, tSourceName, tDestinationName, 
+            tSourceAttributes, tAddAttributes, tSourceValues); 
         superConstructorIsFinished = true;
 
         //time_precision e.g., 1970-01-01T00:00:00Z
@@ -103,7 +110,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //currently, EDVTimeStampGridAxis doesn't support String sourceValues
         String errorInMethod = "datasets.xml/EDVTimeStampGridAxis constructor error for sourceName=" + 
             tSourceName + ":\n";
-        if (sourceValues instanceof StringArray)
+        if (tSourceValues instanceof StringArray)
             throw new RuntimeException(errorInMethod + 
                 "Currently, EDVTimeStampGridAxis doesn't support String source " + 
                 "values for the time axis.");
@@ -113,17 +120,18 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         Test.ensureNotNothing(sourceTimeFormat, 
             errorInMethod + "'units' wasn't found."); //match name in datasets.xml
 
-        time_zone = combinedAttributes.getString("time_zone");
+        timeZoneString = combinedAttributes.getString("time_zone");
         combinedAttributes.remove("time_zone");
-        if (!String2.isSomething(time_zone))
-            time_zone = "Zulu";
+        if (!String2.isSomething(timeZoneString))
+            timeZoneString = "Zulu";
+        timeZone = TimeZone.getTimeZone(timeZoneString);
 
         if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
             sourceTimeIsNumeric = true;
             double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
             sourceTimeBase = td[0];
             sourceTimeFactor = td[1];
-            if (!"Zulu".equals(time_zone) && !"UTC".equals(time_zone)) 
+            if (!"Zulu".equals(timeZoneString) && !"UTC".equals(timeZoneString)) 
                 throw new RuntimeException(
                     "Currently, ERDDAP doesn't support time_zone's other than Zulu " +
                     "and UTC for numeric axis timestamp variables.");
@@ -134,25 +142,26 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
                 "Currently, String time axes are not supported. " +
                 "The source units for the time axis must include \" since \".");
             /*  If Strings are ever supported...
-            //deal with time_zone! see EDVTimeStamp
+            //deal with timeZoneString! see EDVTimeStamp
             //ensure scale_factor=1 and add_offset=0
             if (scaleAddOffset)
                 throw new RuntimeException(errorInMethod + 
                     "For String source times, scale_factor and add_offset MUST NOT be used.");
 
-            if (sourceTimeFormat.equals(ISO8601T_FORMAT) ||
-                sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
+            dateTimeFormat = sourceTimeFormat;
+            if (dateTimeFormat.equals(ISO8601T_FORMAT) ||
+                dateTimeFormat.equals(ISO8601TZ_FORMAT)) {
                 if (verbose) String2.log("parseISOWithCalendar2=true");
-                dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(ZoneId.of("UTC"));
+                dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(ZoneId.of(timeZoneString));
                 parseISOWithCalendar2 = true;
             } else if (sourceTimeFormat.equals(ISO8601T3_FORMAT) ||
                        sourceTimeFormat.equals(ISO8601T3Z_FORMAT)) {
                 if (verbose) String2.log("parseISOWithCalendar2=true");
-                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(ZoneId.of("UTC"));
+                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(ZoneId.of(timeZoneString));
                 parseISOWithCalendar2 = true;                
             } else {
                 //future: support time zones  
-                dateTimeFormatter = DateTimeFormatter.ofPattern(sourceTimeFormat, "UTC");
+                dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat, timeZoneString);
                 parseISOWithCalendar2 = false;
             }
             */
@@ -194,16 +203,16 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //(simpler than EDVTimeStamp because always numeric and range known from axis values)
         destinationDataType = "double";
         destinationDataTypeClass = double.class;
-        int n = sourceValues.size();
+        int n = tSourceValues.size();
         setDestinationMinMaxFromSource(
-            sourceValues.getNiceDouble(0), 
-            sourceValues.getNiceDouble(n - 1));
+            tSourceValues.getNiceDouble(0), 
+            tSourceValues.getNiceDouble(n - 1));
         if (Double.isNaN(destinationMin))
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
-                "[0]=" + sourceValues.getString(0) + " => NaN epochSeconds.");
+                "[0]=" + tSourceValues.getString(0) + " => NaN epochSeconds.");
         if (Double.isNaN(destinationMax))
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
-                "[n-1]=" + sourceValues.getString(n-1) + " => NaN epochSeconds.");
+                "[n-1]=" + tSourceValues.getString(n-1) + " => NaN epochSeconds.");
 
         setActualRangeFromDestinationMinMax();    
         initializeAverageSpacingAndCoarseMinMax();
@@ -363,7 +372,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //    String2.log("    EDVTimeStampGridAxis stBase=" + sourceTimeBase +
         //        " scale=" + scaleFactor + " addOffset=" + addOffset + 
         //        " stFactor=" + sourceTimeFactor + " sourceTime=" + sourceTime +
-        //        " result=" + sec + " = " + Calendar2.epochSecondsToIsoStringT(sec));
+        //        " result=" + sec + " = " + Calendar2.epochSecondsToIsoStringTZ(sec));
         return sec;
     }
 
@@ -392,10 +401,10 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             double d = parseISOWithCalendar2?
                 //parse with Calendar2.parseISODateTime
                 Calendar2.isoStringToEpochSeconds(sourceTime) :
-                //parse with java.time (was Joda)
-                Calendar2.toEpochSeconds(sourceTime, dateTimeFormatter); //thread safe
+                //parse 
+                Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone); //thread safe
             //String2.log("  EDVTimeStampGridAxis sourceTime=" + sourceTime + 
-            //    " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
+            //    " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringTZ(d));
             return d;
         } catch (Throwable t) {
             if (verbose && sourceTime != null && sourceTime.length() > 0)
@@ -493,16 +502,17 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      */
     public PrimitiveArray destinationValues() {
         //alt and time may modify the values, so use sourceValues.clone()
-        return toDestination((PrimitiveArray)sourceValues.clone()); 
+        return toDestination((PrimitiveArray)(sourceValues().clone())); 
     }
 
     /**
      * This returns one of this axis' source values as epochSeconds. 
      */
     public double destinationDouble(int which) {
+        PrimitiveArray tSourceValues = sourceValues(); //work with stable local reference
         return sourceTimeIsNumeric?
-            sourceTimeToEpochSeconds(sourceValues.getNiceDouble(which)) :
-            sourceTimeToEpochSeconds(sourceValues.getString(which));
+            sourceTimeToEpochSeconds(tSourceValues.getNiceDouble(which)) :
+            sourceTimeToEpochSeconds(tSourceValues.getString(which));
     }
 
     /**
@@ -523,7 +533,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
      */
     public PrimitiveArray destinationStringValues() {
-        return toDestinationStrings(sourceValues);
+        return toDestinationStrings(sourceValues());
     }
 
     /**

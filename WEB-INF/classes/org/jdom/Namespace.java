@@ -98,7 +98,7 @@ public final class Namespace {
 
     /** Define a <code>Namespace</code> for the standard xml prefix. */
     public static final Namespace XML_NAMESPACE =
-        new Namespace("xml", "http://www.w3.org/XML/1998/namespace");
+        new Namespace("xml", "https://www.w3.org/XML/1998/namespace");
 
     /** The prefix mapped to this namespace */
     private String prefix;
@@ -115,7 +115,7 @@ public final class Namespace {
 
         // Add the "empty" namespace
         namespaces.put("&", NO_NAMESPACE);
-        namespaces.put("xml&http://www.w3.org/XML/1998/namespace",
+        namespaces.put("xml&https://www.w3.org/XML/1998/namespace",
                        XML_NAMESPACE);
     }
 
@@ -166,21 +166,21 @@ public final class Namespace {
         }
 
         // Handle XML namespace mislabels. If the user requested the correct
-        // namespace and prefix -- xml, http://www.w3.org/XML/1998/namespace
+        // namespace and prefix -- xml, https://www.w3.org/XML/1998/namespace
         // -- then it was already returned from the preexisting namespaces.
         // Thus any use of the xml prefix or the
-        // http://www.w3.org/XML/1998/namespace URI at this point must be
+        // https://www.w3.org/XML/1998/namespace URI at this point must be
         // incorrect. 
         if (prefix.equals("xml")) {
             throw new IllegalNameException(prefix, "Namespace prefix",
              "The xml prefix can only be bound to " +
-             "http://www.w3.org/XML/1998/namespace");        
+             "https://www.w3.org/XML/1998/namespace");        
         }
         // The erratum to Namespaces in XML 1.0 that suggests this 
         // next check is controversial. Not everyone accepts it. 
-        if (uri.equals("http://www.w3.org/XML/1998/namespace")) {
+        if (uri.equals("https://www.w3.org/XML/1998/namespace")) {
             throw new IllegalNameException(uri, "Namespace URI",
-             "The http://www.w3.org/XML/1998/namespace must be bound to " +
+             "The https://www.w3.org/XML/1998/namespace must be bound to " +
              "the xml prefix.");        
         }
 

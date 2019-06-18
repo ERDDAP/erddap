@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 package dods.dap;
+import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import java.net.*;
@@ -112,7 +113,11 @@ public class DConnect {
       URL testURL = new URL(urlString);
     }
     catch (MalformedURLException e) {
-      fileStream = new FileInputStream(urlString);
+      try {
+          fileStream = File2.getDecompressedBufferedInputStream(urlString);
+      } catch (Exception e2) {
+          throw new FileNotFoundException(urlString);
+      }
     }
   }
 
@@ -229,7 +234,7 @@ public class DConnect {
     try {
         //this always asks for and accepts compression
         //this only tries once
-        Object[] object = SSR.getUrlConnInputStream(url.toString(), readTimeOutMillis);
+        Object[] object = SSR.getUrlConnBufferedInputStream(url.toString(), readTimeOutMillis);
         connection = (URLConnection)object[0];
         is = (InputStream)object[1];
     } catch (Exception e) {
@@ -238,7 +243,12 @@ public class DConnect {
     }
 
     // check headers
-    String type = connection.getHeaderField("content-description");
+    String type = connection.getHeaderField("Content-Description");  //2019-03-29 HTTP name is case-insensitive. Bob has seen all 3 variants.
+    if (type == null)                                            //
+        type = connection.getHeaderField("Content-description"); //Bob has seen this. 
+    if (type == null)
+        type = connection.getHeaderField("content-description"); //was this
+
     // System.err.println("Content Description: " + type);
     handleContentDesc(is, type);
 
@@ -301,7 +311,9 @@ public class DConnect {
     }
 
     // check headers
-    String type = connection.getHeaderField("content-description");
+    String type = connection.getHeaderField("Content-Description"); //2019-03-29 Bob says: was "content-description". I added line below too.
+    if (type == null)
+        type = connection.getHeaderField("content-description"); //incorrect, but used in some places historically
     // System.err.println("Content Description: " + type);
     handleContentDesc(is, type);
 
@@ -515,17 +527,15 @@ public class DConnect {
                              ParseException, DDSException, DODSException {
 
     InputStream is = parseMime(fileStream);
-    DataDDS dds = new DataDDS(ver, btf);
-
-    try {
-      dds.parse(new HeaderInputStream(is));    // read the DDS header
-      // NOTE: the HeaderInputStream will have skipped over "Data:" line
-      dds.readData(is, statusUI); // read the data!
-
+    try { //2018-05-22 Bob Simons added try/finally
+        DataDDS dds = new DataDDS(ver, btf);
+        dds.parse(new HeaderInputStream(is));    // read the DDS header
+        // NOTE: the HeaderInputStream will have skipped over "Data:" line
+        dds.readData(is, statusUI); // read the data!
+        return dds;
     } finally {
       is.close();  // stream is always closed even if parse() throws exception
     }
-    return dds;
   }
 
   public DataDDS getDataFromUrl(URL url, StatusUI statusUI, BaseTypeFactory btf) throws MalformedURLException, IOException,
@@ -780,7 +790,9 @@ public class DConnect {
    */
   private void handleContentDesc(InputStream is, String type)
        throws IOException, DODSException {
-    if (type != null && type.equals("dods_error")) {
+    if (type != null && type.startsWith("dods_"))  //2019-03-29 Bob added this
+        type = "dods-" + type.substring(5);
+    if (type != null && type.equals("dods-error")) { //2019-03-29 Bob changed this from "dods_error"
       // create server exception object
       DODSException ds = new DODSException();
       // parse the Error object from stream and throw it

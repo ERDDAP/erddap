@@ -32,7 +32,7 @@ import java.util.Vector;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -285,6 +285,7 @@ public class TableDataSet4DNc extends TableDataSet {
 
                     //close the file  (do care if exception)
                     ncFile.close();
+                    ncFile = null;
 
                     //ok, save this fileName
                     //if (verbose) String2.log("accept " + tFileNames[f]);                                       
@@ -295,7 +296,8 @@ public class TableDataSet4DNc extends TableDataSet {
                     if (verbose) String2.log("  rejecting " + tFileNames[f] + 
                         ": " + e.toString()); //no need for stack trace
                     try {
-                        ncFile.close();
+                        if (ncFile != null)
+                            ncFile.close();
                     } catch (Exception e2) {
                         //I don't care
                     }
@@ -363,8 +365,7 @@ public class TableDataSet4DNc extends TableDataSet {
                     timeFactorToGetSeconds, NcHelper.getDouble(timeVariable, endTimeIndex));
                 if (startTimeIndex == endTimeIndex &&
                     Math.abs(endEpSecInFile - maxEpochSeconds) >= Calendar2.SECONDS_PER_HOUR) {
-                    ncFile.close();
-                    continue;
+                    continue; //ncFile closed in finally {} below
                 }
 
                 //get all the x, y, z, t values
@@ -429,18 +430,8 @@ public class TableDataSet4DNc extends TableDataSet {
                             0, nx, 0, ny, 0, nz, startTimeIndex, nt));
                     }
                 }
-
-                //close the ncFile; I care about an Exception here
+            } finally {
                 ncFile.close();
-
-            } catch (Exception e) {
-                //ensure ncFile is closed
-                try {
-                    ncFile.close();
-                } catch (Exception e2) {
-                    //I don't care
-                }
-                throw e;
             }
         }
 
@@ -467,7 +458,7 @@ public class TableDataSet4DNc extends TableDataSet {
         try {
         TableDataSet4DNc dataset = new TableDataSet4DNc(
             "4NBmeto", "NDBC Meteorological",
-            "c:/data/ndbc/ndbcMet/", 
+            "c:/u00/data/points/ndbcMet/", 
             //".+\\.nc");
             "NDBC_41..._met.nc");
 
@@ -501,8 +492,7 @@ public class TableDataSet4DNc extends TableDataSet {
         Test.ensureEqual(table.getFloatData(15, row), Float.NaN, "");
         Test.ensureEqual(table.getFloatData(16, row), Float.NaN, "");
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) +
-                "2017-05-26 Known problem with cookie. NEEDS WORK.");
+            String2.pressEnterToContinue(MustBe.throwableToString(t));
         }
     }
 }

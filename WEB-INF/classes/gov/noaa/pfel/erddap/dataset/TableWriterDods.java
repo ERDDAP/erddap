@@ -61,11 +61,10 @@ public class TableWriterDods extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation doesn't change them.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation doesn't change them.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {

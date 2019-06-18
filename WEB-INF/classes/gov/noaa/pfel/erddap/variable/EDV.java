@@ -41,16 +41,16 @@ public class EDV {
     public static boolean reallyVerbose = false; 
 
     /**
-     * Set this to true (by calling debug=true in your program, not by changing the code here)
+     * Set this to true (by calling debugMode=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
-    public static boolean debug = false; 
+    public static boolean debugMode = false; 
 
     /** 
      * These are the standardized variable names, long names, CF standard names, 
      * and units for the lon, lat, alt, and time axes in the results. 
      * These names match the CF standard names
-     * (see http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html).
+     * (see http://cfconventions.org/standard-names.html).
      */
     public final static String
         LON_NAME  = "longitude", LON_LONGNAME  = "Longitude", LON_STANDARD_NAME  = "longitude", LON_UNITS  = "degrees_east",        
@@ -144,7 +144,7 @@ public class EDV {
     /**
      * The start of the url for observedProperty for cf standardNames.
      */
-    public final static String cfObservedPropertyUrl = "http://mmisw.org/ont/cf/parameter/";
+    public final static String cfObservedPropertyUrl = "https://mmisw.org/ont/cf/parameter/";
         //was "http://marinemetadata.org/cf#";
     
     /** The valid options for colorBarScale. 
@@ -157,6 +157,10 @@ public class EDV {
     /** The time variable attribute that has the precision specification for 
         Calendar2.epochSecondsToLimitedIsoStringT. */
     public final static String TIME_PRECISION = "time_precision"; 
+
+    /** The float or double variable attribute that specifies the 
+        number of decimal digits for a variable. */
+    public final static String DECIMAL_DIGITS = "decimal_digits"; 
 
     /** This is the standard slider size. */
     public final static int SLIDER_PIXELS = 501;
@@ -212,7 +216,7 @@ public class EDV {
     protected String stringFillValue = ""; //won't be null
     protected String safeStringMissingValue = ""; //won't be null. If not "", then there is probably no 1 source MV 
     protected boolean hasColorBarMinMax = false;
-    protected byte[] sliderCsvValues = null;
+    protected byte[] sliderCsvValues = null; //stored as utf8Bytes
 
     protected boolean isBoolean = false;
     protected boolean scaleAddOffset = false;
@@ -220,6 +224,7 @@ public class EDV {
     //Thus 'true' also indicates: And this class is unpacking to a larger datatype.
     protected boolean sourceIsUnsigned = false; 
     protected double scaleFactor = 1, addOffset = 0;
+    protected int decimal_digits = Integer.MAX_VALUE; //not used
 
     /**
      * The constructor.
@@ -333,6 +338,9 @@ public class EDV {
         if (longName == null)
             longName = destinationName;
         units = combinedAttributes().getString("units"); //may be null; already canonical
+        decimal_digits = combinedAttributes().getInt(DECIMAL_DIGITS); //may be null -> MAX_VALUE
+        if (decimal_digits < 0 || decimal_digits >= Math2.Ten.length)
+            decimal_digits = Integer.MAX_VALUE;
 
         //extractScaleAddOffset     It sets destinationDataType and destinationDataTypeClass
         extractScaleAddOffset(); 
@@ -639,7 +647,8 @@ public class EDV {
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        if (reallyVerbose) String2.log("  " + destinationName + " destinationMin=" + destinationMin + " max=" + destinationMax);
+        if (reallyVerbose) String2.log("  " + destinationName + " destinationMin=" + destinationMin + 
+            " max=" + destinationMax + " class=" + PrimitiveArray.elementClassToString(destinationDataTypeClass()));
         if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
             combinedAttributes.remove("actual_range");
         } else {
@@ -700,6 +709,16 @@ public class EDV {
                 "destinationDataType=" + destinationDataType + " isn't supported.");
         }
         //units may be null
+
+        if ((destinationDataTypeClass == float.class ||
+             destinationDataTypeClass == double.class) &&
+            decimal_digits >= 0 && decimal_digits < Math2.Ten.length) {
+            //okay
+        } else { 
+            decimal_digits = Integer.MAX_VALUE;
+            combinedAttributes.remove(DECIMAL_DIGITS);
+        }
+
         if (EDStatic.variablesMustHaveIoosCategory) {
             String ic = combinedAttributes().getString("ioos_category");
             Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
@@ -779,6 +798,21 @@ public class EDV {
             oLongName.length()     > 0? oLongName :
             fromAbbrev    != null? fromAbbrev :
             tSourceName;
+        //String2.log(">> suggestLongName ttName=" + ttName);
+
+        //shorten the name?
+        String seek = "aasg:"; //special case
+        int po = -1;
+        if (ttName.length() > 6)
+            po = ttName.substring(0, ttName.length() - 1).lastIndexOf(seek);
+        //NOT YET. Most sourceNames aren't too long. aasg is the only known exception.
+        //look for last '/', but not at very end
+        //  and avoid e.g., several something_quality -> quality
+        //if (po < 0 && ttName.length() > 60) 
+        //    po = ttName.substring(0, ttName.length() - 30).lastIndexOf(seek = "/");
+        if (po >= 0)
+            ttName = ttName.substring(po + seek.length());
+
         if ("pH".equals(ttName))
             return ttName;
         StringBuilder tName = new StringBuilder(ttName.trim());
@@ -829,19 +863,6 @@ public class EDV {
                 result = tName.toString();
             }
         }
-
-        //shorten the name?
-        String seek = "aasg:"; //special case
-        int po = -1;
-        if (result.length() > 6)
-            po = result.substring(0, result.length() - 1).lastIndexOf(seek);
-        //NOT YET. Most sourceNames aren't too long. aasg is the only known exception.
-        //look for last '/', but not at very end
-        //  and avoid e.g., several something_quality -> quality
-        //if (po < 0 && result.length() > 60) 
-        //    po = result.substring(0, result.length() - 30).lastIndexOf(seek = "/");
-        if (po >= 0)
-            result = result.substring(po + seek.length());
 
         //return
         //String2.log(">> suggestLongName o=" + oLongName + " sourceName=" + tSourceName + 
@@ -1255,7 +1276,7 @@ public class EDV {
         //already exists? return it
         byte scv[] = sliderCsvValues; //local copy avoids concurrency problems
         if (scv != null) 
-            return String2.utf8ToString(scv);
+            return String2.utf8BytesToString(scv);
 
         //else make it
         try {
@@ -1273,7 +1294,7 @@ public class EDV {
                 dVal = tMin;
                 sVal = isFloat? "" + (float)dVal : "" + dVal;
                 String csv = toSliderString(sVal, isTimeStamp);
-                sliderCsvValues = String2.getUTF8Bytes(csv); //do last
+                sliderCsvValues = String2.stringToUtf8Bytes(csv); //do last
                 return csv;
             }
 
@@ -1302,7 +1323,7 @@ public class EDV {
                 " tMin=" + tMin + " tMax=" + tMax + " stride=" + stride + 
                 " base=" + base + " nValues=" + (nDiv + 1));
             String csv = sb.toString();
-            sliderCsvValues = String2.getUTF8Bytes(csv); //do last
+            sliderCsvValues = String2.stringToUtf8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}

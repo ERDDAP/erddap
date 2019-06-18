@@ -33,6 +33,14 @@ import gov.noaa.pfel.erddap.variable.*;
  */
 public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles { 
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
 
     /** 
      * The constructor just calls the super constructor. 
@@ -66,7 +74,9 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, 
         String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromMultidimNcFiles", tDatasetID, 
@@ -80,7 +90,8 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
     }
 
@@ -91,7 +102,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -100,8 +111,12 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
 
         //read the file
         Table table = new Table();
-        table.readMultidimNc(fileDir + fileName, sourceDataNames, null,
-            getMetadata, removeMVRows, 
+        String decompFullName = FileVisitorDNLS.decompressIfNeeded(
+            tFileDir + tFileName, fileDir, decompressedDirectory(), 
+            EDStatic.decompressedCacheMaxGB, true); //reuseExisting
+        table.readMultidimNc(decompFullName, sourceDataNames, null,
+            treatDimensionsAs,
+            getMetadata, standardizeWhat, removeMVRows,  
             sourceConVars, sourceConOps, sourceConValues);
         return table;
     }
@@ -147,6 +162,8 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         boolean tRemoveMVRows,  //siblings have String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat,
+        String tTreatDimensionsAs, String tCacheFromUrl, 
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromMultidimNcFiles.generateDatasetsXml" +
@@ -167,6 +184,11 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         StringArray useDimensions = StringArray.fromCSV(useDimensionsCSV);
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
@@ -178,10 +200,21 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             String2.log("Found/using sampleFileName=" +
                 (sampleFileName = FileVisitorDNLS.getSampleFileName(
                     tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
+        String tDimAs[][] = null;
+        if (String2.isSomething(tTreatDimensionsAs)) {
+            String parts[] = String2.split(tTreatDimensionsAs, ';');
+            int nParts = parts.length; 
+            tDimAs = new String[nParts][];
+            for (int part = 0; part < nParts; part++) {
+                tDimAs[part] = String2.split(parts[part], ',');
+                if (reallyVerbose) String2.log(TREAT_DIMENSIONS_AS + "[" + part + 
+                    "] was set to " + String2.toCSSVString(tDimAs[part]));
+            }
+        }
 
         //show structure of sample file
         String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
-        String2.log(NcHelper.dumpString(sampleFileName, false));
+        String2.log(NcHelper.ncdump(sampleFileName, "-h"));
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -189,8 +222,11 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         Table dataAddTable = new Table();
 
         //read the sample file
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
         dataSourceTable.readMultidimNc(sampleFileName, null, useDimensions,  
-            true, tRemoveMVRows, //getMetadata, removeMVRows
+            tDimAs, //treatDimensionsAs
+            true, tStandardizeWhat, tRemoveMVRows, //getMetadata, standardizeWhat, removeMVRows
             null, null, null); //conVars, conOps, conVals
         StringArray varNames = new StringArray(dataSourceTable.getColumnNames());
         Test.ensureTrue(varNames.size() > 0, 
@@ -199,11 +235,14 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
-            dataAddTable.addColumn(c, colName, pa,
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+            dataAddTable.addColumn(c, colName, destPA, addAtts); 
 
             //maxTimeES
             String tUnits = sourceAtts.getString("units");
@@ -212,15 +251,19 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
                     if (Calendar2.isNumericTimeUnits(tUnits)) {
                         double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
                         maxTimeES = Calendar2.unitsSinceToEpochSeconds(
-                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                            tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
                     } else { //string time units
-                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                        maxTimeES = Calendar2.tryToEpochSeconds(destPA.getString(destPA.size() - 1)); //NaN if trouble
                     }
                 } catch (Throwable t) {
                     String2.log("caught while trying to get maxTimeES: " + 
                         MustBe.throwableToString(t));
                 }
             }
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, sourcePA, sourceAtts, addAtts); //sourcePA since strongly typed
+
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -253,6 +296,10 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
                 suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
+
+        //treatDimensionsAs
+        if (String2.isSomething(tTreatDimensionsAs))
+            dataAddTable.globalAttributes().set(TREAT_DIMENSIONS_AS, tTreatDimensionsAs);
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -294,7 +341,10 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -337,7 +387,11 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
                 "^", "_prof.nc$", ".*", "fileNumber", //just for test purposes
                 true, //removeMVRows
                 "FLOAT_SERIAL_NO JULD", //sort files by 
-                "", "", "", "", null) + "\n";
+                "", "", "", "", 
+                -1, //defaultStandardizeWhat
+                "", //treatDimensionsAs
+                null, //cacheFromUrl
+                null) + "\n";
 
 String expected = 
 directionsForGenerateDatasetsXml() +
@@ -351,6 +405,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex>^</preExtractRegex>\n" +
 "    <postExtractRegex>_prof.nc$</postExtractRegex>\n" +
 "    <extractRegex>.*</extractRegex>\n" +
@@ -370,13 +425,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"user_manual_version\">3.1</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" +
-"        <att name=\"cdm_profile_variables\">???</att>\n" +
-"        <att name=\"cdm_trajectory_variables\">???</att>\n" +
+"        <att name=\"cdm_profile_variables\">profile_id, ???</att>\n" +
+"        <att name=\"cdm_trajectory_variables\">trajectory_id, ???</att>\n" +
 "        <att name=\"Conventions\">Argo-3.1 CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Coriolis GDAC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -386,7 +441,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, DIRECTION, DATA_CENTRE, WMO_INST_TYPE, JULD_QC, POSITION_QC, POSITIONING_SYSTEM, CONFIG_MISSION_NUMBER</att>\n" +
 "        <att name=\"summary\">Argo float vertical profile. Coriolis Global Data Assembly Centres (GDAC) data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -480,8 +535,6 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Float unique identifier</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -604,8 +657,6 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Serial number of the float</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1111,7 +1162,10 @@ directionsForGenerateDatasetsXml() +
                 "^", "_prof.nc$", ".*", "fileNumber", //just for test purposes
                 "true", //removeMVRows
                 "FLOAT_SERIAL_NO JULD", //sort files by 
-                "", "", "", ""},
+                "", "", "", "", 
+                "-1", //defaultStandardizeWhat
+                "", //treatDimensionsAs
+                ""}, //cacheFromUrl
                 false); //doIt loop?
             Test.ensureEqual(results, expected, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -1120,15 +1174,21 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             //with one small change to addAttributes:
-            results = String2.replaceAll(results, 
+
+            String tr = 
 "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" +
-"        <att name=\"cdm_profile_variables\">???</att>\n" +
-"        <att name=\"cdm_trajectory_variables\">???</att>\n",
+"        <att name=\"cdm_profile_variables\">profile_id, ???</att>\n" +
+"        <att name=\"cdm_trajectory_variables\">trajectory_id, ???</att>\n";
+            int po = results.indexOf(tr);
+            Test.ensureTrue(po > 0, "pre replaceAll:\n" + results);
+            results = String2.replaceAll(results, tr,
 "        <att name=\"cdm_data_type\">Point</att>\n");
-            String2.log(results);
+            String2.log("post replaceAll:\n" + results);
           
+            String tDatasetID = "nc_65cd_4c8a_93f3";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "nc_65cd_4c8a_93f3", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "Argo float vertical profile", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "fileNumber, DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, CYCLE_NUMBER, DIRECTION, DATA_CENTRE, DC_REFERENCE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, time, JULD_QC, JULD_LOCATION, latitude, longitude, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, CONFIG_MISSION_NUMBER, PRES, PRES_QC, PRES_ADJUSTED, PRES_ADJUSTED_QC, PRES_ADJUSTED_ERROR, TEMP, TEMP_QC, TEMP_ADJUSTED, TEMP_ADJUSTED_QC, TEMP_ADJUSTED_ERROR, PSAL, PSAL_QC, PSAL_ADJUSTED, PSAL_ADJUSTED_QC, PSAL_ADJUSTED_ERROR", 
@@ -1593,7 +1653,7 @@ expected=
 "    String source \"Argo float\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 19.875999450683594;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme\";\n" +
 "    String summary \"Argo float vertical profiles from Coriolis Global Data Assembly Centres\n" +
 "(GDAC). Argo is an international collaboration that collects high-quality\n" +
@@ -1778,7 +1838,11 @@ expected=
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 true, //removeMVRows
                 "", //sortFilesBy 
-                "", "", "", "", null);
+                "", "", "", "", 
+                -1, //defaultStandardizeWhat
+                "", //treatDimensionsAs
+                null, //cacheFromUrl
+                null);
             String2.setClipboardString(results);
 
 String expected = 
@@ -1793,6 +1857,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -1808,12 +1873,12 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"title\">NetCDF TIMESERIES - Generated by NEMO, version 1.6.0</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
-"        <att name=\"cdm_timeseries_variables\">???</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
 "        <att name=\"Conventions\">SeaDataNet_1.0, CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">SeaDataNet</att>\n" +
 "        <att name=\"creator_url\">https://www.seadatanet.org/</att>\n" +
@@ -1823,7 +1888,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">SDN_EDMO_CODE, SDN_CRUISE, SDN_STATION, SDN_LOCAL_CDI_ID, SDN_BOT_DEPTH, longitude, latitude, POSITION_SEADATANET_QC, crs, TIME_SEADATANET_QC, depth, DEPTH_SEADATANET_QC, ASLVZZ01_SEADATANET_QC, TEMPPR01_SEADATANET_QC, PRESPR01_SEADATANET_QC</att>\n" +
 "        <att name=\"summary\">Network Common Data Format (NetCDF) TIMESERIES - Generated by NEMO, version 1.6.0</att>\n" +
 "        <att name=\"title\">NetCDF TIMESERIES, Generated by NEMO, version 1.6.0</att>\n" +
@@ -1868,8 +1933,6 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">List of station numbers</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2215,6 +2278,1298 @@ directionsForGenerateDatasetsXml() +
 
     }
 
+    /**
+     * testGenerateDatasetsXml with treatDimensionsAs and standadizeWhat.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
+     */
+    public static void testGenerateDatasetsXmlDimensions() throws Throwable {
+        testVerboseOn();
+
+        try {
+            String results = generateDatasetsXml(
+                EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+                "TIME, DEPTH",
+                1440,
+                "", "", "", "", //just for test purposes
+                false, //removeMVRows
+                "TIME", //sort files by 
+                "", "", "", "", 
+                4355, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
+                "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs
+                null, //cacheFromUrl
+                null) + "\n";
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_442a_2710_b83c\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/erddapTest/nc/</fileDir>\n" +
+"    <fileNameRegex>GL_.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>4355</standardizeWhat>\n" +
+"    <preExtractRegex></preExtractRegex>\n" +
+"    <postExtractRegex></postExtractRegex>\n" +
+"    <extractRegex></extractRegex>\n" +
+"    <columnNameForExtract></columnNameForExtract>\n" +
+"    <removeMVRows>false</removeMVRows>\n" +
+"    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"area\">Global Ocean</att>\n" +
+"        <att name=\"author\">Coriolis and MyOcean data provider</att>\n" +
+"        <att name=\"cdm_data_type\">Time-series</att>\n" +
+"        <att name=\"citation\">These data were collected and made freely available by the MyOcean project and the programs that contribute to it</att>\n" +
+"        <att name=\"contact\">codac@ifremer.fr</att>\n" +
+"        <att name=\"conventions\">OceanSITES Manual 1.1, CF-1.1</att>\n" +
+"        <att name=\"data_assembly_center\">Coriolis</att>\n" +
+"        <att name=\"data_mode\">R</att>\n" +
+"        <att name=\"data_type\">OceanSITES time-series data</att>\n" +
+"        <att name=\"date_update\">2012-08-06T22:07:01Z</att>\n" +
+"        <att name=\"distribution_statement\">These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n" +
+"        <att name=\"format_version\">1.1</att>\n" +
+"        <att name=\"geospatial_lat_max\">51.078</att>\n" +
+"        <att name=\"geospatial_lat_min\">47.763</att>\n" +
+"        <att name=\"geospatial_lon_max\">-39.878</att>\n" +
+"        <att name=\"geospatial_lon_min\">-44.112</att>\n" +
+"        <att name=\"history\">2012-08-06T22:07:01Z : Creation</att>\n" +
+"        <att name=\"id\">GL_201207_TS_DB_44761</att>\n" +
+"        <att name=\"institution\">Unknown institution</att>\n" +
+"        <att name=\"institution_references\">http://www.coriolis.eu.org</att>\n" +
+"        <att name=\"naming_authority\">OceanSITES</att>\n" +
+"        <att name=\"netcdf_version\">3.5</att>\n" +
+"        <att name=\"platform_code\">44761</att>\n" +
+"        <att name=\"qc_manual\">OceanSITES User&#39;s Manual v1.1</att>\n" +
+"        <att name=\"quality_control_indicator\">6</att>\n" +
+"        <att name=\"quality_index\">A</att>\n" +
+"        <att name=\"references\">http://www.myocean.eu.org,http://www.coriolis.eu.org</att>\n" +
+"        <att name=\"source\">BUOY/MOORING: SURFACE, DRIFTING : observation</att>\n" +
+"        <att name=\"time_coverage_end\">2012-07-31T23:00:00Z</att>\n" +
+"        <att name=\"time_coverage_start\">2012-07-11T13:00:00Z</att>\n" +
+"        <att name=\"update_interval\">daily</att>\n" +
+"        <att name=\"wmo_platform_code\">44761</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
+"        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"conventions\">null</att>\n" +
+"        <att name=\"creator_email\">codac@ifremer.fr</att>\n" +
+"        <att name=\"creator_name\">CODAC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://wwz.ifremer.fr/</att>\n" +
+"        <att name=\"infoUrl\">http://www.myocean.eu</att>\n" +
+"        <att name=\"keywords\">air, air_pressure_at_sea_level, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, ATPT, ATPT_DM, ATPT_QC, data, depth, DEPTH_QC, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, flag, hour, hourly, institution, latitude, level, local, longitude, measurements, method, ocean, oceans, pressure, processing, quality, science, sea, sea_water_temperature, seawater, source, static, TEMP, TEMP_DM, TEMP_QC, temperature, tendency, tendency_of_air_pressure, time, TIME_QC, water</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n" +
+"        <att name=\"references\">http://www.myocean.eu,http://www.coriolis.eu.org</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"subsetVariables\">TIME_QC, depth, DEPTH_QC, TEMP_QC, TEMP_DM, ATPT_QC, ATPT_DM, ATMS_QC, ATMS_DM</att>\n" +
+"        <att name=\"summary\">Unknown institution data from a local source.</att>\n" +
+"        <att name=\"title\">Unknown institution data from a local source.</att>\n" +
+"        <att name=\"treatDimensionsAs\">LATITUDE, LONGITUDE, TIME</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TIME</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
+"            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">7.144848E9</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">-6.31152E8</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8.0E9</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-2.0E9</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TIME_QC</sourceName>\n" +
+"        <destinationName>TIME_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"conventions\">OceanSites reference table 2</att>\n" +
+"            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" +
+"            <att name=\"long_name\">quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">9</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>DEPTH</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"coordinate_reference_frame\">urn:ogc:crs:EPSG::5113</att>\n" +
+"            <att name=\"long_name\">Depth of each measurement</att>\n" +
+"            <att name=\"positive\">down</att>\n" +
+"            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
+"            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
+"            <att name=\"reference\">sea_level</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">12000.0</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">0.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
+"            <att name=\"reference\">null</att>\n" +
+"            <att name=\"references\">sea_level</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>DEPTH_QC</sourceName>\n" +
+"        <destinationName>DEPTH_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"conventions\">OceanSites reference table 2</att>\n" +
+"            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" +
+"            <att name=\"long_name\">quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">9</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>LATITUDE</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"long_name\">Latitude of each location</att>\n" +
+"            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
+"            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degree_north</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">90.0</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>LONGITUDE</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"long_name\">Longitude of each location</att>\n" +
+"            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
+"            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degree_east</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">180.0</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TEMP</sourceName>\n" +
+"        <destinationName>TEMP</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"long_name\">Sea temperature</att>\n" +
+"            <att name=\"standard_name\">sea_water_temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TEMP_QC</sourceName>\n" +
+"        <destinationName>TEMP_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"conventions\">OceanSites reference table 2</att>\n" +
+"            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" +
+"            <att name=\"long_name\">quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">9</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TEMP_DM</sourceName>\n" +
+"        <destinationName>TEMP_DM</destinationName>\n" +
+"        <dataType>char</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"conventions\">OceanSITES reference table 5</att>\n" +
+"            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" +
+"            <att name=\"flag_values\">R, P, D, M</att>\n" +
+"            <att name=\"long_name\">method of data processing</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATPT</sourceName>\n" +
+"        <destinationName>ATPT</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"long_name\">Atmospheric pressure hourly tendency</att>\n" +
+"            <att name=\"standard_name\">tendency_of_air_pressure</att>\n" +
+"            <att name=\"units\">hPa hour-1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-3.0</att>\n" +
+"            <att name=\"ioos_category\">Pressure</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATPT_QC</sourceName>\n" +
+"        <destinationName>ATPT_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"conventions\">OceanSites reference table 2</att>\n" +
+"            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" +
+"            <att name=\"long_name\">quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">9</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATPT_DM</sourceName>\n" +
+"        <destinationName>ATPT_DM</destinationName>\n" +
+"        <dataType>char</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"conventions\">OceanSITES reference table 5</att>\n" +
+"            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" +
+"            <att name=\"flag_values\">R, P, D, M</att>\n" +
+"            <att name=\"long_name\">method of data processing</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATMS</sourceName>\n" +
+"        <destinationName>ATMS</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"long_name\">Atmospheric pressure at sea level</att>\n" +
+"            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" +
+"            <att name=\"units\">hPa</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" +
+"            <att name=\"ioos_category\">Pressure</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATMS_QC</sourceName>\n" +
+"        <destinationName>ATMS_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"conventions\">OceanSites reference table 2</att>\n" +
+"            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" +
+"            <att name=\"long_name\">quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">9</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ATMS_DM</sourceName>\n" +
+"        <destinationName>ATMS_DM</destinationName>\n" +
+"        <dataType>char</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"conventions\">OceanSITES reference table 5</att>\n" +
+"            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" +
+"            <att name=\"flag_values\">R, P, D, M</att>\n" +
+"            <att name=\"long_name\">method of data processing</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //GenerateDatasetsXml
+            results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromMultidimNcFiles", 
+                EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+                "TIME, DEPTH",
+                "1440",
+                "", "", "", "", //just for test purposes
+                "false", //removeMVRows
+                "TIME", //sort files by 
+                "", "", "", "", 
+                "4355",  //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
+                "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs                   
+                ""}, //cacheFromUrl
+                false); //doIt loop?
+            Test.ensureEqual(results, expected, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+            //ensure it is ready-to-use by making a dataset from it
+            //with one small change to addAttributes:
+            results = String2.replaceAll(results, 
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n",
+"        <att name=\"cdm_data_type\">Point</att>\n");
+            results = String2.replaceAll(results, 
+"        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n",
+"");
+            //it could be made into valid TimeSeries by adding a few more atts
+            String2.log(results);
+          
+            String tDatasetID = "nc_442a_2710_b83c";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
+            EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)oneFromXmlFragment(null, results);
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+            Test.ensureEqual(edd.title(), "Unknown institution data from a local source.", "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+"time, TIME_QC, depth, DEPTH_QC, latitude, longitude, TEMP, TEMP_QC, TEMP_DM, ATPT, ATPT_QC, ATPT_DM, ATMS, ATMS_QC, ATMS_DM", 
+                "");
+            Test.ensureEqual(edd.treatDimensionsAs.length, 1, TREAT_DIMENSIONS_AS);
+            Test.ensureEqual(String2.toCSSVString(edd.treatDimensionsAs[0]), 
+                "LATITUDE, LONGITUDE, TIME", TREAT_DIMENSIONS_AS);
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
+        }
+
+    }
+
+    /**
+     * This tests treatDimensionsAs and standardizeWhat.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testTreatDimensionsAs(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****************** EDDTableFromMultidimNcFiles.testTreatDimensionsAs() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        String id = "testTreatDimensionsAs";
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //.das
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_treatDimensionsAs", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
+"    String axis \"T\";\n" +
+"    Float64 colorBarMaximum 8.0e+9;\n" +
+"    Float64 colorBarMinimum -2.0e+9;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"    Float64 valid_max 7.144848e+9;\n" +
+"    Float64 valid_min -6.31152e+8;\n" +
+"  }\n" +
+"  TIME_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 1, 1;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSites reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  depth {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    String axis \"Z\";\n" +
+"    Float64 colorBarMaximum 8000.0;\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
+"    String coordinate_reference_frame \"urn:ogc:crs:EPSG::5113\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Depth of each measurement\";\n" +
+"    String positive \"down\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String references \"sea_level\";\n" +
+"    String standard_name \"depth\";\n" +
+"    String units \"m\";\n" +
+"    Float32 valid_max 12000.0;\n" +
+"    Float32 valid_min 0.0;\n" +
+"  }\n" +
+"  DEPTH_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSites reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    String standard_name \"depth\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 47.763, 52.936;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude of each location\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -44.112, -30.196;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude of each location\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  TEMP {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 6.7, 16.7;\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea temperature\";\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  TEMP_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 1, 1;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSites reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  TEMP_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"realtime post-recovery delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  ATPT {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -8.5, 4.166667;\n" +
+"    Float64 colorBarMaximum 3.0;\n" +
+"    Float64 colorBarMinimum -3.0;\n" +
+"    String ioos_category \"Pressure\";\n" +
+"    String long_name \"Atmospheric pressure hourly tendency\";\n" +
+"    String standard_name \"tendency_of_air_pressure\";\n" +
+"    String units \"hPa hour-1\";\n" +
+"  }\n" +
+"  ATPT_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSites reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  ATPT_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"realtime post-recovery delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  ATMS {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 974.7, 1026.6;\n" +
+"    Float64 colorBarMaximum 1050.0;\n" +
+"    Float64 colorBarMinimum 950.0;\n" +
+"    String ioos_category \"Pressure\";\n" +
+"    String long_name \"Atmospheric pressure at sea level\";\n" +
+"    String standard_name \"air_pressure_at_sea_level\";\n" +
+"    String units \"hPa\";\n" +
+"  }\n" +
+"  ATMS_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSites reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  ATMS_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"realtime post-recovery delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String area \"Global Ocean\";\n" +
+"    String author \"Coriolis and MyOcean data provider\";\n" +
+"    String cdm_data_type \"Point\";\n" +
+"    String citation \"These data were collected and made freely available by the MyOcean project and the programs that contribute to it\";\n" +
+"    String contact \"codac@ifremer.fr\";\n" +
+"    String Conventions \"OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"codac@ifremer.fr\";\n" +
+"    String creator_name \"CODAC\";\n" +
+"    String creator_type \"institution\";\n" +
+"    String creator_url \"https://wwz.ifremer.fr/\";\n" +
+"    String data_assembly_center \"Coriolis\";\n" +
+"    String data_mode \"R\";\n" +
+"    String data_type \"OceanSITES time-series data\";\n" +
+"    String date_update \"2012-08-06T22:07:01Z\";\n" +
+"    String distribution_statement \"These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy\";\n" +
+"    Float64 Easternmost_Easting -30.196;\n" +
+"    String featureType \"Point\";\n" +
+"    String format_version \"1.1\";\n" +
+"    Float64 geospatial_lat_max 52.936;\n" +
+"    Float64 geospatial_lat_min 47.763;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -30.196;\n" +
+"    Float64 geospatial_lon_min -44.112;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"2012-08-06T22:07:01Z : Creation\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//2018-06-14T18:48:29Z (local files)
+//2018-06-14T18:48:29Z "http://localhost:8080/cwexperimental/tabledap/testTreatDimensionsAs.das";
+expected = 
+    "String id \"GL_201207_TS_DB_44761\";\n" +
+"    String infoUrl \"http://www.myocean.eu\";\n" +
+"    String institution \"Unknown institution\";\n" +
+"    String institution_references \"http://www.coriolis.eu.org\";\n" +
+"    String keywords \"air, air_pressure_at_sea_level, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, ATPT, ATPT_DM, ATPT_QC, data, depth, DEPTH_QC, earth, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, flag, hour, hourly, institution, latitude, level, local, longitude, measurements, method, ocean, oceans, pressure, processing, quality, science, sea, sea_water_temperature, seawater, source, static, TEMP, TEMP_DM, TEMP_QC, temperature, tendency, tendency_of_air_pressure, time, TIME_QC, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy\";\n" +
+"    String naming_authority \"OceanSITES\";\n" +
+"    String netcdf_version \"3.5\";\n" +
+"    Float64 Northernmost_Northing 52.936;\n" +
+"    String platform_code \"44761\";\n" +
+"    String qc_manual \"OceanSITES User's Manual v1.1\";\n" +
+"    String quality_control_indicator \"6\";\n" +
+"    String quality_index \"A\";\n" +
+"    String references \"http://www.myocean.eu,http://www.coriolis.eu.org\";\n" +
+"    String source \"BUOY/MOORING: SURFACE, DRIFTING : observation\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing 47.763;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String subsetVariables \"TIME_QC, depth, DEPTH_QC, TEMP_QC, TEMP_DM, ATPT_QC, ATPT_DM, ATMS_QC, ATMS_DM\";\n" +
+"    String summary \"Unknown institution data from a local source.\";\n" +
+"    String time_coverage_end \"2012-07-31T23:00:00Z\";\n" +
+"    String time_coverage_start \"2011-11-01T00:00:00Z\";\n" +
+"    String title \"Unknown institution data from a local source.\";\n" +
+"    String update_interval \"daily\";\n" +
+"    Float64 Westernmost_Easting -44.112;\n" +
+"    String wmo_platform_code \"44761\";\n" +
+"  }\n" +
+"}\n";
+        int po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+        //.dds
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_treatDimensionsAs", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 time;\n" +
+"    Byte TIME_QC;\n" +
+"    Float32 depth;\n" +
+"    Byte DEPTH_QC;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Float32 TEMP;\n" +
+"    Byte TEMP_QC;\n" +
+"    String TEMP_DM;\n" +
+"    Float32 ATPT;\n" +
+"    Byte ATPT_QC;\n" +
+"    String ATPT_DM;\n" +
+"    Float32 ATMS;\n" +
+"    Byte ATMS_QC;\n" +
+"    String ATMS_DM;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //.csv
+        //"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=1.3201056e9", dir, 
+            eddTable.className() + "_treatDimensionsAs1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"time,TIME_QC,depth,DEPTH_QC,latitude,longitude,TEMP,TEMP_QC,TEMP_DM,ATPT,ATPT_QC,ATPT_DM,ATMS,ATMS_QC,ATMS_DM\n" +
+"UTC,,m,,degrees_north,degrees_east,degree_C,,,hPa hour-1,,,hPa,,\n" +
+"2011-11-01T00:00:00Z,1,NaN,NaN,52.33,-35.219,9.2,1,R,-1.6,0,R,985.6,0,R\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=1.3437756e9", dir, 
+            eddTable.className() + "_treatDimensionsAs2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"time,TIME_QC,depth,DEPTH_QC,latitude,longitude,TEMP,TEMP_QC,TEMP_DM,ATPT,ATPT_QC,ATPT_DM,ATMS,ATMS_QC,ATMS_DM\n" +
+"UTC,,m,,degrees_north,degrees_east,degree_C,,,hPa hour-1,,,hPa,,\n" +
+"2012-07-31T23:00:00Z,1,NaN,NaN,50.969,-40.416,16.5,1,R,0.13333334,0,R,1022.0,0,R\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+    }
+        
+    /**
+     * This tests treatDimensionsAs and standardizeWhat.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testTreatDimensionsAs2(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****************** EDDTableFromMultidimNcFiles.testTreatDimensionsAs2() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        String id = "testTreatDimensionsAs2";
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //.das
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_treatDimensionsAs2", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   //long flag masks appear a float64
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.506816e+9, 1.5119982e+9;\n" + //before Calendar2 rounded to nearest second for "days since ", this was 1.5119981999999967e+9;\n" +
+"    String axis \"T\";\n" +
+"    Float64 colorBarMaximum 8.0e+9;\n" +
+"    Float64 colorBarMinimum -2.0e+9;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"    Float64 valid_max 7.144848e+9;\n" +
+"    Float64 valid_min -6.31152e+8;\n" +
+"  }\n" +
+"  TIME_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 1, 1;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 42.5, 42.5;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude of each location\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 27.4833, 27.4833;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude of each location\";\n" +
+"    Int32 QC_indicator 1;\n" +
+"    Int32 QC_procedure 1;\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  depth {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -2.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Float64 colorBarMaximum 8000.0;\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Depth\";\n" +
+"    String positive \"down\";\n" +
+"    String source_name \"DEPH\";\n" +
+"    String standard_name \"depth\";\n" +
+"    String units \"m\";\n" +
+"    Float32 valid_max 12000.0;\n" +
+"    Float32 valid_min 0.0;\n" +
+"  }\n" +
+"  DEPH_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 7, 7;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  DEPH_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  RELH {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 27.91, 100.0;\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Meteorology\";\n" +
+"    String long_name \"Relative humidity\";\n" +
+"    String standard_name \"relative_humidity\";\n" +
+"    String units \"percent\";\n" +
+"  }\n" +
+"  RELH_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  RELH_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  ATMS {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float64 colorBarMaximum 1050.0;\n" +
+"    Float64 colorBarMinimum 950.0;\n" +
+"    String ioos_category \"Pressure\";\n" +
+"    String long_name \"Atmospheric pressure at sea level\";\n" +
+"    String standard_name \"air_pressure_at_sea_level\";\n" +
+"    String units \"hPa\";\n" +
+"  }\n" +
+"  ATMS_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 9, 9;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  ATMS_DM {\n" +
+"    String actual_range \" \n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  DRYT {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 0.0, 27.0;\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum -10.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Air temperature in dry bulb\";\n" +
+"    String standard_name \"air_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  DRYT_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  DRYT_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  DEWT {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -6.0, 17.0;\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Dew point temperature\";\n" +
+"    String standard_name \"dew_point_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  DEWT_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  DEWT_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  WSPD {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 0.0, 14.91889;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Horizontal wind speed\";\n" +
+"    String standard_name \"wind_speed\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  WSPD_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  WSPD_DM {\n" +
+"    String actual_range \"R\n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"    String standard_name \"wind_speed\";\n" +
+"  }\n" +
+"  WDIR {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 0.0, 360.0;\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Wind from direction relative true north\";\n" +
+"    String standard_name \"wind_from_direction\";\n" +
+"    String units \"degree\";\n" +
+"  }\n" +
+"  WDIR_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 9;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  WDIR_DM {\n" +
+"    String actual_range \" \n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+"  GSPD {\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 6.173333, 20.06333;\n" +
+"    Float64 colorBarMaximum 30.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Gust wind speed\";\n" +
+"    String standard_name \"wind_speed_of_gust\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  GSPD_QC {\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 9;\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 2\";\n" +
+"    String flag_meanings \"no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value\";\n" +
+"    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"    Byte valid_max 9;\n" +
+"    Byte valid_min 0;\n" +
+"  }\n" +
+"  GSPD_DM {\n" +
+"    String actual_range \" \n" +
+"R\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"OceanSITES reference table 5\";\n" +
+"    String flag_meanings \"real-time provisional delayed-mode mixed\";\n" +
+"    String flag_values \"R, P, D, M\";\n" +
+"    String ioos_category \"Currents\";\n" +
+"    String long_name \"method of data processing\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String area \"Black Sea\";\n" +
+"    String cdm_data_type \"Point\";\n" +
+"    String citation \"These data were collected and made freely available by the Copernicus project and the programs that contribute to it\";\n" +
+"    String contact \"cmems-service@io-bas.bg\";\n" +
+"    String Conventions \"CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 Copernicus-InSituTAC-ParametersList-3.0.0, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"cmems-service@io-bas.bg\";\n" +
+"    String creator_name \"Unknown institution\";\n" +
+"    String creator_url \"http://www.oceansites.org\";\n" +
+"    String data_assembly_center \"IOBAS\";\n" +
+"    String data_mode \"R\";\n" +
+"    String data_type \"OceanSITES time-series data\";\n" +
+"    String date_update \"2018-01-11T02:59:08Z\";\n" +
+"    String distribution_statement \"These data follow Copernicus standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data.\";\n" +
+"    Float64 Easternmost_Easting 27.4833;\n" +
+"    String featureType \"Point\";\n" +
+"    String format_version \"1.2\";\n" +
+"    Float64 geospatial_lat_max 42.5;\n" +
+"    Float64 geospatial_lat_min 42.5;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 27.4833;\n" +
+"    Float64 geospatial_lon_min 27.4833;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min -2.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"2018-01-11T02:59:08Z : Creation\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//2018-06-14T18:48:29Z (local files)
+//2018-06-14T18:48:29Z "http://localhost:8080/cwexperimental/tabledap/testTreatDimensionsAs.das";
+expected = 
+    "String id \"BS_201711_TS_MO_LBBG\";\n" +
+"    String infoUrl \"http://www.oceansites.org\";\n" +
+"    String institution \"Unknown institution\";\n" +
+"    String institution_references \"http://www.io-bas.bg/\";\n" +
+"    String keywords \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, bulb, currents, data, DEPH_DM, DEPH_QC, depth, dew, dew point, dew_point_temperature, DEWT, DEWT_DM, DEWT_QC, direction, dry, DRYT, DRYT_DM, DRYT_QC, earth, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Surface Air Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Humidity, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, flag, GSPD, GSPD_DM, GSPD_QC, gust, horizontal, humidity, institution, latitude, level, local, longitude, measurements, meteorology, method, north, point, pressure, processing, quality, relative, relative_humidity, RELH, RELH_DM, RELH_QC, science, sea, seawater, source, speed, static, surface, temperature, time, TIME_QC, true, vapor, water, WDIR, WDIR_DM, WDIR_QC, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPD_DM, WSPD_QC\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String last_date_observation \"2017-11-29T23:30:00Z\";\n" +
+"    String last_latitude_observation \"42.5\";\n" +
+"    String last_longitude_observation \"27.4833\";\n" +
+"    String license \"These data follow Copernicus standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data.\";\n" +
+"    String naming_authority \"OceanSITES\";\n" +
+"    String netcdf_version \"3.5\";\n" +
+"    Float64 Northernmost_Northing 42.5;\n" +
+"    String platform_code \"LBBG\";\n" +
+"    String qc_manual \"OceanSITES User\\\\'s Manual v1.1\";\n" + //it is incorrect in source
+"    String quality_control_indicator \"6\";\n" +
+"    String quality_index \"A\";\n" +
+"    String references \"http://www.oceansites.org, http://marine.copernicus.eu\";\n" +
+"    String source \"land/onshore structure\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing 42.5;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String subsetVariables \"latitude, longitude, depth\";\n" +
+"    String summary \"Unknown institution data from a local source.\";\n" +
+"    String time_coverage_end \"2017-11-29T23:30:00Z\";\n" +
+"    String time_coverage_start \"2017-10-01T00:00:00Z\";\n" +
+"    String title \"Unknown institution data from a local source.\";\n" +
+"    String update_interval \"daily\";\n" +
+"    Float64 Westernmost_Easting 27.4833;\n" +
+"  }\n" +
+"}\n";
+        int po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+        //.dds
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_treatDimensionsAs2", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 time;\n" +
+"    Byte TIME_QC;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Float32 depth;\n" +
+"    Byte DEPH_QC;\n" +
+"    String DEPH_DM;\n" +
+"    Float32 RELH;\n" +
+"    Byte RELH_QC;\n" +
+"    String RELH_DM;\n" +
+"    Float32 ATMS;\n" +
+"    Byte ATMS_QC;\n" +
+"    String ATMS_DM;\n" +
+"    Float32 DRYT;\n" +
+"    Byte DRYT_QC;\n" +
+"    String DRYT_DM;\n" +
+"    Float32 DEWT;\n" +
+"    Byte DEWT_QC;\n" +
+"    String DEWT_DM;\n" +
+"    Float32 WSPD;\n" +
+"    Byte WSPD_QC;\n" +
+"    String WSPD_DM;\n" +
+"    Float32 WDIR;\n" +
+"    Byte WDIR_QC;\n" +
+"    String WDIR_DM;\n" +
+"    Float32 GSPD;\n" +
+"    Byte GSPD_QC;\n" +
+"    String GSPD_DM;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //.csv
+        //"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            "&time=\"2017-10-01T00:00:00Z\"", //in quotes
+            dir, eddTable.className() + "_treatDimensionsAs21", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"time,TIME_QC,latitude,longitude,depth,DEPH_QC,DEPH_DM,RELH,RELH_QC,RELH_DM,ATMS,ATMS_QC,ATMS_DM,DRYT,DRYT_QC,DRYT_DM,DEWT,DEWT_QC,DEWT_DM,WSPD,WSPD_QC,WSPD_DM,WDIR,WDIR_QC,WDIR_DM,GSPD,GSPD_QC,GSPD_DM\n" +
+"UTC,,degrees_north,degrees_east,m,,,percent,,,hPa,,,degree_C,,,degree_C,,,m s-1,,,degree,,,m s-1,,\n" +
+"2017-10-01T00:00:00Z,1,42.5,27.4833,-2.0,7,R,71.45,0,R,NaN,NaN,R,12.0,0,R,7.0,0,R,4.115556,0,R,10.0,0,R,NaN,9,R\n" +
+"2017-10-01T00:00:00Z,1,42.5,27.4833,0.0,7,R,NaN,NaN,R,NaN,9,R,NaN,NaN,R,NaN,NaN,R,NaN,NaN,R,NaN,NaN,R,NaN,NaN,R\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //all data
+        //tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        //    dir, eddTable.className() + "_treatDimensionsAs22", ".csv"); 
+        //results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            //!!! INTERESTING TEST. Originally, specific max iso time fails 
+            //because it is to nearest second and actual max is off by tiny amount
+            //I added a little fudge to the test to make it to the nearest second.
+            //See EDDTable line 2302 and above
+            "&time=2017-11-29T23:30:00Z",
+            dir, eddTable.className() + "_treatDimensionsAs23", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   
+"time,TIME_QC,latitude,longitude,depth,DEPH_QC,DEPH_DM,RELH,RELH_QC,RELH_DM,ATMS,ATMS_QC,ATMS_DM,DRYT,DRYT_QC,DRYT_DM,DEWT,DEWT_QC,DEWT_DM,WSPD,WSPD_QC,WSPD_DM,WDIR,WDIR_QC,WDIR_DM,GSPD,GSPD_QC,GSPD_DM\n" +
+"UTC,,degrees_north,degrees_east,m,,,percent,,,hPa,,,degree_C,,,degree_C,,,m s-1,,,degree,,,m s-1,,\n" +
+"2017-11-29T23:30:00Z,1,42.5,27.4833,0.0,7,R,93.14,0,R,NaN,9,\" \",3.0,0,R,2.0,0,R,0.0,0,R,0.0,0,R,NaN,9,\" \"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+    }
+        
+
+
 
     /**
      * This tests long variables in this class.
@@ -2458,7 +3813,7 @@ expected=
 "    String references \"http://oceanobservatories.org\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 44.63893;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
 "    String summary \"Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.\";\n" +
 "    String time_coverage_duration \"PT86339S\";\n" +
@@ -2549,7 +3904,7 @@ expected=
         userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Longnc3", ".nc"); 
-        results = NcHelper.dumpString(dir + tName, true);
+        results = NcHelper.ncdump(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf EDDTableFromMultidimNcFiles_Longnc3.nc {\n" +
@@ -2652,7 +4007,7 @@ expected =
 "  :references = \"http://oceanobservatories.org\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = 44.63893; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :subsetVariables = \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
 "  :summary = \"Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.\";\n" +
 "  :time_coverage_duration = \"PT86339S\";\n" +
@@ -2677,7 +4032,7 @@ expected =
         userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Longnc4", ".nc4"); 
-        results = NcHelper.dumpString(dir + tName, true);
+        results = NcHelper.ncdump(dir + tName, "");
         //String2.log(results);
         expected = 
 "zztop\n";
@@ -2720,7 +4075,7 @@ expected =
 //    byte TEMP_QC(TIME=620, DEPTH=7);
         for (int year = 2004; year <= 2016; year++) {
             try {
-                String s = NcHelper.dumpString("/data/briand/W1M3A/OS_W1M3A_" + year + "_R.nc", false);
+                String s = NcHelper.ncdump("/data/briand/W1M3A/OS_W1M3A_" + year + "_R.nc", "-h");
                 if (year == 2004)
                     String2.log(s);
 
@@ -2773,6 +4128,755 @@ expected =
 
     }
 
+    /**
+     * This tests treating char data as a String variable.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testCharAsString(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****************** EDDTableFromMultidimNcFiles.testCharAsString() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        //print dumpString of one of the data files
+        String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "nccf/testCharAsString/7900364_prof.nc", "-h"));
+
+        String id = "testCharAsString";
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //*** test getting das for entire dataset
+        String2.log("\n****************** test das and dds for entire dataset\n");
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_Entire", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  fileNumber {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"File Number\";\n" +
+"  }\n" +
+"  data_type {\n" +
+"    String conventions \"Argo reference table 1\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Data type\";\n" +
+"  }\n" +
+"  format_version {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"File format version\";\n" +
+"  }\n" +
+"  handbook_version {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Data handbook version\";\n" +
+"  }\n" +
+"  reference_date_time {\n" +
+"    Float64 actual_range -6.31152e+8, -6.31152e+8;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Date of reference for Julian days\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  date_creation {\n" +
+"    Float64 actual_range 1.369414924e+9, 1.446162171e+9;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Date of file creation\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  date_update {\n" +
+"    Float64 actual_range 1.499448499e+9, 1.542981342e+9;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Date of update of this file\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  platform_number {\n" +
+"    String cf_role \"trajectory_id\";\n" +
+"    String conventions \"WMO float identifier : A9IIIII\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Float unique identifier\";\n" +
+"  }\n" +
+"  project_name {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Name of the project\";\n" +
+"  }\n" +
+"  pi_name {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Name of the principal investigator\";\n" +
+"  }\n" +
+"  cycle_number {\n" +
+"    Int32 _FillValue 99999;\n" +
+"    Int32 actual_range 1, 142;\n" +
+"    String cf_role \"profile_id\";\n" +
+"    Float64 colorBarMaximum 200.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"0...N, 0 : launch cycle (if exists), 1 : first complete cycle\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Float cycle number\";\n" +
+"  }\n" +
+"  direction {\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"A: ascending profiles, D: descending profiles\";\n" +
+"    String ioos_category \"Currents\";\n" +
+"    String long_name \"Direction of the station profiles\";\n" +
+"  }\n" +
+"  data_center {\n" +
+"    String conventions \"Argo reference table 4\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Data centre in charge of float data processing\";\n" +
+"  }\n" +
+"  dc_reference {\n" +
+"    String conventions \"Data centre convention\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Station unique identifier in data centre\";\n" +
+"  }\n" +
+"  data_state_indicator {\n" +
+"    String conventions \"Argo reference table 6\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Degree of processing the data have passed through\";\n" +
+"  }\n" +
+"  data_mode {\n" +
+"    String conventions \"R : real time; D : delayed mode; A : real time with adjustment\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Delayed mode or real time data\";\n" +
+"  }\n" +
+"  platform_type {\n" +
+"    String conventions \"Argo reference table 23\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Type of float\";\n" +
+"  }\n" +
+"  float_serial_no {\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Serial number of the float\";\n" +
+"  }\n" +
+"  firmware_version {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Instrument firmware version\";\n" +
+"  }\n" +
+"  wmo_inst_type {\n" +
+"    String conventions \"Argo reference table 8\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Coded instrument type\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.356599997e+9, 1.4963616e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Julian day (UTC) of the station relative to REFERENCE_DATE_TIME\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  time_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Quality on date and time\";\n" +
+"  }\n" +
+"  time_location {\n" +
+"    Float64 actual_range 1.356599997e+9, 1.496362576e+9;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 _FillValue 99999.0;\n" +
+"    Float64 actual_range -66.6667, 43.81645;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude of the station, best estimate\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float64 valid_max 90.0;\n" +
+"    Float64 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 _FillValue 99999.0;\n" +
+"    Float64 actual_range -26.250239999999998, 36.42373;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude of the station, best estimate\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float64 valid_max 180.0;\n" +
+"    Float64 valid_min -180.0;\n" +
+"  }\n" +
+"  position_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Quality on position (latitude and longitude)\";\n" +
+"  }\n" +
+"  positioning_system {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Positioning system\";\n" +
+"  }\n" +
+"  profile_pres_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2a\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Global quality flag of PRES profile\";\n" +
+"  }\n" +
+"  profile_temp_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2a\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Global quality flag of TEMP profile\";\n" +
+"  }\n" +
+"  profile_psal_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2a\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Global quality flag of PSAL profile\";\n" +
+"  }\n" +
+"  vertical_sampling_scheme {\n" +
+"    String conventions \"Argo reference table 16\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Vertical sampling scheme\";\n" +
+"  }\n" +
+"  config_mission_number {\n" +
+"    Int32 _FillValue 99999;\n" +
+"    Int32 actual_range 1, 2;\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"1...N, 1 : first complete mission\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Unique number denoting the missions performed by the float\";\n" +
+"  }\n" +
+"  pres {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    Float32 actual_range -0.2, 1999.9;\n" +
+"    String axis \"Z\";\n" +
+"    String C_format \"%7.1f\";\n" +
+"    Float64 colorBarMaximum 5000.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F7.1\";\n" +
+"    String ioos_category \"Sea Level\";\n" +
+"    String long_name \"Sea water pressure, equals 0 at sea-level\";\n" +
+"    String standard_name \"sea_water_pressure\";\n" +
+"    String units \"decibar\";\n" +
+"    Float32 valid_max 12000.0;\n" +
+"    Float32 valid_min 0.0;\n" +
+"  }\n" +
+"  pres_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  pres_adjusted {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String axis \"Z\";\n" +
+"    String C_format \"%7.1f\";\n" +
+"    Float64 colorBarMaximum 5000.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F7.1\";\n" +
+"    String ioos_category \"Sea Level\";\n" +
+"    String long_name \"Sea water pressure, equals 0 at sea-level\";\n" +
+"    String standard_name \"sea_water_pressure\";\n" +
+"    String units \"decibar\";\n" +
+"    Float32 valid_max 12000.0;\n" +
+"    Float32 valid_min 0.0;\n" +
+"  }\n" +
+"  pres_adjusted_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  pres_aqdjusted_error {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String C_format \"%7.1f\";\n" +
+"    Float64 colorBarMaximum 50.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F7.1\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Contains the error on the adjusted values as determined by the delayed mode QC process\";\n" +
+"    String units \"decibar\";\n" +
+"  }\n" +
+"  temp {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    Float32 actual_range -1.855, 27.185;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea temperature in-situ ITS-90 scale\";\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    String units \"degree_Celsius\";\n" +
+"    Float32 valid_max 40.0;\n" +
+"    Float32 valid_min -2.5;\n" +
+"  }\n" +
+"  temp_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  temp_adjusted {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea temperature in-situ ITS-90 scale\";\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    String units \"degree_Celsius\";\n" +
+"    Float32 valid_max 40.0;\n" +
+"    Float32 valid_min -2.5;\n" +
+"  }\n" +
+"  temp_adjusted_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  temp_adjusted_error {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 1.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Contains the error on the adjusted values as determined by the delayed mode QC process\";\n" +
+"    String units \"degree_Celsius\";\n" +
+"  }\n" +
+"  psal {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    Float32 actual_range 15.829, 34.691;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 37.0;\n" +
+"    Float64 colorBarMinimum 32.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Salinity\";\n" +
+"    String long_name \"Practical salinity\";\n" +
+"    String standard_name \"sea_water_practical_salinity\";\n" +
+"    String units \"PSU\";\n" +
+"    Float32 valid_max 41.0;\n" +
+"    Float32 valid_min 2.0;\n" +
+"  }\n" +
+"  psal_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  psal_adjusted {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 37.0;\n" +
+"    Float64 colorBarMinimum 32.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Salinity\";\n" +
+"    String long_name \"Practical salinity\";\n" +
+"    String standard_name \"sea_water_practical_salinity\";\n" +
+"    String units \"PSU\";\n" +
+"    Float32 valid_max 41.0;\n" +
+"    Float32 valid_min 2.0;\n" +
+"  }\n" +
+"  psal_adjusted_qc {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String conventions \"Argo reference table 2\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"quality flag\";\n" +
+"  }\n" +
+"  psal_adjusted_error {\n" +
+"    Float32 _FillValue 99999.0;\n" +
+"    String C_format \"%9.3f\";\n" +
+"    Float64 colorBarMaximum 1.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String FORTRAN_format \"F9.3\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Contains the error on the adjusted values as determined by the delayed mode QC process\";\n" +
+"    String units \"psu\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_altitude_proxy \"pres\";\n" +
+"    String cdm_data_type \"TrajectoryProfile\";\n" +
+"    String cdm_profile_variables \"cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme\";\n" +
+"    String cdm_trajectory_variables \"platform_number, project_name, pi_name, platform_type, float_serial_no\";\n" +
+"    String Conventions \"Argo-3.1, CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"support@argo.net\";\n" +
+"    String creator_name \"Argo\";\n" +
+"    String creator_url \"http://www.argo.net/\";\n" +
+"    Float64 Easternmost_Easting 36.42373;\n" +
+"    String featureType \"TrajectoryProfile\";\n" +
+"    Float64 geospatial_lat_max 43.81645;\n" +
+"    Float64 geospatial_lat_min -66.6667;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 36.42373;\n" +
+"    Float64 geospatial_lon_min -26.250239999999998;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"" + today; 
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//2016-05-09T15:34:11Z (local files)
+//2016-05-09T15:34:11Z http://localhost:8080/cwexperimental/tabledap/testMultidimNc.das\";
+expected=
+   "String infoUrl \"http://www.argo.net/\";\n" +
+"    String institution \"Argo\";\n" +
+"    String keywords \"adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, Earth Science > Oceans > Ocean Pressure > Water Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans, passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    Float64 Northernmost_Northing 43.81645;\n" +
+"    String references \"http://www.argodatamgt.org/Documentation\";\n" +
+"    String source \"Argo float\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -66.6667;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"Argo float vertical profiles from Coriolis Global Data Assembly Centres\n" +
+"(GDAC). Argo is an international collaboration that collects high-quality\n" +
+"temperature and salinity profiles from the upper 2000m of the ice-free\n" +
+"global ocean and currents from intermediate depths. The data come from\n" +
+"battery-powered autonomous floats that spend most of their life drifting\n" +
+"at depth where they are stabilised by being neutrally buoyant at the\n" +
+"\\\"parking depth\\\" pressure by having a density equal to the ambient pressure\n" +
+"and a compressibility that is less than that of sea water. At present there\n" +
+"are several models of profiling float used in Argo. All work in a similar\n" +
+"fashion but differ somewhat in their design characteristics. At typically\n" +
+"10-day intervals, the floats pump fluid into an external bladder and rise\n" +
+"to the surface over about 6 hours while measuring temperature and salinity.\n" +
+"Satellites or GPS determine the position of the floats when they surface,\n" +
+"and the floats transmit their data to the satellites. The bladder then\n" +
+"deflates and the float returns to its original density and sinks to drift\n" +
+"until the cycle is repeated. Floats are designed to make about 150 such\n" +
+"cycles.\n" +
+"Data Management URL: http://www.argodatamgt.org/Documentation\";\n" +
+"    String time_coverage_end \"2017-06-02T00:00:00Z\";\n" +
+"    String time_coverage_start \"2012-12-27T09:19:57Z\";\n" +
+"    String title \"Argo Float Vertical Profiles\";\n" +
+"    String user_manual_version \"3.1\";\n" +
+"    Float64 Westernmost_Easting -26.250239999999998;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 15));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
+        //char vars that are now strings include these destinationNames:
+        //  direction (A|D), data_mode (A|D), 
+        //  and all .*_QC (_FillValue=' ') e.g., time_qc, position_qc, profile_pres_qc, pres_qc.
+
+        //dds
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_1", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String fileNumber;\n" +
+"    String data_type;\n" +
+"    String format_version;\n" +
+"    String handbook_version;\n" +
+"    Float64 reference_date_time;\n" +
+"    Float64 date_creation;\n" +
+"    Float64 date_update;\n" +
+"    String platform_number;\n" +
+"    String project_name;\n" +
+"    String pi_name;\n" +
+"    Int32 cycle_number;\n" +
+"    String direction;\n" +
+"    String data_center;\n" +
+"    String dc_reference;\n" +
+"    String data_state_indicator;\n" +
+"    String data_mode;\n" +
+"    String platform_type;\n" +
+"    String float_serial_no;\n" +
+"    String firmware_version;\n" +
+"    String wmo_inst_type;\n" +
+"    Float64 time;\n" +
+"    String time_qc;\n" +
+"    Float64 time_location;\n" +
+"    Float64 latitude;\n" +
+"    Float64 longitude;\n" +
+"    String position_qc;\n" +
+"    String positioning_system;\n" +
+"    String profile_pres_qc;\n" +
+"    String profile_temp_qc;\n" +
+"    String profile_psal_qc;\n" +
+"    String vertical_sampling_scheme;\n" +
+"    Int32 config_mission_number;\n" +
+"    Float32 pres;\n" +
+"    String pres_qc;\n" +
+"    Float32 pres_adjusted;\n" +
+"    String pres_adjusted_qc;\n" +
+"    Float32 pres_aqdjusted_error;\n" +
+"    Float32 temp;\n" +
+"    String temp_qc;\n" +
+"    Float32 temp_adjusted;\n" +
+"    String temp_adjusted_qc;\n" +
+"    Float32 temp_adjusted_error;\n" +
+"    Float32 psal;\n" +
+"    String psal_qc;\n" +
+"    Float32 psal_adjusted;\n" +
+"    String psal_adjusted_qc;\n" +
+"    Float32 psal_adjusted_error;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //view some data
+        userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
+            "&cycle_number<3";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc\n" +
+",,,,UTC,UTC,UTC,,,,,,,,,,,,,,UTC,,UTC,degrees_north,degrees_east,\n" +
+"7900364,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2013-05-24T17:02:04Z,2017-07-07T17:28:19Z,7900364,AWI,Gerd ROHARDT,1,A,IF,29532210,2B,R,NEMO,185,,860,2012-12-27T09:19:57Z,1,2012-12-27T09:19:57Z,-66.3326,-11.662600000000001,1\n" +
+"7900364,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2013-05-24T17:02:04Z,2017-07-07T17:28:19Z,7900364,AWI,Gerd ROHARDT,2,A,IF,29532211,2B,R,NEMO,185,,860,2012-12-30T05:57:58Z,1,2012-12-30T05:57:58Z,-66.3135,-11.6555,1\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //adding  &direction="A"  should yield the same results   
+        userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
+            "&cycle_number<3&direction=\"A\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test distinct for a char var
+        userDapQuery = "position_qc" +
+            "&distinct()";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_4", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"position_qc\n" +
+"\n" +
+"1\n" +
+"2\n" +
+"4\n" +
+"8\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test > char var
+        userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_5", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"platform_number,cycle_number,position_qc\n" +
+",,\n" +
+"7900364,17,4\n" +
+"7900364,18,4\n" +
+"7900364,21,4\n" +
+"7900364,23,4\n" +
+"7900364,25,4\n" +
+"7900364,27,4\n" +
+"7900364,28,4\n" +
+"7900364,29,4\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test = for a char var
+        userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_6", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"platform_number,cycle_number,position_qc\n" +
+",,\n" +
+"7900594,96,2\n" +
+"7900594,97,2\n" +
+"7900594,101,2\n" +
+"7900594,102,2\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+
+        // **************************** testCharAsChar
+        id = "testCharAsChar";
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
+        eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //char vars that are now strings include these destinationNames:
+        //  direction (A|D), data_mode (A|D), 
+        //  and all .*_QC (_FillValue=' ') e.g., time_qc, position_qc, profile_pres_qc, pres_qc.
+
+        //dds
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_1b", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String fileNumber;\n" +
+"    String data_type;\n" +
+"    String format_version;\n" +
+"    String handbook_version;\n" +
+"    Float64 reference_date_time;\n" +
+"    Float64 date_creation;\n" +
+"    Float64 date_update;\n" +
+"    String platform_number;\n" +
+"    String project_name;\n" +
+"    String pi_name;\n" +
+"    Int32 cycle_number;\n" +
+"    String direction;\n" +  //char vars show up as String, I think because .dds doesn't support char
+"    String data_center;\n" +
+"    String dc_reference;\n" +
+"    String data_state_indicator;\n" +
+"    String data_mode;\n" +
+"    String platform_type;\n" +
+"    String float_serial_no;\n" +
+"    String firmware_version;\n" +
+"    String wmo_inst_type;\n" +
+"    Float64 time;\n" +
+"    String time_qc;\n" +
+"    Float64 time_location;\n" +
+"    Float64 latitude;\n" +
+"    Float64 longitude;\n" +
+"    String position_qc;\n" +
+"    String positioning_system;\n" +
+"    String profile_pres_qc;\n" +
+"    String profile_temp_qc;\n" +
+"    String profile_psal_qc;\n" +
+"    String vertical_sampling_scheme;\n" +
+"    Int32 config_mission_number;\n" +
+"    Float32 pres;\n" +
+"    String pres_qc;\n" +
+"    Float32 pres_adjusted;\n" +
+"    String pres_adjusted_qc;\n" +
+"    Float32 pres_aqdjusted_error;\n" +
+"    Float32 temp;\n" +
+"    String temp_qc;\n" +
+"    Float32 temp_adjusted;\n" +
+"    String temp_adjusted_qc;\n" +
+"    Float32 temp_adjusted_error;\n" +
+"    Float32 psal;\n" +
+"    String psal_qc;\n" +
+"    Float32 psal_adjusted;\n" +
+"    String psal_adjusted_qc;\n" +
+"    Float32 psal_adjusted_error;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //view some data
+        userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
+            "&cycle_number<3";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_2b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc\n" +
+",,,,UTC,UTC,UTC,,,,,,,,,,,,,,UTC,,UTC,degrees_north,degrees_east,\n" +
+"7900364,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2013-05-24T17:02:04Z,2017-07-07T17:28:19Z,7900364,AWI,Gerd ROHARDT,1,A,IF,29532210,2B,R,NEMO,185,,860,2012-12-27T09:19:57Z,1,2012-12-27T09:19:57Z,-66.3326,-11.662600000000001,1\n" +
+"7900364,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2013-05-24T17:02:04Z,2017-07-07T17:28:19Z,7900364,AWI,Gerd ROHARDT,2,A,IF,29532211,2B,R,NEMO,185,,860,2012-12-30T05:57:58Z,1,2012-12-30T05:57:58Z,-66.3135,-11.6555,1\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //adding  &direction="A"  should yield the same results   
+        userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
+            "&cycle_number<3&direction=\"A\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_3b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test distinct for a char var
+        userDapQuery = "position_qc" +
+            "&distinct()";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_4b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"position_qc\n" +
+"\n" +
+"1\n" +
+"2\n" +
+"4\n" +
+"8\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //test > char var
+        userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_5b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"platform_number,cycle_number,position_qc\n" +
+",,\n" +
+"7900364,17,4\n" +
+"7900364,18,4\n" +
+"7900364,21,4\n" +
+"7900364,23,4\n" +
+"7900364,25,4\n" +
+"7900364,27,4\n" +
+"7900364,28,4\n" +
+"7900364,29,4\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test = for a char var
+        userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_6c", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"platform_number,cycle_number,position_qc\n" +
+",,\n" +
+"7900594,96,2\n" +
+"7900594,97,2\n" +
+"7900594,101,2\n" +
+"7900594,102,2\n";
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+    }
 
     /**
      * This tests the methods in this class.
@@ -2785,12 +4889,18 @@ expected =
 /* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testGenerateDatasetsXmlSeaDataNet();
+        testGenerateDatasetsXmlDimensions();
         
-        String2.log(NcHelper.dumpString(
-           "/erddapTest/nc/1900081_prof.nc", "PRES_QC"));
+        //String2.log(NcHelper.ncdump("/erddapTest/nc/1900081_prof.nc", "PRES_QC"));
         testBasic(true);
         testBasic(false);
         testLongAndNetcdf4();
+        testTreatDimensionsAs(true);   //deleteCachedInfo
+        testTreatDimensionsAs(false);  //deleteCachedInfo
+        testTreatDimensionsAs2(true);  //deleteCachedInfo
+        testTreatDimensionsAs2(false); //deleteCachedInfo
+        testCharAsString(true);
+        testCharAsString(false);
 
         /* */
         //testW1M3A(boolean deleteCachedInfo);

@@ -51,7 +51,7 @@ import  dods.dap.DAS;
 
         response.setContentType("text/plain");
         response.setHeader("XDODS-Server",  getServerVersion() );
-        response.setHeader("Content-Description", "dods_dds");
+        response.setHeader("Content-Description", "dods-dds");
         OutputStream Out = new BufferedOutputStream(response.getOutputStream());
 
         GuardedDataset ds = null;

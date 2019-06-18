@@ -18,7 +18,7 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
     /**
      * The constructor.
      *
-     * @param os
+     * @param os  This should be already buffered.
      */
     public OutputStreamSourceSimple(OutputStream os) {
         outputStream = os;
@@ -28,7 +28,7 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
      * A variant of outputStream() for when the contentLength isn't known.
      */
     public OutputStream outputStream(String characterEncoding) throws Throwable {
-        return outputStream(characterEncoding, -1);
+        return outputStream;
     }
 
         
@@ -41,6 +41,8 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
      *     This only matters for some subclasses.
      * @param contentLength the number of bytes that will be sent (or -1 if not known).
      *     (In this subclass it is ignored.)
+     * @return a outputStream. A buffered outputStream.  If outputStream has already been created,
+     *   the same one is returned.
      * @throws Throwable if trouble
      */
     public OutputStream outputStream(String characterEncoding, long contentLength) 

@@ -48,15 +48,15 @@ public abstract class DispatchServlet extends HttpServlet {
       path = path.substring(0, typeIndex);
       if(requestType.equals("das")) {
 	res.setContentType("text/plain");
-	res.setHeader("Content-Description", "dods_das");
+	res.setHeader("Content-Description", "dods-das");
 	getDAS(req, res, path, ce);
       } else if(requestType.equals("dds")) {
 	res.setContentType("text/plain");
-	res.setHeader("Content-Description", "dods_dds");
+	res.setHeader("Content-Description", "dods-dds");
 	getDDS(req, res, path, ce);
       } else if(requestType.equals("dods")) {
 	res.setContentType("application/octet-stream");
-	res.setHeader("Content-Description", "dods_data");
+	res.setHeader("Content-Description", "dods-data");
 	boolean compress = false;
 	String encoding = req.getHeader("Accept-Encoding");
 	if(encoding != null && encoding.equals("deflate")) {
