@@ -61,6 +61,20 @@ public class TableWriterOrderByClosest extends TableWriterAll {
             throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_CLOSEST_ERROR + 
                 " (no CSV)");
         String csv[] = String2.split(tOrderByCsv, ',');
+
+        //bob added: allow csv[last] to be e.g., time/1day, instead of time,1day
+        if (csv.length >= 1) {
+            String csvLast = csv[csv.length - 1];
+            int po = csvLast.indexOf('/');
+            if (po > 0) {
+                String tcsv[] = new String[csv.length + 1];
+                System.arraycopy(csv, 0, tcsv, 0, csv.length - 1);
+                tcsv[csv.length - 1] = csvLast.substring(0, po);
+                tcsv[csv.length]     = csvLast.substring(po + 1); 
+                csv = tcsv;
+            }
+        }
+
         if (csv.length < 2)
             throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_CLOSEST_ERROR + 
                 " (CSV.length<2)");
@@ -86,7 +100,11 @@ public class TableWriterOrderByClosest extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs for processing, 
+     *   then back to destinationMV and FV when finished.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -96,7 +114,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         //to save time and disk space, this just does a partial job 
         //  (remove non-closest rows from this partial table)
         //  and leaves perfect job to finish()
-        table.orderByClosest(orderBy, numberTimeUnits);
+        table.orderByClosest(orderBy, numberTimeUnits); //it handles missing_values and _FillValues temporarily
 
         //ensure the table's structure is the same as before
         //and write to dataOutputStreams
@@ -118,7 +136,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
-        cumulativeTable.orderByClosest(orderBy, numberTimeUnits);
+        cumulativeTable.orderByClosest(orderBy, numberTimeUnits); //it handles missing_values and _FillValues temporarily
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
@@ -137,7 +155,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
             tCumulativeTable.removeAllRows();
             return;
         }
-        tCumulativeTable.orderByClosest(orderBy, numberTimeUnits);
+        tCumulativeTable.orderByClosest(orderBy, numberTimeUnits); //it handles missing_values and _FillValues temporarily
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;
     }

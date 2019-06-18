@@ -130,23 +130,23 @@ public class PointSubsetFull  {
         //open the output file
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
             new FileOutputStream(fullIndexName + axisNames.charAt(axis))));
+        try {
+            //process the rows of pa
+            int lastFiniteRow = -1;  
+            for (int row = 0; row < size; row++) {
 
-        //process the rows of pa
-        int lastFiniteRow = -1;  
-        for (int row = 0; row < size; row++) {
+                //set the new values
+                double d = pa.getDouble(row);
+                if (Double.isFinite(d))
+                    lastFiniteRow = row;
+                out.writeDouble(d);
 
-            //set the new values
-            double d = pa.getDouble(row);
-            if (Double.isFinite(d))
-                lastFiniteRow = row;
-            out.writeDouble(d);
+            }
 
+            nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
+        } finally {
+            out.close();
         }
-
-        nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
-
-        //close in and out and rename
-        out.close();
         if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
@@ -210,11 +210,8 @@ public class PointSubsetFull  {
                 }
             }
 
-            //close file
+        } finally {
             rwChannel.close();
-        } catch (Exception e) {
-            rwChannel.close();
-            throw e;
         }
 
         if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
@@ -306,16 +303,20 @@ public class PointSubsetFull  {
         }
 
         //open the file 
-        DataInputStream inX = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "X"), bufferSize));
-        DataInputStream inY = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "Y"), bufferSize));
-        DataInputStream inZ = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "Z"), bufferSize));
-        DataInputStream inT = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "T"), bufferSize));
-        int xSkip = 0, ySkip = 0, zSkip = 0, tSkip = 0;
+        DataInputStream inX = null;
+        DataInputStream inY = null;
+        DataInputStream inZ = null;
+        DataInputStream inT = null;
         try {
+            inX = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "X"));
+            inY = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "Y"));
+            inZ = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "Z"));
+            inT = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "T"));
+            int xSkip = 0, ySkip = 0, zSkip = 0, tSkip = 0;
             for (int row = 0; row < nFiniteRows; row++) {
                 double t = inT.readDouble();
                 if (t < desiredMinT || t > desiredMaxT || Double.isNaN(t)) {
@@ -351,16 +352,11 @@ public class PointSubsetFull  {
                 //if (verbose) String2.log("row=" + row + " x=" + x + 
                 //    " y=" + y + " z=" + z + " t=" + t + " ok=true");
             }
-            inX.close();
-            inY.close();
-            inZ.close();
-            inT.close();
-        } catch (Exception e) {
-            inX.close();
-            inY.close();
-            inZ.close();
-            inT.close();
-            throw e;
+        } finally {
+            try {inX.close();} catch (Exception e) {}
+            try {inY.close();} catch (Exception e) {}
+            try {inZ.close();} catch (Exception e) {}
+            try {inT.close();} catch (Exception e) {}
         }
 
         String2.log("PointSubsetFull time=" + (System.currentTimeMillis() - time) + "ms");
@@ -388,35 +384,38 @@ public class PointSubsetFull  {
         String dir = File2.getSystemTempDirectory();
         String name = "PointSubsetFullTest1";
         PointSubsetFull pointSubsetFull = new PointSubsetFull(dir + name + ".index", t);
-        pointSubsetFull.constructorX(x);
-        pointSubsetFull.constructorY(y);
-        pointSubsetFull.constructorZ(z);
+        try {
+            pointSubsetFull.constructorX(x);
+            pointSubsetFull.constructorY(y);
+            pointSubsetFull.constructorZ(z);
 
-        //get all
-        Table table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 1e8, 6e8);
-        Test.ensureEqual(table.getColumn(4).toString(), "0, 1, 2, 3, 4, 5", "");
+            //get all
+            Table table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 1e8, 6e8);
+            Test.ensureEqual(table.getColumn(4).toString(), "0, 1, 2, 3, 4, 5", "");
 
-        //2 x's
-        table = pointSubsetFull.subset(120, 120, -90, 90, 0, 5, -1, 1e10);
-        Test.ensureEqual(table.getColumn(4).toString(), "3, 4", "");
+            //2 x's
+            table = pointSubsetFull.subset(120, 120, -90, 90, 0, 5, -1, 1e10);
+            Test.ensureEqual(table.getColumn(4).toString(), "3, 4", "");
 
-        //1 y
-        table = pointSubsetFull.subset(-180, 180, -50, -40, 0, 5, 0, 1e10);
-        Test.ensureEqual(table.getColumn(4).toString(), "1", "");
+            //1 y
+            table = pointSubsetFull.subset(-180, 180, -50, -40, 0, 5, 0, 1e10);
+            Test.ensureEqual(table.getColumn(4).toString(), "1", "");
 
-        //1 z
-        table = pointSubsetFull.subset(-180, 180, -90, 90, 4, 7, 0, 1e10);
-        Test.ensureEqual(table.getColumn(4).toString(), "4", "");
+            //1 z
+            table = pointSubsetFull.subset(-180, 180, -90, 90, 4, 7, 0, 1e10);
+            Test.ensureEqual(table.getColumn(4).toString(), "4", "");
 
-        //1 t
-        table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 0, 1.5e8);
-        Test.ensureEqual(table.getColumn(4).toString(), "0", "");
+            //1 t
+            table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 0, 1.5e8);
+            Test.ensureEqual(table.getColumn(4).toString(), "0", "");
 
-        //nothing (time)
-        table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 0, 1);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            //nothing (time)
+            table = pointSubsetFull.subset(-180, 180, -90, 90, 0, 5, 0, 1);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
 
-        pointSubsetFull.close();
+        } finally {
+            pointSubsetFull.close();
+        }
 
 
         //***test no variation
@@ -427,25 +426,28 @@ public class PointSubsetFull  {
         t = new DoubleArray(new double[]{4,4});
         name = "PointSubsetFullTest2";
         pointSubsetFull = new PointSubsetFull(dir + name + ".index", t);
-        pointSubsetFull.constructorX(x);
-        pointSubsetFull.constructorY(y);
-        pointSubsetFull.constructorZ(z);
+        try {
+            pointSubsetFull.constructorX(x);
+            pointSubsetFull.constructorY(y);
+            pointSubsetFull.constructorZ(z);
 
-        //get all
-        table = pointSubsetFull.subset(0, 5, 0, 5, 0, 5, 0, 5);
-        Test.ensureEqual(table.getColumn(4).toString(), "0, 1", "");
+            //get all
+            table = pointSubsetFull.subset(0, 5, 0, 5, 0, 5, 0, 5);
+            Test.ensureEqual(table.getColumn(4).toString(), "0, 1", "");
 
-        //reject based on x, y, z, t
-        table = pointSubsetFull.subset(5, 10, 0, 5, 0, 5, 0, 5);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(0, 5, -1, 0, 0, 5, 0, 5);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(0, 5, 0, 5, 5, 10, 0, 5);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(0, 5, 0, 5, 0, 5, -1, 0);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            //reject based on x, y, z, t
+            table = pointSubsetFull.subset(5, 10, 0, 5, 0, 5, 0, 5);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(0, 5, -1, 0, 0, 5, 0, 5);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(0, 5, 0, 5, 5, 10, 0, 5);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(0, 5, 0, 5, 0, 5, -1, 0);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
 
-        pointSubsetFull.close();
+        } finally {
+            pointSubsetFull.close();
+        }
 
         //*** test lots of data
         //each construction stage takes about 3 s
@@ -453,36 +455,39 @@ public class PointSubsetFull  {
         IntArray ia = new IntArray(0, n); //0, 1, 2, ...
         name = "PointSubsetFullTest3";
         pointSubsetFull = new PointSubsetFull(dir + name + ".index", ia);
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetFull.constructorX(ia); //0, 2, 4, ...
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetFull.constructorY(ia); //0, 4, 8, ...
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetFull.constructorZ(ia); //0, 8, 16, ...
+        try {
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetFull.constructorX(ia); //0, 2, 4, ...
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetFull.constructorY(ia); //0, 4, 8, ...
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetFull.constructorZ(ia); //0, 8, 16, ...
 
-        //find 1 
-        String2.log("times should be ~ 2422 ms");
-        table = pointSubsetFull.subset(2,2, 4,4, 8,8, 1,1);
-        Test.ensureEqual(table.getColumn(4).toString(), "1", "");  //row#
-        table = pointSubsetFull.subset(2000,2000, 4000,4000, 8000,8000, 1000,1000);
-        Test.ensureEqual(table.getColumn(4).toString(), "1000", "");  //row#
-        table = pointSubsetFull.subset(2000000,2000000, 4000000,4000000, 8000000,8000000, 1000000,1000000);
-        Test.ensureEqual(table.getColumn(4).toString(), "1000000", "");  //row#
+            //find 1 
+            String2.log("times should be ~ 2422 ms");
+            table = pointSubsetFull.subset(2,2, 4,4, 8,8, 1,1);
+            Test.ensureEqual(table.getColumn(4).toString(), "1", "");  //row#
+            table = pointSubsetFull.subset(2000,2000, 4000,4000, 8000,8000, 1000,1000);
+            Test.ensureEqual(table.getColumn(4).toString(), "1000", "");  //row#
+            table = pointSubsetFull.subset(2000000,2000000, 4000000,4000000, 8000000,8000000, 1000000,1000000);
+            Test.ensureEqual(table.getColumn(4).toString(), "1000000", "");  //row#
 
-        //reject based on x, y, z, t
-        table = pointSubsetFull.subset(2.1,2.1, 4,4, 8,8, 1,1);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(2,2, 4.1,4.1, 8,8, 1,1);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(2,2, 4,4, 8.1,8.1, 1,1);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
-        table = pointSubsetFull.subset(2,2, 4,4, 8,8, 1.1,1.1);
-        Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            //reject based on x, y, z, t
+            table = pointSubsetFull.subset(2.1,2.1, 4,4, 8,8, 1,1);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(2,2, 4.1,4.1, 8,8, 1,1);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(2,2, 4,4, 8.1,8.1, 1,1);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
+            table = pointSubsetFull.subset(2,2, 4,4, 8,8, 1.1,1.1);
+            Test.ensureEqual(table.getColumn(4).toString(), "", "");
 
-        pointSubsetFull.close();
+        } finally {
+            pointSubsetFull.close();
+        }
 
         //done
         String2.log("\n***** PointSubsetFull.main finished successfully");

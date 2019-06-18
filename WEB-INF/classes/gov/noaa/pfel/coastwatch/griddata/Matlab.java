@@ -339,26 +339,33 @@ clear sst2
             name = name.substring(0, 31); //Matlab's limit   pg 1-30
         int nameLength = name.length();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-        int n0;
-        if (nameLength <= 4) {    //see 1-20
-            //short form
-            dos.writeShort(nameLength); //nBytes  see 1-20
-            dos.writeShort(miINT8);        //dataType
-            n0 = 4 - nameLength;
-        } else {
-            //long form
-            dos.writeInt(miINT8);        //dataType
-            dos.writeInt(nameLength); //nBytes  see 1-20
-            int nBytes = Math2.hiDiv(nameLength, 8) * 8; //round up to 8-byte boundary
-            n0 = nBytes - nameLength;
+        try {
+            DataOutputStream dos = new DataOutputStream(baos);
+            try {
+                int n0;
+                if (nameLength <= 4) {    //see 1-20
+                    //short form
+                    dos.writeShort(nameLength); //nBytes  see 1-20
+                    dos.writeShort(miINT8);        //dataType
+                    n0 = 4 - nameLength;
+                } else {
+                    //long form
+                    dos.writeInt(miINT8);        //dataType
+                    dos.writeInt(nameLength); //nBytes  see 1-20
+                    int nBytes = Math2.hiDiv(nameLength, 8) * 8; //round up to 8-byte boundary
+                    n0 = nBytes - nameLength;
+                }
+                for (int i = 0; i < nameLength; i++)
+                    dos.write(name.charAt(i));
+                for (int i = 0; i < n0; i++)
+                    dos.write(0);
+            } finally {
+                dos.close();
+            }
+            return baos.toByteArray();
+        } finally {
+            baos.close();
         }
-        for (int i = 0; i < nameLength; i++)
-            dos.write(name.charAt(i));
-        for (int i = 0; i < n0; i++)
-            dos.write(0);
-        dos.close();
-        return baos.toByteArray();
     }
 
 
@@ -603,175 +610,178 @@ clear sst2
 
         //open the file
         if (verbose) String2.log("readMatlabFile: " + fullFileName);
-        DataInputStream stream = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullFileName)));
-        if (verbose) String2.log("bytes available=" + stream.available());
+        DataInputStream stream = new DataInputStream(
+            File2.getDecompressedBufferedInputStream(fullFileName));
+        try {
+            if (verbose) String2.log("bytes available=" + stream.available());
 
-        //read the header
-        byte buffer[] = new byte[256];
-        stream.readFully(buffer, 0, 116);
-        String headerText = new String(buffer, 0, 116);
-        if (verbose) String2.log("headerText=" + headerText);
+            //read the header
+            byte buffer[] = new byte[256];
+            stream.readFully(buffer, 0, 116);
+            String headerText = new String(buffer, 0, 116);
+            if (verbose) String2.log("headerText=" + headerText);
 
-        //skip the 8 byte subsystem-specific offset
-        stream.readFully(buffer, 0, 8);
+            //skip the 8 byte subsystem-specific offset
+            stream.readFully(buffer, 0, 8);
 
-        //read the version 
-        short version = stream.readShort(); //when writing, write 0x0100
-        if (verbose) String2.log("version (should be 256 here)=" + version);  
+            //read the version 
+            short version = stream.readShort(); //when writing, write 0x0100
+            if (verbose) String2.log("version (should be 256 here)=" + version);  
 
-        //read the endian indicator; if "MI", we need to swap byte order when reading
-        String endianChars = (char)stream.readByte() +  "" + (char)stream.readByte();
-        if (verbose) String2.log("endian chars=" + endianChars);
-        boolean littleEndian = endianChars.equals("IM"); //vs "MI"   //is the logic of this correct?
-        if (verbose) String2.log("littleEndian=" + littleEndian);  
+            //read the endian indicator; if "MI", we need to swap byte order when reading
+            String endianChars = (char)stream.readByte() +  "" + (char)stream.readByte();
+            if (verbose) String2.log("endian chars=" + endianChars);
+            boolean littleEndian = endianChars.equals("IM"); //vs "MI"   //is the logic of this correct?
+            if (verbose) String2.log("littleEndian=" + littleEndian);  
 
 
-        //read the data
-        Vector vector = new Vector();
-        while (stream.available() > 0) {
-            //read data type (4 bytes)
-            int miDataType = DataStream.readInt(littleEndian, stream, buffer);
+            //read the data
+            Vector vector = new Vector();
+            while (stream.available() > 0) {
+                //read data type (4 bytes)
+                int miDataType = DataStream.readInt(littleEndian, stream, buffer);
 
-            //is it a small data element? see pg 1-10 and 1-11
-            if (miDataType >> 16 != 0) {
-                int smallData = DataStream.readInt(littleEndian, stream, buffer);
-                if (verbose) String2.log("small data element(nBytes=" + (miDataType >> 16) + "): " + 
-                    miNames[miDataType & 0xFFFF] + " = " + smallData);
-            continue;
-            }
+                //is it a small data element? see pg 1-10 and 1-11
+                if (miDataType >> 16 != 0) {
+                    int smallData = DataStream.readInt(littleEndian, stream, buffer);
+                    if (verbose) String2.log("small data element(nBytes=" + (miDataType >> 16) + "): " + 
+                        miNames[miDataType & 0xFFFF] + " = " + smallData);
+                continue;
+                }
 
-            //read nBytes
-            int nBytes = DataStream.readInt(littleEndian, stream, buffer);
-            if (verbose) String2.log("data element: " + miNames[miDataType] + "  nBytes=" + nBytes);
-            
-            //read miMATRIX data
-            int subMIDataType;
-            int subNBytes;
-            boolean subSmallDataFormat;
-            if (miDataType == miMATRIX) {
-                //miMATRIX is the only type where nBytes includes the padding bytes
-
-                //read array flags sub element  pg 1-17
-                subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
-                Test.ensureEqual(subMIDataType, miUINT32, methodName + "miMATRIX arrayFlags subMIDataType != miUINT32.");
-                subNBytes = DataStream.readInt(littleEndian, stream, buffer);
-                Test.ensureEqual(subNBytes, 8, methodName + "miMATRIX arrayFlags subNBytes != 8.");
-                int arrayFlags0 = DataStream.readInt(littleEndian, stream, buffer);
-                int arrayFlags1 = DataStream.readInt(littleEndian, stream, buffer); //undefined; this fills to 8 byte boundary
-                int mxClass = arrayFlags0 & 255;
-                boolean complex = ((arrayFlags0 >> 8) & 8) == 8;
-                if (verbose) String2.log("  mxClass=" + mxNames[mxClass] + " complex=" + complex); 
-
-                //read dimensions array sub element  pg 1-17
-                subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
-                Test.ensureEqual(subMIDataType, miINT32, methodName + "miMATRIX dimensions subMIDataType != miINT32.");
-                subNBytes = DataStream.readInt(littleEndian, stream, buffer);
-                int nDim = subNBytes / 4;   //4 bytes per miINT32
-                int dim[] = DataStream.readIntArray(littleEndian, stream, buffer, nDim);
-                DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
-                if (verbose) String2.log("  dim=" + dim[0] + ", " + dim[1] + (dim.length > 2? ", " + dim[2] : ""));  //this only support 2 or 3 dimensions
-                 
-                //read array name sub element
-                subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
-                subNBytes = subMIDataType >> 16; 
-                subSmallDataFormat = subNBytes != 0;
-                if (subSmallDataFormat)  
-                    subMIDataType &= 0xFFFF; 
-                else subNBytes = DataStream.readInt(littleEndian, stream, buffer); 
-                Test.ensureEqual(subMIDataType, miINT8, methodName + "miMATRIX array name subMIDataType != miINT8.");
-                String arrayName = new String(DataStream.readByteArray(stream, subNBytes));
-                if (subSmallDataFormat)
-                     DataStream.fullySkip(stream, 4 - subNBytes); //read to 8 byte boundary
-                else DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
-                vector.add(arrayName);
-                if (verbose) String2.log("  arrayName=" + arrayName);
-
-                //read data sub element
-                subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
-                subNBytes = subMIDataType >> 16; 
-                subSmallDataFormat = subNBytes != 0;
-                if (subSmallDataFormat)  
-                    subMIDataType &= 0xFFFF; 
-                else subNBytes = DataStream.readInt(littleEndian, stream, buffer); 
-                if (verbose) String2.log("  data subMIDataType=" + miNames[subMIDataType] + " subNBytes=" + subNBytes);
-                if (subMIDataType == miDOUBLE) {
-                    if (dim.length == 2) {
-                        double a[][] = DataStream.read2DCMDoubleArray(
-                            littleEndian, stream, buffer, dim[0], dim[1]);
-                        if (verbose) String2.log("  a[0][0]=" + a[0][0] + " a[0][" + (dim[1]-1) + "]=" + a[0][dim[1]-1]); 
-                        if (verbose) String2.log("  a["+(dim[0]-1)+"][0]=" + a[dim[0]-1][0] + " a["+(dim[0]-1)+"][" + (dim[1]-1) + "]=" + a[dim[0]-1][dim[1]-1]); 
-                        vector.add(a);
-                    } else if (dim.length == 3) {
-                        double a[][][] = DataStream.read3DDoubleArray(
-                            littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
-                        vector.add(a);
-                    } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                } else if (subMIDataType == miSINGLE) {
-                    if (dim.length == 2) {
-                        float a[][] = DataStream.read2DCMFloatArray(
-                            littleEndian, stream, buffer, dim[0], dim[1]);
-                        if (verbose) String2.log("  first: a[0][0]=" + a[0][0] + " a[0][" + (dim[1]-1) + "]=" + a[0][dim[1]-1]); 
-                        if (dim[0] > 1)
-                            if (verbose) String2.log("  last:  a["+(dim[0]-1)+"][0]=" + a[dim[0]-1][0] + " a["+(dim[0]-1)+"][" + (dim[1]-1) + "]=" + a[dim[0]-1][dim[1]-1]); 
-                        vector.add(a);
-                    } else if (dim.length == 3) {
-                        float a[][][] = DataStream.read3DFloatArray(
-                            littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
-                        vector.add(a);
-                    } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                } else if (subMIDataType == miINT32 || subMIDataType == miUINT32) { //convert uint -> int
-                    if (dim.length == 2) {
-                        int a[][] = DataStream.read2DCMIntArray(
-                            littleEndian, stream, buffer, dim[0], dim[1]);
-                        vector.add(a);
-                    } else if (dim.length == 3) {
-                        int a[][][] = DataStream.read3DIntArray(
-                            littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
-                        vector.add(a);
-                    } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                } else if (subMIDataType == miINT16 || subMIDataType == miUINT16) { //convert uint -> int
-                    if (dim.length == 2) {
-                        short a[][] = DataStream.read2DCMShortArray(
-                            littleEndian, stream, buffer, dim[0], dim[1]);
-                        vector.add(a);
-                    } else if (dim.length == 3) {
-                        short a[][][] = DataStream.read3DShortArray(
-                            littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
-                        vector.add(a);
-                    } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                } else if (subMIDataType == miINT8 || subMIDataType == miUINT8) { //convert uint -> int
-                    if (dim.length == 2) {
-                        byte a[][] = DataStream.read2DCMByteArray(
-                            stream, dim[0], dim[1]);
-                        vector.add(a);
-                    } else if (dim.length == 3) {
-                        byte a[][][] = DataStream.read3DByteArray(
-                            stream, dim[0], dim[1], dim[2]);
-                        vector.add(a);
-                    } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                } else Test.ensureEqual(subMIDataType, 0,
-                    methodName + "miMATRIX subMIDataType not supported (" + miNames[subMIDataType] + ").");
-
-                if (subSmallDataFormat)
-                     DataStream.fullySkip(stream, 4 - subNBytes); //read to 8 byte boundary
-                else DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
-
-                //read complex data sub element                
-                Test.ensureEqual(complex, false, methodName + "miMATRIX complex data is currently not supported.");       
+                //read nBytes
+                int nBytes = DataStream.readInt(littleEndian, stream, buffer);
+                if (verbose) String2.log("data element: " + miNames[miDataType] + "  nBytes=" + nBytes);
                 
+                //read miMATRIX data
+                int subMIDataType;
+                int subNBytes;
+                boolean subSmallDataFormat;
+                if (miDataType == miMATRIX) {
+                    //miMATRIX is the only type where nBytes includes the padding bytes
 
-            } else {
-                //temp: skip over the data
-                if (verbose) String2.log("  skip over that data -- element type not supported yet");
-                DataStream.fullySkip(stream, nBytes);
-                DataStream.fullySkip(stream, (8 - (nBytes % 8)) % 8); //read to 8 byte boundary
+                    //read array flags sub element  pg 1-17
+                    subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
+                    Test.ensureEqual(subMIDataType, miUINT32, methodName + "miMATRIX arrayFlags subMIDataType != miUINT32.");
+                    subNBytes = DataStream.readInt(littleEndian, stream, buffer);
+                    Test.ensureEqual(subNBytes, 8, methodName + "miMATRIX arrayFlags subNBytes != 8.");
+                    int arrayFlags0 = DataStream.readInt(littleEndian, stream, buffer);
+                    int arrayFlags1 = DataStream.readInt(littleEndian, stream, buffer); //undefined; this fills to 8 byte boundary
+                    int mxClass = arrayFlags0 & 255;
+                    boolean complex = ((arrayFlags0 >> 8) & 8) == 8;
+                    if (verbose) String2.log("  mxClass=" + mxNames[mxClass] + " complex=" + complex); 
+
+                    //read dimensions array sub element  pg 1-17
+                    subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
+                    Test.ensureEqual(subMIDataType, miINT32, methodName + "miMATRIX dimensions subMIDataType != miINT32.");
+                    subNBytes = DataStream.readInt(littleEndian, stream, buffer);
+                    int nDim = subNBytes / 4;   //4 bytes per miINT32
+                    int dim[] = DataStream.readIntArray(littleEndian, stream, buffer, nDim);
+                    DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
+                    if (verbose) String2.log("  dim=" + dim[0] + ", " + dim[1] + (dim.length > 2? ", " + dim[2] : ""));  //this only support 2 or 3 dimensions
+                     
+                    //read array name sub element
+                    subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
+                    subNBytes = subMIDataType >> 16; 
+                    subSmallDataFormat = subNBytes != 0;
+                    if (subSmallDataFormat)  
+                        subMIDataType &= 0xFFFF; 
+                    else subNBytes = DataStream.readInt(littleEndian, stream, buffer); 
+                    Test.ensureEqual(subMIDataType, miINT8, methodName + "miMATRIX array name subMIDataType != miINT8.");
+                    String arrayName = new String(DataStream.readByteArray(stream, subNBytes));
+                    if (subSmallDataFormat)
+                         DataStream.fullySkip(stream, 4 - subNBytes); //read to 8 byte boundary
+                    else DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
+                    vector.add(arrayName);
+                    if (verbose) String2.log("  arrayName=" + arrayName);
+
+                    //read data sub element
+                    subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
+                    subNBytes = subMIDataType >> 16; 
+                    subSmallDataFormat = subNBytes != 0;
+                    if (subSmallDataFormat)  
+                        subMIDataType &= 0xFFFF; 
+                    else subNBytes = DataStream.readInt(littleEndian, stream, buffer); 
+                    if (verbose) String2.log("  data subMIDataType=" + miNames[subMIDataType] + " subNBytes=" + subNBytes);
+                    if (subMIDataType == miDOUBLE) {
+                        if (dim.length == 2) {
+                            double a[][] = DataStream.read2DCMDoubleArray(
+                                littleEndian, stream, buffer, dim[0], dim[1]);
+                            if (verbose) String2.log("  a[0][0]=" + a[0][0] + " a[0][" + (dim[1]-1) + "]=" + a[0][dim[1]-1]); 
+                            if (verbose) String2.log("  a["+(dim[0]-1)+"][0]=" + a[dim[0]-1][0] + " a["+(dim[0]-1)+"][" + (dim[1]-1) + "]=" + a[dim[0]-1][dim[1]-1]); 
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            double a[][][] = DataStream.read3DDoubleArray(
+                                littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else if (subMIDataType == miSINGLE) {
+                        if (dim.length == 2) {
+                            float a[][] = DataStream.read2DCMFloatArray(
+                                littleEndian, stream, buffer, dim[0], dim[1]);
+                            if (verbose) String2.log("  first: a[0][0]=" + a[0][0] + " a[0][" + (dim[1]-1) + "]=" + a[0][dim[1]-1]); 
+                            if (dim[0] > 1)
+                                if (verbose) String2.log("  last:  a["+(dim[0]-1)+"][0]=" + a[dim[0]-1][0] + " a["+(dim[0]-1)+"][" + (dim[1]-1) + "]=" + a[dim[0]-1][dim[1]-1]); 
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            float a[][][] = DataStream.read3DFloatArray(
+                                littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else if (subMIDataType == miINT32 || subMIDataType == miUINT32) { //convert uint -> int
+                        if (dim.length == 2) {
+                            int a[][] = DataStream.read2DCMIntArray(
+                                littleEndian, stream, buffer, dim[0], dim[1]);
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            int a[][][] = DataStream.read3DIntArray(
+                                littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else if (subMIDataType == miINT16 || subMIDataType == miUINT16) { //convert uint -> int
+                        if (dim.length == 2) {
+                            short a[][] = DataStream.read2DCMShortArray(
+                                littleEndian, stream, buffer, dim[0], dim[1]);
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            short a[][][] = DataStream.read3DShortArray(
+                                littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else if (subMIDataType == miINT8 || subMIDataType == miUINT8) { //convert uint -> int
+                        if (dim.length == 2) {
+                            byte a[][] = DataStream.read2DCMByteArray(
+                                stream, dim[0], dim[1]);
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            byte a[][][] = DataStream.read3DByteArray(
+                                stream, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else Test.ensureEqual(subMIDataType, 0,
+                        methodName + "miMATRIX subMIDataType not supported (" + miNames[subMIDataType] + ").");
+
+                    if (subSmallDataFormat)
+                         DataStream.fullySkip(stream, 4 - subNBytes); //read to 8 byte boundary
+                    else DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); //read to 8 byte boundary
+
+                    //read complex data sub element                
+                    Test.ensureEqual(complex, false, methodName + "miMATRIX complex data is currently not supported.");       
+                    
+
+                } else {
+                    //temp: skip over the data
+                    if (verbose) String2.log("  skip over that data -- element type not supported yet");
+                    DataStream.fullySkip(stream, nBytes);
+                    DataStream.fullySkip(stream, (8 - (nBytes % 8)) % 8); //read to 8 byte boundary
+                }
             }
-        }
 
-        if (verbose) String2.log("end of Matlab file\n");
-        stream.close();
-        return vector;
+            if (verbose) String2.log("end of Matlab file\n");
+            return vector;
+        } finally {
+            stream.close();
+        }
     }
 
     /**
@@ -784,28 +794,34 @@ clear sst2
         //write a double matlab file
         String tempFile = dir + "MatlabDouble.mat";       
         DataOutputStream dos = DataStream.getDataOutputStream(tempFile);
-        writeMatlabHeader(dos);
-        double dLat[] = {1.1, 2.2, 3.3};
-        double dLon[] = {44.4, 55.5};
-        double dData[][] = /*new double[3][2]*/ {{1.11, 2.22}, {33.33, 44.44}, {555.55, 666.66}};
-        writeDoubleArray(dos, "lon", dLon);
-        writeDoubleArray(dos, "lat", dLat);
-        write2DDoubleArray(dos, "MyData", dData);
-        dos.close();
+        try {
+            writeMatlabHeader(dos);
+            double dLat[] = {1.1, 2.2, 3.3};
+            double dLon[] = {44.4, 55.5};
+            double dData[][] = /*new double[3][2]*/ {{1.11, 2.22}, {33.33, 44.44}, {555.55, 666.66}};
+            writeDoubleArray(dos, "lon", dLon);
+            writeDoubleArray(dos, "lat", dLat);
+            write2DDoubleArray(dos, "MyData", dData);
+        } finally {
+            dos.close();
+        }
         if (verbose) String2.log(File2.hexDump(tempFile, 256));  //uses an external class!
         readMatlabFile(tempFile); 
 
         //write a float matlab file
         tempFile = dir + "MatlabFloat.mat";       
         dos = DataStream.getDataOutputStream(tempFile);
-        writeMatlabHeader(dos);
-        float fLat[] = {1.1f, 2.2f, 3.3f};
-        float fLon[] = {44.4f, 55.5f};
-        float fData[][] = /*new float[3][2]*/ {{1.11f, 2.22f}, {33.33f, 44.44f}, {555.55f, 666.66f}};
-        writeFloatArray(dos, "lon", fLon);
-        writeFloatArray(dos, "lat", fLat);
-        write2DFloatArray(dos, "MyData", fData);      
-        dos.close();
+        try {
+            writeMatlabHeader(dos);
+            float fLat[] = {1.1f, 2.2f, 3.3f};
+            float fLon[] = {44.4f, 55.5f};
+            float fData[][] = /*new float[3][2]*/ {{1.11f, 2.22f}, {33.33f, 44.44f}, {555.55f, 666.66f}};
+            writeFloatArray(dos, "lon", fLon);
+            writeFloatArray(dos, "lat", fLat);
+            write2DFloatArray(dos, "MyData", fData);      
+        } finally {
+            dos.close();
+        }
         if (verbose) String2.log(File2.hexDump(tempFile, 256)); 
         readMatlabFile(tempFile);
 

@@ -277,9 +277,10 @@ public class SgtUtil  {
 
     /**
      * drawHtmlText draws simple HTML text to g2d.
-     * drawHtmlText benefits greatly from setting non-text antialising ON:
+     * Before 2019-02-08, drawHtmlText benefited greatly from setting non-text antialising ON:
      * <tt>g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
      *         RenderingHints.VALUE_ANTIALIAS_ON); </tt>
+     * Now perhaps antialiasing on by default.
      *
      * @param g2d
      * @param x the base x for the text  (in pixels)
@@ -537,10 +538,12 @@ public class SgtUtil  {
         //create fileOutputStream
         BufferedOutputStream bos = new BufferedOutputStream(
             new FileOutputStream(fullPngName + randomInt + ".png"));
-
-        //save the image
-        saveAsTransparentPng(bi, transparent, bos);
-        bos.close();
+        try {
+            //save the image
+            saveAsTransparentPng(bi, transparent, bos);
+        } finally {
+            bos.close();
+        }
 
         //last step: rename to final Png name
         File2.rename(fullPngName + randomInt + ".png", fullPngName + ".png");
@@ -606,7 +609,7 @@ public class SgtUtil  {
      */
     public static Object[] createPdf(com.lowagie.text.Rectangle pageSize,
             int bbWidth, int bbHeight, String fullFileName) throws Exception {
-        return createPdf(pageSize, bbWidth, bbHeight, new FileOutputStream(fullFileName));
+        return createPdf(pageSize, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
     }
 
     /**
@@ -617,7 +620,7 @@ public class SgtUtil  {
      * @param pageSize e.g, PageSize.LETTER or PageSize.LETTER.rotate() (or A4, or, ...)
      * @param width the bounding box width, in 1/144ths of an inch
      * @param height the bounding box height, in 1/144ths of an inch
-     * @param outputStream
+     * @param outputStream  Best if buffered.
      * @return an object[] with 0=g2D, 1=document, 2=pdfContentByte, 3=pdfTemplate
      * @throws Exception if trouble
      */
@@ -648,46 +651,48 @@ public class SgtUtil  {
      * written things to g2D.
      *
      * @param oar the object[] returned from createPdf
-     * @throwsException if trouble
+     * @throws Exception if trouble
      */
     public static void closePdf(Object oar[]) throws Exception {
         Graphics2D g2D = (Graphics2D)oar[0];
         Document document = (Document)oar[1];
-        PdfContentByte pdfContentByte = (PdfContentByte)oar[2];
-        PdfTemplate pdfTemplate = (PdfTemplate)oar[3];
+        try {
+            PdfContentByte pdfContentByte = (PdfContentByte)oar[2];
+            PdfTemplate pdfTemplate = (PdfTemplate)oar[3];
 
-        g2D.dispose();
+            g2D.dispose();
 
-        //center it
-        if (verbose) String2.log("SgtUtil.closePdf" +
-            " left="   + document.left()   + " right=" + document.right() + 
-            " bottom=" + document.bottom() + " top="   + document.top()   + 
-            " template.width="  + pdfTemplate.getWidth() + " template.height=" + pdfTemplate.getHeight());
-        //x device = ax user + by user + e
-        //y device = cx user + dy user + f
-        pdfContentByte.addTemplate(pdfTemplate, //a,b,c,d,e,f      //x,y location in points 
-            0.5f, 0, 0, 0.5f, 
-            document.left()   + (document.right() - document.left()   - pdfTemplate.getWidth()/2)  / 2, 
-            document.bottom() + (document.top()   - document.bottom() - pdfTemplate.getHeight()/2) / 2);
+            //center it
+            if (verbose) String2.log("SgtUtil.closePdf" +
+                " left="   + document.left()   + " right=" + document.right() + 
+                " bottom=" + document.bottom() + " top="   + document.top()   + 
+                " template.width="  + pdfTemplate.getWidth() + " template.height=" + pdfTemplate.getHeight());
+            //x device = ax user + by user + e
+            //y device = cx user + dy user + f
+            pdfContentByte.addTemplate(pdfTemplate, //a,b,c,d,e,f      //x,y location in points 
+                0.5f, 0, 0, 0.5f, 
+                document.left()   + (document.right() - document.left()   - pdfTemplate.getWidth()/2)  / 2, 
+                document.bottom() + (document.top()   - document.bottom() - pdfTemplate.getHeight()/2) / 2);
 
-        /*
-        //if boundingBox is small, center it
-        //if boundingBox is large, shrink and center it
-        //document.left/right/top/bottom include 1/2" margins
-        float xScale = (document.right() - document.left())   / pdfTemplate.getWidth();   
-        float yScale = (document.top()   - document.bottom()) / pdfTemplate.getHeight();  
-        float scale = Math.min(Math.min(xScale, yScale), 1);
-        float xSize = pdfTemplate.getWidth()  / scale;
-        float ySize = pdfTemplate.getHeight() / scale;
-        //x device = ax user + by user + e
-        //y device = cx user + dy user + f
-        pdfContentByte.addTemplate(pdfTemplate, //a,b,c,d,e,f
-            scale, 0, 0, scale, 
-            document.left()   + (document.right() - document.left()   - xSize) / 2,
-            document.bottom() + (document.top()   - document.bottom() - ySize) / 2); 
-        */
-
-        document.close();
+            /*
+            //if boundingBox is small, center it
+            //if boundingBox is large, shrink and center it
+            //document.left/right/top/bottom include 1/2" margins
+            float xScale = (document.right() - document.left())   / pdfTemplate.getWidth();   
+            float yScale = (document.top()   - document.bottom()) / pdfTemplate.getHeight();  
+            float scale = Math.min(Math.min(xScale, yScale), 1);
+            float xSize = pdfTemplate.getWidth()  / scale;
+            float ySize = pdfTemplate.getHeight() / scale;
+            //x device = ax user + by user + e
+            //y device = cx user + dy user + f
+            pdfContentByte.addTemplate(pdfTemplate, //a,b,c,d,e,f
+                scale, 0, 0, scale, 
+                document.left()   + (document.right() - document.left()   - xSize) / 2,
+                document.bottom() + (document.top()   - document.bottom() - ySize) / 2); 
+            */
+        } finally {
+            document.close();
+        }
     }
 
     /**

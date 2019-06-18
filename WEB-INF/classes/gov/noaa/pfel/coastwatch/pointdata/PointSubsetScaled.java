@@ -197,55 +197,56 @@ public class PointSubsetScaled {
         //open the output file
         BufferedOutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullIndexName + axisNames.charAt(axis)), bufferSize);
+        try {
+            //process the rows of pa
+            int lastFiniteRow = -1;  
+            int po = 0;
+            byte buffer[] = new byte[bufferSize];
+            if (axis == T) {
+                for (int row = 0; row < size; row++) {
+                    if (po == bufferSize) {
+                        out.write(buffer);
+                        po = 0;
+                    }
+                    double d = pa.getDouble(row);
+                    short t;
+                    if (Double.isFinite(d)) {
+                        lastFiniteRow = row;
+                        t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
+                            Math2.roundToShort(Short.MIN_VALUE + 
+                                shortScale * (d - min[axis]) / (max[axis] - min[axis]));
+                    } else {
+                        t = Short.MAX_VALUE;
+                    }
+                    buffer[po++] = (byte)(t >> 8);
+                    buffer[po++] = (byte)t;
+                }
+            } else {
+                for (int row = 0; row < size; row++) {
+                    if (po == bufferSize) {
+                        out.write(buffer);
+                        po = 0;
+                    }
+                    double d = pa.getDouble(row);
+                    if (Double.isFinite(d)) {
+                        lastFiniteRow = row;
+                        buffer[po++] = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
+                            Math2.roundToByte(Byte.MIN_VALUE + 
+                                byteScale * (d - min[axis]) / (max[axis] - min[axis]));
+                    } else {
+                        buffer[po++] = Byte.MAX_VALUE;
+                        //also set t to MAX_VALUE since it is checked first
+                        //writeShort(buffer, bufferOffset + offset[T], Short.MAX_VALUE);  
+                    }
+                }
+            }
+            //write remainder of buffer
+            out.write(buffer, 0, po);
+            nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
 
-        //process the rows of pa
-        int lastFiniteRow = -1;  
-        int po = 0;
-        byte buffer[] = new byte[bufferSize];
-        if (axis == T) {
-            for (int row = 0; row < size; row++) {
-                if (po == bufferSize) {
-                    out.write(buffer);
-                    po = 0;
-                }
-                double d = pa.getDouble(row);
-                short t;
-                if (Double.isFinite(d)) {
-                    lastFiniteRow = row;
-                    t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
-                        Math2.roundToShort(Short.MIN_VALUE + 
-                            shortScale * (d - min[axis]) / (max[axis] - min[axis]));
-                } else {
-                    t = Short.MAX_VALUE;
-                }
-                buffer[po++] = (byte)(t >> 8);
-                buffer[po++] = (byte)t;
-            }
-        } else {
-            for (int row = 0; row < size; row++) {
-                if (po == bufferSize) {
-                    out.write(buffer);
-                    po = 0;
-                }
-                double d = pa.getDouble(row);
-                if (Double.isFinite(d)) {
-                    lastFiniteRow = row;
-                    buffer[po++] = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
-                        Math2.roundToByte(Byte.MIN_VALUE + 
-                            byteScale * (d - min[axis]) / (max[axis] - min[axis]));
-                } else {
-                    buffer[po++] = Byte.MAX_VALUE;
-                    //also set t to MAX_VALUE since it is checked first
-                    //writeShort(buffer, bufferOffset + offset[T], Short.MAX_VALUE);  
-                }
-            }
+        } finally {
+            out.close();
         }
-        //write remainder of buffer
-        out.write(buffer, 0, po);
-        nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
-
-        //close in and out and rename
-        out.close();
         if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
@@ -280,81 +281,83 @@ public class PointSubsetScaled {
             " min=" + min[axis] + " max=" + max[axis]); 
 
         //open the old file (in) and new file (out)
-        FileInputStream in = null;
+        InputStream in = null;
         try {
-            in = new FileInputStream(fullIndexName);
+            in = File2.getDecompressedBufferedInputStream(fullIndexName);
         } catch (Exception e) {
             if (axis != T) 
                 throw e;
         }
         FileOutputStream out = new FileOutputStream(altFullIndexName);
+        try {
+            //process the rows of pa
+            int lastFiniteRow = -1;
+            byte buffer[] = new byte[bufferSize];
+            int bytesInBuffer = 0;
+            int bufferOffset = -nBytesPerRow;
+            for (int row = 0; row < size; row++) {
+                bufferOffset += nBytesPerRow;
+                if (bytesInBuffer - bufferOffset < nBytesPerRow) {
+                    if (in == null) {
+                        out.write(buffer, 0, bufferOffset);
+                        Arrays.fill(buffer, (byte)0);
+                        bufferOffset = 0;
+                        bytesInBuffer = buffer.length;
+                    } else {
+                        bytesInBuffer = refill(in, out, buffer, bufferOffset, 
+                            bytesInBuffer, nBytesPerRow);
+                        bufferOffset = 0;
+                    }
+                }
 
-        //process the rows of pa
-        int lastFiniteRow = -1;
-        byte buffer[] = new byte[bufferSize];
-        int bytesInBuffer = 0;
-        int bufferOffset = -nBytesPerRow;
-        for (int row = 0; row < size; row++) {
+                //set the new values
+                double d = pa.getDouble(row);
+                if (axis == T) {
+                    short t;
+                    if (Double.isFinite(d)) {
+                        lastFiniteRow = row;
+                        t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
+                            Math2.roundToShort(Short.MIN_VALUE + 
+                                shortScale * (d - min[axis]) / (max[axis] - min[axis]));
+                    } else {
+                        t = Short.MAX_VALUE;
+                    }
+                    writeShort(buffer, bufferOffset + offset[T], t); 
+                } else {
+                    byte b; 
+                    if (Double.isFinite(d)) {
+                        lastFiniteRow = row;
+                        b = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
+                            Math2.roundToByte(Byte.MIN_VALUE + 
+                                byteScale * (d - min[axis]) / (max[axis] - min[axis]));
+                    } else {
+                        b = Byte.MAX_VALUE;
+                        //also set t to MAX_VALUE since it is checked first
+                        writeShort(buffer, bufferOffset + offset[T], Short.MAX_VALUE);  
+                    }
+                    buffer[bufferOffset + offset[axis]] = b; 
+                }
+
+                //diagnostic
+                //if (verbose && row < Math.min(size, 10)) 
+                //    String2.log(
+                //        " x=" + String2.right("" + buffer[bufferOffset + offset[X]], 3) + 
+                //        " y=" + String2.right("" + buffer[bufferOffset + offset[Y]], 3) + 
+                //        " z=" + String2.right("" + buffer[bufferOffset + offset[Z]], 3) + 
+                //        " t=" + String2.right("" + readShort(buffer, bufferOffset), 6) +
+                //        " d=" + d);
+            }
+            //write bytes remaining in buffer
             bufferOffset += nBytesPerRow;
-            if (bytesInBuffer - bufferOffset < nBytesPerRow) {
-                if (in == null) {
-                    out.write(buffer, 0, bufferOffset);
-                    Arrays.fill(buffer, (byte)0);
-                    bufferOffset = 0;
-                    bytesInBuffer = buffer.length;
-                } else {
-                    bytesInBuffer = refill(in, out, buffer, bufferOffset, 
-                        bytesInBuffer, nBytesPerRow);
-                    bufferOffset = 0;
-                }
-            }
+            out.write(buffer, 0, bufferOffset);
 
-            //set the new values
-            double d = pa.getDouble(row);
-            if (axis == T) {
-                short t;
-                if (Double.isFinite(d)) {
-                    lastFiniteRow = row;
-                    t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
-                        Math2.roundToShort(Short.MIN_VALUE + 
-                            shortScale * (d - min[axis]) / (max[axis] - min[axis]));
-                } else {
-                    t = Short.MAX_VALUE;
-                }
-                writeShort(buffer, bufferOffset + offset[T], t); 
-            } else {
-                byte b; 
-                if (Double.isFinite(d)) {
-                    lastFiniteRow = row;
-                    b = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
-                        Math2.roundToByte(Byte.MIN_VALUE + 
-                            byteScale * (d - min[axis]) / (max[axis] - min[axis]));
-                } else {
-                    b = Byte.MAX_VALUE;
-                    //also set t to MAX_VALUE since it is checked first
-                    writeShort(buffer, bufferOffset + offset[T], Short.MAX_VALUE);  
-                }
-                buffer[bufferOffset + offset[axis]] = b; 
-            }
+            nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
 
-            //diagnostic
-            //if (verbose && row < Math.min(size, 10)) 
-            //    String2.log(
-            //        " x=" + String2.right("" + buffer[bufferOffset + offset[X]], 3) + 
-            //        " y=" + String2.right("" + buffer[bufferOffset + offset[Y]], 3) + 
-            //        " z=" + String2.right("" + buffer[bufferOffset + offset[Z]], 3) + 
-            //        " t=" + String2.right("" + readShort(buffer, bufferOffset), 6) +
-            //        " d=" + d);
+            //close in and out and rename
+            if (in != null) in.close();
+        } finally {
+            out.close();
         }
-        //write bytes remaining in buffer
-        bufferOffset += nBytesPerRow;
-        out.write(buffer, 0, bufferOffset);
-
-        nFiniteRows = Math.min(lastFiniteRow + 1, nFiniteRows);
-
-        //close in and out and rename
-        if (in != null) in.close();
-        out.close();
         File2.delete(fullIndexName);
         File2.rename(altFullIndexName, fullIndexName);
         if (verbose) String2.log("PointSubsetScaled.store time=" + (System.currentTimeMillis() - time) + "ms");
@@ -445,11 +448,8 @@ public class PointSubsetScaled {
             //    }
             //}
 
-            //close channel
+        } finally {
             rwChannel.close();
-        } catch (Exception e) {
-            rwChannel.close();
-            throw e;
         }
 
         //close the file
@@ -493,69 +493,6 @@ public class PointSubsetScaled {
     public void constructorZ(PrimitiveArray z) throws Exception {
         store(Z, z);
     }
-/* was part of constructorZ    
-        //combine the x,y,z,t index files
-        long time = System.currentTimeMillis();
-        DataInputStream indexX = DataStream.getDataInputStream(fullIndexName + "X");
-        DataInputStream indexY = DataStream.getDataInputStream(fullIndexName + "Y");
-        DataInputStream indexZ = DataStream.getDataInputStream(fullIndexName + "Z");
-        DataInputStream indexT = DataStream.getDataInputStream(fullIndexName + "T");
-        DataOutputStream index = DataStream.getDataOutputStream(fullIndexName);
-        byte xBuffer[] = new byte[bufferSize];
-        byte yBuffer[] = new byte[bufferSize];
-        byte zBuffer[] = new byte[bufferSize];
-        byte tBuffer[] = new byte[2 * bufferSize];
-        byte rowBuffer[] = new byte[nBytesPerRow];
-        int po = bufferSize; //to trigger refilling the buffers
-        for (int row = 0; row < size; row++) {
-            //refill the buffers
-            if (po == bufferSize) {
-                int nToRead = Math.min(bufferSize, size - row);
-                indexX.readFully(xBuffer, 0, nToRead);
-                indexY.readFully(yBuffer, 0, nToRead);
-                indexZ.readFully(zBuffer, 0, nToRead);
-                indexT.readFully(tBuffer, 0, 2 * nToRead);
-                po = 0;
-            }
-            
-            //fill the rowBuffer
-            short tShort = 
-                (xBuffer[po] == Byte.MAX_VALUE || 
-                 yBuffer[po] == Byte.MAX_VALUE || 
-                 zBuffer[po] == Byte.MAX_VALUE)? 
-                Short.MAX_VALUE : 
-                (short)readShort(tBuffer, 2 * po);
-            rowBuffer[offset[X]] = xBuffer[po];
-            rowBuffer[offset[Y]] = yBuffer[po];
-            rowBuffer[offset[Z]] = zBuffer[po];
-            writeShort(rowBuffer, offset[T], tShort);
-            po++;
-            //diagnostic
-            //if (verbose && row < Math.min(size, 10)) 
-            //    String2.log(
-            //        " x=" + String2.right("" + xByte, 3) + 
-            //        " y=" + String2.right("" + yByte, 3) + 
-            //        " z=" + String2.right("" + zByte, 3) + 
-            //        " t=" + String2.right("" + tShort, 6));
-
-            //write the rowBuffer
-            index.write(rowBuffer);
-        }
-
-        indexX.close();
-        indexY.close();
-        indexZ.close();
-        indexY.close();
-        index.close();
-
-        File2.delete(fullIndexName + "X");
-        File2.delete(fullIndexName + "Y");
-        File2.delete(fullIndexName + "Z");
-        File2.delete(fullIndexName + "T");
-        if (verbose) String2.log("PointSubsetScaled.constructorZ time to combine = " + 
-            (System.currentTimeMillis() - time));
-    }
-*/
 
     /**
      * This returns a BitSet with true for the rows numbers which have 
@@ -645,68 +582,75 @@ public class PointSubsetScaled {
         //I tried using just FileInputStream and doing my own buffer,
         //but times were slower and more variable.
         //DataInputStream gives me access to readFully(buffer)
-        DataInputStream inX = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "X"), bufferSize));
-        DataInputStream inY = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "Y"), bufferSize));
-        DataInputStream inZ = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "Z"), bufferSize));
-        DataInputStream inT = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(fullIndexName + "T"), bufferSize));
-        //or, using ByteBuffer approach... (which seems to be slower here)
-        //FileChannel in = new FileInputStream(fullIndexName).getChannel();
-        //ByteBuffer byteBuffer = in.map(FileChannel.MapMode.READ_ONLY, 0, (int)in.size()); 
+        DataInputStream inX = null;
+        DataInputStream inY = null;
+        DataInputStream inZ = null;
+        DataInputStream inT = null;
+        try {
 
-        //go through the rows
-        //This is the inner loop of the whole process.
-        //Using a buffer to get all results for one row is 2x faster than 
-        //  separate readByte's and readShort.
-        //But using a big buffer to get lots of rows is ~ as slow
-        //  as separate readByte's and readShort
-        //  (because of arithmetic to calculate positions in the buffer?).
-        byte xBuffer[] = new byte[bufferSize]; 
-        byte yBuffer[] = new byte[bufferSize]; 
-        byte zBuffer[] = new byte[bufferSize]; 
-        byte tBuffer[] = new byte[2*bufferSize]; 
-        long cumulativeReadTime = 0;
-        int po = 0;
-        int nRemain = nFiniteRows;
-        for (int row = 0; row < nFiniteRows; row++) {
-            //read a row's worth of data
-            //cumulativeReadTime -= System.currentTimeMillis(); //this adds significant overhead
-            if ((po % bufferSize) == 0) {
-                int nToRead = Math.min(bufferSize, nRemain);
-                nRemain -= nToRead;
-                inX.readFully(xBuffer, 0, nToRead);   //about 70% of time is spend reading
-                inY.readFully(yBuffer, 0, nToRead);  
-                inZ.readFully(zBuffer, 0, nToRead);  
-                inT.readFully(tBuffer, 0, nToRead * 2);  
-                po = 0;
-            }
+            inX = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "X"));
+            inY = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "Y"));
+            inZ = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "Z"));
+            inT = new DataInputStream(
+                File2.getDecompressedBufferedInputStream(fullIndexName + "T"));
             //or, using ByteBuffer approach... (which seems to be slower here)
-            //byteBuffer.get(buffer); //Fill the array from the buffer 
-            //cumulativeReadTime += System.currentTimeMillis(); //this adds significant overhead
+            //FileChannel in = new FileInputStream(fullIndexName).getChannel(); not File2.getDecompressedBufferedInputStream(. Need FileInputStream.
+            //ByteBuffer byteBuffer = in.map(FileChannel.MapMode.READ_ONLY, 0, (int)in.size()); 
 
-            int t = (tBuffer[po + po] << 8) | (tBuffer[po + po + 1] & 255);
+            //go through the rows
+            //This is the inner loop of the whole process.
+            //Using a buffer to get all results for one row is 2x faster than 
+            //  separate readByte's and readShort.
+            //But using a big buffer to get lots of rows is ~ as slow
+            //  as separate readByte's and readShort
+            //  (because of arithmetic to calculate positions in the buffer?).
+            byte xBuffer[] = new byte[bufferSize]; 
+            byte yBuffer[] = new byte[bufferSize]; 
+            byte zBuffer[] = new byte[bufferSize]; 
+            byte tBuffer[] = new byte[2*bufferSize]; 
+            long cumulativeReadTime = 0;
+            int po = 0;
+            int nRemain = nFiniteRows;
+            for (int row = 0; row < nFiniteRows; row++) {
+                //read a row's worth of data
+                //cumulativeReadTime -= System.currentTimeMillis(); //this adds significant overhead
+                if ((po % bufferSize) == 0) {
+                    int nToRead = Math.min(bufferSize, nRemain);
+                    nRemain -= nToRead;
+                    inX.readFully(xBuffer, 0, nToRead);   //about 70% of time is spend reading
+                    inY.readFully(yBuffer, 0, nToRead);  
+                    inZ.readFully(zBuffer, 0, nToRead);  
+                    inT.readFully(tBuffer, 0, nToRead * 2);  
+                    po = 0;
+                }
+                //or, using ByteBuffer approach... (which seems to be slower here)
+                //byteBuffer.get(buffer); //Fill the array from the buffer 
+                //cumulativeReadTime += System.currentTimeMillis(); //this adds significant overhead
 
-            //test (do t first since most likely to fail)
-            if (t >= targetMinT && t <= targetMaxT && 
-                xBuffer[po] >= targetMinX && xBuffer[po] <= targetMaxX &&
-                yBuffer[po] >= targetMinY && yBuffer[po] <= targetMaxY &&
-                zBuffer[po] >= targetMinZ && zBuffer[po] <= targetMaxZ) {
-                //success
-                bitSet.set(row);
-                //if (verbose) String2.log("row=" + row + " x=" + buffer[2] + 
-                //    " y=" + buffer[3] + " z=" + buffer[4] + " t=" + t + " ok=" + bitSet.get(row));
+                int t = (tBuffer[po + po] << 8) | (tBuffer[po + po + 1] & 255);
+
+                //test (do t first since most likely to fail)
+                if (t >= targetMinT && t <= targetMaxT && 
+                    xBuffer[po] >= targetMinX && xBuffer[po] <= targetMaxX &&
+                    yBuffer[po] >= targetMinY && yBuffer[po] <= targetMaxY &&
+                    zBuffer[po] >= targetMinZ && zBuffer[po] <= targetMaxZ) {
+                    //success
+                    bitSet.set(row);
+                    //if (verbose) String2.log("row=" + row + " x=" + buffer[2] + 
+                    //    " y=" + buffer[3] + " z=" + buffer[4] + " t=" + t + " ok=" + bitSet.get(row));
+                }
+                po++;
             }
-            po++;
+        } finally {
+            //close the file
+            try {inX.close();} catch (Exception e) {}
+            try {inY.close();} catch (Exception e) {}
+            try {inZ.close();} catch (Exception e) {}
+            try {inT.close();} catch (Exception e) {}
         }
-
-        //close the file
-        inX.close();
-        inY.close();
-        inZ.close();
-        inT.close();
 
         String2.log("PointSubsetScaled time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);
@@ -733,41 +677,43 @@ public class PointSubsetScaled {
         String dir = File2.getSystemTempDirectory();
         String name = "PointSubsetScaledTest1";
         PointSubsetScaled pointSubsetScaled = new PointSubsetScaled(dir + name + ".index", t);
-        pointSubsetScaled.constructorX(x);
-        pointSubsetScaled.constructorY(y);
-        pointSubsetScaled.constructorZ(z);
+        try {
+            pointSubsetScaled.constructorX(x);
+            pointSubsetScaled.constructorY(y);
+            pointSubsetScaled.constructorZ(z);
 
-        //get all
-        BitSet bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 1e8, 6e8);
-        Test.ensureEqual(bitSet.cardinality(), 6, "");
+            //get all
+            BitSet bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 1e8, 6e8);
+            Test.ensureEqual(bitSet.cardinality(), 6, "");
 
-        //2 x's
-        bitSet = pointSubsetScaled.subset(120, 120, -90, 90, 0, 5, -1, 1e10);
-        Test.ensureEqual(bitSet.cardinality(), 2, "");
-        Test.ensureTrue(bitSet.get(3), "");
-        Test.ensureTrue(bitSet.get(4), "");
+            //2 x's
+            bitSet = pointSubsetScaled.subset(120, 120, -90, 90, 0, 5, -1, 1e10);
+            Test.ensureEqual(bitSet.cardinality(), 2, "");
+            Test.ensureTrue(bitSet.get(3), "");
+            Test.ensureTrue(bitSet.get(4), "");
 
-        //1 y
-        bitSet = pointSubsetScaled.subset(-180, 180, -50, -40, 0, 5, 0, 1e10);
-        Test.ensureEqual(bitSet.cardinality(), 1, "");
-        Test.ensureTrue(bitSet.get(1), "");
+            //1 y
+            bitSet = pointSubsetScaled.subset(-180, 180, -50, -40, 0, 5, 0, 1e10);
+            Test.ensureEqual(bitSet.cardinality(), 1, "");
+            Test.ensureTrue(bitSet.get(1), "");
 
-        //1 z
-        bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 4, 7, 0, 1e10);
-        Test.ensureEqual(bitSet.cardinality(), 1, "");
-        Test.ensureTrue(bitSet.get(4), "");
+            //1 z
+            bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 4, 7, 0, 1e10);
+            Test.ensureEqual(bitSet.cardinality(), 1, "");
+            Test.ensureTrue(bitSet.get(4), "");
 
-        //1 t
-        bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 0, 1.5e8);
-        Test.ensureEqual(bitSet.cardinality(), 1, "");
-        Test.ensureTrue(bitSet.get(0), "");
+            //1 t
+            bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 0, 1.5e8);
+            Test.ensureEqual(bitSet.cardinality(), 1, "");
+            Test.ensureTrue(bitSet.get(0), "");
 
-        //nothing (time)
-        bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 0, 1);
-        Test.ensureEqual(bitSet.cardinality(), 0, "");
+            //nothing (time)
+            bitSet = pointSubsetScaled.subset(-180, 180, -90, 90, 0, 5, 0, 1);
+            Test.ensureEqual(bitSet.cardinality(), 0, "");
 
-        pointSubsetScaled.close();
-
+        } finally {
+            pointSubsetScaled.close();
+        }
 
         //***test no variation
         //setup for tests
@@ -777,25 +723,28 @@ public class PointSubsetScaled {
         t = new DoubleArray(new double[]{4,4});
         name = "PointSubsetScaledTest2";
         pointSubsetScaled = new PointSubsetScaled(dir + name + ".index", t);
-        pointSubsetScaled.constructorX(x);
-        pointSubsetScaled.constructorY(y);
-        pointSubsetScaled.constructorZ(z);
+        try {
+            pointSubsetScaled.constructorX(x);
+            pointSubsetScaled.constructorY(y);
+            pointSubsetScaled.constructorZ(z);
 
-        //get all
-        bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 0, 5, 0, 5);
-        Test.ensureEqual(bitSet.cardinality(), 2, "");
+            //get all
+            bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 0, 5, 0, 5);
+            Test.ensureEqual(bitSet.cardinality(), 2, "");
 
-        //reject based on x, y, z, t
-        bitSet = pointSubsetScaled.subset(5, 10, 0, 5, 0, 5, 0, 5);
-        Test.ensureEqual(bitSet.cardinality(), 0, "");
-        bitSet = pointSubsetScaled.subset(0, 5, -1, 0, 0, 5, 0, 5);
-        Test.ensureEqual(bitSet.cardinality(), 0, "");
-        bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 5, 10, 0, 5);
-        Test.ensureEqual(bitSet.cardinality(), 0, "");
-        bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 0, 5, -1, 0);
-        Test.ensureEqual(bitSet.cardinality(), 0, "");
+            //reject based on x, y, z, t
+            bitSet = pointSubsetScaled.subset(5, 10, 0, 5, 0, 5, 0, 5);
+            Test.ensureEqual(bitSet.cardinality(), 0, "");
+            bitSet = pointSubsetScaled.subset(0, 5, -1, 0, 0, 5, 0, 5);
+            Test.ensureEqual(bitSet.cardinality(), 0, "");
+            bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 5, 10, 0, 5);
+            Test.ensureEqual(bitSet.cardinality(), 0, "");
+            bitSet = pointSubsetScaled.subset(0, 5, 0, 5, 0, 5, -1, 0);
+            Test.ensureEqual(bitSet.cardinality(), 0, "");
 
-        pointSubsetScaled.close();
+        } finally {
+            pointSubsetScaled.close();
+        }
 
         //*** test lots of data
         //all construction takes about 12 s; subset() takes 1.6 s
@@ -803,22 +752,24 @@ public class PointSubsetScaled {
         IntArray ia = new IntArray(0, n);
         name = "PointSubsetScaledTest3";
         pointSubsetScaled = new PointSubsetScaled(dir + name + ".index", ia);
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetScaled.constructorX(ia); //0, 2, 4, ...
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetScaled.constructorY(ia); //0, 4, 8, ...
-        for (int i = 0; i <= n; i++)
-            ia.array[i] *= 2;
-        pointSubsetScaled.constructorZ(ia); //0, 8, 16, ...
+        try {
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetScaled.constructorX(ia); //0, 2, 4, ...
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetScaled.constructorY(ia); //0, 4, 8, ...
+            for (int i = 0; i <= n; i++)
+                ia.array[i] *= 2;
+            pointSubsetScaled.constructorZ(ia); //0, 8, 16, ...
 
-        //reject based on x, y, z, t
-        bitSet = pointSubsetScaled.subset(1,1, 2,2, 4,4, 8,8);
-        String2.log("  time should be ~ 1766");
-        Test.ensureEqual(bitSet.cardinality(), 77, "");
-
-        pointSubsetScaled.close();
+            //reject based on x, y, z, t
+            bitSet = pointSubsetScaled.subset(1,1, 2,2, 4,4, 8,8);
+            String2.log("  time should be ~ 1766");
+            Test.ensureEqual(bitSet.cardinality(), 77, "");
+        } finally {
+            pointSubsetScaled.close();
+        }
 
         //*** test .nc file
         //Table table = new Table();

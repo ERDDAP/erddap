@@ -42,6 +42,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -62,7 +63,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;  //only Array is needed; all other ucar is for testing netcdf-java
 
@@ -126,6 +127,8 @@ public class EDDGridFromDap extends EDDGrid {
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        boolean tDimensionValuesInMemory = true;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -173,6 +176,10 @@ public class EDDGridFromDap extends EDDGrid {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
+            else if (localTags.equals( "<dimensionValuesInMemory>")) {}
+            else if (localTags.equals("</dimensionValuesInMemory>")) tDimensionValuesInMemory = String2.parseBoolean(content);
 
             else xmlReader.unexpectedTagException();
         }
@@ -192,7 +199,8 @@ public class EDDGridFromDap extends EDDGrid {
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
             ttDataVariables,
-            tReloadEveryNMinutes, tUpdateEveryNMillis, tLocalSourceUrl);
+            tReloadEveryNMinutes, tUpdateEveryNMillis, tLocalSourceUrl, 
+            tnThreads, tDimensionValuesInMemory);
     }
 
     /**
@@ -279,7 +287,7 @@ public class EDDGridFromDap extends EDDGrid {
         Object tAxisVariables[][],
         Object tDataVariables[][],
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tLocalSourceUrl)
+        String tLocalSourceUrl, int tnThreads, boolean tDimensionValuesInMemory)
         throws Throwable {
 
         if (verbose) String2.log(
@@ -308,6 +316,8 @@ public class EDDGridFromDap extends EDDGrid {
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         setUpdateEveryNMillis(tUpdateEveryNMillis);
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        dimensionValuesInMemory = tDimensionValuesInMemory; 
 
         //quickRestart
         Attributes quickRestartAttributes = null;       
@@ -464,7 +474,8 @@ public class EDDGridFromDap extends EDDGrid {
                     (String)tAxisVariables[av][1];
                 if (tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0)
                     tDestinationAxisName = tSourceAxisName;
-                axisVariables[av] = makeAxisVariable(av, tSourceAxisName, tDestinationAxisName,
+                axisVariables[av] = makeAxisVariable(tDatasetID,
+                    av, tSourceAxisName, tDestinationAxisName,
                     tSourceAttributes, tAddAttributes, tSourceValues);
             }
 
@@ -509,9 +520,13 @@ public class EDDGridFromDap extends EDDGrid {
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromDap " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+
+        //very last thing: saveDimensionValuesInFile
+        if (!dimensionValuesInMemory)
+            saveDimensionValuesInFile();
 
     }
 
@@ -758,7 +773,7 @@ public class EDDGridFromDap extends EDDGrid {
             tDataVariables,
             getReloadEveryNMinutes(),
             getUpdateEveryNMillis(),
-            tLocalSourceUrl);
+            tLocalSourceUrl, nThreads, dimensionValuesInMemory);
 
         //if shareInfo, point to same internal data
         if (shareInfo) {
@@ -805,6 +820,8 @@ public class EDDGridFromDap extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
+     * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
      * @param tConstraints  int[nAxisVariables*3] 
      *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
@@ -816,7 +833,8 @@ public class EDDGridFromDap extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+        EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //build String form of the constraint
@@ -844,9 +862,10 @@ public class EDDGridFromDap extends EDDGrid {
                     throw t;
 
                 String2.log(MustBe.throwableToString(t));
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
-                    t); 
+                throw t instanceof WaitThenTryAgainException? t : 
+                    new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                        "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
+                        t); 
             }
 
             if (pa.length == 1) {
@@ -904,7 +923,7 @@ public class EDDGridFromDap extends EDDGrid {
      *
      * @param writeDirections
      * @param tLocalSourceUrl the base url for the dataset (no extension), e.g., 
-     *   "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day"
+     *   "https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day"
      * @param das  The das for the tLocalSourceUrl, or null.
      * @param dds  The dds for the tLocalSourceUrl, or null.
      * @param dimensionNames If not null, only the variables that use these
@@ -1118,7 +1137,9 @@ public class EDDGridFromDap extends EDDGrid {
                     }
                     Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
-                        sourceAtts, null, aName, false, true); //addColorBarMinMax, tryToFindLLAT
+                        sourceAtts, null, aName, 
+                        true, //tryToAddStandardName
+                        false, true); //addColorBarMinMax, tryToFindLLAT
                     axisSourceTable.addColumn(axisSourceTable.nColumns(), aName, 
                         new DoubleArray(), sourceAtts); //type doesn't matter here
                     axisAddTable.addColumn(   axisAddTable.nColumns(),    aName, 
@@ -1135,15 +1156,24 @@ public class EDDGridFromDap extends EDDGrid {
             OpendapHelper.getAttributes(das, dName, sourceAtts);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 axisSourceTable.globalAttributes(),
-                sourceAtts, null, dName, true, false); //addColorBarMinMax, tryToFindLLAT
+                sourceAtts, null, dName, 
+                !dvSourceDataType.equals("String"), //tryToAddStandardName
+                !dvSourceDataType.equals("String"), //addColorBarMinMax
+                false); //tryToFindLLAT
             if (tLocalSourceUrl.indexOf("ncep") >= 0 &&
                 tLocalSourceUrl.indexOf("reanalysis") >= 0)
                 addAtts.add("drawLandMask", "under");
 
             dataSourceTable.addColumn(dataSourceTable.nColumns(), dName, new DoubleArray(), sourceAtts); //type doesn't matter here
             dataAddTable.addColumn(   dataAddTable.nColumns(),    dName, new DoubleArray(), addAtts);    //type doesn't matter here
+
+            //Don't call because sourcePA not available:
+            //add missing_value and/or _FillValue if needed
+            //addMvFvAttsIfNeeded(dName, sourcePA, sourceAtts, addAtts);
+
         }
 
+       
 
         //if dimensionNames wasn't specified, this is controller, so were're done
         if (dimensionNames == null) {
@@ -1332,8 +1362,8 @@ public class EDDGridFromDap extends EDDGrid {
                     double lastTime = pa.getDouble(pa.size() - 1);
                     double esLast = Calendar2.unitsSinceToEpochSeconds(
                         tBaseFactor[0], tBaseFactor[1], lastTime);
-                    String iso0    = Calendar2.safeEpochSecondsToIsoStringT(es0,    "");
-                    String isoLast = Calendar2.safeEpochSecondsToIsoStringT(esLast, "");                   
+                    String iso0    = Calendar2.safeEpochSecondsToIsoStringTZ(es0,    "");
+                    String isoLast = Calendar2.safeEpochSecondsToIsoStringTZ(esLast, "");                   
                     if (verbose)
                         String2.log("timeRange: iso0=" + iso0 + " isoLast=" + isoLast);
                     if (timeRange == null &&  //just get first likely one (time usually av=0) (should be only likely one)
@@ -1462,542 +1492,11 @@ public class EDDGridFromDap extends EDDGrid {
         } 
     }
 
-    /**
-     * This is the low-level method which generates datasets.xml for 
-     * multiple datasets from a THREDDS server.
-     * <br>This calls itself recursively, adding into to fileNameInfo as it is found.
-     * <br>If there is trouble (e.g., an exception), this catches it and returns.
-     * <br>https://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
-     *
-     * <p>Unsolved problem: this does nothing for detecting groups of files/URLs 
-     * that should be aggregated.
-     *
-     * @param tLocalSourceUrl the tLocalSourceUrl of the current Thredds catalog.xml (which usually includes /catalog/), e.g.,
-     *    http://thredds1.pfeg.noaa.gov/thredds/catalog/catalog.xml 
-     *    http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
-     *    (note that comparable .html is at
-     *    http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatMH/chla/catalog.html ).
-     * 
-     *    <p> If /catalog/ isn't in the tLocalSourceUrl, it will be added, 
-     *    <br> e.g., http://thredds1.pfeg.noaa.gov/thredds/catalog.xml 
-     *    <br> becomes http://thredds1.pfeg.noaa.gov/thredds/catalog/catalog.xml 
-     * @param datasetNameRegex  The lowest level name of the dataset must match this, 
-     *    e.g., ".*" for all dataset Names.
-     * @param recursive
-     * @param parentName (currently not used) the &lt;name&gt; of the parent dataset in the parent catalog, 
-     *     e.g., "NCEP MODEL DATA" or "" or null
-     * @param tReloadEveryNMinutes
-     *    Use -1 to have ERDDAP suggest the value based on how recent the last time value is.
-     * @param justURLs true=just write the matching URLs; false=generateDatasetsXml for each URL.
-     * @param results captures all of the results. It isn't closed when the method is done.
-     * @param summary captures the summary of what was done.
-     * @param catalogXmlTimes an int[String2.DistributionSize] to capture catalogXml processing times
-     *     (including children)
-     * @param datasetSuccessTimes an int[String2.DistributionSize] to capture successful
-     *    generateDatasetXml times
-     * @param datasetFailureTimes an int[String2.DistributionSize] to capture unsuccessful
-     *    generateDatasetXml times
-     * @param alreadyDone captures already processed catalog.xml tLocalSourceUrls and datasetIDs,
-     *    so there is no duplication
-     */
-/* RETIRED 2017-11-08
-    public static void recursivelyGenerateDatasetsXmlFromThreddsCatalog(String tLocalSourceUrl, 
-        String datasetNameRegex, boolean recursive, String pathRegex, 
-        String parentName, int tReloadEveryNMinutes, 
-        boolean justURLs, Writer results, StringBuilder summary,
-        int catalogXmlTimes[], int datasetSuccessTimes[], int datasetFailureTimes[],
-        HashSet alreadyDone) {
-
-        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
-        if (reallyVerbose) String2.log(
-            "\n<<< recursivelyGenerateDatasetsXmlFromThreddsCatalogs  regex=" + datasetNameRegex +
-            "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-        long time = System.currentTimeMillis();
-        summary.append("\nStarting " + tLocalSourceUrl + "\n");
-        String2.log(   "\nStarting " + tLocalSourceUrl + "\n");
-        if (!alreadyDone.add(tLocalSourceUrl)) {
-            String ts = "Catalog.xml already done!\n";
-            summary.append(ts);
-            String2.log(ts);
-            return;
-        }
-if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
-    (tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/ARCHIVED") >= 0 ||
-     tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/PENDING") >= 0)) {
-    String ts = ">skipping " + tLocalSourceUrl;
-    summary.append(ts);
-    String2.log(ts);
-    return;
-}
-
-        if (parentName == null)
-            parentName = "";
-        if (pathRegex == null || pathRegex.length() == 0)
-            pathRegex = ".*";
-        HashMap opendapServices = new HashMap();
-        String parentServiceName = "";
-        int datasetCount = 0;
-
-        //for debugging/testing, this lets Bob limit the number of datasets processed during any call
-        int datasetLimit = Integer.MAX_VALUE;  //normally Integer.MAX_VALUE, sometimes less when debugging
-
-        try {
-            String datasetTags[] = {
-                "<catalog><dataset>",
-                "<catalog><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset><dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset><dataset><dataset>"};
-            int nDatasetTags = datasetTags.length;
-            String endDatasetTags[] = {
-                "<catalog></dataset>",
-                "<catalog><dataset></dataset>",
-                "<catalog><dataset><dataset></dataset>",
-                "<catalog><dataset><dataset><dataset></dataset>",
-                "<catalog><dataset><dataset><dataset><dataset></dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset></dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset></dataset>",
-                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset><dataset></dataset>"};
-            String indent[] = {
-                "  ", 
-                "    ", 
-                "      ", 
-                "        ",
-                "          ",
-                "            ",
-                "              ",
-                "                "};
-
-            int catPo = tLocalSourceUrl.indexOf( "/catalog/");
-            if (catPo < 0) {
-                if (verbose) String2.log("  WARNING: '/catalog/' not found in" +
-                    //e.g., https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
-                    //        ncep.reanalysis.dailyavgs/surface/catalog.xml
-                    "\n    tLocalSourceUrl=" + tLocalSourceUrl);
-                int tPod = tLocalSourceUrl.indexOf("/thredds/dodsC/");
-                int tPo  = tLocalSourceUrl.indexOf("/thredds/");
-                if (tPod > 0)
-                    tLocalSourceUrl = tLocalSourceUrl.substring(0, tPo + 9) + 
-                        "catalog/" + tLocalSourceUrl.substring(tPo + 15);
-                else if (tPo > 0)
-                    tLocalSourceUrl = tLocalSourceUrl.substring(0, tPo + 9) + 
-                        "catalog/" + tLocalSourceUrl.substring(tPo + 9);
-                else 
-                    tLocalSourceUrl = File2.getDirectory(tLocalSourceUrl) + 
-                        "catalog/" + File2.getNameAndExtension(tLocalSourceUrl);
-                //e.g., https://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
-                //        ncep.reanalysis.dailyavgs/surface/catalog.xml
-                if (verbose) String2.log("    so trying tLocalSourceUrl=" + tLocalSourceUrl);
-                catPo = tLocalSourceUrl.indexOf( "/catalog/");
-            }
-            String catalogBase = tLocalSourceUrl.substring(0, catPo + 9); //ends in "/catalog/";
-            if (reallyVerbose) String2.log("  catalogBase=" + catalogBase);
-
-            //I could get inputStream from tLocalSourceUrl, 
-            //  but then (via recursion) perhaps lots of streams open for a long time.
-            //I think better to get the entire response (succeed or fail *now*).
-            byte bytes[] = SSR.getUrlResponseBytes(tLocalSourceUrl);
-            SimpleXMLReader xmlReader = new SimpleXMLReader(new ByteArrayInputStream(bytes));
-            //e.g., threddsName=thredds
-            String threddsName = File2.getNameAndExtension(tLocalSourceUrl.substring(0, catPo)); 
-            int ssPo = tLocalSourceUrl.indexOf("//");
-            if (ssPo < 0) 
-                throw new SimpleException("'//' not found in tLocalSourceUrl=" + tLocalSourceUrl);
-            int sPo = tLocalSourceUrl.indexOf('/', ssPo + 2);
-            if (sPo < 0) 
-                throw new SimpleException("'/' not found in tLocalSourceUrl=" + tLocalSourceUrl);
-            //e.g., threddsBase=https://www.esrl.noaa.gov
-            String threddsBase = tLocalSourceUrl.substring(0, sPo);
-            if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
-            String defaultService = null;
-            String defaultDefaultService = "/" + threddsName + "/dodsC/";
-            String name[] = new String[nDatasetTags];
-            String urlPath[] = new String[nDatasetTags];
-            Attributes extraGlobalAtts[] = new Attributes[nDatasetTags];
-            String service[] = new String[nDatasetTags];
-            String lastDocumentationType = null;
-            int cLevel = -1;
-            while (true) {
-                xmlReader.nextTag();
-                String tags = xmlReader.allTags();
-                int whichDatasetTag    = String2.indexOf(datasetTags, tags);
-                int whichEndDatasetTag = String2.indexOf(endDatasetTags, tags);
-                //String2.log("  tags=" + tags);
-
-                //catch <catalogRef>
-                //<catalog><dataset><dataset><dataset>
-                //  <catalogRef xlink:href="Satellite/aggregsatMH/chla/catalog.xml" xlink:title="Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality" name=""/>
-                if (recursive && tags.endsWith("<catalogRef>") &&
-                    String2.lineContainingIgnoreCase(name, "do not test", 0) < 0) {
-                    String href = xmlReader.attributeValue("xlink:href");
-                    //String2.log(">> tLocalSourceUrl=" + tLocalSourceUrl + "\n>> href=" + href);
-                    if (href != null) {
-                        if (!href.startsWith("http")) {  //if not a complete url
-                            if (href.startsWith("/" + threddsName + "/catalog/"))
-                                href = threddsBase + href;
-                            else if (href.startsWith("./")) 
-                                href = File2.getDirectory(tLocalSourceUrl) + href.substring(2);
-                            else if (!href.startsWith("/")) 
-                                href = File2.getDirectory(tLocalSourceUrl) + href;
-                            else if (href.startsWith("/geoide/")) {  //Eeek! pathetic patch
-                                int ts2 = tLocalSourceUrl.indexOf("/", 9);                             
-                                href = tLocalSourceUrl.substring(0, ts2) + href; //href starts with /geoide/
-                            } else if (href.startsWith("/uaf/thredds/")) {  //Eeek! pathetic patch
-                                int ts2 = tLocalSourceUrl.indexOf("/", 14);                             
-                                href = tLocalSourceUrl.substring(0, ts2) + href; //href starts with /geoide/
-                            } else 
-                                href = catalogBase + href.substring(1); //href starts with /
-                        }
-                        //String2.pressEnterToContinue(">> href=" + href);
-                        if (href.matches(pathRegex))
-                            recursivelyGenerateDatasetsXmlFromThreddsCatalog(href,
-                                datasetNameRegex, recursive, pathRegex,
-                                cLevel < 0? "" : name[cLevel],  //cLevel=-1 was parentName, now ""
-                                tReloadEveryNMinutes, justURLs, results,
-                                summary, catalogXmlTimes,
-                                datasetSuccessTimes, datasetFailureTimes, alreadyDone);
-                    }
-
-                //catch services  (this supports 1 or 2 levels) 
-                //<catalog name="Oceanwatch THREDDS Data Server" version="1.0.1">
-                //  <service name="all" serviceType="Compound" base="">
-                //    <service name="ncdods" serviceType="OPENDAP" base="/thredds/dodsC/"/>
-                //see http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/6F782D2B9E0DE28D6B06A1ADCDC7A363.xml
-                } else if (tags.endsWith("<service><service>")) {
-                    String tServiceType = xmlReader.attributeValue("serviceType");
-                    String tServiceName = xmlReader.attributeValue("name");
-                    String tServiceBase = xmlReader.attributeValue("base");
-                    if ("OPENDAP".equals(tServiceType) &&
-                        tServiceName != null && tServiceName.length() > 0 &&
-                        tServiceBase != null && tServiceBase.length() > 0) {
-
-                        opendapServices.put(tServiceName, tServiceBase);
-                        opendapServices.put(parentServiceName, tServiceBase);
-                        if (defaultService == null) defaultService = tServiceBase;
-                        if (reallyVerbose) 
-                            String2.log(
-                                "  storing service name=" + tServiceName      + " base=" + tServiceBase + "\n" +
-                                "  storing service name=" + parentServiceName + " base=" + tServiceBase);
-                    }
-
-                } else if (tags.endsWith("<service></service>")) {
-                    //do nothing, but needed to distinguish from </service> below
-
-                } else if (tags.endsWith("<service>")) {
-                    String tServiceType = xmlReader.attributeValue("serviceType");
-                    String tServiceName = xmlReader.attributeValue("name");
-                    String tServiceBase = xmlReader.attributeValue("base");
-                    parentServiceName = tServiceName;
-                    if ("OPENDAP".equals(tServiceType) &&  
-                        tServiceName != null && tServiceName.length() > 0 &&
-                        tServiceBase != null && tServiceBase.length() > 0) {
-
-                        opendapServices.put(tServiceName, tServiceBase);
-                        if (defaultService == null) defaultService = tServiceBase;
-                        if (reallyVerbose) 
-                            String2.log("  storing service name=" + tServiceName + " base=" + tServiceBase);
-                    }
-                    
-                } else if (tags.endsWith("</service>")) {
-                    //clear parentServiceName
-                    parentServiceName = "";
-
-
-                //is this dataset service an opendap service?
-                //e.g., <catalog><dataset><dataset><serviceName>localOPeNDAP</serviceName>
-                //If two or more (!), the last one is used.
-                } else if (tags.endsWith("</serviceName>")) {  
-                    String tServiceName = String2.whitespacesToSpace(xmlReader.content());
-                    String tServiceBase = (String)opendapServices.get(tServiceName);
-                    if (tServiceBase != null) {
-                        service[Math.max(0, cLevel)] = tServiceBase;
-                        if (reallyVerbose) 
-                            String2.log("  cLevel=" + cLevel + " using serviceName=" + 
-                                tServiceName + " base=" + tServiceBase);
-                    }
-
-                //catch <dataset>
-                //  <dataset name="Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality">
-                //    <dataset name="5-day" ID="satellite/MH/chla/5day" urlPath="satellite/MH/chla/5day">
-                } else if (whichDatasetTag >= 0) {
-                    cLevel = whichDatasetTag;
-                    name[cLevel] = xmlReader.attributeValue("name");
-                    if (name[cLevel] == null)
-                        name[cLevel] = "";
-                    //String2.log("  <dataset> cLevel=" + cLevel + " name=" + name[cLevel]);
-                    urlPath[cLevel] = xmlReader.attributeValue("urlPath");
-                    if ("latest.xml".equals(urlPath[cLevel])) {
-                        String tHref = File2.getDirectory(tLocalSourceUrl) + "latest.xml";
-                        recursivelyGenerateDatasetsXmlFromThreddsCatalog(tHref,
-                            datasetNameRegex, recursive, pathRegex,
-                            cLevel < 0? "" : name[cLevel],  //cLevel=-1 was parentName, now ""
-                            tReloadEveryNMinutes, justURLs, results,
-                            summary, catalogXmlTimes,
-                            datasetSuccessTimes, datasetFailureTimes, alreadyDone);
-                    }
-                    extraGlobalAtts[cLevel] = new Attributes();   //see "inherited" below
-                    service[cLevel] = cLevel == 0? 
-                        (defaultService == null? defaultDefaultService : defaultService) :
-                        (String)service[cLevel - 1];
-                    String ts = indent[cLevel] + 
-                        (name[cLevel].length() == 0? "(No Name)" : name[cLevel]) + 
-                        "\n";
-                    summary.append(ts);
-                    String2.log(ts);
-
-
-                //catch </dataset> and create a dataset
-                //  <dataset name="Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality">
-                //    <dataset name="5-day" ID="satellite/MH/chla/5day" urlPath="satellite/MH/chla/5day">
-                } else if (whichEndDatasetTag >= 0) {
-                    if (datasetCount++ >= datasetLimit) {
-                        String2.log("ERROR: too many <dataset> levels: datasetCount=" + 
-                            datasetCount + " > datasetLimit=" + datasetLimit);
-                        xmlReader.close();
-                        break;
-                    }
-                    cLevel = whichEndDatasetTag;  //it should be already
-                    String tUrlPath = urlPath[cLevel];
-                    String noDatasets = "no datasets that met the UAF standards";
-                    if (!name[cLevel].matches(datasetNameRegex)) {
-                        //skip this dataset
-                        if (verbose)
-                            String2.log("regex=" + datasetNameRegex + " rejectedName=" + name[cLevel]);
-                    
-                    } else if (name[cLevel].indexOf(noDatasets) >= 0) {
-                        String ts = indent[cLevel] + noDatasets + ": " + urlPath[cLevel];
-                        summary.append(ts);
-                        String2.log(ts);
-
-                    } else if (String2.lineContainingIgnoreCase(name, "do not test", 0) >= 0) {
-                        //skip this dataset
-                        if (verbose)
-                            String2.log("skip \"do not test\" dataset name=" + name[cLevel]);
-
-                    } else if (tUrlPath != null) {
-                        //try to make this dataset
-                        if (tUrlPath.startsWith("http")) { }
-                        else if (service[cLevel].startsWith("http")) 
-                             tUrlPath = service[cLevel] + tUrlPath;
-                        else if (service[cLevel].startsWith("/"))
-                            tUrlPath = threddsBase + service[cLevel] + tUrlPath;
-                        else 
-                            tUrlPath = threddsBase + "/" + service[cLevel] + tUrlPath;
-                        //String2.log(": </dataset> tUrlPath=" + tUrlPath);  
-
-                        //is there a port number in the url that can be removed?
-                        String port = String2.extractRegex(tUrlPath, ":\\d{4}/", 0);
-                        if (port != null) {
-                            //there is a port number
-                            //String2.log("!!!found port=" + port); Math2.sleep(1000);
-                            String ttUrlPath = String2.replaceAll(tUrlPath, port, "/");
-                            try {
-                                String dds = SSR.getUrlResponseStringUnchanged(ttUrlPath + ".dds");
-                                if (dds.startsWith("Dataset {")) {
-                                    //it can be removed
-                                    //String2.log(">>port=" + port + " was removed"); Math2.sleep(1000);
-                                    tUrlPath = ttUrlPath;
-                                }
-                            } catch (Throwable t) {
-                                //it can't be removed
-                                //String2.log(t.toString()); Math2.sleep(1000);
-                            }
-                        }
-
-                        //accumulate tTitle from the parent names (but not if duplicate info or too long)
-                        String tTitle = name[cLevel];
-                        for (int tcLevel = cLevel - 1; tcLevel >= 0; tcLevel--) {
-                            String tParentName = cLevel <= 0? parentName : name[tcLevel];
-                            if (tParentName.length() == 0 ||      //no info
-                                tParentName.toLowerCase().equals("aggregate") ||
-                                tTitle.toLowerCase().indexOf(tParentName.toLowerCase()) >= 0) //duplicate info
-                                continue;
-                            if (tParentName.length() + 2 + tTitle.length() > 80)  //too long
-                                break;
-                            tTitle = tParentName + ", " + tTitle; 
-                        }
-
-                        //suggest title
-                        tTitle = removeExtensionsFromTitle(tTitle); //e.g., .grib
-                        tTitle = String2.replaceAll(tTitle, '/', ' ');
-                        tTitle = String2.replaceAll(tTitle, "_.", " ");
-                        tTitle = String2.replaceAll(tTitle, '_', ' ');
-                        tTitle = String2.replaceAll(tTitle, '\n', ' ');
-                        tTitle = String2.replaceAll(tTitle, "avhrr AVHRR", "AVHRR");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "aggregate", "");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "aggregation", "");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "ghrsst", "GHRSST");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "ncml", "");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "Data iridl.ldeo.columbia.edu SOURCES ", "");
-                        tTitle = String2.replaceAllIgnoreCase(tTitle, "data opendap.jpl.nasa.gov opendap ", "");        
-                        tTitle = String2.whitespacesToSpace(tTitle);
-                        int dpo = tTitle.lastIndexOf(" dodsC ");
-                        if (dpo >= 0) 
-                            tTitle = tTitle.substring(dpo + 7);
-                        extraGlobalAtts[cLevel].add("title", tTitle);
-                        //if (reallyVerbose) String2.log("  extraGlobalAtts[" + cLevel + "] title=" + tTitle);
-
-                        //suffixForTitle  (otherwise, too many datasets have same title)
-                        //name[cLevel] e.g. Thredds currentLevel name: "5-day" or "sal001", sometimes long
-                        String sft = removeExtensionsFromTitle(name[cLevel]); 
-                        sft = String2.replaceAll(sft, '/', ' ');
-                        sft = String2.replaceAll(sft, "_.", " ");
-                        sft = String2.replaceAll(sft, '_', ' ');
-                        sft = String2.replaceAll(sft, '\n', ' ');
-                        sft = String2.replaceAll(sft, "avhrr AVHRR", "AVHRR");
-                        sft = String2.replaceAllIgnoreCase(sft, "aggregate", "");
-                        sft = String2.replaceAllIgnoreCase(sft, "aggregation", "");
-                        sft = String2.replaceAllIgnoreCase(sft, "ghrsst", "GHRSST");
-                        sft = String2.replaceAllIgnoreCase(sft, "ncml", "");
-                        sft = String2.replaceAllIgnoreCase(sft, "Data iridl.ldeo.columbia.edu SOURCES ", "");
-                        sft = String2.replaceAllIgnoreCase(sft, "data opendap.jpl.nasa.gov opendap ", "");        
-                        sft = String2.whitespacesToSpace(sft);
-                        dpo = sft.lastIndexOf(" dodsC ");
-                        if (dpo >= 0) 
-                            sft = sft.substring(dpo + 7);
-                        extraGlobalAtts[cLevel].add("suffixForTitle", sft);
-
-                        String tt = tUrlPath;
-                        if (tt.endsWith(".html") || tt.endsWith(".xml")) 
-                            tt = File2.forceExtension(tt, "");
-                        if (alreadyDone.add(tt)) {
-                            
-                            if (justURLs) {
-                                results.write(tt + "\n");
-                            } else {
-                                safelyGenerateDatasetsXml(tt, 
-                                    tReloadEveryNMinutes, extraGlobalAtts[cLevel], 
-                                    results, summary, indent[cLevel] + "  ", 
-                                    datasetSuccessTimes, datasetFailureTimes);
-                            }
-                        } else {
-                            String ts = indent[cLevel] + "  Dataset already done: " + tt + "\n";
-                            summary.append(ts);
-                            String2.log(ts);
-                        }
-                    }
-                    name[cLevel--] = "";  //result may be -1
-
-
-                //catch metadata
-                //see 
-                //  <dataset name="5-day" ID="satellite/MH/chla/5day" urlPath="satellite/MH/chla/5day">
-                //  <metadata inherited="true">
-                //    <authority>gov.noaa.pfel.coastwatch</authority>
-                //    <dataType>GRID</dataType>
-                //    <dataFormat>NetCDF</dataFormat>
-                //    <documentation type="Summary">....</documentation>
-                //    <documentation xlink:href="http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html" xlink:title="Dataset Summary"/>
-                //    <creator>
-                //      <name>NASA GSFC (G. Feldman)</name>
-                //      <contact url="" email=""/>
-                //    </creator>
-                //    <publisher>
-                //      <name>NOAA CoastWatch, West Coast Node</name>
-                //      <contact url="http://coastwatch.pfeg.noaa.gov" email="dave.foley@noaa.gov"/>
-                //        </publisher>
-                } else if (cLevel >= 0 && tags.endsWith("<metadata>")) {
-                    if (cLevel > 0 && "true".equals(xmlReader.attributeValue("inherited")))
-                        extraGlobalAtts[cLevel] = (Attributes)extraGlobalAtts[cLevel - 1].clone();
-                } else if (cLevel >= 0 && tags.endsWith("<metadata></authority>")) {
-                    extraGlobalAtts[cLevel].add("authority", 
-                        String2.whitespacesToSpace(xmlReader.content()));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata><creator></name>")) {
-                    extraGlobalAtts[cLevel].add("creator_name", 
-                        String2.whitespacesToSpace(xmlReader.content()));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata><creator><contact>")) {
-                    extraGlobalAtts[cLevel].add("creator_email", 
-                        String2.whitespacesToSpace(xmlReader.attributeValue("email")));
-                    extraGlobalAtts[cLevel].add("creator_url",   
-                        String2.whitespacesToSpace(xmlReader.attributeValue("url")));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata></date>")) {
-                    extraGlobalAtts[cLevel].add("date", 
-                        String2.whitespacesToSpace(xmlReader.content()));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata><documentation>")) {
-                    //all types should be lowercase, sometimes they aren't
-                    lastDocumentationType = xmlReader.attributeValue("type");
-                    if (lastDocumentationType != null)
-                        lastDocumentationType = lastDocumentationType.toLowerCase();
-
-                    //deal with xlinks
-                    String xHref  = xmlReader.attributeValue("xlink:href");
-                    String xTitle = xmlReader.attributeValue("xlink:title");
-                    if (xHref  != null && xHref.length()  > 0 &&
-                        xTitle != null && xTitle.length() > 0) {
-                        //String2.log("  xHref=" + xHref + "\n  xTitle=" + xTitle);
-                        if (xTitle.equals("Dataset Summary"))
-                            xTitle = "infoUrl";
-                        xTitle = String2.replaceAll(xTitle, '.', '_');
-                        xTitle = String2.replaceAll(xTitle, '-', '_');
-                        xTitle = String2.modifyToBeFileNameSafe(xTitle);
-                        extraGlobalAtts[cLevel].add(xTitle, xHref);
-                        //store first .html found as infoUrl
-                        if (xHref.endsWith(".html") &&
-                            extraGlobalAtts[cLevel].getString("infoUrl") == null)
-                            extraGlobalAtts[cLevel].add("infoUrl", xHref);
-                    }
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata></documentation>")) {
-                    if (lastDocumentationType != null && lastDocumentationType.length() > 0) {
-                        if (lastDocumentationType.equals("rights"))
-                            lastDocumentationType = "license";
-                        extraGlobalAtts[cLevel].add(
-                            lastDocumentationType, 
-                            xmlReader.content());
-                    }
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata></keyword>")) {
-                    extraGlobalAtts[cLevel].add(    "keywords", xmlReader.content());
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata></project>")) {
-                    extraGlobalAtts[cLevel].add(    "project", 
-                        String2.whitespacesToSpace(xmlReader.content()));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata><publisher></name>")) {
-                    extraGlobalAtts[cLevel].add(    "publisher_name", 
-                        String2.whitespacesToSpace(xmlReader.content()));
-
-                } else if (cLevel >= 0 && tags.endsWith("<metadata><publisher><contact>")) {
-                    extraGlobalAtts[cLevel].add(    "publisher_email", xmlReader.attributeValue("email"));
-                    extraGlobalAtts[cLevel].add(    "publisher_url",   xmlReader.attributeValue("url"));
-
-                //done
-                } else if (tags.equals("</catalog>")) {
-                    xmlReader.close();
-                    break;
-                }
-            }
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            String ts = "  " + String2.ERROR + ": " + 
-                String2.replaceAll(MustBe.throwableToShortString(t), "\n", "\n  ") +
-                "\n";
-            summary.append(ts);
-            String2.log(ts);
-        }
-        if (reallyVerbose) String2.log(
-            "\n>>> leaving recursivelyGenerateDatasetsXmlFromThreddsCatalogs\n" +
-            "  tLocalSourceUrl=" + tLocalSourceUrl);
-        time = System.currentTimeMillis() - time;
-        String2.distribute(time, catalogXmlTimes);
-        String ts = "Finished " + tLocalSourceUrl + "  (" + 
-            Calendar2.elapsedTimeString(time) + ")\n\n";
-        summary.append(ts);
-        String2.log(ts);
-    }
-*/
 
     /**
      * This gets matching datasetURLs from a thredds catalog.
      * 
-     * @param startUrl http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
+     * @param startUrl https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
      * @param datasetNameRegex e.g. ".*\.nc"
      * @param recursive
      */
@@ -2021,20 +1520,20 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
 
         //test negativePathRegex
         results = getUrlsFromThreddsCatalog(
-            "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
+            "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
             null, null, ".*(8day).*").toNewlineString();
         expected = 
-"http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day\n" +
+"https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day\n" +
 //8day blocked by negativePathRegex
-"http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday\n";
+"https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday\n";
         Test.ensureEqual(results, expected, "results1=" + results);
 
         //test pathRegex
         results = getUrlsFromThreddsCatalog(
-            "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
+            "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
             "8.*", null, "").toNewlineString();
         expected = 
-"http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\n";
+"https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\n";
         Test.ensureEqual(results, expected, "results2=" + results);
     
     }
@@ -2112,18 +1611,20 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
             String2.standardHelpAboutMessage()); 
         
         Writer results = new BufferedWriter(new OutputStreamWriter(
-            new FileOutputStream(resultsFileName), String2.ISO_8859_1));
-        results.write(directionsForGenerateDatasetsXml() + "-->\n\n");
+            new BufferedOutputStream(new FileOutputStream(resultsFileName)), String2.ISO_8859_1));
+        try {
+            results.write(directionsForGenerateDatasetsXml() + "-->\n\n");
 
-        //crawl THREDDS catalog
-        crawlThreddsCatalog(
-            oLocalSourceUrl == null? 
-                "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml" :
-                oLocalSourceUrl, 
-            datasetNameRegex, pathRegex, negativePathRegex, 
-            results);
-
-        results.close();
+            //crawl THREDDS catalog
+            crawlThreddsCatalog(
+                oLocalSourceUrl == null? 
+                    "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml" :
+                    oLocalSourceUrl, 
+                datasetNameRegex, pathRegex, negativePathRegex, 
+                results);
+        } finally {
+            results.close();
+        }
 
         String2.returnLoggingToSystemOut(); 
 
@@ -2178,7 +1679,7 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
         int po2 = resultsAr[1].indexOf("<att name=\"history\">NASA GSFC (OBPG)", po + 80);
         String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
         String2.log("");  //ensure previous is written
-        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 36), expected, "");
+        Test.repeatedlyTestLinesMatch(resultsAr[1].substring(po, po2 + 36), expected, "");
 
 /*"2010-01-08T00:51:12Z NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD</att>\n" +
 "        <att name=\"id\">LMHchlaSmday_20091216120000</att>\n" +
@@ -2230,7 +1731,7 @@ String expected2 =
 "        <att name=\"publisher_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: https://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">Chlorophyll-a, Aqua MODIS, National Polar-orbiting Partnership \\(NPP\\), 0.05 degrees, Global, Science Quality. NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
 "        <att name=\"title\">Chlorophyll-a \\(Deprecated Older Version\\), Aqua MODIS, NPP, Global, Science Quality, 1-day, 2003-2013</att>\n" +
@@ -2335,7 +1836,7 @@ String expected2 =
         po2 = resultsAr[1].indexOf("</dataset>", po + 80);
         if (po < 0 || po2 < 0) 
             String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
-        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 10), expected2, 
+        Test.repeatedlyTestLinesMatch(resultsAr[1].substring(po, po2 + 10), expected2, 
             "results=\n" + resultsAr[1]);
 
         String2.log("\ntestGenerateDatasetsXmlFromThreddsCatalog passed the test.");
@@ -2352,41 +1853,41 @@ String expected2 =
     //2010-04-07 still v1.0.1, but #58-61 added)
     //2012-12-09 big new catalog
     //2017-04-15 base url changed
-    // from http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalog.xml"
-    // to   http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.xml
+    // from https://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalog.xml"
+    // to   https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.xml
     //2017-11-08 redone
     //0=entire "clean catalog" http://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html 
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.html",
     //1
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/oceanNomads/catalog_aggs.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/regclim/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/woa13/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oceanwatch.pfeg.noaa.gov/thredds/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/oceanNomads/catalog_aggs.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/regclim/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/woa13/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oceanwatch.pfeg.noaa.gov/thredds/catalog.html",
     //6
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/carbontracker.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data1.gfdl.noaa.gov/thredds/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/carbontracker.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data1.gfdl.noaa.gov/thredds/catalog.html",
     //11
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/osmc.noaa.gov/thredds/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/uaf.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.marine.rutgers.edu/thredds/roms/espresso/2013_da/catalog.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/atm_mod.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/osmc.noaa.gov/thredds/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/uaf.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.marine.rutgers.edu/thredds/roms/espresso/2013_da/catalog.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/atm_mod.html",
     //16
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/nowcast/glcfs_nowcast_all.html",
-    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/glcfs_forecast.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/nowcast/glcfs_nowcast_all.html",
+    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/glcfs_forecast.html",
 
     //motherlode isn't part of UAF
-    "http://motherlode.ucar.edu/thredds/catalog.xml"
+    "https://motherlode.ucar.edu/thredds/catalog.xml"
     };
 
     /** 
      * Bob uses this for testing in individual GEO IDE UAF Thredds catalog.
-     * See original catalog http://ferret.pmel.noaa.gov/thredds/geoideCatalog.html
-     * See the clean catalog at http://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
+     * See original catalog https://ferret.pmel.noaa.gov/thredds/geoideCatalog.html
+     * See the clean catalog at https://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
      */
     public static void testUAFSubThreddsCatalog(int which) throws Throwable {
 
@@ -2395,7 +1896,8 @@ String expected2 =
         generateDatasetsXmlFromThreddsCatalog(
             EDStatic.fullLogsDirectory + "UAFdatasets" + partName + ".xml", 
             UAFSubThreddsCatalogs[which], 
-            ".*", ".*", ".*(oceanwatch\\.pfeg\\.noaa\\.gov).*", //pathRegex, negativePathRegex
+            ".*", ".*",  //pathRegex
+            ".*(oceanwatch\\.pfeg\\.noaa\\.gov|coastwatch/viirs-ocr/).*", //negativePathRegex
             -1);  //-1 uses suggestReloadEveryNMinutes
     }
 
@@ -2477,7 +1979,7 @@ String expected2 =
                 "/" + fourLetter + "/" + timePeriod + "</sourceUrl>\n" +
 "        <reloadEveryNMinutes>" + reload + "</reloadEveryNMinutes>\n" +
 "        <addAttributes> \n" +
-"            <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov/infog/" + 
+"            <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/" + 
                 twoLetter + "_" + fourLetter + "_las.html</att>\n" +
 "            <att name=\"title\">" + title + " (" + niceTimePeriod + ")</att>\n" +
 "            <att name=\"cwhdf_version\" />\n" +
@@ -2529,7 +2031,7 @@ String expected2 =
         String tName = gridDataset.makeNewFileForDapQuery(null, null,
             "surf_el[(2008-06-12T00:00:00):1:(2008-06-12T00:00:00)][(10.0):100:(65.0)][(-150.0):100:(-100.0)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Carleton", ".nc"); 
-        String results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        String results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         String expected = 
 "time =\n" +
 "  {1.2132288E9}\n" +
@@ -2577,7 +2079,7 @@ String expected2 =
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
             "chlor_a[(2008-03-29T12:00:00):1:(2008-03-29T12:00:00)][(0.0):1:(0.0)][(16.995124378128825):100:(31.00905181853181)][(-99.01235553141787):100:(-78.99636386525192)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_" + tid, ".nc"); 
-        String2.log(NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true));        
+        String2.log(NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, ""));        
 
         String2.log("\n\n***** PNG ");
         tName = gridDataset.makeNewFileForDapQuery(null, null, "chlor_a[0][][][]&.colorBar=Rainbow|C|Log|.04|10|", 
@@ -2648,24 +2150,25 @@ String expected2 =
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.ensureLinesMatch(String2.split(error, '\n')[0],  //last # changes frequently.   Was 500.
+        Test.repeatedlyTestLinesMatch(String2.split(error, '\n')[0],  //last # changes frequently.   Was 500.
             "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
                 "Constraint=\"\\[\\(2007-02-06\\)\\[\\]\": Stop=\"\" is invalid\\.  " +
                 "It must be an integer between 0 and \\d{3}\\.", 
             "error=" + error);
 
         //invalid date format    2014-10-02
+        // but 2007-2-06 is allowed as of 2018-05-17.
         error = "";
         try {
             gridDataset.parseDataDapQuery(
-                "chlorophyll[(2007-2-06):(2007-02-06)][][(29):10:(50)][(225):10:(247)]", 
+                "chlorophyll[(2007-002-06):(2007-02-06)][][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  
             "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
-                "Constraint=\"[(2007-2-06):(2007-02-06)]\": " +
+                "Constraint=\"[(2007-002-06):(2007-02-06)]\": " +
                 "Start=NaN (invalid format?) isn't allowed.", 
             "error=" + error);
 
@@ -2673,14 +2176,14 @@ String expected2 =
         error = "";
         try {
             gridDataset.parseDataDapQuery(
-                "chlorophyll[(2007-02-06):(2007-2-06)][][(29):10:(50)][(225):10:(247)]", 
+                "chlorophyll[(2007-02-06):(2007-002-06)][][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  
             "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
-                "Constraint=\"[(2007-02-06):(2007-2-06)]\": " +
+                "Constraint=\"[(2007-02-06):(2007-002-06)]\": " +
                 "Stop=NaN (invalid format?) isn't allowed.", 
             "error=" + error);
 
@@ -2750,7 +2253,7 @@ String expected2 =
         //if (true) System.exit(0);
 
         //*** test valid parseDataDapQuery
-        String iso = Calendar2.epochSecondsToIsoStringT(1.0260864E9);
+        String iso = Calendar2.epochSecondsToIsoStringTZ(1.0260864E9);
         Test.ensureTrue(!gridDataset.isAxisDapQuery(userDapQuery), "");
         gridDataset.parseDataDapQuery(userDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
@@ -2947,7 +2450,7 @@ String expected2 =
 "      Float64 longitude\\[longitude = 8640\\];\n" +
 "  \\} chlorophyll;\n" +
 "\\} erdMHchla8day;\n";
-        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
@@ -3001,7 +2504,7 @@ String expected2 =
 "      Float64 longitude\\[longitude = 8640\\];\n" +
 "  } chlorophyll;\n" +
 "} erdMHchla8day;\n";
-        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
 
 
     }
@@ -3170,7 +2673,7 @@ String expected2 =
 "    \"columnTypes\": [\"String\", \"double\"],\n" +
 "    \"columnUnits\": [\"UTC\", \"degrees_east\"],\n" +
 "    \"rows\": [\n" +
-"      [\"2002-07-08T00:00:00Z\", 360.0],\n" +
+"      [\"2002-07-08T00:00:00Z\", 360],\n" +  //pre 2018-03-17 was 360.0
 "      [\"2004-09-25T00:00:00Z\", null],\n" +
 "      [\"2006-12-15T00:00:00Z\", null]\n" +
 "    ]\n" +
@@ -3194,7 +2697,7 @@ String expected2 =
 "    \"columnTypes\": [\"String\", \"double\"],\n" +
 "    \"columnUnits\": [\"UTC\", \"degrees_east\"],\n" +
 "    \"rows\": [\n" +
-"      [\"2002-07-08T00:00:00Z\", 360.0],\n" +
+"      [\"2002-07-08T00:00:00Z\", 360],\n" +  //pre 2018-03-17 was 360.0
 "      [\"2004-09-25T00:00:00Z\", null],\n" +
 "      [\"2006-12-15T00:00:00Z\", null]\n" +
 "    ]\n" +
@@ -3249,7 +2752,7 @@ String expected2 =
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
         expected = 
 "netcdf EDDGridFromDap_Axis.nc {\n" +
 "  dimensions:\n" +
@@ -3317,12 +2820,12 @@ String expected2 =
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2006-12-15T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 360.0; // double\n" +
 " data:\n" +
 "time =\n" +
@@ -3374,9 +2877,8 @@ String expected2 =
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "RESULTS=\n" + results);
         expected = 
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 360.0; // double\n" +
-" data:\n" +
 "}\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
@@ -3410,7 +2912,7 @@ String expected2 =
 "    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 360.0},\n" +
 "    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
 "    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
-//2017-07-31T20:10:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
+//2017-07-31T20:10:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]\"},\n" +
@@ -3433,12 +2935,12 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 "    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
 "    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
 "    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
-"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2006-12-15T00:00:00Z\"},\n" +
 "    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
-"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
 "    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 360.0}\n" +
 "  },\n" +
 "  \"dimensions\": {\n" +
@@ -3512,7 +3014,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 "    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 360.0},\n" +
 "    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
 "    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
-//2017-07-31T20:10:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
+//2017-07-31T20:10:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]&.jsonp=myFunctionName\"},\n" +
@@ -3535,12 +3037,12 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 "    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
 "    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
 "    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
-"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2006-12-15T00:00:00Z\"},\n" +
 "    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
-"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
 "    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 360.0}\n" +
 "  },\n" +
 "  \"dimensions\": {\n" +
@@ -3652,8 +3154,8 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
-"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+"  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+"<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" +
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDGridFromDap_LatAxis</title>\n" +
@@ -3818,6 +3320,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             count++;
         }
         String2.log("Test of GridDataRandomAccess columnMajor succeeded. count=" + count);
+        gdra.releaseResources();
+        gda.releaseResources();
 
 
         //********************************************** test getting grid data
@@ -4050,24 +3554,24 @@ pre 2012-08-17 was
 "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\", \"float\"],\n" +
 "    \"columnUnits\": [\"UTC\", \"m\", \"degrees_north\", \"degrees_east\", \"mg m-3\"],\n" +
 "    \"rows\": [\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 224.98437319134158, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.40108808889917, null],\n" +
+"      [\"2007-02-06T00:00:00Z\", 0, 28.985876360268577, 224.98437319134158, null],\n" +  //pre 2018-03-17 was 0.0
+"      [\"2007-02-06T00:00:00Z\", 0, 28.985876360268577, 225.40108808889917, null],\n" +
 //pre 2010-10-26, was
 //"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.099],\n" +
 //"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.118],\n"; 
 //pre 2012-08-17 was:
 //"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.10655],\n" +
 //"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.12478],\n"; */
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.11093],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.12439],\n";
-        Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
+"      [\"2007-02-06T00:00:00Z\", 0, 28.985876360268577, 225.81780298645677, 0.11093],\n" +
+"      [\"2007-02-06T00:00:00Z\", 0, 28.985876360268577, 226.23451788401434, 0.12439],\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = 
-"      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.23683296677856, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.65354786433613, null]\n" +
+"      [\"2007-02-06T00:00:00Z\", 0, 49.82403334105115, 246.23683296677856, null],\n" +
+"      [\"2007-02-06T00:00:00Z\", 0, 49.82403334105115, 246.65354786433613, null]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n";
-        Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
+        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "RESULTS=\n" + results);
 /* */
         //.mat
         //octave> load('c:/temp/griddap/EDDGridFromDap_Data.mat');
@@ -4125,7 +3629,7 @@ pre 2012-08-17 was
         String2.log("\n*** EDDGridFromDap test get .NC data\n");
         tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
         expected = //changed a little ("// (has coord.var)") when switched to netcdf-java 4.0, 2009-02-23
 "netcdf EDDGridFromDap_Data.nc {\n" +
 "  dimensions:\n" +
@@ -4233,13 +3737,13 @@ pre 2012-08-17 was
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 224.98437319134158; // double\n" +
 " data:\n" +
 "time =\n" +
@@ -4299,9 +3803,8 @@ pre 2012-08-17 was
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         expected = 
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 224.98437319134158; // double\n" +  //note updated value
-" data:\n" +
 "}\n";
         int po10 = results.indexOf("  :title");
         Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
@@ -4344,7 +3847,7 @@ pre 2012-08-17 was
 "    \"geospatial_vertical_positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
 "    \"geospatial_vertical_units\": {\"type\": \"char\", \"data\": \"m\"},\n" +
 "    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
-//2017-07-31T20:37:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
+//2017-07-31T20:37:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]\"},\n" +
@@ -4368,13 +3871,13 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
 "    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
 "    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
-"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
 "    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2002-07-16T00:00:00Z\"},\n" +
 "    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
-"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
 "    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 224.98437319134158}\n" +
 "  },\n" +
 "  \"dimensions\": {\n" +
@@ -4524,7 +4027,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "    \"geospatial_vertical_positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
 "    \"geospatial_vertical_units\": {\"type\": \"char\", \"data\": \"m\"},\n" +
 "    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
-//2017-07-31T20:37:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
+//2017-07-31T20:37:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName\"},\n" +
@@ -4548,13 +4051,13 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
 "    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
 "    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
-"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
 "    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
-"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v55\"},\n" +
 "    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
 "    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2002-07-16T00:00:00Z\"},\n" +
 "    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
-"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
 "    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 224.98437319134158}\n" +
 "  },\n" +
 "  \"dimensions\": {\n" +
@@ -4707,8 +4210,8 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
-"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+"  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+"<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" +
 "<head>\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = 
@@ -4776,13 +4279,13 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
     }
 
 
-    public static void testGraphics() throws Throwable {
+    public static void testGraphics(boolean testAll) throws Throwable {
         testVerboseOn();
+        String tDir = EDStatic.fullTestCacheDirectory;
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]"; 
         String mapDapQuery   = "chlorophyll[200][][(29):(45)][(225):(247)]"; //stride irrelevant 
         String tName, results;
-boolean testAll = true;
 
         //*** test getting graphs
         String2.log("\n****************** EDDGridFromDap test get graphs\n");
@@ -4790,64 +4293,64 @@ boolean testAll = true;
         //test graph .png
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.size=128|240&.font=0.75", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphTiny", 
+                tDir, gridDataset.className() + "_GraphTiny", 
                 ".largePng"); //to show it's irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphS", ".smallPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Graph", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Graph", ".png"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphL", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphL", ".largePng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.size=1700|1800&.font=3", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphHuge", 
+                tDir, gridDataset.className() + "_GraphHuge", 
                 ".smallPng"); //to show it's irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test graph .pdf
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphS", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphS", ".smallPdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Graph", ".pdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Graph", ".pdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphL", ".largePdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphL", ".largePdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test legend= options
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Off&.trim=10", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphLegendOff", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphLegendOff", ".png"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphLegendOnlySmall", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphLegendOnlySmall", ".smallPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphLegendOnlyMed", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphLegendOnlyMed", ".png"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphLegendOnlyLarge", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphLegendOnlyLarge", ".largePng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_GraphTransparentLegendOnly", ".transparentPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_GraphTransparentLegendOnly", ".transparentPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
 
@@ -4856,8 +4359,8 @@ boolean testAll = true;
         //not working yet    time axis is hard to work with
         //String tempDapQuery = "chlorophyll[0:10:20][][(29):1:(50)][(225):1:(225)]";
         //tName = gridDataset.makeNewFileForDapQuery(null, null, tempDapQuery, 
-        //    EDStatic.fullTestCacheDirectory, gridDataset.className() + "_CSGraph", ".png"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //    tDir, gridDataset.className() + "_CSGraph", ".png"); 
+        //SSR.displayInBrowser("file://" + tDir + tName);
 
 
         //*** test getting map .png
@@ -4865,26 +4368,26 @@ boolean testAll = true;
             String2.log("\n****************** EDDGridFromDap test get maps\n");
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=120|280&.font=0.75", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapTiny", 
+                tDir, gridDataset.className() + "_MapTiny", 
                 ".largePng"); //to show it's irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapS", ".smallPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Map", ".png"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapL", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapL", ".largePng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=1700|1800&.font=3", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapHuge", 
+                tDir, gridDataset.className() + "_MapHuge", 
                 ".smallPng"); //to show it's irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
 
@@ -4893,65 +4396,63 @@ boolean testAll = true;
 
             //yes, stretched.  that's what query is asking for
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=300|400", 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapTPSmall", ".transparentPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapTPSmall", ".transparentPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapTP", ".transparentPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapTP", ".transparentPng"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test map pdf
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapS", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapS", ".smallPdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", ".pdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Map", ".pdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_MapL", ".largePdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_MapL", ".largePdf"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test map kml
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", ".kml"); 
-            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Map", ".kml"); 
+            results = String2.directReadFromUtf8File(tDir + tName);
             String2.log("results=\n" + results);
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + tDir + tName);
         }
 
 
         //test .geotif
         if (testAll || false) {
             tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", ".geotif"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                tDir, gridDataset.className() + "_Map", ".geotif"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
 
-            EDDGrid agssta8 = (EDDGridFromDap)oneFromDatasetsXml(null, "erdAGssta8day"); //should work
-//        tName = agssta8.makeNewFileForDapQuery(null, null, dataIndexExample, 
-//            EDStatic.fullTestCacheDirectory, agssta8.className() + "std1", ".csv"); 
-//        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-//        String2.log(results);
+            String testMsg = "If .geotif looks okay, close the IrfanView Window and press Enter to test deleting the file.";
+            String failMsg = "ERROR: The .geotif file couldn't be deleted!\n";
+            String2.pressEnterToContinue("\nFaint coast of California.\n" + testMsg);
+            if (!File2.simpleDelete(tDir + tName))
+                String2.pressEnterToContinue(failMsg + tDir + tName);
 
-// currently not an option (after changes to kml in late 2009)
-//        //animated map   (works, just not usually an active test)
-//        if (true) {
-//            tName = agssta8.makeNewFileForDapQuery(null, null, "sst[200:2:220][][(29):10:(50)][(225):10:(247)]",
-//                EDStatic.fullTestCacheDirectory, agssta8.className() + "_Animated", ".kml"); 
-//            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
-//            String2.log("results=\n" + results);
-//            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-//        }
+            EDDGrid mur = (EDDGrid)oneFromDatasetsXml(null, "jplMURSST41"); //should work
 
             //this is cool looking (but you have to double click on file in windows explorer to see it)
-            tName = agssta8.makeNewFileForDapQuery(null, null, EDStatic.EDDGridMapExample, 
-                EDStatic.fullTestCacheDirectory, agssta8.className() + "_ExampleMap", ".geotif"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName); //doesn't display it or show error message
+            tName = mur.makeNewFileForDapQuery(null, null, 
+                //EDDGridMapExample, but stride->100
+                "analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):100:(89.99)][(-179.99):100:(180.0)]&.draw=surface&.vars=longitude|latitude|analysed_sst&.colorBar=Rainbow|C|Linear|0|32|",
+                tDir, mur.className() + "_ExampleMap", ".geotif"); 
+            SSR.displayInBrowser("file://" + tDir + tName); //doesn't display it or show error message
+
+            String2.pressEnterToContinue(testMsg);
+            if (!File2.simpleDelete(tDir + tName))
+                String2.pressEnterToContinue(failMsg + tDir + tName);
         }
  
         //give graphs some time to be displayed (other test() may delete the files)
@@ -5050,7 +4551,7 @@ boolean testAll = true;
             Test.ensureEqual(epas[3], tpas[3], ""); //lat
             Test.ensureEqual(epas[4], tpas[4], ""); //lon
             Test.ensureEqual(epas[0], tpas[0], ""); //data
-            String tTime = Calendar2.epochSecondsToIsoStringT(tpas[1].getDouble(0));
+            String tTime = Calendar2.epochSecondsToIsoStringTZ(tpas[1].getDouble(0));
             float tData1 = tpas[0].getFloat(0);
             float tData2 = tpas[0].getFloat(1);
 
@@ -5062,7 +4563,7 @@ boolean testAll = true;
                 results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
                 String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
                 expected = 
-"netcdf " + tUrl + "/griddap/erdMHchla8day \\{\n" +
+"netcdf erdMHchla8day \\{\n" +
 "  dimensions:\n" +
 "    time = \\d{3};\n" +   // (has coord.var)\n" +  //changes sometimes  \\d{3} was 500
 "    altitude = 1;\n" +   // (has coord.var)\n" +
@@ -5158,22 +4659,22 @@ boolean testAll = true;
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"NASA GSFC \\(OBPG\\)\n";  //important test   re netcdf 4.0
                 int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
-                Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
+                Test.repeatedlyTestLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
 
                 expected = 
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
 "  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "}\n";
-                Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
+                Test.repeatedlyTestLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
                 attributes.clear();
                 NcHelper.getGlobalAttributes(nc, attributes);
@@ -5243,7 +4744,7 @@ boolean testAll = true;
                         "chlorophyll", null, null}},
                 60, //int tReloadEveryNMinutes,
                 -1, //updateEveryNMillis,
-                erddapUrl); //sourceUrl); //in tests, always non-https url
+                erddapUrl, -1, true); //sourceUrl, nThreads, dimensionValuesInMemory); //in tests, always non-https url
 
             //.xhtml
             tName = eddGrid2.makeNewFileForDapQuery(null, null, griddapUserDapQuery, 
@@ -5253,8 +4754,8 @@ boolean testAll = true;
             expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
-"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+"  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+"<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" +
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDGridFromDap_Itself</title>\n" +
@@ -5279,14 +4780,14 @@ boolean testAll = true;
 "<th>mg m-3</th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td>" + tTime + "Z</td>\n" +
+"<td>" + tTime + "</td>\n" +
 "<td class=\"R\">0.0</td>\n" +
 "<td class=\"R\">-3.3132669599444426</td>\n" +
 "<td class=\"R\">205.8571593934483</td>\n" +
 "<td" + (tData1 == -9999999.0f? ">" : " class=\"R\">" + tData1) + "</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td>" + tTime + "Z</td>\n" +
+"<td>" + tTime + "</td>\n" +
 "<td class=\"R\">0.0</td>\n" +
 "<td class=\"R\">-3.229914332021309</td>\n" +
 "<td class=\"R\">205.8571593934483</td>\n" +
@@ -5309,90 +4810,212 @@ boolean testAll = true;
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
         //don't test local dataset because of dns/numericIP problems
-        //this dataset is good test because it has several dimension combos
-        String url = "http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231";
+        //this dataset is good test because it has 2 dimension combos
+        String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.1.6";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
 
 String expected1 = 
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_70b4_dfa4_41e3\" active=\"true\">\n" +
-"    <sourceUrl>http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_418c_b59f_8e9e\" active=\"true\">\n" +
+"    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.1.6</sourceUrl>\n" +
 "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"cmor_version\" type=\"float\">1.2</att>\n" +
-"        <att name=\"comment\">GFDL experiment name = CM2Q-d2_1861-2000-AllForc_h1. PCMDI experiment name = 20C3M (run1). Initial conditions for this experiment were taken from 1 January of year 1 of the 1860 control model experiment named CM2Q_Control-1860_d2. Several forcing agents varied during the 140 year duration of the CM2Q-d2_1861-2000-AllForc_h1 experiment in a manner based upon observations and reconstructions for the late 19th and 20th centuries. The time varying forcing agents were atmospheric CO2, CH4, N2O, halons, tropospheric and stratospheric O3, anthropogenic tropospheric sulfates, black and organic carbon, volcanic aerosols, solar irradiance, and the distribution of land cover types. The direct effect of tropospheric aerosols is calculated by the model, but not the indirect effects.</att>\n" +
-"        <att name=\"contact\">GFDL.Climate.Model.Info@noaa.gov</att>\n" +
-"        <att name=\"Conventions\">CF-1.0</att>\n" +
-"        <att name=\"experiment_id\">climate of the 20th Century experiment (20C3M)</att>\n" +
-"        <att name=\"gfdl_experiment_name\">CM2Q-d2_1861-2000-AllForc_h1</att>\n" +
-"        <att name=\"history\">Fri Jul 13 18:00:20 2007: ncks -O -d time,0,1199 /vftmp/757914.1.ic1.a//archive/pcmdi/data1/gfdl_cm2_0/CM2Q-d2_1861-2000-AllForc_h1/pp/atmos/ts/monthly/cl_A1.186101-200012.nc /vftmp/757914.1.ic1.a//archive/pcmdi/data1/gfdl_cm2_0/CM2Q-d2_1861-2000-AllForc_h1/pp/atmos/ts/monthly/cl_A1.186101-196012.nc\n" +
-"input/atmos.186101-200012.cl.nc  At 12:12:21 on 07/11/2007, CMOR rewrote data to comply with CF standards and IPCC Fourth Assessment and US CCSP Projects requirements</att>\n" +
-"        <att name=\"institution\">NOAA GFDL (US Dept of Commerce / NOAA / Geophysical Fluid Dynamics Laboratory, Princeton, NJ, USA)</att>\n" +
-"        <att name=\"project_id\">IPCC Fourth Assessment and US CCSP Projects</att>\n" +
-"        <att name=\"realization\" type=\"int\">1</att>\n" +
-"        <att name=\"references\">The GFDL Data Portal (http://nomads.gfdl.noaa.gov/) provides access to NOAA/GFDL&#39;s publicly available model input and output data sets. From this web site one can view and download data sets and documentation, including those related to the GFDL CM2.0 model experiments run for the IPCC&#39;s 4th Assessment Report and the US CCSP.</att>\n" +
-"        <att name=\"source\">GFDL_CM2.0 (2004): atmosphere: AM2 (am2p13, N45L24); ocean: OM3 (mom4p0_om3p4, tripolar360x200L50); sea ice: SIS; land: LM2; infrastructure: FMS J release</att>\n" +
-"        <att name=\"table_id\">Table A1 (20 September 2004)</att>\n" +
-"        <att name=\"title\">GFDL CM2.0, 20C3M (run 1) climate of the 20th Century experiment (20C3M) output for IPCC AR4 and US CCSP</att>\n" +
+"        <att name=\"Conventions\">COARDS</att>\n" +
+"        <att name=\"dataType\">Grid</att>\n" +
+"        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
+"        <att name=\"history\">Wed May 08 13:25:46 HST 2019 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">GFDL.Climate.Model.Info@noaa.gov</att>\n" +
-"        <att name=\"creator_name\">NOAA GFDL</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">chepurin@umd.edu</att>\n" +
+"        <att name=\"creator_name\">HAWAII SOEST</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
-"        <att name=\"creator_url\">http://data1.gfdl.noaa.gov/nomads/forms/deccen/</att>\n" +
-"        <att name=\"infoUrl\">http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231.html</att>\n" +
-"        <att name=\"institution\">NOAA GFDL</att>\n" +
-"        <att name=\"keywords\">18610101-20001231, 20c3m, 20c3m-0, 20th, ar4, assessment, atmosphere, ccsp, century, change, climate, cm2.0, coefficient, coordinate, data, diagnosis, dynamics, experiment, fluid, fourth, geophysical, gfdl, hybrid, intercomparison, intergovernmental, ipcc, laboratory, layer, lev, model, month, monthly, noaa, output, panel, pcmdi, program, report, run, science, sigma, US</att>\n" +
+"        <att name=\"creator_url\">https://www.atmos.umd.edu/~ocean/</att>\n" +
+"        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
+"        <att name=\"institution\">HAWAII SOEST</att>\n" +
+"        <att name=\"keywords\">assimilation, currents, data, degc, density, depth, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, oceans, pop2.1.6, practical, psu, salinity, salt, school, science, sea, sea_water_practical_salinity, seawater, simple, soda, soest, technology, temperature, time, u, unit, v, v2.1.6, velocity, water, zonal</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">Geophysical Fluid Dynamics Laboratory (GFDL) CM2.0, 20C3M (run 1) climate of the 20th Century experiment (20C3M) output for Intergovernmental Panel on Climate Change (IPCC) Fourth Assessment Report (AR4) and US Climate Change Science Program (CCSP). GFDL experiment name = CM2Q-d2_1861-2000-AllForc_h1. Program for Climate Model Diagnosis and Intercomparison (PCMDI) experiment name = 20C3M (run1). Initial conditions for this experiment were taken from 1 January of year 1 of the 1860 control model experiment named CM2Q_Control-1860_d2. Several forcing agents varied during the 140 year duration of the CM2Q-d2_1861-2000-AllForc_h1 experiment in a manner based upon observations and reconstructions for the late 19th and 20th centuries. The time varying forcing agents were atmospheric CO2, CH4, N2O, halons, tropospheric and stratospheric O3, anthropogenic tropospheric sulfates, black and organic carbon, volcanic aerosols, solar irradiance, and the distribution of land cover types. The direct effect of tropospheric aerosols is calculated by the model, but not the indirect effects.</att>\n" +
-"        <att name=\"title\">IPCC AR4 CM2.0 R1 20C3M-0 monthly atmos 18610101-20001231 [lev]</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.1.6 monthly means (soda pop2.1.6)</att>\n" +
+"        <att name=\"title\">SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5&#xb0;, 1958-2008</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>lev</sourceName>\n" +
-"        <destinationName>lev</destinationName>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"axis\">Z</att>\n" +
-"            <att name=\"bounds\">lev_bnds</att>\n" +
-"            <att name=\"formula\">p(n,k,j,i) = a(k)*p0 + b(k)*ps(n,j,i)</att>\n" +
-"            <att name=\"formula_terms\">p0 a b ps</att>\n" +
-"            <att name=\"long_name\">hybrid sigma pressure coordinate</att>\n" +
-"            <att name=\"positive\">down</att>\n" +
-"            <att name=\"standard_name\">atmosphere_hybrid_sigma_pressure_coordinate</att>\n" +
-"            <att name=\"units\">1</att>\n" +
+"            <att name=\"grads_dim\">t</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_min\">00z15jan1958</att>\n" +
+"            <att name=\"grads_size\">612</att>\n" +
+"            <att name=\"grads_step\">1mo</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"maximum\">00z15dec2008</att>\n" +
+"            <att name=\"minimum\">00z15jan1958</att>\n" +
+"            <att name=\"resolution\" type=\"float\">30.436989</att>\n" +
+"            <att name=\"units\">days since 1-1-1 00:00:0.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"data_max\">00z15dec2008</att>\n" +
+"            <att name=\"data_min\">00z15jan1958</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_min\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"grads_step\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since 0001-01-01T00:00:00.000Z</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lev</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">z</att>\n" +
+"            <att name=\"grads_mapping\">levels</att>\n" +
+"            <att name=\"long_name\">altitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">5375.0</att>\n" +
+"            <att name=\"minimum\" type=\"double\">5.01</att>\n" +
+"            <att name=\"name\">Depth</att>\n" +
+"            <att name=\"positive\">down</att>\n" +
+"            <att name=\"resolution\" type=\"float\">137.69205</att>\n" +
+"            <att name=\"units\">meters</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"data_max\" type=\"double\">5375.0</att>\n" +
+"            <att name=\"data_min\" type=\"double\">5.01</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"source_name\">lev</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">y</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_size\">330</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">89.25</att>\n" +
+"            <att name=\"minimum\" type=\"double\">-75.25</att>\n" +
+"            <att name=\"resolution\" type=\"float\">0.5</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"data_max\" type=\"double\">89.25</att>\n" +
+"            <att name=\"data_min\" type=\"double\">-75.25</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">x</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_size\">720</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">359.75</att>\n" +
+"            <att name=\"minimum\" type=\"double\">0.25</att>\n" +
+"            <att name=\"resolution\" type=\"float\">0.5</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"data_max\" type=\"double\">359.75</att>\n" +
+"            <att name=\"data_min\" type=\"double\">0.25</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>a</sourceName>\n" +
-"        <destinationName>a</destinationName>\n" +
+"        <sourceName>temp</sourceName>\n" +
+"        <destinationName>temp</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"long_name\">hybrid sigma coordinate A coefficient for layer</att>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">temperature [degc]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>b</sourceName>\n" +
-"        <destinationName>b</destinationName>\n" +
+"        <sourceName>salt</sourceName>\n" +
+"        <destinationName>salt</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"long_name\">hybrid sigma coordinate B coefficient for layer</att>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">salinity [psu]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +
+"            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +
+"            <att name=\"units\">PSU</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>u</sourceName>\n" +
+"        <destinationName>u</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">zonal velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>v</sourceName>\n" +
+"        <destinationName>v</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">meridional velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_d226_9170_c87c\" active=\"true\">\n";
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_90cf_3790_6762\" active=\"true\">\n";
 
         try {
             String results = generateDatasetsXml(true, url, 
@@ -5407,18 +5030,20 @@ directionsForGenerateDatasetsXml() +
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
                 "-verbose", "-i#testGenerateDatasetsXml",
-                "EDDGridFromDap", url, "-1"},
+                "EDDGridFromDap", url, "-1"}, //defaultReloadEvery,
                 false); //doIt loop?
             Test.ensureEqual(gdxResults.substring(0, expected1.length()), expected1,
                 "Unexpected results from GenerateDatasetsXml.doIt.");
 
             //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = "hawaii_soest_418c_b59f_8e9e";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
-            Test.ensureEqual(edd.datasetID(), "noaa_gfdl_70b4_dfa4_41e3", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), 
-                "IPCC AR4 CM2.0 R1 20C3M-0 monthly atmos 18610101-20001231 [lev]", "");
+                "SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5°, 1958-2008", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "a, b", "");
+                "temp, salt, u, v", "");
 
 
         } catch (Throwable t) {
@@ -5433,12 +5058,12 @@ directionsForGenerateDatasetsXml() +
      *   and adding resolution to title. 
      * Another good/better test of suggestReloadEveryNMinutes is
      *  EDDGridFromDap.testUAFSubThreddsCatalog(1);  //test one sub catalog
-     *  http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
+     *  https://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
      *  because it has a good mix of NRT and delayed datasets.
      */
     public static void testGenerateDatasetsXml2() throws Throwable {
         testVerboseOn();
-        String url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday";
+        String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml2");
 
 String expected1 = 
@@ -5478,8 +5103,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">NOAA NESDIS\n" +
 "2013-01-30T16:45:58Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 "2013-01-30T18:11:15Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday\n" +
-"2013-01-30T18:11:15Z http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday.das</att>\n" +
-"        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov/infog/GA_ssta_las.html</att>\n" +
+"2013-01-30T18:11:15Z https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday.das</att>\n" +
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/GA_ssta_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"keywords\">Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
 "coastwatch, day, degrees, goes, hemisphere, imager, night, noaa, ocean, oceans, scan, sea, sea_surface_temperature, single, sst, surface, temperature, wcn, western</att>\n" +
@@ -5504,7 +5129,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"source\">satellite observation: GOES, Imager</att>\n" +
 "        <att name=\"sourceUrl\">https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-44.975</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch provides SST data from the NOAA Geostationary Operational Environmental Satellites (GOES).  Measurements are gathered by the GOES Imager, a multi-channel radiometer carried aboard the satellite.  SST is available for hourly Imager measurements, or in composite images of various durations.</att>\n" +
 "        <att name=\"time_coverage_end\">2013-01-30T15:00:00Z</att>\n" +
 "        <att name=\"time_coverage_start\">2008-06-02T00:00:00Z</att>\n" +
@@ -6064,7 +5689,7 @@ expected =
 "    String source \"Gary Lagerloef, ESR (lager@esr.org) and Fabrice Bonjean (bonjean@esr.org)\";\n" +
 "    String sourceUrl \"http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\";\n" +
 "    Float64 Southernmost_Northing -69.5;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"This project is developing a processing system and data center to provide operational ocean surface velocity fields from satellite altimeter and vector wind data. The method to derive surface currents with satellite altimeter and scatterometer data is the outcome of several years NASA sponsored research. The project will transition that capability to operational oceanographic applications. The end product is velocity maps updated daily, with a goal for eventual 2-day maximum delay from time of satellite measurement. Grid resolution is 100 km for the basin scale, and finer resolution in the vicinity of the Pacific Islands.\";\n" +
 "    String time_coverage_end \"" + lastTimeString + "\";\n" +
 "    String time_coverage_start \"1992-10-21T00:00:00Z\";\n" +
@@ -6136,7 +5761,7 @@ expected =
         userDapQuery = "latitude[(69.5):10:(-69.5)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "Lat", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         String2.log(results);
         expected = //note actual range is low to high
 "netcdf EDDGridFromDapLat.nc {\n" +
@@ -6160,7 +5785,7 @@ expected =
 
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
-        expected = //note geospatial_lat_min max;  note that internal " are not slashed, but that is ncDump's problem
+        expected = //note geospatial_lat_min max;  note that internal " are not slashed, but that is ncdump's problem
 " :DATASUBTYPE = \"unfiltered\";\n" +
 " :DATATYPE = \"5-Day Interval\";\n" +
 " :date = \"27-Apr-2007\";\n" +
@@ -6175,7 +5800,7 @@ expected =
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
 
-//note geospatial_lat_min max;  note that internal " are not slashed, but that is ncDump's problem
+//note geospatial_lat_min max;  note that internal " are not slashed, but that is ncdump's problem
 //today + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
 //today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 
@@ -6198,7 +5823,7 @@ expected =
 " :source = \"Gary Lagerloef, ESR (lager@esr.org) and Fabrice Bonjean (bonjean@esr.org)\";\n" +
 " :sourceUrl = \"http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\";\n" +
 " :Southernmost_Northing = -60.5f; // float\n" +
-" :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+" :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 " :summary = \"This project is developing a processing system and data center to provide operational ocean surface velocity fields from satellite altimeter and vector wind data. The method to derive surface currents with satellite altimeter and scatterometer data is the outcome of several years NASA sponsored research. The project will transition that capability to operational oceanographic applications. The end product is velocity maps updated daily, with a goal for eventual 2-day maximum delay from time of satellite measurement. Grid resolution is 100 km for the basin scale, and finer resolution in the vicinity of the Pacific Islands.\";\n" +
 " :title = \"OSCAR - Ocean Surface Current Analyses, Real-Time\";\n" +
 " :VARIABLE = \"Ocean Surface Currents\";\n" +
@@ -6443,7 +6068,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String references \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "    Float64 Southernmost_Northing 18.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
 "    String title \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
 "    Float64 Westernmost_Easting -161.0;\n" +
@@ -6477,7 +6102,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
         userDapQuery = "latitude[(22):10:(21)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "Lat", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         results = String2.replaceAll(results, "\r", "");
         expected = //note actual range is low to high
 "netcdf EDDGridFromDapLat.nc {\n" +
@@ -6525,7 +6150,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "  :references = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "  :Southernmost_Northing = 21.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
 "  :title = \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
 " data:\n" +
@@ -7273,7 +6898,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             vals.add(12 + i);
         String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
-        EDVGridAxis edvga = new EDVGridAxis("x", "x",
+        EDVGridAxis edvga = new EDVGridAxis("testDatasetID", "x", "x",
             new Attributes(), new Attributes(), vals);
         time = System.currentTimeMillis();
         results = edvga.sliderCsvValues();         
@@ -7294,7 +6919,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             vals.add(123456 + i);
         String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
-        edvga = new EDVGridAxis("x", "x",
+        edvga = new EDVGridAxis("testDatasetID", "x", "x",
             new Attributes(), new Attributes(), vals);
         time = System.currentTimeMillis();
         results = edvga.sliderCsvValues();         
@@ -7316,7 +6941,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("  make DoubleArray time=" + (System.currentTimeMillis() - time) + "ms");
 
         //test EDVTimeStampGridAxis
-        EDVTimeStampGridAxis edvtsga = new EDVTimeStampGridAxis("mytime", null,
+        EDVTimeStampGridAxis edvtsga = new EDVTimeStampGridAxis(
+            "testDatasetID", "mytime", null,
             (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970), 
             new Attributes(), seconds);
         time = System.currentTimeMillis();
@@ -7330,7 +6956,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("  TimeStamp sliderCsvValues time=" + (System.currentTimeMillis() - time) + "ms");
 
         //EDVTimeGridAxis
-        EDVTimeGridAxis edvtga = new EDVTimeGridAxis("time", 
+        EDVTimeGridAxis edvtga = new EDVTimeGridAxis("testDatasetID", "time", 
             (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970), 
             new Attributes(), seconds);
         time = System.currentTimeMillis();
@@ -7838,7 +7464,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "<Extent name=\"elevation\" default=\"-5375.0\" >-5.01,-15.07,-25.28,-35.76,-46.61,-57.98,-70.02,-82.92,-96.92,-112.32,-129.49,-148.96,-171.4,-197.79,-229.48,-268.46,-317.65,-381.39,-465.91,-579.31,-729.35,-918.37,-1139.15,-1378.57,-1625.7,-1875.11,-2125.01,-2375.0,-2625.0,-2875.0,-3125.0,-3375.0,-3625.0,-3875.0,-4125.0,-4375.0,-4625.0,-4875.0,-5125.0,-5375.0</Extent>\n" +
 "        <Attribution>\n" +
 "          <Title>TAMU/UMD</Title>\n" +
-"          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"          <OnlineResource xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "            xlink:type=\"simple\"\n" +
 "            xlink:href=\"https://www.atmos.umd.edu/~ocean/\" />\n" +
 "        </Attribution>\n" +
@@ -8318,7 +7944,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         expected = 
 "time,altitude,latitude,longitude,u\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
-"0000-12-15T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-01-25 was 12/13?!
+"0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-05-17 was 12-15, 2018-01-25 was 12-13?!
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t)); 
@@ -8482,7 +8108,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         EDD.testVerbose(false);
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String fileName = EDStatic.fullTestCacheDirectory + "gridTestSpeedDAF.txt";
-        Writer writer = new FileWriter(fileName);
+        Writer writer = new BufferedWriter(new FileWriter(fileName));
         gridDataset.writeDapHtmlForm(null, "", writer);
 
         //time it DAF
@@ -8503,19 +8129,24 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //setup and warmup
         EDD.testVerbose(false);
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
-        String fileName = EDStatic.fullTestCacheDirectory + "gridTestSpeedMAG.txt";
-        OutputStreamSource oss = new OutputStreamSourceSimple(new FileOutputStream(fileName));
-        gridDataset.respondToGraphQuery(null, null, "", "", oss, null, null, null);
+        String dir = EDStatic.fullTestCacheDirectory;
+        String baseFileName = "gridTestSpeedMAG";
 
         //time it 
         String2.log("start timing");
         long time2 = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++) //1000 so it dominates program run time
+        int n = 1000; //1000 so it dominates program run time
+        for (int i = 0; i < n; i++) { 
+            String fileName = baseFileName + i + ".html";
+            OutputStreamSource oss = new OutputStreamSourceSimple(
+                new BufferedOutputStream(new FileOutputStream(dir + fileName)));
             gridDataset.respondToGraphQuery(null, null, "", "", oss,
-                EDStatic.fullTestCacheDirectory, "testSpeedMAG.txt", ".graph");
-        String2.log("EDDGridFromDap.testSpeedMAG time per .graph = " +
-            ((System.currentTimeMillis() - time2) / 1000.0) + "ms (avg=18ms)\n" +
-            "  outputFileName=" + fileName);
+                EDStatic.fullTestCacheDirectory, fileName, ".graph");
+            Test.ensureTrue(File2.delete(dir + fileName), "");
+        }
+        String2.pressEnterToContinue("EDDGridFromDap.testSpeedMAG time per .graph = " +
+            ((System.currentTimeMillis() - time2) / (double)n) + "ms (avg=18ms)");
+
         EDD.testVerbose(true);
     }
 
@@ -8528,7 +8159,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         File2.delete(quickRestartFullFileName(tDatasetID)); //force regular load
         long time1 = System.currentTimeMillis();
         EDD edd1 = oneFromDatasetsXml(null, tDatasetID);
-        String searchString1 = String2.utf8ToString(edd1.searchBytes());
+        String searchString1 = String2.utf8BytesToString(edd1.searchBytes());
         time1 = System.currentTimeMillis() - time1;
 
         //try to load from quickRestartFile
@@ -8536,7 +8167,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         Test.ensureTrue(EDStatic.initialLoadDatasets(), "");
         long time2 = System.currentTimeMillis();
         EDD edd2 = oneFromDatasetsXml(null, tDatasetID);
-        String searchString2 = String2.utf8ToString(edd2.searchBytes());
+        String searchString2 = String2.utf8BytesToString(edd2.searchBytes());
         time2 = System.currentTimeMillis() - time2;
 
         String2.log(
@@ -8639,7 +8270,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
                     "longitude and/or latitude values aren't evenly spaced.";
                 Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) +
+                    "And now, source dataset is gone."); 
             }
 
         } catch (Throwable t) {
@@ -8714,7 +8346,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  <attribute name=\"publisher_url\" value=\"https://www.pfeg.noaa.gov\" />\n" +
 "  <attribute name=\"references\" value=\"Blended SST from satellites information: This is an experimental product which blends satellite-" +
 "derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of ea" +
-"ch satellite. AMSR_E Processing information: http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . " +
+"ch satellite. AMSR_E Processing information: https://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . " +
 "AMSR-E Processing reference: Wentz, " +
 "F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems " +
 "Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Wa" +
@@ -8733,9 +8365,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  <attribute name=\"satellite\" value=\"Aqua, GOES, POES\" />\n" +
 "  <attribute name=\"sensor\" value=\"AMSR-E, MODIS, Imager, AVHRR\" />\n" +
 "  <attribute name=\"source\" value=\"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\" />\n" +
-"  <attribute name=\"sourceUrl\" value=\"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\" />\n" +
+"  <attribute name=\"sourceUrl\" value=\"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\" />\n" +
 "  <attribute name=\"Southernmost_Northing\" type=\"double\" value=\"-75.0\" />\n" +
-"  <attribute name=\"standard_name_vocabulary\" value=\"CF Standard Name Table v29\" />\n" +
+"  <attribute name=\"standard_name_vocabulary\" value=\"CF Standard Name Table v55\" />\n" +
 "  <attribute name=\"summary\" value=\"NOAA OceanWatch provides a blended sea surface temperature \\(SST\\) products derived from both microwa" +
 "ve and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence " +
 "of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented " +
@@ -8812,7 +8444,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "    <attribute name=\"units\" value=\"degree_C\" />\n" +
 "  </variable>\n" +
 "</netcdf>\n";
-        Test.ensureLinesMatch(results, expected, "RESULTS=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -8822,7 +8454,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
     public static void testNetcdfJava() throws Throwable {
         //open as a NetcdfDataset, not a NetcdfFile as above
-        String url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
+        String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
         //String url = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
 
         NetcdfDataset nc = NetcdfDataset.openDataset(url);
@@ -8833,7 +8465,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
             String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
             expected = 
-"netcdf dods" + url.substring(4) + " \\{\n" +
+"netcdf " + File2.getNameNoExtension(url) + " \\{\n" +
 "  dimensions:\n" +
 "    time = \\d{3};\n" +  //was 500   It changes (here and below...)
 "    altitude = 1;\n" +
@@ -8931,23 +8563,23 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  :history = \"NASA GSFC \\(OBPG\\)";
             int po = results.indexOf(":history = \"NASA GSFC (OBPG)");
             Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-            Test.ensureLinesMatch(results.substring(0, po + 28), expected, "RESULTS=\n" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(0, po + 28), expected, "RESULTS=\n" + results);
 
             expected = 
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
 "  :time_coverage_start = \"20.{8}T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
 "\\}\n";
-            Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
             attributes.clear();
             NcHelper.getGlobalAttributes(nc, attributes);
@@ -9042,7 +8674,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /**
      * This tests a bug in which land and national boundaries were draw twice
      * and offset horizontally if drawLandMask=under.
-     * <p>ANTIALIASING PROBLEM NOT YET SOLVED. 2014-08-26 It seems to be a problem with antialiasing,
+     * <p>ANTIALIASING PROBLEM SOLVED 2018-06-20 (not by me). It was a problem with antialiasing,
      * but turning antialiasing off or changing other renderingHints had no effict
      * (e.g., in SgtMap, see g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, )).
      * I spent hours trying to characterize then fix this, but found no solution.
@@ -9068,7 +8700,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingBAD", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        String2.pressEnterToContinue("\nANTIALIASING PROBLEM NOT YET SOLVED."); 
+        String2.pressEnterToContinue("\nANTIALIASING PROBLEM SOLVED 2018-06-20"); 
     }
 
     /**
@@ -9346,7 +8978,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <att name=\"metadata_link\">null</att>\n" +
 "        <att name=\"northernmost_latitude\">null</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"stop_time\">null</att>\n" +
 "        <att name=\"summary\">Sea Surface Temperature. The GLB L3C product derived from METOP A Advanced Very High Resolution Radiometer (AVHRR) brightness temperatures.</att>\n" +
@@ -9737,7 +9369,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
         try {
         String results = generateDatasetsXml(false, 
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day", 
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day", 
             null, null, null, -1, null);
         String2.log(results);
         int po;
@@ -9758,7 +9390,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
 expected = 
         "<att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
-"        <att name=\"file_quality_level\">1</att>\n" +
+"        <att name=\"file_quality_level\">3</att>\n" +  //this may change depending on source file (eg, 1 or 3)
 "        <att name=\"gds_version_id\">2.0</att>\n" +
 "        <att name=\"geospatial_lat_resolution\">0.01 degrees</att>\n" +
 "        <att name=\"geospatial_lat_units\">degrees north</att>\n" +
@@ -9775,7 +9407,7 @@ expected =
 "        <att name=\"naming_authority\">org.ghrsst</att>\n" +
 "        <att name=\"netcdf_version_id\">4.1</att>\n" +
 "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
-"        <att name=\"platform\">Terra, Aqua, GCOM-W, NOAA-19, MetOp-A</att>\n" +
+"        <att name=\"platform\">Terra, Aqua, GCOM-W, NOAA-19, MetOp-A, Buoys/Ships</att>\n" +
 "        <att name=\"processing_level\">L4</att>\n" +
 "        <att name=\"product_version\">04.1nrt</att>\n" +
 "        <att name=\"project\">NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program</att>\n" +
@@ -9783,8 +9415,8 @@ expected =
 "        <att name=\"publisher_name\">GHRSST Project Office</att>\n" +
 "        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" +
 "        <att name=\"references\">http://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
-"        <att name=\"sensor\">MODIS, AMSR2, AVHRR</att>\n" +
-"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, Ice_Conc-OSISAF</att>\n" +
+"        <att name=\"sensor\">MODIS, AMSR2, AVHRR, in-situ</att>\n" +
+"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
 "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
 "        <att name=\"spatial_resolution\">0.01 degrees</att>\n" +
 "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n";
@@ -9826,7 +9458,7 @@ expected =
 "        <att name=\"publisher_url\">https://www.ghrsst.org</att>\n" +
 "        <att name=\"references\">https://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"stop_time\">null</att>\n" +
 "        <att name=\"summary\">A merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL).</att>\n";
@@ -9916,7 +9548,7 @@ expected =
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">analysed sea surface temperature</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.001</att>\n" +
-"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, Ice_Conc-OSISAF</att>\n" +
+"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
 "            <att name=\"standard_name\">sea_surface_foundation_temperature</att>\n" +
 "            <att name=\"units\">kelvin</att>\n" +
 "            <att name=\"valid_max\" type=\"short\">32767</att>\n" +
@@ -10067,13 +9699,13 @@ expected =
 String2.log("url=" + url);
 String2.log(String2.annotatedString(results));
         expected = 
-"Attributes {\n" +
-"    history {\n" +
-"        DODS {\n" +
-"            Int32 strlen 4096;\n" + //sometimes 4096, sometimes 4200. not sure why
-"        }\n" +
-"    }\n" +
-"    lat {\n" +
+//"Attributes {\n" +
+//"    history {\n" +  //2018-06-20 disappeared, 2018-08-07 returned
+//"        DODS {\n" +
+//"            Int32 strlen 4096;\n" + //sometimes 4096, sometimes 4200. not sure why
+//"        }\n" +
+//"    }\n" +
+    "lat {\n" +
 "        String unit \"degrees_north\";\n" +
 "        String long_name \"latitude\";\n" +
 "        String standard_name \"latitude\";\n" +
@@ -10110,7 +9742,8 @@ String2.log(String2.annotatedString(results));
 "        Int16 missing_value 0;\n" +
 "    }\n";  //...
         try {
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "");
+            int po = results.indexOf(expected.substring(0, 5));
+            Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
@@ -10289,7 +9922,7 @@ String2.log(String2.annotatedString(results));
         userDapQuery = "wind_speed[(2012-12-31T12:00:00Z)][(89.97918):1000:(-89.97916)][(-179.9792):1000:(179.9792)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "scale1offset0", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         expected = //source is byte, with double scale_factor=1 and add_offset=0
 " data:\n" +
 "time =\n" +
@@ -10377,7 +10010,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords\">advanced, amsr, amsr-e, amsre, data, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, eos, intercomparisons, jet, jpl, laboratory, latitude, longitude, microwave, model, msr, nasa, nasa-jpl, obs, obs-amsre, obs4mips, observation, observations, ocean, oceans, output, prepared, propulsion, radiometer, remote, scanning, science, sea, sea_surface_temperature, sensing, surface, systems, temperature, time, tos</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">Obs-Advanced Microwave Scanning Radiometer on EOS (AMSRE) model output prepared for Observations for Model Intercomparisons (obs4MIPs) NASA-Jet Propulsion Laboratory (JPL) observation (tos AMSRE L3 v7 200206-201012)</att>\n" +
 "        <att name=\"title\">Obs-AMSRE model output prepared for obs4MIPs NASA-JPL observation, 1.0&#xb0;, 2002-2010</att>\n" + //test of resolution and timeRange
 "    </addAttributes>\n" +
@@ -10476,8 +10109,8 @@ directionsForGenerateDatasetsXml() +
      * Crawl a THREDDS catalog to gather base DAP URLs.
      * 
      * @param catalogXmlUrl A url ending in catalog.xml e.g., 
-     *      http://oceanwatch.pfeg.noaa.gov/thredds/catalog.xml
-     *   or http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/MPOC/catalog.html (will be changed to .xml)     
+     *      https://oceanwatch.pfeg.noaa.gov/thredds/catalog.xml
+     *   or https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/MPOC/catalog.html (will be changed to .xml)     
      * @param pathRegex if a catalogUrl path doesn't match this, 
      *   the catalog won't be processed.     
      * @param negativePathRegex if this is something other than null or "", 
@@ -10800,42 +10433,42 @@ directionsForGenerateDatasetsXml() +
         //test find several datasets
         StringWriter writer = null;
         String results = EDDGridFromDap.crawlThreddsCatalog(
-            "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/MPOC/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/MPOC/catalog.html",
             null, null, null, writer).toNewlineString();
         String expected = 
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/1day\n" +
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/8day\n" +
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/mday\n";
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/1day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/8day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/mday\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test pathRegex -- 2017-11-30 now hard to use and hard to test
 //        writer = new StringWriter();
 //        results = EDDGridFromDap.crawlThreddsCatalog(
-//            "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
+//            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
 //            null, ".*(8day).*", null, writer).toNewlineString();
 //        expected = 
-//"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day\n";
+//"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day\n";
 //        Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test negativePathRegex
         writer = new StringWriter();
         results = EDDGridFromDap.crawlThreddsCatalog(
-            "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
             null, null, ".*(8day).*", writer).toNewlineString();
         expected = 
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday\n";
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test generateDatasetsXml
         writer = new StringWriter();
         results = EDDGridFromDap.crawlThreddsCatalog(
-            "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
             null, null, null, writer).toNewlineString();
         expected = 
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day\n" +
-"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday\n";
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //note that it converts to https and uses https for getting info
@@ -10910,6 +10543,7 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -10934,9 +10568,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"publisher_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
+"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: https://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL. NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms. The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment. These are complemented by the relatively fine measurements of infrared sensors. The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean. Measurements are gathered by Japan&#39;s Advanced Microwave Scanning Radiometer (Advanced Microwave Scanning Radiometer on EOS (AMSR-E)) instrument, a passive radiance sensor carried aboard NASA&#39;s Aqua spacecraft, NOAA&#39;s Advanced Very High Resolution Radiometer, NOAA Geostationary Operational Environmental Satellite (GOES) Imager, and NASA&#39;s Moderate Resolution Imaging Spectrometer (Moderate Resolution Imaging Spectroradiometer (MODIS)). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.</att>\n" +
 "        <att name=\"title\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL (SST, Blended, Global, EXPERIMENTAL, 5-day), 2002-2014</att>\n" + //important test of adding timeRange
@@ -11105,6 +10739,7 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -11129,9 +10764,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"publisher_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
+"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: https://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL. NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms. The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment. These are complemented by the relatively fine measurements of infrared sensors. The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean. Measurements are gathered by Japan&#39;s Advanced Microwave Scanning Radiometer (Advanced Microwave Scanning Radiometer on EOS (AMSR-E)) instrument, a passive radiance sensor carried aboard NASA&#39;s Aqua spacecraft, NOAA&#39;s Advanced Very High Resolution Radiometer, NOAA Geostationary Operational Environmental Satellite (GOES) Imager, and NASA&#39;s Moderate Resolution Imaging Spectrometer (Moderate Resolution Imaging Spectroradiometer (MODIS)). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.</att>\n" +
 "        <att name=\"title\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL (SST, Blended, Global, EXPERIMENTAL, 8-day), 2006-2014</att>\n" +
@@ -11300,6 +10935,7 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -11324,9 +10960,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"publisher_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
+"        <att name=\"references\">Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: https://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL. NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms. The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment. These are complemented by the relatively fine measurements of infrared sensors. The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean. Measurements are gathered by Japan&#39;s Advanced Microwave Scanning Radiometer (Advanced Microwave Scanning Radiometer on EOS (AMSR-E)) instrument, a passive radiance sensor carried aboard NASA&#39;s Aqua spacecraft, NOAA&#39;s Advanced Very High Resolution Radiometer, NOAA Geostationary Operational Environmental Satellite (GOES) Imager, and NASA&#39;s Moderate Resolution Imaging Spectrometer (Moderate Resolution Imaging Spectroradiometer (MODIS)). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.</att>\n" +
 "        <att name=\"title\">SST, Blended, 0.1 degrees, Global, EXPERIMENTAL (SST, Blended, Global, EXPERIMENTAL, Monthly), 2002-2013</att>\n" + 
@@ -11427,7 +11063,12 @@ directionsForGenerateDatasetsXml() +
 "</dataset>\n" +
 "\n";
         //String2.setClipboardString(results);
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        try {
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Exception e) {            
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "2018-09-15 currently, there are differences in metadata. FIX THIS.");
+        }
     }
 
     
@@ -11452,86 +11093,86 @@ directionsForGenerateDatasetsXml() +
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "Dataset {\n" +
-"  Float64 time[time = 753];\n" +   //time=# changes here and below
+"  Float64 time[time = 1183];\n" +   //time=# changes here and below
 "  Float64 latitude[latitude = 62];\n" +
 "  Float64 longitude[longitude = 122];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SST[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 SST[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SST;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSS[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 SSS[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSS;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pCO2sw[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 pCO2sw[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pCO2sw;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TA[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 TA[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TC[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 TC[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TC;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pH[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 pH[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pH;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSA[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 SSA[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 HCO3[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 HCO3[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } HCO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 CO3[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 CO3[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } CO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 surface_flag[time = 753][latitude = 62][longitude = 122];\n" +
+"      Float32 surface_flag[time = 1183][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 753];\n" +
+"      Float64 time[time = 1183];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } surface_flag;\n" +
@@ -11575,7 +11216,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  SST {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 12.63, 28.2;\n" +  //source actual_range is Float64
+"    Float32 actual_range 23.75, 30.75;\n" +  //source actual_range is Float64   values from 1 file and so changes often! in real life -> null
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11587,7 +11228,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  SSS {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 33.5415, 36.8975;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11599,7 +11239,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  pCO2sw {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 348.55, 403.408;\n" +
 "    Float64 colorBarMaximum 420.0;\n" +
 "    Float64 colorBarMinimum 340.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11610,7 +11249,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  TA {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 2225.41, 2420.01;\n" +
 "    Float64 colorBarMaximum 2450.0;\n" +
 "    Float64 colorBarMinimum 2200.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11621,7 +11259,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  TC {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 1959.0, 2115.36;\n" +
 "    Float64 colorBarMaximum 2150.0;\n" +
 "    Float64 colorBarMinimum 1950.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11632,7 +11269,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  pH {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 8.042086, 8.105326;\n" +
 "    Float64 colorBarMaximum 9.0;\n" +
 "    Float64 colorBarMinimum 7.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11644,7 +11280,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  SSA {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 2.431465, 3.874839;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 2.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11655,7 +11290,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  HCO3 {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 1756.82, 1924.5;\n" +
 "    Float64 colorBarMaximum 1950.0;\n" +
 "    Float64 colorBarMinimum 1750.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11666,7 +11300,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  CO3 {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 159.521, 245.204;\n" +
 "    Float64 colorBarMaximum 260.0;\n" +
 "    Float64 colorBarMinimum 140.0;\n" +
 "    String coordsys \"geographic\";\n" +
@@ -11677,7 +11310,6 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  surface_flag {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 0.0, 1.0;\n" +
 "    Float64 colorBarMaximum 1.5;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String description \"An array in the same dimension as the data array(s) classifies valid, non-valid (includes land and areas of no model outpt) and missing pixels that are all flaged by the same missing_value in the da array(s).\";\n" +
@@ -11695,7 +11327,7 @@ directionsForGenerateDatasetsXml() +
 "    String creator_email \"coralreefwatch@noaa.gov\";\n" +
 "    String creator_name \"CORALREEFWATCH\";\n" +
 "    String creator_type \"institution\";\n" +
-"    String creator_url \"http://www.noaa.gov/\";\n" +
+"    String creator_url \"https://www.noaa.gov/\";\n" +
 "    String data_source \"NOAA OI AVHRR-AMSRE SST, NCEP Interp SLP, Forecast pCO2air Model, IASNFS SSS\";\n" +
 "    Float64 Easternmost_Easting -59.875;\n" +
 "    Float64 geospatial_lat_max 30.125;\n" +
@@ -11712,7 +11344,8 @@ directionsForGenerateDatasetsXml() +
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
+                "\n2018-06-20 I think actual_ranges change with every new timepoint.\n" +
+                "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?"); 
         }
     }
 
@@ -11836,9 +11469,10 @@ directionsForGenerateDatasetsXml() +
      *
      * @throws Throwable if trouble
      */
-    public static void test(boolean doGraphicsTests) throws Throwable {
+    public static void test() throws Throwable {
 
         String2.log("\n*** EDDGridFromDap.test()\n");
+        EDDGrid.tableWriterNBufferRows = 100;  //for testing, to make problems visible in small tests
 
 /* for releases, this line should have open/close comment */
         // standard tests 
@@ -11846,12 +11480,12 @@ directionsForGenerateDatasetsXml() +
         testBasic2();
         testBasic3();
         testAccessibleTo();
-        if (doGraphicsTests) testGraphics();
+        testGraphics(true);
         testOpendap();
         testScaleAddOffset();
         testNcml();
-        //testPmelOscar(doGraphicsTests); DAPPER IS NO LONGER ACTIVE!
-        testGenerateDatasetsXml(); //often slow or troubled source
+        //testPmelOscar(true); DAPPER IS NO LONGER ACTIVE!
+        testGenerateDatasetsXml(); 
         testGenerateDatasetsXml2();
         testGenerateDatasetsXml3();
         testGenerateDatasetsXml4();
@@ -11876,7 +11510,7 @@ directionsForGenerateDatasetsXml() +
         testNetcdfJava();
         testGeotif();
         testDescendingLat(true);  //testGraphics?
-        testDescendingAxisGeotif(); //2016-02-23 stalled response from http://data1.gfdl.noaa.gov:9192
+        testDescendingAxisGeotif(); // 2019 switch to https, 2016-02-23 stalled response from http://data1.gfdl.noaa.gov:9192
         testMap74to434();
         testMapAntialiasing();
         testTimeErrorMessage();

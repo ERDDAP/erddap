@@ -164,5 +164,11 @@ public class LinearTransform implements Transform {
 		mUPSlope = num/denom;
 		mUPYintercept = mPhysRange.start - (mPUSlope * mUserRange.start);
 	}
+
+  public void releaseResources() throws Exception {
+	mPhysRange = null;
+	mUserRange = null;
+  }
+
 }
 

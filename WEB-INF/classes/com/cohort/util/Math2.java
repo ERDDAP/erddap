@@ -55,6 +55,7 @@ public class Math2 {
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
      * These are MessageFormat-style strings, so any single quote ' must be escaped as ''. 
+     * !!! If you add another, add it to EDStatic.sendError(), which looks for these.
      */
     public static String memoryTooMuchData = 
         "Your query produced too much data.  Try to request less data.";
@@ -64,7 +65,7 @@ public class Math2 {
         "than is ever safely available in this Java setup ({1} MB).";
     public static String memoryArraySize = 
         "The request needs an array size ({0}) bigger than Java ever allows ({1}).";
-    /** gcSleep is used by gcAndWait() and a few other places.
+    /** shortSleep is used by gcAndWait() and a few other places.
      * 2013-12-06 If I use -verbose:gc with my localhost ERDDAP 
      * and hammer it with WMS requests, I can get memory use up to 500 MB (1.5 GB allocated).
      * GC (&lt; 0.02 s) runs often by itself and Full GC (&lt; 0.06 s) runs fairly often.
@@ -74,7 +75,7 @@ public class Math2 {
      * bigger tasks are usually given to computers with more, faster cores and more memory,
      * and smaller tasks are usually given to computers with fewer, slower cores and less memory.
      */
-    public static int gcSleep = 250; 
+    public static int shortSleep = 250; 
 
 
     /** If memory use jumps by this amount, a call to incgc will trigger a call
@@ -139,23 +140,10 @@ public class Math2 {
     };
 
     public static final double[] COMMON_MV9 = {
-        -99, -99.9, -99.99, -999, -9999, -99999, -999999, -9999999,
-         99,  99.9,  99.99,  999,  9999,  99999,  999999,  9999999};
+        -99, -99.9, -99.99, -999, -999.9, -9999, -99999, -999999, -9999999,
+         99,  99.9,  99.99,  999,  999.9,  9999,  99999,  999999,  9999999};
 
 
-    /**
-     * This returns the log base 10 of d.
-     * 
-     * @param d a double value
-     * @return the log base 10 of d.
-     *     d=0 returns Double.NEGATIVE_INFINITY. 
-     *     d&lt;0 returns NaN.
-     *     d=Double.POSITIVE_INFINITY returns Double.POSITIVE_INFINITY. 
-     *     d=NaN returns NaN. 
-     */
-    public static double log10(double d) {
-        return Math.log(d) / ln10; 
-    }
 
     /**
      * This returns the truncated part of a double.
@@ -226,7 +214,7 @@ public class Math2 {
         if (d == 0)
             return 0;
 
-        return (int)Math.floor(log10(Math.abs(d))); //safe since the exponent of a finite double is +/-308.
+        return (int)Math.floor(Math.log10(Math.abs(d))); //safe since the exponent of a finite double is +/-308.
     }
 
     /**
@@ -406,7 +394,7 @@ public class Math2 {
      * standardWaitTime is intended to give gc sufficient time to do its job, even under heavy use.
      */
     public static void gcAndWait() {
-        gc(gcSleep);
+        gc(shortSleep);
     }
 
     /**
@@ -997,11 +985,16 @@ public class Math2 {
         if (!Double.isFinite(degrees))
             return 0;
 
-        degrees = frac(degrees / 360) * 360;
-
-        //now it is -360..360
-        if (degrees < 0)
+        while (degrees < 0)
             degrees += 360;
+        while (degrees >= 360)
+            degrees -= 360;
+
+        //causes slight bruising
+        //degrees = frac(degrees / 360) * 360;
+        //now it is -360..360
+        //if (degrees < 0)
+        //    degrees += 360;
 
         return degrees;
     }
@@ -1056,13 +1049,14 @@ public class Math2 {
         if (!Double.isFinite(degrees))
             return 0;
 
-        degrees = frac(degrees / 360) * 360;
+        while (degrees < -180) degrees += 360;
+        while (degrees >= 180) degrees -= 360;
 
+        //this causes some bruising
+        //degrees = frac(degrees / 360) * 360;
         //now it is -360..360
-        if (degrees < -180)
-            degrees += 360;
-        if (degrees >= 180)
-            degrees -= 360;
+        //if (degrees < -180) degrees += 360;
+        //if (degrees >= 180) degrees -= 360;
 
         return degrees;
     }
@@ -1910,6 +1904,34 @@ public class Math2 {
     public static double finiteMax(double a, double b) {
         return Double.isNaN(a)? b :
                Double.isNaN(b)? a : Math.max(a,b);
+    }
+
+    /**
+     * This returns true if a == b. 
+     * This treats as true: NaN=NaN (which Java says is false), NEGATIVE_INFINITY=NEGATIVE_INFINITY, and 
+     * POSITIVE_INFINITY=POSITIVE_INFINITY. 
+     *
+     * @param a
+     * @param b
+     * @return true if a == b. 
+     */
+    public static boolean equalsIncludingNanOrInfinite(double a, double b) {
+        return a == b ||   //handles +infinity==+infinity and -infinity==-infinity
+               (Double.isNaN(a) && Double.isNaN(b));
+    }
+
+    /**
+     * This returns true if a == b. 
+     * This treats as true: NaN=NaN (which Java says is false), NEGATIVE_INFINITY=NEGATIVE_INFINITY, and 
+     * POSITIVE_INFINITY=POSITIVE_INFINITY. 
+     *
+     * @param a
+     * @param b
+     * @return true if a == b. 
+     */
+    public static boolean equalsIncludingNanOrInfinite(float a, float b) {
+        return a == b ||   //handles +infinity==+infinity and -infinity==-infinity
+               (Float.isNaN(a) && Float.isNaN(b));
     }
 
 

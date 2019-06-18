@@ -496,13 +496,15 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     } else {
       angle = -(float)angle_;
     }
-    RenderingHints oldRenderingHints = null;
+    //Object originalAntiAliasingHint = null;
     Graphics2D g2 = (Graphics2D)g;
-    if(angle != 0.0f || alwaysAntiAlias_) {
-      oldRenderingHints = g2.getRenderingHints();
-      g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                          RenderingHints.VALUE_ANTIALIAS_ON);
-    }
+    //if(angle != 0.0f || alwaysAntiAlias_) {
+      //originalAntiAliasingHint = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+      //2019-02-08 This no longer sets RenderingHints.VALUE_ANTIALIAS_ON. 
+      //  It uses current RenderingHints from the Graphics object.
+      //g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+      //                    RenderingHints.VALUE_ANTIALIAS_ON);
+    //}
     AffineTransform oldTransform = g2.getTransform();
     //    System.out.println("\n angle = " + angle + ", text = " + label_);
     //    System.out.println("oldTransform = " + oldTransform);
@@ -515,9 +517,9 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     //   System.out.println("newTransform = " + g2.getTransform());
     g2.drawString(as.getIterator(), 0, 0);
     g2.setTransform(oldTransform);
-    if(angle != 0.0f || alwaysAntiAlias_) {
-      g2.setRenderingHints(oldRenderingHints);
-    }
+    //if(originalAntiAliasingHint != null) {
+    //  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, originalAntiAliasingHint);
+    //}
     //
 //      g2.setStroke(normal);
 //      Color oldColor = g.getColor();
@@ -560,16 +562,18 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
 
   FontRenderContext getFontRenderContext(Graphics2D g2) {
     if(g2 == null) return null;
-    RenderingHints oldRenderingHints = null;
-    if(angle_ != 0.0 || alwaysAntiAlias_) {
-      oldRenderingHints = g2.getRenderingHints();
-      g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                          RenderingHints.VALUE_ANTIALIAS_ON);
-    }
+    //Object originalAntiAliasingHint = null;
+    //if(angle_ != 0.0 || alwaysAntiAlias_) {
+      //2019-02-08 This no longer sets RenderingHints.VALUE_ANTIALIAS_ON. 
+      //  It uses current RenderingHints from the Graphics object.
+      //originalAntiAliasingHint = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+    //  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+    //                      RenderingHints.VALUE_ANTIALIAS_ON);
+    //}
     FontRenderContext frc = g2.getFontRenderContext();
-    if(angle_ != 0.0 || alwaysAntiAlias_) {
-      g2.setRenderingHints(oldRenderingHints);
-    }
+    //if(originalAntiAliasingHint != null) {
+    //  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, originalAntiAliasingHint);
+    //}
     return frc;
   }
 }

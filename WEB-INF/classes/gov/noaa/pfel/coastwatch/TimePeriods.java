@@ -632,13 +632,13 @@ public class TimePeriods {
 
         //end time; return as date + time string
         if (timePeriodHours < 24)
-            return Calendar2.formatAsISODateTimeT(center) + "Z";
+            return Calendar2.formatAsISODateTimeTZ(center);
 
         if (timePeriodHours == 25) //25 hours
-            return Calendar2.formatAsISODateTimeT(center) + "Z (center of 25 hours)";
+            return Calendar2.formatAsISODateTimeTZ(center) + " (center of 25 hours)";
 
         if (timePeriodHours == 33) //33 hours
-            return Calendar2.formatAsISODateTimeT(center) + "Z (center of 33 hours)";
+            return Calendar2.formatAsISODateTimeTZ(center) + " (center of 33 hours)";
 
         if (timePeriodHours == 24) //1 day
             return Calendar2.formatAsISODate(start);

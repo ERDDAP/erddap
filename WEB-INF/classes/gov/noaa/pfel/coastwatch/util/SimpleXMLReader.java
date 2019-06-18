@@ -6,6 +6,7 @@ package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
+import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -45,44 +46,49 @@ public class SimpleXMLReader {
      * ends with "?&gt;", and it uses the encoding information.
      * Typical: "&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;".
      *
-     * @param inputStream   it need not be buffered
-     * @throws Exception if trouble
+     * @param inputStream   best if buffered
+     * @throws Exception if trouble and inputStream will be closed.
      */
     public SimpleXMLReader(InputStream inputStream) throws Exception {
-
-        StringBuilder sb = new StringBuilder();
-        int b = inputStream.read();
-        while (b != '>') {
-            sb.append((char)b);
-            b = inputStream.read();
-            if (b < 0) {
-                throwException(
-                    "Unexpected end of file while looking for end of first tag=\"" + sb.toString() + "\".");
-            } else if (b == '\n') lineNumber++;
-        }
-        sb.append((char)b);
-        if (sb.substring(0, 6).equals("<?xml ") && sb.charAt(sb.length() - 2) == '?') {
-        } else {
-            throwException("The first XML tag=\"" + sb.toString() + 
-                "\" should have started with \"<?xml \" and ended with \"?>\".");
-        }
-
-        //deal with encoding
-        String encoding = "";
-        int po1 = sb.indexOf("encoding=\"");
-        if (po1 > 0) {
-            po1 += 10;
-            int po2 = sb.indexOf("\"", po1);
-            if (po2 >= 0) {
-                encoding = sb.substring(po1, po2);
+        try {
+            StringBuilder sb = new StringBuilder();
+            int b = inputStream.read();
+            while (b != '>') {
+                sb.append((char)b);
+                b = inputStream.read();
+                if (b < 0) {
+                    throwException(
+                        "Unexpected end of file while looking for end of first tag=\"" + sb.toString() + "\".");
+                } else if (b == '\n') lineNumber++;
             }
+            sb.append((char)b);
+            if (sb.substring(0, 6).equals("<?xml ") && sb.charAt(sb.length() - 2) == '?') {
+            } else {
+                throwException("The first XML tag=\"" + sb.toString() + 
+                    "\" should have started with \"<?xml \" and ended with \"?>\".");
+            }
+
+            //deal with encoding
+            String encoding = "";
+            int po1 = sb.indexOf("encoding=\"");
+            if (po1 > 0) {
+                po1 += 10;
+                int po2 = sb.indexOf("\"", po1);
+                if (po2 >= 0) {
+                    encoding = sb.substring(po1, po2);
+                }
+            }
+           
+            //make the reader with the proper encoding
+            //String2.log("SimpleXMLReader constructor found encoding=" + encoding);
+            reader = new BufferedReader(encoding.length() == 0?
+                new InputStreamReader(inputStream) :
+                new InputStreamReader(inputStream, encoding));
+        } catch (Exception e) {
+            try {inputStream.close(); } catch (Exception e2) {}
+            reader = null;
+            throw e;
         }
-       
-        //make the reader with the proper encoding
-        //String2.log("SimpleXMLReader constructor found encoding=" + encoding);
-        reader = new BufferedReader(encoding.length() == 0?
-            new InputStreamReader(inputStream) :
-            new InputStreamReader(inputStream, encoding));
     }
 
     /**
@@ -188,8 +194,8 @@ public class SimpleXMLReader {
      * So this is normally called right after an end tag.
      *
      * @return the content from right before the end tag (or null if end-of-file).
-     *   Common entities (&amp;amp; &amp;lt; &amp;gt; &amp;quot;) are converted
-     *   to the original characters.
+     *   Unless content was in a CDATA, common entities (&amp;amp; &amp;lt; &amp;gt; &amp;quot;) 
+     *   are converted to the referenced characters.
      *   &amp;nbsp; is converted to a regular space.   
      *   All CR (#13) are removed. All LF (#10) are intact.
      *   If no content, this will be "" (not null).
@@ -337,7 +343,7 @@ public class SimpleXMLReader {
                     ch = (char)iCh;
                 }
 
-                //read to end of tag ">" (or end of comment tag "-->") (or end of cdata <![CDATA[  ]]>
+                //read to end of tag ">", or end of comment tag "-->", or end of cdata <![CDATA[  ]]> 
                 boolean done = false;
                 while (!done) {
                     iCh = reader.read(); 
@@ -345,7 +351,7 @@ public class SimpleXMLReader {
                     else if (iCh == 10) lineNumber++;
                     ch = (char)iCh;
                     while (ch != '>') {
-                        tagBuffer.append(ch);
+                        if (ch != '\r') tagBuffer.append(ch);
                         iCh = reader.read(); 
                         if (iCh < 0) throw new Exception("end of file"); 
                         else if (iCh == 10) lineNumber++;
@@ -358,9 +364,9 @@ public class SimpleXMLReader {
                         tagBuffer.substring(0, 3).equals("!--")) { //it is a comment
                         if (tagBuffer.substring(tagBuffer.length() - 2, tagBuffer.length()).equals("--")) {
                             //end of comment
-                            tagBuffer.setLength(0);
+                            tagBuffer.setLength(0); //throw away the content
                         } else {
-                            //not yet end of comment
+                            //It's the end of a tag within the comment. Not yet end of comment.
                             done = false; 
                         }
                     }
@@ -370,11 +376,18 @@ public class SimpleXMLReader {
                         tagBuffer.substring(0, 8).equals("![CDATA[")) { //it is CDATA
                         if (tagBuffer.substring(tagBuffer.length() - 2).equals("]]")) {
                             //end of CDATA, transfer to contentBuffer
-                            contentBuffer.append(tagBuffer.substring(8, tagBuffer.length() - 2));
+                            //don't include "![CDATA[" start or "]]" end
+                            tagBuffer.delete(0, 8);
+                            tagBuffer.setLength(tagBuffer.length() - 2);
+                            //defeat character decode below by encoding & as &amp; here
+                            String2.replaceAll(tagBuffer, "&", "&amp;");                            
+                            contentBuffer.append(tagBuffer); 
                             tagBuffer.setLength(0);
+                            //String2.log(">> found CDATA: " + contentBuffer.toString());
                         } else {                   
+                            //It's the end of a tag within the CDATA. Not yet end of CDATA.
                             tagBuffer.append('>');
-                            done = false; //not yet end of cdata
+                            done = false;
                         }
                     }
                 }
@@ -517,8 +530,8 @@ public class SimpleXMLReader {
         while (wi > 0 && Character.isWhitespace(contentBuffer.charAt(wi - 1)))
             wi--;
         endWhiteSpace = contentBuffer.substring(wi);
-        content = XML.decodeEntities(String2.trim(contentBuffer).toString());
-
+        String2.trim(contentBuffer);
+        content = XML.decodeEntities(contentBuffer.toString());
     }
 
     /**
@@ -557,17 +570,17 @@ public class SimpleXMLReader {
     }
 
     /**
-     * This closes the reader and sets it to null.  
+     * This closes the reader (and thus the inputStream) and sets it to null.  
      * Any further calls to getNextTag will throw an exception.
-     *
      */
     public void close() {
         try {
-            if (reader != null)
+            if (reader != null) {
                 reader.close();
+                reader = null;
+            }
         } catch (Exception e) {
         }
-        reader = null;
     }
 
     /** 
@@ -584,7 +597,7 @@ public class SimpleXMLReader {
      * Call this before reading the first textType tag (e.g., para or section).
      * See example of DocBook at http://docbook.org/docs/howto/howto.xml
      * This is a helper method for generateDatasetsXmlFromEML.
-     * see https://knb.ecoinformatics.org/#external//emlparser/docs/eml-2.1.1/./eml-text.html#TextType
+     * see https://knb.ecoinformatics.org/external//emlparser/docs/eml-2.1.1/eml-text.html#TextType
      *
      * <p>For now, this is imperfect. 
      * It doesn't catch whitespace at the beginning of content properly.
@@ -705,15 +718,18 @@ public class SimpleXMLReader {
     public static void testValidity(String fileName, String rootTag) throws Throwable {
         String2.log("\n*** SimpleXMLReader.testValidity...");
         SimpleXMLReader xmlReader = new SimpleXMLReader(
-            new FileInputStream(fileName), rootTag);
-        while (true) {
-            xmlReader.nextTag();
-            String at = xmlReader.allTags();
-            String2.log("line=" + xmlReader.lineNumber() + " " + at);
-            if (xmlReader.stackSize() == 1 && at.equals("</" + rootTag + ">")) {
-                xmlReader.close();
-                return;
+            File2.getDecompressedBufferedInputStream(fileName), rootTag);
+        try {
+            while (true) {
+                xmlReader.nextTag();
+                String at = xmlReader.allTags();
+                String2.log("line=" + xmlReader.lineNumber() + " " + at);
+                if (xmlReader.stackSize() == 1 && at.equals("</" + rootTag + ">")) {
+                    return;
+                }
             }
+        } finally {
+            xmlReader.close();
         }
     } 
 
@@ -824,7 +840,7 @@ expected =
             "  <level1 att1=value1 att2=\"value 2\" > \n level 1 \r&amp; <!-- comment < > -->text  \r\n" +
             "  </level1>\n" +
             "  <levela/>\n" +   //"empty tag" appears as two tags, begin and end
-            "  <levelb> stuff <![CDATA[cdata < > stuff]]></levelb>\n" + 
+            "  <levelb> stuff <![CDATA[cdata e.g., html content: <kbd>&amp;&gt;&lt;&something;</kbd> stuff]]></levelb>\n" + 
             "\n" +
             "\n" +
             "\n" +
@@ -875,7 +891,7 @@ expected =
         xmlReader.nextTag();
         Test.ensureEqual(xmlReader.stackSize(), 2, "e");
         Test.ensureEqual(xmlReader.topTag(), "/levelb", "e");
-        Test.ensureEqual(xmlReader.content(), "stuff cdata < > stuff", "e");
+        Test.ensureEqual(xmlReader.content(), "stuff cdata e.g., html content: <kbd>&amp;&gt;&lt;&something;</kbd> stuff", "e");
         Test.ensureEqual(xmlReader.allTags(), "<testr></levelb>", "e");
 
         xmlReader.nextTag();

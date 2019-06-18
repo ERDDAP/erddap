@@ -408,35 +408,36 @@ public class SdsWriter  {
                 tagList.size() + ").");
         DataOutputStream stream = new DataOutputStream( new BufferedOutputStream(
             new FileOutputStream(hdfFileName)));
-        int dataOffset = 0;
-        stream.writeInt(0x0e031301); //magic number
-        stream.writeShort((short)tagList.size());
-        stream.writeInt(0); //offset of next Data Descriptor Block
-        dataOffset = 10;
+        try {
+            int dataOffset = 0;
+            stream.writeInt(0x0e031301); //magic number
+            stream.writeShort((short)tagList.size());
+            stream.writeInt(0); //offset of next Data Descriptor Block
+            dataOffset = 10;
 
-        //write Data Descriptor block
-        dataOffset += tagList.size() * (2 + 2 + 4 + 4); //tagType, ref#, offset, length
-        for (int i = 0; i < tagList.size(); i++) {
-            //String2.log("i=" + i + " tag=" + tagList.get(i).toString());
-            HdfTag hdfTag = (HdfTag)tagList.get(i);
-            boolean isHdfNull = hdfTag instanceof HdfNull;
-            stream.writeShort(hdfTag.tagType);
-            stream.writeShort(hdfTag.referenceNumber);
-            stream.writeInt(isHdfNull? -1 : dataOffset);
-            int length = hdfTag.getLength(); 
-            stream.writeInt(isHdfNull? -1 : length);
-            dataOffset += length;
+            //write Data Descriptor block
+            dataOffset += tagList.size() * (2 + 2 + 4 + 4); //tagType, ref#, offset, length
+            for (int i = 0; i < tagList.size(); i++) {
+                //String2.log("i=" + i + " tag=" + tagList.get(i).toString());
+                HdfTag hdfTag = (HdfTag)tagList.get(i);
+                boolean isHdfNull = hdfTag instanceof HdfNull;
+                stream.writeShort(hdfTag.tagType);
+                stream.writeShort(hdfTag.referenceNumber);
+                stream.writeInt(isHdfNull? -1 : dataOffset);
+                int length = hdfTag.getLength(); 
+                stream.writeInt(isHdfNull? -1 : length);
+                dataOffset += length;
+            }
+                 
+            //write the Data Blocks
+            for (int i = 0; i < tagList.size(); i++) 
+                ((HdfTag)tagList.get(i)).writeData(stream);
+
+            //write one extra 0 byte
+            stream.write(0);
+        } finally {
+            stream.close();
         }
-             
-        //write the Data Blocks
-        for (int i = 0; i < tagList.size(); i++) 
-            ((HdfTag)tagList.get(i)).writeData(stream);
-
-        //write one extra 0 byte
-        stream.write(0);
-
-        //close the file
-        stream.close();
         String2.log("SdsWriter.create done");
     }
 

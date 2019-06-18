@@ -16,8 +16,10 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 /**
  * This is a command line program to run EDD.testDasDds.
@@ -28,7 +30,7 @@ public class DasDds {
 
     static String logFileName = EDStatic.fullLogsDirectory + "DasDds.log";
     static String outFileName = EDStatic.fullLogsDirectory + "DasDds.out";
-    FileWriter outFile = null;
+    Writer outFile = null;
 
     private void printToBoth(String s) throws IOException {
         String2.log(s);
@@ -65,7 +67,7 @@ public class DasDds {
      * If args is null or args.length is 0, this loops; otherwise it returns when done.
      *
      * @param args if args has values, they are used to answer the questions.
-     * @returns the contents of outFileName (will be "" if trouble)
+     * @return the contents of outFileName (will be "" if trouble)
      */
     public String doIt(String args[], boolean loop) throws Throwable {
         File2.safeRename(logFileName, logFileName + ".previous");
@@ -80,60 +82,64 @@ public class DasDds {
             logFileName,
             true, String2.logFileDefaultMaxSize);  //append
         String2.log("*** Starting DasDds " + 
-            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +        
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + " erddapVersion=" + EDStatic.erddapVersion + "\n" +        
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());  
-        outFile = new FileWriter(outFileName); //default charset
+        outFile = new BufferedWriter(new FileWriter(outFileName)); //default charset
+        try {
 
-        //delete the old log files (pre 1.48 names)
-        File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt");
-        File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt.previous");
+            //delete the old log files (pre 1.48 names)
+            File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt");
+            File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt.previous");
 
-        String datasetID = "";
-        if (args == null) 
-            args = new String[0];
+            String datasetID = "";
+            if (args == null) 
+                args = new String[0];
 
-        //look for -verbose (and remove it)
-        boolean verbose = false;  //actually controls reallyVerbose
-        int vi = String2.indexOf(args, "-verbose");
-        if (vi >= 0) {
-            String2.log("verbose=true");
-            verbose = true;
-            StringArray sa = new StringArray(args);
-            sa.remove(vi);
-            args = sa.toArray();
-        }
+            //look for -verbose (and remove it)
+            boolean verbose = false;  //actually controls reallyVerbose
+            int vi = String2.indexOf(args, "-verbose");
+            if (vi >= 0) {
+                String2.log("verbose=true");
+                verbose = true;
+                StringArray sa = new StringArray(args);
+                sa.remove(vi);
+                args = sa.toArray();
+            }
 
-        do {
-            //get the EDD type
-            //EDD.reallyVerbose = false;  //sometimes while testing
-            datasetID = get(args, 0, 
-                "\n*** DasDds ***\n" +
-                "This generates the DAS and DDS for a dataset and puts it in\n" +
-                outFileName + "\n" +
-                "Press ^D or ^C to exit at any time.\n\n" +
-                "Which datasetID",
-                datasetID);
-            if (datasetID == null) {
+            do {
+                //get the EDD type
+                //EDD.reallyVerbose = false;  //sometimes while testing
+                datasetID = get(args, 0, 
+                    "\n*** DasDds ***\n" +
+                    "This generates the DAS and DDS for a dataset and puts it in\n" +
+                    outFileName + "\n" +
+                    "Press ^D or ^C to exit at any time.\n\n" +
+                    "Which datasetID",
+                    datasetID);
+                if (datasetID == null) {
+                    String2.flushLog();
+                    outFile.flush();
+                    outFile.close();
+                    outFile = null;
+                    return String2.readFromFile(outFileName)[1];
+                }
+
+                try {
+                    printToBoth(EDD.testDasDds(true, datasetID, verbose)); //clearCache
+                } catch (Throwable t) {
+                    String2.log(
+                        "\n*** An error occurred while trying to load " + datasetID + ":\n" +
+                        MustBe.throwableToString(t));
+                }
                 String2.flushLog();
-                outFile.flush();
-                outFile.close();
-                return String2.readFromFile(outFileName)[1];
-            }
 
-            try {
-                printToBoth(EDD.testDasDds(true, datasetID, verbose)); //clearCache
-            } catch (Throwable t) {
-                String2.log(
-                    "\n*** An error occurred while trying to load " + datasetID + ":\n" +
-                    MustBe.throwableToString(t));
-            }
-            String2.flushLog();
+            } while (loop && args.length == 0);
 
-        } while (loop && args.length == 0);
-
-        outFile.flush();
-        outFile.close();
+            outFile.flush();
+        } finally {
+            outFile.close();
+        }
         String ret = String2.readFromFile(outFileName)[1];
         String2.returnLoggingToSystemOut();
         return ret;

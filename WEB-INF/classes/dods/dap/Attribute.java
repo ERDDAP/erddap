@@ -91,7 +91,7 @@ public class Attribute implements Cloneable {
      * Construct a container attribute.
      *
      * @param container the <code>AttributeTable</code> container.
-     * @deprecated Use the ctor with the name.
+     * @Deprecated Use the ctor with the name.
      */
     public Attribute(AttributeTable container) {
 	type = CONTAINER;

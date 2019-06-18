@@ -17,6 +17,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
+import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -48,6 +49,8 @@ public class TableWriterAll extends TableWriter {
 
     public static String attributeTo = "gathering data in TableWriterAll";
 
+    protected int randomInt = Math2.random(Integer.MAX_VALUE);
+
     //set by constructor
     protected String dir;
     protected String fileNameNoExt;
@@ -55,9 +58,8 @@ public class TableWriterAll extends TableWriter {
     //set firstTime
     //POLICY: because this class may be used in more than one thread,
     //each instance makes unique temp files names by adding randomInt to name.
-    protected int randomInt = Math2.random(Integer.MAX_VALUE);
-    protected DataOutputStream[] columnStreams;
-    protected long totalNRows = 0; 
+    protected volatile DataOutputStream[] columnStreams;
+    protected volatile long totalNRows = 0; 
 
     protected Table cumulativeTable; //set by writeAllAndFinish, if used
 
@@ -69,7 +71,8 @@ public class TableWriterAll extends TableWriter {
      *
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
-     * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
+     * @param tFileNameNoExt is the fileName-safe fileName without dir or extension 
+     *     (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
     public TableWriterAll(EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt) {
@@ -90,11 +93,11 @@ public class TableWriterAll extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
      * This implementation doesn't change them.
      *
-     * @param table  with destinationValues
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -110,13 +113,13 @@ public class TableWriterAll extends TableWriter {
         if (firstTime) {
             columnStreams = new DataOutputStream[nColumns];
             for (int col = 0; col < nColumns; col++) {
+                String tFileName = columnFileName(col);
                 columnStreams[col] = new DataOutputStream(new BufferedOutputStream(
-                    new FileOutputStream(
-                    dir + fileNameNoExt + "." + randomInt + "." + columnNames[col])));
+                    new FileOutputStream(tFileName)));
+                if (col == 0 && reallyVerbose) 
+                    String2.log("TableWriterAll nColumns=" + nColumns + 
+                        " colNames=" + table.getColumnNamesCSVString() + " col0 file=" + tFileName);
             }
-            if (reallyVerbose) 
-                String2.log("TableWriterAll col0 file=" + 
-                    dir + fileNameNoExt + "." + randomInt + "." + columnNames[0]);
         }
 
         //avoid gathering more data than can be processed
@@ -127,8 +130,10 @@ public class TableWriterAll extends TableWriter {
 
         //do everyTime stuff
         //write the data
-        for (int col = 0; col < nColumns; col++) 
+        for (int col = 0; col < nColumns; col++) {
+            Test.ensureNotNull(columnStreams[col], "columnStreams[" + col + "] is null! nColumns=" + nColumns);
             table.getColumn(col).writeDos(columnStreams[col]);
+        }
         totalNRows = newTotalNRows;
     }
 
@@ -149,7 +154,7 @@ public class TableWriterAll extends TableWriter {
         //String2.log("TableWriterAll.finish  n columnStreams=" + columnStreams.length);
         for (int col = 0; col < columnStreams.length; col++) {
             //close the stream
-            columnStreams[col].close();
+            try {if (columnStreams[col] != null) columnStreams[col].close();} catch (Exception e) {}
             //an attempt to solve File2.delete problem on these files: it couldn't hurt
             columnStreams[col] = null;  
         }
@@ -184,8 +189,11 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray pa = PrimitiveArray.factory(columnType(col), 
             (int)totalNRows, false);  //safe since checked above
         DataInputStream dis = dataInputStream(col);
-        pa.readDis(dis, (int)totalNRows); //safe since checked above
-        dis.close();
+        try {
+            pa.readDis(dis, (int)totalNRows); //safe since checked above
+        } finally {
+            dis.close();
+        }
         return pa;
     }
 
@@ -216,8 +224,11 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray pa = PrimitiveArray.factory(columnType(col), 
             (int)totalNRows, false);  //safe since checked above
         DataInputStream dis = dataInputStream(col);
-        pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
-        dis.close();
+        try {
+            pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
+        } finally { 
+            dis.close();
+        }
         return pa;
     }
 
@@ -236,9 +247,14 @@ public class TableWriterAll extends TableWriter {
      * @throws Throwable if trouble  (e.g., totalNRows > Integer.MAX_VALUE)
      */
     public DataInputStream dataInputStream(int col) throws Throwable {
-        DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(
-            dir + fileNameNoExt + "." + randomInt + "." + columnNames[col])));
+        DataInputStream dis = new DataInputStream(File2.getDecompressedBufferedInputStream(
+            columnFileName(col)));
         return dis;
+    }
+
+    public String columnFileName(int col) {
+        return dir + fileNameNoExt + "." + randomInt + "." + 
+            String2.encodeFileNameSafe(columnNames[col]);
     }
 
     /**
@@ -289,13 +305,25 @@ public class TableWriterAll extends TableWriter {
         try {
             cumulativeTable = null;
 
+            //delete columnStreams (if it was still saving data)
+            if (columnStreams != null) {
+                for (int col = 0; col < columnStreams.length; col++) {
+                    //close the stream
+                    try {if (columnStreams[col] != null) columnStreams[col].close();} catch (Exception e) {}
+                    //an attempt to solve File2.delete problem on these files: it couldn't hurt
+                    columnStreams[col] = null;  
+                }
+                columnStreams = null;
+            }
+
+            //delete the files
             if (columnNames == null)
                 return;
             int nColumns = nColumns();
             for (int col = 0; col < nColumns; col++) {
                 //deletion isn't essential or urgent.  
                 //We don't want to tie up the garbage collector thread.
-                File2.simpleDelete(dir + fileNameNoExt + "." + randomInt + "." + columnNames[col]);
+                File2.simpleDelete(columnFileName(col));
             }
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));

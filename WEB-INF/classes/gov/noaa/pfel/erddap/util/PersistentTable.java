@@ -140,8 +140,8 @@ public class PersistentTable {
      */
     public void close() throws IOException {
         if (raf != null) {
-            flush();
-            raf.close();
+            try {flush();    } catch (Exception e) {}
+            try {raf.close();} catch (Exception e) {}
             raf = null;
         }
     }
@@ -239,12 +239,12 @@ public class PersistentTable {
         int colWidth = columnWidths[col];
         if (s.length() > colWidth)
             s = s.substring(0, colWidth);
-        byte ar[] = String2.getUTF8Bytes(s);
+        byte ar[] = String2.stringToUtf8Bytes(s);
         //truncating is tricky because don't want to have 1/2 of a 2-byte char
         while (ar.length > colWidth) {
             if (reallyVerbose) String2.log("s=" + String2.annotatedString(s) + " will be shortened by 1 char.");
             s = s.substring(0, s.length() - 1); //remove last byte
-            ar = String2.getUTF8Bytes(s);
+            ar = String2.stringToUtf8Bytes(s);
         }
         if (ar.length < colWidth) {
             byte tar[] = new byte[colWidth];
@@ -616,7 +616,9 @@ public class PersistentTable {
         Test.ensureEqual(pt.readString(      14, 1), testS.substring(0, 18), "");
         pt.close();
 
-        String modes[] = {"rw", "rw", "rws", "rwd"};
+        // rws is rw + synchronized update of metadata
+        // rwd is rw + synchronized write to underlying storage device
+        String modes[] = {"rw", "rw", "rws", "rwd"}; 
         n = 1000;
         for (int mode = 0; mode < modes.length; mode++) {
             try {
@@ -625,6 +627,7 @@ public class PersistentTable {
                     new int[]{80, BINARY_DOUBLE_LENGTH, DOUBLE_LENGTH, BINARY_INT_LENGTH, INT_LENGTH});
                 pt.addRows(n);
                 if (mode == 1) String2.log("*** Note: 2nd rw test uses flush()");
+                //2018-09-13 times adjusted for Lenovo and Java 1.8
 
                 //string speed test
                 time = System.currentTimeMillis();
@@ -643,7 +646,7 @@ public class PersistentTable {
                 }
                 String2.log(modes[mode] + " time to read " + n + " Strings=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,16,47,15}[mode] + "ms)");  //java 1.6 15,16,47,15
+                    new int[]{15,16,15,15}[mode] + "ms)");  //java 1.6 15,16,47,15
 
                 //double speed test
                 time = System.currentTimeMillis();
@@ -652,7 +655,7 @@ public class PersistentTable {
                 if (mode == 1) pt.flush();
                 String2.log(modes[mode] + " time to write " + n + " doubles=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,15,234,327}[mode] + "ms)"); //java 1.6 16,15,219,188
+                    new int[]{16,130,96,109}[mode] + "ms)"); //java 1.6 16,15,219,188
 
                 time = System.currentTimeMillis();
                 for (int i = 0; i < n; i++) {
@@ -661,7 +664,7 @@ public class PersistentTable {
                 }
                 String2.log(modes[mode] + " time to read " + n + " doubles=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,32,16,0}[mode] + "ms)");  //java 1.6 15,32,16,0
+                    new int[]{15,32,0,16}[mode] + "ms)");  //java 1.6 15,32,16,0
 
                 //binary double speed test
                 time = System.currentTimeMillis();
@@ -670,7 +673,7 @@ public class PersistentTable {
                 if (mode == 1) pt.flush();
                 String2.log(modes[mode] + " time to write " + n + " binary doubles=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,31,1750,1872}[mode] + "ms)");  //java 1.6 16,31,1968,1687
+                    new int[]{31,125,770,772}[mode] + "ms)");  //java 1.6 16,31,1968,1687
 
                 time = System.currentTimeMillis();
                 for (int i = 0; i < n; i++) {
@@ -679,7 +682,7 @@ public class PersistentTable {
                 }
                 String2.log(modes[mode] + " time to read " + n + " binary doubles=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,16,31,31}[mode] + "ms)"); //java 1.6 16,31,16,16
+                    new int[]{16,16,16,16}[mode] + "ms)"); //java 1.6 16,31,16,16
 
                 //int speed test
                 time = System.currentTimeMillis();
@@ -688,7 +691,7 @@ public class PersistentTable {
                 if (mode == 1) pt.flush();
                 String2.log(modes[mode] + " time to write " + n + " ints=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,0,203,249}[mode] + "ms)"); //java 1.6 16,0,219,219
+                    new int[]{16,110,109,106}[mode] + "ms)"); //java 1.6 16,0,219,219
 
                 time = System.currentTimeMillis();
                 for (int i = 0; i < n; i++) {
@@ -697,7 +700,7 @@ public class PersistentTable {
                 }
                 String2.log(modes[mode] + " time to read " + n + " ints=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{0,16,0,0}[mode] + "ms)"); //java 1.6 0,16,0,0
+                    new int[]{0,16,0,4}[mode] + "ms)"); //java 1.6 0,16,0,0
 
                 //binary int speed test
                 time = System.currentTimeMillis();
@@ -706,7 +709,7 @@ public class PersistentTable {
                 if (mode == 1) pt.flush();
                 String2.log(modes[mode] + " time to write " + n + " binary int=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,15,1029,1108}[mode] + "ms)"); //java 1.6 15,1531,922
+                    new int[]{15,125,360,402}[mode] + "ms)"); //java 1.6 15,1531,922
 
                 time = System.currentTimeMillis();
                 for (int i = 0; i < n; i++) {
@@ -715,10 +718,10 @@ public class PersistentTable {
                 }
                 String2.log(modes[mode] + " time to read " + n + " binary int=" + 
                     (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{0,16,16,16}[mode] + "ms)");  //java 1.6 16,16,0
+                    new int[]{16,16,16,3}[mode] + "ms)");  //java 1.6 16,16,0
 
 
-                int expected[] = {109,109,3401,3681};
+                int expected[] = {141,693,1491,1615};
                 modeTime = System.currentTimeMillis() - modeTime;
                 String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
                     modeTime + "   (" + expected[mode] + "ms)"); 

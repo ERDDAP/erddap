@@ -27,7 +27,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -91,81 +91,36 @@ public class NcHelper  {
     }
 
     /**
-     * This generates a String with a dump of the contents of a netcdf file.
-     * WARNING: if the file is big, this can be very slow.
-     * WARNING: if printData is true, this may not show the data if there is lots of data. 
+     * This is an ncdump-like method.
      *
-     * @param fullFileName
-     * @param printData if true, all of the data values are printed, too.
-     * @return a String with the dump text
+     * @param cmd Use just one option: "-h" (header), "-c" (coord. vars),
+     *  "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
+     *  "-k" (type), "-t" (human-readable times)  -- These 2 options don't work.
      */
-    public static String dumpString(String fullFileName, 
-            boolean printData) throws Exception {
-        return lowDumpString(fullFileName, printData, "");
-    }
-
-        
-    /**
-     * This generates a String with a dump of the contents of a netcdf file.
-     * WARNING: if the file is big, this can be very slow.
-     * WARNING: if printData is true, this may not show the data if there is lots of data. 
-     *
-     * @param fullFileName
-     * @param varNames    a CSV list of varNames whose data you want printed
-     * @return a String with the dump text
-     */
-    public static String dumpString(String fullFileName, 
-          String varNames) throws Exception {
-        return lowDumpString(fullFileName, true, varNames);
-    }
-
-    /**
-     * This generates a String with a dump of the contents of a netcdf file.
-     * WARNING: if the file is big, this can be very slow.
-     * WARNING: if printData is true, this may not show the data if there is lots of data. 
-     *
-     * @param fullFileName  
-     * @param printData if true, all of the data values are printed, too.
-     * @param varNames csv list of variable names (or "")
-     * @return a String with the dump text
-     */
-    public static String lowDumpString(String fullFileName, 
-            boolean printData, String varNames) throws Exception {
-
-        StringWriter sw = new StringWriter();
-        //NCdumpW.printHeader(fullFileName, baos);
-        NCdumpW.print(fullFileName, sw, 
-            varNames.length() > 0? false : printData, 
-            false /*print only coord variables*/, 
-            fullFileName.endsWith(".ncml"), 
-            false, //strict
-            String2.replaceAll(varNames, ',', ';'), 
-            null /*cancel*/);
-        String s = sw.toString();
-
-        //remove the directory name from the string
-        //These headers are used by the HTTP GET system and so are seen
-        //by users, so they should not have directory info (on first line)
-        //e.g., netcdf /u00/cwatch/cwexperimental/private/PTS_PMBcrunS1dayAverages_x-135_X-105_y22_Y50_z6_Z6_t20061026000000_T20061026000000.nc {
-        //because users would know where the files are (which is bad for some files
-        //like SeaWiFS).
-        int nPo = s.indexOf('\n');
-        if (nPo > 0) {
-            String firstLine = s.substring(0, nPo);
-            int slash1 = firstLine.indexOf('/');
-            if (slash1 >= 2 && String2.isLetter(firstLine.charAt(slash1 - 2)) && 
-                firstLine.charAt(slash1 - 1) == ':')
-                slash1 -= 2;
-            int slash2 = firstLine.lastIndexOf('/');
-            if (slash1 >= 1 && slash2 >= 0) 
-                s = s.substring(0, slash1) + s.substring(slash2 + 1);
+     public static String ncdump(String fileName, String cmd) throws Exception{
+        NetcdfFile nc = null;
+        try {  
+            nc = openFile(fileName);
+            return ncdump(nc, cmd);
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            return "Unable to open file or file not .nc-compatible.";
+        } finally {
+            try { nc.close(); } catch (Throwable t2) {}
         }
+     }
 
-        //added with switch to netcdf-java 4.0
-        s = decodeNcDump(s);
-
-        return s;
-    }
+     public static String ncdump(NetcdfFile nc, String cmd) throws Exception{
+        try {  
+            StringWriter sw = new StringWriter();
+            //-vall is NCdumpW version of default for ncdump
+            NCdumpW.print(nc, String2.isSomething(cmd)? cmd : "-vall", sw, null); 
+            return decodeNcDump(sw.toString());
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            return "Error while generating ncdump string.";
+        }
+     }
 
     /**
      * This is like String2.fromJson, but does less decoding and is made specifically to fix up 
@@ -179,7 +134,22 @@ public class NcHelper  {
     public static String decodeNcDump(String s) {
         StringBuilder sb = new StringBuilder();
         int sLength = s.length();
+
+        //remove dir name from first line (since this is sometimes sent to ERDDAP users)    
+        //"netcdf /data/erddapBPD/cache/_test/EDDGridFromDap_Axis.nc {\n" +
         int po = 0;
+        int brPo = s.indexOf(" {"); 
+        if (brPo >= 0) {
+            int slPo = s.substring(0, brPo).lastIndexOf('/');
+            if (slPo < 0)
+                slPo = s.substring(0, brPo).lastIndexOf('\\');
+            if (slPo >= 0) {
+                sb.append("netcdf ");
+                po = slPo + 1;
+            }
+        }
+
+        //process rest of s
         while (po < sLength) {
             char ch = s.charAt(po);
             if (ch == '\\') {
@@ -437,7 +407,7 @@ public class NcHelper  {
         if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
             ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
             String sa[] = String2.toStringArray((Object[])ao.copyTo1DJavaArray());
-            for (int i = 0; i < sa.length; i++)
+            for (int i = 0; i < sa.length; i++) 
                 sa[i] = String2.canonical(String2.trimEnd(sa[i]));
             return sa;
         }
@@ -582,18 +552,13 @@ public class NcHelper  {
         NetcdfFile netcdfFile = openFile(fullName);
         try {
             String results = netcdfFile.toString();
-
-            //I care about this exception
-            netcdfFile.close();
             return String2.replaceAll(results, "\r", ""); //2013-09-03 netcdf-java 4.3 started using \r\n
 
-        } catch (Exception e) {
+        } finally {
             try {
                 netcdfFile.close(); //make sure it is explicitly closed
             } catch (Exception e2) {
-                //don't care
             }
-            throw e;
         }
 
     }
@@ -679,7 +644,7 @@ public class NcHelper  {
      *
      * @param netcdfFile
      * @param variableNames if null, this will search for the variables in 
-     *   a (psuedo)structure.
+     *   a (pseudo)structure.
      * @return structure's variables
      */
     public static Variable[] findVariables(NetcdfFile netcdfFile, String variableNames[]) {
@@ -703,7 +668,7 @@ public class NcHelper  {
         //String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
         for (int v = 0; v < rootGroupVariables.size(); v++) {
             if (rootGroupVariables.get(v) instanceof Structure) {
-                if (reallyVerbose) String2.log("NcHelper.findVariables found a Structure.");
+                if (reallyVerbose) String2.log("    NcHelper.findVariables found a Structure.");
                 return variableListToArray(((Structure)rootGroupVariables.get(v)).getVariables());
             }
         }
@@ -718,7 +683,7 @@ public class NcHelper  {
             if (pa.size() > 0) {
                 String dimName = pa.getString(0);
                 if (reallyVerbose) 
-                    String2.log("NcHelper.findVariables observationDimension: " + 
+                    String2.log("    NcHelper.findVariables observationDimension: " + 
                         dimName);
                 mainDimension = netcdfFile.getRootGroup().findDimension(dimName);
             }
@@ -734,7 +699,7 @@ public class NcHelper  {
                 if (tDimension.isUnlimited()) {
                     mainDimension = tDimension;
                     if (reallyVerbose) 
-                        String2.log("NcHelper.findVariables found an unlimited dimension: " + 
+                        String2.log("    NcHelper.findVariables found an unlimited dimension: " + 
                             mainDimension.getFullName());
                     break;
                 }
@@ -751,7 +716,7 @@ public class NcHelper  {
                     Calendar2.isNumericTimeUnits(units.getString(0)) && dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) 
-                        String2.log("NcHelper.findVariables found a time variable with dimension: " + 
+                        String2.log("    NcHelper.findVariables found a time variable with dimension: " + 
                             mainDimension.getFullName());
                     break;
                 }
@@ -765,8 +730,11 @@ public class NcHelper  {
                 List dimensions = variable.getDimensions();
                 if (dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
-                    if (reallyVerbose) String2.log("NcHelper.findVariables found an outer dimension: " + 
-                        mainDimension.getFullName());
+                    if (reallyVerbose) {
+                        String fName = mainDimension.getFullName();
+                        if (!"row".equals(fName)) //may be null
+                            String2.log("    NcHelper.findVariables found an outer dimension: " + fName);
+                    }
                     break;
                 }
             }
@@ -1159,284 +1127,27 @@ public class NcHelper  {
     }
 
     /**
-     * If the variable is packed with scale_factor and/or add_offset, 
-     *  this will unpack the packed attributes of the variable: 
-     *   actual_range, actual_min, actual_max, 
-     *   data_max, data_min, 
-     *   valid_max, valid_min, valid_range.
-     * missing_value and _FillValue will be converted to PA standard mv 
-     *   for the the unpacked datatype (or current type if not packed).
-     *
-     * @param sAtts the sourceAtts (which will be modified)
-     */
-    public static void unpackAttributes(Variable var, Attributes sAtts) {
-
-        //deal with numeric time units
-        String tUnits = sAtts.getString("units");
-        if (Calendar2.isTimeUnits(tUnits)) 
-            sAtts.set("units", Calendar2.SECONDS_SINCE_1970); //AKA EDV.TIME_UNITS
-            //presumably, String time var doesn't have units
-
-        PrimitiveArray unsignedPA = sAtts.remove("_Unsigned");
-        boolean unsigned = unsignedPA != null && "true".equals(unsignedPA.toString());         
-        PrimitiveArray scalePA = sAtts.remove("scale_factor");
-        PrimitiveArray addPA   = sAtts.remove("add_offset");
-
-        //if present, convert _FillValue and missing_value to PA standard mv
-        Class oClass = getElementClass(var.getDataType());
-        Class destClass = 
-            scalePA != null? scalePA.elementClass() :
-            addPA   != null? addPA.elementClass() : 
-            unsigned && oClass == byte.class?  short.class :  //similar code below
-            unsigned && oClass == short.class? int.class :
-            unsigned && oClass == int.class?   double.class : //longs are converted to double
-            unsigned && oClass == long.class?  double.class : //longs are converted to double
-            oClass;  
-        if (sAtts.remove("_FillValue")    != null)
-            sAtts.set(   "_FillValue",    PrimitiveArray.factory(destClass, 1, ""));
-        if (sAtts.remove("missing_value") != null)
-            sAtts.set(   "missing_value", PrimitiveArray.factory(destClass, 1, ""));
-
-        //if var isn't packed, we're done
-        if (!unsigned && scalePA == null && addPA == null)
-            return; 
-
-        //var is packed, so unpack all packed numeric attributes
-        //lookForStringTimes is false because these are all attributes of numeric variables
-        if (debugMode) 
-            String2.log(">  before unpack " + var.getFullName() + 
-                " unsigned="      + unsigned +
-                " scale_factor="  + scalePA + 
-                " add_offset="    + addPA + 
-                " actual_max="    + sAtts.get("actual_max") + 
-                " actual_min="    + sAtts.get("actual_min") +
-                " actual_range="  + sAtts.get("actual_range") + 
-                " data_max="      + sAtts.get("data_max") + 
-                " data_min="      + sAtts.get("data_min") +
-                " valid_max="     + sAtts.get("valid_max") + 
-                " valid_min="     + sAtts.get("valid_min") +
-                " valid_range="   + sAtts.get("valid_range"));
-
-        //attributes are never unsigned
-
-        //before erddap v1.82, ERDDAP said actual_range had packed values.
-        //but CF 1.7 says actual_range is unpacked. 
-        //So look at data types and guess which to do, with preference to believing they're already unpacked
-        //Note that at this point in this method, we're dealing with a packed data variable
-        if (destClass != null && (destClass == float.class || destClass == double.class)) {
-            PrimitiveArray pa;
-            pa = sAtts.get("actual_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                sAtts.set("actual_max",   unpackPA(var, pa, false, false)); 
-
-            pa = sAtts.get("actual_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                sAtts.set("actual_min",   unpackPA(var, pa, false, false)); 
-
-            pa = sAtts.get("actual_range");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                sAtts.set("actual_range", unpackPA(var, pa, false, false)); 
-
-            pa = sAtts.get("data_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                sAtts.set("data_min",     unpackPA(var, pa, false, false)); 
-
-            pa = sAtts.get("data_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                sAtts.set("data_max",     unpackPA(var, pa, false, false)); 
-        }
-        sAtts.set("valid_max",        unpackPA(var, sAtts.get("valid_max"),   false, false)); 
-        sAtts.set("valid_min",        unpackPA(var, sAtts.get("valid_min"),   false, false));
-        sAtts.set("valid_range",      unpackPA(var, sAtts.get("valid_range"), false, false)); 
-
-        if (debugMode) 
-            String2.log(">  after  unpack " + var.getFullName() + 
-                " unsigned="      + unsigned +               
-                " actual_max="    + sAtts.get("actual_max") + 
-                " actual_min="    + sAtts.get("actual_min") +
-                " actual_range="  + sAtts.get("actual_range") + 
-                " data_max="      + sAtts.get("data_max") + 
-                " data_min="      + sAtts.get("data_min") +
-                " valid_max="     + sAtts.get("valid_max") + 
-                " valid_min="     + sAtts.get("valid_min") +
-                " valid_range="   + sAtts.get("valid_range"));
-    }
-
-    /**
      * If the var has time units, or scale_factor and add_offset, the values in the dataPa
-     * will be unpacked (time will be epochSeconds).
+     * will be unpacked (numeric times will be epochSeconds).
      * If missing_value and/or _FillValue are used, they are converted to PA standard mv.
      *
      * @param var this method gets the info it needs
      *   (_Unsigned, scale_factor, add_offset, units, _FillValue, missingvalue)
-     *    from the var (not tAtts).
+     *    from the var.
+     * @param dataPa A data pa or a attribute value pa. It isn't an error if dataPa = null.
      * @param lookForUnsigned should be true for the main PA, but false when converting attribute PA's.
-     * @return dataPa or a different PA or null (if dataPa = null).
+     * @return pa The same pa or a new pa or null (if the pa parameter = null).
      *   missing_value and _FillValue will be converted to PA standard mv 
      *     for the the unpacked datatype (or current type if not packed).
      */
     public static PrimitiveArray unpackPA(Variable var, PrimitiveArray dataPa,
         boolean lookForStringTimes, boolean lookForUnsigned) {
 
-        if (dataPa == null)
-            return null;
-        Class dataPaClass = dataPa.elementClass();
-        if (debugMode)
-            String2.log(">NcHelper.unpackPA name=" + var.getFullName() + " " + dataPa.elementClassString());
-
-        //any of these may be null
-        PrimitiveArray scalePA = getVariableAttribute(var, "scale_factor");
-        PrimitiveArray addPA   = getVariableAttribute(var, "add_offset");
-        String tUnits          = getRawStringVariableAttribute(var, "units");         
-        boolean unsigned       = lookForUnsigned && "true".equals(
-            getRawStringVariableAttribute(var, "_Unsigned"));         
-        //_FillValue and missing_value should be unsigned if _Unsigned=true, 
-        //  but in practice sometimes aren't
-        //and they should be packed if var is packed.
-        //see EDDGridFromNcFilesUnpacked.testUInt16File()
-        double dFillValue      = unsigned?
-            getUnsignedDoubleVariableAttribute(var, "_FillValue") :   //so -1B becomes 255
-            getRawDoubleVariableAttribute(     var, "_FillValue");    //so e.g., 127 stays as 127
-        double dMissingValue   = unsigned?
-            getUnsignedDoubleVariableAttribute(var, "missing_value") ://so -1B becomes 255
-            getRawDoubleVariableAttribute(     var, "missing_value"); //so e.g., 127 stays as 127
-        if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
-
-        //scale and add_offset -- done first, before check for numeric time
-        if (unsigned || scalePA != null || addPA != null) {
-
-            //figure out new data type indicated by scale_factor or add_offset 
-            double scale = 1;
-            double add = 0;
-            Class tClass = null; //null is important, tests if set below
-            if (scalePA != null) {  
-                scale = scalePA.getNiceDouble(0);
-                if (Double.isNaN(scale))
-                    scale = 1;
-                tClass = scalePA.elementClass();
-            }
-            if (addPA != null) {
-                add = addPA.getNiceDouble(0);
-                if (Double.isNaN(add))
-                    add = 0;
-                if (tClass == null)
-                    tClass = addPA.elementClass();
-            }
-            if (tClass == null) //might be
-                tClass = dataPaClass;
-            //or data type needed by '_Unsigned'      //same code above
-            if (unsigned && tClass == dataPaClass) {
-                if      (tClass == byte.class)  tClass = short.class;
-                else if (tClass == short.class) tClass = int.class;
-                else if (tClass == int.class)   tClass = double.class; //longs are converted to doubles
-                else if (tClass == long.class)  tClass = double.class; //longs are converted to doubles
-            }
-
-            //switch data type
-            PrimitiveArray dataPa2 = 
-                //if stated missing_value or _FillValue is same as cohort missingValue...
-                unsigned? 
-                    PrimitiveArray.unsignedFactory(tClass, dataPa) : //unsigned 
-                    dataPa.isIntegerType() &&
-                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
-                         dFillValue    == dataPa.missingValue())?
-                        PrimitiveArray.factory(        tClass, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
-                        PrimitiveArray.rawFactory(     tClass, dataPa);  //missingValues (e.g., 127) AREN'T changed
-            if (debugMode) String2.log(
-                ">> source="   + dataPaClass + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
-                ">> dataPa2= " + tClass      + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
-
-            //dataPa2 is destination data type and now has (if relevant) unsigned values, 
-            //but not yet scaleAddOffset.
-            //If present, missing_value and _FillValue are packed
-            //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
-            //and apply before scaleAddOffset
-            //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
-            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
-                dataPa2.switchFromTo(      "" + dMissingValue, "");
-                dMissingValue = Double.NaN;  //it's done
-            }
-            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
-                dataPa2.switchFromTo(      "" + dFillValue,    "");
-                dFillValue = Double.NaN;     //it's done
-            }
-
-            //apply scaleAddOffset
-            dataPa2.scaleAddOffset(scale, add); //it checks for (1,0)
-            if (debugMode)
-                String2.log(
-                    ">> NcHelper.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
-                    ">> unpacked=" + tClass + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
-            return dataPa2;
-
-        }
-
-        //numeric times (we know scale_factor and add_offset aren't used)
-        if (Calendar2.isNumericTimeUnits(tUnits)) {
- 
-            //interpred tUnits
-            double[] baseFactor = null;
-            try {
-                baseFactor = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
-            } catch (Exception e) {
-                String2.log(tUnits.toString());
-                return PrimitiveArray.factory(double.class, dataPa.size(), "");   //i.e. uninterpretable
-            }
-
-            //switch data type
-            PrimitiveArray dataPa2 = 
-                //if stated missing_value or _FillValue is same as cohort missingValue...
-                unsigned?
-                    PrimitiveArray.unsignedFactory(double.class, dataPa) :
-                    dataPa.isIntegerType() &&
-                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
-                         dFillValue    == dataPa.missingValue())?
-                        PrimitiveArray.factory(        double.class, dataPa) : //missingValues (e.g., 127) are    changed
-                        PrimitiveArray.rawFactory(     double.class, dataPa);  //missingValues (e.g., 127) AREN'T changed
-
-            //convert other dMissingValue and dFillValue (e.g., -128)
-            // before scaleAddOffset to epochSeconds
-            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
-                dataPa2.switchFromTo(      "" + dMissingValue, "");
-                dMissingValue = Double.NaN;  //it's done
-            }
-            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
-                dataPa2.switchFromTo(      "" + dFillValue,    "");
-                dFillValue = Double.NaN;     //it's done
-            }
-
-            //convert numeric time to epochSeconds
-            dataPa2 = Calendar2.unitsSinceToEpochSeconds(baseFactor[0], baseFactor[1], dataPa2);
-            if (debugMode)
-                String2.log(
-                    ">> numeric time as epochSeconds: " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
-            return dataPa2;
-        } 
-        
-        //string times?  no units, so units aren't helpful. 
-        if (lookForStringTimes && dataPa instanceof StringArray) {
-            StringArray sa = (StringArray)dataPa;
-            String format = Calendar2.suggestDateTimeFormat(sa);
-            if (format.length() > 0) {
-                if (verbose) String2.log("  " + var.getFullName() + " has String times format=" + format);
-                dataPa = Calendar2.toEpochSeconds(sa, format);
-            }
+        if (dataPa == null) 
             return dataPa;
-        }
-
-        //none of the above situations apply 
-        //  (i.e., not unsigned, and no scale_factor or add_offset, not numeric or string time)
-        //still need to convert missingValue to dataPa missing value
-        if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
-            dataPa.switchFromTo(       "" + dMissingValue, "");
-            dMissingValue = Double.NaN;  //it's done
-        }
-        if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
-            dataPa.switchFromTo(       "" + dFillValue,    "");
-            dFillValue = Double.NaN;     //it's done
-        }
-
-        return dataPa;
+        Attributes atts = new Attributes();
+        getVariableAttributes(var, atts);
+        return atts.unpackPA(var.getFullName(), dataPa, lookForStringTimes, lookForUnsigned);
     }
 
 
@@ -1788,7 +1499,7 @@ public class NcHelper  {
         if (pa.size() > nRows) {
             //it full-sized; reduce to correct size
             if (reallyVerbose) String2.log(
-                "NcHelper.getPrimitiveArray variable.read returned entire variable!"); 
+                "    NcHelper.getPrimitiveArray variable.read returned entire variable!"); 
             pa.removeRange(lastRow + 1, pa.size()); //remove tail first (so don't have to move it when remove head
             pa.removeRange(0, firstRow - 1); //remove head section
         }
@@ -1890,18 +1601,14 @@ public class NcHelper  {
             for (int i = 0; i < loadVariables.length; i++)
                 tColumnNames[i] = loadVariables[i].getFullName(); 
 
-            //I care about this exception
-            netcdfFile.close();
-        } catch (Exception e) {
+            return tColumnNames;
+        } finally {
             try {
                 netcdfFile.close(); //make sure it is explicitly closed
             } catch (Exception e2) {
-                //don't care
             }
-            throw e;
         }
 
-        return tColumnNames;
     }
 
     /**
@@ -2049,21 +1756,20 @@ public class NcHelper  {
      */
     public static void writePAsInNc(String fullName, StringArray varNames, 
         PrimitiveArray pas[]) throws Exception {
-        if (reallyVerbose) String2.log("NcHelper.savePAsInNc " + fullName); 
+        String msg = "  NcHelper.savePAsInNc " + fullName; 
         long time = System.currentTimeMillis();
 
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
         File2.delete(fullName);
 
-        //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
-
         //tpas is same as pas, but with CharArray and LongArray converted to StringArray
         int nVars = varNames.size();
         PrimitiveArray tpas[] = new PrimitiveArray[nVars]; 
 
+        //open the file (before 'try'); if it fails, no temp file to delete
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
         try {
             Group rootGroup = nc.addGroup(null, "");
             nc.setFill(false);
@@ -2127,26 +1833,32 @@ public class NcHelper  {
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
 
             File2.rename(fullName + randomInt, fullName);
 
             //diagnostic
-            if (reallyVerbose) String2.log("  NcHelper.savePAsInNc done. TIME=" + 
-                (System.currentTimeMillis() - time) + "ms");
-            //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
+            if (reallyVerbose) msg += " finished. TIME=" + 
+                (System.currentTimeMillis() - time) + "ms";
+            //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
             //try to close the file
             try {
-                nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null)
+                    nc.close(); //it calls flush() and doesn't like flush called separately
             } catch (Exception e2) {
                 //don't care
             }
 
             //delete any partial or pre-existing file
             File2.delete(fullName + randomInt);
+           
+            if (!reallyVerbose) String2.log(msg);
 
             throw e;
+        } finally {
+            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -2168,9 +1880,9 @@ public class NcHelper  {
     public static PrimitiveArray[] readPAsInNc(String fullName, String loadVarNames[],
         StringArray varNames) throws Exception {
 
-        if (reallyVerbose) String2.log("NcHelper.readPAsInNc " + fullName
+        String msg = "  NcHelper.readPAsInNc " + fullName
             //+ " \n  loadVarNames=" + String2.toCSSVString(loadVarNames)
-            ); 
+            ; 
         varNames.clear();
         ArrayList pas = new ArrayList();
         long time = System.currentTimeMillis();
@@ -2225,25 +1937,15 @@ public class NcHelper  {
                     pas.add(pa);
                 }
             }
-
-            //I care about this exception
-            netcdfFile.close();
-
-        } catch (Exception e) {
-            //make sure it is explicitly closed
-            try {
-                netcdfFile.close(); 
-            } catch (Exception e2) {
-                //don't care
-            }
-            throw e;
+        } finally {
+            netcdfFile.close(); 
         }
 
         int pasSize = pas.size();
         PrimitiveArray paar[] = new PrimitiveArray[pasSize];
         for (int i = 0; i < pasSize; i++)
             paar[i] = (PrimitiveArray)pas.get(i);
-        if (reallyVerbose) String2.log("  NcHelper.readPAsInNc done. nPAs=" + pasSize + 
+        if (reallyVerbose) String2.log(msg + " done. nPAs=" + pasSize + 
             " TIME=" + (System.currentTimeMillis() - time) + "ms");
         return paar;
     }
@@ -2352,33 +2054,20 @@ String2.log(pas13.toString());
         String2.log("diffString=\n" + pas14.diffString(pas13));
     }
 
-    public static String testLowNcDump(String fullFileName) throws Exception {
-        StringWriter sw = new StringWriter();
-        //NCdumpW.printHeader(fullFileName, sw);
-        NCdumpW.print(fullFileName, sw, 
-            false /*printData*/, false /*print only coord variables*/, 
-            fullFileName.endsWith(".ncml"), false,
-            "", null /*cancel*/);
-        return sw.toString();
-    }
-
     /** 
      * Test findAllVariablesWithDims.
      * @throws Exception if trouble
      */
     public static void testFindAllVariablesWithDims() throws Exception {
-        NetcdfFile ncFile = openFile("c:/data/nodcTemplates/ncCFMA2a.nc");
-
         StringArray sa = new StringArray();
+        NetcdfFile ncFile = openFile("c:/data/nodcTemplates/ncCFMA2a.nc");
         try {
             Variable vars[] = findAllVariablesWithDims(ncFile);
             for (int v = 0; v < vars.length; v++)
                 sa.add(vars[v].getFullName());
             sa.sort();
+        } finally {
             ncFile.close();
-        } catch (Exception e) {
-            ncFile.close();
-            throw e;
         }
         String results = sa.toString();
         String expected = 
@@ -2394,10 +2083,9 @@ String2.log(pas13.toString());
     public static void testUnlimited() throws Exception {
         String testUnlimitedFileName = "/temp/unlimited.nc";
         String2.log("\n* Projects.testUnlimited() " + testUnlimitedFileName);
+        int strlen = 6;
         NetcdfFileWriter file = NetcdfFileWriter.createNew(
             NetcdfFileWriter.Version.netcdf3, testUnlimitedFileName);
-        int strlen = 6;
-
         try {
             Group rootGroup = file.addGroup(null, "");
 
@@ -2453,7 +2141,7 @@ String2.log(pas13.toString());
                 file.flush(); //force file update
 
                 if (row == 1) { 
-                    results = NcHelper.dumpString(testUnlimitedFileName, true);
+                    results = NcHelper.ncdump(testUnlimitedFileName, "");
                     String2.log(results);
                     expected = 
 "netcdf unlimited.nc {\n" +  //2013-09-03 netcdf-java 4.3 added blank lines
@@ -2502,7 +2190,7 @@ String2.log(pas13.toString());
                 file.close(); //writes changes to file
         }
 
-        results = NcHelper.dumpString(testUnlimitedFileName, true);
+        results = NcHelper.ncdump(testUnlimitedFileName, "");
         String2.log(results);
         expected = 
 "netcdf unlimited.nc {\n" + //2013-09-03 netcdf-java 4.3 added blank lines
@@ -2545,9 +2233,12 @@ String2.log(pas13.toString());
      */
     public static void testSequence() throws Throwable {
         NetcdfDataset ncd = NetcdfDataset.openDataset(
-            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
-        String2.log(ncd.toString());
-        ncd.close();
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
+        try {
+            String2.log(ncd.toString());
+        } finally {
+            ncd.close();
+        }
     }
 
 
@@ -2733,11 +2424,10 @@ String2.log(pas13.toString());
         //test if defining >2GB throws exception
         fullName = "c:/temp/TooBig.nc";
         File2.delete(fullName);
-        NetcdfFileWriter ncOut = null;
+        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName);
         try {
             //"define" mode    2vars * 3000*50000*8bytes = 2,400,000,000
-            ncOut = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, fullName);
             Group rootGroup = ncOut.addGroup(null, "");
             ncOut.setFill(false);
 
@@ -2781,11 +2471,10 @@ String2.log(pas13.toString());
         //Must the char[][] be the exact right size?  What if too long?
         fullName = "c:/temp/StringsInNc.nc";
         File2.delete(fullName);
-        ncOut = null;
+        ncOut = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName);
         try {
             //"define" mode
-            ncOut = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, fullName);
             Group rootGroup = ncOut.addGroup(null, "");
             ncOut.setFill(false);
             Dimension dim0 = ncOut.addDimension(rootGroup, "dim0", 2);
@@ -2807,14 +2496,13 @@ String2.log(pas13.toString());
 
             ar = Array.factory(String.class, new int[]{2,3}, sa6);         
             ncOut.writeStringData(s1Var, new int[]{0, 0}, ar);
-
-            //close file
+        } finally {
             ncOut.close(); //it calls flush() and doesn't like flush called separately
-            ncOut = null;
+        }
 
-            //Strings are truncated to maxCharLength specified in "define" mode.
-            String results = dumpString(fullName, true); //printData
-            String expected = 
+        //Strings are truncated to maxCharLength specified in "define" mode.
+        String results = ncdump(fullName, ""); 
+        String expected = 
 "netcdf StringsInNc.nc {\n" + 
 "  dimensions:\n" +
 "    dim0 = 2;\n" +
@@ -2828,23 +2516,13 @@ String2.log(pas13.toString());
 "  {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" + 
 "  }\n" +
 "}\n";
-            String2.log("results=\n" + results);
-            Test.ensureEqual(results, expected, "");
+        String2.log("results=\n" + results);
+        Test.ensureEqual(results, expected, "");
 
-            //nc chars are essentially unsigned bytes!
-            String2.log(File2.hexDump(fullName, 1000000)); 
+        //nc chars are essentially unsigned bytes!
+        String2.log(File2.hexDump(fullName, 1000000)); 
+        File2.delete(fullName);
 
-        } catch (Throwable t) {
-            try { 
-                if (ncOut != null) {
-                    ncOut.close(); 
-                    File2.delete(fullName);
-                }
-            } catch (Exception e) {
-            }
-
-            throw t;
-        }
     }
 
     /**

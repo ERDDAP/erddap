@@ -1266,7 +1266,7 @@ Dataset {
         boolean doAsciiTestToo) throws Exception {
         System.out.println("\nOpendap.doThredds1_8081SpeedTests");
         try {
-            doSimpleSpeedTests("http://thredds1.pfeg.noaa.gov:8081/thredds/dodsC/satellite/", 
+            doSimpleSpeedTests("https://thredds1.pfeg.noaa.gov:8081/thredds/dodsC/satellite/", 
                 doDotTestToo, doAsciiTestToo);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
@@ -1288,7 +1288,7 @@ Dataset {
         boolean doAsciiTestToo) throws Exception {
         System.out.println("\nOpendap.doErddapSpeedTests");
         try {
-            String baseUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/";
+            String baseUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/";
             simpleSpeedTest(  //625 ms for THREDDS 3.10; 31 ms for 3.12 2nd pass 
                 baseUrl+"erdAGssta3day", "?sst[0:1:0][0:1:0][0:1:20][0:1:20]", doAsciiTestToo);
             simpleSpeedTest(  //2656 ms for THREDDS 3.10; 203 ms for 3.12 2nd pass   

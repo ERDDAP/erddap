@@ -37,14 +37,14 @@ public class TableWriterWav extends TableWriter {
     //set by constructor
 
     //set by firstTime
-    protected int randomInt;
-    protected String fullDosName;
-    protected DataOutputStream dos;
-    protected String fullOutName;
-    protected String tClass;
-    protected boolean isLong; //if true, save as int (from high 4 bytes)
-    public long totalNRows = 0;
-    protected int nColumns;
+    protected volatile int randomInt;
+    protected volatile String fullDosName;
+    protected volatile DataOutputStream dos;
+    protected volatile String fullOutName;
+    protected volatile String tClass;
+    protected volatile boolean isLong; //if true, save as int (from high 4 bytes)
+    public    volatile long totalNRows = 0;
+    protected volatile int nColumns;
 
     /**
      * The constructor.
@@ -78,7 +78,7 @@ public class TableWriterWav extends TableWriter {
      * @param table with destinationValues
      * @throws Throwable if trouble
      */
-    public void writeSome(Table table) throws Throwable {
+    public synchronized void writeSome(Table table) throws Throwable {
         if (table.nRows() == 0) 
             return;
 
@@ -142,11 +142,12 @@ public class TableWriterWav extends TableWriter {
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
-    public void finish() throws Throwable {
+    public synchronized void finish() throws Throwable {
         if (ignoreFinish) 
             return;
         if (dos != null)
             dos.close();
+        dos = null;
 
         //check for MustBe.THERE_IS_NO_DATA
         if (totalNRows == 0) 
@@ -161,9 +162,12 @@ public class TableWriterWav extends TableWriter {
 
         //then send to outputStream
         OutputStream out = outputStreamSource.outputStream(""); //no character_encoding
-        if (!File2.copy(fullOutName, out))             
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
-        out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        try {
+            if (!File2.copy(fullOutName, out))             
+                throw new SimpleException(String2.ERROR + " while transmitting file.");
+        } finally {
+            try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        }
 
         //diagnostic
         if (verbose)

@@ -11,8 +11,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.Toolkit;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,8 +23,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -64,6 +69,7 @@ public class String2 {
      * This is the original definition, referenced by many other classes.
      */
     public static String ERROR = "ERROR";
+    public static String WARNING = "WARNING";
 
     //public static Logger log = Logger.getLogger("com.cohort.util");
     private static boolean logToSystemOut = true;
@@ -137,12 +143,13 @@ public class String2 {
     public final static String ACDD_PERSON_REGEX2 = 
         "(Dr\\.? |Prof\\.? |)[A-Z](\\.|[a-z]*) ([A-Z]\\.? |)(Ma?c|)[A-Z][a-z]+(, .+|)"; 
 
-    public final static String NCCSV_VERSION      = "NCCSV-1.0";
-    public final static String NCCSV_GLOBAL       = "*GLOBAL*";
-    public final static String NCCSV_DATATYPE     = "*DATA_TYPE*";
-    public final static String NCCSV_SCALAR       = "*SCALAR*";
-    public final static String NCCSV_END_METADATA = "*END_METADATA*";
-    public final static String NCCSV_END_DATA     = "*END_DATA*";
+    public final static String NCCSV_VERSION        = "NCCSV-1.0";
+    public final static String NCCSV_BINARY_VERSION = "NCCSV_BINARY-1.0";
+    public final static String NCCSV_GLOBAL         = "*GLOBAL*";
+    public final static String NCCSV_DATATYPE       = "*DATA_TYPE*";
+    public final static String NCCSV_SCALAR         = "*SCALAR*";
+    public final static String NCCSV_END_METADATA   = "*END_METADATA*";
+    public final static String NCCSV_END_DATA       = "*END_DATA*";
 
     public final static Pattern NCCSV_BYTE_ATT_PATTERN   = Pattern.compile("-?\\d{1,3}b");
     public final static Pattern NCCSV_SHORT_ATT_PATTERN  = Pattern.compile("-?\\d{1,5}s");
@@ -633,7 +640,7 @@ public class String2 {
      * This returns the specified capture group from s. 
      *
      * @param s the source String
-     * @param regexPattern 
+     * @param regexPattern the regexPattern must match the entire string
      * @param captureGroupNumber the number of the capture group (0 for entire regex,
      *    1 for first capture group, 2 for second, etc.)
      * @return the value of the specified capture group,
@@ -819,24 +826,30 @@ public class String2 {
         //BufferedReader and results are declared outside try/catch so 
         //that they can be accessed from within either try/catch block.
         long time = System.currentTimeMillis();
-        FileInputStream fis = new FileInputStream(fileName);
-        InputStreamReader isr = new InputStreamReader(fis, 
-            charset == null || charset.length() == 0? ISO_8859_1 : charset);
+        InputStream fis = null;
+        Reader isr = null;
         StringBuilder sb = new StringBuilder(8192);
-
-        //get the text from the file
         try {
+
+            fis = File2.getDecompressedBufferedInputStream(fileName);
+            isr = new BufferedReader(new InputStreamReader(fis, 
+                charset == null || charset.length() == 0? ISO_8859_1 : charset));
+
+            //get the text from the file
             char buffer[] = new char[8192];
             int nRead;
             while ((nRead = isr.read(buffer)) >= 0)  //-1 = end-of-file
                 sb.append(buffer, 0, nRead);
+            return sb.toString();
         } finally {
             try {
-                isr.close();
+                if (isr != null)
+                    isr.close();
+                else if (fis != null)
+                    fis.close();
             } catch (Exception e) {
             }
         }
-        return sb.toString();
     }
 
     /**
@@ -888,7 +901,7 @@ public class String2 {
         //BufferedReader and results are declared outside try/catch so 
         //that they can be accessed from within either try/catch block.
         long time = System.currentTimeMillis();
-        FileInputStream fis = null;
+        InputStream is = null;
         InputStreamReader isr = null;
         BufferedReader bufferedReader = null;
         String results[] = {"", ""};
@@ -902,8 +915,8 @@ public class String2 {
             maxAttempt = Math.max(1, maxAttempt);
             for (int attempt = 1; attempt <= maxAttempt; attempt++) {
                 try {
-                    fis = new FileInputStream(fileName);
-                    isr = new InputStreamReader(fis, 
+                    is = File2.getDecompressedBufferedInputStream(fileName);
+                    isr = new InputStreamReader(is, 
                         charset == null || charset.length() == 0? ISO_8859_1 : charset);
                 } catch (Exception e) {
                     if (attempt == maxAttempt) {
@@ -941,12 +954,12 @@ public class String2 {
             results[errorIndex] = MustBe.throwable("fileName=" + fileName, e);
         }
 
-        //close the bufferedReader
+        //close whatever got opened
         try {
             //close the highest level file object available
             if (bufferedReader != null) bufferedReader.close();
             else if (isr       != null) isr.close();
-            else if (fis       != null) fis.close();
+            else if (is        != null) is.close();
 
         } catch (Exception e) {
             if (results[errorIndex].length() == 0)
@@ -981,36 +994,48 @@ public class String2 {
         int maxAttempt) throws Exception {
 
         long time = System.currentTimeMillis();
+        InputStream is = null;
         InputStreamReader isr = null;
-        for (int i = 0; i < maxAttempt; i++) {
-            try {
-                isr = new InputStreamReader(new FileInputStream(fileName), 
-                    charset == null || charset.length() == 0? ISO_8859_1 : charset);
-                break; //success
-            } catch (RuntimeException e) {
-                if (i == maxAttempt - 1)
-                    throw e;
-                Math2.sleep(1);
+        try {
+            for (int i = 0; i < maxAttempt; i++) {
+                try {
+                    is = File2.getDecompressedBufferedInputStream(fileName);
+                    isr = new InputStreamReader(is, 
+                        charset == null || charset.length() == 0? ISO_8859_1 : charset);
+                    break; //success
+                } catch (RuntimeException e) {
+                    if (is != null) {
+                        is.close();
+                        is = null;
+                    }
+                    if (i == maxAttempt - 1)
+                        throw e;
+                    Math2.sleep(100);
+                }
             }
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            try {
+                ArrayList<String> al = new ArrayList();                         
+                String s = bufferedReader.readLine();
+                while (s != null) { //null = end-of-file
+                    al.add(s);
+                    s = bufferedReader.readLine();
+                }
+                return al.toArray(new String[0]);
+            } finally {
+                bufferedReader.close();
+                isr = null;
+            }
+        } finally {
+            if (isr != null)
+                isr.close();
         }
-        BufferedReader bufferedReader = new BufferedReader(isr);
-        ArrayList<String> al = new ArrayList();                         
-        String s = bufferedReader.readLine();
-        while (s != null) { //null = end-of-file
-            al.add(s);
-            s = bufferedReader.readLine();
-        }
-
-        bufferedReader.close();
-        isr.close();
-        return al.toArray(new String[0]);
     }
 
     /*
     Here is a skeleton for more direct control of reading text from a file: 
-        BufferedReader bufferedReader = null;
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));                      
         try {
-            bufferedReader = new BufferedReader(new FileReader(fileName));                      
             String s;
             while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
                 //do something with s
@@ -1095,8 +1120,9 @@ public class String2 {
             //This uses a BufferedWriter wrapped around a FileWriter
             //to write the information to the file.
             Writer w = charset == null || charset.length() == 0?
-                new FileWriter(fileName, append) :
-                new OutputStreamWriter(new FileOutputStream(fileName, append), charset);
+                new FileWriter(fileName, append) :  //buffered below
+                new OutputStreamWriter(
+                    new BufferedOutputStream(new FileOutputStream(fileName, append)), charset);
             bufferedWriter = new BufferedWriter(w);
                          
             //convert \n to operating-system-specific lineSeparator
@@ -1120,10 +1146,8 @@ public class String2 {
 
         //make sure bufferedWriter is closed
         try {
-            if (bufferedWriter != null) {
+            if (bufferedWriter != null) 
                 bufferedWriter.close();
-
-            }
         } catch (Exception e) {
             if (error.length() == 0)
                 error = e.toString(); 
@@ -1147,6 +1171,20 @@ public class String2 {
         return "Java " + javaVersion + mrjVersion + " (" + Math2.JavaBits + " bit, " +
             System.getProperty("java.vendor") + ") on " +
             OSName + " (" + System.getProperty("os.version") + ").";
+    }
+
+    /**
+     * This returns true for A..Z, a..z.
+     *
+     * @param c a char
+     * @return true if c is a letter
+     */
+    public static final boolean isAsciiLetter(int c) {
+        if (c <  'A') return false;
+        if (c <= 'Z') return true;
+        if (c <  'a') return false;
+        if (c <= 'z') return true;
+        return false;
     }
 
     /**
@@ -1226,7 +1264,26 @@ public class String2 {
      * @return true if c is a digit
      */
     public static final boolean isDigit(int c) {
-        return ((c >= '0') && (c <= '9'));
+        return (c >= '0') && (c <= '9');
+    }
+
+    /**
+     * 0..9.
+     * Non-Latin numeric characters are not included (see Java Lang Spec pg 14).
+     *
+     * @param s a string
+     * @return true if c is a digit
+     */
+    public static final boolean allDigits(String s) {
+        if (s == null)
+            return false;
+        int n = s.length();
+        if (n == 0)
+            return false;
+        for (int po = 0; po < n; po++)
+            if (!isDigit(s.charAt(po)))
+                return false;
+        return true;
     }
 
     /**
@@ -2078,6 +2135,20 @@ public class String2 {
 
 
     /**
+     * This makes a JSON version of a float. 
+     *
+     * @param f
+     * @return "null" if not finite. Return an integer if it ends with ".0".
+     *    Else returns the number as a string.
+     */
+    public static String toJson(float f) {
+        if (!Float.isFinite(f))
+            return "null";
+        String s = "" + f;
+        return s.endsWith(".0")? s.substring(0, s.length() - 2) : s;
+    }
+
+    /**
      * This makes a JSON version of a number. 
      *
      * @param d
@@ -2208,6 +2279,7 @@ public class String2 {
      * This is very liberal in what it accepts, including all common C escaped characters:
      * http://msdn.microsoft.com/en-us/library/h21280bw%28v=vs.80%29.aspx
      * "null" returns the String "null". null returns null.
+     * This won't throw an exception.
      *
      * @param s  it may be enclosed by "'s, or not.
      * @return the decoded string
@@ -2321,6 +2393,7 @@ public class String2 {
      * (surrounding "'s (if any) are removed and \\, \f, \n, \r, \t, \/, and \" are unescaped).
      * This is very liberal in what it accepts, including all common C escaped characters:
      * http://msdn.microsoft.com/en-us/library/h21280bw%28v=vs.80%29.aspx
+     * This won't throw an exception.
      *
      * @param s  it may be enclosed by "'s, or not.
      * @return the decoded string
@@ -2390,6 +2463,16 @@ public class String2 {
         return sb.toString();
     }
 
+    /**
+     * This writes one string to an NCCSV DOS.
+     */
+/* project not finished or tested
+    public static void writeNccsvDos(DataOutputStream dos, String s) throws IOException {
+        byte bar[] = stringToUtf8Bytes(s);
+        dos.writeInt(bar.length);
+        dos.write(bar, 0, bar.length);
+    }
+*/
     /**
      * This encodes special characters in s if needed so that 
      * s can be stored as an item in a tsv string.
@@ -3266,6 +3349,33 @@ public class String2 {
 
         return sb.toString();
     }
+
+    /**
+     * This finds the first element in Object[]  (starting at element startAt)
+     * where ar[i]==o.
+     *
+     * @param ar the array of Objects
+     * @param o the String to be found
+     * @param startAt the first element of ar to be checked.
+     *    If startAt &lt; 0, this starts with startAt = 0.
+     *    If startAt &gt;= ar.length, this returns -1.
+     * @return the element number of ar which is equal to s (or -1 if ar is null, or s is null or not found)
+     */
+    public static int indexOfObject(Object[] ar, Object o, int startAt) {
+        if (ar == null || o == null)
+            return -1;
+        int n = ar.length;
+        for (int i = Math.max(0, startAt); i < n; i++)
+            if (ar[i] != null && ar[i] == o)  
+                return i;
+        return -1;
+    }
+
+    /** A variant of indexOfObject() that uses startAt=0. */
+    public static int indexOfObject(Object[] ar, Object o) {
+        return indexOfObject(ar, o, 0);
+    }
+
 
     /**
      * This finds the first element in Object[] 
@@ -4220,7 +4330,7 @@ and zoom and pan with controls in
      * DON'T USE THIS; RELY ON THE FIXES AVAILABLE FOR JAVA: 
      * EITHER THE LATEST VERSION OF JAVA OR THE 
      * JAVA UPDATER TO FIX THE BUG ON EXISTING OLDER JAVA INSTALLATIONS
-     * http://www.oracle.com/technetwork/java/javase/fpupdater-tool-readme-305936.html
+     * https://www.oracle.com/technetwork/java/javase/fpupdater-tool-readme-305936.html
      *
      * <p>This returns true if s is a value that causes Java to hang. 
      * Avoid java hang.     2011-02-09 
@@ -4635,39 +4745,59 @@ and zoom and pan with controls in
             " out=" + fullOutFileName + " search=" + search + " replace=" + replace);
         String tOutFileName = fullOutFileName + Math2.random(Integer.MAX_VALUE);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(fullInFileName));
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tOutFileName));
         try {
-                             
-            //convert the text, line by line
-            //This uses bufferedReader.readLine() to repeatedly
-            //read lines from the file and thus can handle various 
-            //end-of-line characters.
-            String s = bufferedReader.readLine();
-            while (s != null) { //null = end-of-file
-                bufferedWriter.write(replaceAll(s, search, replace));
-                bufferedWriter.write(lineSeparator);
-                s = bufferedReader.readLine();
-            }
-
-            bufferedReader.close();
-            bufferedWriter.close();
-
-            if (fullInFileName.equals(fullOutFileName))
-                File2.rename(fullInFileName, fullInFileName + ".original");
-            File2.rename(tOutFileName, fullOutFileName);
-            if (fullInFileName.equals(fullOutFileName))
-                File2.delete(fullInFileName + ".original");
-
-        } catch (Exception e) {
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tOutFileName));
             try {
+                                 
+                //convert the text, line by line
+                //This uses bufferedReader.readLine() to repeatedly
+                //read lines from the file and thus can handle various 
+                //end-of-line characters.
+                String s = bufferedReader.readLine();
+                while (s != null) { //null = end-of-file
+                    bufferedWriter.write(replaceAll(s, search, replace));
+                    bufferedWriter.write(lineSeparator);
+                    s = bufferedReader.readLine();
+                }
+
                 bufferedReader.close();
+                bufferedReader = null;
                 bufferedWriter.close();
-            } catch (Exception e2) {
+                bufferedWriter = null;
+
+                if (fullInFileName.equals(fullOutFileName))
+                    File2.rename(fullInFileName, fullInFileName + ".original");
+                File2.rename(tOutFileName, fullOutFileName);
+                if (fullInFileName.equals(fullOutFileName))
+                    File2.delete(fullInFileName + ".original");
+
+            } catch (Exception e) {
+                try {
+                    if (bufferedWriter != null) {
+                        bufferedWriter.close();
+                        bufferedWriter = null;
+                    }
+                } catch (Exception e2) {
+                }
+                try {
+                    if (bufferedReader != null) {
+                        bufferedReader.close();
+                        bufferedReader = null;
+                    }
+                } catch (Exception e2) {
+                }
+                File2.delete(tOutFileName);
+                throw e;
+            }
+        } catch (Exception e3) {
+            try {
+                if (bufferedReader != null) 
+                    bufferedReader.close();
+            } catch (Exception e4) {
             }
             File2.delete(tOutFileName);
-            throw e;
+            throw e3;
         }
-
     }
 
     /**
@@ -4686,22 +4816,25 @@ and zoom and pan with controls in
         throws Exception {
          
         BufferedReader bufferedReader = new BufferedReader(new FileReader(fullInFileName));
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fullOutFileName));
-                         
-        //get the text from the file
-        //This uses bufferedReader.readLine() to repeatedly
-        //read lines from the file and thus can handle various 
-        //end-of-line characters.
-        String s = bufferedReader.readLine();
-        while (s != null) { //null = end-of-file
-            bufferedWriter.write(s.replaceAll(search, replace));
-            bufferedWriter.write(lineSeparator);
-            s = bufferedReader.readLine();
+        try {
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fullOutFileName));
+            try {                   
+                //get the text from the file
+                //This uses bufferedReader.readLine() to repeatedly
+                //read lines from the file and thus can handle various 
+                //end-of-line characters.
+                String s = bufferedReader.readLine();
+                while (s != null) { //null = end-of-file
+                    bufferedWriter.write(s.replaceAll(search, replace));
+                    bufferedWriter.write(lineSeparator);
+                    s = bufferedReader.readLine();
+                }
+            } finally {
+                bufferedWriter.close();
+            }
+        } finally {
+            bufferedReader.close();
         }
-
-        bufferedReader.close();
-        bufferedWriter.close();
-
     }
 
 
@@ -4966,36 +5099,41 @@ and zoom and pan with controls in
      *
      * @param prompt
      * @return the String the user entered
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
-    public static String getStringFromSystemIn(String prompt) throws Exception {
-        flushLog();
-        System.out.print(prompt);
-        BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-        return inReader.readLine();
+    public static String getStringFromSystemIn(String prompt) {
+        try {
+            flushLog();
+            System.out.print(prompt);
+            BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+            return inReader.readLine();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /** 
      * A variant of getStringFromSystemIn that adds "\nPress ^C to stop or Enter to continue..."
      * to the prompt.
      *
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
-    public static String pressEnterToContinue(String prompt) throws Exception {
+    public static String pressEnterToContinue(String prompt) {
         if (prompt == null)
             prompt = "";
         return getStringFromSystemIn(prompt + 
-            (prompt.length() == 0 || prompt.endsWith("\n")? "" : "\n") +
-            "Press ^C to stop or Enter to continue...");
+                (prompt.length() == 0 || prompt.endsWith("\n")? "" : "\n") +
+                "Press ^C to stop or Enter to continue...");
     }
-     
+
+   
     /** 
      * A variant of pressEnterToContinue with "Press ^C to stop or Enter to continue..."
      * as the prompt.
      *
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
-    public static String pressEnterToContinue() throws Exception {
+    public static String pressEnterToContinue() {
         return pressEnterToContinue("");
     }
      
@@ -5316,27 +5454,30 @@ and zoom and pan with controls in
 
     /**
      * This returns the UTF-8 encoding of the string (or null if trouble).
-     * The inverse of this is utf8ToString.
+     * The inverse of this is utf8BytesToString.
+     * This won't throw an exception and returns ERROR (as bytes) if trouble.
      */
-    public static byte[] getUTF8Bytes(String s) {
+    public static byte[] stringToUtf8Bytes(String s) {
         try {
-            return s.getBytes(UTF_8);             
-        } catch (Exception e) {
-            log("Caught " + ERROR + " in String2.getUTF8Bytes(" + s + "): " + 
+            return s.getBytes(UTF_8);   
+        } catch (Exception e) {  //danger is invalid encoding name -- won't happen
+            log("Caught " + ERROR + " in String2.stringToUtf8Bytes(" + s + "): " + 
                 MustBe.throwableToString(e));
             return new byte[]{59, 92, 92, 79, 92}; //ERROR
         }
     }
 
     /**
-     * This returns a string from the UTF-8 encoded byte[] (or null if trouble).
-     * The inverse of this is getUTF8Bytes.
+     * This returns a string from the UTF-8 encoded byte[] (or ERROR if trouble).
+     * The inverse of this is stringToUtf8Bytes.
+     * This won't throw an exception and returns ERROR if trouble.
      */
-    public static String utf8ToString(byte[] bar) {
+    public static String utf8BytesToString(byte[] bar) {
         try {
-            return new String(bar, UTF_8);             
-        } catch (Exception e) {
-            log("Caught " + ERROR + " in String2.utf8ToString: " + 
+            return new String(bar, UTF_8); 
+            //alternatively, you could use (char)bar[i]
+        } catch (Exception e) { //danger is invalid UTF-8
+            log("Caught " + ERROR + " in String2.utf8BytesToString(" + toCSSVString(bar) + "): " + 
                 MustBe.throwableToString(e));
             return ERROR; 
         }
@@ -5346,26 +5487,27 @@ and zoom and pan with controls in
      * A little weird: This returns the UTF-8 encoding of the string as a String 
      * (using only the lower byte of each 2-byte char),
      * so a unicode string can be stored in a 1-byte/char string. 
-     *
+     * This won't throw an exception and returns ERROR (as bytes) if trouble.
      */
-    public static String toUTF8String(String s) {
+    public static String stringToUtf8String(String s) {
         try {
-            return new String(s.getBytes(UTF_8));             
+            return new String(s.getBytes(UTF_8), 0);  //0=highByte  this is deprecated but useful
         } catch (Exception e) {
-            log("Caught " + ERROR + " in String2.toUTF8String(" + s + "): " + 
+            log("Caught " + ERROR + " in String2.stringToUtf8String(" + s + "): " + 
                 MustBe.throwableToString(e));
             return ERROR; 
         }
     }
 
     /**
-     * A little weird: This returns the unicode string from a UTF-8 encoded String. 
+     * A little weird: This returns the unicode string from a UTF-8 encoded String.
+     * This won't throw an exception and returns ERROR (as bytes) if trouble.
      */
-    public static String fromUTF8String(String s) {
+    public static String utf8StringToString(String s) {
         try {
-            return utf8ToString(toByteArray(s));             
+            return new String(toByteArray(s), UTF_8);             
         } catch (Exception e) {
-            log("Caught " + ERROR + " in String2.fromUTF8String(" + s + "): " + 
+            log("Caught " + ERROR + " in String2.utf8StringToString(" + s + "): " + 
                 MustBe.throwableToString(e));
             return ERROR; 
         }
@@ -5462,7 +5604,7 @@ and zoom and pan with controls in
     } 
 
     /**
-     * This returns the MD5 hash digest of getUTF8Bytes(password) as a String of 32 lowercase hex digits.
+     * This returns the MD5 hash digest of stringToUtf8Bytes(password) as a String of 32 lowercase hex digits.
      * Lowercase because the digest authentication standard uses lower case; so mimic them.
      * And lowercase is easier to type.
      * 
@@ -5475,7 +5617,7 @@ and zoom and pan with controls in
     }
 
     /**
-     * This returns the hash digest of getUTF8Bytes(password) as a String of lowercase hex digits.
+     * This returns the hash digest of stringToUtf8Bytes(password) as a String of lowercase hex digits.
      * Lowercase because the digest authentication standard uses lower case; so mimic them.
      * And lowercase is easier to type.
      * 
@@ -5488,7 +5630,7 @@ and zoom and pan with controls in
         try {
             if (password == null) return null;
             MessageDigest md = MessageDigest.getInstance(algorithm);
-            md.update(getUTF8Bytes(password));
+            md.update(stringToUtf8Bytes(password));
             byte bytes[] = md.digest();
             int nBytes = bytes.length;
             StringBuilder sb = new StringBuilder(nBytes * 2);
@@ -5517,23 +5659,27 @@ and zoom and pan with controls in
      * @param algorithm one of the FILE_DIGEST_OPTIONS ("MD5", "SHA-1", "SHA-256", ...).
      * @param fullFileName  the name of the file to be digested
      * @return the hash digest of the file
-     *   (for MD5, 32 lowercase hex digits as a String),
-     *   or null if fullFileName is null or there is trouble.
+     *   (for MD5, 32 lowercase hex digits as a String)
+     * @throws Exception if real trouble
      */
     public static String fileDigest(boolean useBase64, String algorithm, String fullFileName) 
         throws Exception {
         MessageDigest md = MessageDigest.getInstance(algorithm);
-        FileInputStream fis = new FileInputStream(fullFileName);
-        byte buffer[] = new byte[8192];
-        int nBytes;
-        while ((nBytes = fis.read(buffer)) >= 0) 
-            md.update(buffer, 0, nBytes);
-        fis.close();
+        //below not File2.getDecompressedBufferedInputStream() because want file digest of archive
+        InputStream fis = new BufferedInputStream(new FileInputStream(fullFileName));
+        try {
+            byte buffer[] = new byte[8192];
+            int nBytes;
+            while ((nBytes = fis.read(buffer)) >= 0) 
+                md.update(buffer, 0, nBytes);
+        } finally {
+            fis.close();
+        }
         byte bytes[] = md.digest();
         if (useBase64) {
             return new String(Base64.encodeBase64(bytes));
         } else {
-            nBytes = bytes.length;
+            int nBytes = bytes.length;
             StringBuilder sb = new StringBuilder(nBytes * 2);
             for (int i = 0; i < nBytes; i++)
                 sb.append(zeroPad(Integer.toHexString(
@@ -5898,6 +6044,21 @@ and zoom and pan with controls in
 
 
 
+    /**
+     * This replaces each of the substrings with the canonical String.
+     * If any is null, it is left as null.
+     *
+     * @return the same array, for convenience. null returns null.
+     */
+    public static String[] canonical(String sar[]) {
+        if (sar == null)
+            return null;
+        int n = sar.length;
+        for (int i = 0; i < n; i++)
+            sar[i] = canonical(sar[i]);
+        return sar;
+    }
+
     /** 
      * This is like String.intern(), but uses a WeakHashMap so the canonical strings 
      * can be garbage collected.
@@ -6113,6 +6274,42 @@ and zoom and pan with controls in
     /** This returns true if s isn't null and s.trim().length() &gt; 0. */
     public static boolean isSomething(String s) {
         return s != null && s.trim().length() > 0;
+    }
+
+    /** This returns true if s isn't null, "", "-", "null", "nd", "N/A", "...", "???", etc. */
+    public static boolean isSomething2(String s) {
+        //Some datasets have "" for an attribute.
+
+        //Some datasets have comment="..." ,e.g.,
+        //http://edac-dap.northerngulfinstitute.org/thredds/dodsC/ncom/region1/ncom_glb_reg1_2010013000.nc.das
+        //which then prevents title from being generated
+
+        //some have "-", e.g.,
+        //http://dm1.caricoos.org/thredds/dodsC/content/wrf_archive/wrfout_d01_2009-09-25_12_00_00.nc.das
+        if (s == null || s.length() == 0)
+            return false;
+        s = s.trim().toLowerCase();
+        if (s.length() == 0) //may be now (not before) because of trim()
+            return false;
+
+        //"nd" (used by BCO-DMO) and "other" (since it is often part of a vocabulary) 
+        //are purposely not on the list.
+
+        //if lots of words, switch to hash set.
+        char ch = s.charAt(0);
+        if (s.length() == 1) {
+            return ".-?".indexOf(ch) < 0;
+        } else if (ch == 'n') {
+            return !(s.equals("n/a")  || s.equals("na") || 
+                     s.equals("nd") ||
+                     s.equals("none") || s.equals("none.") || 
+                     s.equals("not applicable") || 
+                     s.equals("null"));
+        } else if (ch == 'u') {
+            return !(s.equals("unknown") || s.equals("unspecified"));
+        } else {
+            return !(s.equals("...") || s.equals("???"));
+        }
     }
 
 

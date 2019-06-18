@@ -25,12 +25,12 @@ public class EDVTimeGridAxis extends EDVTimeStampGridAxis {
 
     
      /** The constructor. */
-    public EDVTimeGridAxis(String tSourceName, 
+    public EDVTimeGridAxis(String tParentDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes,
         PrimitiveArray tSourceValues) throws Throwable {
 
-        super(tSourceName, EDV.TIME_NAME, tSourceAttributes, tAddAttributes,
-            tSourceValues); 
+        super(tParentDatasetID, tSourceName, EDV.TIME_NAME, 
+            tSourceAttributes, tAddAttributes, tSourceValues); 
     }
 
     /**

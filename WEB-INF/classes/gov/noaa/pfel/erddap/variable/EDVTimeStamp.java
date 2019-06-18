@@ -45,8 +45,9 @@ public class EDVTimeStamp extends EDV {
     protected boolean sourceTimeIsNumeric;
     protected double sourceTimeBase = Double.NaN;  //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
-    protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with java.time (was Joda). 
-    protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
+    //protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with java.time (was Joda). 
+    protected String dateTimeFormat; //only used if !sourceTimeIsNumeric
+    protected DateTimeFormatter dateTimeFormatter; //for generating source time if !sourceTimeIsNumeric
     protected String time_precision;  //see Calendar2.epochSecondsToLimitedIsoStringT
     protected String time_zone;  //if not specified, will be Zulu
     protected TimeZone timeZone = null; //for Java   null=Zulu
@@ -70,7 +71,7 @@ public class EDVTimeStamp extends EDV {
      *      Calendar2.ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ",
      *      will be parsed with Calendar2.parseISODateTimeZulu().
      *      See
-     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
      *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    </ul>
      * This constructor gets/sets actual_range from actual_range, actual_min, actual_max,
@@ -211,21 +212,21 @@ public class EDVTimeStamp extends EDV {
             safeStringMissingValue = String2.isSomething(stringFillValue)?
                 stringFillValue : stringMissingValue;
 
-            parseISOWithCalendar2 = sourceTimeFormat.startsWith("yyyy-MM");
-            if (verbose) String2.log("parseISOWithCalendar2=" + parseISOWithCalendar2);
+            //parseISOWithCalendar2 = Calendar2.parseWithCalendar2IsoParser(sourceTimeFormat);
+            //if (verbose) String2.log("parseISOWithCalendar2=" + parseISOWithCalendar2);
 
-            //dateTimeFormatter: sometimes for parsing, always for writing
-            String tSTF = sourceTimeFormat;
-            if (parseISOWithCalendar2 && //so pattern is only for writing 
-                tSTF.endsWith("Z")) //not 'Z'
+            //dateTimeFormatter: for writing to source format
+            dateTimeFormat = sourceTimeFormat;
+            if (//parseISOWithCalendar2 && //so pattern is only for writing 
+                dateTimeFormat.endsWith("Z")) //not 'Z'
                 //force write 'Z' not +0000
-                tSTF = String2.replaceAll(tSTF, "Z", "'Z'"); 
+                dateTimeFormat = String2.replaceAll(dateTimeFormat, "Z", "'Z'"); 
             
             if (time_zone.equals("Zulu")) { //UTC -> Zulu above
-                dateTimeFormatter = Calendar2.makeDateTimeFormatter(tSTF, time_zone);
+                dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
             } else {
-                timeZone = TimeZone.getTimeZone(time_zone);   //VERY BAD: if failure, returns GMT timeZone!!!
-                dateTimeFormatter = Calendar2.makeDateTimeFormatter(tSTF, time_zone);
+                timeZone = TimeZone.getTimeZone(time_zone); //VERY BAD: if failure, no exception and it returns GMT timeZone!!!
+                dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
 
                 //NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
                 //verify that timeZone matches zoneId  (to deal with VERY BAD above)
@@ -396,7 +397,7 @@ public class EDVTimeStamp extends EDV {
      *    <li> a java.time.format.DateTimeFormatter string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
+     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
      *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    <li> null if this can be procured from the "units" source metadata.
      *    </ul>
@@ -456,7 +457,7 @@ public class EDVTimeStamp extends EDV {
         double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor,
             sourceTime);
         //String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
-            //" = " + Calendar2.safeEpochSecondsToIsoStringT(d, "") + "Z");
+            //" = " + Calendar2.safeEpochSecondsToIsoStringTZ(d, ""));
         return d;
     }
 
@@ -496,12 +497,12 @@ public class EDVTimeStamp extends EDV {
 
         //time is a string
         try {
-            double d = parseISOWithCalendar2?
+            double d = //parseISOWithCalendar2?
                 //parse with Calendar2.parseISODateTime
-                Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-                //parse with java.time (was Joda)
-                Calendar2.toEpochSeconds(sourceTime, dateTimeFormatter); 
-            //String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
+                //Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
+                //parse sourceTime
+                Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone); 
+            //String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringTZ(d));
             return d;
         } catch (Throwable t) {
             if (verbose && sourceTime != null && sourceTime.length() > 0)
@@ -634,7 +635,7 @@ public class EDVTimeStamp extends EDV {
      */
     public String sliderCsvValues() throws Throwable {
         if (sliderCsvValues != null) 
-            return String2.utf8ToString(sliderCsvValues);
+            return String2.utf8BytesToString(sliderCsvValues);
 
         try {
             boolean isTime = true;        
@@ -665,7 +666,7 @@ public class EDVTimeStamp extends EDV {
             //store in compact utf8 format
             String csv = sb.toString();
             if (reallyVerbose) String2.log("EDVTimeStamp.sliderCsvValues nValues=" + nValues);
-            sliderCsvValues = String2.getUTF8Bytes(csv); //do last
+            sliderCsvValues = String2.stringToUtf8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -685,20 +686,21 @@ public class EDVTimeStamp extends EDV {
         String2.log("\n*** EDVTimeStamp.test with Z");
         EDVTimeStamp eta = new EDVTimeStamp("sourceName", "time",
             null, 
-            (new Attributes()).add("units", Calendar2.ISO8601TZ_FORMAT).
-                add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00Z", "2007-01-01T00:00:00Z"})),
+            (new Attributes())
+                .add("units", "yyyy-MM-dd'T'HH:mm:ssXXX") //was Calendar2.ISO8601TZ_FORMAT with 'Z'
+                .add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00Z", "2007-01-01T00:00:00Z"})),
             "String"); //this constructor gets source / sets destination actual_range
 
         //test 'Z'
         String t1 = "2007-01-02T03:04:05Z";
         double d = eta.sourceTimeToEpochSeconds(t1);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(d)+"Z", t1, "a1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(d), t1, "a1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t1, "a2");
 
         //test -01:00
         String t2 = "2007-01-02T02:04:05-01:00";
         d = eta.sourceTimeToEpochSeconds(t2);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(d)+"Z", t1, "b1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(d), t1, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t1, "b2");
 
 
@@ -706,20 +708,20 @@ public class EDVTimeStamp extends EDV {
         String2.log("\n*** EDVTimeStamp.test with 3Z");
         eta = new EDVTimeStamp("sourceName", "time",
             null, 
-            (new Attributes()).add("units", Calendar2.ISO8601T3Z_FORMAT).
+            (new Attributes()).add("units", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"). //was Calendar2.ISO8601T3Z_FORMAT).
                 add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00.000Z", "2007-01-01T00:00:00.000Z"})),
             "String");
 
         //test 'Z'
         String t13 = "2007-01-02T03:04:05.123Z";
         d = eta.sourceTimeToEpochSeconds(t13);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "a1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3Z(d), t13, "a1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t13, "a2");
 
         //test -01:00
         String t23 = "2007-01-02T02:04:05.123-01:00";
         d = eta.sourceTimeToEpochSeconds(t23);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "b1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3Z(d), t13, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t13, "b2");
 
 
@@ -734,7 +736,7 @@ public class EDVTimeStamp extends EDV {
         //test no suffix    
         String t4 = "2007-01-02T03:04:05"; //without Z
         d = eta.sourceTimeToEpochSeconds(t4);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(d)+"Z", t1, "b1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(d), t1, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d)+"Z", t1, "b2");
 
 
@@ -749,7 +751,7 @@ public class EDVTimeStamp extends EDV {
         //test no suffix    
         t4 = "2007-01-02T03:04:05.123"; //without Z
         d = eta.sourceTimeToEpochSeconds(t4);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "b1");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3Z(d), t13, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString( d)+"Z", t13, "b2");
 
 

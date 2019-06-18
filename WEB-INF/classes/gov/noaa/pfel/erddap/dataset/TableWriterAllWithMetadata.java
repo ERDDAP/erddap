@@ -44,16 +44,16 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     //TableWriter has Class[] columnTypes; and columnType()
     //TableWriter has Attributes globalAttributes;
     //TableWriter has Attributes[] columnAttributes;
-    protected int[] columnMaxStringLength;
-    protected double[] columnMinValue;  //min of finite values, NaN if no valid values
-    protected double[] columnMaxValue;  //max of finite values, NaN if no valid values
+    protected volatile int[] columnMaxStringLength;
+    protected volatile double[] columnMinValue;  //min of finite values, NaN if no valid values
+    protected volatile double[] columnMaxValue;  //max of finite values, NaN if no valid values
 
     /**
      * The constructor.
      *
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
-     * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
+     * @param tFileNameNoExt is the fileName-safe fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
     public TableWriterAllWithMetadata(EDD tEdd, String tNewHistory, String tDir, 
@@ -70,11 +70,10 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation doesn't change them.
-     *
-     * @param table  with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This TableWriter doesn't change them.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {

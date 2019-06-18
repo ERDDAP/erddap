@@ -25,7 +25,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -46,25 +46,6 @@ public class SaveOpendap  {
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
-
-    /**
-     * This generates a String with a dump of the contents of a netcdf file.
-     * WARNING: if the file is big, this can be very slow.
-     * WARNING: if printData is true, this may not show the data if there is lots of data. 
-     *
-     * @param fullFileName
-     * @param printData if true, all of the data values are printed, too.
-     * @return a String with the dump text
-     */
-    public static String ncDumpString(String fullFileName, 
-            boolean printData) throws Exception {
-        //changed with switch to netcdf-java 4.6.4
-        StringWriter writer = new StringWriter();
-        NCdumpW.print(fullFileName, writer,             
-            printData, false /*print only coord variables*/, false /*ncml*/, false, //strict
-            "" /*varNames*/, null /*cancel*/);
-        return String2.replaceAll(writer.toString(), "\r", "");
-    }
 
     /**
      * Save tries to save all the variables (attributes and data) from
@@ -190,15 +171,17 @@ public class SaveOpendap  {
 
             //I care about this exception
             in.close();
+            in = null;
  
-             //rename the file to the specified name
-             File2.rename(fullName + randomInt, fullName);
+            //rename the file to the specified name
+            File2.rename(fullName + randomInt, fullName);
 
-             //success!
+            //success!
 
         } catch (Exception e) {
             try {
-                in.close(); //explicitly close it
+                if (in != null)
+                    in.close(); //explicitly close it
             } catch (Exception e2) {
                 //don't care
             }
@@ -214,7 +197,7 @@ public class SaveOpendap  {
         if (verbose) 
             String2.log("SaveOpendap.asNc done. created in " + 
                 Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n  fileName=" + fullName);
-        //ncDump("End of SaveOpendap.asNc", directory + name + ext, false);
+        //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
     }
 
@@ -248,7 +231,7 @@ public class SaveOpendap  {
             //test ndbc       It would be better test if it actually tested the data.
             name = "SaveOpendapAsNcNDBC.nc";
             asNc("http://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/31201/31201h2005.nc", dir + name);
-            String info = ncDumpString(dir + name, false);
+            String info = NcHelper.ncdump(dir + name, "-h");
             int po = info.indexOf("{");
             info = info.substring(po);
     String shouldBe =         
@@ -393,7 +376,6 @@ public class SaveOpendap  {
 "  :comment = \"Floripa, Brazil (109)\";\n" +
 "  :location = \"27.70 S 48.13 W \";\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
-" data:\n" +
 "}\n";
             Test.ensureEqual(info, shouldBe, "info=" + info);
             File2.delete(dir + name);
@@ -406,7 +388,7 @@ public class SaveOpendap  {
             name = "SaveOpendapAsNcMBARI.nc";
             //asNc("dods://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);  //doesn't solve problem
             asNc("http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);
-            String2.log(ncDumpString(dir + name, false));
+            String2.log(NcHelper.ncdump(dir + name, "-h"));
             File2.delete(dir + name);
             */
 
@@ -418,7 +400,7 @@ public class SaveOpendap  {
             //String outName = testDir + "convert.nc";
             //convert(inName, READ_OPENDAP_SEQUENCE, outName, SAVE_AS_NC, "row", false);
             //Table table = new Table();
-            //table.readFlatNc(outName, null, 0); //should be already unpacked
+            //table.readFlatNc(outName, null, 0); //standardizeWhat=0; it should be already unpacked
             //String2.log(table.toString(3));
             //Test.ensureEqual(table.nColumns(), 2, "");
             //Test.ensureEqual(table.nRows(), 190, "");
@@ -431,7 +413,7 @@ public class SaveOpendap  {
             //Test.ensureEqual(table.getDoubleData(1, 0), 6.56105, "");
             //Test.ensureEqual(table.getDoubleData(1, 1), 6.95252, "");
             //File2.delete(outName);
-            String2.log(ncDumpString(dir + name, true));
+            String2.log(NcHelper.ncdump(dir + name, ""));
             //File2.delete(dir + name);
             */
         } catch (Exception e) {

@@ -120,7 +120,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         //finally
         if (verbose) 
             String2.log(
-                (reallyVerbose? "\n" + toString() : "") +
+                (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromAllDatasets constructor finished. TIME=" + 
                 (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }

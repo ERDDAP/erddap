@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -51,6 +52,12 @@ public class TaskThread extends Thread {
      */
     public final static Integer TASK_ALL_DAP_TO_NC = new Integer(3);
 
+    /** If taskOA[0].equals(TASK_DOWNLOAD), then make
+     * taskOA[1]=remoteUrl, taskOA[2]=fullFileName,
+     * taskOA[3]=lastModified (Long)   if MAX_VALUE, will be ignored
+     */
+    public final static Integer TASK_DOWNLOAD = new Integer(4);
+
     /**
      * TASK_NAMES parallels the TASK Integers.
      */
@@ -58,7 +65,8 @@ public class TaskThread extends Thread {
         "MAKE_A_DATAFILE",
         "SET_FLAG",
         "DAP_TO_NC",
-        "ALL_DAP_TO_NC"};
+        "ALL_DAP_TO_NC",
+        "DOWNLOAD"};
 
     /**
      * Set this to true (by calling verbose=true in your program, 
@@ -161,7 +169,7 @@ public class TaskThread extends Thread {
                         "    dapUrl=" + dapUrl +
                         "    vars=" + vars + " projection=" + projection +
                         "    file=" + fullFileName + 
-                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT( //local time, or Z?
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringTZ( 
                                 lastModified.longValue() / 1000.0, "NaN");
                     String2.log(taskSummary);
 
@@ -179,12 +187,28 @@ public class TaskThread extends Thread {
                         "  TASK_ALL_DAP_TO_NC \n" + 
                         "    dapUrl=" + dapUrl +
                         "    file=" + fullFileName + 
-                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT( //local time, or Z?
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringTZ( 
                                 lastModified.longValue() / 1000.0, "NaN");
                     String2.log(taskSummary);
 
                     OpendapHelper.allDapToNc(dapUrl, fullFileName);
                     File2.setLastModified(fullFileName, lastModified.longValue());
+
+                //TASK_DOWNLOAD
+                } else if (taskType.equals(TASK_DOWNLOAD)) {
+
+                    String sourceUrl    = (String)taskOA[1];
+                    String fullFileName = (String)taskOA[2];
+                    long   lastMod      =  ((Long)taskOA[3]).longValue();
+                    taskSummary = 
+                        "  TASK_DOWNLOAD sourceUrl=" + sourceUrl + "\n" +
+                        "    fullName=" + fullFileName + "\n" +
+                        "    lastMod=" + lastMod;
+                    String2.log(taskSummary);
+
+                    SSR.downloadFile("TASK_DOWNLOAD", sourceUrl, fullFileName, true); //tryToUseCompression, throws Exception
+                    if (lastMod < Long.MAX_VALUE)
+                        File2.setLastModified(fullFileName, lastMod);
 
                 //UNKNOWN taskType
                 } else {

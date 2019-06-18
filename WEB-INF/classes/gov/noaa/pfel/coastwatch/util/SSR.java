@@ -18,6 +18,8 @@ import com.cohort.util.Test;
 
 import java.awt.Toolkit;
 import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -32,6 +34,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -126,9 +129,14 @@ public class SSR {
     public static boolean debugMode = false;
 
     public static String windows7Zip = "c:\\progra~1\\7-Zip\\7z"; //on Bob's computer
+    public static String erddapVersion = "2"; //vague. will be updated by EDStatic
 
     private static String contextDirectory; //lazy creation by getContextDirectory
     private static String tempDirectory; //lazy creation by getTempDirectory
+
+    static {
+        HttpURLConnection.setFollowRedirects(true);  //it's a static method!
+    }
 
 
     /**
@@ -177,15 +185,16 @@ public class SSR {
             throws java.io.IOException {
         BufferedReader bufferedReader = 
             new BufferedReader(new FileReader(fileName));       
-        String s;
-        while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
-            //String2.log(s);
-            if (s.startsWith(start)) {
-                bufferedReader.close();
-                return s;
+        try {
+            String s;
+            while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
+                //String2.log(s);
+                if (s.startsWith(start)) 
+                    return s;
             }
+        } finally {
+            bufferedReader.close();
         }
-        bufferedReader.close();
         return null;
     }
 
@@ -203,16 +212,17 @@ public class SSR {
             throws java.io.IOException {
         BufferedReader bufferedReader = 
             new BufferedReader(new FileReader(fileName));       
-        String s;
-        Pattern pattern = Pattern.compile(regex);
-        while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
-            //String2.log(s);
-            if (pattern.matcher(s).matches()) {
-                bufferedReader.close();
-                return s;
+        try {
+            String s;
+            Pattern pattern = Pattern.compile(regex);
+            while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
+                //String2.log(s);
+                if (pattern.matcher(s).matches()) 
+                    return s;
             }
+        } finally {
+            bufferedReader.close();
         }
-        bufferedReader.close();
         return null;
     }
 
@@ -346,9 +356,9 @@ public class SSR {
 
         //if I created the streams, close them
         if (outBAOS != null)
-            outBAOS.close();
+            try {outBAOS.close();} catch (Exception e) {}
         if (errBAOS != null)
-            errBAOS.close();
+            try {errBAOS.close();} catch (Exception e) {}
 
         //collect and print results (or throw exception)
         String err = errBAOS == null? "" : errBAOS.toString();
@@ -541,45 +551,51 @@ public class SSR {
         //for all other operating systems...
         if (verbose) String2.log("Using Java's zip to make " + zipDirName);
         //create the ZIP file
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipDirName));
-    
-        //create a buffer for reading the files
-        byte[] buf = new byte[4096];
-    
-        //compress the files
-        for (int i = 0; i < dirNames.length; i++) {
-            //if directory, get all file names
-            ArrayList<String> al = new ArrayList();
-            if (File2.isDirectory(dirNames[i])) {
-                RegexFilenameFilter.recursiveFullNameList(al,
-                    dirNames[i], ".*", false); //directoriesToo
-            } else {
-                al.add(dirNames[i]);
-            }
-
-            for (int i2 = 0; i2 < al.size(); i2++) {
-                FileInputStream in = new FileInputStream(al.get(i2));
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)));
+        try {
         
-                //add ZIP entry to output stream
-                String tName = includeDirectoryInfo? 
-                    al.get(i2).substring(removeDirPrefix.length()): //already validated above
-                    File2.getNameAndExtension(al.get(i2)); 
-                out.putNextEntry(new ZipEntry(tName));
+            //create a buffer for reading the files
+            byte[] buf = new byte[4096];
         
-                //transfer bytes from the file to the ZIP file
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
+            //compress the files
+            for (int i = 0; i < dirNames.length; i++) {
+                //if directory, get all file names
+                ArrayList<String> al = new ArrayList();
+                if (File2.isDirectory(dirNames[i])) {
+                    RegexFilenameFilter.recursiveFullNameList(al,
+                        dirNames[i], ".*", false); //directoriesToo
+                } else {
+                    al.add(dirNames[i]);
                 }
-        
-                //complete the entry
-                out.closeEntry();
-                in.close();
+
+                for (int i2 = 0; i2 < al.size(); i2++) {
+                    //below not File2.getDecompressedBufferedInputStream(). Read files as is.
+                    InputStream in = new BufferedInputStream(new FileInputStream(al.get(i2)));
+                    try {
+                
+                        //add ZIP entry to output stream
+                        String tName = includeDirectoryInfo? 
+                            al.get(i2).substring(removeDirPrefix.length()): //already validated above
+                            File2.getNameAndExtension(al.get(i2)); 
+                        out.putNextEntry(new ZipEntry(tName));
+                
+                        //transfer bytes from the file to the ZIP file
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                
+                        //complete the entry
+                        out.closeEntry();
+                    } finally {
+                        in.close();
+                    }
+                }
             }
+        } finally {        
+            //close the ZIP file
+            out.close();
         }
-    
-        //close the ZIP file
-        out.close();
         if (verbose) String2.log("  zip done. TIME=" + 
             (System.currentTimeMillis() - tTime) + "ms\n");
     }
@@ -670,34 +686,37 @@ public class SSR {
         //for all other operating systems...
         //create the ZIP file
         long tTime = System.currentTimeMillis();
-        GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(gzipDirName));
-    
-        //create a buffer for reading the files
-        byte[] buf = new byte[4096];
-    
-        //compress the files
-        for (int i = 0; i < 1; i++) { //i < dirNames.length; i++) {
-            FileInputStream in = new FileInputStream(dirNames[i]);
-    
-            //add ZIP entry to output stream
-            String tName = includeDirectoryInfo? 
-                dirNames[i].substring(removeDirPrefix.length()): //already validated above
-                File2.getNameAndExtension(dirNames[i]); 
-            //out.putNextEntry(new ZipEntry(tName));
-    
-            //transfer bytes from the file to the ZIP file
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+        GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(gzipDirName)));
+        try {
+            //create a buffer for reading the files
+            byte[] buf = new byte[4096];
+        
+            //compress the files
+            for (int i = 0; i < 1; i++) { //i < dirNames.length; i++) {
+                //below not File2.getDecompressedBufferedInputStream() Read files as is.
+                InputStream in = new BufferedInputStream(new FileInputStream(dirNames[i])); 
+                try {
+                    //add ZIP entry to output stream
+                    String tName = includeDirectoryInfo? 
+                        dirNames[i].substring(removeDirPrefix.length()): //already validated above
+                        File2.getNameAndExtension(dirNames[i]); 
+                    //out.putNextEntry(new ZipEntry(tName));
+            
+                    //transfer bytes from the file to the ZIP file
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    //complete the entry
+                    //out.closeEntry();
+                } finally {
+                    in.close();
+                }
             }
-    
-            //complete the entry
-            //out.closeEntry();
-            in.close();
+        } finally {    
+            //close the GZIP file
+            out.close();
         }
-    
-        //close the GZIP file
-        out.close();
         if (verbose) String2.log("  gzip done. TIME=" + 
             (System.currentTimeMillis() - tTime) + "ms\n");
     }
@@ -737,55 +756,59 @@ public class SSR {
         //if Linux, it is faster to use the zip utility
         long tTime = System.currentTimeMillis();
         if (verbose) String2.log("Using Java's unzip on " + fullZipName);
-        ZipInputStream in = new ZipInputStream(new FileInputStream(fullZipName));
-    
-        //create a buffer for reading the files
-        byte[] buf = new byte[4096];
-    
-        //unzip the files
-        ZipEntry entry = in.getNextEntry();
-        while (entry != null) {
+        //below not File2.getDecompressedBufferedInputStream(). Read file as is.
+        ZipInputStream in = new ZipInputStream(new BufferedInputStream(new FileInputStream(fullZipName))); 
+        try {
+            //create a buffer for reading the files
+            byte[] buf = new byte[4096];
+        
+            //unzip the files
+            ZipEntry entry = in.getNextEntry();
+            while (entry != null) {
 
-            //isDirectory?
-            String name = entry.getName();
-            if (verbose) String2.log("  unzipping " + name);
-            if (entry.isDirectory()) {
-                if (ignoreZipDirectories) {
+                //isDirectory?
+                String name = entry.getName();
+                if (verbose) String2.log("  unzipping " + name);
+                if (entry.isDirectory()) {
+                    if (ignoreZipDirectories) {
+                    } else {
+                        File tDir = new File(baseDir + name);
+                        if (!tDir.exists())
+                            tDir.mkdirs();
+                    }
                 } else {
-                    File tDir = new File(baseDir + name);
-                    if (!tDir.exists())
-                        tDir.mkdirs();
-                }
-            } else {
-                //open an output file
-                if (ignoreZipDirectories) 
-                    name = File2.getNameAndExtension(name); //remove dir info
-                File2.makeDirectory(File2.getDirectory(baseDir + name)); //name may incude subdir names
-                OutputStream out = new FileOutputStream(baseDir + name);
+                    //open an output file
+                    if (ignoreZipDirectories) 
+                        name = File2.getNameAndExtension(name); //remove dir info
+                    File2.makeDirectory(File2.getDirectory(baseDir + name)); //name may incude subdir names
+                    OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
+                    try {
 
-                //transfer bytes from the .zip file to the output file
-                //in.read reads from current zipEntry
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
-                    out.write(buffer, 0, bytesRead);
+                        //transfer bytes from the .zip file to the output file
+                        //in.read reads from current zipEntry
+                        byte[] buffer = new byte[8192]; //best if smaller than java buffered...stream size
+                        int bytesRead;
+                        while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                    } finally {
+                        //close the output file
+                        out.close();
+                    }
+                    if (resultingFullFileNames != null)
+                        resultingFullFileNames.add(baseDir + name);
                 }
 
-                //close the output file
-                out.close();
-                if (resultingFullFileNames != null)
-                    resultingFullFileNames.add(baseDir + name);
+                //close this entry
+                in.closeEntry();
+
+                //get the next entry
+                entry = in.getNextEntry();
             }
-
-            //close this entry
-            in.closeEntry();
-
-            //get the next entry
-            entry = in.getNextEntry();
+        } finally {
+            //close the input file
+            in.close();
         }
-
-        //close the input file
-        in.close();
 
         if (verbose) String2.log("  unzip done. TIME=" + 
             (System.currentTimeMillis() - tTime) + "ms\n");
@@ -826,53 +849,56 @@ public class SSR {
         } else */ {
             //use Java's gzip procedures for all other operating systems
             if (verbose) String2.log("Java's ungzip " + fullGzName);
-            GZIPInputStream in = new GZIPInputStream(new FileInputStream(fullGzName));
-        
-            //create a buffer for reading the files
-            byte[] buf = new byte[4096];
-        
-            ////unzip the files
-            //ZipEntry entry = in.getNextEntry();
-            //while (entry != null) {
-                String ext = File2.getExtension(fullGzName); //should be .gz
-                String name = fullGzName.substring(0, fullGzName.length() - ext.length()); 
-                /*
-                //isDirectory?
-                if (entry.isDirectory()) {
-                    if (ignoreZipDirectories) {
-                    } else {
-                        File tDir = new File(baseDir + name);
-                        if (!tDir.exists())
-                            tDir.mkdirs();
+            //below not File2.getDecompressedBufferedInputStream(). Read file as is.
+            GZIPInputStream in = new GZIPInputStream(new BufferedInputStream(new FileInputStream(fullGzName))); 
+            try {
+                //create a buffer for reading the files
+                byte[] buf = new byte[4096];
+            
+                ////unzip the files
+                //ZipEntry entry = in.getNextEntry();
+                //while (entry != null) {
+                    String ext = File2.getExtension(fullGzName); //should be .gz
+                    String name = fullGzName.substring(0, fullGzName.length() - ext.length()); 
+                    /*
+                    //isDirectory?
+                    if (entry.isDirectory()) {
+                        if (ignoreZipDirectories) {
+                        } else {
+                            File tDir = new File(baseDir + name);
+                            if (!tDir.exists())
+                                tDir.mkdirs();
+                        }
+                    } else */ {
+                        //open an output file
+                        //???do I need to make the directory???
+                        if (ignoreGzDirectories) 
+                            name = File2.getNameAndExtension(name); //remove dir info
+                        OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
+                        try {
+                            //transfer bytes from the .zip file to the output file
+                            //in.read reads from current zipEntry
+                            byte[] buffer = new byte[8192]; //best if smaller than java buffered...Stream size
+                            int bytesRead;
+                            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+                                out.write(buffer, 0, bytesRead);
+                            }
+                        } finally {
+                            //close the output file
+                            out.close();
+                        }
                     }
-                } else */ {
-                    //open an output file
-                    //???do I need to make the directory???
-                    if (ignoreGzDirectories) 
-                        name = File2.getNameAndExtension(name); //remove dir info
-                    OutputStream out = new FileOutputStream(baseDir + name);
-    
-                    //transfer bytes from the .zip file to the output file
-                    //in.read reads from current zipEntry
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
-                        out.write(buffer, 0, bytesRead);
-                    }
 
-                    //close the output file
-                    out.close();
-                }
+                    ////close this entry
+                    //in.closeEntry();
 
-                ////close this entry
-                //in.closeEntry();
-
-                ////get the next entry
-                //entry = in.getNextEntry();
-            //}
-
-            //close the input file
-            in.close();
+                    ////get the next entry
+                    //entry = in.getNextEntry();
+                //}
+            } finally {
+                //close the input file
+                in.close();
+            }
         }
         if (verbose) String2.log("  ungzip done. TIME=" + 
             (System.currentTimeMillis() - tTime) + "ms\n");
@@ -963,7 +989,7 @@ public class SSR {
         
         try {
             // Create the ZIP file
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipDirName));
+            ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)));
         
             // Add ZIP entry to output stream.
             out.putNextEntry(new ZipEntry(fileName));
@@ -1158,7 +1184,7 @@ public class SSR {
      * This requires additions to javac's and java's -cp: 
      * ";C:\programs\_tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar"
      * The mail.jar files are available from Sun
-     * (see http://www.oracle.com/technetwork/java/javamail/index.html).
+     * (see https://www.oracle.com/technetwork/java/javamail/index.html).
      * The software is copyrighted by Sun, but Sun grants anyone 
      * the right to freely redistribute the binary .jar files.
      * The source code is also available from Sun.
@@ -1248,39 +1274,41 @@ public class SSR {
             smtpTransport = session.getTransport("smtp");
             smtpTransport.connect(smtpHost, userName, password);
         }
+        try {
+            // Send the message
+            String addresses[] = toAddresses.split(",");
+            for (int add = 0; add < addresses.length; add++) {
+                String toAddress = addresses[add].trim();
+                if (toAddress.length() == 0 || toAddress.equals("null"))
+                    continue;
 
-        // Send the message
-        String addresses[] = toAddresses.split(",");
-        for (int add = 0; add < addresses.length; add++) {
-            String toAddress = addresses[add].trim();
-            if (toAddress.length() == 0 || toAddress.equals("null"))
-                continue;
+                // Construct the message
+                MimeMessage msg = new MimeMessage(session);
+                msg.setFrom(new InternetAddress(fromAddress));
+                msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
+                msg.setSubject(subject, String2.UTF_8);
+                msg.setText(content, String2.UTF_8); 
+                msg.setHeader("X-Mailer", "msgsend");
+                msg.setSentDate(new Date());
+                msg.saveChanges();  //do last.  don't forget this
 
-            // Construct the message
-            MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(fromAddress));
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
-            msg.setSubject(subject, String2.UTF_8);
-            msg.setText(content, String2.UTF_8); 
-            msg.setHeader("X-Mailer", "msgsend");
-            msg.setSentDate(new Date());
-            msg.saveChanges();  //do last.  don't forget this
-
-            try {
-                if (password == null || password.length() == 0)
-                    Transport.send(msg);
-                else 
-                    smtpTransport.sendMessage(msg, msg.getAllRecipients());
-            } catch (Exception e) {
-                String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
+                try {
+                    if (password == null || password.length() == 0)
+                        Transport.send(msg);
+                    else 
+                        smtpTransport.sendMessage(msg, msg.getAllRecipients());
+                } catch (Exception e) {
+                    String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
+                }
             }
+        } finally {
+            if (smtpTransport != null)
+                smtpTransport.close();    
         }
-        if (smtpTransport != null)
-            smtpTransport.close();    
     }
 
     /**
-     * This mini/psuedo percent encodes query characters for examples
+     * This mini/pseudo percent encodes query characters for examples
      * that work in a browser.
      * This won't always work (e.g., it won't encode &amp; within parameter value).
      * 
@@ -1289,7 +1317,7 @@ public class SSR {
      *    If query is null, this returns "".
      * @throws Exception if trouble
      */
-    public static String psuedoPercentEncode(String url) throws Exception {
+    public static String pseudoPercentEncode(String url) throws Exception {
         if (url == null)
             return "";
         StringBuilder sb = new StringBuilder();
@@ -1327,7 +1355,7 @@ public class SSR {
             //   A-Za-z0-9_-.~   (unreserved characters)   different from java:
             //See javadocs for URI. It says
             //  encode everything but A-Za-z0-9_-!.~'()*   (unreserved characters)
-            //  and for details see appendix A of http://www.ietf.org/rfc/rfc2396.txt
+            //  and for details see appendix A of https://www.ietf.org/rfc/rfc2396.txt
             //    It says agree with unreserved character list in URI javadocs 
             //    (unreserved = alphanum | mark)
             //JavaScript docs support that interpretation
@@ -1415,7 +1443,8 @@ public class SSR {
      */
     public static void touchUrl(String urlString, int timeOutMillis) throws Exception {
         //tests show that getting the inputStream IS necessary (but reading it is not)
-        Object[] oar = getUrlConnInputStream(urlString, timeOutMillis);  
+        Object[] oar = getUrlConnBufferedInputStream(urlString, timeOutMillis, 
+            false, false);  //requestCompression, touchMode
         InputStream in = (InputStream)oar[1];
         //it doesn't seem necessary to read even 1 byte (if available)
         //if (in.available() > 0)
@@ -1437,18 +1466,17 @@ public class SSR {
      * @return an InputStream from the url
      * @throws Exception if trouble
      */
-    public static InputStream getUncompressedUrlInputStream(String urlString) 
+    public static InputStream getUncompressedUrlBufferedInputStream(String urlString) 
             throws Exception {
-        if (reallyVerbose) String2.log("getUncompressedUrlInputStream\n" +
-            urlString);  
-        URL turl = new URL(urlString); 
-        HttpURLConnection conn = (HttpURLConnection)turl.openConnection();
-        conn.setConnectTimeout(120000); //2 minute timeout
-        conn.setReadTimeout(10 * Calendar2.SECONDS_PER_MINUTE * 1000); //ten minutes, in ms
-        conn.connect();      
-        return conn.getInputStream();        
+        return (InputStream)getUrlConnBufferedInputStream(urlString, 120000, false)[1]; //2 minute timeout
     } 
 
+
+    /** A variant that sets attributeTo to "downloadFile". */
+    public static void downloadFile(String urlString,
+            String fullFileName, boolean tryToUseCompression) throws Exception {
+        downloadFile("downloadFile", urlString, fullFileName, tryToUseCompression);
+    }
 
     /**
      * This downloads a file as bytes from a Url and saves it as a temporary file,
@@ -1459,6 +1487,7 @@ public class SSR {
      *
      * CHARSET! This writes the bytes as-is, regardless of charset of source URL.
      *
+     * @param attributeTo is used for diagnostic messages. If null, this uses "downloadFile".
      * @param urlString urlString (or file name) pointing to the information.  
      *   The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
@@ -1473,33 +1502,46 @@ public class SSR {
      * @throws Exception if trouble (and the temporary file will have been deleted,
      *   (but the original fullFileName, if any, will still exist).
      */
-    public static void downloadFile(String urlString,
+    public static void downloadFile(String attributeTo, String urlString,
             String fullFileName, boolean tryToUseCompression) throws Exception {
         //if 'url' is really just a local file, just copy it into place
+        if (attributeTo == null)
+            attributeTo = "downloadFile";
         if (!String2.isUrl(urlString)) {
             if (!File2.copy(urlString, fullFileName))
-                throw new IOException(String2.ERROR + ": Unable to copy " + 
+                throw new IOException(String2.ERROR + ": " + attributeTo + " unable to copy " + 
                     urlString + " to " + fullFileName);
         }
 
         //download from Url
         //first, ensure dir exists
+        long time = System.currentTimeMillis();
         int random = Math2.random(Integer.MAX_VALUE);
         InputStream in = null;  
         OutputStream out = null;
         try {
             File2.makeDirectory(File2.getDirectory(fullFileName));
             in = tryToUseCompression? 
-                getUrlInputStream(urlString) :             
-                getUncompressedUrlInputStream(urlString);  
-            out = new FileOutputStream(fullFileName + random);
-            byte buffer[] = new byte[32768];
-            int nBytes;
-            while ((nBytes = in.read(buffer)) > 0) 
-                out.write(buffer, 0, nBytes);
-            in.close();  in = null;
-            out.close(); out = null;
+                getUrlBufferedInputStream(urlString) :             
+                getUncompressedUrlBufferedInputStream(urlString);  
+            try {
+                out = new BufferedOutputStream(new FileOutputStream(fullFileName + random));
+                try {
+                    byte buffer[] = new byte[8192]; //best if smaller than java buffered..stream sizes
+                    int nBytes;
+                    while ((nBytes = in.read(buffer)) > 0) 
+                        out.write(buffer, 0, nBytes);
+                } finally {
+                    out.close(); out = null;
+                }
+            } finally {
+                in.close();  in = null;
+            }
             File2.rename(fullFileName + random, fullFileName); //exception if trouble
+            if (verbose) String2.log(
+                attributeTo + " successfully DOWNLOADED (in " + (System.currentTimeMillis() - time) + "ms)" +
+                "\n  from " + urlString + 
+                "\n  to " + fullFileName);
 
         } catch (Exception e) {
             try {
@@ -1513,15 +1555,18 @@ public class SSR {
             } catch (Exception e2) {
             }
             File2.delete(fullFileName + random);
-            throw new IOException(String2.ERROR + " while downloading " + urlString,
+            String2.log(String2.ERROR + " in " + attributeTo + " while downloading from " + 
+                urlString + " to " + fullFileName);
+            throw new IOException(String2.ERROR + " in " + attributeTo + " while downloading from " + urlString,
                 e);
         }
     }
 
     /**
      * This gets the inputStream from a url.
-     * This solicits and accepts gzip, x-gzip, and deflate compressed responses
+     * This solicits and accepts gzip and deflate compressed responses
      * (not compress or x-compress as they seem harder to work with because of 'Entries').
+     * And touchMode is set to false.
      * For info on compressed responses, see: 
      * http://www.websiteoptimization.com/speed/tweak/compress/ 
      * and the related test site: http://www.webperformance.org/compression/ .
@@ -1535,39 +1580,156 @@ public class SSR {
      *   [2]=charset (will be valid)
      * @throws Exception if trouble
      */
-    public static Object[] getUrlConnInputStream(String urlString, int timeOutMillis) throws Exception {
+    public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis) throws Exception {
+        return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, true, false);
+    }
+
+    /** 
+     * This is a variant of getUrlConnInputStream where touchMode=false.
+     */
+    public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
+            boolean requestCompression) throws Exception {
+        return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, 
+            requestCompression, false);
+    }
+
+
+    /**
+     * This is the low level version of getUrlConnInputStream. It has the most options.
+     *
+     * @param touchMode If true, this method doesn't pursue http to https redirects 
+     *    and doesn't log the info from the errorStream.
+     */
+    public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
+            boolean requestCompression, boolean touchMode) throws Exception {
+        if (requestCompression && urlString.indexOf('?') < 0 && //no parameters
+            File2.isCompressedExtension(File2.getExtension(urlString)))
+                requestCompression = false;
         if (reallyVerbose) 
-            String2.log("getUrlConnInputStream " + urlString);  
+            String2.log("getUrlConnInputStream " + urlString + " requestCompression=" + requestCompression);  
         URL turl = new URL(urlString); 
         URLConnection conn = turl.openConnection();
-        conn.setRequestProperty("Accept-Encoding", 
-            "gzip, deflate"); //compress, x-compress, x-gzip
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        if (requestCompression) 
+            conn.setRequestProperty("Accept-Encoding", 
+                "gzip, deflate"); //compress, x-compress, x-gzip
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 ERDDAP/" + erddapVersion);
         //String2.log("request: " + String2.toString(conn.getRequestProperties()));
-        if (timeOutMillis <= 0)
-            timeOutMillis = 10 * Calendar2.SECONDS_PER_MINUTE * 1000; //ten minutes, in ms
-        conn.setConnectTimeout(timeOutMillis);
+        if (connectTimeOutMillis <= 0)
+            connectTimeOutMillis = 10 * Calendar2.SECONDS_PER_MINUTE * 1000; //ten minutes, in ms
+        conn.setConnectTimeout(connectTimeOutMillis);
         //I think setReadTimeout is any period of inactivity.
         conn.setReadTimeout(10 * Calendar2.SECONDS_PER_MINUTE * 1000); //ten minutes, in ms
         conn.connect();      
 
-        String encoding = conn.getContentEncoding();
-        InputStream is = conn.getInputStream();
-        //String2.log("url = " + urlString + "\n" +  //diagnostic
-        //  "  headerFields=" + String2.toString(conn.getHeaderFields()));
-        //    "encoding=" + encoding + "\n" +
-        //    "BeginContent");
-        if (encoding != null) {
-            encoding = encoding.toLowerCase();
-            //if (encoding.indexOf("compress") >= 0)
-            //    is = new ZipInputStream(is);
-            //else 
-            if (encoding.indexOf("gzip") >= 0)
-                is = new GZIPInputStream(is);
-            else if (encoding.indexOf("deflate") >= 0)
-                is = new InflaterInputStream(is);
-        }
+        //The automatic redirect handling won't handle http to https.
+        //So if error is 301, 302, 303 and there is a "location" header field: redirect
+        if (!touchMode && conn instanceof HttpURLConnection) {
+            HttpURLConnection httpUrlConn = (HttpURLConnection)conn;
+            int code = httpUrlConn.getResponseCode();
+            if (code != 200) 
+                String2.log(
+                    (reallyVerbose? "" : //info was shown above, else show now ...
+                        "getUrlConnInputStream " + urlString + " requestCompression=" + requestCompression + "\n") +  
+                    "  Warning: HTTP status code=" + code);
+            if (code >= 301 && code <= 308 && code != 304) {  //HTTP_MOVED_TEMP HTTP_MOVED_PERM HTTP_SEE_OTHER  (304 Not Modified)
+                String location = conn.getHeaderField("location");
+                if (String2.isSomething(location)) {
+                    String2.log("  redirect to " + location);
+                    turl = new URL(location); 
+                    conn = turl.openConnection();
+                    conn.setRequestProperty("Accept-Encoding", 
+                        "gzip, deflate"); //compress, x-compress, x-gzip
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 ERDDAP/" + erddapVersion);
+                    //String2.log("request: " + String2.toString(conn.getRequestProperties()));
+                    conn.setConnectTimeout(connectTimeOutMillis);
+                    //I think setReadTimeout is any period of inactivity.
+                    conn.setReadTimeout(10 * Calendar2.SECONDS_PER_MINUTE * 1000); //ten minutes, in ms
+                    conn.connect();      
+                    if (conn instanceof HttpURLConnection) {
+                        httpUrlConn = (HttpURLConnection)conn;
+                        code = httpUrlConn.getResponseCode();
+                        if (code != 200) 
+                            String2.log("  Warning: after redirect, HTTP status code=" + code);
+                    }
+                }
+            //Do little here. Java throws good Exception eg, when later try getInputStream 
+            }            
+        }        
 
+        InputStream is = getBufferedInputStream(urlString, conn);
+        String charset = getCharset(urlString, conn); 
+
+        //String2.log(">>charset=" + charset);
+        return new Object[]{conn, is, charset};
+    }
+
+
+    /**
+     * This returns the inputStream from the connection, with a content decoder
+     * if needed.
+     *
+     * @param urlString for diagnostics only
+     * @param con 
+     * @return the inputStream from the connection, with a content decoder
+     * if needed.
+     */
+    public static InputStream getBufferedInputStream(String urlString, URLConnection con) throws Exception {
+        String encoding = con.getContentEncoding();
+        try {
+            InputStream is = new BufferedInputStream(con.getInputStream());
+            //String2.log("url = " + urlString + "\n" +  //diagnostic
+            //  "  headerFields=" + String2.toString(conn.getHeaderFields()));
+            //    "encoding=" + encoding + "\n" +
+            //    "BeginContent");
+            if (encoding != null) {
+                encoding = encoding.toLowerCase();
+                //if (encoding.indexOf("compress") >= 0) //hard to work with later
+                //    is = new ZipInputStream(is);
+                //else 
+                if (encoding.indexOf("gzip") >= 0)
+                    is = new GZIPInputStream(is);
+                else if (encoding.indexOf("deflate") >= 0)
+                    is = new InflaterInputStream(is);
+            }
+
+            return is;
+        } catch (Exception e) {
+            if (con instanceof HttpURLConnection) {
+                //try to read errorStream and append to e.
+                HttpURLConnection httpUrlCon = (HttpURLConnection)con;
+                int code = httpUrlCon.getResponseCode();
+                if (code != 200) {
+                    String msg = null;
+                    try {
+                        //try to read the errorStream
+                        InputStream es = httpUrlCon.getErrorStream(); //will fail if no error content
+                        if (es != null) {
+                            String charset = getCharset(urlString, httpUrlCon);
+                            msg = readerToString(urlString, //may throw exception
+                                new BufferedReader(new InputStreamReader(es, charset)), 1000); //maxCharacters
+                        }
+                    } catch (Throwable t) {
+                    }
+                    String eString = e.toString();
+                    if (!String2.isSomething(eString))
+                        eString = "";
+                    String lookFor = "java.io.IOException: Server returned HTTP response code: \\d\\d\\d for .*"; //"for [url]"
+                    if (eString.matches(lookFor)) 
+                        eString = eString.substring(61); //leaving "for [url]"
+                    throw new IOException("HTTP status code=" + code + " " + eString + 
+                        (String2.isSomething(msg)? "\n(" + msg.trim() + ")" : ""));
+                }
+            }
+            throw e;  //just rethrow e
+        }
+    }
+
+    /**
+     * This returns the charset of the response (and assumes 8859-1 if none specified).
+     *
+     * @param urlString is for diagnostic messages only
+     */
+    public static String getCharset(String urlString, URLConnection conn) {
         //typical: Content-Type: text/html; charset=utf-8
         //default charset="ISO-8859-1"
         //see https://www.w3.org/International/articles/http-charset/index
@@ -1598,8 +1760,7 @@ public class SSR {
                 }
             }            
         }
-        //String2.log(">>charset=" + charset);
-        return new Object[]{conn, is, charset};
+        return charset;
     }
 
     /** For compatibility with older code. It uses a timeout of 120 seconds.
@@ -1610,8 +1771,8 @@ public class SSR {
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      */
-    public static InputStream getUrlInputStream(String urlString) throws Exception {
-        return (InputStream)(getUrlConnInputStream(urlString, 120000)[1]); 
+    public static InputStream getUrlBufferedInputStream(String urlString) throws Exception {
+        return (InputStream)(getUrlConnBufferedInputStream(urlString, 120000)[1]); 
     }
 
     /** If you need a reader, this is better than starting with getUrlInputStream
@@ -1621,13 +1782,11 @@ public class SSR {
      * @param urlString The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     * @return a buffered Url Reader.  BufferedReaders can readLine().
      */
-    public static Reader getUrlReader(String urlString) throws Exception {
-        Object[] o3 = getUrlConnInputStream(urlString, 120000);       
-        return new InputStreamReader((InputStream)o3[1], (String)o3[2]); 
-    }
     public static BufferedReader getBufferedUrlReader(String urlString) throws Exception {
-        return new BufferedReader(getUrlReader(urlString)); 
+        Object[] o3 = getUrlConnBufferedInputStream(urlString, 120000);       
+        return new BufferedReader(new InputStreamReader((InputStream)o3[1], (String)o3[2])); 
     }
 
     /**
@@ -1648,15 +1807,21 @@ public class SSR {
                 return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 2);
 
             BufferedReader in = getBufferedUrlReader(urlString);
-            ArrayList<String> al = new ArrayList();
-            String s;
-            while ((s = in.readLine()) != null) {
-                al.add(s);
+            try {
+                ArrayList<String> al = new ArrayList();
+                String s;
+                while ((s = in.readLine()) != null) {
+                    al.add(s);
+                }
+                return al.toArray(new String[0]);
+            } finally {
+                in.close();
             }
-            in.close();
-            return al.toArray(new String[0]);
         } catch (Exception e) {
-            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+            String msg = e.toString();
+            if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0)
+                throw e;
+            throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
     } 
 
@@ -1676,14 +1841,20 @@ public class SSR {
             try {
                 StringBuilder sb = new StringBuilder(4096); 
                 BufferedReader in = getBufferedUrlReader(urlString);
-                String s;
-                while ((s = in.readLine()) != null) {
-                    sb.append(s);
-                    sb.append('\n');
+                try {
+                    String s;
+                    while ((s = in.readLine()) != null) {
+                        sb.append(s);
+                        sb.append('\n');
+                    }
+                } finally {
+                    in.close();
                 }
-                in.close();
                 return sb.toString();
             } catch (Exception e) {
+                String msg = e.toString();
+                if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0)
+                    throw e;
                 throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
             }
         }
@@ -1706,23 +1877,51 @@ public class SSR {
      * @throws Exception if error occurs
      */
     public static String getUrlResponseStringUnchanged(String urlString) throws Exception {
-        if (String2.isUrl(urlString)) {
-            try {
-                char buffer[] = new char[4096];
-                StringBuilder sb = new StringBuilder(4096); 
-                Reader in = getUrlReader(urlString);
-                int got;
-                while ((got = in.read(buffer)) >= 0)  //-1 if end-of-stream
-                    sb.append(buffer, 0, got);
-                in.close();
-                return sb.toString();
-            } catch (Exception e) {
-                throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
-            }
-        }
+        if (String2.isUrl(urlString)) 
+            return readerToString(urlString, getBufferedUrlReader(urlString));
 
         //if file -- Trouble! it assumes 8859-1 encoding. Who uses this?
         return String2.directReadFrom88591File(urlString); //throws exception
+    }
+
+    /** 
+     * This variant of readerToString gets all of the content.
+     */
+    public static String readerToString(String urlString, Reader in) throws Exception {
+        return readerToString(urlString, in, Integer.MAX_VALUE);
+    }
+
+    /**
+     * This returns the info from the reader, unchanged.
+     *
+     * @param urlString for diagnostic messages only
+     * @param in Usually a bufferedReader. This method always closes the reader.
+     * @throws Exception if trouble
+     */
+    public static String readerToString(String urlString, Reader in, int maxChars) throws Exception {
+        try {
+            char buffer[] = new char[8192];
+            StringBuilder sb = new StringBuilder(8192); 
+            try {
+                int got;
+                while ((got = in.read(buffer)) >= 0) { //-1 if end-of-stream
+                    sb.append(buffer, 0, got);
+                    if (sb.length() >= maxChars) {
+                        sb.setLength(maxChars);
+                        sb.append("...");
+                        break;
+                    }
+                }
+            } finally {
+                in.close();
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            String msg = e.toString();
+            if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0)
+                throw e;
+            throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+        }
     }
 
     /**
@@ -1738,19 +1937,24 @@ public class SSR {
     public static byte[] getUrlResponseBytes(String urlString) throws Exception {
         try {
             byte buffer[] = new byte[1024];
-            InputStream is = getUrlInputStream(urlString); 
-            ByteArray ba = new ByteArray();
-            int available = is.available();
-            while (available >= 0) { //0 is ok
-                int getN = is.read(buffer, 0, Math.min(1024, Math.max(1, available))); //1.. avail .. 1024
-                if (getN == -1) //eof
-                    break;
-                ba.add(buffer, 0, getN);
+            InputStream is = getUrlBufferedInputStream(urlString); 
+            try {
+                ByteArray ba = new ByteArray();
+                int available = is.available();
+                while (available >= 0) { //0 is ok
+                    int getN = is.read(buffer, 0, Math.min(1024, Math.max(1, available))); //1.. avail .. 1024
+                    if (getN == -1) //eof
+                        break;
+                    ba.add(buffer, 0, getN);
+                }
+                return ba.toArray();
+            } finally {
+                is.close();
             }
-            is.close();
-            return ba.toArray();
         } catch (Exception e) {
-            //String2.log(e.toString());
+            String msg = e.toString();
+            if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0)
+                throw e;
             throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
     } 
@@ -1770,7 +1974,7 @@ public class SSR {
     /**
      * This gets the bytes from a file.
      *
-     * @param fileName
+     * @param fileName.  If compressed file, this reads the decompressed, first file in the archive.
      * @return a byte[] with the response.
      * @throws Exception if error occurs
      */
@@ -1778,7 +1982,7 @@ public class SSR {
         InputStream is = null; 
         try {
             byte buffer[] = new byte[1024];
-            is = new FileInputStream(fileName); 
+            is = File2.getDecompressedBufferedInputStream(fileName); 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for(int s; (s=is.read(buffer)) != -1; ) 
                 baos.write(buffer, 0, s);
@@ -2144,14 +2348,19 @@ public class SSR {
     /** 
      * This POSTs the content to the url, and returns the response.
      * 
-     * @param urlString where the content will be sent
-     * @param mimeType e.g., "text/xml"
-     * @param encoding e.g., String2.UTF_8
-     * @param content the content to be sent
+     * @param urlString where the content will be sent (with no parameters)
+     * @param contentType charset MUST be UTF-8. E.g., "application/x-www-form-urlencoded; charset=UTF-8" or 
+     *    "text/xml; charset=UTF-8"   
+     * @param content the content to be sent, e.g., key1=value1&key2=value2
+     *  (where keys and values are percent encoded).
+     *  This method does conversion to UTF-8 bytes.
+     * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) InputStream,
+     *   [2]=charset (will be valid)
      * @throws Exception if trouble
      */
-    public static InputStream getPostInputStream(String urlString, 
-        String mimeType, String encoding, String content) throws Exception {
+    public static Object[] getPostInputStream(String urlString, 
+        String contentType, String content) throws Exception {
+        //modified from https://stackoverflow.com/questions/3324717/sending-http-post-request-in-java 
 
         //create the connection where we're going to send the file
         URL url = new URL(urlString);
@@ -2159,48 +2368,58 @@ public class SSR {
 
         //set the appropriate HTTP parameters
         //con.setRequestProperty("Content-Length", "" + content.length()); //not required, and I'm confused about pre/post encoding length
-        con.setRequestProperty("Content-Type", mimeType);
-        con.setRequestProperty("Content-Encoding", encoding);        
-        con.setRequestProperty("Accept-Encoding", 
-            "gzip, x-gzip, deflate"); //no compress, x-compress, since zip Entries are hard to deal with
+        con.setRequestProperty("Content-Type", contentType);
+        boolean requestCompression = true;
+        if (requestCompression && urlString.indexOf('?') < 0 && //no parameters
+            File2.isCompressedExtension(File2.getExtension(urlString)))
+            requestCompression = false;
+        if (requestCompression)
+            con.setRequestProperty("Accept-Encoding", 
+                "gzip, deflate"); //no compress, x-compress, since zip Entries are hard to deal with
         con.setRequestMethod("POST");
         con.setDoOutput(true);
         con.setDoInput(true);
 
         //send the content
-        OutputStreamWriter writer = new OutputStreamWriter(con.getOutputStream(), encoding);
-        writer.write(content);  
-        writer.flush();
-        writer.close();
-
-        //read the response
-        InputStream is = con.getInputStream();
-        String responseEncoding = con.getContentEncoding();
-        String2.log("  getPostInputStream url = " + urlString +   //diagnostic
-            //"  headerFields=" + String2.toString(con.getHeaderFields()) +
-            " encoding=" + responseEncoding);
-        if (responseEncoding != null) {
-            responseEncoding = responseEncoding.toLowerCase();
-            //if (encoding.indexOf("compress") >= 0)
-            //    is = new ZipInputStream(is);
-            //else 
-            if (responseEncoding.indexOf("gzip") >= 0) {
-                //String2.log("using gzip!");
-                is = new GZIPInputStream(is);
-            } else if (responseEncoding.indexOf("deflate") >= 0) {
-                //String2.log("using deflate!");
-                is = new InflaterInputStream(is);
-            }
+        Writer writer = new BufferedWriter(new OutputStreamWriter(
+            new BufferedOutputStream(con.getOutputStream()), String2.UTF_8));
+        try {
+            writer.write(content);  
+            writer.flush();
+        } finally {
+            writer.close();
         }
-        return is;
+
+        InputStream is = getBufferedInputStream(urlString, con);
+        String charset = getCharset(urlString, con);
+        return new Object[]{con, is, charset};
     } 
+
+    /**
+     * Submits the urlString via POST and returns the response.
+     * This assumes the response is text, not a binary file.
+     *
+     * @param urlString a GET-like urlString with '?' and params.
+     *   This method breaks it at '?' and submits via POST.
+     */
+    public static String postFormGetResponseString(String urlString) throws Exception {
+        int po = urlString.indexOf('?');
+        Object ob3[] = getPostInputStream(
+            po < 0? urlString : urlString.substring(0, po), 
+            "application/x-www-form-urlencoded; charset=UTF-8", 
+            po < 0? "" : urlString.substring(po + 1));
+        BufferedReader bufReader = new BufferedReader(
+            new InputStreamReader((InputStream)ob3[1], (String)ob3[2]));
+        return readerToString(urlString, bufReader);
+    }
+
 
 
     /**
      * Copy from source to outputStream.
      *
      * @param source May be local fileName or a URL.
-     * @param out At the end, out is flushed, but not closed
+     * @param out Best if buffered. At the end, out is flushed, but not closed
      * @param first The first byte to be transferred (0..).
      * @param last The last byte to be transferred, inclusive.
      *   Use -1 to transfer from first to the end.
@@ -2213,7 +2432,7 @@ public class SSR {
             //URL
             InputStream in = null;
             try {
-                in = (InputStream)(getUrlConnInputStream(source, 
+                in = (InputStream)(getUrlConnBufferedInputStream(source, 
                     120000)[1]); //timeOutMillis. throws Exception
                 if (first > 0) {
                     File2.skipFully(in, first);
@@ -2240,8 +2459,8 @@ public class SSR {
      * A method to copy the info from an inputStream to an outputStream.
      * Based on E.R. Harold's book "Java I/O".
      *
-     * @param in At the end, in ISN'T closed.
-     * @param out At the end, out is flushed, but not closed
+     * @param in Best if buffered. At the end, in ISN'T closed.
+     * @param out Best if Buffered. At the end, out is flushed, but not closed
      * @throws IOException if trouble
      */
     public static void copy(InputStream in, OutputStream out) throws IOException {
@@ -2250,7 +2469,7 @@ public class SSR {
         // input or write to the output while copying is taking place
         synchronized (in) {
             synchronized (out) {
-                byte[] buffer = new byte[32768];
+                byte[] buffer = new byte[8192]; //best if smaller than java buffered...stream sizes
                 int nRead;
                 while ((nRead = in.read(buffer)) >= 0) //0 shouldn't happen. -1=end of file
                     out.write(buffer, 0, nRead);

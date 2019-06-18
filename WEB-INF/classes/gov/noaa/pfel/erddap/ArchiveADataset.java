@@ -24,6 +24,8 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.InputStreamReader;
@@ -85,7 +87,7 @@ public class ArchiveADataset {
      */
     public String doIt(String args[]) throws Throwable {
         GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
-        String isoTime     = Calendar2.formatAsISODateTimeT(gcZ) + "Z";
+        String isoTime     = Calendar2.formatAsISODateTimeTZ(gcZ);
         String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
         String aadDir = EDStatic.bigParentDirectory + "ArchiveADataset/";
         File2.makeDirectory(aadDir);
@@ -93,8 +95,9 @@ public class ArchiveADataset {
         String2.setupLog(true, false,  //toSystemOut, toSystemErr
             logFileName,
             false, String2.logFileDefaultMaxSize);  //append
-        String2.log("*** Starting ArchiveADataset " + isoTime + "\n" + 
+        String2.log("*** Starting ArchiveADataset " + isoTime + " erddapVersion=" + EDStatic.erddapVersion + "\n" +  
             "logFile=" + String2.logFileName() + "\n" +
+
             String2.standardHelpAboutMessage());
         String resultName;
         FileOutputStream fos;
@@ -176,7 +179,7 @@ public class ArchiveADataset {
                 logFileName + "\n" +
                 "Press ^D or ^C to exit this program at any time.\n" +
                 "For detailed information, see\n" +
-                "http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset");
+                "https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset");
             
             //get bagitMode
             int whichArg = 0;
@@ -316,8 +319,8 @@ public class ArchiveADataset {
                 if (bagitMode) {
                     manifestFullFileName = archiveDir + "manifest-" + 
                         digestExtension1 + ".txt"; //md5 or sha256
-                    manifestFileWriter = new OutputStreamWriter(
-                        new FileOutputStream(manifestFullFileName), String2.UTF_8);            
+                    manifestFileWriter = new BufferedWriter(new OutputStreamWriter(
+                        new BufferedOutputStream(new FileOutputStream(manifestFullFileName)), String2.UTF_8));            
 
                     aadSettings = 
                         "ArchiveADataset_container_type: " + mode + "\n" +
@@ -515,8 +518,8 @@ public class ArchiveADataset {
                 if (bagitMode) {
                     manifestFullFileName = archiveDir + "manifest-" + 
                         digestExtension1 + ".txt"; //md5 or sha256
-                    manifestFileWriter = new OutputStreamWriter(
-                        new FileOutputStream(manifestFullFileName), String2.UTF_8);            
+                    manifestFileWriter = new BufferedWriter(new OutputStreamWriter(
+                        new BufferedOutputStream(new FileOutputStream(manifestFullFileName)), String2.UTF_8));            
 
                     aadSettings = 
                         "ArchiveADataset_container_type: " + mode + "\n" +
@@ -608,7 +611,7 @@ public class ArchiveADataset {
                         subsetByCSV + extraConstraints + "&distinct()", 
                         archiveDir, "combos", ".nc"); 
                     Table combos = new Table(); 
-                    combos.readFlatNc(archiveDir + resultName, null, 0);
+                    combos.readFlatNc(archiveDir + resultName, null, 0); //standardizeWhat=0
                     File2.delete(     archiveDir + resultName);
                     int nComboRows = combos.nRows();
                     int nComboCols = combos.nColumns();
@@ -674,33 +677,42 @@ public class ArchiveADataset {
                 manifestFileWriter = null;
 
                 //create required bagit.txt
-                Writer tw = new OutputStreamWriter(
-                    new FileOutputStream(archiveDir + "bagit.txt"), String2.UTF_8);            
-                tw.write(
-                    "BagIt-Version: 0.97\n" +
-                    "Tag-File-Character-Encoding: UTF-8\n");
-                tw.close();
+                Writer tw = new BufferedWriter(new OutputStreamWriter(
+                    new BufferedOutputStream(new FileOutputStream(archiveDir + "bagit.txt")), String2.UTF_8));            
+                try {
+                    tw.write(
+                        "BagIt-Version: 0.97\n" +
+                        "Tag-File-Character-Encoding: UTF-8\n");
+                } finally {
+                    tw.close();
+                }
 
                 //create optional bag-info.txt
-                tw = new OutputStreamWriter(
-                    new FileOutputStream(archiveDir + "bag-info.txt"), String2.UTF_8);            
-                tw.write(
-                    "Contact-Email: " + contactEmail + "\n" +
-                    "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
-                    aadSettings);
-                tw.close();
+                tw = new BufferedWriter(new OutputStreamWriter(
+                    new BufferedOutputStream(new FileOutputStream(archiveDir + "bag-info.txt")), String2.UTF_8));            
+                try {
+                    tw.write(
+                        "Contact-Email: " + contactEmail + "\n" +
+                        "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+                        aadSettings);
+                } finally {
+                    tw.close();
+                }
 
                 //create optional tagmanifest-md5.txt
-                tw = new OutputStreamWriter(
-                    new FileOutputStream(archiveDir + "tagmanifest-" + digestExtension1 + ".txt"), String2.UTF_8);            
-                tw.write(
-                    String2.fileDigest(digestType, archiveDir + "bag-info.txt")                + 
-                        "  bag-info.txt\n" +
-                    String2.fileDigest(digestType, archiveDir + "bagit.txt")                   + 
-                        "  bagit.txt\n" +
-                    String2.fileDigest(digestType, archiveDir + "manifest-" + digestExtension1 + ".txt") + 
-                        "  manifest-" + digestExtension1 + ".txt\n");
-                tw.close();
+                tw = new BufferedWriter(new OutputStreamWriter(
+                    new BufferedOutputStream(new FileOutputStream(archiveDir + "tagmanifest-" + digestExtension1 + ".txt")), String2.UTF_8));            
+                try {
+                    tw.write(
+                        String2.fileDigest(digestType, archiveDir + "bag-info.txt")                + 
+                            "  bag-info.txt\n" +
+                        String2.fileDigest(digestType, archiveDir + "bagit.txt")                   + 
+                            "  bagit.txt\n" +
+                        String2.fileDigest(digestType, archiveDir + "manifest-" + digestExtension1 + ".txt") + 
+                            "  manifest-" + digestExtension1 + ".txt\n");
+                } finally {
+                    tw.close();
+                }
             }
 
             //make the zip or .tgz file
@@ -802,13 +814,13 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
-"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         149..\n" +
+"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         1....\n" +
 "cwwcNDBCMet.dds                                                  " + today + "T.{8}Z           3..\n" +
 "READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
 "data/\n" +
 "  cwwcNDBCMet.nc                                                 " + today + "T.{8}Z      1.......\n" +
 "  cwwcNDBCMet.nc.md5                                             " + today + "T.{8}Z            49\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external ...tar.gz.md5.txt
         ra = String2.readFromFile(targzName + ".md5.txt");
@@ -816,7 +828,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
        
        
         //String2.pressEnterToContinue("\n"); 
@@ -860,7 +872,7 @@ public class ArchiveADataset {
 "manifest-md5.txt,54\n" +
 "tagmanifest-md5.txt,142\n" +
 "data/cwwcNDBCMet.nc,1.......\n";  //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-md5.txt", String2.UTF_8);
@@ -868,7 +880,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{32}  data/cwwcNDBCMet.nc\n";   //2017-03-07 actual md5 verified by hand
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -877,7 +889,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -895,7 +907,7 @@ public class ArchiveADataset {
 "ArchiveADataset_subset_by: \n" +
 "ArchiveADataset_data_file_type: .ncCF\n" +
 "ArchiveADataset_digest_type: MD5\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-md5.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-md5.txt", String2.UTF_8);
@@ -905,7 +917,7 @@ public class ArchiveADataset {
 "[0-9a-f]{32}  bag-info.txt\n" +  
 "[0-9a-f]{32}  bagit.txt\n" +
 "[0-9a-f]{32}  manifest-md5.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.md5.txt
         ra = String2.readFromFile(targzName + ".md5.txt");
@@ -913,7 +925,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = //2017-03-07 actual md5 verified by hand
 "[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
 
         //String2.pressEnterToContinue("\n"); 
@@ -958,7 +970,7 @@ public class ArchiveADataset {
 "manifest-sha256.txt,86\n" +
 "tagmanifest-sha256.txt,2..\n" +
 "data/cwwcNDBCMet.nc,4.......\n";  //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
@@ -966,7 +978,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  data/cwwcNDBCMet.nc\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -975,7 +987,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -993,7 +1005,7 @@ public class ArchiveADataset {
 "ArchiveADataset_subset_by: \n" +
 "ArchiveADataset_data_file_type: .ncCFMA\n" +
 "ArchiveADataset_digest_type: SHA-256\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
@@ -1003,7 +1015,7 @@ public class ArchiveADataset {
 "[0-9a-f]{64}  bag-info.txt\n" +  
 "[0-9a-f]{64}  bagit.txt\n" +
 "[0-9a-f]{64}  manifest-sha256.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1011,7 +1023,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
 
         //String2.pressEnterToContinue("\n"); 
@@ -1052,7 +1064,7 @@ public class ArchiveADataset {
 "  sp051-20141112.nc.sha256                                       " + today + "T.{8}Z            84\n" +
 "  sp052-20140814.nc                                              " + today + "T.{8}Z        4.....\n" +
 "  sp052-20140814.nc.sha256                                       " + today + "T.{8}Z            84\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at external ...tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1060,7 +1072,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
        
         //String2.pressEnterToContinue("\n"); 
     }
@@ -1104,7 +1116,7 @@ public class ArchiveADataset {
 "tagmanifest-sha256.txt,241\n" +
 "data/sp051-20141112.nc,148...\n" +
 "data/sp052-20140814.nc,499...\n";  //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
@@ -1113,7 +1125,7 @@ public class ArchiveADataset {
         expected = 
 "[0-9a-f]{64}  data/sp051-20141112.nc\n" +
 "[0-9a-f]{64}  data/sp052-20140814.nc\n"; 
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -1122,7 +1134,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -1140,7 +1152,7 @@ public class ArchiveADataset {
 "ArchiveADataset_subset_by: trajectory\n" +
 "ArchiveADataset_data_file_type: .ncCFMA\n" +
 "ArchiveADataset_digest_type: SHA-256\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
@@ -1150,7 +1162,7 @@ public class ArchiveADataset {
 "[0-9a-f]{64}  bag-info.txt\n" +  
 "[0-9a-f]{64}  bagit.txt\n" +
 "[0-9a-f]{64}  manifest-sha256.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1158,7 +1170,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         
         //String2.pressEnterToContinue("\n"); 
@@ -1197,7 +1209,7 @@ public class ArchiveADataset {
 "  20150301000000Z.nc.sha256                                      " + today + "T.{8}Z            85\n" +
 "  20150302000000Z.nc                                             " + today + "T.{8}Z     44784....\n" +
 "  20150302000000Z.nc.sha256                                      " + today + "T.{8}Z            85\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at external ...tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1205,7 +1217,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
        
         //String2.pressEnterToContinue("\n"); 
     }
@@ -1247,7 +1259,7 @@ public class ArchiveADataset {
 "tagmanifest-sha256.txt,241\n" +
 "data/20150301000000Z.nc,447840...\n" +
 "data/20150302000000Z.nc,447840...\n";  //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
@@ -1256,7 +1268,7 @@ public class ArchiveADataset {
         expected = 
 "[0-9a-f]{64}  data/20150301000000Z.nc\n" +
 "[0-9a-f]{64}  data/20150302000000Z.nc\n";   
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -1265,7 +1277,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -1281,7 +1293,7 @@ public class ArchiveADataset {
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
 "ArchiveADataset_digest_type: SHA-256\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
@@ -1291,7 +1303,7 @@ public class ArchiveADataset {
 "[0-9a-f]{64}  bag-info.txt\n" +  
 "[0-9a-f]{64}  bagit.txt\n" +
 "[0-9a-f]{64}  manifest-sha256.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1299,7 +1311,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         
         //String2.pressEnterToContinue("\n"); 
@@ -1336,7 +1348,7 @@ public class ArchiveADataset {
 "data/\n" +
 "  20150302000000Z.nc                                             " + today + "T.{8}Z     44784....\n" +
 "  20150302000000Z.nc.sha1                                        " + today + "T.{8}Z            61\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at external ...tar.gz.sha1.txt
         ra = String2.readFromFile(targzName + ".sha1.txt");
@@ -1344,7 +1356,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
        
         //String2.pressEnterToContinue("\n"); 
     }
@@ -1385,7 +1397,7 @@ public class ArchiveADataset {
 "manifest-sha1.txt,66\n" +
 "tagmanifest-sha1.txt,167\n" +
 "data/20150302000000Z.nc,447840...\n";  //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha1.txt", String2.UTF_8);
@@ -1393,7 +1405,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  data/20150302000000Z.nc\n";   
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -1402,7 +1414,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -1418,7 +1430,7 @@ public class ArchiveADataset {
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
 "ArchiveADataset_digest_type: SHA-1\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-sha1.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha1.txt", String2.UTF_8);
@@ -1428,7 +1440,7 @@ public class ArchiveADataset {
 "[0-9a-f]{40}  bag-info.txt\n" +  
 "[0-9a-f]{40}  bagit.txt\n" +
 "[0-9a-f]{40}  manifest-sha1.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external ....tar.gz.sha1.txt
         ra = String2.readFromFile(targzName + ".sha1.txt");
@@ -1436,7 +1448,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         
         //String2.pressEnterToContinue("\n"); 
@@ -1479,7 +1491,7 @@ public class ArchiveADataset {
 "tagmanifest-sha256.txt,2..\n" +
 "data/20150301000000Z.nc,447......\n" +  //will change periodically
 "data/20150302000000Z.nc,447......\n";   //will change periodically
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
@@ -1488,7 +1500,7 @@ public class ArchiveADataset {
         expected = 
 "[0-9a-f]{64}  data/20150301000000Z.nc\n" +
 "[0-9a-f]{64}  data/20150302000000Z.nc\n";   
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
@@ -1497,7 +1509,7 @@ public class ArchiveADataset {
         expected = 
 "BagIt-Version: 0.97\n" +
 "Tag-File-Character-Encoding: UTF-8\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
@@ -1513,7 +1525,7 @@ public class ArchiveADataset {
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
 "ArchiveADataset_digest_type: SHA-256\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
@@ -1523,7 +1535,7 @@ public class ArchiveADataset {
 "[0-9a-f]{64}  bag-info.txt\n" +  
 "[0-9a-f]{64}  bagit.txt\n" +
 "[0-9a-f]{64}  manifest-sha256.txt\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
         //look at external ....tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
@@ -1531,7 +1543,7 @@ public class ArchiveADataset {
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
-        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
         
         
         //String2.pressEnterToContinue("\n"); 

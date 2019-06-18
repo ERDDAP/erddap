@@ -24,6 +24,8 @@ import java.util.Set;
  */
 public class FloatArray extends PrimitiveArray {
 
+    public final static FloatArray MV9 = new FloatArray(DoubleArray.MV9);
+
     /**
      * This is the main data structure.
      * This should be private, but is public so you can manipulate it if you 
@@ -76,6 +78,13 @@ public class FloatArray extends PrimitiveArray {
         size = anArray.length;
     }
 
+    /** The minimum value that can be held by this class. */
+    public String MINEST_VALUE() {return "" + -Float.MAX_VALUE;}
+
+    /** The maximum value that can be held by this class 
+        (not including the cohort missing value). */
+    public String MAXEST_VALUE() {return "" + Float.MAX_VALUE;}
+
     /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
@@ -112,14 +121,17 @@ public class FloatArray extends PrimitiveArray {
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
      * and stopIndex.
      *
+     * @param pa the pa to be filled (may be null). If not null, must be of same type as this class. 
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
      * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
-     * @return a new PrimitiveArray with the desired subset.
-     *    It will have a new backing array with a capacity equal to its size.
+     * @return The same pa (or a new PrimitiveArray if it was null) with the desired subset.
+     *    If new, it will have a backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
-    public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
+    public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
+        if (pa != null)
+            pa.clear();
         if (startIndex < 0)
             throw new IndexOutOfBoundsException(MessageFormat.format(
                 ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
@@ -129,11 +141,18 @@ public class FloatArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return new FloatArray(new float[0]);
+            return pa == null? new FloatArray(new float[0]) : pa;
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-        Math2.ensureMemoryAvailable(4L * willFind, "FloatArray"); 
-        float tar[] = new float[willFind];
+        FloatArray fa = null;
+        if (pa == null) {
+            fa = new FloatArray(willFind, true);
+        } else {
+            fa = (FloatArray)pa;
+            fa.ensureCapacity(willFind);
+            fa.size = willFind;
+        }
+        float tar[] = fa.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -141,7 +160,7 @@ public class FloatArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return new FloatArray(tar);
+        return fa;
     }
 
     /**
@@ -234,7 +253,8 @@ public class FloatArray extends PrimitiveArray {
     /**
      * This adds n Strings to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
@@ -271,7 +291,8 @@ public class FloatArray extends PrimitiveArray {
     /**
      * This adds n doubles to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
@@ -684,6 +705,18 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
+     * Return a value from the array as a String suitable for a JSON file. 
+     * char returns a String with 1 character.
+     * String returns a json String with chars above 127 encoded as \\udddd.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     */
+    public String getJsonString(int index) {
+        return String2.toJson(get(index));
+    }
+
+    /**
      * Set a value in the array as a String.
      * 
      * @param index the index number 0 .. 
@@ -737,6 +770,8 @@ public class FloatArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int indexOf(String lookFor, int startIndex) {
+        if (startIndex >= size)
+            return -1;
         return indexOf(String2.parseFloat(lookFor), startIndex);
     }
 
@@ -810,7 +845,7 @@ public class FloatArray extends PrimitiveArray {
                                  "s (from " + other.array[0] + " to " + other.array[other.size - 1] + ")") +
                ".";
         for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
+            if (!Math2.equalsIncludingNanOrInfinite(array[i], other.array[i]))
                 return "The two FloatArrays aren't equal: this[" + i + "]=" + array[i] + 
                                                       "; other[" + i + "]=" + other.array[i] + ".";
         return "";
@@ -1319,12 +1354,6 @@ public class FloatArray extends PrimitiveArray {
         return "";
     }
 
-    /** This returns the minimum value that can be held by this class. */
-    public String minValue() {return "" + -Float.MAX_VALUE;}
-
-    /** This returns the maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String maxValue() {return "" + Float.MAX_VALUE;}
 
     /**
      * This finds the number of non-missing values, and the index of the min and
@@ -1699,6 +1728,16 @@ public class FloatArray extends PrimitiveArray {
         ss = anArray.subset(1, 1, 0);
         Test.ensureEqual(ss.toString(), "", "");
 
+        ss.trimToSize();
+        anArray.subset(ss, 1, 3, 4);
+        Test.ensureEqual(ss.toString(), "5.0, 19.0", "");
+        anArray.subset(ss, 0, 1, 0);
+        Test.ensureEqual(ss.toString(), "25.0", "");
+        anArray.subset(ss, 0, 1, -1);
+        Test.ensureEqual(ss.toString(), "", "");
+        anArray.subset(ss, 1, 1, 0);
+        Test.ensureEqual(ss.toString(), "", "");
+
         //evenlySpaced
         String2.log("\nevenlySpaced test #1");
         anArray = new FloatArray(new float[] {10,20,30});
@@ -1772,11 +1811,18 @@ public class FloatArray extends PrimitiveArray {
 
         //min max
         anArray = new FloatArray();
-        anArray.addString(anArray.minValue());
-        anArray.addString(anArray.maxValue());
-        Test.ensureEqual(anArray.getString(0), anArray.minValue(), "");
+        anArray.addString(anArray.MINEST_VALUE());
+        anArray.addString(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
         Test.ensureEqual(anArray.getString(0), "-3.4028235E38", "");
-        Test.ensureEqual(anArray.getString(1), anArray.maxValue(), "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
+
+        //tryToFindNumericMissingValue() 
+        Test.ensureEqual((new FloatArray(new float[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new FloatArray(new float[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new FloatArray(new float[] {-1e37f })).tryToFindNumericMissingValue(), -1e37f, "");
+        Test.ensureEqual((new FloatArray(new float[] { 1e37f })).tryToFindNumericMissingValue(),  1e37f, "");
+        Test.ensureEqual((new FloatArray(new float[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
     }
 
 }

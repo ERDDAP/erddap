@@ -593,7 +593,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   /**
    * Get month
    *
-   * @deprecated Overrides a deprecated method, replaced by {@link #getGMTMonth}.
+   * @Deprecated Overrides a deprecated method, replaced by {@link #getGMTMonth}.
    */
   //public int getMonth() {
   //  splitTimeFormat();
@@ -609,7 +609,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   /**
    * Get day
    *
-   * @deprecated Overrides a deprecated method, replaced by {@link #getGMTDay}.
+   * @Deprecated Overrides a deprecated method, replaced by {@link #getGMTDay}.
    */
   //public int getDay() {
   //  splitTimeFormat();
@@ -625,7 +625,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   /**
    * Get hours
    *
-   * @deprecated Overrides a deprecated method, replaced by {@link #getGMTHours}.
+   * @Deprecated Overrides a deprecated method, replaced by {@link #getGMTHours}.
    */
   //public int getHours() {
   //  splitTimeFormat();
@@ -641,7 +641,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   /**
    * Get minutes
    *
-   * @deprecated Overrides a deprecated method, replaced by {@link #getGMTMinutes}.
+   * @Deprecated Overrides a deprecated method, replaced by {@link #getGMTMinutes}.
    */
   //public int getMinutes() {
   //  splitTimeFormat();
@@ -656,7 +656,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   }
   /**
    * Get secondss
-   * @deprecated replaced by {@link #getGMTSeconds}.
+   * @Deprecated replaced by {@link #getGMTSeconds}.
    */
   public double getSecondss() {
     splitTimeFormat();

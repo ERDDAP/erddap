@@ -1,0 +1,11 @@
+# Derived from http://soliton.vm.bytemark.co.uk/pub/cpt-city/jjg/misc/rainfall.cpt
+# which credits jjg 2009
+0	229	180	44	1	242	180	100  
+1	242	180	100	2	243	233	119
+2	243	233	119	3	145	206	126
+3	145	206	126	4	67	190	135
+4	67	190	135	5	52	180	133
+5	52	180	133	6	6	155	66
+B	229	180	44
+F	6	155	66
+N	128	128	128

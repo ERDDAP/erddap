@@ -117,7 +117,7 @@ import java.beans.PropertyChangeListener;
  * @author Donald Denbo
  * @version $Revision: 1.23 $, $Date: 2003/09/19 23:14:24 $
  * @since 1.0
- * @deprecated As of sgt 3.0, use {@link gov.noaa.pmel.sgt.JPane JPane}.
+ * @Deprecated As of sgt 3.0, use {@link gov.noaa.pmel.sgt.JPane JPane}.
  * @see Layer
  * @see Graph
  * @see java.awt.Graphics

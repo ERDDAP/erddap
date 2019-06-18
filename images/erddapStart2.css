@@ -106,7 +106,7 @@ th.T, td.T, img.T, audio.T, video.T, span.T {vertical-align:top;}
 th.N, td.N, a.N, span.N {white-space:nowrap;}
 th.R, td.R, span.R {white-space:nowrap; text-align:right;}
 th.L, td.L, span.L {white-space:nowrap; text-align:left;}
-th.W, td.W, table.W, span.L {white-space:normal;}
+th.W, td.W, table.W, span.W {white-space:normal;}
 
 /* This is used in the middle of the screen on the ERDDAP home page. */
 td.verticalLine {border-left:1px solid #bbbbbb; height:100%; } 

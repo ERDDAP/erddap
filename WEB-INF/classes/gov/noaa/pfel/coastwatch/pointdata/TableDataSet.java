@@ -690,8 +690,8 @@ public abstract class TableDataSet implements Comparable {
         double n = stats[PrimitiveArray.STATS_N];
         double average = n == 0? Double.NaN : stats[PrimitiveArray.STATS_SUM]/n;
         String2.log("TableDataSet.calculateAverage" +
-            " minT=" + Calendar2.epochSecondsToIsoStringT(table.getColumn(3).getDouble(0)) +
-            " maxT=" + Calendar2.epochSecondsToIsoStringT(table.getColumn(3).getDouble(table.nRows() - 1)) +
+            " minT=" + Calendar2.epochSecondsToIsoStringTZ(table.getColumn(3).getDouble(0)) +
+            " maxT=" + Calendar2.epochSecondsToIsoStringTZ(table.getColumn(3).getDouble(table.nRows() - 1)) +
             "\n  average=" + average);
         return average;
     }
@@ -791,8 +791,8 @@ public abstract class TableDataSet implements Comparable {
         double maxT = Calendar2.isoStringToEpochSeconds(isoMaxT); //isoMaxT cleaned above
         if (reallyVerbose) String2.log(
             "  mATS clean minT=" + isoMinT + " maxT=" + isoMaxT + 
-            " rawMinT=" + Calendar2.epochSecondsToIsoStringT(rawMinT) +
-            " rawMaxT=" + Calendar2.epochSecondsToIsoStringT(rawMaxT)); 
+            " rawMinT=" + Calendar2.epochSecondsToIsoStringTZ(rawMinT) +
+            " rawMaxT=" + Calendar2.epochSecondsToIsoStringTZ(rawMaxT)); 
 
         //get the raw data
         Table rawTable = makeSubset(minX, maxX,
@@ -888,11 +888,11 @@ public abstract class TableDataSet implements Comparable {
         }
 
         //interesting tests, but don't leave on all the time
-        //Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(minT), 
-        //                 Calendar2.epochSecondsToIsoStringT(timePeriodCenteredTime[0]), 
+        //Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(minT), 
+        //                 Calendar2.epochSecondsToIsoStringTZ(timePeriodCenteredTime[0]), 
         //                 "minT!=center[0]");
-        //Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(maxT), 
-        //                 Calendar2.epochSecondsToIsoStringT(timePeriodCenteredTime[nTimePeriods - 1]), 
+        //Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(maxT), 
+        //                 Calendar2.epochSecondsToIsoStringTZ(timePeriodCenteredTime[nTimePeriods - 1]), 
         //                 "maxT!=center[last]");
         double timePeriodSum[]   = new double[nTimePeriods];
         int    timePeriodCount[] = new int[nTimePeriods];
@@ -900,13 +900,13 @@ public abstract class TableDataSet implements Comparable {
             String2.log("  mATS nTimePeriods=" + nTimePeriods);
             for (int i = 0; i < Math.min(3, nTimePeriods); i++)
                 String2.log("    mATS timePeriod " + i + ": " +
-                    Calendar2.epochSecondsToIsoStringT(timePeriodBeginTime[i]) + " to " + 
-                    Calendar2.epochSecondsToIsoStringT(timePeriodEndTime[i]) + " center=" +
-                    Calendar2.epochSecondsToIsoStringT(timePeriodCenteredTime[i]));
+                    Calendar2.epochSecondsToIsoStringTZ(timePeriodBeginTime[i]) + " to " + 
+                    Calendar2.epochSecondsToIsoStringTZ(timePeriodEndTime[i]) + " center=" +
+                    Calendar2.epochSecondsToIsoStringTZ(timePeriodCenteredTime[i]));
             String2.log("    mATS timePeriod " + (nTimePeriods - 1) + ": " +
-                Calendar2.epochSecondsToIsoStringT(timePeriodBeginTime[nTimePeriods - 1]) + " to " + 
-                Calendar2.epochSecondsToIsoStringT(timePeriodEndTime[nTimePeriods - 1]) + " center=" +
-                    Calendar2.epochSecondsToIsoStringT(timePeriodCenteredTime[nTimePeriods - 1]));
+                Calendar2.epochSecondsToIsoStringTZ(timePeriodBeginTime[nTimePeriods - 1]) + " to " + 
+                Calendar2.epochSecondsToIsoStringTZ(timePeriodEndTime[nTimePeriods - 1]) + " center=" +
+                Calendar2.epochSecondsToIsoStringTZ(timePeriodCenteredTime[nTimePeriods - 1]));
         }
 
         //make a new table with the averaged data
@@ -949,7 +949,7 @@ public abstract class TableDataSet implements Comparable {
                     String2.log(String2.ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +
                         " firstGE=" + first + 
                         " lastLE=" + last + " n=" + nTimePeriods + 
-                        " time=" + tTime + "=" + Calendar2.epochSecondsToIsoStringT(tTime));
+                        " time=" + tTime + "=" + Calendar2.epochSecondsToIsoStringTZ(tTime));
                         //+ "\n\nbeginTimes=" + timePeriodBeginTime +
                         //"\n\nendTimes=" + timePeriodEndTime);
 
@@ -1118,14 +1118,14 @@ public abstract class TableDataSet implements Comparable {
         globalAttributes.set("title",  title);
         globalAttributes.set("keywords", "Oceans"); //part of line from http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
         //skip keywords vocabulary since not using it strictly
-        globalAttributes.set("id", title);
+        globalAttributes.set("id", title); //2019-05-07 not right, but inactive, so not used by ERDDAP. Should be datasetID
         globalAttributes.set("naming_authority", "gov.noaa.pfel.coastwatch");
         globalAttributes.set("cdm_data_type", "Station");
         //skip 'history'
-        String todaysDate = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10) + "Z";
+        String todaysDate = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
         globalAttributes.set("date_created", todaysDate); 
         globalAttributes.set("creator_name", DataHelper.CW_CREATOR_NAME);
-        globalAttributes.set("creator_url", "http://coastwatch.pfeg.noaa.gov");
+        globalAttributes.set("creator_url", "https://coastwatch.pfeg.noaa.gov");
         globalAttributes.set("creator_email", "bob.simons@noaa.gov");
         //globalAttributes.set("institution", DataHelper.CW_CREATOR_NAME);
         globalAttributes.set("project", "NOAA NESDIS CoastWatch");
@@ -1140,9 +1140,9 @@ public abstract class TableDataSet implements Comparable {
         //globalAttributes.set("geospatial_vertical_max",  0.0);
         globalAttributes.set("geospatial_vertical_units","meters");
         globalAttributes.set("geospatial_vertical_positive", "up"); //since some readings are above and some are below sea level
-        //globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(table.getDoubleData(timeIndex, 0)) + "Z");
+        //globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringTZ(table.getDoubleData(timeIndex, 0)));
         //double timeStats[] = table.getColumn(timeIndex).calculateStats();
-        //globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(timeStats[PrimitiveArray.STATS_MAX]) + "Z");
+        //globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringTZ(timeStats[PrimitiveArray.STATS_MAX]));
         //globalAttributes.set("time_coverage_resolution", "P1H");
         globalAttributes.set("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
         globalAttributes.set("license", "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither NOAA, NDBC, CoastWatch, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.");

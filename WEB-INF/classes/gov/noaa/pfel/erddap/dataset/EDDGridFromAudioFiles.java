@@ -53,7 +53,9 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             int tReloadEveryNMinutes, int tUpdateEveryNMillis, String tFileDir, 
             String tFileNameRegex, boolean tRecursive, String tPathRegex, 
             String tMetadataFrom, int tMatchAxisNDigits, 
-            boolean tFileTableInMemory, boolean tAccessibleViaFiles)
+            boolean tFileTableInMemory, boolean tAccessibleViaFiles, 
+            int tnThreads, boolean tDimensionValuesInMemory, 
+            String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex)
             throws Throwable {
 
         super("EDDGridFromAudioFiles", tDatasetID, 
@@ -66,7 +68,9 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
                 tReloadEveryNMinutes, tUpdateEveryNMillis,
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, 
                 tMetadataFrom, tMatchAxisNDigits, 
-                tFileTableInMemory, tAccessibleViaFiles);
+                tFileTableInMemory, tAccessibleViaFiles, 
+                tnThreads, tDimensionValuesInMemory, 
+                tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
         if (verbose) String2.log("\n*** constructing EDDGridFromAudioFiles(xmlReader)...");        
     }
@@ -75,8 +79,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
      * This gets sourceGlobalAttributes and sourceDataAttributes from the
      * specified source file.
      *
-     * @param fileDir
-     * @param fileName
+     * @param tFullName the name of the decompressed data file
      * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source data columns
@@ -91,7 +94,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
      *   sourceDataName not found). If there is trouble, this doesn't call
      *   addBadFile or requestReloadASAP().
      */
-    public void lowGetSourceMetadata(String fileDir, String fileName,
+    public void lowGetSourceMetadata(String tFullName,
             StringArray sourceAxisNames,
             StringArray sourceDataNames, 
             String sourceDataTypes[],
@@ -99,10 +102,10 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             Attributes sourceAxisAttributes[],
             Attributes sourceDataAttributes[]) throws Throwable {
         
-        if (reallyVerbose) String2.log("getSourceMetadata " + fileDir + fileName);
+        if (reallyVerbose) String2.log("getSourceMetadata " + tFullName);
         
         Table table = new Table();
-        table.readAudioFile(fileDir + fileName, false, true); //readData? addElapsedTime?
+        table.readAudioFile(tFullName, false, true); //readData? addElapsedTime?
 
         //globalAtts
         sourceGlobalAttributes.add(table.globalAttributes());
@@ -133,8 +136,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     /**
      * This gets source axis values from one file.
      *
-     * @param fileDir
-     * @param fileName
+     * @param tFullName the name of the decompressed data file
      * @param sourceAxisNames the names of the desired source axis variables.
      *   If there is a special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested
@@ -143,7 +145,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (e.g., invalid file). If there is trouble,
      * this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName,
+    public PrimitiveArray[] lowGetSourceAxisValues(String tFullName,
             StringArray sourceAxisNames) throws Throwable {
 
         //for this class, only elapsedTime is available
@@ -156,14 +158,14 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             PrimitiveArray[] avPa = new PrimitiveArray[1];
 
             Table table = new Table();
-            table.readAudioFile(fileDir + fileName, true, true); //readData? addElapsedTime?
+            table.readAudioFile(tFullName, true, true); //readData? addElapsedTime?
             avPa[0] = table.getColumn(0);
            
             return avPa;
 
         } catch (Throwable t) {
             throw new RuntimeException("Error in EDDGridFromAudioFiles.getSourceAxisValues"
-                + "\nfrom " + fileDir + fileName
+                + "\nfrom " + tFullName
                 + "\nCause: " + MustBe.throwableToShortString(t),
                 t);
         }
@@ -172,8 +174,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     /**
      * This gets source data from one file.
      *
-     * @param fileDir
-     * @param fileName
+     * @param fullFileName
      * @param tDataVariables the desired data variables
      * @param tConstraints 
      *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
@@ -188,10 +189,11 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (notably, WaitThenTryAgainException). If
      *   there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName,
+    public PrimitiveArray[] lowGetSourceDataFromFile(String fullFileName,
             EDV tDataVariables[], IntArray tConstraints) throws Throwable {
         
-        if (verbose) String2.log("getSourceDataFromFile(" + fileDir + ", " + fileName + ", " + tDataVariables + ", " + tConstraints + ")");
+        if (verbose) String2.log("getSourceDataFromFile(" + fullFileName + 
+            ", [" + String2.toCSSVString(tDataVariables) + "], " + tConstraints + ")");
 
         //for this class, elapsedTime must be constrained
         if (tConstraints.size() != 3)
@@ -203,7 +205,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         int howManyRows = PrimitiveArray.strideWillFind(stop - start + 1, stride);
 
         Table table = new Table();
-        table.readAudioFile(fileDir + fileName, true, false); //readData? addElapsedTime?
+        table.readAudioFile(fullFileName, true, false); //readData? addElapsedTime?
         int ndv = tDataVariables.length;
         PrimitiveArray paa[] = new PrimitiveArray[ndv];
         for (int dvi = 0; dvi < ndv; dvi++) {
@@ -268,7 +270,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         String extractFileNameRegex,
         String extractDataType,
         String extractColumnName,
-        int tReloadEveryNMinutes, 
+        int tReloadEveryNMinutes, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDGridFromAudioFiles.generateDatasetsXml" +
@@ -286,6 +288,11 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             throw new IllegalArgumentException("extractColumnName wasn't specified.");
 
         tFileDir = File2.addSlash(tFileDir); 
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
 
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
@@ -297,7 +304,10 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 
         String2.log("Let's see if we get the structure of the sample file:");
         Table table = new Table();
-        table.readAudioFile(sampleFileName, false, true); //getData, addElapsedTimeColumn
+        String decomSampleFileName = FileVisitorDNLS.decompressIfNeeded(sampleFileName, 
+            tFileDir, EDStatic.fullDecompressedGenerateDatasetsXmlDirectory, 
+            EDStatic.decompressedCacheMaxGB, false); //reuseExisting
+        table.readAudioFile(decomSampleFileName, false, true); //getData, addElapsedTimeColumn
         String2.log(table.toString(0));
         int nCols = table.nColumns();
 
@@ -360,6 +370,10 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             }
             dataSourceTable.addColumn(col - 1, varName, pa, sourceAtts);
             dataAddTable.addColumn(   col - 1, varName, pa, addAtts);
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(varName, pa, sourceAtts, addAtts);
+
         }
 
         //after dataVariables known, add global attributes in the axisAddTable
@@ -399,8 +413,11 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
+            "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
 
@@ -442,7 +459,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         String results = generateDatasetsXml(
             dir, regex, "", 
             extractFileNameRegex, extractDataType, extractColumnName,
-            -1, null) + "\n";
+            -1, null, null) + "\n";
 
         String expected = 
 directionsForGenerateDatasetsXml() +
@@ -459,6 +476,7 @@ directionsForGenerateDatasetsXml() +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -477,7 +495,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedTime, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">Audio data from a local source.</att>\n" +
 "        <att name=\"title\">Audio data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -522,7 +540,7 @@ directionsForGenerateDatasetsXml() +
         results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromAudioFiles", dir, regex, "", 
             extractFileNameRegex, extractDataType, extractColumnName,
-            "-1"}, //default reloadEvery
+            "-1", ""}, //default reloadEvery, cacheFromUrl
             false); //doIt loop?
 
         Test.ensureEqual(results, expected, 
@@ -574,7 +592,7 @@ directionsForGenerateDatasetsXml() +
         String results = generateDatasetsXml(
             dir, regex, "", 
             extractFileNameRegex, extractDataType, extractColumnName,
-            -1, null) + "\n";
+            -1, null, null) + "\n";
 
         String expected = 
 directionsForGenerateDatasetsXml() +
@@ -591,6 +609,7 @@ directionsForGenerateDatasetsXml() +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -609,7 +628,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedTime, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">Audio data from a local source.</att>\n" +
 "        <att name=\"title\">Audio data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -656,7 +675,7 @@ directionsForGenerateDatasetsXml() +
         results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromAudioFiles", dir, regex, "", 
             extractFileNameRegex, extractDataType, extractColumnName,
-            "-1"}, //default reloadEvery
+            "-1", ""}, //default reloadEvery, cacheFromUrl
             false); //doIt loop?
 
         Test.ensureEqual(results, expected, 
@@ -685,6 +704,8 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** EDDGridFromAudioFiles.testBasic(" + 
             deleteCachedDatasetInfo + ")\n");
         testVerboseOn();
+        EDDGrid.debugMode = true;
+        EDV.debugMode = true; //to see dimensionValuesInMemory diagnostic messages
         //delete cached info
         if (deleteCachedDatasetInfo)
             deleteCachedDatasetInfo("testGridWav");
@@ -769,7 +790,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"Audio data from a local source.\";\n" +
 "    String time_coverage_end \"2014-11-19T00:20:00Z\";\n" +
 "    String time_coverage_start \"2014-11-19T00:15:00Z\";\n" +
@@ -867,6 +888,8 @@ expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 
         String2.log("\n*** EDDGridFromAudioFiles.testBasic(" + 
             deleteCachedDatasetInfo + ") finished successfully");
+        EDDGrid.debugMode = true;
+        EDV.debugMode = false;
     }
 
     /**
@@ -904,8 +927,8 @@ expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
         list = al.subList(0, 8);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
-"[10]\n" +
-"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>C:\\programs\\curl7211\\curl http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav -i    [10]\n" +
+//"[10]\n" +
+//"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>call C:\\programs\\curl7600\\I386\\curl.exe http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav -i        [10]\n" +
 "HTTP/1.1 200 [10]\n" +  //200=SC_OK
 "Content-Encoding: identity[10]\n" +
 "Accept-ranges: bytes[10]\n" +
@@ -921,8 +944,6 @@ expected =
         list = al.subList(0, 8);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
-"[10]\n" +
-"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>C:\\programs\\curl7211\\curl http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav -i -H \"Range: bytes=0-30\"  [10]\n" +
 "HTTP/1.1 206 [10]\n" +  //206=SC_PARTIAL_CONTENT
 "Content-Encoding: identity[10]\n" +
 "Content-Range: bytes 0-30/57600044[10]\n" +
@@ -938,8 +959,6 @@ expected =
         list = al.subList(0, 8);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
-"[10]\n" +
-"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>C:\\programs\\curl7211\\curl http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav -i -H \"Range: bytes=0-\"  [10]\n" +
 "HTTP/1.1 206 [10]\n" +  //206=SC_PARTIAL_CONTENT
 "Content-Encoding: identity[10]\n" +
 "Content-Range: bytes 0-57600043/57600044[10]\n" +
@@ -954,8 +973,6 @@ expected =
         list = al.subList(0, 8);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
-"[10]\n" +
-"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>C:\\programs\\curl7211\\curl http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav -i -H \"Range: bytes=50000000-\"  [10]\n" +
 "HTTP/1.1 206 [10]\n" +  //206=SC_PARTIAL_CONTENT
 "Content-Encoding: identity[10]\n" +
 "Content-Range: bytes 50000000-57600043/57600044[10]\n" +
@@ -970,15 +987,13 @@ expected =
         list = al.subList(0, 5);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
-"[10]\n" +
-"c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>C:\\programs\\curl7211\\curl http://localhost:8080/cwexperimental/images/wz_tooltip.js -i    [10]\n" +
 "HTTP/1.1 200 [10]\n" +
 "Cache-Control: PUBLIC, max-age=604800, must-revalidate[10]\n" +
 "Expires: ";
         results2 = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(results2, expected, "results2=\n" + results2);
 
-        list = al.subList(6, 12);
+        list = al.subList(4, 10);
         results = String2.annotatedString(String2.toNewlineString(list.toArray()));
 expected = 
 "Content-Encoding: identity[10]\n" +

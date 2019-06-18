@@ -382,7 +382,7 @@ public class CacheOpendapStation {
                 //read the data as a table
                 //String2.log("  pre read table " + Math2.memoryString());
                 Table table = new Table();
-                table.read4DNc(fullStationFileName + randomInt, null, 1);
+                table.read4DNc(fullStationFileName + randomInt, null, 1); //standardizeWhat=1
 
                 String2.log("  post read table nRows=" + table.nRows() + 
                     " nCols=" + table.nColumns());
@@ -675,7 +675,7 @@ public class CacheOpendapStation {
                 //read the data as a table
                 //String2.log("  pre read table " + Math2.memoryString());
                 Table table = new Table();
-                table.read4DNc(fullStationFileName + randomInt, null, 1, null, -1);
+                table.read4DNc(fullStationFileName + randomInt, null, 1, null, -1); //standardizeWhat=1
 
                 String2.log("  post read table nRows=" + table.nRows() + 
                     " nCols=" + table.nColumns());
@@ -784,7 +784,7 @@ public class CacheOpendapStation {
                 String2.log("  read4DNc...");
                 //String2.log("  pre read table ");
                 Table table = new Table();
-                table.read4DNc(fullStationFileName, null, 1, null, -1);
+                table.read4DNc(fullStationFileName, null, 1, null, -1); //standardizeWhat=1
                 int oldNRows = table.nRows(); //will be different from opendapTimeDimensionSize because flattened
                 PrimitiveArray timeColumn = table.getColumn(3);
                 String2.log("  table from cache file nRows=" + oldNRows + 
@@ -1117,7 +1117,7 @@ public class CacheOpendapStation {
             //M0: compare first part of cache file to ascii response
             //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
             table.clear();
-            table.read4DNc(fileName, null, 1, null, -1);
+            table.read4DNc(fileName, null, 1, null, -1); //unpackWaht=1
             //String2.log(table.toString(10));
             Test.ensureEqual(table.nColumns(), 6, "");
             Test.ensureEqual(table.getColumnName(0), "longitude", ""); //was adcp_longitude
@@ -1186,7 +1186,7 @@ public class CacheOpendapStation {
 
         //M1: compare first part of cache file to ascii response
         table.clear();
-        table.read4DNc(fileName, null, 1);
+        table.read4DNc(fileName, null, 1); //standardizeWhat=1
         //String2.log(table.toString(10));
         Test.ensureEqual(table.nColumns(), 6, "");
         Test.ensureEqual(table.getColumnName(0), "adcp_longitude", "");
@@ -1251,7 +1251,7 @@ public class CacheOpendapStation {
 
         //M2: compare first part of cache file to ascii response
         table.clear();
-        table.read4DNc(fileName, null, 1);
+        table.read4DNc(fileName, null, 1); //standardizeWhat=1
         //String2.log(table.toString(10));
         Test.ensureEqual(table.nColumns(), 6, "");
         Test.ensureEqual(table.getColumnName(0), "adcp_longitude", "");

@@ -255,8 +255,8 @@ public class CompoundColorMap extends ColorMap {
         double minSeconds = minData / (dataIsMillis? 1000 : 1);
         double maxSeconds = maxData / (dataIsMillis? 1000 : 1);
         if (reallyVerbose) String2.log("CompoundColorMap(" + 
-            Calendar2.epochSecondsToIsoStringT(minSeconds) + " to " + 
-            Calendar2.epochSecondsToIsoStringT(maxSeconds) + ")");
+            Calendar2.epochSecondsToIsoStringTZ(minSeconds) + " to " + 
+            Calendar2.epochSecondsToIsoStringTZ(maxSeconds) + ")");
         double secondsRange = maxSeconds - minSeconds;
         if (secondsRange < 10) {
             minSeconds -= 5;
@@ -412,7 +412,7 @@ public class CompoundColorMap extends ColorMap {
 
         Test.ensureTrue(Calendar2.gcToEpochSeconds(gc) >= maxSeconds,
             errorInMethod + "final gc=" + Calendar2.formatAsISODateTimeT(gc) + 
-            " is less than maxSeconds=" + Calendar2.epochSecondsToIsoStringT(maxSeconds) + ".");
+            " is less than maxSeconds=" + Calendar2.epochSecondsToIsoStringTZ(maxSeconds) + ".");
 
         //make an integer palette (0..nPieces)
         //   public static String makeCPT(String baseDir, String palette, String scale, double minData, 

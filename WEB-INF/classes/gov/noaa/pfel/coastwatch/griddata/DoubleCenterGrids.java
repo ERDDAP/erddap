@@ -241,11 +241,11 @@ public class DoubleCenterGrids {
         main(new String[]{"c:/u00/satellite/AG", newDir});
 
         //do tests
-        String ncDump = NcHelper.dumpString(
-            "c:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc", false);
+        String ncdump = NcHelper.ncdump(
+            "c:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc", "-h");
         //ensure time is centered correctly
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1079504E9), //# from time actual_range
-            "2005-02-09T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1079504E9), //# from time actual_range
+            "2005-02-09T12:00:00Z", "");
         String reference = 
 "netcdf AG2005040_2005040_ssta.nc {\n" +
 "  dimensions:\n" +
@@ -316,9 +316,9 @@ public class DoubleCenterGrids {
 "  :contributor_name = \"NOAA NESDIS OSDPD\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3, CWHDF\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"  :creator_url = \"https://coastwatch.pfeg.noaa.gov\";\n" +
 "  :cwhdf_version = \"3.4\";\n";
         
 //" :date_created = \"2007-01-23Z\";\n" +
@@ -347,7 +347,7 @@ String reference2=
 
 //"2007-01-23T19:30:17Z NOAA CoastWatch, West Coast Node\";\n" +
 String reference3=
-"  :id = \"LAGsstaS1day_20050209120000\";\n" +
+"  :id = \"LAGsstaS1day\";\n" +
 "  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :keywords = \"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
@@ -359,30 +359,29 @@ String reference3=
 "  :polygon_latitude = 33.5, 42.5, 42.5, 33.5, 33.5; // double\n" +
 "  :polygon_longitude = 230.5, 230.5, 239.5, 239.5, 230.5; // double\n" +
 "  :processing_level = \"3 (projected)\";\n" +
-"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :project = \"CoastWatch (https://coastwatch.noaa.gov/)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
-"  :references = \"NOAA POES satellites information: http://www.oso.noaa.gov/poes/index.htm . Processing link: http://www.osdpd.noaa.gov/PSB/PSB.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer.  J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.\";\n" +
+"  :references = \"NOAA POES satellites information: https://www.oso.noaa.gov/poes/index.htm . Processing link: https://www.ospo.noaa.gov/PSB/PSB.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer.  J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.\";\n" +
 "  :rows = 91; // int\n" +
 "  :satellite = \"POES\";\n" +
 "  :sensor = \"AVHRR GAC\";\n" +
 "  :source = \"satellite observation: POES, AVHRR GAC\";\n" +
 "  :Southernmost_Northing = 33.5; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :start_time = 0.0; // double\n" +
 "  :summary = \"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data provides global area coverage at 0.1 degrees resolution.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.\";\n" +
 "  :time_coverage_end = \"2005-02-10T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2005-02-09T00:00:00Z\";\n" +
 "  :title = \"SST, NOAA POES AVHRR, GAC, 0.1 degrees, Global, Day and Night\";\n" +
 "  :Westernmost_Easting = 230.5; // double\n" +
-" data:\n" +
 "}\n";
-        //String2.log(ncDump);
-        Test.ensureEqual(ncDump.substring(0, reference.length()), reference, "ncDump=" + ncDump + "\nreference=" + reference);
-        int po = ncDump.indexOf("  :Easternmost_Easting");
-        Test.ensureEqual(ncDump.substring(po, po + reference2.length()), reference2, "ncDump=" + ncDump);
-        po = ncDump.indexOf("  :id = \"LAGsstaS1day");
-        Test.ensureEqual(ncDump.substring(po), reference3, "ncDump=" + ncDump);
+        //String2.log(ncdump);
+        Test.ensureEqual(ncdump.substring(0, reference.length()), reference, "ncdump=" + ncdump + "\nreference=" + reference);
+        int po = ncdump.indexOf("  :Easternmost_Easting");
+        Test.ensureEqual(ncdump.substring(po, po + reference2.length()), reference2, "ncdump=" + ncdump);
+        po = ncdump.indexOf("  :id = \"LAGsstaS1day");
+        Test.ensureEqual(ncdump.substring(po), reference3, "ncdump=" + ncdump);
 
         //just ensure the other file exists
         Test.ensureTrue(File2.isFile(

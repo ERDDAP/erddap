@@ -74,10 +74,13 @@ public class TableWriterUnits extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation doesn't change them.
      * @throws Throwable if trouble
      */
-    public void writeSome(Table table) throws Throwable {
+    public synchronized void writeSome(Table table) throws Throwable {
         if (table.nRows() == 0) 
             return;
 
@@ -99,7 +102,7 @@ public class TableWriterUnits extends TableWriter {
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
-    public void finish() throws Throwable {
+    public synchronized void finish() throws Throwable {
         if (ignoreFinish) 
             return;
 
@@ -114,7 +117,7 @@ public class TableWriterUnits extends TableWriter {
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
-    public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
+    public synchronized void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
         if (ignoreFinish) {
             writeSome(tCumulativeTable);
             tCumulativeTable.removeAllRows();

@@ -18,8 +18,8 @@ import gov.noaa.pfel.coastwatch.griddata.*;
  */
 public class TestBrowsers  {
 
-    public static String publicBaseUrl       = "http://coastwatch.pfeg.noaa.gov/coastwatch/";
-    public static String experimentalBaseUrl = "http://coastwatch.pfeg.noaa.gov/cwexperimental/";
+    public static String publicBaseUrl       = "https://coastwatch.pfeg.noaa.gov/coastwatch/";
+    public static String experimentalBaseUrl = "https://coastwatch.pfeg.noaa.gov/cwexperimental/";
 
     /**
      * This tests the ERD West Coast CoastWatch Browser's bathymetry data options.
@@ -221,7 +221,7 @@ public class TestBrowsers  {
         File2.delete(ncName);
 
         //HTTP GET an .asc bath file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.01&minLat=-80.01&maxLat=-79.01&nLon=2&nLat=2&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -256,7 +256,7 @@ public class TestBrowsers  {
         File2.delete(testName + ".grd");
 
         //test of HTTP GET an .hdf bath file    (readHDF doesn't work on my files)
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.hdf");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -268,7 +268,7 @@ public class TestBrowsers  {
         //Test.ensureEqual(response, reference, error);     //not a good test
           
         //test of  HTTP GET an .mat bath file (there is no read mat)
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.mat");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -360,7 +360,7 @@ public class TestBrowsers  {
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"Bathymetry, ETOPO2v2, 0.033333 degrees, Global\";") > 0, "response=" + response);
 
         //test of HTTP GET an .tif bath file    (there is no readTif())
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             //!!!there was trouble with nLon=2 and nLat=2  but more dense file seems fine
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&fileType=.tif");
         error = "response=" + response;
@@ -375,7 +375,7 @@ public class TestBrowsers  {
         
 
         //HTTP GET an .xyz bath file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.01&minLat=-80.01&maxLat=-79.01&nLon=2&nLat=2&fileType=.xyz");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -400,7 +400,7 @@ public class TestBrowsers  {
         String reference, response, error, find;
 
         //HTTP GET an .asc grid file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -414,7 +414,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response.substring(0, reference.length()), reference, error); 
 
         //HTTP GET an .asc grid file    for approximate centeredTime
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=~2006-11-21T11:12:13&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -429,7 +429,7 @@ public class TestBrowsers  {
 
         //HTTP GET an .asc grid file   same as above but with equivalent "endDate" instead of "centeredTime"!
         //note that end date is (beginning of) last date
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=2006-11-21&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference = //reference data from public browser
@@ -443,7 +443,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response.substring(0, reference.length()), reference, error); 
 
         //HTTP GET the same .asc grid file using the oldStyle ~endDate instead of centeredTime
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=~2006-11-21T02:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -476,7 +476,7 @@ public class TestBrowsers  {
         Test.ensureEqual((float)grid.getData(7, 0), -6.12819f, "");
         
         //test of HTTP GET an .hdf grid file    (readHDF doesn't work on my files)
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.hdf");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -488,7 +488,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response, reference, error); 
           
         //test of  HTTP GET an .mat grid file (there is no read mat)
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-18T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.mat");
         error = "response=" + response.substring(0, 100);
         reference =    //reference data from public browser
@@ -597,7 +597,7 @@ public class TestBrowsers  {
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Near Real Time, Zonal\";") > 0, "response=" + response);
 
         //test of HTTP GET an .tif grid file    (there is no readTif())
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.tif");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -779,13 +779,13 @@ public class TestBrowsers  {
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :projection = \"geographic\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :projection_type = \"mapped\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :references = \"NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :references = \"NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: https://www.ospo.noaa.gov/PSB/EPS/CW/coastwatch.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :rows = 401; // int") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :satellite = \"POES\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :sensor = \"AVHRR HRPT\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"satellite observation: POES, AVHRR HRPT\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Southernmost_Northing = 22.0; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :start_time = 0.0; // double") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :summary = \"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_end = \"2006-11-22T00:00:00Z\";") > 0, error);
@@ -826,8 +826,8 @@ public class TestBrowsers  {
         responseArray = SSR.getUrlResponseLines(
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&lon=-127.26&lat=46.65&fileType=.asc");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.161432E9),  "2006-10-21T12:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         Test.ensureEqual(response,   //reference data from public browser
 "LON\tLAT\tDEPTH\tTIME\tID\tTQNux10\n" +
 "degrees_east\tdegrees_north\tm\tseconds since 1970-01-01T00:00:00Z\t\tm s-1\n" +
@@ -963,7 +963,7 @@ public class TestBrowsers  {
         Test.ensureTrue(response.indexOf(" :sensor = \"SeaWinds\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :source = \"satellite observation: QuikSCAT, SeaWinds\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Southernmost_Northing = 46.75; // double") > 0, error);
-        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :summary = \"NASA's Jet Propulsion Laboratory (JPL) distributes near real time wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :time_coverage_end = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :time_coverage_start = \"2006-10-21T12:00:00Z\";") > 0, error);
@@ -1045,7 +1045,7 @@ public class TestBrowsers  {
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         String reference =    //reference data from public browser
 "netcdf VTQNu10S1day_20061121120000_x-135_X-105_y22_Y50_nx121_ny113.nc {\n" +
 " dimensions:\n" +
@@ -1177,7 +1177,7 @@ public class TestBrowsers  {
         Test.ensureTrue(response.indexOf(" :sensor = \"SeaWinds\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :source = \"satellite observation: QuikSCAT, SeaWinds\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :Southernmost_Northing = 22.0; // double\n") > 0, error);
-        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v29\";\n") > 0, error);
+        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v55\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :start_time = 0.0; // double\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :summary = \"NASA's Jet Propulsion Laboratory (JPL) distributes near real time wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :time_coverage_end = \"2006-11-22T00:00:00Z\";\n") > 0, error);
@@ -1226,7 +1226,7 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
         responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         error = "response=" + response;
         reference =  //reference data from public browser
 "netcdf PNBwspuS1dayAverages_x-135_X-105_y22_Y50_z0_Z0_t20061121120000_T20061121120000.nc {\n" +
@@ -1320,13 +1320,13 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"https://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Southernmost_Northing = 32.425; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_end = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_start = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"Wind Speed, Zonal (NDBC)\";") > 0, error);
@@ -1347,8 +1347,8 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
         responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.161432E9),  "2006-10-21T12:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         Test.ensureEqual(response,   //reference data from public browser
 "LON\tLAT\tDEPTH\tTIME\tID\tWSPU\tWSPV\n" +
 "degrees_east\tdegrees_north\tm\tseconds since 1970-01-01T00:00:00Z\tunitless\tm s-1\tm s-1\n" +
@@ -1390,8 +1390,8 @@ String2.ERROR + " getting .asc");
         responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.161432E9),  "2006-10-21T12:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         error = "response=" + response;
         reference =    //reference data from public browser
 "netcdf PNBwspuS1dayAverages_x-130.36_X-130.36_y42.58_Y42.58_z0_Z0_t20061021120000_T20061121120000.nc {\n" +
@@ -1481,13 +1481,13 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(" :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
-        Test.ensureTrue(response.indexOf(" :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :NDBCMeasurementDescriptionUrl = \"https://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 42.58; // double") > 0, error);
         Test.ensureTrue(response.indexOf(" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :source = \"station observation\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Southernmost_Northing = 42.58; // double") > 0, error);
-        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :time_coverage_end = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :time_coverage_start = \"2006-10-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :title = \"Wind Speed, Zonal (NDBC)\";") > 0, error);
@@ -1517,7 +1517,7 @@ String2.ERROR + " getting .asc");
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         Test.ensureTrue(          
             response.startsWith(         //reference data from public browser
 "LON\tLAT\tDEPTH\tTIME\tID\tWTMP\n" +
@@ -1621,13 +1621,13 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"https://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Southernmost_Northing = 32.425; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_end = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_start = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"SST (NDBC)\";") > 0, error);
@@ -1649,8 +1649,8 @@ String2.ERROR + " getting .asc");
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
 //            url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36101&maxLon=-130.359&minLat=42.579002&maxLat=42.581&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.161432E9),  "2006-10-21T12:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         Test.ensureEqual(response,  //reference data from public browser   but revised to be just float data
 "LON\tLAT\tDEPTH\tTIME\tID\tWTMP\n" +
 "degrees_east\tdegrees_north\tm\tseconds since 1970-01-01T00:00:00Z\tunitless\tdegree_C\n" +
@@ -1693,8 +1693,8 @@ String2.ERROR + " getting .asc");
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
 //            url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36101&maxLon=-130.359&minLat=42.579002&maxLat=42.581&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
-        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.161432E9),  "2006-10-21T12:00:00Z", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1641104E9), "2006-11-21T12:00:00Z", "");
         error = "response=" + response;
         reference =    //reference data from public browser
 "netcdf PNBwtmpS1dayAverages_x-130.36_X-130.36_y42.58_Y42.58_z0_Z0_t20061021120000_T20061121120000.nc {\n" +
@@ -1779,13 +1779,13 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"https://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 42.58; // double") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Southernmost_Northing = 42.58; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v29\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :standard_name_vocabulary = \"CF Standard Name Table v55\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_end = \"2006-11-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :time_coverage_start = \"2006-10-21T12:00:00Z\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"SST (NDBC)\";") > 0, error);
@@ -1899,7 +1899,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of contour screen with time series
-            response = SSR.getURLResponseStringUnchanged(
+            response = SSR.getUrlResponseStringUnchanged(
                 url + "?" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1914,7 +1914,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of vector screen with time series
-            response = SSR.getURLResponseStringUnchanged(
+            response = SSR.getUrlResponseStringUnchanged(
                 url + "?" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1930,11 +1930,11 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of station vector screen with time series
-//http://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowser.jsp?
+//https://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowser.jsp?
 //get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&
 //minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&
 //beginTime=2006-11-27T23&endTime=2006-11-27T23&fileType=.ncHeader
-            response = SSR.getURLResponseStringUnchanged(
+            response = SSR.getUrlResponseStringUnchanged(
                 url + "?edit=Station Vector Data&" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1950,7 +1950,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of station screen with time series
-            response = SSR.getURLResponseStringUnchanged(
+            response = SSR.getUrlResponseStringUnchanged(
                 url + "?edit=Station+Data+1&" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1980,7 +1980,7 @@ String2.ERROR + " getting .asc");
         String responseArray[], response, error, reference;
 
         //HTTP GET an .ncHeader of a grid file,    centeredTime
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=latest" +
                 "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         error = "response=" + response;            //reference data from public browser
@@ -1994,7 +1994,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a grid file,  endTime
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=latest" +
                 "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         error = "response=" + response;            //reference data from public browser
@@ -2008,7 +2008,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a grid time series file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day&beginTime=latest" +
                 "&endTime=latest&lon=-127.26&lat=46.65&fileType=.ncHeader");
         error = "response=" + response;
@@ -2025,7 +2025,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a vector file   
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day" +
                 "&centeredTime=latest&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0" +
                 "&fileType=.ncHeader");
@@ -2039,7 +2039,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a station vector file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-135.0" +
                 "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
                 "&beginTime=latest&endTime=latest&fileType=.ncHeader");
@@ -2053,7 +2053,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a station file
-        response = SSR.getURLResponseStringUnchanged(
+        response = SSR.getUrlResponseStringUnchanged(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0" +
                 "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
                 "&beginTime=latest&endTime=latest&fileType=.ncHeader");

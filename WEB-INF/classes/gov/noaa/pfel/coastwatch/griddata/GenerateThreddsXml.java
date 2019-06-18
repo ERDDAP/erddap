@@ -95,7 +95,7 @@ public class GenerateThreddsXml {
      * <p> Bob has some of Jerome/Yao's handmade files
      *   e.g., c:/temp/oceanwatch new tomcat/ ...catalogHandMade70122.xml
      * <p> Bob has some sample files from Motherload
-     *   (http://motherlode.ucar.edu:8080/thredds/catalog.html):
+     *   (https://motherlode.ucar.edu/thredds/catalog.html):
      *   e.g., c:/temp/otterTomcat/MotherlodeDatasetCatalog.xml
      *
      * <p>It requires 4 parameters:
@@ -281,8 +281,8 @@ public class GenerateThreddsXml {
                 xml.append(
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
                     "<catalog xmlns=\"http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0\" \n" +
-                    "         xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
-                    "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+                    "         xmlns:xlink=\"https://www.w3.org/1999/xlink\" \n" +
+                    "         xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" \n" +
                     "         xsi:schemaLocation=\"http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0 http://www.unidata.ucar.edu/schemas/thredds/InvCatalog.1.0.xsd\" \n" +
                     //Yao AGssta has GLOBEC for name(!); others have Satellite Data Server; or CA Data Server
                     //documentation isn't clear.   2006/10/11 I'll try "Oceanwatch THREDDS Data Server" for everything
@@ -502,7 +502,7 @@ public class GenerateThreddsXml {
                         "          The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\n" +
                         "        </documentation>\n" +
                         "        <documentation xlink:href=\"" +
-                                   "http://coastwatch.pfeg.noaa.gov/infog/" + twoName + "_" + fourName + "_las.html\" \n" +  //Yao QNux10 had no info
+                                   "https://coastwatch.pfeg.noaa.gov/infog/" + twoName + "_" + fourName + "_las.html\" \n" +  //Yao QNux10 had no info
                         "          xlink:title=\"Dataset Summary\" /> \n" +
                         "        <documentation xlink:href=\"https://oceanwatch.pfeg.noaa.gov\" \n" +
                         "          xlink:title=\"Oceanwatch Live Access Server\" /> \n" +
@@ -524,7 +524,7 @@ public class GenerateThreddsXml {
                         //originally Jerome had something like:
                         //"        <creator>\n" +
                         //"          <name vocabulary=\"DIF\">NOAA NESDIS CoastWatch West Coast Regional Node</name>\n" +
-                        //"          <contact url=\"http://coastwatch.pfeg.noaa.gov\" email=\"dave.foley@noaa.gov\" />\n" +
+                        //"          <contact url=\"https://coastwatch.pfeg.noaa.gov\" email=\"erd.data@noaa.gov\" />\n" +
                         //"        </creator>\n" +
                         "\n" +
                         "        <geospatialCoverage>\n" +
@@ -552,7 +552,7 @@ public class GenerateThreddsXml {
                                       Calendar2.SECONDS_SINCE_1970 + "\">time</variable>\n" +
                         "          <variable name=\"altitude\" vocabulary_name=\"altitude\" units=\"m\">altitude</variable>\n" +
                         "          <variable name=\"lat\" vocabulary_name=\"latitude\" units=\"degrees_north\">lat</variable>\n" + //Yao had degrees North
-                        "          <variable name=\"lon\" vocabulary_name=\"longtitude\" units=\"degrees_east\">lon</variable>\n" +
+                        "          <variable name=\"lon\" vocabulary_name=\"longitude\" units=\"degrees_east\">lon</variable>\n" +
                         "          <variable name=\"" + twoName + fourName + "\" " + 
                                      //vocabulary name is required, but CF standard name list (and hence
                                      //DataSet.properties) often doesn't have an appropriate standardName!    

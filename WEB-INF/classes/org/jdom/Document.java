@@ -83,7 +83,7 @@ public class Document implements Parent {
     ContentList content = new ContentList(this);
 
     /**
-     *  See http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/core.html#baseURIs-Considerations
+     *  See https://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/core.html#baseURIs-Considerations
      */
     protected String baseURI = null;
 

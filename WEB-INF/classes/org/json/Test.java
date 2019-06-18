@@ -253,8 +253,8 @@ public class Test {
 
             j = XML.toJSONObject("<?xml version='1.0' encoding='UTF-8'?>"+"\n\n"+"<SOAP-ENV:Envelope"+
               " xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\""+
-              " xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\""+
-              " xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\">"+
+              " xmlns:xsi=\"https://www.w3.org/1999/XMLSchema-instance\""+
+              " xmlns:xsd=\"https://www.w3.org/1999/XMLSchema\">"+
               "<SOAP-ENV:Body><ns1:doGoogleSearch"+
               " xmlns:ns1=\"urn:GoogleSearch\""+
               " SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"+

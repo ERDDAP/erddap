@@ -354,7 +354,7 @@ public class GridDataSetAnomaly extends GridDataSet {
             //make the regular, climatology and anomaly datasets
             GridDataSet gridDataSet = new GridDataSetThredds(fnu, "TQSux10",
                 //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/", //was :8081
-                "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/",
+                "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/",
                 "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null, "S", 1, 1, "", 1, 1);
             GridDataSetCWLocalClimatology climatologyDataSet = new GridDataSetCWLocalClimatology(
                 fnu, "CQCux10", "c:/u00/data/", dir); 

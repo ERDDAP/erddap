@@ -32,6 +32,6 @@ public class ErddapRedirect extends HttpServlet {
         res.setContentType("text/html");
         PrintWriter out = res.getWriter();
         res.setStatus(res.SC_MOVED_PERMANENTLY);
-        res.setHeader("Location", "http://coastwatch.pfeg.noaa.gov/erddap/");
+        res.setHeader("Location", "https://coastwatch.pfeg.noaa.gov/erddap/");
     }
 }

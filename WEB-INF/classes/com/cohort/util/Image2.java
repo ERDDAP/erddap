@@ -225,7 +225,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 and 
 known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 and 4881314
      public static BufferedImage getImageFromFile(String fileName) {
         try {
-            return ImageIO.read(new BufferedInputStream(new FileInputStream(fileName)));
+            return ImageIO.read(File2.getDecompressedBufferedInputStream(fileName));
         } catch (Exception e) {
             System.err.println("Image2.getImage from inputStream");
             String2.log.fine(MustBe.throwableToString(e));
@@ -292,35 +292,43 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
 
         OutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullFileName));
+        try {
 
-        // Retrieve jpg image to be compressed
-        //BufferedImage originalImage = ImageIO.read(infile);
+            // Retrieve jpg image to be compressed
+            //BufferedImage originalImage = ImageIO.read(infile);
 
-        // Find a jpeg writer
-        ImageWriter writer = null;
-        Iterator iter = ImageIO.getImageWritersByFormatName("jpg");
-        if (iter.hasNext()) {
-            writer = (ImageWriter)iter.next();
+            // Find a jpeg writer
+            ImageWriter writer = null;
+            try {
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpg");
+                if (iter.hasNext()) {
+                    writer = (ImageWriter)iter.next();
+                }
+
+                // Prepare output file
+                ImageOutputStream ios = ImageIO.createImageOutputStream(out);
+                try {
+                    writer.setOutput(ios);
+
+                    // Set the compression quality
+                    ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
+                    iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT) ;
+                    iwparam.setCompressionQuality(compressionQuality);
+
+                    // Write the image
+                    writer.write(null, new IIOImage(originalImage, null, null), iwparam);
+
+                } finally {
+                    // Cleanup
+                    ios.flush();
+                    ios.close();
+                }
+            } finally {
+                writer.dispose();
+            }
+        } finally {
+            out.close();
         }
-
-        // Prepare output file
-        ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-        writer.setOutput(ios);
-
-        // Set the compression quality
-        ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
-        iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT) ;
-        iwparam.setCompressionQuality(compressionQuality);
-
-        // Write the image
-        writer.write(null, new IIOImage(originalImage, null, null), iwparam);
-
-        // Cleanup
-        ios.flush();
-        writer.dispose();
-        ios.close();
-        out.close();
-
     }
     
     /*    
@@ -348,14 +356,17 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     // 'o' can be either a File or InputStream object.
     // Returns null if the format is not known.
     private static String getFormatName(Object o) {
+        ImageInputStream iis = null;
         try {
             // Create an image input stream on the image
-            ImageInputStream iis = ImageIO.createImageInputStream(o);
+            iis = ImageIO.createImageInputStream(o);
     
             // Find all image readers that recognize the image format
             Iterator iter = ImageIO.getImageReaders(iis);
             if (!iter.hasNext()) {
                 // No readers found
+                iis.close();
+                iis = null;
                 return null;
             }
     
@@ -364,10 +375,13 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     
             // Close stream
             iis.close();
+            iis = null;
     
             // Return the format name
             return reader.getFormatName();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            if (iis != null)
+                try {iis.close();} catch (Exception e2) {}
         }
         // The image could not be read
         return null;
@@ -599,8 +613,11 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //Gif89Encoder is free from http://jmge.net/java/gifenc/ 
         OutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullFileName));
-        (new Gif89Encoder(image)).encode(out);
-        out.close();
+        try {
+            (new Gif89Encoder(image)).encode(out);
+        } finally {
+            out.close();
+        }
     }
 
     /**
@@ -617,10 +634,13 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //Gif89Encoder is free from http://jmge.net/java/gifenc/ 
         OutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullFileName));
-        (new Gif89Encoder(image, 
-            useDithering? Gif89Encoder.DITHERED_WEB216_PALETTE: Gif89Encoder.WEB216_PALETTE)
-            ).encode(out);
-        out.close();
+        try {
+            (new Gif89Encoder(image, 
+                useDithering? Gif89Encoder.DITHERED_WEB216_PALETTE: Gif89Encoder.WEB216_PALETTE)
+                ).encode(out);
+        } finally {
+            out.close();
+        }
     }
 
     /**
@@ -634,8 +654,11 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
             throws Exception {
         OutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullFileName));
-        ImageIO.write(image, "png", out);
-        out.close();
+        try {
+            ImageIO.write(image, "png", out);
+        } finally {
+            out.close();
+        }
     }
 
     /**

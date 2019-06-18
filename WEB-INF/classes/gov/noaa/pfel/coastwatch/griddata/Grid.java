@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -776,29 +777,30 @@ public class Grid  {
 
         //open the file  (reading should be thread safe)
         RandomAccessFile raf = new RandomAccessFile(fullFileName, "r");
+        try {
 
-        //fill data array
-        //lat is outer loop because file is lat major
-        //and loop is backwards since stored top to bottom
-        //(goal is to read basically from start to end of file)
-        nValidPoints = nLon * nLat; //all points are valid
-        data = new double[nValidPoints];
-        int minSData = Integer.MAX_VALUE;
-        int maxSData = Integer.MIN_VALUE;
-        for (int tLat = nLat - 1; tLat >= 0; tLat--) { 
-            for (int tLon = 0; tLon < nLon; tLon++) { 
-               raf.seek(offsetLat[tLat] + offsetLon[tLon]);
-               short ts = Short.reverseBytes(raf.readShort());  //reverseBytes since etopo1 is LSB
-               setData(tLon, tLat, ts);
-               minSData = Math.min(minSData, ts);
-               maxSData = Math.max(maxSData, ts);
+            //fill data array
+            //lat is outer loop because file is lat major
+            //and loop is backwards since stored top to bottom
+            //(goal is to read basically from start to end of file)
+            nValidPoints = nLon * nLat; //all points are valid
+            data = new double[nValidPoints];
+            int minSData = Integer.MAX_VALUE;
+            int maxSData = Integer.MIN_VALUE;
+            for (int tLat = nLat - 1; tLat >= 0; tLat--) { 
+                for (int tLon = 0; tLon < nLon; tLon++) { 
+                   raf.seek(offsetLat[tLat] + offsetLon[tLon]);
+                   short ts = Short.reverseBytes(raf.readShort());  //reverseBytes since etopo1 is LSB
+                   setData(tLon, tLat, ts);
+                   minSData = Math.min(minSData, ts);
+                   maxSData = Math.max(maxSData, ts);
+                }
             }
+            minData = minSData;
+            maxData = maxSData;
+        } finally {
+            raf.close();
         }
-        minData = minSData;
-        maxData = maxSData;
-
-        //close the file 
-        raf.close();
         if (verbose) 
             String2.log("Grid.readBinary TIME=" + 
                 (System.currentTimeMillis() - time) + "\n"); 
@@ -969,7 +971,7 @@ switch to finally clause
         //open the file (before 'try'); if it fails, no temp file to delete
         NetcdfFile grdFile = NcHelper.openFile(fullFileName);
         try {
-            //if (verbose) DataHelper.ncDump("  ncDump=", fullFileName, false);
+            //if (verbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
             //get lon and lat
             int fileNLon = -1;
@@ -1321,7 +1323,7 @@ switch to finally clause
         //open the file (before 'try'); if it fails, no temp file to delete
         NetcdfFile grdFile = NcHelper.openFile(fullFileName);
         try {
-            //if (verbose) DataHelper.ncDump("  ncDump=", fullFileName, false);
+            //if (verbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
             //get fileLonSpacing and fileLatSpacing
             Variable variable = grdFile.findVariable("spacing");
@@ -1402,7 +1404,7 @@ switch to finally clause
         //This .grd file was originally created by saveAsGrd, so circular logic
         //But manual test showed I could read into GMT.
         String grdDump = 
-//"netcdf " + dir + testName + 
+//"netcdf " + testName + 
     ".grd {\n" +
 "  dimensions:\n" +
 "    side = 2;\n" +
@@ -1429,13 +1431,12 @@ switch to finally clause
 "  // global attributes:\n" + 
 "  :title = \"\";\n" +
 "  :source = \"CoastWatch West Coast Node\";\n" +
-" data:\n" +
 "}\n";
 
         //input file is as expected (independent test) 
-        Test.ensureEqual(NcHelper.dumpString(testDir + testName + ".grd", false), 
+        Test.ensureEqual(NcHelper.ncdump(testDir + testName + ".grd", "-h"), 
             "netcdf " + testName + grdDump, 
-            "ncDump of " + testDir + testName + ".grd");
+            "ncdump of " + testDir + testName + ".grd");
         Test.ensureEqual(File2.length(testDir + testName + ".grd"), 55320, 
             "length of " + testDir + testName + ".grd");
 
@@ -1481,9 +1482,9 @@ switch to finally clause
         grid = new Grid();
         grid.readGrd(testDir + testName + ".grd", true);
         grid.saveAsGrd(testDir, "temp");
-        Test.ensureEqual(NcHelper.dumpString(testDir + "temp.grd", false), 
+        Test.ensureEqual(NcHelper.ncdump(testDir + "temp.grd", "-h"), 
             "netcdf temp" + grdDump, 
-            "ncDump of " + testDir + "temp.grd");
+            "ncdump of " + testDir + "temp.grd");
         Test.ensureEqual(File2.length(testDir + "temp.grd"), 55320, 
             "length of " + testDir + "temp.grd");
         File2.delete(testDir + "temp.grd");
@@ -1492,7 +1493,7 @@ switch to finally clause
         String dir4 = String2.unitTestDataDir + "gmt/";
         String name4= "TestGMT4";
         grdDump = 
-"netcdf TestGMT4.grd {\n" +  //2013-03-20 changed with ncdumpW: had dir, too
+"netcdf TestGMT4.grd {\n" +  
 "  dimensions:\n" +
 "    x = 4001;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
 "    y = 2321;\n" +   // (has coord.var)\n" +
@@ -1517,12 +1518,11 @@ switch to finally clause
 "  :history = \"nearneighbor -V -R205/255/22/51 -I0.0125/0.0125 -S2k -G/u00/modisgf/data/2007/1day/MW2007339_2007339_chla.grd -N1\";\n" +
 "  :GMT_version = \"4.2.1\";\n" +
 "  :node_offset = 0; // int\n" +
-" data:\n" +
 "}\n";
         //input file is as expected (independent test)
-        String s = NcHelper.dumpString(dir4 + name4 + ".grd", false);
+        String s = NcHelper.ncdump(dir4 + name4 + ".grd", "-h");
         Test.ensureEqual(s, grdDump, 
-            "ncDump of " + testDir + testName + ".grd\n" + s);
+            "ncdump of " + testDir + testName + ".grd\n" + s);
 
         //test read Grd
         time = System.currentTimeMillis();
@@ -1890,7 +1890,7 @@ switch to finally clause
      * This doesn't set minData, maxData, or nValidPoints; 
      * use calculateStats to get these values.
      * This is intended to work with COARDS compatible files. 
-     * [COARDS] refers to http://www.ferret.noaa.gov/noaa_coop/coop_cdf_profile.html
+     * [COARDS] refers to https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html
      *
      * <p>The file must have a variable with attribute "units"="degrees_north" 
      *   (or a variation) to identify the latitude variable. See [COARDS] "Latitude Dimension".
@@ -1959,7 +1959,7 @@ switch to finally clause
         try {
             
             //*** ncdump
-            //if (verbose) DataHelper.ncDump("Start of Grid.readNetCDF", fullFileName, false);
+            //if (verbose) NcHelper.ncdump("Start of Grid.readNetCDF", fullFileName, "-h");
 
             long time = System.currentTimeMillis();
 
@@ -2005,7 +2005,7 @@ try {
     PrimitiveArray pa = DataHelper.getPrimitiveArray(timeVariable.read());
     StringArray sa = new StringArray();
     for (int i = 0; i < pa.size(); i++) 
-        sa.add(Calendar2.epochSecondsToIsoStringT(pa.getDouble(i)));
+        sa.add(Calendar2.epochSecondsToIsoStringTZ(pa.getDouble(i)));
     String2.log("time values=" + sa);
 
 } catch (Exception e) {
@@ -2919,44 +2919,44 @@ try {
 
         //open the temp file
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(directory + randomInt));
-
-        //write the data
-        bufferedWriter.write("ncols " + lon.length + "\n");
-        bufferedWriter.write("nrows " + lat.length + "\n");
-        bufferedWriter.write("xllcenter " + lon[0] + "\n"); //as precisely as possible; was xllcorner, but xllcenter is correct
-        bufferedWriter.write("yllcenter " + lat[0] + "\n"); 
-        //ArcGIS forces cellsize to be square; see test above
-        bufferedWriter.write("cellsize " + latSpacing + "\n"); 
-        bufferedWriter.write("nodata_value " + NaNString + "\n");
-        if (fromTop) {
-            //write values from row to row, top to bottom
-            int last = lon.length - 1;
-            for (int tLat = lat.length - 1; tLat >= 0; tLat--) {
-                float f;
-                for (int tLon = 0; tLon < last; tLon++) {
-                    f = (float)getData(tLon, tLat);
-                    bufferedWriter.write(Float.isNaN(f)? NaNString + ' ': f + " ");
+        try {
+            //write the data
+            bufferedWriter.write("ncols " + lon.length + "\n");
+            bufferedWriter.write("nrows " + lat.length + "\n");
+            bufferedWriter.write("xllcenter " + lon[0] + "\n"); //as precisely as possible; was xllcorner, but xllcenter is correct
+            bufferedWriter.write("yllcenter " + lat[0] + "\n"); 
+            //ArcGIS forces cellsize to be square; see test above
+            bufferedWriter.write("cellsize " + latSpacing + "\n"); 
+            bufferedWriter.write("nodata_value " + NaNString + "\n");
+            if (fromTop) {
+                //write values from row to row, top to bottom
+                int last = lon.length - 1;
+                for (int tLat = lat.length - 1; tLat >= 0; tLat--) {
+                    float f;
+                    for (int tLon = 0; tLon < last; tLon++) {
+                        f = (float)getData(tLon, tLat);
+                        bufferedWriter.write(Float.isNaN(f)? NaNString + ' ': f + " ");
+                    }
+                    f = (float)getData(last, tLat);
+                    bufferedWriter.write(Float.isNaN(f)? NaNString + '\n': f + "\n");
                 }
-                f = (float)getData(last, tLat);
-                bufferedWriter.write(Float.isNaN(f)? NaNString + '\n': f + "\n");
-            }
-        } else {
-            //write values from row to row, bottom to top 
-            int nLat = lat.length;
-            int last = lon.length - 1;
-            for (int tLat = 0; tLat < nLat; tLat++) {
-                float f;
-                for (int tLon = 0; tLon < last; tLon++) {
-                    f = (float)getData(tLon, tLat);
-                    bufferedWriter.write(Float.isNaN(f)? NaNString + ' ': f + " ");
+            } else {
+                //write values from row to row, bottom to top 
+                int nLat = lat.length;
+                int last = lon.length - 1;
+                for (int tLat = 0; tLat < nLat; tLat++) {
+                    float f;
+                    for (int tLon = 0; tLon < last; tLon++) {
+                        f = (float)getData(tLon, tLat);
+                        bufferedWriter.write(Float.isNaN(f)? NaNString + ' ': f + " ");
+                    }
+                    f = (float)getData(last, tLat);
+                    bufferedWriter.write(Float.isNaN(f)? NaNString + '\n': f + "\n");
                 }
-                f = (float)getData(last, tLat);
-                bufferedWriter.write(Float.isNaN(f)? NaNString + '\n': f + "\n");
             }
+        } finally {
+            bufferedWriter.close();
         }
-
-        //close the file
-        bufferedWriter.close();
 
         //rename the file to the specified name
         File2.rename(directory, randomInt + "", name + ext);
@@ -3059,24 +3059,25 @@ try {
 
         //attempt via java netcdf libraries
         GeotiffWriter writer = new GeotiffWriter(directory + name + ".tif");
+        try {
+            //2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
+            GridDataset gridDataset = GridDataset.open(directory + name + ".nc");
+            java.util.List grids = gridDataset.getGrids();
+            //if (grids.size() == 0) ...
+            GeoGrid geoGrid = (GeoGrid)grids.get(0);
+            Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); //get all
+            writer.writeGrid(gridDataset, geoGrid, dataArray, true); //true=grayscale
 
-        //2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
-        GridDataset gridDataset = GridDataset.open(directory + name + ".nc");
-        java.util.List grids = gridDataset.getGrids();
-        //if (grids.size() == 0) ...
-        GeoGrid geoGrid = (GeoGrid)grids.get(0);
-        Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); //get all
-        writer.writeGrid(gridDataset, geoGrid, dataArray, true); //true=grayscale
-
-        //2013-08-28 pre 4.3.16, it was 
-        //LatLonRect latLonRect = new LatLonRect(
-        //    new LatLonPointImpl(lat[0], lon[0]),
-        //    new LatLonPointImpl(lat[lat.length - 1], lon[lon.length - 1]));
-        //writer.writeGrid(directory + name + ".nc", dataName, 0, 0, 
-        //    true, //true=grayscale   color didn't work for me. and see javadocs above.
-        //    latLonRect);
-
-        writer.close();    
+            //2013-08-28 pre 4.3.16, it was 
+            //LatLonRect latLonRect = new LatLonRect(
+            //    new LatLonPointImpl(lat[0], lon[0]),
+            //    new LatLonPointImpl(lat[lat.length - 1], lon[lon.length - 1]));
+            //writer.writeGrid(directory + name + ".nc", dataName, 0, 0, 
+            //    true, //true=grayscale   color didn't work for me. and see javadocs above.
+            //    latLonRect);
+        } finally {
+            writer.close();    
+        }
 
         if (verbose) String2.log("  Grid.saveAsGeotiff done. TIME=" + 
             (System.currentTimeMillis() - time) + "\n");
@@ -3255,6 +3256,7 @@ try {
 
             //make sure the file is closed
             grd.close();
+            grd = null;
 
             String2.log("  write data time=" + (System.currentTimeMillis() - tTime));
 
@@ -3263,7 +3265,8 @@ try {
 
         } catch (Exception e) {
             try {
-                grd.close(); //make sure it is explicitly closed
+                if (grd != null)
+                    grd.close(); //make sure it is explicitly closed
             } catch (Exception e2) {
                 //don't care
             }
@@ -3841,31 +3844,32 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //open a dataOutputStream 
         DataOutputStream dos = DataStream.getDataOutputStream(directory + randomInt);
+        try {
+            //write the header
+            Matlab.writeMatlabHeader(dos);
 
-        //write the header
-        Matlab.writeMatlabHeader(dos);
+            //first: write the lon array 
+            Matlab.writeDoubleArray(dos, "lon", lon);
 
-        //first: write the lon array 
-        Matlab.writeDoubleArray(dos, "lon", lon);
+            //second: make the lat array
+            Matlab.writeDoubleArray(dos, "lat", lat);
 
-        //second: make the lat array
-        Matlab.writeDoubleArray(dos, "lat", lat);
+            //make an array of the data[row][col]
+            int nLat = lat.length;
+            int nLon = lon.length;
+            double ar[][] = new double[nLat][nLon];
+            for (int row = 0; row < nLat; row++)
+                for (int col = 0; col < nLon; col++) 
+                    ar[row][col] = getData(col, row);
+            Matlab.write2DDoubleArray(dos, varName, ar);
 
-        //make an array of the data[row][col]
-        int nLat = lat.length;
-        int nLon = lon.length;
-        double ar[][] = new double[nLat][nLon];
-        for (int row = 0; row < nLat; row++)
-            for (int col = 0; col < nLon; col++) 
-                ar[row][col] = getData(col, row);
-        Matlab.write2DDoubleArray(dos, varName, ar);
+            //this doesn't write attributes because .mat files don't store attributes
+            //setStatsAttributes(true); //true = double
+            //write the attributes...
 
-        //this doesn't write attributes because .mat files don't store attributes
-        //setStatsAttributes(true); //true = double
-        //write the attributes...
-
-        //close dos 
-        dos.close();
+        } finally { 
+            dos.close();
+        }
 
         //rename the file to the specified name     
         File2.rename(directory, randomInt + "", name + ext);
@@ -3947,7 +3951,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         globalAttributes.set("title",                     fileNameUtility.getBoldTitle(name));
         globalAttributes.set("summary",                   fileNameUtility.getAbstract(name));
         globalAttributes.set("keywords",                  fileNameUtility.getKeywords(name));
-        globalAttributes.set("id",                        FileNameUtility.getUniqueID(name));
+        globalAttributes.set("id",                        FileNameUtility.getID(name));
         globalAttributes.set("naming_authority",          FileNameUtility.getNamingAuthority());
         globalAttributes.set("keywords_vocabulary",       FileNameUtility.getKeywordsVocabulary());
         globalAttributes.set("cdm_data_type",             FileNameUtility.getCDMDataType());
@@ -3971,8 +3975,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         globalAttributes.set("geospatial_lat_resolution", Math.abs(latSpacing));
         globalAttributes.set("geospatial_lon_units",      FileNameUtility.getLonUnits());
         globalAttributes.set("geospatial_lon_resolution", Math.abs(lonSpacing));
-        globalAttributes.set("time_coverage_start",       Calendar2.formatAsISODateTimeT(FileNameUtility.getStartCalendar(name)) + "Z");
-        globalAttributes.set("time_coverage_end",         Calendar2.formatAsISODateTimeT(FileNameUtility.getEndCalendar(name)) + "Z");
+        globalAttributes.set("time_coverage_start",       Calendar2.formatAsISODateTimeTZ(FileNameUtility.getStartCalendar(name)));
+        globalAttributes.set("time_coverage_end",         Calendar2.formatAsISODateTimeTZ(FileNameUtility.getEndCalendar(name)));
         //globalAttributes.set("time_coverage_resolution", "P12H"));
         globalAttributes.set("standard_name_vocabulary",  FileNameUtility.getStandardNameVocabulary());
         globalAttributes.set("license",                   FileNameUtility.getLicense());
@@ -4227,7 +4231,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             if (hasTime) 
                 String2.log("  start=" + globalAttributes.getString("time_coverage_start") + 
                     " end=" + endString + 
-                    "\n  center=" + Calendar2.epochSecondsToIsoStringT(centeredTimeDouble));
+                    "\n  center=" + Calendar2.epochSecondsToIsoStringTZ(centeredTimeDouble));
             else String2.log("  hasTime=false");
 
             ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
@@ -4262,7 +4266,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 }
             }
             //order of dimensions is specified by the
-            //coards standard (http://www.ferret.noaa.gov/noaa_coop/coop_cdf_profile.html)
+            //coards standard (https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html)
             //see the topics "Number of dimensions" and "Order of dimensions"
             Variable dataVar = nc.addVariable(rootGroup, dataName, DataType.FLOAT, 
                 Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
@@ -4334,6 +4338,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
 
             //rename the file to the specified name
             File2.rename(directory, randomInt + "", name + ext);
@@ -4341,12 +4346,13 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             //diagnostic
             if (verbose) String2.log("  Grid.saveAsNetCDF done.  TIME=" + 
                 (System.currentTimeMillis() - time) + "\n");
-            //ncDump("End of Grid.saveAsNetCDF", directory + name + ext, false);
+            //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
             //try to close the file
             try {
-                nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null)
+                    nc.close(); //it calls flush() and doesn't like flush called separately
             } catch (Exception e2) {
                 //don't care
             }
@@ -4401,7 +4407,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.globalAttributes().get("title"),                      new StringArray(new String[]{"SST, NOAA POES AVHRR, LAC, 0.0125 degrees, West US, Day and Night"}), "title");
         Test.ensureEqual(grid2.globalAttributes().get("summary"),                    new StringArray(new String[]{"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites."}), "summary");
         Test.ensureEqual(grid2.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"}), "keywords");
-        Test.ensureEqual(grid2.globalAttributes().get("id"),                         new StringArray(new String[]{"LATsstaS1day_20030304120000_x-135_X-134.25_y22_Y23"}), "id");
+        Test.ensureEqual(grid2.globalAttributes().get("id"),                         new StringArray(new String[]{"LATsstaS1day"}), "id");
         Test.ensureEqual(grid2.globalAttributes().get("naming_authority"),           new StringArray(new String[]{"gov.noaa.pfeg.coastwatch"}), "naming_authority");
         Test.ensureEqual(grid2.globalAttributes().get("keywords_vocabulary"),        new StringArray(new String[]{"GCMD Science Keywords"}), "keywords_vocabulary");
         Test.ensureEqual(grid2.globalAttributes().get("cdm_data_type"),              new StringArray(new String[]{"Grid"}), "cdm_data_typ");
@@ -4409,12 +4415,12 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String2.log("history=" + history);
         Test.ensureTrue(history.startsWith("NOAA NWS Monterey and NOAA CoastWatch\n20"), "getHistory");
         Test.ensureTrue(history.endsWith("NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD"), "getHistory");
-        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_created");
+        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_created");
         Test.ensureEqual(grid2.globalAttributes().get("creator_name"),               new StringArray(new String[]{"NOAA CoastWatch, West Coast Node"}), "creator_name");
-        Test.ensureEqual(grid2.globalAttributes().get("creator_url"),                new StringArray(new String[]{"http://coastwatch.pfeg.noaa.gov"}), "creator_url");
-        Test.ensureEqual(grid2.globalAttributes().get("creator_email"),              new StringArray(new String[]{"dave.foley@noaa.gov"}), "creator_email");
+        Test.ensureEqual(grid2.globalAttributes().get("creator_url"),                new StringArray(new String[]{"https://coastwatch.pfeg.noaa.gov"}), "creator_url");
+        Test.ensureEqual(grid2.globalAttributes().get("creator_email"),              new StringArray(new String[]{"erd.data@noaa.gov"}), "creator_email");
         Test.ensureEqual(grid2.globalAttributes().get("institution"),                new StringArray(new String[]{"NOAA CoastWatch, West Coast Node"}), "institution");
-        Test.ensureEqual(grid2.globalAttributes().get("project"),                    new StringArray(new String[]{"CoastWatch (http://coastwatch.noaa.gov/)"}), "project");
+        Test.ensureEqual(grid2.globalAttributes().get("project"),                    new StringArray(new String[]{"CoastWatch (https://coastwatch.noaa.gov/)"}), "project");
         Test.ensureEqual(grid2.globalAttributes().get("processing_level"),           new StringArray(new String[]{"3 (projected)"}), "processing_level");
         Test.ensureEqual(grid2.globalAttributes().get("acknowledgement"),            new StringArray(new String[]{"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD"}), "acknowledgement");
         Test.ensureEqual(grid2.globalAttributes().get("geospatial_lat_min"),         new DoubleArray(new double[]{22}), "geospatial_lat_min");
@@ -4428,12 +4434,12 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2003-03-04T00:00:00Z"}), "time_coverage_start");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2003-03-05T00:00:00Z"}), "time_coverage_end");
         //Test.ensureEqual(grid2.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-        Test.ensureEqual(grid2.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v29"}), "standard_name_vocabulary");
+        Test.ensureEqual(grid2.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v55"}), "standard_name_vocabulary");
         Test.ensureEqual(grid2.globalAttributes().get("license"),                    new StringArray(new String[]{"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information."}), "license");
         Test.ensureEqual(grid2.globalAttributes().get("contributor_name"),           new StringArray(new String[]{"NOAA NWS Monterey and NOAA CoastWatch"}), "contributor_name");
         Test.ensureEqual(grid2.globalAttributes().get("contributor_role"),           new StringArray(new String[]{"Source of level 2 data."}), "contributor_role");
-        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_issued");
-        Test.ensureEqual(grid2.globalAttributes().getString("references"),           "NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.", "references");
+        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_issued");
+        Test.ensureEqual(grid2.globalAttributes().getString("references"),           "NOAA POES satellites information: https://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: https://www.ospo.noaa.gov/Operations/POES/index.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.", "references");
         Test.ensureEqual(grid2.globalAttributes().getString("source"),               "satellite observation: POES, AVHRR HRPT", "source");
         //Google Earth
         Test.ensureEqual(grid2.globalAttributes().get("Southernmost_Northing"),      new DoubleArray(new double[]{22}), "southernmost");
@@ -4538,11 +4544,11 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         nLat = grid2.lat.length;
         nLon = grid2.lon.length;
         Test.ensureTrue(grid1.equals(grid2), "TestNetCDF");//tests lat, lon, data
-        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_created");
+        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_created");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2003-03-04T17:00:00Z"}), "time_coverage_start");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2003-03-04T17:00:00Z"}), "time_coverage_end");
         //Test.ensureEqual(grid2.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_issued");
+        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_issued");
  
         Test.ensureEqual(grid2.globalAttributes().get("pass_date"),                  new IntArray(new int[]{12115}), "pass_date"); //int32[nDays] 
         Test.ensureEqual(grid2.globalAttributes().get("start_time"),                 new DoubleArray(new double[]{17 * Calendar2.SECONDS_PER_HOUR}), "start_time"); //float64[nDays] 
@@ -4579,11 +4585,11 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         nLat = grid2.lat.length;
         nLon = grid2.lon.length;
         Test.ensureTrue(grid1.equals(grid2), "TestNetCDF");//tests lat, lon, data
-        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_created");
+        Test.ensureEqual(grid2.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_created");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"0001-03-04T00:00:00Z"}), "time_coverage_start");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"0001-03-05T00:00:00Z"}), "time_coverage_end");
         //Test.ensureEqual(grid2.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_issued");
+        Test.ensureEqual(grid2.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_issued");
  
         Test.ensureEqual(grid2.globalAttributes().get("pass_date"),                  new IntArray(new int[]{-719101}), "pass_date"); //int32[nDays] 
         Test.ensureEqual(grid2.globalAttributes().get("start_time"),                 new DoubleArray(new double[]{0}), "start_time"); //float64[nDays] 
@@ -4667,36 +4673,37 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //open the temp file
         //(I tried with Buffer/FileOutputStream. No faster.)
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(directory + randomInt));
+        try {
 
-        //write the data
-        int nLat = lat.length;
-        int nLon = lon.length;
-        if (fromTop) {
-            //write values from row to row, top to bottom
-            for (int tLat = nLat - 1; tLat >= 0; tLat--) {
-                for (int tLon = 0; tLon < nLon; tLon++) {
-                    float f = (float)getData(tLon, tLat);
-                    bufferedWriter.write(
-                        String2.genEFormat10(lon[tLon]) + "\t" + 
-                        String2.genEFormat10(lat[tLat]) + "\t" + 
-                        (Float.isNaN(f)? NaNString + '\n': f + "\n"));
+            //write the data
+            int nLat = lat.length;
+            int nLon = lon.length;
+            if (fromTop) {
+                //write values from row to row, top to bottom
+                for (int tLat = nLat - 1; tLat >= 0; tLat--) {
+                    for (int tLon = 0; tLon < nLon; tLon++) {
+                        float f = (float)getData(tLon, tLat);
+                        bufferedWriter.write(
+                            String2.genEFormat10(lon[tLon]) + "\t" + 
+                            String2.genEFormat10(lat[tLat]) + "\t" + 
+                            (Float.isNaN(f)? NaNString + '\n': f + "\n"));
+                    }
+                }
+            } else {
+                //write values from row to row, bottom to top 
+                for (int tLat = 0; tLat < nLat; tLat++) {
+                    for (int tLon = 0; tLon < nLon; tLon++) {
+                        float f = (float)getData(tLon, tLat);
+                        bufferedWriter.write(
+                            String2.genEFormat10(lon[tLon]) + "\t" + 
+                            String2.genEFormat10(lat[tLat]) + "\t" + 
+                            (Float.isNaN(f)? NaNString + '\n': f + "\n"));
+                    }
                 }
             }
-        } else {
-            //write values from row to row, bottom to top 
-            for (int tLat = 0; tLat < nLat; tLat++) {
-                for (int tLon = 0; tLon < nLon; tLon++) {
-                    float f = (float)getData(tLon, tLat);
-                    bufferedWriter.write(
-                        String2.genEFormat10(lon[tLon]) + "\t" + 
-                        String2.genEFormat10(lat[tLat]) + "\t" + 
-                        (Float.isNaN(f)? NaNString + '\n': f + "\n"));
-                }
-            }
+        } finally {
+            bufferedWriter.close();
         }
-
-        //close the file
-        bufferedWriter.close();
 
         //rename the file to the specified name
         File2.rename(directory, randomInt + "", name + ext);
@@ -5508,7 +5515,6 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //open the netcdf file
         String2.log("ncXYTtoAsciiXYT: " + inName + " to " + outName);
-        FileWriter ascii = null;
         NetcdfFile ncFile = NcHelper.openFile(inName);
         
         try {
@@ -5551,37 +5557,34 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
 
             //write to ascii
-            ascii = new FileWriter(outName);
-            String s = xName + "\t" + yName + "\t" + tName + "\t" + dataName + newline;
-            ascii.write(s, 0, s.length());
-            for (int t = 0; t < tArray.length; t++) {
-                if ((t % 10) == 0) String2.log("writing t=" + t + " of " + tArray.length);
-                for (int y = 0; y < yArray.length; y++) {
-                    for (int x = 0; x < xArray.length; x++) {
-                        int datum = data.get(t, y, x);
-                        s = xArray[x] + "\t" + yArray[y] + "\t" + 
-                            tStrings[t] + "\t" + 
-                            (datum == missingValue? "NaN" : 
-                                //treat like float; don't let scaling add excess digits
-                                String2.genEFormat6(datum * scaleFactor + addOffset)) + 
-                            newline; 
-                        ascii.write(s, 0, s.length());
+            Writer ascii = new BufferedWriter(new FileWriter(outName));
+            try {
+                String s = xName + "\t" + yName + "\t" + tName + "\t" + dataName + newline;
+                ascii.write(s, 0, s.length());
+                for (int t = 0; t < tArray.length; t++) {
+                    if ((t % 10) == 0) String2.log("writing t=" + t + " of " + tArray.length);
+                    for (int y = 0; y < yArray.length; y++) {
+                        for (int x = 0; x < xArray.length; x++) {
+                            int datum = data.get(t, y, x);
+                            s = xArray[x] + "\t" + yArray[y] + "\t" + 
+                                tStrings[t] + "\t" + 
+                                (datum == missingValue? "NaN" : 
+                                    //treat like float; don't let scaling add excess digits
+                                    String2.genEFormat6(datum * scaleFactor + addOffset)) + 
+                                newline; 
+                            ascii.write(s, 0, s.length());
+                        }
                     }
                 }
+            } finally {
+                try {
+                    ascii.close();
+                } catch (Exception e) {
+                }
             }
-
             
-            //close the files
-            //I care about these exceptions
-            ncFile.close();
-            ascii.close(); 
-        } catch (Exception e) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Exception e2) {
-                //don't care
-            }
-            throw e;
+        } finally {
+            ncFile.close(); //make sure it is explicitly closed
         }
     }
 
@@ -5605,37 +5608,46 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //read the land mask into a hash table
         HashSet hashSet = new HashSet();
         BufferedReader maskFile = new BufferedReader(new FileReader(landMaskFileName));
-        s = maskFile.readLine(); //skip col names
-        s = maskFile.readLine();
-        while (s != null) {
-            //store land bits to the hashSet
-            String fields[] = String2.split(s, '\t'); //x,y,t,d
-            if (fields[3].equals("0")) //land
-                hashSet.add(fields[0] + fields[1]);
-
-            //read the next line
+        try {
+            s = maskFile.readLine(); //skip col names
             s = maskFile.readLine();
+            while (s != null) {
+                //store land bits to the hashSet
+                String fields[] = String2.split(s, '\t'); //x,y,t,d
+                if (fields[3].equals("0")) //land
+                    hashSet.add(fields[0] + fields[1]);
+
+                //read the next line
+                s = maskFile.readLine();
+            }
+        } finally {
+            maskFile.close();
         }
 
         //read the asciiFile and write new newFile
         BufferedReader in  = new BufferedReader(new FileReader(dataFileName));
-        BufferedWriter out = new BufferedWriter(new FileWriter(newFileName));
-        s = in.readLine(); //skip col names
-        s = in.readLine();
-        while (s != null) {
-            //replace land data with NaN
-            String fields[] = String2.split(s, '\t'); //x,y,t,d
-            if (hashSet.contains(fields[0] + fields[1]))
-                fields[3] = "NaN";
-            s = String2.toSVString(fields, "\t", false) + newline;
-            out.write(s, 0, s.length());
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(newFileName));
+            try {
+                s = in.readLine(); //skip col names
+                s = in.readLine();
+                while (s != null) {
+                    //replace land data with NaN
+                    String fields[] = String2.split(s, '\t'); //x,y,t,d
+                    if (hashSet.contains(fields[0] + fields[1]))
+                        fields[3] = "NaN";
+                    s = String2.toSVString(fields, "\t", false) + newline;
+                    out.write(s, 0, s.length());
 
-            //read the next line
-            s = in.readLine();
+                    //read the next line
+                    s = in.readLine();
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
         }
-
-        in.close();
-        out.close();
     }
 
     /**
@@ -5978,7 +5990,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
 
-/* */
+/* for releases, this line should have open/close comment */
         Grid.verbose = true;
 
         //test readGrd speed
