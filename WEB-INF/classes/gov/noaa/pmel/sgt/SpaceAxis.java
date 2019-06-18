@@ -134,8 +134,8 @@ public abstract class SpaceAxis extends Axis {
       }
     }
   }
-  //
-  protected void drawSmallXTics(Graphics g,double xu,double xtest,double del,double yp) {
+  //Bob added atLeast                      start     finish       (big)delta   y
+  protected void drawSmallXTics(Graphics g,double xu,double xtest,double del,double yp,double atLeast) {
     int x0, y0, y1, i;
     double yp0, yp1, smdel, xt;
     if(numSmallTics_ <= 0) return;
@@ -155,14 +155,14 @@ public abstract class SpaceAxis extends Axis {
     smdel = del/(numSmallTics_ + 1);
     for(i=0; i <= numSmallTics_; i++) {
       xt = xu + smdel*i;
-      if((xtest - xt)/del >= 0) {
+      if(xt >= atLeast && (xtest - xt)/del >= 0) {
         x0 = graph_.getXUtoD(xt);
         g.drawLine(x0, y0, x0, y1);
       }
     }
   }
-  //
-  protected void drawSmallYTics(Graphics g,double xp,double yu,double ytest,double del) {
+  //bob added atLeast                      x         start     finish       (big)delta  atLeast
+  protected void drawSmallYTics(Graphics g,double xp,double yu,double ytest,double del, double atLeast) {
     int x0, x1, y0, i;
     double xp0, xp1, smdel, yt;
     if(numSmallTics_ <= 0) return;
@@ -182,7 +182,7 @@ public abstract class SpaceAxis extends Axis {
     smdel = del/(numSmallTics_ + 1);
     for(i=0; i <= numSmallTics_; i++) {
       yt = yu + smdel*i;
-      if((ytest - yt)/del >= 0) {
+      if(yt >= atLeast && (ytest - yt)/del >= 0) {
         y0 = graph_.getYUtoD(yt);
         g.drawLine(x0, y0, x1, y0);
       }

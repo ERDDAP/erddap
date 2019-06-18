@@ -47,7 +47,7 @@ import java.util.Enumeration;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;  
 
@@ -339,48 +339,51 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 //guess ioos_category   (alternative is always assign "Unknown")
                 Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
                     sourceGlobalAttributes, tSourceAtt, null, tSourceName, 
+                    false, //tryToAddStandardName since just getting ioos_category
                     false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                 //if put it in tSourceAtt, it will be available for quick restart 
                 tSourceAtt.add("ioos_category", tAtts.getString("ioos_category"));
             }
 
             //make the variable
+            EDV edv = null;
             if (EDV.LON_NAME.equals(tSourceName)) {
                 lonIndex = tDataVariables.size();
-                tDataVariables.add(new EDVLon(tSourceName,
+                edv = new EDVLon(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN)); 
+                    tSourceType, Double.NaN, Double.NaN); 
             } else if (EDV.LAT_NAME.equals(tSourceName)) {
                 latIndex = tDataVariables.size();
-                tDataVariables.add(new EDVLat(tSourceName,
+                edv = new EDVLat(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN)); 
+                    tSourceType, Double.NaN, Double.NaN); 
             } else if (EDV.ALT_NAME.equals(tSourceName)) {
                 altIndex = tDataVariables.size();
-                tDataVariables.add(new EDVAlt(tSourceName,
+                edv = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN));
+                    tSourceType, Double.NaN, Double.NaN);
             } else if (EDV.DEPTH_NAME.equals(tSourceName)) {
                 depthIndex = tDataVariables.size();
-                tDataVariables.add(new EDVDepth(tSourceName,
+                edv = new EDVDepth(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN)); 
+                    tSourceType, Double.NaN, Double.NaN); 
             } else if (EDV.TIME_NAME.equals(tSourceName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = tDataVariables.size();
-                tDataVariables.add(new EDVTime(tSourceName,
+                edv = new EDVTime(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType));//this constructor gets source / sets destination actual_range
+                    tSourceType);//this constructor gets source / sets destination actual_range
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                tDataVariables.add(new EDVTimeStamp(tSourceName, tSourceName, 
+                edv = new EDVTimeStamp(tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType)); //this constructor gets source / sets destination actual_range
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                EDV edv = new EDV(tSourceName, tSourceName, 
+                edv = new EDV(tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //the constructor that reads actual_range
                 edv.setActualRangeFromDestinationMinMax();
-                tDataVariables.add(edv); 
             }
+            tDataVariables.add(edv); 
+
         }
         dataVariables = new EDV[tDataVariables.size()];
         for (int dv = 0; dv < tDataVariables.size(); dv++)
@@ -395,18 +398,18 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 File2.makeDirectory(File2.getDirectory(quickRestartFullFileName())); //goofy: name is .nc but contents are NCCSV
                 sourceGlobalAttributes.set("creationTimeMillis", "" + creationTimeMillis);
                 sourceGlobalAttributes.set("sourceErddapVersion", sourceErddapVersion);
-                sourceTable.saveAsNccsvFile(false, true, 0, quickRestartFullFileName()); //goofy: name is .nc but contents are NCCSV
+                sourceTable.saveAsNccsvFile(false, true, 0, Integer.MAX_VALUE, quickRestartFullFileName()); //goofy: name is .nc but contents are NCCSV
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
         }
 
         //try to subscribe to the remote ERDDAP dataset
-        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset);
+        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset, localSourceUrl);
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableFromErddap " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
@@ -485,7 +488,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * The XML can then be edited by hand and added to the datasets.xml file.
      *
      * @param tLocalSourceUrl the base url for the dataset, e.g., 
-     *   "http://coastwatch.pfeg.noaa.gov/erddap".
+     *   "https://coastwatch.pfeg.noaa.gov/erddap".
      *   This is a localSourceUrl since it has to be accessible, but usually it is also a publicSourceUrl.
      * @param keepOriginalDatasetIDs
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
@@ -517,7 +520,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 "   send an email to the admin asking that s/he add onChange tags to the datasets.\n" +
 "   See the EDDTableFromErddap documentation.\n" + 
 " * The XML needed for EDDTableFromErddap in datasets.xml has few options.  See\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap .\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap .\n" +
 "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
 "   use EDDTableFromDapSequence to access the dataset instead of EDDTableFromErddap.\n" +
 " * If the remote ERDDAP is version 1.12 or below, this will generate incorrect, useless results.\n" +
@@ -605,7 +608,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromErddap",
                 EDStatic.erddapUrl,
-                "true"}, //keep original names?
+                "true", "-1"},  //keep original names?, defaultStandardizeWhat
               false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -624,7 +627,13 @@ expected =
 String fragment = expected;
             int po = results.indexOf(expected.substring(0, 80));
             String2.log("\nresults=\n" + results);
+try {
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
+} catch (Throwable t) {
+    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+        "This test requires erdGlobecBottle in localhost ERDDAP.\n" +
+        "Unexpected error.");  
+}
 
 expected = 
 "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
@@ -634,6 +643,7 @@ try {
             Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
 } catch (Throwable t) {
     String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+        "This test requires rGlobecBottle in localhost ERDDAP.\n" +
         "Unexpected error.");  
 }
 
@@ -641,9 +651,11 @@ try {
             /*
             //ensure it is ready-to-use by making a dataset from it       
             //NO - don't mess with existing erdGlobecBottle
+            String tDatasetID = "erdGlobecBottle";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, fragment);
             Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
-            Test.ensureEqual(edd.datasetID(), "erdGlobecBottle", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par", 
                 "");
@@ -696,7 +708,7 @@ try {
 "*GLOBAL*,geospatial_lon_max,-130.2576d\n" +
 "*GLOBAL*,geospatial_lon_min,-132.1591d\n" +
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -704,7 +716,7 @@ try {
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,27.9998d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
@@ -750,6 +762,7 @@ try {
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
 "testLong,*DATA_TYPE*,long\n" +
+"testLong,_FillValue,9223372036854775807L\n" +
 "testLong,actual_range,-9223372036854775808L,9223372036854774784L\n" + //max is largest double that can round trip to a long
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
@@ -767,7 +780,7 @@ try {
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
-"sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
+"sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
 "sst,units,degree_C\n" +
@@ -805,7 +818,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/" + 
     (tRedirect? "testNccsvScalar" : tID) + 
     ".nccsv\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -813,7 +826,7 @@ expected =
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,27.9998d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
@@ -855,6 +868,7 @@ expected =
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
 "testLong,*DATA_TYPE*,long\n" +
+"testLong,_FillValue,9223372036854775807L\n" +
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
@@ -870,7 +884,7 @@ expected =
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
-"sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
+"sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
 "sst,units,degree_C\n" +
@@ -878,10 +892,10 @@ expected =
 "*END_METADATA*\n" +
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         tPo = results.indexOf(expected.substring(0, 40));
@@ -916,7 +930,7 @@ expected =
         String2.log("\n*** EDDTableFromErddap.testDegreesSignAttribute");
         String url = 
             //"http://localhost:8080/cwexperimental/tabledap/erdCalcofiSur";
-            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
         DConnect dConnect = new DConnect(url, true, 1, 1);
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         String results = OpendapHelper.getDasString(das);
@@ -1099,7 +1113,9 @@ expected =
         String2.log("\n*** EDDTableFromErddap.testChukchiSea make DATA FILES\n");       
 
         //.asc
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&id=\"ae1001c011\"", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            "&id=%22ae1001c011%22", //"&id=\"ae1001c011\"", 
+            EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Data", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);

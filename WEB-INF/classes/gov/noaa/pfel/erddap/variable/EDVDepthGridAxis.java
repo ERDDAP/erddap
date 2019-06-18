@@ -18,6 +18,9 @@ public class EDVDepthGridAxis extends EDVGridAxis {
     /**
      * The constructor.
      *
+     * @param tParentDatasetID This is needed if dimensionValuesInMemory is false,
+     *   so sourceValues sometimes need to be read from 
+     *   [cacheDirectory(tParentDatasetID)]/dimensionSourceValues.nc
      * @param tSourceName the name of the axis variable in the dataset source
      *    (usually with no spaces).
      * @param tSourceAttributes are the attributes for the variable
@@ -31,12 +34,13 @@ public class EDVDepthGridAxis extends EDVGridAxis {
      *    There must be at least one element.
      * @throws Throwable if trouble
      */
-    public EDVDepthGridAxis(String tSourceName, 
+    public EDVDepthGridAxis(String tParentDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         PrimitiveArray tSourceValues) 
         throws Throwable {
 
-        super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
+        super(tParentDatasetID, tSourceName, DEPTH_NAME, 
+            tSourceAttributes, tAddAttributes, tSourceValues); 
 
         if (destinationDataType().equals("String"))
             throw new RuntimeException("datasets.xml error: " +

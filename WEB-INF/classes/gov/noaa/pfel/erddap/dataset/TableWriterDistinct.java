@@ -47,7 +47,8 @@ public class TableWriterDistinct extends TableWriterAll {
      *
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
-     * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
+     * @param tFileNameNoExt is the fileName-safe fileName without dir or extension 
+     *    (used as basis for temp files).
      *     A random number will be added to it for safety.
      * @param tOtherTableWriter the tableWriter that will receive the unique rows
      *   found by this tableWriter.
@@ -68,7 +69,10 @@ public class TableWriterDistinct extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation doesn't change them.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {

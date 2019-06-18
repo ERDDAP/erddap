@@ -33,7 +33,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -325,17 +325,8 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
                 column = table.getColumn(4); column.append(PrimitiveArray.factory(column.elementClass(), n, groupName));
                 column = table.getColumn(5); column.append(data);
             }
-
-            //I care about this exception
+        } finally {
             ncFile.close();
-
-        } catch (Exception e) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Exception e2) {
-                //don't care
-            }
-            throw e;
         }
     }
 

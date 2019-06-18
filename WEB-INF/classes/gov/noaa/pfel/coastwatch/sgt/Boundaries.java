@@ -246,9 +246,6 @@ public class Boundaries  {
             double requestMinY, double requestMaxY) throws Exception {
 
         //if (reallyVerbose) String2.log("    readSGTLine");
-
-        DataInputStream dis = new DataInputStream( new BufferedInputStream(
-            new FileInputStream(fullFileName)));
         DoubleArray lat = new DoubleArray(); //accumlate the results
         DoubleArray lon = new DoubleArray();
         double shift[] = {-720, -360, 0, 360};
@@ -260,142 +257,147 @@ public class Boundaries  {
           tempLon[i] = new DoubleArray();
         }
         int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
-        //double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4 maxMaxLon=359.99969482
-        while (true) { 
-            //read a path
 
-            //first value, first row should be NaN
-            if (!Double.isNaN(dis.readDouble())) {
-                dis.close();
-                throw new RuntimeException("Unexpected finite value at beginning of path in " +
-                    fullFileName);
-            }
+        DataInputStream dis = new DataInputStream(
+            File2.getDecompressedBufferedInputStream(fullFileName));
+        try {
+            //double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4 maxMaxLon=359.99969482
+            while (true) { 
+                //read a path
 
-            //second value, first row is nPoints
-            int nPoints = Math2.roundToInt(dis.readDouble());
-            if (nPoints <= 0 || nPoints == Integer.MAX_VALUE) {
-                //end of file
-                break;
-            }
-
-            //read path's minLon minLat
-            double minLon = dis.readDouble();
-            double minLat = dis.readDouble();      
-            double maxLon = dis.readDouble();
-            double maxLat = dis.readDouble(); 
-            
-            //if (debug) {
-            //    minMinLon = Math.min(minMinLon, minLon);
-            //    maxMaxLon = Math.max(maxMaxLon, maxLon);
-            //}
-
-            //lat test is easy
-            if (minLat > requestMaxY || maxLat < requestMinY) {
-                //skip this path
-                nLatSkip++;
-                dis.skipBytes(nPoints * 16);
-                continue;
-            }
-
-            //lon test: always check for no overlap of request (min/requestMaxX)
-            //   and this path's original position, and shifted right
-            // |requestHere?| |-720|     |requestHere?|
-            // |requestHere?| |-360|     |requestHere?|
-            // |requestHere?| |original| |requestHere?| 
-            // |requestHere?| |+360|     |requestHere?|
-            boolean displayIt = false;
-            for (int i = 0; i < 4; i++) {
-                doShift[i] = !(minLon + shift[i] >= requestMaxX || maxLon + shift[i] <= requestMinX);
-                if (doShift[i])
-                    displayIt = true;
-            }
-            if (debug) String2.log(
-                "> doShift -720=" + doShift[0] + " -360=" + doShift[1] + 
-                            " 0=" + doShift[2] +  " 360=" + doShift[3] +
-                " requestX=" + requestMinX + " " + requestMaxX + 
-                " polyLon=" + minLon + " " + maxLon);
-            if (!displayIt) {
-                //skip this path
-                nLonSkip++;
-                dis.skipBytes(nPoints * 16);
-                continue;
-            }
-            nKeep++;
-            
-            //read the points
-            double oLon = 0; //irrelevant
-            double oLat = 0;
-            double tLon = 0;
-            double tLat = 0;      
-            double polyMinLon = 1e10, polyMaxLon = -1e10;  //see if actualy poly lon range is as promised
-            for (int point = 0; point < nPoints; point++) {
-                oLon = tLon;
-                oLat = tLat;
-                tLon = dis.readDouble();
-                tLat = dis.readDouble();      
-                if (debug) {
-                    polyMinLon = Math.min(polyMinLon, tLon);
-                    polyMaxLon = Math.max(polyMaxLon, tLon);
+                //first value, first row should be NaN
+                if (!Double.isNaN(dis.readDouble())) {
+                    //dis will be closed in finally{} below
+                    throw new RuntimeException("Unexpected finite value at beginning of path in " +
+                        fullFileName);
                 }
-                //cut lines going from one edge of world to the other
+
+                //second value, first row is nPoints
+                int nPoints = Math2.roundToInt(dis.readDouble());
+                if (nPoints <= 0 || nPoints == Integer.MAX_VALUE) {
+                    //end of file
+                    break;
+                }
+
+                //read path's minLon minLat
+                double minLon = dis.readDouble();
+                double minLat = dis.readDouble();      
+                double maxLon = dis.readDouble();
+                double maxLat = dis.readDouble(); 
+                
+                //if (debug) {
+                //    minMinLon = Math.min(minMinLon, minLon);
+                //    maxMaxLon = Math.max(maxMaxLon, maxLon);
+                //}
+
+                //lat test is easy
+                if (minLat > requestMaxY || maxLat < requestMinY) {
+                    //skip this path
+                    nLatSkip++;
+                    dis.skipBytes(nPoints * 16);
+                    continue;
+                }
+
+                //lon test: always check for no overlap of request (min/requestMaxX)
+                //   and this path's original position, and shifted right
+                // |requestHere?| |-720|     |requestHere?|
+                // |requestHere?| |-360|     |requestHere?|
+                // |requestHere?| |original| |requestHere?| 
+                // |requestHere?| |+360|     |requestHere?|
+                boolean displayIt = false;
                 for (int i = 0; i < 4; i++) {
-                    if (doShift[i]) {
-                        //does this polyline wrap around 0 <--> 360?
-                        if (tempLon[i].size() > 0 && Math.abs(oLon - tLon) > 180.0) {
-                            //try to add this subpath
-                            if (oLon < tLon)                      //to make not disjoint, 
-                                 lon.add(tLon + shift[i] - 360);  //  shift this pt to left
-                            else lon.add(tLon + shift[i] + 360);  //  shift this pt to right
-                            lat.add(tLat);
-                            int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
-                                requestMinX, requestMaxX, requestMinY, requestMaxY); 
+                    doShift[i] = !(minLon + shift[i] >= requestMaxX || maxLon + shift[i] <= requestMinX);
+                    if (doShift[i])
+                        displayIt = true;
+                }
+                if (debug) String2.log(
+                    "> doShift -720=" + doShift[0] + " -360=" + doShift[1] + 
+                                " 0=" + doShift[2] +  " 360=" + doShift[3] +
+                    " requestX=" + requestMinX + " " + requestMaxX + 
+                    " polyLon=" + minLon + " " + maxLon);
+                if (!displayIt) {
+                    //skip this path
+                    nLonSkip++;
+                    dis.skipBytes(nPoints * 16);
+                    continue;
+                }
+                nKeep++;
+                
+                //read the points
+                double oLon = 0; //irrelevant
+                double oLat = 0;
+                double tLon = 0;
+                double tLat = 0;      
+                double polyMinLon = 1e10, polyMaxLon = -1e10;  //see if actualy poly lon range is as promised
+                for (int point = 0; point < nPoints; point++) {
+                    oLon = tLon;
+                    oLat = tLat;
+                    tLon = dis.readDouble();
+                    tLat = dis.readDouble();      
+                    if (debug) {
+                        polyMinLon = Math.min(polyMinLon, tLon);
+                        polyMaxLon = Math.max(polyMaxLon, tLon);
+                    }
+                    //cut lines going from one edge of world to the other
+                    for (int i = 0; i < 4; i++) {
+                        if (doShift[i]) {
+                            //does this polyline wrap around 0 <--> 360?
+                            if (tempLon[i].size() > 0 && Math.abs(oLon - tLon) > 180.0) {
+                                //try to add this subpath
+                                if (oLon < tLon)                      //to make not disjoint, 
+                                     lon.add(tLon + shift[i] - 360);  //  shift this pt to left
+                                else lon.add(tLon + shift[i] + 360);  //  shift this pt to right
+                                lat.add(tLat);
+                                int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
+                                    requestMinX, requestMaxX, requestMinY, requestMaxY); 
+                                tempLat[i].removeRange(tn, tempLat[i].size());
+                                tempLon[i].removeRange(tn, tempLon[i].size());
+                                if (tn > 0) {
+                                    lon.append(tempLon[i]);
+                                    lat.append(tempLat[i]);
+                                    lon.add(Double.NaN); //break in line
+                                    lat.add(Double.NaN);
+                                    nObjects++;
+                                }
+                                tempLon[i].clear();
+                                tempLat[i].clear();
+                            }
+                            tempLon[i].add(tLon + shift[i]);
+                            tempLat[i].add(tLat);
+                        }
+                    }
+                }
+                if (debug) {
+                    if (polyMinLon < minLon ||
+                        polyMaxLon > maxLon) 
+                        String2.pressEnterToContinue(
+    //                    String2.log(
+                            "> Trouble: promisedLon=" + minLon + " " + maxLon + 
+                            " actualLon=" + polyMinLon + " " + polyMaxLon);
+                }
+
+                //try to add this subpath
+                for (int i = 0; i < 4; i++) {
+                    if (tempLat[i].size() > 0) {
+                        int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
+                            requestMinX, requestMaxX, requestMinY, requestMaxY);
+                        if (tn > 0) {
                             tempLat[i].removeRange(tn, tempLat[i].size());
                             tempLon[i].removeRange(tn, tempLon[i].size());
-                            if (tn > 0) {
-                                lon.append(tempLon[i]);
-                                lat.append(tempLat[i]);
-                                lon.add(Double.NaN); //break in line
-                                lat.add(Double.NaN);
-                                nObjects++;
-                            }
-                            tempLon[i].clear();
-                            tempLat[i].clear();
+                            lon.append(tempLon[i]);
+                            lat.append(tempLat[i]);
+                            lon.add(Double.NaN); //break in line
+                            lat.add(Double.NaN);
+                            nObjects++;
                         }
-                        tempLon[i].add(tLon + shift[i]);
-                        tempLat[i].add(tLat);
+                        tempLon[i].clear();
+                        tempLat[i].clear();
                     }
                 }
             }
-            if (debug) {
-                if (polyMinLon < minLon ||
-                    polyMaxLon > maxLon) 
-                    String2.pressEnterToContinue(
-//                    String2.log(
-                        "> Trouble: promisedLon=" + minLon + " " + maxLon + 
-                        " actualLon=" + polyMinLon + " " + polyMaxLon);
-            }
-
-            //try to add this subpath
-            for (int i = 0; i < 4; i++) {
-                if (tempLat[i].size() > 0) {
-                    int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
-                        requestMinX, requestMaxX, requestMinY, requestMaxY);
-                    if (tn > 0) {
-                        tempLat[i].removeRange(tn, tempLat[i].size());
-                        tempLon[i].removeRange(tn, tempLon[i].size());
-                        lon.append(tempLon[i]);
-                        lat.append(tempLat[i]);
-                        lon.add(Double.NaN); //break in line
-                        lat.add(Double.NaN);
-                        nObjects++;
-                    }
-                    tempLon[i].clear();
-                    tempLat[i].clear();
-                }
-            }
+        } finally {
+            dis.close();
         }
-
-        dis.close();
         if (reallyVerbose) String2.log("    Boundaries.readSgtLine nLatSkip=" + nLatSkip +
             " nLonSkip=" + nLonSkip + " nKeep=" + nKeep + " nObjects=" + nObjects);        
         //if (debug) String2.log(">>>      minMinLon=" + minMinLon + " maxMaxLon=" + maxMaxLon);
@@ -424,68 +426,72 @@ public class Boundaries  {
         //if (reallyVerbose) String2.log("    readSGTLine");
 
         boolean lonPM180 = requestMinX < 0;
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fullFileName));
         DoubleArray lat = new DoubleArray(); 
         DoubleArray lon = new DoubleArray();
         DoubleArray tempLat = new DoubleArray(); 
         DoubleArray tempLon = new DoubleArray();
         String startGapLine1 = format == MATLAB_FORMAT? "nan nan" : ">";
         String startGapLine2 = format == MATLAB_FORMAT? "nan nan" : "#";
-        String s = bufferedReader.readLine();
         int nObjects = 0;
-        while (s != null) { //null = end-of-file
-            if (s.startsWith(startGapLine1) ||
-                s.startsWith(startGapLine2)) {
-                //try to add this subpath
-                int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
-                    requestMinX, requestMaxX, requestMinY, requestMaxY);
-                tempLat.removeRange(tn, tempLat.size());
-                tempLon.removeRange(tn, tempLon.size());
-                if (tn > 0) {
-                    lon.append(tempLon);
-                    lat.append(tempLat);
-                    lon.add(Double.NaN);
-                    lat.add(Double.NaN);
-                    nObjects++;
-                }
-                tempLon.clear();
-                tempLat.clear();
-            } else {
-                //each line: x\ty 
-                String[] items = String2.split(s, '\t');
-                if (items.length == 2) {
-                    double tLon = String2.parseDouble(items[0]);
-                    double tLat = String2.parseDouble(items[1]);
-                    if (lonPM180) {
-                        if (tLon >= 180) tLon -= 360;
-                    } else {
-                        if (tLon < 0) tLon += 360;
+
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(fullFileName));
+        try {
+            String s = bufferedReader.readLine();
+            while (s != null) { //null = end-of-file
+                if (s.startsWith(startGapLine1) ||
+                    s.startsWith(startGapLine2)) {
+                    //try to add this subpath
+                    int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
+                        requestMinX, requestMaxX, requestMinY, requestMaxY);
+                    tempLat.removeRange(tn, tempLat.size());
+                    tempLon.removeRange(tn, tempLon.size());
+                    if (tn > 0) {
+                        lon.append(tempLon);
+                        lat.append(tempLat);
+                        lon.add(Double.NaN);
+                        lat.add(Double.NaN);
+                        nObjects++;
                     }
-                    //cut lines going from one edge of world to the other
-                    if (tempLon.size() > 0 && Math.abs(tLon - tempLon.get(tempLon.size() - 1)) > 50.0) {
-                        //try to add this subpath
-                        int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
-                            requestMinX, requestMaxX, requestMinY, requestMaxY);
-                        tempLat.removeRange(tn, tempLat.size());
-                        tempLon.removeRange(tn, tempLon.size());
-                        if (tn > 0) {
-                            lon.append(tempLon);
-                            lat.append(tempLat);
-                            lon.add(Double.NaN);
-                            lat.add(Double.NaN);
-                            nObjects++;
+                    tempLon.clear();
+                    tempLat.clear();
+                } else {
+                    //each line: x\ty 
+                    String[] items = String2.split(s, '\t');
+                    if (items.length == 2) {
+                        double tLon = String2.parseDouble(items[0]);
+                        double tLat = String2.parseDouble(items[1]);
+                        if (lonPM180) {
+                            if (tLon >= 180) tLon -= 360;
+                        } else {
+                            if (tLon < 0) tLon += 360;
                         }
-                        tempLon.clear();
-                        tempLat.clear();
-                    }
-                    tempLon.add(tLon);
-                    tempLat.add(tLat);
-                } else String2.log(String2.ERROR + " at readSGTLine items.length!=2 (" + 
-                    items.length + ") s=" + s);
+                        //cut lines going from one edge of world to the other
+                        if (tempLon.size() > 0 && Math.abs(tLon - tempLon.get(tempLon.size() - 1)) > 50.0) {
+                            //try to add this subpath
+                            int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
+                                requestMinX, requestMaxX, requestMinY, requestMaxY);
+                            tempLat.removeRange(tn, tempLat.size());
+                            tempLon.removeRange(tn, tempLon.size());
+                            if (tn > 0) {
+                                lon.append(tempLon);
+                                lat.append(tempLat);
+                                lon.add(Double.NaN);
+                                lat.add(Double.NaN);
+                                nObjects++;
+                            }
+                            tempLon.clear();
+                            tempLat.clear();
+                        }
+                        tempLon.add(tLon);
+                        tempLat.add(tLat);
+                    } else String2.log(String2.ERROR + " at readSGTLine items.length!=2 (" + 
+                        items.length + ") s=" + s);
+                }
+                s = bufferedReader.readLine();
             }
-            s = bufferedReader.readLine();
+        } finally {
+            bufferedReader.close();
         }
-        bufferedReader.close();
         if (reallyVerbose) String2.log("    Boundaries.readSgtLine nObjects=" + nObjects);        
 
         lon.trimToSize();
@@ -514,67 +520,71 @@ public class Boundaries  {
         int format = GMT_FORMAT;  
 
         String2.log("convertSgtLine\n in:" + sourceName + "\nout:" + destName);
-
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(sourceName));
-        DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
-            new FileOutputStream(destName)));
         DoubleArray lat = new DoubleArray(); 
         DoubleArray lon = new DoubleArray();
         DoubleArray tempLat = new DoubleArray(); 
         DoubleArray tempLon = new DoubleArray();
-
         String startGapLine1 = format == MATLAB_FORMAT? "nan nan" : ">";
         String startGapLine2 = format == MATLAB_FORMAT? "nan nan" : "#";
-        String s = bufferedReader.readLine();
         int nObjects = 0;
-        while (true) { 
-            if (s == null || //null = end-of-file
-                s.startsWith(startGapLine1) ||
-                s.startsWith(startGapLine2)) {
-                //try to add this subpath
-                if (tempLat.size() > 0) {
-                    double lonStats[] = tempLon.calculateStats();
-                    double latStats[] = tempLat.calculateStats();
-                    dos.writeDouble(Double.NaN); 
-                    dos.writeDouble(tempLat.size());
-                    dos.writeDouble(lonStats[PrimitiveArray.STATS_MIN]);
-                    dos.writeDouble(latStats[PrimitiveArray.STATS_MIN]);
-                    dos.writeDouble(lonStats[PrimitiveArray.STATS_MAX]);
-                    dos.writeDouble(latStats[PrimitiveArray.STATS_MAX]);
-                    for (int i = 0; i < tempLat.size(); i++) {
-                        dos.writeDouble(tempLon.get(i));
-                        dos.writeDouble(tempLat.get(i));
-                    }
-                    nObjects++;
-                }
-                tempLon.clear();
-                tempLat.clear();
-                if (s == null)
-                    break;
-            } else {
-                //each line: x\ty 
-                String[] items = String2.split(s, '\t');
-                if (items.length == 2) {
-                    double tLon = String2.parseDouble(items[0]);
-                    double tLat = String2.parseDouble(items[1]);
-                    if (!Double.isNaN(tLon) &&
-                        !Double.isNaN(tLat)) {
-                        tempLon.add(tLon);
-                        tempLat.add(tLat);
+
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(sourceName));
+        try {
+            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
+                new FileOutputStream(destName)));
+            try {
+                String s = bufferedReader.readLine();
+                while (true) { 
+                    if (s == null || //null = end-of-file
+                        s.startsWith(startGapLine1) ||
+                        s.startsWith(startGapLine2)) {
+                        //try to add this subpath
+                        if (tempLat.size() > 0) {
+                            double lonStats[] = tempLon.calculateStats();
+                            double latStats[] = tempLat.calculateStats();
+                            dos.writeDouble(Double.NaN); 
+                            dos.writeDouble(tempLat.size());
+                            dos.writeDouble(lonStats[PrimitiveArray.STATS_MIN]);
+                            dos.writeDouble(latStats[PrimitiveArray.STATS_MIN]);
+                            dos.writeDouble(lonStats[PrimitiveArray.STATS_MAX]);
+                            dos.writeDouble(latStats[PrimitiveArray.STATS_MAX]);
+                            for (int i = 0; i < tempLat.size(); i++) {
+                                dos.writeDouble(tempLon.get(i));
+                                dos.writeDouble(tempLat.get(i));
+                            }
+                            nObjects++;
+                        }
+                        tempLon.clear();
+                        tempLat.clear();
+                        if (s == null)
+                            break;
                     } else {
-                        bufferedReader.close();
-                        dos.close();
-                        throw new RuntimeException(String2.ERROR + " in convertSGTLine, s=" + s);
+                        //each line: x\ty 
+                        String[] items = String2.split(s, '\t');
+                        if (items.length == 2) {
+                            double tLon = String2.parseDouble(items[0]);
+                            double tLat = String2.parseDouble(items[1]);
+                            if (!Double.isNaN(tLon) &&
+                                !Double.isNaN(tLat)) {
+                                tempLon.add(tLon);
+                                tempLat.add(tLat);
+                            } else {
+                                // bufferedReader and dos closed by finally{} below
+                                throw new RuntimeException(String2.ERROR + " in convertSGTLine, s=" + s);
+                            }
+                        }
                     }
+                    s = bufferedReader.readLine();
                 }
+                //mark of file
+                dos.writeDouble(Double.NaN); 
+                dos.writeDouble(Double.NaN); 
+            } finally {
+                dos.close();
             }
-            s = bufferedReader.readLine();
+        } finally {
+            bufferedReader.close();
         }
-        //mark of file
-        dos.writeDouble(Double.NaN); 
-        dos.writeDouble(Double.NaN); 
-        bufferedReader.close();
-        dos.close();
         String2.log("    Boundaries.convertSgtLine nObjects=" + nObjects);        
     }
 

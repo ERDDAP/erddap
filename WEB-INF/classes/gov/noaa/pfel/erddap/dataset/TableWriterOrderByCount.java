@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -66,7 +67,11 @@ public class TableWriterOrderByCount extends TableWriterAll {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs for processing, 
+     *   then back to destinationMV and FV when finished.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -76,7 +81,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
         //to save time and disk space, this just does a partial job 
         //  (remove non-max rows from this partial table)
         //  and leaves perfect job to finish()
-        table.orderByCount(orderBy);
+        table.orderByCount(orderBy); //this handles missingValues and _FillValues permanently
 
         //ensure the table's structure is the same as before
         //and write to dataOutputStreams
@@ -100,16 +105,17 @@ public class TableWriterOrderByCount extends TableWriterAll {
         releaseResources();
 
         //combine results
+        //missing_value and _FillValue are all done. All data are counts.
         int nRows = cumTable.nRows();
         int nCols = cumTable.nColumns();
         int keyCols[] = cumTable.keyColumnNamesToNumbers("orderByCount",
-                // just get the column names, ignoring runding e.g. time not time/1day		
-                Arrays.stream(orderBy).map((s)->s.split("/")[0]).toArray(size -> new String[size]));
+            // just get the column names, ignoring rounding e.g. time not time/1day
+            Arrays.stream(orderBy).map((s)->s.split("/")[0]).toArray(size -> new String[size]));
         int nKeyCols = keyCols.length;
 
         //sort based on keys
         if (nKeyCols > 0)
-            cumTable.ascendingSort(keyCols);
+            cumTable.ascendingSort(keyCols); 
         //String2.log(dataToString());
 
         //note which are keyCol
@@ -121,8 +127,21 @@ public class TableWriterOrderByCount extends TableWriterAll {
         PrimitiveArray pas[] = new PrimitiveArray[nCols];
         for (int col = 0; col < nCols; col++) {
             pas[col] = cumTable.getColumn(col);
-            if (!isKeyCol[col]) 
-                cumTable.columnAttributes(col).set("units", "count");
+            if (!isKeyCol[col]) {
+                Attributes atts = cumTable.columnAttributes(col);
+                atts.set(   "_FillValue", Integer.MAX_VALUE);
+                atts.remove("actual_range");
+                atts.remove("cf_role");
+                atts.remove("colorBarMinimum");
+                atts.remove("colorBarMaximum");
+                atts.remove("colorBarPalette");
+                atts.remove("colorBarScale");
+                atts.remove("missing_value");
+                String s = atts.getString("standard_name");
+                if (s != null)
+                   atts.set("standard_name", s + " number_of_observations");
+                atts.set(   "units", "count");
+            }
         }
 
         //walk through the table

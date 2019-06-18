@@ -64,6 +64,15 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * It is unlikely anyone would want to change this. */
     public static boolean acceptDeflate = true;
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
 
     /** 
      * The constructor just calls the super constructor. 
@@ -90,7 +99,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromHyraxFiles", tDatasetID, 
@@ -105,7 +116,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
     }
 
@@ -311,13 +323,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
 
     /**
-     * This gets source data from one copied .nc file.
+     * This gets source data from one copied .nc (perhaps .gz) file.
      * See documentation in EDDTableFromFiles.
      *
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -328,7 +340,11 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
         //read the file
         Table table = new Table();
-        table.readNDNc(fileDir + fileName, sourceDataNames.toArray(),
+        String decompFullName = FileVisitorDNLS.decompressIfNeeded(
+            tFileDir + tFileName, fileDir, decompressedDirectory(), 
+            EDStatic.decompressedCacheMaxGB, true); //reuseExisting
+        table.readNDNc(decompFullName, sourceDataNames.toArray(), 
+            standardizeWhat,
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
                 minSorted, maxSorted, 
             getMetadata);
@@ -367,7 +383,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes,  
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
-        String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
+        String tSortFilesBySourceNames, int tStandardizeWhat,
+        Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
         String2.log("\n*** EDDTableFromHyraxFiles.generateDatasetsXml" +
@@ -392,6 +409,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             String2.log("Found/using sampleFileName=" +
                 (oneFileDapUrl = FileVisitorDNLS.getSampleFileName(
                     tLocalDirUrl, tFileNameRegex, true, ".*"))); //recursive, pathRegex
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -424,15 +443,18 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");
             }
             if (pv != null) {
-                PrimitiveArray pa = 
+                PrimitiveArray sourcePA = 
                     PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, 
-                    pa, sourceAtts);
-                pa = makeDestPAForGDX(pa, sourceAtts);
-                dataAddTable.addColumn(dataAddTable.nColumns(), varName, pa,                    
+                    sourcePA, sourceAtts);
+                PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+                dataAddTable.addColumn(dataAddTable.nColumns(), varName, destPA,                    
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         dataSourceTable.globalAttributes(),
-                        sourceAtts, null, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                        sourceAtts, null, varName,
+                        destPA.elementClass() != String.class, //tryToAddStandardName
+                        destPA.elementClass() != String.class, //addColorBarMinMax
+                        true)); //tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
                 //and no harm if files aren't sorted that way
@@ -446,9 +468,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                         if (Calendar2.isNumericTimeUnits(tUnits)) {
                             double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
                             maxTimeES = Calendar2.unitsSinceToEpochSeconds(
-                                tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                                tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
                         } else { //string time units
-                            maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                            maxTimeES = Calendar2.tryToEpochSeconds(destPA.getString(destPA.size() - 1)); //NaN if trouble
                         }
                     } catch (Throwable t) {
                         String2.log("caught while trying to get maxTimeES: " + 
@@ -467,6 +489,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
+
+        //add missing_value and/or _FillValue if needed
+        addMvFvAttsIfNeeded(dataSourceTable, dataAddTable);
 
         //global attributes
         if (externalAddGlobalAttributes == null)
@@ -527,6 +552,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -566,7 +592,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/pentad_19870705_v11l35flk.nc.gz", 
 2880,
 "", "", "", "", //extract
-"time", "time", new Attributes());
+"time", "time", 
+-1, //defaultStandardizeWhat
+new Attributes());
 
 String expected = 
 directionsForGenerateDatasetsXml() +
@@ -580,6 +608,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -596,13 +625,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5)</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
+"        <att name=\"creator_email\">support-podaac@earthdata.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
@@ -612,7 +641,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -663,7 +692,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">4200.0</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">hours since 1987-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">hours since 1987-01-01T00:00:00.000Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -794,8 +823,10 @@ directionsForGenerateDatasetsXml() +
 
             /* *** This doesn't work. Usually no files already downloaded. 
             //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = "nasa_jpl_ae1a_8793_8b49";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "nasa_jpl_ae1a_8793_8b49", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, time, uwnd, vwnd, wspd, upstr, vpstr, nobs", "");
@@ -821,7 +852,8 @@ directionsForGenerateDatasetsXml() +
 "https://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/wod_002057989O.nc", 
 2880,
 "", "", "", "", //extract
-"time", "time", new Attributes());
+"time", "time", -1, //defaultStandardizeWhat
+new Attributes());
 
 /* 2012-04-10 That throws exception:     Hyrax isn't compatible with JDAP???
 dods.dap.DDSException:
@@ -853,8 +885,10 @@ directionsForGenerateDatasetsXml() +
 
             /* *** This doesn't work. Usually no files already downloaded. 
             //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = "nasa_jpl_ae1a_8793_8b49";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "nasa_jpl_ae1a_8793_8b49", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, time, uwnd, vwnd, wspd, upstr, vpstr, nobs", "");
@@ -887,25 +921,34 @@ directionsForGenerateDatasetsXml() +
         String id = "testEDDTableFromHyraxFiles";
         String deletedFile = "pentad_19870928_v11l35flk.nc.gz";
 
+        EDDTable eddTable = null;
         try {
 
-        //delete the last file in the collection
-        if (deleteCachedInfoAndOneFile) {
-            deleteCachedDatasetInfo(id);
-            File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
-            Math2.sleep(1000);
-        }
+            //delete the last file in the collection
+            if (deleteCachedInfoAndOneFile) {
+                deleteCachedDatasetInfo(id);
+                File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
+                Math2.sleep(1000);
+            }
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+            eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
-        if (deleteCachedInfoAndOneFile) {
-            String2.pressEnterToContinue(
-                "\n****** BOB! ******\n" +
-                "This test just deleted a file: " + deletedFile + "\n" +
-                "The background task to re-download it should have already started.\n" +
-                "The remote dataset is really slow.\n" +
-                "Wait for it to finish background tasks.\n\n");
-            eddTable = (EDDTable)oneFromDatasetsXml(null, id); //redownload the dataset
+            if (deleteCachedInfoAndOneFile) {
+                String2.pressEnterToContinue(
+                    "\n****** BOB! ******\n" +
+                    "This test just deleted a file:\n" + 
+                    EDStatic.fullCopyDirectory + id + "/" + deletedFile + "\n" +
+                    "The background task to re-download it should have already started.\n" +
+                    "The remote dataset is really slow.\n" +
+                    "Wait for it to finish background tasks.\n\n");
+                eddTable = (EDDTable)oneFromDatasetsXml(null, id); //redownload the dataset
+            }
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) +
+                "\n2019-05 This fails because source was .gz so created local files were called .gz\n" +
+                "even though they aren't .gz compressed.\n" +
+                "Solve this, or better: stop using EDDTableFromHyraxfiles");
+            return;
         }
 
 
@@ -1056,7 +1099,7 @@ expected =
 "    Float64 Northernmost_Northing 78.375;\n" +
 "    String sourceUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n" +
 "    Float64 Southernmost_Northing -78.375;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String summary \"Time average of level3.0 products.\";\n" +
 "    String time_coverage_end \"1987-09-28T00:00:00Z\";\n" +
 "    String time_coverage_start \"1987-09-03T00:00:00Z\";\n" +
@@ -1071,8 +1114,11 @@ expected =
                 expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) +
+                "\n2019-05 This fails because source was .gz so created local files were called .gz\n" +
+                "even though they aren't .gz compressed.\n" +
+                "Solve this, or better: stop using EDDTableFromHyraxfiles");
+            return;
         }
 
         //*** test getting dds for entire dataset
@@ -1145,6 +1191,7 @@ expected =
                 "\nUnexpected error."); 
         }
 
+        try {
         //.csv    few variables,  for small lat,lon range,  one time
         userDapQuery = "longitude,latitude,time,upstr,vpstr&longitude>=220&longitude<=221&latitude>=40&latitude<=41&time>=1987-09-28&time<=1987-09-28";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1191,6 +1238,10 @@ expected =
 /* for releases, this line should have open/close comment */
         //usually run
         testGenerateDatasetsXml();
+        //2019-05-17 testJpl fails because remote source is named ...nc.gz
+        //  so local files are named .nc.gz even though they are .nc files.
+        //  This class should force .nc as local file type.
+        //  Or just get rid of it.
         testJpl(true);   //deleteCachedInfoAndOneFile
         testJpl(false);  
         /* */

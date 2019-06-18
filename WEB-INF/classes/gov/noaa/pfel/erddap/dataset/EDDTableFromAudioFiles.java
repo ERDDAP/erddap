@@ -40,6 +40,15 @@ import gov.noaa.pfel.erddap.variable.*;
 public class EDDTableFromAudioFiles extends EDDTableFromFiles { 
 
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
     /** 
      * The constructor just calls the super constructor. 
      *
@@ -71,7 +80,9 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromAudioFiles", tDatasetID, 
@@ -85,8 +96,10 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
+        //String2.log(">> EDDTableFromAudioFiles end of constructor:\n" + toString());
     }
 
 
@@ -97,7 +110,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -108,7 +121,15 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
 
         //read the file
         Table table = new Table();
-        table.readAudioFile(fileDir + fileName, mustGetData, true); //addElapsedTime
+        String decompFullName = FileVisitorDNLS.decompressIfNeeded(
+            tFileDir + tFileName, fileDir, decompressedDirectory(), 
+            EDStatic.decompressedCacheMaxGB, true); //reuseExisting
+        table.readAudioFile(decompFullName, mustGetData, true); //addElapsedTime
+
+        //unpack
+        table.unpack(standardizeWhat);
+        //String2.log(">> EDDTableFromAudioFiles.lowGetSourceDataFromFile header after unpack (nCol=" + table.nColumns() + "):\n" + table.getNCHeader("row"));
+
         return table;
     }
 
@@ -153,6 +174,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, String tExtractUnits, //String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromAudioFiles.generateDatasetsXml" +
@@ -172,6 +194,11 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         String tSortedColumnSourceName = Table.ELAPSED_TIME;
@@ -187,16 +214,22 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         Table dataSourceTable = new Table();
         dataSourceTable.readAudioFile(sampleFileName, true, true); //getMetadata, addElapsedTime
 
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.unpack(tStandardizeWhat);
+
         Table dataAddTable = new Table();
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(sourcePA, sourceAtts),
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            dataAddTable.addColumn(c, colName, destPA,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+                    destPA.elementClass() != String.class, //tryToAddStandardName
+                    destPA.elementClass() != String.class, //addColorBarMinMax
+                    true)); //tryToFindLLAT
             if (c > 0) {
                 if (EDStatic.variablesMustHaveIoosCategory)
                     dataAddTable.columnAttributes(c).set("ioos_category", "Other");
@@ -295,7 +328,10 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -335,7 +371,9 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
                 "",
                 1440,
                 "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
-                "", "", "", "", "", null) + "\n";
+                "", "", "", "", "", 
+                -1, null, //defaultStandardizeWhat
+                null) + "\n";
 
             String2.log(results);
 
@@ -347,7 +385,8 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
                 "",
                 "1440",
                 "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
-                "", "", "", "", ""},
+                "", "", "", "", "", 
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -365,6 +404,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex>aco_acoustic\\.</preExtractRegex>\n" +
 "    <postExtractRegex>\\.wav</postExtractRegex>\n" +
 "    <extractRegex>.*</extractRegex>\n" +
@@ -390,7 +430,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords\">channel, channel_1, data, elapsed, elapsedTime, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"subsetVariables\">time</att>\n" +
 "        <att name=\"summary\">Audio data from a local source.</att>\n" +
 "        <att name=\"title\">Audio data from a local source.</att>\n" +
@@ -438,6 +478,8 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
+            String tDatasetID = "wav_56d5_230d_1887";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "wav_56d5_230d_1887", "");
             Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
@@ -474,7 +516,7 @@ directionsForGenerateDatasetsXml() +
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        String2.log("\n****************** EDDTableFromNccsvFiles  test das and dds for entire dataset\n");
+        String2.log("\n****************** EDDTableFromAudioFiles  test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -535,7 +577,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"time\";\n" +
 "    String summary \"Audio data from a local source.\";\n" +
 "    String time_coverage_end \"2014-11-19T00:20:00Z\";\n" +

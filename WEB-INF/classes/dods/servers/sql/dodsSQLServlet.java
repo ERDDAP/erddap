@@ -184,7 +184,7 @@ public abstract class dodsSQLServlet extends DODSServlet {
 
         response.setContentType("application/octet-stream");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_data");
+        response.setHeader("Content-Description", "dods-data"); //2019-03-29 this (and in other classes) was e.g., "dods_data". I changed to "-" as in DODS 2.0 specification.
 
 
         ServletOutputStream sOut = response.getOutputStream();
@@ -317,7 +317,7 @@ public abstract class dodsSQLServlet extends DODSServlet {
 
                 eOut = new BufferedOutputStream(sOut);
 
-                response.setHeader("Content-Description", "dods_error");
+                response.setHeader("Content-Description", "dods-error");
 
                 // This should probably be set to "plain" but this works, the
                 // C++ slients don't barf as they would if I sent "plain" AND
@@ -336,7 +336,7 @@ public abstract class dodsSQLServlet extends DODSServlet {
 
             eOut = new BufferedOutputStream(sOut);
 
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ slients don't barf as they would if I sent "plain" AND
@@ -352,7 +352,7 @@ public abstract class dodsSQLServlet extends DODSServlet {
 
             eOut = new BufferedOutputStream(sOut);
 
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ slients don't barf as they would if I sent "plain" AND
@@ -371,7 +371,7 @@ public abstract class dodsSQLServlet extends DODSServlet {
 
             eOut = new BufferedOutputStream(sOut);
 
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ clients don't barf as they would if I sent "plain" AND

@@ -38,7 +38,7 @@ public abstract class TableWriter {
      * A subclass will set this to true when it doesn't want any more data
      * (e.g., TableWriterHtmlTable when showFirstNRows is reached)
      */
-    public boolean noMoreDataPlease = false;
+    public volatile boolean noMoreDataPlease = false;
 
     /**
      * The code that creates the TableWriter may set this to true to 
@@ -104,7 +104,7 @@ public abstract class TableWriter {
                 if (edd != null) {
                     try {  //findVar throws exception if not found
                         EDV edv = edd.findVariableByDestinationName(columnNames[col]); //finds axis or dataVariable
-                        colAttsClone = new Attributes(edv.combinedAttributes());
+                        colAttsClone = new Attributes(edv.combinedAttributes()); 
                     } catch (Throwable t) {
                         //rare, e.g., happens with added "Count" and "Percent"
                         //columns in countTable for "2 = viewDistinctDataCounts" 
@@ -114,9 +114,7 @@ public abstract class TableWriter {
                     }
                 }
                 if (colAttsClone == null)
-                    //no need to make copies (clones) of atts since standardizeResultsTable
-                    //has made copies for the table
-                    colAttsClone = table.columnAttributes(col);
+                    colAttsClone = new Attributes(table.columnAttributes(col));
                 columnAttributes[col] = colAttsClone; 
                 //String2.log("\nTableWriter attributes " + columnNames[col] + "\n" + columnAttributes[col]);
             }
@@ -127,6 +125,7 @@ public abstract class TableWriter {
             return;
         }
 
+        //not first time calling ensureCompatible, so ensure it's compatible
         //ensure columnNames are same
         if (columnNames.length != tColumnNames.length)
             throw new RuntimeException("Internal error in TableWriter: newNColumns=" + 
@@ -140,8 +139,18 @@ public abstract class TableWriter {
                 throw new RuntimeException("Internal error in TableWriter: for column#" + c + "=" + columnNames[c] +
                       ", newType=" + PrimitiveArray.elementClassToString(tColumnTypes[c]) + 
                     " != oldType=" + PrimitiveArray.elementClassToString(columnTypes[c]) + ".");
-        }
 
+            //restore missing_value and _FillValue attributes 
+            //  (if removed via convertToStandardMissingValues() and reuse of the table)
+            Attributes originalAtts = columnAttributes[c];
+            Attributes tableAtts    = table.columnAttributes(c);
+            PrimitiveArray pa = originalAtts.get("missing_value");
+            if (pa != null)
+                tableAtts.set("missing_value", pa);
+            pa = originalAtts.get("_FillValue");
+            if (pa != null)
+                tableAtts.set("_FillValue", pa);
+        }
     }
 
     /**
@@ -152,31 +161,13 @@ public abstract class TableWriter {
      * The number of columns, the column names, and the types of columns 
      * must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     *  or destinationFillValues.
      *
-     * @param table 
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
      * @throws Throwable if trouble
      */
     public abstract void writeSome(Table table) throws Throwable;
-
-
-    /**
-     * This converts the missing values to standard (e.g., NaN) missing values,
-     * but doesn't erase the missing_value and _FillValue metadata so the table can be reused.
-     * This is a convenience for subclasses' writeSome() and writeAllAndFinish().
-     *
-     * @param table a partial data table
-     */
-    protected void convertToStandardMissingValues(Table table) {
-        int nColumns = table.nColumns();
-        for (int col = 0; col < nColumns; col++) {
-            Attributes colAtt = table.columnAttributes(col);
-            table.getColumn(col).convertToStandardMissingValues( 
-                colAtt.getDouble("_FillValue"),
-                colAtt.getDouble("missing_value"));
-         }
-     }
 
 
     /**

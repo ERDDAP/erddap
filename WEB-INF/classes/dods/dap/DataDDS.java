@@ -137,23 +137,34 @@ public class DataDDS extends DDS {
     } else {
       bufferedOS = new BufferedOutputStream(os);
     }
+    try {  //2018-05-22 Bob Simons added try/finally
 
-    // Redefine PrintWriter here, so the DDS is also compressed if necessary
-    PrintWriter pw = new PrintWriter(new OutputStreamWriter(bufferedOS));
-    print(pw);
-    // pw.println("Data:");  // JCARON CHANGED
-    pw.flush();
-    bufferedOS.write("\nData:\n".getBytes()); // JCARON CHANGED
-    bufferedOS.flush();
+        // Redefine PrintWriter here, so the DDS is also compressed if necessary
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(bufferedOS));
+        try {
+            print(pw);
+            // pw.println("Data:");  // JCARON CHANGED
+            pw.flush();
+            bufferedOS.write("\nData:\n".getBytes()); // JCARON CHANGED
+            bufferedOS.flush();
 
-    // Use a DataOutputStream for serialize
-    DataOutputStream dataOS = new DataOutputStream(bufferedOS);
-    for(Enumeration e = getVariables(); e.hasMoreElements(); ) {
-      ClientIO bt = (ClientIO)e.nextElement();
-      bt.externalize(dataOS);
+            // Use a DataOutputStream for serialize
+            DataOutputStream dataOS = new DataOutputStream(bufferedOS);
+            try {
+                for(Enumeration e = getVariables(); e.hasMoreElements(); ) {
+                  ClientIO bt = (ClientIO)e.nextElement();
+                  bt.externalize(dataOS);
+                }
+                // Note: for DeflaterOutputStream, flush() is not sufficient to flush
+                // all buffered data
+            } finally {
+                dataOS.close();
+            }
+        } finally {
+            pw.close();
+        }
+    } finally {
+        bufferedOS.close();
     }
-    // Note: for DeflaterOutputStream, flush() is not sufficient to flush
-    // all buffered data
-    dataOS.close();
   }
 }

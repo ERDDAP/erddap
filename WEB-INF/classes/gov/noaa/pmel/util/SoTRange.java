@@ -72,7 +72,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       this.delta = tdelta;
     }
     /**
-     * @deprecated use SoTRange
+     * @Deprecated use SoTRange
      */
     public GeoDate(TimeRange trange) {
       start = new gov.noaa.pmel.util.GeoDate(trange.start.getTime());
@@ -265,7 +265,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       this(ustart.getTime(), uend.getTime(), udel.getTime());
     }
     /**
-     * @deprecated use SoTRange
+     * @Deprecated use SoTRange
      */
     public Time(TimeRange trange) {
       start = trange.start.getTime();
@@ -277,7 +277,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       }
     }
     /**
-     * @deprecated use SoTRange.Time
+     * @Deprecated use SoTRange.Time
      */
     public Time(SoTRange.GeoDate trange) {
       this(trange.start, trange.end, trange.delta);

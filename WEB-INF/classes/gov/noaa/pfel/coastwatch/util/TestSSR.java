@@ -140,7 +140,7 @@ public class TestSSR {
             Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
         } catch (Exception e) {
             Test.knownProblem(
-                "IMAGEMAGICK NOT SET UP ON BOB'S DELL M4700.",
+                "IMAGEMAGICK NOT SET UP ON BOB'S DELL M4700 or Lenovo.",
                 MustBe.throwableToString(e));
         }
         File2.delete(tempGif);
@@ -269,7 +269,7 @@ public class TestSSR {
         //test non-existent file
         long rTime = System.currentTimeMillis();
         try {
-            sar = SSR.getUrlResponseLines("http://coastwatch.pfeg.noaa.gov/zzz.html");
+            sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/zzz.html");
             throw new Throwable("shouldn't get here.");
         } catch (Exception e) { //not throwable
             String2.log("SSR.getUrlResponse for non existent url time=" + (System.currentTimeMillis() - rTime) + "ms");
@@ -282,7 +282,7 @@ public class TestSSR {
         //but you can put as many params on one line as needed (from any screen)
         //and put edit=... to determine which screen gets returned
         try {
-            sar = SSR.getUrlResponseLines("http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
+            sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
             String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
             Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
         } catch (Exception e) {
@@ -290,16 +290,16 @@ public class TestSSR {
                 "\nUnexpected error."); 
         }
 
-        //postHTMLForm     (always right after contact the web site above)
+        //postHTMLForm     (always right after contact the website above)
         //I NEVER GOT THIS WORKING. JUST USE 'GET' TESTS ABOVE
 //        String2.log("test postHTMLForm");
 
         //for apache commons version
-//        sar = SSR.postHTMLForm("http://coastwatch.pfeg.noaa.gov/cwexperimental/", "CWBrowser.jsp",
+//        sar = SSR.postHTMLForm("https://coastwatch.pfeg.noaa.gov/cwexperimental/", "CWBrowser.jsp",
 //            new String[]{"edit", "Bathymetry"});
 
         //for devx version
-        //sar = SSR.postHTMLForm("http://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowser.jsp",
+        //sar = SSR.postHTMLForm("https://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowser.jsp",
         //    new Object[]{"bathymetry", "false", "edit", "Bathymetry"});
 
         //for java almanac version
@@ -422,6 +422,34 @@ public class TestSSR {
         SSR.debugMode = false;
     }
 
+    /**
+     * Test posting info and getting response.
+     */
+    public static void testPostFormGetResponseString() throws Exception {
+        try {
+            String s = SSR.postFormGetResponseString(
+                "https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
+            String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
+            Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
+            Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0, "");
+            Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
+
+            //2018-10-24 I verified that 
+            //* This request appears as a POST (not GET) in tomcat's localhost_access_lot[date].txt
+            //* The parameters don't appear in that file (whereas they do for GET requests)
+            //* The parameters don't appear in ERDDAP log (whereas they do for GET requests),
+            //*    and it is labelled as a POST request.
+            s = SSR.postFormGetResponseString(
+                "http://localhost:8080/cwexperimental/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
+            String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
+            Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
+            Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0, 
+                "This test requires MUR 4.1 in the local host ERDDAP.");
+            Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
+        } catch (Exception e) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
+        }
+    }
 
     /**
      * Run all of the tests which are dependent on Unix.
@@ -441,6 +469,7 @@ public class TestSSR {
         SSR.verbose = true;
 /* for releases, this line should have open/close comment */
         runNonUnixTests();
+        testPostFormGetResponseString();
         
 //        runUnixTests();
     }

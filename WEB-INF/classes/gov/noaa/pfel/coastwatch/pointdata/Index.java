@@ -105,40 +105,42 @@ public class Index  {
 
         //open the output file
         FileChannel out = (new FileOutputStream(baseIndexName + compactName)).getChannel();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
-        byteBuffer.rewind();
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
+            byteBuffer.rewind();
 
-        //process the rows of pa
-        int tLastFiniteRow = -1;  
-        int bufferPo = -8;
-        for (int row = 0; row < nRows; row++) {
+            //process the rows of pa
+            int tLastFiniteRow = -1;  
+            int bufferPo = -8;
+            for (int row = 0; row < nRows; row++) {
 
-            //need to empty the buffer first?
-            bufferPo += 8;
-            if (bufferPo == bufferSize) {
-                byteBuffer.flip(); //makes written bytes ready for writing
-                Test.ensureEqual(out.write(byteBuffer), bufferSize, 
-                    String2.ERROR + " in Index.addIndex: not all of buffer was written.");
-                byteBuffer.rewind();
-                bufferPo = 0;
+                //need to empty the buffer first?
+                bufferPo += 8;
+                if (bufferPo == bufferSize) {
+                    byteBuffer.flip(); //makes written bytes ready for writing
+                    Test.ensureEqual(out.write(byteBuffer), bufferSize, 
+                        String2.ERROR + " in Index.addIndex: not all of buffer was written.");
+                    byteBuffer.rewind();
+                    bufferPo = 0;
+                }
+
+                //set the new values
+                double d = pa.getDouble(row);
+                if (Double.isFinite(d))
+                    tLastFiniteRow = row;
+                byteBuffer.putDouble(d); //use internal po
             }
+            bufferPo += 8;
+            byteBuffer.flip(); //makes written bytes ready for writing
+            Test.ensureEqual(out.write(byteBuffer), //it knows po (bytes to write) internally
+                bufferPo, 
+                String2.ERROR + " in Index.addIndex: not all of buffer was written.");
 
-            //set the new values
-            double d = pa.getDouble(row);
-            if (Double.isFinite(d))
-                tLastFiniteRow = row;
-            byteBuffer.putDouble(d); //use internal po
+            lastFiniteRow = Math.min(tLastFiniteRow, lastFiniteRow);
+
+        } finally {
+            out.close();
         }
-        bufferPo += 8;
-        byteBuffer.flip(); //makes written bytes ready for writing
-        Test.ensureEqual(out.write(byteBuffer), //it knows po (bytes to write) internally
-            bufferPo, 
-            String2.ERROR + " in Index.addIndex: not all of buffer was written.");
-
-        lastFiniteRow = Math.min(tLastFiniteRow, lastFiniteRow);
-
-        //close out
-        out.close();
         if (verbose) String2.log("Index.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
@@ -181,49 +183,57 @@ public class Index  {
         //open the files
         FileChannel in[] = new FileChannel[nIndices];
         ByteBuffer byteBuffer[] = new ByteBuffer[nIndices];
-        for (int i = 0; i < nIndices; i++) {
-            in[i] = (new FileInputStream(baseIndexName + compactNames.get(i))).getChannel();
-            byteBuffer[i] = ByteBuffer.allocate(bufferSize);
-        }
+        try {
+            for (int i = 0; i < nIndices; i++) {
+                in[i] = (File2.getDecompressedBufferedInputStream(baseIndexName + compactNames.get(i))).getChannel();
+                byteBuffer[i] = ByteBuffer.allocate(bufferSize);
+            }
 
-        //go through the data
-        double rowValues[] = new double[nIndices];
-        int filePo = 0;
-        int bufferPo = -8;
-        ROW_LOOP:
-        for (int row = 0; row <= lastFiniteRow; row++) {
-            //refill buffers?
-            bufferPo += 8;  //position in bytes
-            if ((bufferPo % bufferSize) == 0) {
-                int desiredBytes = Math.min(bufferSize, nRows * 8 - filePo);
+            //go through the data
+            double rowValues[] = new double[nIndices];
+            int filePo = 0;
+            int bufferPo = -8;
+            ROW_LOOP:
+            for (int row = 0; row <= lastFiniteRow; row++) {
+                //refill buffers?
+                bufferPo += 8;  //position in bytes
+                if ((bufferPo % bufferSize) == 0) {
+                    int desiredBytes = Math.min(bufferSize, nRows * 8 - filePo);
+                    for (int index = 0; index < nIndices; index++) {
+                        byteBuffer[index].rewind();
+                        //it would be best to keep track of nBytes read for each,
+                        //  but I need to keep them in synch to simplify reading from them
+                        Test.ensureEqual(in[index].read(byteBuffer[index], filePo), desiredBytes, 
+                            String2.ERROR + " in Index.subset while filling buffers.");
+                    }
+                    filePo += bufferSize;
+                    bufferPo = 0;
+                }
+
+                //check if valid row
                 for (int index = 0; index < nIndices; index++) {
-                    byteBuffer[index].rewind();
-                    //it would be best to keep track of nBytes read for each,
-                    //  but I need to keep them in synch to simplify reading from them
-                    Test.ensureEqual(in[index].read(byteBuffer[index], filePo), desiredBytes, 
-                        String2.ERROR + " in Index.subset while filling buffers.");
+                    double d = byteBuffer[index].getDouble(bufferPo); 
+                    if (d < desiredMin[index] || d > desiredMax[index] || Double.isNaN(d)) {
+                        continue ROW_LOOP;
+                    }
+                rowValues[index] = d;
                 }
-                filePo += bufferSize;
-                bufferPo = 0;
+                //success
+                for (int index = 0; index < nIndices; index++) 
+                    doubleArray[index].add(rowValues[index]);
+                rowArray.add(row);
+                //if (verbose) String2.log("row=" + row + " values=" + String2.toCSSVString(values));
             }
-
-            //check if valid row
+        } finally {                
             for (int index = 0; index < nIndices; index++) {
-                double d = byteBuffer[index].getDouble(bufferPo); 
-                if (d < desiredMin[index] || d > desiredMax[index] || Double.isNaN(d)) {
-                    continue ROW_LOOP;
+                if (in[index] != null) {
+                    try {
+                        in[index].close();
+                    } catch (Exception e) {
+                    }
                 }
-            rowValues[index] = d;
             }
-            //success
-            for (int index = 0; index < nIndices; index++) 
-                doubleArray[index].add(rowValues[index]);
-            rowArray.add(row);
-            //if (verbose) String2.log("row=" + row + " values=" + String2.toCSSVString(values));
         }
-            
-        for (int index = 0; index < nIndices; index++) 
-            in[index].close();
 
         String2.log("Index.subset time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);

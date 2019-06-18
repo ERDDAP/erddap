@@ -59,16 +59,16 @@ public class TableWriterHtmlTable extends TableWriter {
 
 
     //set firstTime
-    protected boolean isCharOrString[];
-    protected boolean isTimeStamp[];
-    protected String time_precision[];
-    protected String fileAccessBaseUrl[];
-    protected String fileAccessSuffix[];
-    protected BufferedWriter writer;
+    protected volatile boolean isCharOrString[];
+    protected volatile boolean isTimeStamp[];
+    protected volatile String time_precision[];
+    protected volatile String fileAccessBaseUrl[];
+    protected volatile String fileAccessSuffix[];
+    protected volatile BufferedWriter writer;
 
     //set later
-    public boolean isMBLimited = false; //ie, did htmlTableMaxMB reduce showFirstNRows?
-    public boolean allDataDisplayed = true;
+    public volatile boolean isMBLimited = false; //ie, did htmlTableMaxMB reduce showFirstNRows?
+    public volatile boolean allDataDisplayed = true;
 
     /**
      * The constructor.
@@ -147,11 +147,10 @@ public class TableWriterHtmlTable extends TableWriter {
      *   If a timeStamp column has a time_precision attribute, it is used
      *   to format the times.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation converts them to NaNs.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -304,7 +303,7 @@ public class TableWriterHtmlTable extends TableWriter {
         }
 
         //*** do everyTime stuff
-        convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
+        table.convertToStandardMissingValues();  //to NaNs
 
         //write how many rows?
         int nRows = table.nRows();

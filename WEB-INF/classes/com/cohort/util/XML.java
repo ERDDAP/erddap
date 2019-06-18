@@ -642,7 +642,7 @@ public class XML {
      * @param item usually a Document from parseXml() above, but may be a NodeList or a Node.
      * @param xPath  from getXPath()
      * @param xPathQuery  e.g., "/testr/level1". 
-     *    See XPath documentation: http://www.w3.org/TR/xpath
+     *    See XPath documentation: https://www.w3.org/TR/xpath
      * @return the NodeList of matching Nodes (it may be of length 0)
      * @throws Exception if trouble
      */
@@ -657,7 +657,7 @@ public class XML {
      * @param item usually a Document from parseXml() above, but may be a NodeList or a Node.
      * @param xPath  from getXPath()
      * @param xPathQuery  e.g., "/testr/level1". 
-     *    See XPath documentation: http://www.w3.org/TR/xpath
+     *    See XPath documentation: https://www.w3.org/TR/xpath
      * @return the first node matching an XPath query (or null if none).
      */
     public static Node getFirstNode(Object item, XPath xPath, String xPathQuery) throws Exception {
@@ -710,7 +710,7 @@ public class XML {
      * @param item usually a Document from parseXml() above, but may be a NodeList or a Node.
      * @param xPath  from getXPath()
      * @param xPathQuery  e.g., "/testr/level1". 
-     *    See XPath documentation: http://www.w3.org/TR/xpath
+     *    See XPath documentation: https://www.w3.org/TR/xpath
      * @return the text content (or "" if no matching node or no content).
      */
     public static String getTextContent1(Object item, XPath xPath, String xPathQuery) throws Exception {

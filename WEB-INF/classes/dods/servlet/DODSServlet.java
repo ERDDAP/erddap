@@ -188,7 +188,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         try {
             BufferedOutputStream eOut = new BufferedOutputStream(response.getOutputStream());
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ slients don't barf as they would if I sent "plain" AND
@@ -223,7 +223,7 @@ public abstract class DODSServlet extends HttpServlet {
         try {
             BufferedOutputStream eOut = new BufferedOutputStream(response.getOutputStream());
 
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ slients don't barf as they would if I sent "plain" AND
@@ -254,7 +254,7 @@ public abstract class DODSServlet extends HttpServlet {
         try {
             DataOutputStream dos = new DataOutputStream(response.getOutputStream());
 
-            response.setHeader("Content-Description", "dods_error");
+            response.setHeader("Content-Description", "dods-error");
 
             // This should probably be set to "plain" but this works, the
             // C++ slients don't barf as they would if I sent "plain" AND
@@ -358,7 +358,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("text/plain");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_error");
+        response.setHeader("Content-Description", "dods-error");
         // Commented because of a bug in the DODS C++ stuff...
         //response.setHeader("Content-Encoding", "none");
 
@@ -476,7 +476,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("text/plain");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_das");
+        response.setHeader("Content-Description", "dods-das");
         // Commented because of a bug in the DODS C++ stuff...
         //response.setHeader("Content-Encoding", "plain");
 
@@ -528,7 +528,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("text/plain");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_dds");
+        response.setHeader("Content-Description", "dods-dds");
         // Commented because of a bug in the DODS C++ stuff...
         //response.setHeader("Content-Encoding", "plain");
 
@@ -604,7 +604,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("application/octet-stream");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_data");
+        response.setHeader("Content-Description", "dods-data");
 
         ServletOutputStream sOut = response.getOutputStream();
         OutputStream bOut;
@@ -694,7 +694,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/html");
-        response.setHeader("Content-Description", "dods_directory");
+        response.setHeader("Content-Description", "dods-directory");
 
         try {
             dodsDIR di = new dodsDIR();
@@ -735,7 +735,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("text/plain");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_version");
+        response.setHeader("Content-Description", "dods-version");
         // Commented because of a bug in the DODS C++ stuff...
         //response.setHeader("Content-Encoding", "plain");
 
@@ -773,7 +773,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setContentType("text/html");
         response.setHeader("XDODS-Server", getServerVersion());
-        response.setHeader("Content-Description", "dods_help");
+        response.setHeader("Content-Description", "dods-help");
         // Commented because of a bug in the DODS C++ stuff...
         //response.setHeader("Content-Encoding", "plain");
 
@@ -854,7 +854,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/plain");
-        response.setHeader("Content-Description", "dods_ascii");
+        response.setHeader("Content-Description", "dods-ascii");
 
         try {
             dodsASCII di = new dodsASCII();
@@ -894,7 +894,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/html");
-        response.setHeader("Content-Description", "dods_description");
+        response.setHeader("Content-Description", "dods-description");
 
         GuardedDataset ds = null;
         try {
@@ -943,7 +943,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/html");
-        response.setHeader("Content-Description", "dods_form");
+        response.setHeader("Content-Description", "dods-form");
 
         GuardedDataset ds = null;
         try {
@@ -988,7 +988,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/xml");
-        response.setHeader("Content-Description", "dods_catalog");
+        response.setHeader("Content-Description", "dods-catalog");
 
         PrintWriter pw = new PrintWriter(response.getOutputStream());
         printCatalog(pw);
@@ -1026,7 +1026,7 @@ public abstract class DODSServlet extends HttpServlet {
 
         response.setHeader("XDODS-Server", getServerVersion());
         response.setContentType("text/html");
-        response.setHeader("Content-Description", "dods_status");
+        response.setHeader("Content-Description", "dods-status");
 
         PrintWriter pw = new PrintWriter(response.getOutputStream());
         pw.println("<title>Server Status</title>");
@@ -1218,7 +1218,7 @@ public abstract class DODSServlet extends HttpServlet {
      * @return A string containing the prepared constraint expression. If there
      *         is a problem with the constraint expression a <code>null</code> is returned.
      * @see ReqState
-     * @deprecated This function has been encompassed by the ReqState object
+     * @Deprecated This function has been encompassed by the ReqState object
      *             internals and is no longer needed here.
      */
     private String prepCE(String ce) {
@@ -1288,7 +1288,7 @@ public abstract class DODSServlet extends HttpServlet {
      * @return True is the client accpets a compressed return document.
      *         False otherwise.
      * @see ReqState
-     * @deprecated This method has been encapsulated in the ReqState object and
+     * @Deprecated This method has been encapsulated in the ReqState object and
      *             is no longer needed here.
      */
 
@@ -1332,7 +1332,7 @@ public abstract class DODSServlet extends HttpServlet {
      *                in question.
      * @return True if the URL wasn't junk, false otherwise.
      * @see ReqState
-     * @deprecated This method has been moved to the ReqState object and
+     * @Deprecated This method has been moved to the ReqState object and
      *             is no longer needed here.
      */
 

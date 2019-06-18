@@ -86,7 +86,7 @@ public class ReqState {
      * @param acceptsCompressed
      * @param sc
      * @param serverClassName
-     * @deprecated
+     * @Deprecated
      */
     public ReqState(String dataSetName,
                         String requestSuffix,

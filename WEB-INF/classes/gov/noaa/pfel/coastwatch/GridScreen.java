@@ -610,7 +610,7 @@ public class GridScreen extends Screen {
                     if (oneOf.verbose()) String2.log("  timeSeries reusing " + timeSeriesFileName + ".nc");
                     thereIsTimeSeriesData = true;
                     timeSeriesTable = new Table();
-                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
                 } else {
                     //unresolved problem with relying on existing file:
                     //  file for composite of current (e.g.) month would change hourly as new data arrives
@@ -722,7 +722,7 @@ public class GridScreen extends Screen {
         try {
             Table timeSeriesTable = new Table();
             String fullTimeSeriesFileName = oneOf.fullPrivateDirectory() + timeSeriesFileName + ".nc";
-            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
             return new GraphDataLayer(
                 editOption, //sourceID
                 3, 5, -1, -1, -1, //time,data, others not used

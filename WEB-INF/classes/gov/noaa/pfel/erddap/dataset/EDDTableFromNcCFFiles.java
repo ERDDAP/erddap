@@ -36,6 +36,15 @@ import gov.noaa.pfel.erddap.variable.*;
 public class EDDTableFromNcCFFiles extends EDDTableFromFiles { 
 
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
     /** 
      * The constructor just calls the super constructor. 
      *
@@ -78,7 +87,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
-        boolean tRemoveMVRows) 
+        boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromNcCFFiles",  
@@ -94,7 +104,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
     }
 
     /**
@@ -106,7 +117,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -115,14 +126,17 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         
         //get the data from the source file
         Table table = new Table();
-        table.readNcCF(fileDir + fileName, sourceDataNames,
+        String decompFullName = FileVisitorDNLS.decompressIfNeeded(
+            tFileDir + tFileName, fileDir, decompressedDirectory(), 
+            EDStatic.decompressedCacheMaxGB, true); //reuseExisting
+        table.readNcCF(decompFullName, sourceDataNames, standardizeWhat,
             sourceConVars, sourceConOps, sourceConValues);
         return table;
     }
 
 
     /** 
-     * This generates a ready-to-use datasets.xml entry for an EDDTableFromNcFiles.
+     * This generates a ready-to-use datasets.xml entry for an EDDTableFromNcCFFiles.
      * The XML can then be edited by hand and added to the datasets.xml file.
      *
      * <p>This can't be made into a web service because it would allow any user
@@ -156,6 +170,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, 
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** EDDTableFromNcCFFiles.generateDatasetsXml" +
@@ -172,6 +187,11 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         //tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
@@ -184,22 +204,28 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
                     tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
-        String2.log(NcHelper.dumpString(sampleFileName, false));
+        String2.log(NcHelper.ncdump(sampleFileName, "-h"));
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
-        dataSourceTable.readNcCF(sampleFileName, null, null, null, null);
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.readNcCF(sampleFileName, null, tStandardizeWhat,
+            null, null, null);
         double maxTimeES = Double.NaN;
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
-            dataAddTable.addColumn(c, colName, pa,
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+            dataAddTable.addColumn(c, colName, destPA, addAtts); 
 
             //maxTimeES
             String tUnits = sourceAtts.getString("units");
@@ -208,15 +234,19 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
                     if (Calendar2.isNumericTimeUnits(tUnits)) {
                         double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
                         maxTimeES = Calendar2.unitsSinceToEpochSeconds(
-                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                            tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
                     } else { //string time units
-                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                        maxTimeES = Calendar2.tryToEpochSeconds(destPA.getString(destPA.size() - 1)); //NaN if trouble
                     }
                 } catch (Throwable t) {
                     String2.log("caught while trying to get maxTimeES: " + 
                         MustBe.throwableToString(t));
                 }
             }
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, sourcePA, sourceAtts, addAtts); //sourcePA since strongly typed
+
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -288,7 +318,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -337,7 +370,9 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
                 1440,
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
-                "", "", "", "", null) + "\n";
+                "", "", "", "", 
+                -1, null, //defaultStandardizeWhat
+                null) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -347,7 +382,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
                 "1440",
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
-                "", "", "", "", ""},
+                "", "", "", "", "",
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -363,6 +399,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -427,7 +464,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
 "        <att name=\"keywords\">1984-2004, altitude, animals, animals/vertebrates, aquatic, atmosphere, biological, biology, biosphere, calcofi, california, classification, coastal, code, common, cooperative, count, cruise, data, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Biological Classification &gt; Animals/Vertebrates &gt; Fish, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat, Earth Science &gt; Oceans &gt; Aquatic Sciences &gt; Fisheries, ecosystems, fish, fisheries, habitat, height, identifier, investigations, larvae, latitude, line, line_station, longitude, marine, name, number, observed, obsScientific, obsUnits, obsValue, occupancy, ocean, oceanic, oceans, order, science, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>line_station</sourceName>\n" +
@@ -564,8 +601,10 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
+            String tDatasetID = "nccf_8867_6a37_8e8f";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "nccf_8867_6a37_8e8f", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits", 
@@ -607,7 +646,9 @@ directionsForGenerateDatasetsXml() +
                 1440,
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "WOD_cruise_identifier, time", 
-                "", "", "", "", null) + "\n";
+                "", "", "", "", 
+                -1, null, //defaultStandardizeWhat
+                null) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -615,7 +656,8 @@ directionsForGenerateDatasetsXml() +
                 "1440",
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "WOD_cruise_identifier, time", 
-                "", "", "", "", ""},
+                "", "", "", "", "", 
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -631,6 +673,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
 "    <extractRegex></extractRegex>\n" +
@@ -681,14 +724,14 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">World Ocean Database</att>\n" +
 "        <att name=\"infoUrl\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"institution\">NGDC(NODC), NOAA</att>\n" +
-"        <att name=\"keywords\">Access_no, accession, bathymetry, below, cast, Cast_Direction, Cast_Duration, Cast_Tow_number, center, chemistry, chlorophyll, Chlorophyll_Instrument, Chlorophyll_row_size, Chlorophyll_uncalibrated, Chlorophyll_WODprofileflag, color, concentration, concentration_of_chlorophyll_in_sea_water, conductivit, Conductivit_row_size, country, crs, cruise, currents, data, database, dataset, date, dbase_orig, density, depth, direction, dissolved, dissolved o2, duration, earth, Earth Science &gt; Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, file, flag, floor, geophysical, GMT_time, high, High_res_pair, identifier, institute, instrument, latitude, level, longitude, measured, multi, multi-cast, name, national, ncei, nesdis, ngdc, noaa, nodc, number, O2, observation, observations, ocean, ocean color, oceanographic, oceans, Orig_Stat_Num, origflagset, origin, original, originators, originators_cruise_identifier, oxygen, Oxygen_Instrument, Oxygen_Original_units, Oxygen_row_size, Oxygen_WODprofileflag, pair, platform, practical, pressure, Pressure_row_size, profile, project, quality, resolution, responsible, salinity, Salinity_Instrument, Salinity_row_size, Salinity_Scale, Salinity_WODprofileflag, scale, science, sea, sea_floor_depth, sea_water_practical_salinity, seafloor, seawater, sigfig, station, statistics, temperature, Temperature_Instrument, Temperature_row_size, Temperature_Scale, Temperature_WODprofileflag, time, topography, tow, unique, units, upon, values, water, which, wod, WOD_cruise_identifier, wod_unique_cast, WODf, WODfd, wodflag, WODfp, wodprofileflag, world, z_sigfig, z_WODflag</att>\n" +
+"        <att name=\"keywords\">Access_no, accession, bathymetry, below, cast, Cast_Direction, Cast_Duration, Cast_Tow_number, center, chemistry, chlorophyll, Chlorophyll_Instrument, Chlorophyll_row_size, Chlorophyll_uncalibrated, Chlorophyll_WODprofileflag, color, concentration, concentration_of_chlorophyll_in_sea_water, conductivit, Conductivit_row_size, country, crs, cruise, data, database, dataset, date, dbase_orig, depth, direction, dissolved, dissolved o2, duration, earth, Earth Science &gt; Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll, file, flag, floor, geophysical, GMT_time, high, High_res_pair, identifier, institute, instrument, latitude, level, longitude, measured, multi, multi-cast, name, national, ncei, nesdis, ngdc, noaa, nodc, number, O2, observation, observations, ocean, ocean color, oceanographic, oceans, Orig_Stat_Num, origflagset, origin, original, originators, originators_cruise_identifier, oxygen, Oxygen_Instrument, Oxygen_Original_units, Oxygen_row_size, Oxygen_WODprofileflag, pair, platform, pressure, Pressure_row_size, profile, project, quality, resolution, responsible, salinity, Salinity_Instrument, Salinity_row_size, Salinity_Scale, Salinity_WODprofileflag, scale, science, sea, sea_floor_depth, seafloor, seawater, sigfig, station, statistics, temperature, Temperature_Instrument, Temperature_row_size, Temperature_Scale, Temperature_WODprofileflag, time, topography, tow, unique, units, upon, values, water, which, wod, WOD_cruise_identifier, wod_unique_cast, WODf, WODfd, wodflag, WODfp, wodprofileflag, world, z_sigfig, z_WODflag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"publisher_url\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n" +
 "        <att name=\"title\">World Ocean Database, Multi-cast file</att>\n" +
 "    </addAttributes>\n" +
@@ -867,6 +910,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Cast_or_Tow_number</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483647</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -881,6 +925,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Originators_Station_Number</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">9.96921E36</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -913,6 +958,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">hours</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">9.96921E36</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -924,9 +970,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Cast_Direction</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -938,6 +982,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">WOD_high_resolution_pair_number</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483647</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -975,8 +1020,6 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"comment\">set of originators flag codes to use</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "            <att name=\"long_name\">Origflagset</att>\n" +
 "        </addAttributes>\n" +
@@ -1112,11 +1155,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Scale upon which values were measured</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
-"            <att name=\"ioos_category\">Salinity</att>\n" +
-"            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +
-"            <att name=\"units\">PSU</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" + //no standard_name or units because String data
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1128,11 +1167,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Instrument</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
-"            <att name=\"ioos_category\">Salinity</att>\n" +
-"            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +
-"            <att name=\"units\">PSU</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +  //no standard_name or units because String data
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1210,6 +1245,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"sample_dimension\">Chlorophyll_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">999</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1238,11 +1274,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Instrument</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" +
-"            <att name=\"colorBarScale\">Log</att>\n" +
-"            <att name=\"ioos_category\">Ocean Color</att>\n" +
-"            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
+"            <att name=\"ioos_category\">Ocean Color</att>\n" +  //no standard_name or units because String data
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1253,6 +1285,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"comment\">set if measurements have not been calibrated</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483647</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" +
 "            <att name=\"colorBarScale\">Log</att>\n" +
@@ -1270,6 +1303,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"sample_dimension\">Conductivit_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">999</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1287,6 +1321,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"semi_major_axis\" type=\"float\">6378137.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">CRS</att>\n" +
 "        </addAttributes>\n" +
@@ -1301,6 +1336,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">WOD_observation_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1316,6 +1352,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">WOD_profile_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1331,6 +1368,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">WOD_depth_level_</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
@@ -1482,7 +1520,8 @@ directionsForGenerateDatasetsXml() +
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
             dir, eddTable.className() + "_testKevin20160519_1", ".ncCF"); 
         table = new Table();
-        table.readNcCF(dir + tName, null, null, null, null);
+        table.readNcCF(dir + tName, null, 0, //standardizeWhat
+            null, null, null);
         results = table.dataToString();
         expected = 
 "array,station,wmo_platform_code,longitude,latitude,time,depth,LON_502,QX_5502,LAT_500,QY_5500\n" +
@@ -1496,7 +1535,8 @@ directionsForGenerateDatasetsXml() +
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
             dir, eddTable.className() + "_testKevin20160519_2", ".nc"); 
         table = new Table();
-        table.readNDNc(dir + tName, null, null, 0, 0, true);
+        table.readNDNc(dir + tName, null, 0, //standardizeWhat
+            null, 0, 0, true);
         //expected is same except there's an additional 'row' column, remove it
         table.removeColumn(table.findColumnNumber("row"));
         results = table.dataToString();
@@ -1511,7 +1551,8 @@ directionsForGenerateDatasetsXml() +
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
             dir, eddTable.className() + "_testKevin20160519_3", ".ncCF"); 
         table = new Table();
-        table.readNcCF(dir + tName, null, null, null, null);
+        table.readNcCF(dir + tName, null, 0, //standardizeWhat
+            null, null, null);
         results = table.dataToString();
         //expected is same
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1535,7 +1576,7 @@ directionsForGenerateDatasetsXml() +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
-            Test.ensureLinesMatch(msg, 
+            Test.repeatedlyTestLinesMatch(msg, 
 "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.", 
                 "");
         }
@@ -1545,7 +1586,7 @@ directionsForGenerateDatasetsXml() +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
-            Test.ensureLinesMatch(msg, 
+            Test.repeatedlyTestLinesMatch(msg, 
 "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.", 
                 "");
         }
@@ -1568,11 +1609,13 @@ directionsForGenerateDatasetsXml() +
         Table table;
 
         table = new Table();
-        table.readNcCF("c:/data/bridger/B01.accelerometer.historical.nc", null, null, null, null);
+        table.readNcCF("c:/data/bridger/B01.accelerometer.historical.nc", null, 0, //standardizeWhat
+            null, null, null);
         Test.ensureSomethingUnicode(table.globalAttributes(), "historical global attributes");
 
         table = new Table();
-        table.readNcCF("c:/data/bridger/B01.accelerometer.realtime.nc", null, null, null, null);
+        table.readNcCF("c:/data/bridger/B01.accelerometer.realtime.nc", null, 0, //standardizeWhat
+            null, null, null);
         Test.ensureSomethingUnicode(table.globalAttributes(), "realtime global attributes");
 
         String id = "UMaineAccB01";
@@ -1658,7 +1701,7 @@ directionsForGenerateDatasetsXml() +
     "  time \\{\n" +
     "    Int32 _ChunkSizes 1;\n" +
     "    String _CoordinateAxisType \"Time\";\n" +
-    "    Float64 actual_range 1.0173492e\\+9, 1.3907502000000134e\\+9;\n" +
+    "    Float64 actual_range 1.0173492e\\+9, 1.3907502e\\+9;\n" +
     "    String axis \"T\";\n" +
     "    String calendar \"gregorian\";\n" +
     "    String ioos_category \"Time\";\n" +
@@ -1668,7 +1711,7 @@ directionsForGenerateDatasetsXml() +
     "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
     "  \\}\n" +
     "  time_created \\{\n" +
-    "    Float64 actual_range 1.3717448871222715e\\+9, 1.3907507452187824e\\+9;\n" +
+    "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
     "    String coordinates \"time lon lat depth\";\n" +
     "    String ioos_category \"Time\";\n" +
     "    String long_name \"Time Record Created\";\n" +
@@ -1679,7 +1722,7 @@ directionsForGenerateDatasetsXml() +
     "    Float64 valid_range 0.0, 99999.0;\n" +
     "  \\}\n" +
     "  time_modified \\{\n" +
-    "    Float64 actual_range 1.3717448871222715e\\+9, 1.3907507452187824e\\+9;\n" +
+    "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
     "    String coordinates \"time lon lat depth\";\n" +
     "    String ioos_category \"Time\";\n" +
     "    String long_name \"Time Record Last Modified\";\n" +
@@ -1832,8 +1875,7 @@ directionsForGenerateDatasetsXml() +
     "    String position_datum \"WGS 84\";\n" +
     "    String processing \"realtime\";\n" +
     "    String project \"NERACOOS\";\n" +
-    "    String project_url \"http://gomoos.org\";\n" +
-    "    String projejct \"NERACOOS\";\n" +
+    "    String project_url \"http://www.neracoos.org\";\n" +
     "    String publisher \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
     "    String publisher_email \"info@neracoos.org\";\n" +
     "    String publisher_name \"Northeastern Regional Association of Coastal and Ocean Observing Systems \\(NERACOOS\\)\";\n" +
@@ -1861,7 +1903,7 @@ directionsForGenerateDatasetsXml() +
     "    Float64 Westernmost_Easting -70.42779;\n" +
     "  \\}\n" +
     "\\}\n";
-            Test.ensureLinesMatch(results, expected, "results=\n" + results);
+            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
             //.csv    for start time time
             //"    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +
@@ -1946,7 +1988,7 @@ directionsForGenerateDatasetsXml() +
         //See low level reading test: Table.testReadNcCF7SampleDims()
         String fileName = String2.unitTestDataDir + 
             "nccf/ncei/ind199105_ctd.nc";
-        String2.log(NcHelper.dumpString(fileName, false));
+        String2.log(NcHelper.ncdump(fileName, "-h"));
 
         String id = "testNcCF7SampleDimensions";
         deleteCachedDatasetInfo(id);
@@ -2016,7 +2058,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.730829399991989e+8, 6.757330750024796e+8;\n" +
+"    Float64 actual_range 6.73082939999e+8, 6.75733075002e+8;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -2166,7 +2208,7 @@ expected =
 "    String references \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
 "    String source \"World Ocean Database\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute,Cast_Tow_number,Temperature_WODprofileFlag,Temperature_Scale,Temperature_instrument\";\n" +
 "    String summary \"Test WOD .ncCF file\";\n" +
 "    String time_coverage_end \"1991-05-31T23:37:55Z\";\n" +
@@ -2281,7 +2323,7 @@ expected =
 
             //ncdump the .nc file
             String2.log("Here's the ncdump of " + baseName + ".nc:");
-            results = NcHelper.dumpString(baseName + ".nc", false);
+            results = NcHelper.ncdump(baseName + ".nc", "-h");
             expected = 
 "netcdf CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc {\n" +
 "  dimensions:\n" +
@@ -2353,114 +2395,114 @@ expected =
 "  :Final_NC_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc\";\n" +
 "  :Creation_date = \"06-Aug-2014 12:22:59\";\n" +
 "  :NCO = \"\\\"4.5.2\\\"\";\n" +
-" data:\n" +
 "}\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ncdump the .ncml file
             String2.log("\nHere's the ncdump of " + baseName + ".ncml:");
-            results = NcHelper.dumpString(baseName + ".ncml", false);
+            results = NcHelper.ncdump(baseName + ".ncml", "-h");
             expected = 
-"<?xml version='1.0' encoding='UTF-8'?>\n" +
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
-"    location='file:/data/medrano/CTZ-T500-MCT-NS5649-Z408-INS12-REC14.ncml' >\n" +
+"netcdf CTZ-T500-MCT-NS5649-Z408-INS12-REC14.ncml {\n" +
+"  dimensions:\n" +
+"    time = 101;\n" +
+"    station = 1;\n" +
+"  variables:\n" +
+"    double Cond(station=1, time=101);\n" +
+"      :long_name = \"Conductividad\";\n" +
+"      :units = \"S/m\";\n" +
+"      :standard_name = \"sea_water_electrical_conductivity\";\n" +
+"      :coordinates = \"time latitude longitude z\";\n" +
 "\n" +
-"  <dimension name='time' length='101' />\n" +
-"  <dimension name='station' length='1' />\n" +
+"    double Pres(station=1, time=101);\n" +
+"      :long_name = \"Presion\";\n" +
+"      :units = \"dBar\";\n" +
+"      :standard_name = \"sea_water_pressure\";\n" +
+"      :coordinates = \"time latitude longitude z\";\n" +
 "\n" +
-"  <attribute name='Anclaje' value='CTZ-T500' />\n" +
-"  <attribute name='Equipo' value='MCT' />\n" +
-"  <attribute name='Numero_de_serie' value='5649' />\n" +
-"  <attribute name='Source_file' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14.mat' />\n" +
-"  <attribute name='Final_NC_file' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc' />\n" +
-"  <attribute name='NCO' value='&quot;4.5.2&quot;' />\n" +
-"  <attribute name='Conventions' value='CF-1.6' />\n" +
-"  <attribute name='featureType' value='timeSeries' />\n" +
-"  <attribute name='standard_name_vocabulary' value='CF-1.6' />\n" +
-"  <attribute name='title' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14' />\n" +
-"  <attribute name='cdm_data_type' value='TimeSeries' />\n" +
-"  <attribute name='cdm_timeseries_variables' value='station' />\n" +
-"  <attribute name='date_created' value='06-Aug-2014 12:22:59' />\n" +
+"    double Temp(station=1, time=101);\n" +
+"      :long_name = \"Temperatura\";\n" +
+"      :units = \"degree_celsius\";\n" +
+"      :standard_name = \"sea_water_temperature\";\n" +
+"      :coordinates = \"time latitude longitude z\";\n" +
 "\n" +
-"  <variable name='station' type='int' shape='station' >\n" +
-"    <attribute name='long_name' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14' />\n" +
-"    <attribute name='cf_role' value='timeseries_id' />\n" +
-"  </variable>\n" +
-"  <variable name='time' type='double' shape='station time' >\n" +
-"    <attribute name='long_name' value='tiempo en dias Julianos' />\n" +
-"    <attribute name='units' value='days since 0000-01-01 00:00:00 ' />\n" +
-"    <attribute name='time_origin' value='0000-01-01 00:00:00' />\n" +
-"    <attribute name='standard_name' value='time' />\n" +
-"    <attribute name='axis' value='T' />\n" +
-"    <attribute name='calendar' value='julian' />\n" +
-"  </variable>\n" +
-"  <variable name='Cond' type='double' shape='station time' >\n" +
-"    <attribute name='long_name' value='Conductividad' />\n" +
-"    <attribute name='units' value='S/m' />\n" +
-"    <attribute name='standard_name' value='sea_water_electrical_conductivity' />\n" +
-"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
-"  </variable>\n" +
-"  <variable name='Pres' type='double' shape='station time' >\n" +
-"    <attribute name='long_name' value='Presion' />\n" +
-"    <attribute name='units' value='dBar' />\n" +
-"    <attribute name='standard_name' value='sea_water_pressure' />\n" +
-"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
-"  </variable>\n" +
-"  <variable name='Temp' type='double' shape='station time' >\n" +
-"    <attribute name='long_name' value='Temperatura' />\n" +
-"    <attribute name='units' value='degree_celsius' />\n" +
-"    <attribute name='standard_name' value='sea_water_temperature' />\n" +
-"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
-"  </variable>\n" +
-"  <variable name='Sal' type='double' shape='station time' >\n" +
-"    <attribute name='long_name' value='Salinidad' />\n" +
-"    <attribute name='units' value='PSU' />\n" +
-"    <attribute name='standard_name' value='sea_water_salinity' />\n" +
-"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
-"  </variable>\n" +
-"  <variable name='latitude' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Latitud' />\n" +
-"    <attribute name='standard_name' value='latitude' />\n" +
-"    <attribute name='units' value='degrees_north' />\n" +
-"    <attribute name='axis' value='Y' />\n" +
-"  </variable>\n" +
-"  <variable name='longitude' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Longitud' />\n" +
-"    <attribute name='units' value='degrees_east' />\n" +
-"    <attribute name='standard_name' value='longitude' />\n" +
-"    <attribute name='axis' value='X' />\n" +
-"  </variable>\n" +
-"  <variable name='z' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='profundidad' />\n" +
-"    <attribute name='units' value='m' />\n" +
-"    <attribute name='standard_name' value='depth' />\n" +
-"    <attribute name='axis' value='Z' />\n" +
-"  </variable>\n" +
-"  <variable name='ProfDiseno' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Profundidad de diseno' />\n" +
-"    <attribute name='units' value='m' />\n" +
-"  </variable>\n" +
-"  <variable name='TiranteDiseno' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Tirante diseno' />\n" +
-"    <attribute name='units' value='m' />\n" +
-"  </variable>\n" +
-"  <variable name='TiranteEstimado' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Tirante estimado' />\n" +
-"    <attribute name='units' value='m' />\n" +
-"  </variable>\n" +
-"  <variable name='var_pres' type='double' shape='station' >\n" +
-"    <attribute name='long_name' value='Bandera presion' />\n" +
-"    <attribute name='units' value='N/A' />\n" +
-"  </variable>\n" +
-"</netcdf>\n";
-//Before netcdf-java 4.6.4: ProfDiseno, TiranteDiseno, TiranteEstimado, and var_pres
-//appeared as shape='station one' even though he got rid of 'one' dimension
-//via .ncml
+"    double Sal(station=1, time=101);\n" +
+"      :long_name = \"Salinidad\";\n" +
+"      :units = \"PSU\";\n" +
+"      :standard_name = \"sea_water_salinity\";\n" +
+"      :coordinates = \"time latitude longitude z\";\n" +
+"\n" +
+"    double ProfDiseno(station=1);\n" +
+"      :long_name = \"Profundidad de diseno\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double TiranteDiseno(station=1);\n" +
+"      :long_name = \"Tirante diseno\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double TiranteEstimado(station=1);\n" +
+"      :long_name = \"Tirante estimado\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double var_pres(station=1);\n" +
+"      :long_name = \"Bandera presion\";\n" +
+"      :units = \"N/A\";\n" +
+"\n" +
+"    int station(station=1);\n" +
+"      :long_name = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\";\n" +
+"      :cf_role = \"timeseries_id\";\n" +
+"\n" +
+"    double time(station=1, time=101);\n" +
+"      :long_name = \"tiempo en dias Julianos\";\n" +
+"      :units = \"days since 0000-01-01 00:00:00 \";\n" +
+"      :time_origin = \"0000-01-01 00:00:00\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :axis = \"T\";\n" +
+"      :calendar = \"julian\";\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"\n" +
+"    double latitude(station=1);\n" +
+"      :long_name = \"Latitud\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :axis = \"Y\";\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"\n" +
+"    double longitude(station=1);\n" +
+"      :long_name = \"Longitud\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :axis = \"X\";\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"\n" +
+"    double z(station=1);\n" +
+"      :long_name = \"profundidad\";\n" +
+"      :units = \"m\";\n" +
+"      :standard_name = \"depth\";\n" +
+"      :axis = \"Z\";\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :Anclaje = \"CTZ-T500\";\n" +
+"  :Equipo = \"MCT\";\n" +
+"  :Numero_de_serie = \"5649\";\n" +
+"  :Source_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.mat\";\n" +
+"  :Final_NC_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc\";\n" +
+"  :NCO = \"\\\"4.5.2\\\"\";\n" +
+"  :Conventions = \"CF-1.6\";\n" +
+"  :featureType = \"timeSeries\";\n" +
+"  :standard_name_vocabulary = \"CF-1.6\";\n" +
+"  :title = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\";\n" +
+"  :cdm_data_type = \"TimeSeries\";\n" +
+"  :cdm_timeseries_variables = \"station\";\n" +
+"  :date_created = \"06-Aug-2014 12:22:59\";\n" +
+"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
+"}\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //read the .ncml via table.readNcCF
             table = new Table();
-            table.readNcCF(baseName + ".ncml", null, null, null, null);
+            table.readNcCF(baseName + ".ncml", null, 0, //standardizeWhat
+                null, null, null);
             results = table.toString(5);
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
@@ -2559,7 +2601,9 @@ expected =
             //read the .ncml via table.readNcCF -- just station info
             table = new Table();
             table.readNcCF(baseName + ".ncml", 
-                StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), null, null, null);
+                StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), 
+                0, //standardizeWhat
+                null, null, null);
             results = table.dataToString();
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
@@ -2590,7 +2634,7 @@ expected =
 
             //ncdump the .nc file
             String2.log("Here's the ncdump of " + dir + sampleName);
-            results = NcHelper.dumpString(dir + sampleName, false);
+            results = NcHelper.ncdump(dir + sampleName, "-h");
             String2.log(results);
             expected = 
 "netcdf biology_JP14323.nc {\n" +
@@ -2813,7 +2857,8 @@ expected =
 
             //read the table 
             table = new Table();
-            table.readNcCF(dir + sampleName, null, null, null, null);
+            table.readNcCF(dir + sampleName, null, 0, //standardizeWhat
+                null, null, null);
 
             results = table.dataToString(5);
             expected = 

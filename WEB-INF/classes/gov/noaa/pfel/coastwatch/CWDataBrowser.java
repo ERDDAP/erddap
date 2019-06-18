@@ -588,7 +588,7 @@ public class CWDataBrowser extends EmaClass  {
             "<p>DISCLAIMER FOR EXTERNAL LINKS\n" +
             "<br>The appearance of external links on this World Wide Web site does not\n" +
             "constitute endorsement by the\n" +
-            "<a href=\"http://www.doc.gov\">Department of Commerce</a>/<a href=\"http://www.noaa.gov\">National\n" +
+            "<a href=\"http://www.commerce.gov\">Department of Commerce</a>/<a href=\"https://www.noaa.gov\">National\n" +
             "Oceanic and Atmospheric Administration</a> of external Web sites or the information,\n" +
             "products or services contained\n" +
             "therein. For other than authorized activities the Department of Commerce/NOAA does not\n" +

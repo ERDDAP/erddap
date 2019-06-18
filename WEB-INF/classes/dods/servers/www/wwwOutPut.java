@@ -47,7 +47,7 @@ public class wwwOutPut  {
 
 
     public static String nameForJsCode(String dodsName){
-        return("dods_"+dodsName);
+        return("dods_"+dodsName);  //2019-03-29 Bob asks: should this be "dods-"? because it is a "Content-Description"? But I don't use this code.
     }
 
 

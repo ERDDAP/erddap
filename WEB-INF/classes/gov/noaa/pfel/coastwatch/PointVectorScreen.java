@@ -278,7 +278,7 @@ public class PointVectorScreen extends Screen {
             //It is calculated from uMean and vMean (not from mean of vector lengths).
             //This matches method used to plot REGRESS_MEAN on the graph (in SgtGraph).
             //And this matches how NDBC calculates the "average" for a given hour
-            // (see http://www.ndbc.noaa.gov/measdes.shtml#stdmet).
+            // (see https://www.ndbc.noaa.gov/measdes.shtml#stdmet).
             if (File2.touch(fullAverageFileName)) {
                 //read the table from an existing file
                 //unresolved problem with relying on existing file:
@@ -287,7 +287,7 @@ public class PointVectorScreen extends Screen {
                 if (oneOf.verbose()) String2.log("  averageTable reusing " + 
                     fullAverageFileName);
                 averageTable = new Table();
-                averageTable.readFlatNc(fullAverageFileName, null, 1); //1=unpack
+                averageTable.readFlatNc(fullAverageFileName, null, 1); //standardizeWhat=1
             } else {
                 long tTime = System.currentTimeMillis();
                 if (oneOf.verbose()) String2.log("  averageTable creating " + 
@@ -418,7 +418,7 @@ public class PointVectorScreen extends Screen {
                 if (File2.touch(fullTimeSeriesFileName)) {
                     if (oneOf.verbose()) String2.log("  timeSeries reusing " + timeSeriesFileName + ".nc");
                     timeSeriesTable = new Table();
-                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
                 } else {
                     //unresolved problem with relying on existing file:
                     //  file for composite of current month would change hourly as new data arrives
@@ -475,7 +475,7 @@ public class PointVectorScreen extends Screen {
         try {
             Table timeSeriesTable = new Table();
             String fullTimeSeriesFileName = oneOf.fullPrivateDirectory() + timeSeriesFileName + ".nc";
-            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
 
             //set up the graphGDL 
             //(with data for all visible stations, averaged over time)

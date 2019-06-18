@@ -42,6 +42,15 @@ import java.util.List;
  */
 public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles { 
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
     /** 
      * The constructor just calls the super constructor. 
      *
@@ -67,7 +76,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
-        boolean tRemoveMVRows) 
+        boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", tDatasetID, 
@@ -82,7 +92,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
             tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
 
     }
 
@@ -94,7 +105,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -102,7 +113,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         throws Throwable {
 
         Table table = new Table();
-        table.readAwsXmlFile(fileDir + fileName);
+        table.readAwsXmlFile(tFileDir + tFileName);
 
         //convert to desired sourceDataTypes
         int nCols = table.nColumns();
@@ -118,6 +129,9 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 }
             }
         }
+
+        //unpack
+        table.unpack(standardizeWhat);
 
         return table;
     }
@@ -159,6 +173,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        int tStandardizeWhat, String tCacheFromUrl, 
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromAwsXmlFiles.generateDatasetsXml" +
@@ -177,6 +192,11 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tFileNameRegex = String2.isSomething(tFileNameRegex)? 
+            tFileNameRegex.trim() : ".*";
+        if (String2.isRemote(tCacheFromUrl)) 
+            FileVisitorDNLS.sync(tCacheFromUrl, tFileDir, tFileNameRegex,
+                true, ".*", false); //not fullSync
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
@@ -203,6 +223,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             dataSourceTable.setStringData(zipCol, 0, 
                 dataSourceTable.getStringData(zipCol, 0).substring(1));
 
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.unpack(tStandardizeWhat);
+
         //and make a parallel table to hold addAttributes
         Table dataAddTable = new Table();
 
@@ -225,13 +249,15 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
-            dataAddTable.addColumn(col, colName,
-                makeDestPAForGDX(
-                    (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
-                    sourceAtts), 
+            PrimitiveArray sourcePA = (PrimitiveArray)dataSourceTable.getColumn(col).clone();
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            dataAddTable.addColumn(col, colName, destPA,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     null, //no source global attributes
-                    sourceAtts, null, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                    sourceAtts, null, colName, 
+                    destPA.elementClass() != String.class, //tryToAddStandardName
+                    destPA.elementClass() != String.class, //addColorBarMinMax
+                    true)); //tryToFindLLAT
             Attributes addAtts = dataAddTable.columnAttributes(col);
 
             //if a variable has timeUnits, files are likely sorted by time
@@ -239,6 +265,9 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(sourceAtts, null);
             if (tSortedColumnSourceName.length() == 0 && hasTimeUnits)
                 tSortedColumnSourceName = dataSourceTable.getColumnName(col);
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, destPA, sourceAtts, addAtts);
 
         }
 
@@ -297,9 +326,12 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
+            (String2.isRemote(tCacheFromUrl)? 
+            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -339,6 +371,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
                 "ob-date", "station-id ob-date", 
                 "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
+                -1, null, //defaultStandardizeWhat
                 externalAddAttributes) + "\n";
 
             //GenerateDatasetsXml
@@ -348,7 +381,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 "1", "2", "1440",
                 "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
                 "ob-date", "station-id ob-date", 
-                "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!"},
+                "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
+                "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -368,6 +402,7 @@ directionsForGenerateDatasetsXml() +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex>-.*$</postExtractRegex>\n" +
 "    <extractRegex>.*</extractRegex>\n" +
@@ -379,8 +414,8 @@ directionsForGenerateDatasetsXml() +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
@@ -389,11 +424,11 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"infoUrl\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"institution\">exploratorium</att>\n" +
-"        <att name=\"keywords\">air, altitude, atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, aux_temp, aux_temp_rate, bulb, city, city-state, city-state-zip, city_state, city_state_zip, currents, data, date, dew, dew point, dew_point, dew_point_temperature, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, exploratorium, feels, feels-like, feels_like, file, fileName, gust, gust-direction, gust-time, gust_direction, gust_speed, gust_time, height, high, humidity, humidity-rate, humidity_high, humidity_low, humidity_rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, indoor_temp, indoor_temp_rate, light, light-rate, light_rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, moon_phase, moon_phase_moon_phase_img, name, newer, ob-date, phase, point, precipitation, pressure, pressure-high, pressure-low, pressure-rate, pressure_high, pressure_low, pressure_rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, rainfall, rate, relative, relative_humidity, science, site, site-url, site_url, speed, state, station, station-id, station_id, sunrise, sunset, surface, temp-high, temp-low, temp-rate, temp_high, temp_low, temp_rate, temperature, time, title, today, vapor, water, wet, wet_bulb, wet_bulb_temperature, wind, wind_direction, wind_direction_avg, wind_from_direction, wind_speed, wind_speed_avg, wind_speed_of_gust, winds, year, zip</att>\n" +
+"        <att name=\"keywords\">air, altitude, atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, aux_temp, aux_temp_rate, average, bulb, city, city-state, city-state-zip, city_state, city_state_zip, data, date, dew, dew point, dew_point, dew_point_temperature, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, exploratorium, feels, feels-like, feels_like, file, fileName, gust, gust-direction, gust-time, gust_direction, gust_speed, gust_time, height, high, humidity, humidity-rate, humidity_high, humidity_low, humidity_rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, indoor_temp, indoor_temp_rate, light, light-rate, light_rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, moon_phase, moon_phase_moon_phase_img, name, newer, ob-date, phase, point, precipitation, pressure, pressure-high, pressure-low, pressure-rate, pressure_high, pressure_low, pressure_rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, rainfall, rate, relative, relative_humidity, science, site, site-url, site_url, speed, state, station, station-id, station_id, sunrise, sunset, surface, temp-high, temp-low, temp-rate, temp_high, temp_low, temp_rate, temperature, time, title, today, vapor, water, wet, wet_bulb, wet_bulb_temperature, wind, wind-direction, wind-direction-avg, wind_direction, wind_direction_avg, wind_speed, wind_speed_avg, wind_speed_of_gust, winds, year, zip</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">The new summary! exploratorium data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -570,9 +605,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
 "            <att name=\"long_name\">Gust-direction</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -964,11 +997,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
-"            <att name=\"long_name\">Wind From Direction</att>\n" +
-"            <att name=\"standard_name\">wind_from_direction</att>\n" +
+"            <att name=\"long_name\">Wind-direction</att>\n" + //no standard_name because it is String direction
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -978,11 +1008,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
-"            <att name=\"long_name\">Wind From Direction</att>\n" +
-"            <att name=\"standard_name\">wind_from_direction</att>\n" +
+"            <att name=\"long_name\">Wind-direction-avg</att>\n" +  //no standard_name because it is String direction
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -991,6 +1018,8 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             //!!! actually this will fail with a specific error which is caught below
+            String tDatasetID = "xml_5540_32bf_7f9d";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "xml_5540_32bf_7f9d", "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
@@ -1120,7 +1149,7 @@ directionsForGenerateDatasetsXml() +
 "  gust_direction {\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    String ioos_category \"Currents\";\n" +
+"    String ioos_category \"Wind\";\n" +
 "    String long_name \"Gust-direction\";\n" +
 "  }\n" +
 "  gust_speed {\n" +
@@ -1367,7 +1396,7 @@ String expected2 =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"fileName, station_id, station, city_state_zip, city_state, site_url, altitude\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String time_coverage_end \"2012-11-03T20:30:00Z\";\n" +

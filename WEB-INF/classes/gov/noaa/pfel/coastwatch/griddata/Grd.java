@@ -444,42 +444,48 @@ public class Grd {
                     //read the data from the ASCII file
                     BufferedReader reader = new BufferedReader(new FileReader(
                         resultDir + name + ".asc"));
-                    String s;
-                    s = reader.readLine(); int nCols = String2.parseInt(s.substring(s.indexOf(' ') + 1));
-                    s = reader.readLine(); int nRows = String2.parseInt(s.substring(s.indexOf(' ') + 1));
-                    s = reader.readLine(); double lon0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-                    s = reader.readLine(); double lat0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-                    s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
-                    s = reader.readLine(); String mv = s.substring(s.indexOf(' ') + 1);
-                    //String2.log("grdinfo = " + String2.toCSSVString(info));
+                    try {
+                        String s;
+                        s = reader.readLine(); int nCols = String2.parseInt(s.substring(s.indexOf(' ') + 1));
+                        s = reader.readLine(); int nRows = String2.parseInt(s.substring(s.indexOf(' ') + 1));
+                        s = reader.readLine(); double lon0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+                        s = reader.readLine(); double lat0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+                        s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
+                        s = reader.readLine(); String mv = s.substring(s.indexOf(' ') + 1);
+                        //String2.log("grdinfo = " + String2.toCSSVString(info));
 
-                    //open a dataOutputStream 
-                    DataOutputStream dos = DataStream.getDataOutputStream(resultDir + name + randomInt + ".mat");
+                        //open a dataOutputStream 
+                        DataOutputStream dos = DataStream.getDataOutputStream(resultDir + name + randomInt + ".mat");
+                        try {
 
-                    //write the header
-                    Matlab.writeMatlabHeader(dos);
+                            //write the header
+                            Matlab.writeMatlabHeader(dos);
 
-                    //first: make the lon array and write it to dos
-                    double lon[] = new double[nCols];
-                    for (int col = 0; col < nCols; col++)
-                        lon[col] = lon0 + col * incr;
-                    Matlab.writeDoubleArray(dos, "lon", lon);
+                            //first: make the lon array and write it to dos
+                            double lon[] = new double[nCols];
+                            for (int col = 0; col < nCols; col++)
+                                lon[col] = lon0 + col * incr;
+                            Matlab.writeDoubleArray(dos, "lon", lon);
 
-                    //second: make the lat array and write it to dos
-                    double lat[] = new double[nRows];
-                    for (int row = 0; row < nRows; row++)
-                        lat[row] = lat0 + row * incr;
-                    Matlab.writeDoubleArray(dos, "lat", lat);
+                            //second: make the lat array and write it to dos
+                            double lat[] = new double[nRows];
+                            for (int row = 0; row < nRows; row++)
+                                lat[row] = lat0 + row * incr;
+                            Matlab.writeDoubleArray(dos, "lat", lat);
 
-                    //make an array of the data
-                    double ar[][] = new double[nRows][nCols];
-                    for (int row = 0; row < nRows; row++)
-                        for (int col = 0; col < nCols; col++) 
-                            ar[row][col] = String2.parseDouble(reader.readLine());
-                    Matlab.write2DDoubleArray(dos, varName, ar);
+                            //make an array of the data
+                            double ar[][] = new double[nRows][nCols];
+                            for (int row = 0; row < nRows; row++)
+                                for (int col = 0; col < nCols; col++) 
+                                    ar[row][col] = String2.parseDouble(reader.readLine());
+                            Matlab.write2DDoubleArray(dos, varName, ar);
 
-                    //close dos 
-                    dos.close();
+                        } finally {
+                            dos.close();
+                        }
+                    } finally {
+                        reader.close();
+                    }
                         
                     //delete the ascii file
                     File2.delete(resultDir + name + ".asc");
@@ -513,8 +519,11 @@ public class Grd {
                     /* //Alternative: java pipe: 14.6s for westus AT 1km with correct file name in .zip
                     ZipOutputStream zos = startZipOutputStream(fullResultName + ".xyz.zip", 
                         File2.nameAndExtension(fullResultName + ".xyz"));
-                    SSR.cShell("grd2xyz " + fullGrdName + ".grd", zos, null);
-                    zos.close();        
+                    try {
+                        SSR.cShell("grd2xyz " + fullGrdName + ".grd", zos, null);
+                    } finally {
+                        zos.close();        
+                    }
                     // */
                 }
 

@@ -50,7 +50,7 @@ public class AttributedString2 {
     /**
      * A constructor.
      *
-     * @param family e.g., "Serif" or "SansSerif" 
+     * @param family e.g., "DejaVu Sans", "Bitstream Vera Sans", "Serif" or "SansSerif" 
      *   (standard logical fonts: Serif, Sans-serif, Monospaced, Dialog, and DialogInput?)
      *   or a family available on the computer this is running on
      * @param size  in points
@@ -196,7 +196,7 @@ public class AttributedString2 {
      *    corresponding character entities.
      * @param x in the current coordinate system (perhaps just pixels)
      * @param y in the current coordinate system (perhaps just pixels)
-     * @param family "Serif" or "SansSerif"  
+     * @param family "DejaVu Sans", "Bitstream Vera Sans", "Serif" or "SansSerif"  
      *   (standard logical fonts: Serif, Sans-serif, Monospaced, Dialog, and DialogInput?)
      *   or a family available on the computer this is running on
      * @param fontSize  font height (ascender + descender + leading) in the current coordinate system

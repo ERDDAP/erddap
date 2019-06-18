@@ -386,7 +386,7 @@ public class PointScreen extends Screen {
                 //  but with re-use of file, new data won't be added.
                 if (verbose) String2.log("  averageTable reusing " + averageFileName + ".nc");
                 averageTable = new Table();
-                averageTable.readFlatNc(fullAverageName, null, 1); //1=unpack
+                averageTable.readFlatNc(fullAverageName, null, 1); //standardizeWhat=1
             } else {
                 //make the table with 6 columns (x, y, z, t, id, data).
                 //(almost identical code in Browser for getStationAverage)
@@ -531,7 +531,7 @@ public class PointScreen extends Screen {
                 if (File2.touch(fullTimeSeriesFileName)) {
                     if (verbose) String2.log("  timeSeries reusing " + timeSeriesFileName + ".nc");
                     timeSeriesTable = new Table();
-                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+                    timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
                 } else {
                     //unresolved problem with relying on existing file:
                     //  file for composite of current month would change hourly as new data arrives
@@ -604,7 +604,7 @@ public class PointScreen extends Screen {
         try {
             Table averageTable = new Table();
             String fullAverageFileName = oneOf.fullPrivateDirectory() + averageFileName + ".nc";
-            averageTable.readFlatNc(fullAverageFileName, null, 1);
+            averageTable.readFlatNc(fullAverageFileName, null, 1); //standardizeWhat=1
             //String2.log("PointScreen" + whichPointScreen1 + ".getMapGDL table=\n" + averageTable.toString());
             return new GraphDataLayer(
                 editOption, //sourceID
@@ -645,7 +645,7 @@ public class PointScreen extends Screen {
         try {
             Table timeSeriesTable = new Table();
             String fullTimeSeriesFileName = oneOf.fullPrivateDirectory() + timeSeriesFileName + ".nc";
-            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1);
+            timeSeriesTable.readFlatNc(fullTimeSeriesFileName, null, 1); //standardizeWhat=1
             return new GraphDataLayer(
                 editOption, //sourceID
                 3, 5, -1, -1, -1, //time,data, others not used

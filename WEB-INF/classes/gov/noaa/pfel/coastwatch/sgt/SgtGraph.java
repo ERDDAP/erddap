@@ -75,7 +75,7 @@ public class SgtGraph  {
     public double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT; 
     public double majorLabelRatio = 1.25; //axisTitleHeight/axisLabelHeight; 1.25 matches SGT
 
-    public static Color DefaultBackgroundColor = new Color(0xCCCCFF); 
+    public static Color DefaultBackgroundColor = new Color(0xCCCCFF); //just the RGB part (no A)
     public int widenOnePoint = 1;  //pixels
     private final static String testImageExtension = ".png"; //was/could be ".gif"
 
@@ -83,7 +83,7 @@ public class SgtGraph  {
      * Constructor.
      * This throws exception if trouble
      *
-     * @param fontFamily the name of the font family (a safe choice is "SansSerif")
+     * @param fontFamily the name of the font family (a good choice is "DejaVu Sans"; a safe choice is "SansSerif")
      */
     public SgtGraph(String fontFamily) {
 
@@ -119,27 +119,31 @@ public class SgtGraph  {
      *    or null for none.
      * @param minX the min value for the X axis. Use Double.NaN to tell makeGraph to set it.
      *    If xIsTimeAxis, specify minX in epochSeconds.
-     *    Here (and inside this method), minX < maxX.
+     *    Here (and inside this method), minX &lt; maxX.
      * @param maxX the max value for the X axis. Use Double.NaN to tell makeGraph to set it.
      *    If xIsTimeAxis, specify minX in epochSeconds.
      * @param xAscending if true, the axis will be drawn low to high; else it will be flipped.
      *    The current minX maxX order is irrelevant.
+     * @param xIsTimeAxis   note that SGT doesn't allow x and y to be time axes
+     * @param xIsLogAxis   This states a preference. 
+     *    If xIsTimeAxis or minX&lt;=0 or this is a Sticks graph, this is ignored and treated as false.
      * @param minY the min value for the Y axis. Use Double.NaN to tell makeGraph to set it.
      *    If yIsTimeAxis, specify minY in epochSeconds. 
-     *    Here (and inside this method), minY < maxY.
+     *    Here (and inside this method), minY &lt; maxY.
      * @param maxY the max value for the Y axis. Use Double.NaN to tell makeGraph to set it.
      *    If yIsTimeAxis, specify minY in epochSeconds. 
      * @param yAscending if true, the axis will be drawn low to high; else it will be flipped.
      *    The current minY maxY order is irrelevant.
-     * @param xIsTimeAxis   note that SGT doesn't allow x and y to be time axes
      * @param yIsTimeAxis
+     * @param yIsLogAxis This states a preference. 
+     *    If yIsTimeAxis or minY&lt;=0 or this is a Sticks graph, this is ignored and treated as false.
      * @param graphDataLayers an ArrayList of GraphDataLayers with the data to be plotted; 
      *    the first column in the table is treated as the X data, 
      *    the second column as the y data.
      *    If you want variable-color filled markers, specify a colorMap
      *    and choose a "filled" marker type.
      * @param g2 the graphics2D object to be used (the image background color should
-     *    already have been drawn)
+     *    already have been drawn).
      * @param baseULXPixel defines area to be used, in pixels 
      * @param baseULYPixel defines area to be used, in pixels 
      * @param imageWidthPixels defines the area to be used, in pixels 
@@ -160,9 +164,8 @@ public class SgtGraph  {
         String xAxisTitle, String yAxisTitle,
         int legendPosition, String legendTitle1, String legendTitle2,
         String imageDir, String logoImageFile,
-        double minX, double maxX, boolean xAscending, 
-        double minY, double maxY, boolean yAscending,
-        boolean xIsTimeAxis, boolean yIsTimeAxis,
+        double minX, double maxX, boolean xAscending, boolean xIsTimeAxis, boolean xIsLogAxis,
+        double minY, double maxY, boolean yAscending, boolean yIsTimeAxis, boolean yIsLogAxis,
         ArrayList graphDataLayers,
         Graphics2D g2,
         int baseULXPixel, int baseULYPixel,
@@ -173,8 +176,16 @@ public class SgtGraph  {
 
         //Coordinates in SGT:
         //   Graph - 'U'ser coordinates      (graph's axes' coordinates)
-        //   Layer - 'P'hysical coordinates  (e.g., psuedo-inches, 0,0 is lower left)
+        //   Layer - 'P'hysical coordinates  (e.g., pseudo-inches, 0,0 is lower left)
         //   JPane - 'D'evice coordinates    (pixels, 0,0 is upper left)
+
+        if (legendTitle1 == null) 
+            legendTitle1 = "";
+        if (legendTitle2 == null) 
+            legendTitle2 = "";
+
+        if (xIsTimeAxis) xIsLogAxis = false;
+        if (yIsTimeAxis) yIsLogAxis = false;
 
         //make the empty returnAL
         IntArray returnMinX = new IntArray();
@@ -272,7 +283,9 @@ public class SgtGraph  {
                     tMinX = Double.isFinite(minX)? minX : tMinX;  //work on t values first
                     tMaxX = Double.isFinite(maxX)? maxX : tMaxX;
                     if (tMinX > tMaxX) {double d = tMinX; tMinX = tMaxX; tMaxX = d;}
-                    double xLowHigh[] = Math2.suggestLowHigh(tMinX, tMaxX);
+                    double xLowHigh[] = xIsLogAxis && tMinX > 0?
+                        new double[]{tMinX*0.8, tMaxX*1.2} :
+                        Math2.suggestLowHigh(tMinX, tMaxX);
                     //then set minX, maxX
                     minX = Double.isFinite(minX)? minX : xLowHigh[0];
                     maxX = Double.isFinite(maxX)? maxX : xLowHigh[1];
@@ -359,7 +372,9 @@ public class SgtGraph  {
                     tMinY = Double.isFinite(minY)? minY : tMinY;  //work on t values first
                     tMaxY = Double.isFinite(maxY)? maxY : tMaxY;
                     if (tMinY > tMaxY) {double d = tMinY; tMinY = tMaxY; tMaxY = d;}
-                    double yLowHigh[] = Math2.suggestLowHigh(tMinY, tMaxY);
+                    double yLowHigh[] = yIsLogAxis && tMinY > 0?
+                        new double[]{tMinY*0.5, tMaxY*1.2} :
+                        Math2.suggestLowHigh(tMinY, tMaxY);
                     //then set minY, maxY
                     minY = Double.isFinite(minY)? minY : yLowHigh[0];
                     maxY = Double.isFinite(maxY)? maxY : yLowHigh[1];
@@ -409,10 +424,10 @@ public class SgtGraph  {
             double scaleXIfTime = xIsTimeAxis? 1000 : 1; //s to ms
             double scaleYIfTime = yIsTimeAxis? 1000 : 1; //s to ms
             if (reallyVerbose) String2.log("  sticksGraph=" + sticksGraph + 
-                "\n    minX=" + (xIsTimeAxis? Calendar2.epochSecondsToIsoStringT(minX) : "" + minX) + 
-                     " maxX=" + (xIsTimeAxis? Calendar2.epochSecondsToIsoStringT(maxX) : "" + maxX) + 
-                "\n    minY=" + (yIsTimeAxis? Calendar2.epochSecondsToIsoStringT(minY) : "" + minY) + 
-                     " maxY=" + (yIsTimeAxis? Calendar2.epochSecondsToIsoStringT(maxY) : "" + maxY)); 
+                "\n    minX=" + (xIsTimeAxis? Calendar2.epochSecondsToIsoStringTZ(minX) : "" + minX) + 
+                     " maxX=" + (xIsTimeAxis? Calendar2.epochSecondsToIsoStringTZ(maxX) : "" + maxX) + 
+                "\n    minY=" + (yIsTimeAxis? Calendar2.epochSecondsToIsoStringTZ(minY) : "" + minY) + 
+                     " maxY=" + (yIsTimeAxis? Calendar2.epochSecondsToIsoStringTZ(maxY) : "" + maxY)); 
 
 
             //figure out the params needed to make the graph
@@ -426,6 +441,38 @@ public class SgtGraph  {
             double endX   = xAscending? maxX: minX;
             double beginY = yAscending? minY: maxY;
             double endY   = yAscending? maxY: minY;
+
+            //Perhaps set xIsLogAxis and yIsLogAxis to false since pertinent info is now known.
+            //Sticks: because sticks calls CartesianProjection.graphToDeviceYDistance 
+            //  which doesn't support log axes.
+            //  Also, the y range of sticks graph is -yMax to +yMax, 
+            //  so it fails the &lt;=0 test, too.
+            if (xIsLogAxis) {
+                String reason = null;
+                if      (minX <= 0)   reason = "minX<=0";
+                else if (xIsTimeAxis) reason = "xIsTimeAxis";
+                else if (sticksGraph) reason = "sticksGraph";
+                else if (Math2.intExponent(minX) == Math2.intExponent(maxX) &&  //within 1 decade
+                        Math.floor(Math2.mantissa(maxX)) - Math.floor(Math2.mantissa(minX)) <= 1) //only 0 or 1 labels visible
+                    reason = "narrow range " + minX + " to " + maxX;
+                if (reason != null) {
+                    if (verbose) String2.log("  ! xIsLogAxis=false because " + reason);
+                    xIsLogAxis = false;
+                }
+            }
+            if (yIsLogAxis) {
+                String reason = null;
+                if      (minY <= 0)   reason = "minY<=0";
+                else if (yIsTimeAxis) reason = "yIsTimeAxis";
+                else if (sticksGraph) reason = "sticksGraph";
+                else if (Math2.intExponent(minY) == Math2.intExponent(maxY) && //within 1 decade
+                        Math.floor(Math2.mantissa(maxY)) - Math.floor(Math2.mantissa(minY)) <= 1) //only 0 or 1 labels visible
+                    reason = "narrow range " + minY + " to " + maxY;
+                if (reason != null) {
+                    if (verbose) String2.log("  ! yIsLogAxis=false because " + reason);
+                    yIsLogAxis = false;
+                }
+            }
 
             double rangeScaler = 1;  //bigger -> fewer labels
             if (imageWidthPixels <= 180) {
@@ -478,7 +525,7 @@ public class SgtGraph  {
                     imageWidthPixels - (legendSampleSize + 3 * legendInsideBorder), fontScale); 
                 maxBoldCharsPerLine = SgtUtil.maxBoldCharsPerLine(maxCharsPerLine);
                 double legendLineCount = 
-                    (legendTitle1 == null && legendTitle2 == null)? -1 : 1; //for legend title   //???needs adjustment for larger font size
+                    String2.isSomething(legendTitle1 + legendTitle2)? 1 : -1; //for legend title   //???needs adjustment for larger font size
                 for (int i = 0; i < graphDataLayers.size(); i++) 
                     legendLineCount += ((GraphDataLayer)graphDataLayers.get(i)).legendLineCount(maxCharsPerLine);
                 //String2.log("legendLineCount=" + legendLineCount);
@@ -561,7 +608,8 @@ public class SgtGraph  {
 
             //SgtUtil.drawHtmlText needs non-text antialiasing ON
             //but if transparent, turn antialiasing OFF (fuzzy pixels make a halo around things)
-            RenderingHints oldRenderingHints = g2.getRenderingHints();
+            Object originalAntialiasing = 
+                g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING); 
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, transparent?
                 RenderingHints.VALUE_ANTIALIAS_OFF :
                 RenderingHints.VALUE_ANTIALIAS_ON); 
@@ -575,13 +623,7 @@ public class SgtGraph  {
                 g2.drawRect(legendBoxULX, legendBoxULY, legendBoxWidth - 1, legendBoxHeight - 1);
 
                 //legend titles
-                if (legendTitle1 == null && legendTitle2 == null) {
-                    //don't draw the legend title
-                } else {
-                    if (legendTitle1 == null) 
-                        legendTitle1 = "";
-                    if (legendTitle2 == null) 
-                        legendTitle2 = "";
+                if (String2.isSomething(legendTitle1 + legendTitle2)) {
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -644,10 +686,12 @@ public class SgtGraph  {
             if (reallyVerbose) String2.log(
                 "  graphWidth=" + graphWidthPixels + " narrowX=" + narrowXGraph +
                 " graphHeight=" + graphHeightPixels + " narrowY=" + narrowYGraph);
+            //This is where xIsTimeAxis, yIsTimeAxis, xIsLogAxis, yIsLogAxis first actually gets used.
             CartesianProjection cp = new CartesianProjection(
                 beginX * scaleXIfTime, endX * scaleXIfTime, 
                 beginY * scaleYIfTime, endY * scaleYIfTime, 
-                graphX1, graphX2, graphY1, graphY2);
+                graphX1, graphX2, graphY1, graphY2,
+                xIsLogAxis, yIsLogAxis);
             DoubleObject dox1 = new DoubleObject(0);
             DoubleObject doy1 = new DoubleObject(0);
             DoubleObject dox2 = new DoubleObject(0);
@@ -697,9 +741,11 @@ public class SgtGraph  {
             SoTRange yUserRange = yIsTimeAxis?
                 (SoTRange)new SoTRange.Time((long)(beginY * scaleYIfTime), (long)(endY * scaleYIfTime)):
                 (SoTRange)new SoTRange.Double(beginY, endY, (yAscending? 1 : -1) * yDivisions[0]);
-            gov.noaa.pmel.sgt.LinearTransform xt = 
+            gov.noaa.pmel.sgt.AxisTransform xt = xIsLogAxis?
+                new gov.noaa.pmel.sgt.LogTransform(   xPhysRange, xUserRange) :
                 new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
-            gov.noaa.pmel.sgt.LinearTransform yt = 
+            gov.noaa.pmel.sgt.AxisTransform yt = yIsLogAxis?
+                new gov.noaa.pmel.sgt.LogTransform(   yPhysRange, yUserRange) :
                 new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
             SoTPoint origin2 = new SoTPoint( //where are axes drawn?
                 xIsTimeAxis? (SoTValue)new SoTValue.Time((long)(beginX * scaleXIfTime)) : (SoTValue)new SoTValue.Double(beginX), 
@@ -755,7 +801,7 @@ public class SgtGraph  {
                                 //It is calculated from uMean and vMean (not from mean of vector lengths).
                                 //This matches method used to plot "average" vector on the graph.
                                 //And this matches how NDBC calculates the "average" for a given hour
-                                // (see http://www.ndbc.noaa.gov/measdes.shtml#stdmet).
+                                // (see https://www.ndbc.noaa.gov/measdes.shtml#stdmet).
                                 stats = vPA.calculateStats();
                                 statsN = stats[PrimitiveArray.STATS_N]; 
                                 if (statsN > 0) {
@@ -1164,6 +1210,8 @@ public class SgtGraph  {
                     //TimeAxis
                     TimeAxis timeAxis = new TimeAxis(TimeAxis.AUTO);
                     xAxis = timeAxis;
+                } else if (xIsLogAxis) {
+                    xAxis = new LogAxis("X");  //id
                 } else {
                     //plainAxis
                     PlainAxis2 plainAxis = new PlainAxis2(new GenEFormatter());
@@ -1212,6 +1260,9 @@ public class SgtGraph  {
                     yAxis = timeAxis;
                     //timeAxis.setRangeU(yUserRange);
                     //timeAxis.setLocationU(origin);
+                } else if (yIsLogAxis) {
+                    yAxis = new LogAxis("Y");  //id
+//                    yAxis.setLabelInterval(1);
                 } else {
                     //plainAxis
                     PlainAxis2 plainAxis = new PlainAxis2(new GenEFormatter());
@@ -1222,12 +1273,12 @@ public class SgtGraph  {
                     plainAxis.setNumberSmallTics(nYSmallTics); 
                     plainAxis.setLabelInterval(1);
                     //plainAxis.setLabelFormat("%g");
-                    if (yAxisTitle != null && yAxisTitle.length() > 0) {
-                        SGLabel yTitle = new SGLabel("", yAxisTitle, new Point2D.Double(0, 0));
-                        yTitle.setHeightP(majorLabelRatio * axisLabelHeight);
-                        yTitle.setFont(labelFont);
-                        plainAxis.setTitle(yTitle);
-                    }
+                }
+                if (!yIsTimeAxis && yAxisTitle != null && yAxisTitle.length() > 0) {
+                    SGLabel yTitle = new SGLabel("", yAxisTitle, new Point2D.Double(0, 0));
+                    yTitle.setHeightP(majorLabelRatio * axisLabelHeight);
+                    yTitle.setFont(labelFont);
+                    yAxis.setTitle(yTitle);
                 }
                 yAxis.setRangeU(yUserRange);
                 yAxis.setLocationU(origin2);
@@ -1279,7 +1330,8 @@ public class SgtGraph  {
             }
 
             //return to original RenderingHints           
-            g2.setRenderingHints(oldRenderingHints);
+            if (originalAntialiasing != null)
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, originalAntialiasing); 
 
             //display time to makeGraph
             if (verbose) String2.log("}} SgtGraph.makeGraph done. TOTAL TIME=" + 
@@ -1422,8 +1474,13 @@ public class SgtGraph  {
 
         //Coordinates in SGT:
         //   Graph - 'U'ser coordinates      (graph's axes' coordinates)
-        //   Layer - 'P'hysical coordinates  (e.g., psuedo-inches, 0,0 is lower left)
+        //   Layer - 'P'hysical coordinates  (e.g., pseudo-inches, 0,0 is lower left)
         //   JPane - 'D'evice coordinates    (pixels, 0,0 is upper left)
+
+        if (legendTitle1 == null) 
+            legendTitle1 = "";
+        if (legendTitle2 == null) 
+            legendTitle2 = "";
 
         //set the clip region
         g2.setClip(0, 0, imageWidthPixels, imageHeightPixels);
@@ -1456,7 +1513,7 @@ public class SgtGraph  {
             int maxBoldCharsPerLine = SgtUtil.maxBoldCharsPerLine(maxCharsPerLine);
 
             double legendLineCount = 
-                (legendTitle1 == null && legendTitle2 == null)? -1 : 1; //for legend title   //???needs adjustment for larger font size
+                String2.isSomething(legendTitle1 + legendTitle2)? 1 : -1; //for legend title   //???needs adjustment for larger font size
             legendLineCount += gdl.legendLineCount(maxCharsPerLine);
                 //String2.log("legendLineCount=" + legendLineCount);
             int legendBoxULX = 0;
@@ -1474,12 +1531,6 @@ public class SgtGraph  {
             //create the label font
             Font labelFont = new Font(fontFamily, Font.PLAIN, 10); //Font.ITALIC
 
-            //SgtUtil.drawHtmlText needs non-text antialiasing ON
-            Object originalAntialiasing = 
-                g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING); 
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                RenderingHints.VALUE_ANTIALIAS_ON); 
-
             //draw legend basics
             if (true) {
                 //box for legend    
@@ -1489,13 +1540,7 @@ public class SgtGraph  {
                 g2.drawRect(legendBoxULX, legendBoxULY, imageWidthPixels - 1, imageHeightPixels - 1);
 
                 //legend titles
-                if (legendTitle1 == null && legendTitle2 == null) {
-                    //don't draw the legend title
-                } else {
-                    if (legendTitle1 == null) 
-                        legendTitle1 = "";
-                    if (legendTitle2 == null) 
-                        legendTitle2 = "";
+                if (String2.isSomething(legendTitle1 + legendTitle2)) {
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -1642,9 +1687,9 @@ public class SgtGraph  {
             SgtMap.deconstructJPane("SgtMap.makeLegend", jPane, layerNames);
 
             //return antialiasing to original
-            if (originalAntialiasing != null)
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                    originalAntialiasing); 
+            //if (originalAntialiasing != null)
+            //    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+            //        originalAntialiasing); 
 
             //display time to makeGraph
             if (verbose) String2.log("}} SgtGraph.makeLegend done. TOTAL TIME=" + 
@@ -1658,7 +1703,7 @@ public class SgtGraph  {
     
 
     /** This makes and displays lots of graph types. */
-    public static void testDiverseGraphs() throws Exception {
+    public static void testDiverseGraphs(boolean testAllAndDisplay, boolean xIsLogAxis, boolean yIsLogAxis) throws Exception {
         verbose = true;
         reallyVerbose = true;
         PathCartesianRenderer.verbose = true;
@@ -1666,7 +1711,7 @@ public class SgtGraph  {
         //AttributedString2.verbose = true;
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
-        SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
+        SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
         String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
             "images/";
 
@@ -1675,7 +1720,7 @@ public class SgtGraph  {
 
         //graph 1: make a data file with data
         PrimitiveArray xCol1 = PrimitiveArray.factory(new double[]{1.500e9, 1.501e9, 1.502e9, 1.503e9});
-        PrimitiveArray yCol1 = PrimitiveArray.factory(new double[]{1.1, 2.9, Double.NaN, 2.3});
+        PrimitiveArray yCol1 = PrimitiveArray.factory(new double[]{1, 29, Double.NaN, 23});
         Table table1 = new Table();
         table1.addColumn("X", xCol1);
         table1.addColumn("Y", yCol1);
@@ -1730,7 +1775,7 @@ public class SgtGraph  {
             PrimitiveArray tyCol = new DoubleArray();
             for (int j = 0; j < 10; j++) {
                 txCol.addDouble(1.500e9 + Math.random() * .0025e9);
-                tyCol.addDouble(1.5 + Math.random());
+                tyCol.addDouble(15 + 10* Math.random());
             }
             Table ttable = new Table();
             ttable.addColumn("X", txCol);
@@ -1876,14 +1921,14 @@ public class SgtGraph  {
         graphDataLayers6.add(graphDataLayer);
 
         //draw the graph with data
-        BufferedImage bufferedImage = SgtUtil.getBufferedImage(width+20, height+20);
+        BufferedImage bufferedImage  = SgtUtil.getBufferedImage(width+20, height+20);
         BufferedImage bufferedImage1 = SgtUtil.getBufferedImage(300, 300);
         BufferedImage bufferedImage2 = SgtUtil.getBufferedImage(300, 300);
         BufferedImage bufferedImage3 = SgtUtil.getBufferedImage(300, 300);
         BufferedImage bufferedImage4 = SgtUtil.getBufferedImage(300, 300);
         BufferedImage bufferedImage5 = SgtUtil.getBufferedImage(300, 300);
         BufferedImage bufferedImage6 = SgtUtil.getBufferedImage(300, 300);
-        Graphics2D g2 = (Graphics2D)bufferedImage.getGraphics();
+        Graphics2D g2  = (Graphics2D)bufferedImage.getGraphics();
         Graphics2D g21 = (Graphics2D)bufferedImage1.getGraphics();
         Graphics2D g22 = (Graphics2D)bufferedImage2.getGraphics();
         Graphics2D g23 = (Graphics2D)bufferedImage3.getGraphics();
@@ -1896,16 +1941,16 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis, 
             graphDataLayers1,
             g21, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis, 
             graphDataLayers1,
             g2, 0, 0, //upperLeft
             width/2, height/3, 2, //graph width/height
@@ -1916,16 +1961,16 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 2,", "no time, no data.",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, false, xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis, 
             graphDataLayers2,
             g22, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1.5); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 2,", "no time, no data.",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis,
             graphDataLayers2,
             g2, width/2 + 10, 0, //upper Right
             width/2, height/3, 2, //graph width/height
@@ -1936,16 +1981,16 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 3,", "stick graph",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis,
             graphDataLayers3,
             g23, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 3,", "stick graph",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis, 
             graphDataLayers3,
             g2, 0, height/3, //mid Left
             width/2, height/3, 2, //graph width/height
@@ -1956,16 +2001,16 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 4,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis, 
             graphDataLayers4,
             g24, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 4,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis,
             graphDataLayers4,
             g2, width/2 + 10, height/3, //mid Right
             width/2, height/3, 2, //graph width/height
@@ -1976,16 +2021,16 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 5,", "2 time axis! y->not",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, true, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, true, yIsLogAxis,
             graphDataLayers5,
             g25, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 5,", "2 time axis! y->not",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            true, true, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, true, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, true, yIsLogAxis,
             graphDataLayers5,
             g2, 0, height*2/3, //low left
             width/2, height/3, 2, //graph width/height
@@ -1996,45 +2041,23 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 6,", "y is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, true, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, true,  yIsLogAxis,
             graphDataLayers6,
             g26, 0, 0, 300, 300, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 6,", "y is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, true, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, true,  yIsLogAxis,
             graphDataLayers6,
             g2, width/2 + 10, height*2/3, //low right
             width/2, height/3, 2, //graph width/height
             DefaultBackgroundColor, 1); //fontScale
 
-
-        //save image
+        //make sure old files are deleted
         String fileName = tempDir + "SgtGraphTest";
-        SgtUtil.saveImage(bufferedImage, fileName + ".png");
-        SgtUtil.saveImage(bufferedImage1, fileName + "1.png");
-        SgtUtil.saveImage(bufferedImage2, fileName + "2.png");
-        SgtUtil.saveImage(bufferedImage3, fileName + "3.png");
-        SgtUtil.saveImage(bufferedImage4, fileName + "4.png");
-        SgtUtil.saveImage(bufferedImage5, fileName + "5.png");
-        SgtUtil.saveImage(bufferedImage6, fileName + "6.png");
-
-        //view it
-        SSR.displayInBrowser("file://" + fileName + ".png");  Math2.sleep(2000);
-        SSR.displayInBrowser("file://" + fileName + "1.png"); Math2.sleep(400);
-        SSR.displayInBrowser("file://" + fileName + "2.png"); Math2.sleep(400);
-        SSR.displayInBrowser("file://" + fileName + "3.png"); Math2.sleep(400);
-        SSR.displayInBrowser("file://" + fileName + "4.png"); Math2.sleep(400);
-        SSR.displayInBrowser("file://" + fileName + "5.png"); Math2.sleep(400);
-        SSR.displayInBrowser("file://" + fileName + "6.png"); Math2.sleep(400);
-
-        Math2.sleep(5000);
-        //String2.pressEnterToContinue(); 
-        
-        //delete files        
         File2.delete(fileName + ".png");
         File2.delete(fileName + "1.png");
         File2.delete(fileName + "2.png");
@@ -2042,6 +2065,30 @@ public class SgtGraph  {
         File2.delete(fileName + "4.png");
         File2.delete(fileName + "5.png");
         File2.delete(fileName + "6.png");
+
+        //save image
+        SgtUtil.saveImage(bufferedImage, fileName + ".png");
+        if (testAllAndDisplay) {
+            SgtUtil.saveImage(bufferedImage1, fileName + "1.png");
+            SgtUtil.saveImage(bufferedImage2, fileName + "2.png");
+            SgtUtil.saveImage(bufferedImage3, fileName + "3.png");
+            SgtUtil.saveImage(bufferedImage4, fileName + "4.png");
+            SgtUtil.saveImage(bufferedImage5, fileName + "5.png");
+            SgtUtil.saveImage(bufferedImage6, fileName + "6.png");
+        } else {
+            String2.log("fileName=" + fileName + ".png");
+        }
+
+        //view it
+        SSR.displayInBrowser("file://" + fileName + ".png");  Math2.sleep(2000);
+        if (testAllAndDisplay) {
+            SSR.displayInBrowser("file://" + fileName + "1.png"); Math2.sleep(400);
+            SSR.displayInBrowser("file://" + fileName + "2.png"); Math2.sleep(400);
+            SSR.displayInBrowser("file://" + fileName + "3.png"); Math2.sleep(400);
+            SSR.displayInBrowser("file://" + fileName + "4.png"); Math2.sleep(400);
+            SSR.displayInBrowser("file://" + fileName + "5.png"); Math2.sleep(400);
+            SSR.displayInBrowser("file://" + fileName + "6.png"); Math2.sleep(400);
+        }
 
         //done
         Math2.gcAndWait(); Math2.gcAndWait(); //part of a test.  Ensure all are garbage collected.
@@ -2063,10 +2110,12 @@ public class SgtGraph  {
         reallyVerbose = true;
         PathCartesianRenderer.verbose = true;
         PathCartesianRenderer.reallyVerbose = true;
+        boolean xIsLogAxis = false;
+        boolean yIsLogAxis = false;
         //AttributedString2.verbose = true;
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
-        SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
+        SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
         String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
             "images/";
 
@@ -2139,8 +2188,8 @@ public class SgtGraph  {
             sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
                 SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
                 imageDir, "noaa20.gif",
-                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-                true, false, //x/yIsTimeAxis,
+                Double.NaN, Double.NaN, true, true,  xIsLogAxis, //isAscending, isTimeAxis, isLog
+                Double.NaN, Double.NaN, true, false, yIsLogAxis, 
                 graphDataLayers1,
                 g21, 0, 0, //upperLeft
                 width, height, 1, //graph width/height
@@ -2167,7 +2216,7 @@ public class SgtGraph  {
             String2.pressEnterToContinue(); 
     }
 
-    public static void testSurface() throws Exception {
+    public static void testSurface(boolean xIsLogAxis, boolean yIsLogAxis) throws Exception {
         verbose = true;
         reallyVerbose = true;
         PathCartesianRenderer.verbose = true;
@@ -2178,7 +2227,7 @@ public class SgtGraph  {
         long memoryInUse = Math2.getMemoryInUse();
 
         String tempDir = SSR.getTempDirectory();
-        SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
+        SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
         String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
             "images/";
        
@@ -2230,8 +2279,8 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Standard,", "some text",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true, false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true, false, yIsLogAxis,
             graphDataLayers1,
             g2, 0, 0, //upperLeft
             width, height, 2, //graph width/height
@@ -2240,8 +2289,8 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Flip X,", "some text",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, false, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, false, false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, true,  false, yIsLogAxis,
             graphDataLayers1,
             g2, width, 0, //upperLeft
             width, height, 2, //graph width/height
@@ -2250,8 +2299,8 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Flip Y", "some text",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, false, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, true,  false, xIsLogAxis,  //isAscending, isTimeAxis, isLog
+            Double.NaN, Double.NaN, false, false, yIsLogAxis,
             graphDataLayers1,
             g2, 0, height, //upperLeft
             width, height, 2, //graph width/height
@@ -2260,8 +2309,8 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Flip X & Y,", "some text",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, false, Double.NaN, Double.NaN, false, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
+            Double.NaN, Double.NaN, false, false, xIsLogAxis,  //isAscending, isTimeAxis false,
+            Double.NaN, Double.NaN, false, false, yIsLogAxis,
             graphDataLayers1,
             g2, width, height, //upperLeft
             width, height, 2, //graph width/height
@@ -2288,9 +2337,13 @@ public class SgtGraph  {
 
     /** This tests SgtGraph. */ 
     public static void test() throws Exception {
-        testDiverseGraphs();
+        testDiverseGraphs(true, false, false); //testAllAndDisplay, xIsLogAxis, yIsLogAxis
+        testDiverseGraphs(true, false, true);  
+        testDiverseGraphs(true, true,  true);  
         testForMemoryLeak();
-        testSurface();
+        testSurface(false, false); //xIsLogAxis, yIsLogAxis
+        testSurface(false, true); 
+        testSurface(true, true); 
     }
 
 }

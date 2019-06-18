@@ -82,7 +82,7 @@ import org.apache.lucene.document.Field.Store;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -143,7 +143,7 @@ public abstract class EDDTable extends EDD {
      *  They parallel the orderByOptions. */    
     public static String orderByExtraDefaults[] = { "",
         "", DEFAULT_ORDERBYCLOSEST,         "",      DEFAULT_ORDERBYLIMIT,          
-        "",                     "",         "", ""};
+        "",                     "",         "",      ""};
      /** This is the minimum number of orderBy variables that must be specified
        (not counting the orderByExtra item). */
     public static byte minOrderByVariables[] = { 0,
@@ -157,18 +157,20 @@ public abstract class EDDTable extends EDD {
     public final static String[] dataFileTypeNames = {  
         //If add new type and not actual-data type (e.g., .das), 
         //  add to graphsAccessibleToFileTypeNames below
-        ".asc", ".csv", ".csvp", ".csv0", ".dataTable", ".das", ".dds",
+        ".asc", ".csv", ".csvp", ".csv0", ".dataTable", ".das", ".dds", 
         ".dods", ".esriCsv", ".fgdc", ".geoJson", ".graph", ".help", ".html", 
-        ".htmlTable", ".iso19115", ".itx", ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
+        ".htmlTable", ".iso19115", ".itx", ".json", 
+        ".jsonlCSV1", ".jsonlCSV", ".jsonlKVP", ".mat", 
         ".nc", ".ncHeader", ".ncCF", ".ncCFHeader", ".ncCFMA", ".ncCFMAHeader", 
 //        ".nc4", ".nc4Header", 
         ".nccsv", ".nccsvMetadata", ".ncoJson",
         ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
         ".wav", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
-        ".asc", ".csv", ".csv", ".csv", ".json", ".das", ".dds",
+        ".asc", ".csv", ".csv", ".csv", ".json", ".das", ".dds", 
         ".dods", ".csv", ".xml", ".json", ".html", ".html", ".html", 
-        ".html", ".xml", ".itx", ".json", ".jsonl", ".jsonl", ".mat", 
+        ".html", ".xml", ".itx", ".json", 
+        ".jsonl", ".jsonl", ".jsonl", ".mat", 
         ".nc", ".txt", ".nc", ".txt", ".nc", ".txt", 
 //        ".nc", ".txt",
         ".csv", ".csv", ".json",
@@ -194,6 +196,7 @@ public abstract class EDDTable extends EDD {
         EDStatic.fileHelp_iso19115,
         EDStatic.fileHelp_itxTable,
         EDStatic.fileHelp_json,
+        EDStatic.fileHelp_jsonlCSV1,
         EDStatic.fileHelp_jsonlCSV,
         EDStatic.fileHelp_jsonlKVP,
         EDStatic.fileHelp_mat,
@@ -218,25 +221,26 @@ public abstract class EDDTable extends EDD {
     };
     //These are encoded for use as HTML attributes (href)
     public static String[] dataFileTypeInfo = {  //"" if not available
-        "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", //OPeNDAP ascii
-        //csv: also see http://www.ietf.org/rfc/rfc4180.txt
+        "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", //OPeNDAP ascii
+        //csv: also see https://www.ietf.org/rfc/rfc4180.txt
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
-        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-        "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", //das
-        "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
-        "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
+        "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", //das
+        "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
+        "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
         "https://support.esri.com/technical-article/000012745", //.esriCsv
         "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
         "http://wiki.geojson.org/Main_Page", //geoJSON
         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", //GraphicsCommands
         "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
-        "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
+        "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
         "https://www.w3schools.com/html/html_tables.asp", //htmlTable
         "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
-        "http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
+        "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
         "https://www.json.org/", //json
+        "http://jsonlines.org/", //jsonlCSV
         "http://jsonlines.org/", //jsonlCSV
         "http://jsonlines.org/", //jsonlKVP
         "https://www.mathworks.com/", //mat
@@ -248,8 +252,8 @@ public abstract class EDDTable extends EDD {
         "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncCFMAHeader
 //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
 //        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
-        "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
-        "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
+        "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
+        "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "http://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://en.wikipedia.org/wiki/Faceted_search",  //subset
@@ -258,7 +262,6 @@ public abstract class EDDTable extends EDD {
         "http://jkorpela.fi/TSV.html",  //tsv
         "https://en.wikipedia.org/wiki/WAV", //wav
         "https://www.w3schools.com/html/html_tables.asp"}; //xhtml
-        //"http://www.tizag.com/htmlT/tables.php" //xhtml
 
     public final static String[] imageFileTypeNames = {
         ".kml", ".smallPdf", ".pdf", ".largePdf", ".smallPng", ".png", ".largePng", ".transparentPng"};  
@@ -309,8 +312,8 @@ public abstract class EDDTable extends EDD {
           "text/html",    //no way to distinguish an html table vs html document in general
           "application/json",     
         "application/x-matlab-mat",  //??? made up, x=nonstandard
-          "application/x-netcdf",       //see http://www.wussu.com/various/mimetype.htm
-          "application/x-netcdf", //ncCF, see http://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf",       //see https://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf", //ncCF, see https://www.wussu.com/various/mimetype.htm
           "application/x-netcdf", //ncCFMA
         "application/json",     //ncoJson
           "text/plain", //odv
@@ -345,6 +348,16 @@ public abstract class EDDTable extends EDD {
     public final static String sosTabledapImageResponseTypes[] = {
         ".kml", ".pdf", ".png"};
 
+    protected Table minMaxTable; 
+    /** 
+     * minMaxTable has a col for each dv; row0=min for all files, row1=max for all files.
+     * The values are straight from the source; scale_factor and add_offset haven't been applied. 
+     * Even time is stored as raw source values; see "//EEEK!!!" in EDDTableFromFiles.  
+     *
+     * @param minMaxTable Currently, only EDDTableFromFiles returns a table. For other subclasses, this will be null. 
+     *   Just read from this. Don't change the values.
+     */
+    public Table minMaxTable() {return minMaxTable; }
 
     //static constructor
     static {
@@ -922,7 +935,7 @@ public abstract class EDDTable extends EDD {
      *   into resultsVariables so they can be tested by
      *   standardizeResultsTable (and by the source, or not).
      * <br>This removes constraints which can't be handled by the source 
-     *   (e.g., regex for numberic source variables).
+     *   (e.g., regex for numeric source variables).
      * <br>But the subclass will almost always need to fine-tune the
      *   results from this method to PRUNE out additional constraints
      *   that the source can't handle (e.g., constraints on inner variables
@@ -1089,7 +1102,7 @@ public abstract class EDDTable extends EDD {
                         !Double.isNaN(constraintValueD) &&
                         constraintValueD != Math2.roundToDouble(constraintValueD)) { //if not int
 
-                        double fudge = 0.001;
+                        double fudge = Math.abs(constraintValueD) * (sourceClass == float.class? 1e-7 : 1e-16);
                         if (reallyVerbose && constraintOp.indexOf('=') >= 0)
                             String2.log("    The constraint with '=' is being expanded because sourceNeedsExpandedFP_EQ=true.");
                         if (constraintOp.equals(">=")) {
@@ -1097,20 +1110,11 @@ public abstract class EDDTable extends EDD {
                         } else if (constraintOp.equals("<=")) {
                             constraintValues.set(cv, "" + (constraintValueD + fudge));
                         } else if (constraintOp.equals("=")) {
-                            constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
                             constraintVariables.atInsert(cv + 1, constraintVariable);
                             constraintOps.set(cv,          ">=");
                             constraintOps.atInsert(cv + 1, "<=");
                             constraintValues.set(cv,          "" + (constraintValueD - fudge));
                             constraintValues.atInsert(cv + 1, "" + (constraintValueD + fudge)); 
-                        //2014-11-05 != modifications commented out. Leave constraint as it is.
-                        //} else if (constraintOp.equals("!=")) {
-                        //    constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
-                        //    constraintVariables.add(cv + 1, constraintVariable);
-                        //    constraintOps.set(cv,          "<=");
-                        //    constraintOps.atInsert(cv + 1, ">=");
-                        //    constraintValues.set(cv,          constraintValueD - fudge);
-                        //    constraintValues.atInsert(cv + 1, constraintValueD + fudge); 
                         }
                     }
                 }
@@ -1338,11 +1342,11 @@ public abstract class EDDTable extends EDD {
      */
     public void standardizeResultsTable(String requestUrl, String userDapQuery, 
             Table table) throws Throwable {
-        if (reallyVerbose) String2.log("\nstandardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString());
-        //String2.log("table=\n" + table.toString());
-        //String2.log("DEBUG " + MustBe.getStackTrace());
         if (table.nRows() == 0) 
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (pre-standardize: nRows = 0)");
+        String msg = "    standardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString();
+        //String2.log("table=\n" + table.toString());
+        //String2.log("DEBUG " + MustBe.getStackTrace());
 
         //pick the query apart
         StringArray resultsVariables    = new StringArray();
@@ -1371,7 +1375,7 @@ public abstract class EDDTable extends EDD {
             int dv = String2.indexOf(dataVariableSourceNames(), columnSourceName);
             if (dv < 0) {
                 //remove unexpected column
-                if (reallyVerbose) String2.log("  removing unexpected source column=" + columnSourceName);
+                if (debugMode) msg += "\n      removing unexpected source column=" + columnSourceName;
                 table.removeColumn(col);
                 continue;
             }
@@ -1389,14 +1393,15 @@ public abstract class EDDTable extends EDD {
             table.setColumn(col, edv.toDestination(table.getColumn(col)));
             //String2.log("> srt 3b col=" + col + "=" + columnSourceName);
         }
+        if (reallyVerbose) 
+            String2.log(msg);
 
         //apply the constraints and finish up
         applyConstraints(table, false,  //don't apply CONSTRAIN_YES constraints
             resultsVariables, 
             constraintVariables, constraintOps, constraintValues);
 
-        if (reallyVerbose) String2.log("standardizeResultsTable done.");
-        if (debugMode) String2.log(table.toString(2) + "\n");
+        if (debugMode) String2.log(table.toString(2));
     }
 
 
@@ -1443,6 +1448,7 @@ public abstract class EDDTable extends EDD {
         throws Throwable {
 
         //move the requested resultsVariables columns into place   and add metadata
+        StringBuilder sb = new StringBuilder();
         int nRows = table.nRows();
         for (int rv = 0; rv < resultsVariables.size(); rv++) {
 
@@ -1462,9 +1468,9 @@ public abstract class EDDTable extends EDD {
                         new Attributes(edv.combinedAttributes())); //make a copy
                 } else {
                     //not found, so add new col with all missing values in correct place
-                    if (verbose) String2.log("Note: " +
+                    if (verbose) sb.append("Note: " +
                         "variable=" + edv.destinationName() + 
-                        " not found in results table.");
+                        " not found in results table.\n");
                     col = table.nColumns();
                     double dmv = edv.safeDestinationMissingValue();
                     table.addColumn(rv, edv.destinationName(), 
@@ -1494,7 +1500,7 @@ public abstract class EDDTable extends EDD {
         //!!!!! SO IF YOU MAKE A CHANGE HERE, MAKE A CHANGE THERE.
         BitSet keep = new BitSet();
         keep.set(0, nRows, true); 
-        if (reallyVerbose) String2.log("  nRows=" + nRows);
+        if (reallyVerbose) sb.append("    initial nRows=" + nRows);
         for (int cv = 0; cv < constraintVariables.size(); cv++) { 
             String constraintVariable = constraintVariables.get(cv);
             String constraintOp       = constraintOps.get(cv);
@@ -1533,7 +1539,7 @@ public abstract class EDDTable extends EDD {
                         sourceCanConstrainNumericData == CONSTRAIN_PARTIAL ||
                         constraintOp.equals(PrimitiveArray.REGEX_OP) || //always do all regex tests here
                         (sourceNeedsExpandedFP_EQ && //source did an expanded query. Check it here.
-                          (sourceClass == float.class || sourceClass == double.class) && 
+                          (sourceClass == float.class || sourceClass == double.class) &&  
                           !Double.isNaN(constraintValueD) &&
                           constraintValueD != Math2.roundToDouble(constraintValueD))) { //if not int
                         //fall through to test below
@@ -1547,8 +1553,6 @@ public abstract class EDDTable extends EDD {
             //The constraint needs to be tested here. Test it now.
             //Note that Timestamp and Alt values have been converted to standardized units above.
             PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
-            if (reallyVerbose) String2.log("  Handling constraint #" + cv + " here: " + 
-                constraintVariable + " " + constraintOp + " " + String2.toJson(constraintValue));
             //chars and strings aren't converted
             int nSwitched = dataPa.convertToStandardMissingValues(
                 edv.destinationFillValue(), edv.destinationMissingValue());            
@@ -1556,7 +1560,9 @@ public abstract class EDDTable extends EDD {
 
             int nStillGood = dataPa.applyConstraint(edv instanceof EDVTimeStamp, 
                 keep, constraintOp, constraintValue);
-            if (reallyVerbose) String2.log("    nStillGood=" + nStillGood);
+            if (reallyVerbose) sb.append(
+                "\n    Handled constraint #" + cv + " here (nStillGood=" + nStillGood + "): " + 
+                constraintVariable + " " + constraintOp + " " + String2.toJson(constraintValue));
             if (nStillGood == 0)
                 break;
             if (nSwitched > 0)
@@ -1565,6 +1571,7 @@ public abstract class EDDTable extends EDD {
             //if (cv == constraintVariables.size() - 1 && nStillGood > 0) String2.log(table.toString());
 
         }
+        if (reallyVerbose) String2.log(sb.toString());
 
         //discard excess columns (presumably constraintVariables not handled by source)
         table.removeColumns(resultsVariables.size(), table.nColumns());
@@ -1581,7 +1588,7 @@ public abstract class EDDTable extends EDD {
      * This gets the data (chunk by chunk) from this EDDTable for the 
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      *
-     * <p>This methods allows any constraint on any variable.
+     * <p>This method allows any constraint on any variable.
      * Since many data sources just support constraints on certain variables
      * (e.g., Dapper only supports axis variable constraints), the implementations
      * here must separate constraints that the server can handle and constraints 
@@ -1638,16 +1645,17 @@ public abstract class EDDTable extends EDD {
         String fileName = suggestFileName(loggedInAs, userDapQuery, ".twawm");
         if (reallyVerbose) String2.log("getTwawmForDapQuery " + dir + fileName);
         TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
-            this, getNewHistory(requestUrl, userDapQuery), 
+            userDapQuery.indexOf("&distinct") >= 0 || //if other TableWriters, they will provide the metadata
+            userDapQuery.indexOf("&orderBy") >= 0 ||
+            userDapQuery.indexOf("&units") >= 0? null : this, 
+            getNewHistory(requestUrl, userDapQuery), 
             dir, fileName);
         TableWriter tableWriter = encloseTableWriter(true, //alwaysDoAll
             dir, fileName, twawm, requestUrl, userDapQuery);
         if (handleViaFixedOrSubsetVariables(loggedInAs, requestUrl, userDapQuery, tableWriter)) {
+            //it's done
         } else {
-            if (tableWriter != twawm)
-                tableWriter = encloseTableWriter(false, //alwaysDoAll
-                    dir, fileName, twawm, requestUrl, userDapQuery);
-            getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);  
+            getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);  //do it
         }
         if (reallyVerbose) String2.log("getTwawmForDapQuery finished. time=" + 
             (System.currentTimeMillis() - tTime) + "ms");
@@ -1680,7 +1688,7 @@ public abstract class EDDTable extends EDD {
 
         //write to tableWriter?
         //String2.log("writeChunkToTableWriter table.nRows=" + table.nRows());
-        if (table.nRows() > 200 || //that's a small number, but user is probably eager to see some results
+        if (table.nRows() > 1000 || 
             (table.nRows() * (long)table.nColumns() > EDStatic.partialRequestMaxCells) || 
             finish) {
 
@@ -1839,7 +1847,7 @@ public abstract class EDDTable extends EDD {
      *      "&gt;", "&gt;=", and "=~" (REGEX_OP, which looks for data values
      *      matching the regular expression on the right hand side),
      *      but in percent encoded form. 
-     *      (see http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
+     *      (see https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
      *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
      *      "orderBy...("...")", "units("...")", it is ignored.
      *    <br>If an &amp;-separated part starts with ".", it is ignored.
@@ -1873,15 +1881,15 @@ public abstract class EDDTable extends EDD {
         //!!! Table.parseDapQuery and EDDTable.parseUserDapQuery ARE ALMOST IDENTICAL!!!
         //IF YOU MAKE CHANGES TO ONE, MAKE CHANGES TO THE OTHER.
 
-        //parse userDapQuery into parts
-        String parts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        //split userDapQuery into parts at &'s
+        String parts[] = Table.getDapQueryParts(userDapQuery); //results are decoded.  always at least 1 part (it may be "")
         resultsVariables.clear();
         constraintVariables.clear(); 
         constraintOps.clear(); 
         constraintValues.clear();
 
-        //expand no resultsVariables (or entire sequence) into all results variables
         //look at part0 with comma-separated vars 
+        //expand no resultsVariables (or entire sequence) into all results variables
         if (parts[0].length() == 0 || parts[0].equals(SEQUENCE_NAME)) {
             if (debugMode) String2.log("  userDapQuery parts[0]=\"" + parts[0] + 
                 "\" is expanded to request all variables.");
@@ -1889,7 +1897,7 @@ public abstract class EDDTable extends EDD {
                 resultsVariables.add(dataVariables[v].destinationName());
             }
         } else {
-            String cParts[] = String2.split(parts[0], ',');
+            String cParts[] = String2.split(parts[0], ','); //list of results variables
             for (int cp = 0; cp < cParts.length; cp++) {
 
                 //request uses sequence.dataVarName notation?
@@ -1899,7 +1907,7 @@ public abstract class EDDTable extends EDD {
                     tVar = tVar.substring(period + 1);
 
                 //is it a valid destinationName?
-                int po = String2.indexOf(dataVariableDestinationNames(), tVar.split("/")[0]);
+                int po = String2.indexOf(dataVariableDestinationNames(), tVar);
                 if (po < 0) {
                     if (!repair) {
                         if (tVar.equals(SEQUENCE_NAME))
@@ -1914,7 +1922,7 @@ public abstract class EDDTable extends EDD {
                                     "...\") must be preceded by '&'.");
                         }
                         throw new SimpleException(EDStatic.queryError +
-                             "Unrecognized variable=\"" + tVar + "\"");
+                             "Unrecognized variable=\"" + tVar + "\".");
                     }
                 } else {
                     //it's valid; is it a duplicate?
@@ -1946,22 +1954,23 @@ public abstract class EDDTable extends EDD {
                 continue;
 
             if (constraint.endsWith("\")") &&
-                    constraint.startsWith("orderBy(\"")) {
-                   //ensure all orderBy vars are in resultsVariables
-                   //TableWriters for orderBy... do additional checking
-                   if (!repair) {
-                       int ppo = constraint.indexOf("(\"");
-                       StringArray obv = StringArray.fromCSV(constraint.substring(
-                           ppo + 2, constraint.length() - 2));
-                       for (int obvi = 0; obvi < obv.size(); obvi++) {
-                           if (resultsVariables.indexOf(obv.get(obvi)) < 0)
-                               throw new SimpleException(EDStatic.queryError +
-                                   MessageFormat.format(
+                constraint.startsWith("orderBy(\"")) {
+                //ensure all orderBy vars are in resultsVariables
+                //TableWriters for orderBy... do additional checking
+                if (!repair) {
+                    int ppo = constraint.indexOf("(\"");
+                    StringArray obv = StringArray.fromCSV(constraint.substring(
+                        ppo + 2, constraint.length() - 2));
+                    for (int obvi = 0; obvi < obv.size(); obvi++) {
+                        if (resultsVariables.indexOf(obv.get(obvi)) < 0)
+                            throw new SimpleException(EDStatic.queryError +
+                                MessageFormat.format(
                                        EDStatic.queryErrorOrderByVariable, obv.get(obvi)));
-                       }
-                   }
-                   continue;
-               }
+                    }
+                }
+                continue;
+            }
+
             //special case: server-side functions: standard orderBySomething (varCSV)
             if (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderByCount(\"") ||
@@ -1977,8 +1986,8 @@ public abstract class EDDTable extends EDD {
                     StringArray obv = StringArray.fromCSV(constraint.substring(
                         ppo + 2, constraint.length() - 2));
                     for (int obvi = 0; obvi < obv.size(); obvi++) {
-                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
-                    	String item = obvParts[0];
+                        String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                        String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 MessageFormat.format(
@@ -1997,12 +2006,23 @@ public abstract class EDDTable extends EDD {
                     int ppo = constraint.indexOf("(\"");
                     StringArray obv = StringArray.fromCSV(constraint.substring(
                         ppo + 2, constraint.length() - 2));
+
+                    //bob added, but is not sure: allow csv[last] to be e.g., time/1day, instead of time,1day
+                    if (obv.size() >= 1) {
+                        String obvLast = obv.get(obv.size() - 1);
+                        int po = obvLast.indexOf('/');
+                        if (po > 0) {
+                            obv.set(obv.size() - 1, obvLast.substring(0, po));
+                            obv.add(                obvLast.substring(po + 1)); 
+                        }
+                    }
+
                     if (obv.size() < 2)
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_CLOSEST_ERROR + " (csv.length<2)");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is interval
-                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
-                    	String item = obvParts[0];
+                        String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                        String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_CLOSEST_ERROR + 
@@ -2016,7 +2036,7 @@ public abstract class EDDTable extends EDD {
 
             //special case: server-side functions: special orderByLimit(varCSV, limitN)
             if (constraint.endsWith("\")") &&
-                 (constraint.startsWith("orderByLimit(\""))) {
+                constraint.startsWith("orderByLimit(\"")) {
 
                 //ensure all orderBy vars are in resultsVariables
                 if (!repair) {
@@ -2027,8 +2047,8 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_LIMIT_ERROR + " (csv.length=0)");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is limitN
-                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
-                    	String item = obvParts[0];
+                        String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                        String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_LIMIT_ERROR + 
@@ -2042,8 +2062,7 @@ public abstract class EDDTable extends EDD {
 
             //special case: server-side functions: special orderByMean(varCSV)
             if (constraint.endsWith("\")") &&
-                 (constraint.startsWith("orderByMean(\""))) {
-
+                constraint.startsWith("orderByMean(\"")) {
                 //ensure all orderBy vars are in resultsVariables
                 if (!repair) {
                     int ppo = constraint.indexOf("(\"");
@@ -2051,11 +2070,11 @@ public abstract class EDDTable extends EDD {
                         ppo + 2, constraint.length() - 2));
                     int last = obv.size(); // last may be time interval...
                     for (int obvi = 0; obvi < last; obvi++) {
-                    	String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
-                    	String item = obvParts[0];
+                       String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                       String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
                             throw new SimpleException(EDStatic.queryError +
-                                Table.ORDER_BY_MEAN_ERROR + 
+                                Table.ORDER_BY_MEAN_ERROR +
                                 " (col=" + obv.get(obvi) + " not in results variables)");
                     }
                 }
@@ -2119,7 +2138,7 @@ public abstract class EDDTable extends EDD {
             if (dvi < 0) {
                 if (repair) continue;
                 else throw new SimpleException(EDStatic.queryError +
-                    "Unrecognized constraint variable=\"" + tName + "\""
+                    "Unrecognized constraint variable=\"" + tName + "\"."
                     //+ "\nValid=" + String2.toCSSVString(dataVariableDestionNames())
                     );
             }
@@ -2315,16 +2334,22 @@ public abstract class EDDTable extends EDD {
                 String constraintOp = OPERATORS[op];
                 //non-timestamp tests are troubled by float/double/slight differences                
                 if (tPassed && Double.isFinite(destMin)) {
-                    if (constraintOp.equals("=") || constraintOp.startsWith("<")) 
+                    if (constraintOp.equals("=") || constraintOp.startsWith("<")) { 
                         tPassed = conEdvIsTimeStamp?
-                            conValueD >= destMin :  //precise test  
+                            conValueD >= destMin-1 :  //precise test, but -1 is 1 second fudge  
                             Math2.greaterThanAE(5, conValueD, destMin);  //loose test with bias towards pass
+                        if (!tPassed && verbose) String2.log("failed conVal=" + conValueD + 
+                            " " + constraintOp + " destMin=" + destMin);
+                    }
                 }
                 if (tPassed && Double.isFinite(destMax)) {
-                    if (constraintOp.equals("=") || constraintOp.startsWith(">"))
+                    if (constraintOp.equals("=") || constraintOp.startsWith(">")) {
                         tPassed = conEdvIsTimeStamp?
-                            conValueD <= destMax : //precise test  
+                            conValueD <= destMax+1 : //precise test, but +1 is 1 second fudge  
                             Math2.lessThanAE(5, conValueD, destMax);  //loose test with bias towards pass
+                        if (!tPassed && verbose) String2.log("failed conVal=" + conValueD + 
+                            " " + constraintOp + " destMax=" + destMax);
+                    }
                 }
                 if (!tPassed) {
                     String tv = conEdvIsTimeStamp?
@@ -2440,8 +2465,8 @@ public abstract class EDDTable extends EDD {
             if (reallyVerbose) String2.log("  " + tName + " requested min=" + requestedMin[i] + " max=" + requestedMax[i]);
             if (!Double.isNaN(requestedMin[i]) && !Double.isNaN(requestedMax[i])) {
                 if (requestedMin[i] > requestedMax[i]) {
-                    String minS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMin[3]) : "" + requestedMin[i];
-                    String maxS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMax[3]) : "" + requestedMax[i];
+                    String minS = i == 3? Calendar2.epochSecondsToIsoStringTZ(requestedMin[3]) : "" + requestedMin[i];
+                    String maxS = i == 3? Calendar2.epochSecondsToIsoStringTZ(requestedMax[3]) : "" + requestedMax[i];
                     throw new SimpleException(EDStatic.queryError +
                         "The requested " + tName + " min=" + minS +
                         " is greater than the requested max=" + maxS + ".");
@@ -2485,8 +2510,8 @@ public abstract class EDDTable extends EDD {
             if (reallyVerbose) String2.log("  " + tName + " requested min=" + requestedMin[i] + " max=" + requestedMax[i]);
             if (!Double.isNaN(requestedMin[i]) && !Double.isNaN(requestedMax[i])) {
                 if (requestedMin[i] > requestedMax[i]) {
-                    String minS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMin[3]) : "" + requestedMin[i];
-                    String maxS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMax[3]) : "" + requestedMax[i];
+                    String minS = i == 3? Calendar2.epochSecondsToIsoStringTZ(requestedMin[3]) : "" + requestedMin[i];
+                    String maxS = i == 3? Calendar2.epochSecondsToIsoStringTZ(requestedMax[3]) : "" + requestedMax[i];
                     throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                         "\n(" + tName + " min=" + minS +
                         " is greater than max=" + maxS + ")");
@@ -2573,6 +2598,7 @@ public abstract class EDDTable extends EDD {
         String loggedInAs,
         String requestUrl, String userDapQuery, 
         OutputStreamSource outputStreamSource, String fileTypeName) throws Throwable {
+
         throw new SimpleException(EDStatic.queryError +
             MessageFormat.format(EDStatic.queryErrorFileType, fileTypeName));
     }
@@ -2594,7 +2620,8 @@ public abstract class EDDTable extends EDD {
      *   still percentEncoded (shouldn't be null).
      * @param outputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
-     *     <br>This doesn't call out.close() at the end; the caller MUST call out.close().
+     *    Now, this usually does call out.close() at the end if all goes well,
+     *    but still assumes caller will close it (notably if trouble).
      * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
      * @param fileName the name for the 'file' (no dir, no extension),
      *    which is used to write the suggested name for the file to the response 
@@ -2641,9 +2668,12 @@ public abstract class EDDTable extends EDD {
         if (fileTypeName.equals(".fgdc")) {
             if (accessibleViaFGDC.length() == 0) {                
                 OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
-                    throw new SimpleException(String2.ERROR + " while transmitting file.");
-                out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                try {
+                    if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
+                        throw new SimpleException(String2.ERROR + " while transmitting file.");
+                } finally {
+                    try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                }
             } else {
                 throw new SimpleException(accessibleViaFGDC);
             }
@@ -2651,18 +2681,27 @@ public abstract class EDDTable extends EDD {
         }
 
         //special EDDTableFromHttpGet file types
-        /*if (fileTypeName.equals(".insert")) {
-            insertOrDelete(EDDTableFromHttpGet.INSERT_COMMAND,
-                request, response, loggedInAs, requestUrl, userDapQuery, 
-                outputStreamSource, fileTypeName);
+        if (this instanceof EDDTableFromHttpGet &&
+            (fileTypeName.equals(".insert") ||
+             fileTypeName.equals(".delete"))) {
+            if (!EDStatic.developmentMode &&
+                loggedInAs == null) 
+                throw new SimpleException(String2.ERROR + 
+                    ": " + fileTypeName + " requests must be made to the https URL.");
+
+            EDDTableFromHttpGet etfhg = (EDDTableFromHttpGet)this;
+            String jsonResponse = etfhg.insertOrDelete(  //throws exception if trouble
+                fileTypeName.equals(".insert")? 
+                    EDDTableFromHttpGet.INSERT_COMMAND :
+                    EDDTableFromHttpGet.DELETE_COMMAND, 
+                userDapQuery);
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8)); 
+            writer.write(jsonResponse);
+            writer.flush(); //essential
+
             return;
         }
-        if (fileTypeName.equals(".delete")) {
-            insertOrDelete(EDDTableFromHttpGet.DELETE_COMMAND,
-                request, response, loggedInAs, requestUrl, userDapQuery, 
-                outputStreamSource, fileTypeName);
-            return;
-        }*/
 
         //.graph
         if (fileTypeName.equals(".graph")) {
@@ -2679,7 +2718,7 @@ public abstract class EDDTable extends EDD {
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
             //With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
             OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-            Writer writer = new OutputStreamWriter(out, String2.UTF_8); 
+            Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
             writer.write(EDStatic.startHeadHtml(tErddapUrl,  
                 title() + " - " + EDStatic.daf));
             writer.write("\n" + rssHeadLink());
@@ -2689,41 +2728,36 @@ public abstract class EDDTable extends EDD {
             writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
             writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));      //this is a link to a script
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
-            try {
-                writer.write(
-                    "<div class=\"standard_width\">\n");
-                writer.write(EDStatic.youAreHereWithHelp(loggedInAs, dapProtocol, 
-                    EDStatic.daf, 
-                    "<div class=\"standard_max_width\">" + 
-                    EDStatic.dafTableTooltip + 
-                    "<p>" + EDStatic.EDDTableDownloadDataTooltip +
-                    "</ol>\n" +
-                    EDStatic.dafTableBypassTooltip + 
-                    "</div>"));
-                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
-                    userDapQuery, "");
-                if (userDapQuery.length() == 0) 
-                    userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
-                writeDapHtmlForm(loggedInAs, userDapQuery, writer);
+            writer.write(
+                "<div class=\"standard_width\">\n");
+            writer.write(EDStatic.youAreHereWithHelp(loggedInAs, dapProtocol, 
+                EDStatic.daf, 
+                "<div class=\"standard_max_width\">" + 
+                EDStatic.dafTableTooltip + 
+                "<p>" + EDStatic.EDDTableDownloadDataTooltip +
+                "</ol>\n" +
+                EDStatic.dafTableBypassTooltip + 
+                "</div>"));
+            writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
+                userDapQuery, "");
+            if (userDapQuery.length() == 0) 
+                userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
+            writeDapHtmlForm(loggedInAs, userDapQuery, writer);
 
-                //info at end of page
+            //info at end of page
 
-                //then das (with info about this dataset
-                writer.write("<hr>\n");
-                writer.write("<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">" + 
-                    EDStatic.dasTitle + "</a></h2>\n" +
-                    "<pre style=\"white-space:pre-wrap;\">\n");
-                table.writeDAS(writer, SEQUENCE_NAME, true); //useful so search engines find all relevant words
-                writer.write("</pre>\n");
+            //then das (with info about this dataset
+            writer.write("<hr>\n");
+            writer.write("<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">" + 
+                EDStatic.dasTitle + "</a></h2>\n" +
+                "<pre style=\"white-space:pre-wrap;\">\n");
+            table.writeDAS(writer, SEQUENCE_NAME, true); //useful so search engines find all relevant words
+            writer.write("</pre>\n");
 
-                //then dap instructions
-                writer.write("<br>&nbsp;\n");
-                writer.write("<hr>\n");
-                writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
-            } catch (Throwable t) {
-                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                writer.write(EDStatic.htmlForException(t));
-            }
+            //then dap instructions
+            writer.write("<br>&nbsp;\n");
+            writer.write("<hr>\n");
+            writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
             writer.write("</div>\n");
             writer.write(EDStatic.endBodyHtml(tErddapUrl));
             writer.write("\n</html>\n");
@@ -2747,18 +2781,24 @@ public abstract class EDDTable extends EDD {
 
             //ok, copy it  (and don't close the outputStream)
             OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-            if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
-                throw new SimpleException(String2.ERROR + " while transmitting file.");
-            out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+            try {
+                if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
+                    throw new SimpleException(String2.ERROR + " while transmitting file.");
+            } finally {
+                try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+            }
             return;
         }
 
         if (fileTypeName.equals(".iso19115")) {
             if (accessibleViaISO19115.length() == 0) {                
                 OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
-                    throw new SimpleException(String2.ERROR + " while transmitting file.");
-                out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                try {
+                    if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
+                        throw new SimpleException(String2.ERROR + " while transmitting file.");
+                } finally {
+                    try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                }
             } else {
                 throw new SimpleException(accessibleViaISO19115);
             }
@@ -2766,8 +2806,6 @@ public abstract class EDDTable extends EDD {
         }
         
         if (fileTypeName.equals(".nccsvMetadata")) {
-            Writer writer = new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1); 
             Table table = new Table();
             table.globalAttributes().add(combinedGlobalAttributes());
             for (int dvi = 0; dvi < dataVariables.length; dvi++) {
@@ -2793,7 +2831,9 @@ public abstract class EDDTable extends EDD {
                 table.addColumn(dvi, dv.destinationName(), 
                     PrimitiveArray.factory(tClass, 1, false), catts);
             }        
-            table.saveAsNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1)); 
+            table.saveAsNccsv(false, true, 0, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
         
@@ -2823,8 +2863,9 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".esriCsv")) 
             tableWriter = new TableWriterEsriCsv(this, tNewHistory, outputStreamSource);
         else if (fileTypeName.equals(".geoJson") || 
-                 fileTypeName.equals(".json") ||
-                 fileTypeName.equals(".dataTable") ||
+                 fileTypeName.equals(".json") || 
+                 fileTypeName.equals(".dataTable") || 
+                 fileTypeName.equals(".jsonlCSV1") || 
                  fileTypeName.equals(".jsonlCSV") || 
                  fileTypeName.equals(".jsonlKVP") ||
                  fileTypeName.equals(".ncoJson")) {
@@ -2842,10 +2883,12 @@ public abstract class EDDTable extends EDD {
                 tableWriter = new TableWriterJson(this, tNewHistory, outputStreamSource, jsonp, true); //writeUnits
             else if (fileTypeName.equals(".dataTable"))
                 tableWriter = new TableWriterDataTable(this, tNewHistory, outputStreamSource, true); //writeUnits
+            else if (fileTypeName.equals(".jsonlCSV1"))
+                tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, true, false, jsonp);  //writeColNames, writeKVP
             else if (fileTypeName.equals(".jsonlCSV"))
-                tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, jsonp); //writeKVP=false
+                tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, false, jsonp); //writeColNames, writeKVP
             else if (fileTypeName.equals(".jsonlKVP"))
-                tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, true, jsonp);  //writeKVP=true
+                tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, true, jsonp);  //writeColNames, writeKVP
             else if (fileTypeName.equals(".ncoJson")) { 
                 twawm = new TableWriterAllWithMetadata(this, tNewHistory, dir, fileName);  //used after getDataForDapQuery below...
                 tableWriter = twawm;
@@ -2884,9 +2927,12 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".wav")) {
             if (File2.isFile(dir + fileName + ".wav")) {
                 OutputStream out = outputStreamSource.outputStream("");
-                if (!File2.copy(dir + fileName + ".wav", out))
-                    throw new SimpleException(String2.ERROR + " while transmitting file.");
-                out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                try {
+                    if (!File2.copy(dir + fileName + ".wav", out))
+                        throw new SimpleException(String2.ERROR + " while transmitting file.");
+                } finally {
+                    try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+                }
                 return;
             } else {
                 tableWriter = new TableWriterWav(this, tNewHistory, outputStreamSource, 
@@ -2925,7 +2971,7 @@ public abstract class EDDTable extends EDD {
 
         //*** make a file (then copy it to outputStream)
         //nc files are handled this way because .ncHeader .ncCFHeader, .ncCFMAHeader
-        //  need to call NcHelper.dumpString(aRealFile, false). 
+        //  need to call NcHelper.ncdump(aRealFile, "-h"). 
         String fileTypeExtension = fileTypeExtension(fileTypeName);
         String fullName = dir + fileName + fileTypeExtension;
         //Normally, this is cacheDirectory and it already exists,
@@ -3046,26 +3092,29 @@ public abstract class EDDTable extends EDD {
             } else {
                 //all other types
                 //create random file; and if error, only random file will be created
-                FileOutputStream fos = new FileOutputStream(cacheFullName + random);
-                OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);
+                OutputStream fos = new BufferedOutputStream(new FileOutputStream(cacheFullName + random));
                 boolean ok; 
-                if (fileTypeName.equals(".kml")) {
-                    ok = saveAsKml(loggedInAs, requestUrl, userDapQuery, dir, fileName, 
-                        osss);
+                try {
+                    OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);
+                    if (fileTypeName.equals(".kml")) {
+                        ok = saveAsKml(loggedInAs, requestUrl, userDapQuery, dir, fileName, 
+                            osss);
 
-                } else if (String2.indexOf(imageFileTypeNames, fileTypeName) >= 0) {
-                    //pdf and png  //do last so .kml caught above
-                    ok = saveAsImage(loggedInAs, requestUrl, userDapQuery, dir, fileName, 
-                        osss, fileTypeName);
+                    } else if (String2.indexOf(imageFileTypeNames, fileTypeName) >= 0) {
+                        //pdf and png  //do last so .kml caught above
+                        ok = saveAsImage(loggedInAs, requestUrl, userDapQuery, dir, fileName, 
+                            osss, fileTypeName);
 
-                } else { 
-                    fos.close();
-                    File2.delete(cacheFullName + random);
-                    throw new SimpleException(EDStatic.queryError +
-                        MessageFormat.format(EDStatic.queryErrorFileType, fileTypeName));
+                    } else { 
+                        fos.close(); 
+                        fos = null;
+                        File2.delete(cacheFullName + random);
+                        throw new SimpleException(EDStatic.queryError +
+                            MessageFormat.format(EDStatic.queryErrorFileType, fileTypeName));
+                    }
+                } finally {
+                    if (fos != null) try {fos.close();} catch (Exception e) {}
                 }
-
-                fos.close();
                 File2.rename(cacheFullName + random, cacheFullName); //make available in an instant
                 if (!ok) //make eligible to be removed from cache in 5 minutes
                     File2.touch(cacheFullName, 
@@ -3082,7 +3131,7 @@ public abstract class EDDTable extends EDD {
             synchronized(String2.canonical(fullName)) {
                 if (!File2.isFile(fullName)) {
                     String error = String2.writeToFile(fullName + random, 
-                        NcHelper.dumpString(cacheFullName, false), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
+                        NcHelper.ncdump(cacheFullName, "-h"), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
                     if (error.length() == 0) {
                         File2.rename(fullName + random, fullName); //make available in an instant
                         File2.isFile(fullName, 5); //for possible waiting thread, wait till file is visible via operating system
@@ -3098,13 +3147,16 @@ public abstract class EDDTable extends EDD {
         OutputStream out = outputStreamSource.outputStream(
             ncXHeader? String2.UTF_8 : 
             fileTypeName.equals(".kml")? String2.UTF_8 : "");
-        if (!File2.copy(fullName, out)) { 
-            //outputStream contentType already set,
-            //so I can't go back to html and display error message
-            //note than the message is thrown if user cancels the transmission; so don't email to me
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
+        try {
+            if (!File2.copy(fullName, out)) { 
+                //outputStream contentType already set,
+                //so I can't go back to html and display error message
+                //note than the message is thrown if user cancels the transmission; so don't email to me
+                throw new SimpleException(String2.ERROR + " while transmitting file.");
+            }
+        } finally {
+            try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         }
-        out.close(); //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
         //done
         if (reallyVerbose) String2.log(
@@ -3135,36 +3187,59 @@ public abstract class EDDTable extends EDD {
         String tNewHistory = getNewHistory(requestUrl, userDapQuery);
         String[] parts = Table.getDapQueryParts(userDapQuery); //decoded
 
-        //only the first distinct() or orderBy...() MAY be handled by source
-        int firstDistinctOrOrderBy = -1;
+        //identify skipPart (if any) and firstActiveDistinctOrOrderBy (if any)
+        //the logic here is complex!   So this is written for clarity, not fewest operations.
+        int skipPart = -1; //skip if first distinct() or orderBy...() AND will be handled by source  -1=still looking -2=no longer looking
+        int firstActiveDistinctOrOrderBy = -1; //it gets metadata from edd, others from first addSome table
         for (int part = 0; part < parts.length; part++) {
             String p = parts[part];
+
             if (p.equals("distinct()")) {
-                firstDistinctOrOrderBy = part;
-                break;
-            }
-            if (p.startsWith("orderBy") && p.endsWith(")")) {
-                firstDistinctOrOrderBy = part;
-                break;
+                if (skipPart == -1) {
+                    if (!alwaysDoAll && sourceCanDoDistinct == CONSTRAIN_YES) 
+                         skipPart = part;
+                    else skipPart = -2;  //no longer looking
+                } 
+                if (skipPart != part && firstActiveDistinctOrOrderBy == -1) {
+                    firstActiveDistinctOrOrderBy = part;
+                    break;
+                }
+            } else if (p.startsWith("orderBy(") && p.endsWith(")")) {  //just simple sort
+                if (skipPart == -1) {
+                    if (!alwaysDoAll && sourceCanOrderBy == CONSTRAIN_YES) 
+                         skipPart = part;
+                    else skipPart = -2;  //no longer looking
+                } 
+                if (skipPart != part && firstActiveDistinctOrOrderBy == -1) {
+                    firstActiveDistinctOrOrderBy = part;
+                    break;
+                }
+            } else if ((p.startsWith("orderBy") || p.startsWith("units(")) && //other orderBy options or units()
+                       p.endsWith(")")) {
+                if (skipPart == -1)
+                    skipPart = -2;  //no longer looking
+                if (firstActiveDistinctOrOrderBy == -1) {
+                    firstActiveDistinctOrOrderBy = part;
+                    break;
+                }
             }
         }
         //String2.pressEnterToContinue(">>> firstDistinctOrOrderBy=" + firstDistinctOrOrderBy);
 
         //work backwards through parts so tableWriters are added in correct order
         for (int part = parts.length - 1; part >= 0; part--) {
+            if (part == skipPart)
+                continue;
             String p = parts[part];
             if (p.equals("distinct()")) {
-                if (!alwaysDoAll && sourceCanDoDistinct == CONSTRAIN_YES &&
-                    part == firstDistinctOrOrderBy) 
-                    //skip distinct(), if any. Database will handle it.
-                    continue;
-                tableWriter = new TableWriterDistinct(this, tNewHistory, 
-                    dir, fileName, tableWriter);
+                tableWriter = new TableWriterDistinct(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, dir, fileName, tableWriter);
+
             } else if (p.startsWith("orderBy(\"") && p.endsWith("\")")) {
-                if (!alwaysDoAll && sourceCanOrderBy == CONSTRAIN_YES &&
-                    part == firstDistinctOrOrderBy)
-                    continue;
-                TableWriterOrderBy twob = new TableWriterOrderBy(this, tNewHistory, 
+                TableWriterOrderBy twob = new TableWriterOrderBy(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
                     dir, fileName, tableWriter, p.substring(9, p.length() - 2));
                 tableWriter = twob;
                 //minimal test: ensure orderBy columns are valid column names
@@ -3173,10 +3248,12 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             "'orderBy' variable=" + twob.orderBy[ob] + " isn't in the dataset.");
                 }
+
             } else if (p.startsWith("orderByClosest(\"") && p.endsWith("\")")) {
-                TableWriterOrderByClosest twobc = 
-                    new TableWriterOrderByClosest(this, tNewHistory, 
-                        dir, fileName, tableWriter, p.substring(16, p.length() - 2));
+                TableWriterOrderByClosest twobc = new TableWriterOrderByClosest(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(16, p.length() - 2));
                 tableWriter = twobc;
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobc.orderBy.length; ob++) {
@@ -3185,13 +3262,11 @@ public abstract class EDDTable extends EDD {
                             Table.ORDER_BY_CLOSEST_ERROR + 
                             " (unknown column name=" + twobc.orderBy[ob] + ")");
                 }
-            } else if (p.startsWith("orderByMean(\"") && p.endsWith("\")")) {
-                TableWriterOrderByMean twobm = 
-                        new TableWriterOrderByMean(this, tNewHistory, 
-                            dir, fileName, tableWriter, p.substring(13, p.length() - 2));
-                    tableWriter = twobm;
+
             } else if (p.startsWith("orderByCount(\"") && p.endsWith("\")")) {
-                TableWriterOrderByCount twobc = new TableWriterOrderByCount(this, tNewHistory, 
+                TableWriterOrderByCount twobc = new TableWriterOrderByCount(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
                     dir, fileName, tableWriter, p.substring(14, p.length() - 2));
                 tableWriter = twobc;
                 //minimal test: ensure orderBy columns are valid column names
@@ -3200,10 +3275,12 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByCount' variable=" + twobc.orderBy[ob] + " isn't in the dataset.");
                 }
+
             } else if (p.startsWith("orderByLimit(\"") && p.endsWith("\")")) {
-                TableWriterOrderByLimit twobl = 
-                    new TableWriterOrderByLimit(this, tNewHistory, 
-                        dir, fileName, tableWriter, p.substring(14, p.length() - 2));
+                TableWriterOrderByLimit twobl = new TableWriterOrderByLimit( 
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(14, p.length() - 2));
                 tableWriter = twobl;
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobl.orderBy.length; ob++) {
@@ -3212,8 +3289,18 @@ public abstract class EDDTable extends EDD {
                             Table.ORDER_BY_LIMIT_ERROR + 
                             " (unknown column name=" + twobl.orderBy[ob] + ")");
                 }
+
+            } else if (p.startsWith("orderByMean(\"") && p.endsWith("\")")) {
+                TableWriterOrderByMean twobm = new TableWriterOrderByMean(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(13, p.length() - 2));
+                tableWriter = twobm;
+
             } else if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) {
-                TableWriterOrderByMax twobm = new TableWriterOrderByMax(this, tNewHistory, 
+                TableWriterOrderByMax twobm = new TableWriterOrderByMax(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
                     dir, fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
@@ -3222,8 +3309,11 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
+
             } else if (p.startsWith("orderByMin(\"") && p.endsWith("\")")) {
-                TableWriterOrderByMin twobm = new TableWriterOrderByMin(this, tNewHistory, 
+                TableWriterOrderByMin twobm = new TableWriterOrderByMin(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
                     dir, fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
@@ -3232,9 +3322,11 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMin' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
+
             } else if (p.startsWith("orderByMinMax(\"") && p.endsWith("\")")) {
                 TableWriterOrderByMinMax twobm = new TableWriterOrderByMinMax(
-                    this, tNewHistory, dir, fileName, tableWriter, 
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, dir, fileName, tableWriter, 
                     p.substring(15, p.length() - 2));
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
@@ -3243,12 +3335,15 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMinMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
+
             } else if (p.startsWith("units(\"") && p.endsWith("\")")) {
                 String fromUnits = EDStatic.units_standard;
                 String toUnits = p.substring(7, p.length() - 2);
                 TableWriterUnits.checkFromToUnits(fromUnits, toUnits);
                 if (!fromUnits.equals(toUnits)) {
-                    TableWriterUnits twu = new TableWriterUnits(this, tNewHistory, 
+                    TableWriterUnits twu = new TableWriterUnits(
+                        part == firstActiveDistinctOrOrderBy? this : null,
+                        tNewHistory, 
                         tableWriter, fromUnits, toUnits);
                     tableWriter = twu;
                 }
@@ -3505,7 +3600,7 @@ public abstract class EDDTable extends EDD {
             "      <Icon>\n" +
             //see list in Google Earth by right click on icon : Properties : the icon icon
             //2011-12-15 was shaded_dot (too fuzzy), now placemark_circle
-            "        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+            "        <href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
             "      </Icon>\n" +
             "    </IconStyle>\n" +
             "  </Style>\n" +
@@ -3514,7 +3609,7 @@ public abstract class EDDTable extends EDD {
             "      <color>ff0099ff</color>\n" +
             "      <scale>" + (2 * iconSize) + "</scale>\n" +
             "      <Icon>\n" +
-            "        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+            "        <href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
             "      </Icon>\n" +
             "    </IconStyle>\n" +
             "    <LabelStyle><scale>0</scale></LabelStyle>\n" +
@@ -3799,6 +3894,7 @@ public abstract class EDDTable extends EDD {
             //x/yMin < x/yMax
             double xMin = Double.NaN, xMax = Double.NaN, yMin = Double.NaN, yMax = Double.NaN;
             boolean xAscending = true, yAscending = true; //this is what controls flipping of the axes
+            String xScale = "", yScale = ""; //(default) or Linear or Log
             double fontScale = 1, vectorStandard = Double.NaN;
             int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
             StringBuilder title2 = new StringBuilder();
@@ -3936,8 +4032,16 @@ public abstract class EDDTable extends EDD {
                     if (pParts.length > 2) 
                         //if the param slot is there, the param determines Ascending
                         xAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
+                    if (pParts.length > 3) {
+                        //if the param slot is there, the param determines Scale
+                        xScale = String2.toTitleCase(pParts[3].trim()); //"" -> (the default)
+                        if (!xScale.equals("Log") &&
+                            !xScale.equals("Linear"))
+                            xScale = ""; //"" -> (the default)
+                    }
                     if (reallyVerbose)
-                        String2.log(".xRange min=" + xMin + " max=" + xMax + " ascending=" + xAscending);
+                        String2.log(".xRange min=" + xMin + " max=" + xMax + 
+                            " ascending=" + xAscending + " xScale=" + xScale);
 
                 //.yRange   
                 //  this is more powerful than yVar constraints
@@ -3948,8 +4052,16 @@ public abstract class EDDTable extends EDD {
                     if (pParts.length > 2) 
                         //if the param slot is there, the param determines Ascending
                         yAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
+                    if (pParts.length > 3) {
+                        //if the param slot is there, the param determines Scale
+                        yScale = String2.toTitleCase(pParts[3].trim()); //"" -> (the default)
+                        if (!yScale.equals("Log") &&
+                            !yScale.equals("Linear"))
+                            yScale = ""; //"" -> (the default)
+                    }
                     if (reallyVerbose)
-                        String2.log(".yRange min=" + yMin + " max=" + yMax + " ascending=" + yAscending);
+                        String2.log(".yRange min=" + yMin + " max=" + yMax + 
+                            " ascending=" + yAscending + " scale=" + yScale);
     
                 //ignore any unrecognized .something 
                 } else if (ampPart.startsWith(".")) {
@@ -3974,6 +4086,23 @@ public abstract class EDDTable extends EDD {
                 title2.insert(0, "(");
                 title2.append(")");
             }
+            if (xScale.length() == 0) {
+                //use the default from colorBarScale
+                xScale = xVar.combinedAttributes().getString("colorBarScale");
+                xScale = xScale == null? "" : String2.toTitleCase(xScale.trim());
+                if (!xScale.equals("Log"))
+                    xScale = "Linear"; //apply "" default -> Linear
+            }
+            boolean xIsLogAxis = !(xVar instanceof EDVTimeStamp) && xScale.equals("Log");
+            if (yScale.length() == 0) {
+                //use the default from colorBarScale
+                yScale = yVar.combinedAttributes().getString("colorBarScale");
+                yScale = yScale == null? "" : String2.toTitleCase(yScale.trim());
+                if (!yScale.equals("Log"))
+                    yScale = "Linear"; //apply "" default -> Linear
+            }
+            boolean yIsLogAxis = !(yVar instanceof EDVTimeStamp) && yScale.equals("Log");
+
             if (debugMode) String2.log("saveAsImage 5");
 
             //make colorMap if needed
@@ -4091,7 +4220,7 @@ public abstract class EDDTable extends EDD {
                             "NaN" :
                          edv instanceof EDVTimeStamp? 
                             //not time_precision, since query may be more precise
-                            Calendar2.epochSecondsToIsoStringT(conValD) + "Z" : 
+                            Calendar2.epochSecondsToIsoStringTZ(conValD) : 
                          conVal));
                 }
             }
@@ -4328,9 +4457,8 @@ public abstract class EDDTable extends EDD {
                     png && drawLegend.equals(LEGEND_ONLY)? "." : yLabel, //avoid running into legend
                     SgtUtil.LEGEND_BELOW, EDStatic.legendTitle1, EDStatic.legendTitle2,
                     EDStatic.imageDir, logoImageFile,
-                    xMin, xMax, xAscending, yMin, yMax, yAscending,
-                    xVar instanceof EDVTimeStamp, //x/yIsTimeAxis,
-                    yVar instanceof EDVTimeStamp, 
+                    xMin, xMax, xAscending, xVar instanceof EDVTimeStamp, xIsLogAxis, 
+                    yMin, yMax, yAscending, yVar instanceof EDVTimeStamp, yIsLogAxis, 
                     graphDataLayers,
                     g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
                     bgColor, fontScale); 
@@ -4388,8 +4516,6 @@ public abstract class EDDTable extends EDD {
                         //But e.g., No Data, should just be a transparent image.
                         transparentColor = Color.white;
                     } else {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                            RenderingHints.VALUE_ANTIALIAS_ON);
                         g2.setClip(0, 0, imageWidth, imageHeight); //unset in case set by sgtGraph
                         msg = String2.noLongLines(msg, (imageWidth * 10 / 6) / tHeight, "    ");
                         String lines[] = msg.split("\\n"); //not String2.split which trims
@@ -4614,8 +4740,8 @@ public abstract class EDDTable extends EDD {
      * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results 
      *     (or null if none).
      *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
-     *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
-     *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
+     *     and https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
+     *     and https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/ .
      *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
      * @throws Throwable 
      */
@@ -4638,126 +4764,133 @@ public abstract class EDDTable extends EDD {
         //create a writer
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
             outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
-        if (jsonp != null) 
-            writer.write(jsonp + "(");
+        try {
+            if (jsonp != null) 
+                writer.write(jsonp + "(");
 
-        //write start
-        writer.write("{\n");
+            //write start
+            writer.write("{\n");
 
-        //write the global attributes
-        writer.write(twawm.globalAttributes().toNcoJsonString("  "));
+            //write the global attributes
+            writer.write(twawm.globalAttributes().toNcoJsonString("  "));
 
-        //write row dimension
-//{
-//  "dimensions": {
-//    "row": 10,
-//    "bnd": 2 
-//  }
-        writer.write(
-            "  \"dimensions\": {\n" +
-            "    \"row\": " + nRows);
-        String stringDim[] = new String[nCols];
-        if (!writeStringsAsStrings) {
+            //write row dimension
+    //{
+    //  "dimensions": {
+    //    "row": 10,
+    //    "bnd": 2 
+    //  }
+            writer.write(
+                "  \"dimensions\": {\n" +
+                "    \"row\": " + nRows);
+            String stringDim[] = new String[nCols];
+            if (!writeStringsAsStrings) {
+                for (int col = 0; col < nCols; col++) {
+                    boolean isString = twawm.columnType(col) == String.class;
+                    if (isString) {
+                        stringDim[col] = String2.toJson(twawm.columnName(col) + NcHelper.StringLengthSuffix);
+                        writer.write(",\n" + //end of previous line
+                            "    " + stringDim[col] + ": " + Math.max(1, twawm.columnMaxStringLength(col)));
+                    }
+                }
+            }
+            writer.write("\n" + //end of previous line
+                "  },\n");  //end of dimensions
+
+            //write the variables
+            writer.write(
+                "  \"variables\": {\n");
+
+            StringBuilder ssb = new StringBuilder(); //reused for string variables
             for (int col = 0; col < nCols; col++) {
-                boolean isString = twawm.columnType(col) == String.class;
-                if (isString) {
-                    stringDim[col] = String2.toJson(twawm.columnName(col) + NcHelper.StringLengthSuffix);
-                    writer.write(",\n" + //end of previous line
-                        "    " + stringDim[col] + ": " + Math.max(1, twawm.columnMaxStringLength(col)));
+    //    "att_var": {
+    //      "shape": ["time"],
+    //      "type": "float",
+    //      "attributes": { ... },
+    //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
+    //    }
+                Attributes atts = twawm.columnAttributes(col); 
+                String tType = PrimitiveArray.elementClassToString(twawm.columnType(col));
+                boolean isString = tType.equals("String");
+                boolean isChar   = tType.equals("char");
+                int bufferSize = (int)Math.min(isChar? 8192 : 10, nRows);  //this is also nPerLine for all except char
+                if (isString) 
+                    tType = writeStringsAsStrings? "string": "char";
+                else if (tType.equals("long"))
+                    tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                writer.write(
+                    "    " + String2.toJson(twawm.columnName(col)) + ": {\n" +
+                    "      \"shape\": [\"row\"" + 
+                        (isString && !writeStringsAsStrings? ", " + stringDim[col]: "") +
+                        "],\n" +
+                    "      \"type\": \"" + tType + "\",\n");
+                writer.write(atts.toNcoJsonString("      "));
+                writer.write(
+                    "      \"data\": [");
+                DataInputStream dis = twawm.dataInputStream(col);
+                try {
+                    //create the bufferPA
+                    PrimitiveArray pa = 
+                        PrimitiveArray.factory(twawm.columnType(col), 
+                           bufferSize, false);  //safe since checked above
+                    long nRowsRead = 0;
+                    while (nRowsRead < nRows) {
+                        int nToRead = (int)Math.min(bufferSize, nRows - nRowsRead);
+                        pa.clear();
+                        pa.readDis(dis, nToRead);
+                        if (isChar) {
+                            //write it as one string with chars concatenated
+                            //see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
+                            //  "shape": ["lev"],          //dim lev size=3
+                            //  ...
+                            //  "data": ["abc"] 
+                            //here: write it in buffersize chunks
+                            if (nRowsRead == 0)
+                                writer.write("\""); //start the string
+                            String s = String2.toJson(new String(((CharArray)pa).toArray()));
+                            writer.write(s.substring(1, s.length() - 1));  //remove start and end "
+                        } else if (isString) {
+                            //Arrays of Strings are written oddly: (example from http://dust.ess.uci.edu/tmp/in.json.fmt2)
+                            //    "date_rec": {
+                            //      "shape": ["time", "char_dmn_lng26"],
+                            //      "type": "char",
+                            //      "attributes": ...,
+                            //      "data": [["2010-11-01T00:00:00.000000"], ["2010-11-01T01:00:00.000000"], ["2010-11-01T02:00:00.000000"], ["2010-11-01T03:00:00.000000"], ["2010-11-01T04:00:00.000000"], ["2010-11-01T05:00:00.000000"], ["2010-11-01T06:00:00.000000"], ["2010-11-01T07:00:00.000000"], ["2010-11-01T08:00:00.000000"], ["2010-11-01T09:00:00.000000"]]
+                            //    },
+                            if (nRowsRead > 0)
+                                writer.write(",\n    "); //separate and write on next line
+                            ssb.setLength(0);
+                            for (int row = 0; row < nToRead; row++) 
+                                ssb.append((row == 0? "" : ", ") +
+                                stringOpenBracket + 
+                                String2.toJson(pa.getString(row)) + 
+                                stringCloseBracket);
+                            writer.write(ssb.toString());
+                        } else {
+                            if (nRowsRead > 0)
+                                writer.write(",\n    "); //separate and write on next line
+                            writer.write(pa.toJsonCsvString());
+                        }
+                        nRowsRead += nToRead;
+                    }
+                } finally {
+                    dis.close();
                 }
+                if (isChar)
+                    writer.write('\"'); //terminate the string
+                writer.write("]\n" +  //end of data
+                    "    }" + 
+                    (col < nCols-1? ",\n" : "\n"));  //end of variable
             }
-        }
-        writer.write("\n" + //end of previous line
-            "  },\n");  //end of dimensions
-
-        //write the variables
-        writer.write(
-            "  \"variables\": {\n");
-
-        StringBuilder ssb = new StringBuilder(); //reused for string variables
-        for (int col = 0; col < nCols; col++) {
-//    "att_var": {
-//      "shape": ["time"],
-//      "type": "float",
-//      "attributes": { ... },
-//      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
-//    }
-            Attributes atts = twawm.columnAttributes(col); 
-            String tType = PrimitiveArray.elementClassToString(twawm.columnType(col));
-            boolean isString = tType.equals("String");
-            boolean isChar   = tType.equals("char");
-            int bufferSize = (int)Math.min(isChar? 8192 : 10, nRows);  //this is also nPerLine for all except char
-            if (isString) 
-                tType = writeStringsAsStrings? "string": "char";
-            else if (tType.equals("long"))
-                tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
             writer.write(
-                "    " + String2.toJson(twawm.columnName(col)) + ": {\n" +
-                "      \"shape\": [\"row\"" + 
-                    (isString && !writeStringsAsStrings? ", " + stringDim[col]: "") +
-                    "],\n" +
-                "      \"type\": \"" + tType + "\",\n");
-            writer.write(atts.toNcoJsonString("      "));
-            writer.write(
-                "      \"data\": [");
-            DataInputStream dis = twawm.dataInputStream(col);
-            //create the bufferPA
-            PrimitiveArray pa = 
-                PrimitiveArray.factory(twawm.columnType(col), 
-                   bufferSize, false);  //safe since checked above
-            long nRowsRead = 0;
-            while (nRowsRead < nRows) {
-                int nToRead = (int)Math.min(bufferSize, nRows - nRowsRead);
-                pa.clear();
-                pa.readDis(dis, nToRead);
-                if (isChar) {
-                    //write it as one string with chars concatenated
-                    //see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
-                    //  "shape": ["lev"],          //dim lev size=3
-                    //  ...
-                    //  "data": ["abc"] 
-                    //here: write it in buffersize chunks
-                    if (nRowsRead == 0)
-                        writer.write("\""); //start the string
-                    String s = String2.toJson(new String(((CharArray)pa).toArray()));
-                    writer.write(s.substring(1, s.length() - 1));  //remove start and end "
-                } else if (isString) {
-                    //Arrays of Strings are written oddly: (example from http://dust.ess.uci.edu/tmp/in.json.fmt2)
-                    //    "date_rec": {
-                    //      "shape": ["time", "char_dmn_lng26"],
-                    //      "type": "char",
-                    //      "attributes": ...,
-                    //      "data": [["2010-11-01T00:00:00.000000"], ["2010-11-01T01:00:00.000000"], ["2010-11-01T02:00:00.000000"], ["2010-11-01T03:00:00.000000"], ["2010-11-01T04:00:00.000000"], ["2010-11-01T05:00:00.000000"], ["2010-11-01T06:00:00.000000"], ["2010-11-01T07:00:00.000000"], ["2010-11-01T08:00:00.000000"], ["2010-11-01T09:00:00.000000"]]
-                    //    },
-                    if (nRowsRead > 0)
-                        writer.write(",\n    "); //separate and write on next line
-                    ssb.setLength(0);
-                    for (int row = 0; row < nToRead; row++) 
-                        ssb.append((row == 0? "" : ", ") +
-                        stringOpenBracket + 
-                        String2.toJson(pa.getString(row)) + 
-                        stringCloseBracket);
-                    writer.write(ssb.toString());
-                } else {
-                    if (nRowsRead > 0)
-                        writer.write(",\n    "); //separate and write on next line
-                    writer.write(pa.toJsonCsvString());
-                }
-                nRowsRead += nToRead;
-            }
-            dis.close();
-            if (isChar)
-                writer.write('\"'); //terminate the string
-            writer.write("]\n" +  //end of data
-                "    }" + 
-                (col < nCols-1? ",\n" : "\n"));  //end of variable
+                "  }\n" +  //end of variables object
+                "}\n"); //end of main object
+            if (jsonp != null) 
+                writer.write(")");
+            writer.flush(); //essential
+        } finally {
+            writer.close();
         }
-        writer.write(
-            "  }\n" +  //end of variables object
-            "}\n"); //end of main object
-        if (jsonp != null) 
-            writer.write(")");
-        writer.flush(); //essential
 
         if (reallyVerbose) String2.log("  EDDTable.saveAsNcoJson done. TIME=" + 
             (System.currentTimeMillis() - time) + "ms\n");
@@ -4848,11 +4981,11 @@ public abstract class EDDTable extends EDD {
                 }
             }
 
-            //set id attribute = file name
+            //if no id, set id=datasetID
             //currently, only the .nc saveAs types use attributes!
             Attributes globalAttributes = twawm.globalAttributes();
             if (globalAttributes.get("id") == null)
-                globalAttributes.set("id", File2.getNameNoExtension(fullName));
+                globalAttributes.set("id", datasetID); //2019-05-07 File2.getNameNoExtension(fullName));
 
             //set the attributes
             NcHelper.setAttributes(nc3Mode, rootGroup, globalAttributes);
@@ -4879,49 +5012,53 @@ public abstract class EDDTable extends EDD {
                 PrimitiveArray pa = null;
                 DoubleArray da = new DoubleArray();
                 DataInputStream dis = twawm.dataInputStream(col);
-                Class colType = twawm.columnType(col);
-                Array array;
+                try {
+                    Class colType = twawm.columnType(col);
+                    Array array;
 
-                while (nToGo > 0) {
-                    bufferSize = Math.min(nToGo, bufferSize); //actual number to be transferred
-                    //use of != below (not <) lets toObjectArray below return internal array since size=capacity
-                    if (pa == null || pa.capacity() != bufferSize)
-                        pa = PrimitiveArray.factory(colType, bufferSize, false);
-                    pa.clear();
-                    pa.readDis(dis, bufferSize);                    
-                    if (debugMode) String2.log(">> col=" + col + " nToGo=" + nToGo + 
-                        " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
-                        " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
-                    if (nc3Mode && pa instanceof StringArray) {
-                        //pa is temporary, so ok to change strings
-                        array = Array.factory(colType,      new int[]{bufferSize}, 
-                            ((StringArray)pa).toIso88591().toObjectArray());
-                        nc.writeStringData(newVars[col], new int[]{ncOffset}, array);
-
-                    } else {
-                        if (nc3Mode && pa instanceof LongArray) {
-                            da.clear(); 
-                            da.append(pa);
-                            array = Array.factory(double.class, new int[]{bufferSize}, da.toObjectArray());
-                        } else if (pa instanceof CharArray) {
-                            //pa is temporary, so ok to change chars
+                    while (nToGo > 0) {
+                        bufferSize = Math.min(nToGo, bufferSize); //actual number to be transferred
+                        //use of != below (not <) lets toObjectArray below return internal array since size=capacity
+                        if (pa == null || pa.capacity() != bufferSize)
+                            pa = PrimitiveArray.factory(colType, bufferSize, false);
+                        pa.clear();
+                        pa.readDis(dis, bufferSize);                    
+                        if (debugMode) String2.log(">> col=" + col + " nToGo=" + nToGo + 
+                            " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
+                            " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
+                        if (nc3Mode && pa instanceof StringArray) {
+                            //pa is temporary, so ok to change strings
                             array = Array.factory(colType,      new int[]{bufferSize}, 
-                                ((CharArray)pa).toIso88591().toObjectArray());                            
-                        } else { 
-                            array = Array.factory(colType,      new int[]{bufferSize}, pa.toObjectArray());
+                                ((StringArray)pa).toIso88591().toObjectArray());
+                            nc.writeStringData(newVars[col], new int[]{ncOffset}, array);
+
+                        } else {
+                            if (nc3Mode && pa instanceof LongArray) {
+                                da.clear(); 
+                                da.append(pa);
+                                array = Array.factory(double.class, new int[]{bufferSize}, da.toObjectArray());
+                            } else if (pa instanceof CharArray) {
+                                //pa is temporary, so ok to change chars
+                                array = Array.factory(colType,      new int[]{bufferSize}, 
+                                    ((CharArray)pa).toIso88591().toObjectArray());                            
+                            } else { 
+                                array = Array.factory(colType,      new int[]{bufferSize}, pa.toObjectArray());
+                            }
+                            nc.write(newVars[col], new int[]{ncOffset}, array);
                         }
-                        nc.write(newVars[col], new int[]{ncOffset}, array);
+                                
+                        nToGo -= bufferSize;
+                        ncOffset += bufferSize;
+                        //String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType == String.class));
                     }
-                            
-                    nToGo -= bufferSize;
-                    ncOffset += bufferSize;
-                    //String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType == String.class));
+                } finally {
+                    dis.close();
                 }
-                dis.close();
             }
 
             //if close throws Throwable, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
 
             //rename the file to the specified name
             File2.rename(fullName + randomInt, fullName);
@@ -4929,12 +5066,12 @@ public abstract class EDDTable extends EDD {
             //diagnostic
             if (reallyVerbose) String2.log("  EDDTable.saveAsFlatNc done. TIME=" + 
                 (System.currentTimeMillis() - time) + "ms\n");
-            //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
+            //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Throwable t) {
             //try to close the file
             try {
-                nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null) nc.close(); //it calls flush() and doesn't like flush called separately
             } catch (Throwable t2) {
                 //don't care
             }
@@ -5228,7 +5365,8 @@ public abstract class EDDTable extends EDD {
             String featureType = cdmType;
             cdmGlobalAttributes.remove("observationDimension"); //obsDim is for a flat file and OBSOLETE
             cdmGlobalAttributes.set("featureType", featureType);
-            cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
+            if (cdmGlobalAttributes.get("id") == null)
+                cdmGlobalAttributes.set("id", datasetID); //2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
             NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
@@ -5305,6 +5443,7 @@ public abstract class EDDTable extends EDD {
                 } else if (nodcMode) {
                     //write nodc obsVar[feature][obs]
                     int origin[] = {0, 0};
+                    PrimitiveArray subsetPa = null;
                     for (int feature = 0; feature < nFeatures; feature++) { 
                         //write the data for this feature
                         origin[0] = feature;
@@ -5312,8 +5451,7 @@ public abstract class EDDTable extends EDD {
                         int firstRow = featureFirstRow.get(feature);
                         int tNRows   = featureNRows.get(feature);
                         int stopRow  = firstRow + tNRows - 1;
-                        PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
-                        subsetPa.trimToSize(); //so toObjectArray will be underlying array
+                        subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
                         NcHelper.write(nc3Mode, ncCF, newVars[col], 
                             origin, new int[]{1, tNRows}, subsetPa);         
 
@@ -5356,17 +5494,11 @@ public abstract class EDDTable extends EDD {
             //diagnostic
             if (reallyVerbose) String2.log("  EDDTable.convertFlatNcToNcCF1 done. TIME=" + 
                 (System.currentTimeMillis() - time) + "ms\n");
-            //String2.log("  .ncCF File created:\n" + NcHelper.dumpString(ncCFName, false));
+            //String2.log("  .ncCF File created:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { 
-                if (ncCF != null) {
-                    ncCF.close(); 
-                    //delete the partial file
-                    File2.delete(ncCFName + randomInt);
-                }
-            } catch (Exception e) {
-            }
+            try { if (ncCF != null) ncCF.close(); } catch (Exception e) {}
+            File2.delete(ncCFName + randomInt);
 
             throw t;
         }
@@ -5393,7 +5525,7 @@ public abstract class EDDTable extends EDD {
     public void saveAsNcCF2(boolean nodcMode, String ncCFName, 
         TableWriterAllWithMetadata twawm) throws Throwable {
 
-        if (reallyVerbose) String2.log("EDDTable.convertFlatNcToNcCF2 " + ncCFName); 
+        if (reallyVerbose) String2.log("EDDTable.saveAsNcCF2 " + ncCFName); 
         long time = System.currentTimeMillis();
         String rowSizeName = "rowSize";
         boolean nc3Mode = true;
@@ -5538,11 +5670,11 @@ public abstract class EDDTable extends EDD {
                 nProfilesPerFeature.calculateStats()[PrimitiveArray.STATS_MAX]);
             if (reallyVerbose) String2.log(
                   "  nFeatures="           + nFeatures + 
-                "\n  nProfilesPerFeature=" + nProfilesPerFeature.toString() +
-                "\n  nProfiles="           + nProfiles + 
-                "\n  featureIndex="        + featureIndex.toString() +
-                "\n  profileFirstObsRow="  + profileFirstObsRow.toString() +
-                "\n  nObsPerProfile="      + nObsPerProfile.toString());
+                //"\n  nProfilesPerFeature=" + nProfilesPerFeature.toString() +  //these can be really long
+                "\n  nProfiles="           + nProfiles);
+                //"\n  featureIndex="        + featureIndex.toString() +
+                //"\n  profileFirstObsRow="  + profileFirstObsRow.toString() +
+                //"\n  nObsPerProfile="      + nObsPerProfile.toString());
             //conserve memory
             oidPA = null;
             pidPA = null;
@@ -5649,7 +5781,8 @@ public abstract class EDDTable extends EDD {
             String featureType = cdmType;
             cdmGlobalAttributes.remove("observationDimension"); //obsDim is for a flat file and OBSOLETE
             cdmGlobalAttributes.set("featureType", featureType);
-            cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
+            if (cdmGlobalAttributes.get("id") == null)
+                cdmGlobalAttributes.set("id", datasetID); //2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
             NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
@@ -5734,6 +5867,7 @@ public abstract class EDDTable extends EDD {
                         int origin[] = new int[2];
                         int firstRow;
                         int lastRow = -1;
+                        PrimitiveArray tpa = null;
                         for (int feature = 0; feature < nFeatures; feature++) { 
                             //write data
                             origin[0] = feature;
@@ -5741,7 +5875,7 @@ public abstract class EDDTable extends EDD {
                             int tnProfiles = nProfilesPerFeature.get(feature);
                             firstRow = lastRow + 1;
                             lastRow = firstRow + tnProfiles - 1;
-                            PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);                        
+                            tpa = pa.subset(tpa, firstRow, 1, lastRow);                        
                             NcHelper.write(nc3Mode, ncCF, newVars[col], 
                                 origin, new int[]{1, tnProfiles}, tpa);   
                             
@@ -5793,7 +5927,7 @@ public abstract class EDDTable extends EDD {
                         int firstRow = profileFirstObsRow.get(profile);
                         int tNRows   = nObsPerProfile.get(profile);
                         int stopRow  = firstRow + tNRows - 1;
-                        subsetPa = pa.subset(firstRow, 1, stopRow);
+                        subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
                         shape[2] = tNRows;
                         NcHelper.write(nc3Mode, ncCF, newVars[col], origin, shape, subsetPa);         
                     }
@@ -5820,17 +5954,11 @@ public abstract class EDDTable extends EDD {
             //diagnostic
             if (reallyVerbose) String2.log("  EDDTable.convertFlatNcToNcCF2 done. TIME=" + 
                 (System.currentTimeMillis() - time) + "ms\n");
-            //String2.log("  .ncCF File:\n" + NcHelper.dumpString(ncCFName, false));
+            //String2.log("  .ncCF File:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { 
-                if (ncCF != null) {
-                    ncCF.close(); 
-                    //delete the partial file
-                    File2.delete(ncCFName + randomInt);
-                }
-            } catch (Exception e) {
-            }
+            try { if (ncCF != null) ncCF.close(); } catch (Exception e) {}
+            File2.delete(ncCFName + randomInt);
 
             throw t;
         } 
@@ -5840,9 +5968,9 @@ public abstract class EDDTable extends EDD {
     /**
      * Save the TableWriterAllWithMetadata data as an Igor Text File .itx file.
      * <br>File reference: in Bob's /programs/igor/ or 
-     *   http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf
+     *   https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf
      * <br>Command reference: in Bob's /programs/igor/ or 
-     *   http://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
+     *   https://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
      * <br>The file extension should be .itx
      * 
      * @param outputStreamSource  If all goes well, the outputstream is closed at the end.
@@ -5857,46 +5985,52 @@ public abstract class EDDTable extends EDD {
 
         if (reallyVerbose) String2.log("EDDTable.saveAsIgor"); 
         long time = System.currentTimeMillis();
+        try {
 
-        //make sure there is data but not too much
-        long tnRows = twawm.nRows();
-        if (tnRows == 0)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsIgor)");
-        if (tnRows >= Integer.MAX_VALUE)
-            throw new SimpleException(Math2.memoryTooMuchData + " (at start of saveAsIgor)");
-        //the other params are all required by EDD, 
-        //  so it's a programming error if they are missing
+            //make sure there is data but not too much
+            long tnRows = twawm.nRows();
+            if (tnRows == 0)
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsIgor)");
+            if (tnRows >= Integer.MAX_VALUE)
+                throw new SimpleException(Math2.memoryTooMuchData + " (at start of saveAsIgor)");
+            //the other params are all required by EDD, 
+            //  so it's a programming error if they are missing
 
-        //open an OutputStream   
-        OutputStreamWriter writer = new OutputStreamWriter(
-            outputStreamSource.outputStream(Table.IgorCharset));
-        writer.write("IGOR" + Table.IgorEndOfLine);
+            //open an OutputStream   
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                outputStreamSource.outputStream(Table.IgorCharset)));
+            try {
+                writer.write("IGOR" + Table.IgorEndOfLine);
 
-        //write each col as a wave separately, so data type is preserved
-        HashSet colNamesHashset = new HashSet();
-        int nCols = twawm.nColumns();
-        for (int col = 0; col < nCols; col++) {
-            Attributes atts = twawm.columnAttributes(col);
-            String units = atts.getString("units");
-            boolean isTimeStamp = units != null && 
-                (units.equals(EDV.TIME_UNITS) || 
-                 units.equals(EDV.TIME_UCUM_UNITS));
+                //write each col as a wave separately, so data type is preserved
+                HashSet colNamesHashset = new HashSet();
+                int nCols = twawm.nColumns();
+                for (int col = 0; col < nCols; col++) {
+                    Attributes atts = twawm.columnAttributes(col);
+                    String units = atts.getString("units");
+                    boolean isTimeStamp = units != null && 
+                        (units.equals(EDV.TIME_UNITS) || 
+                         units.equals(EDV.TIME_UCUM_UNITS));
 
-            PrimitiveArray pa = twawm.column(col);
-            pa.convertToStandardMissingValues(
-                atts.getDouble("_FillValue"), 
-                atts.getDouble("missing_value"));
+                    PrimitiveArray pa = twawm.column(col);
+                    pa.convertToStandardMissingValues(
+                        atts.getDouble("_FillValue"), 
+                        atts.getDouble("missing_value"));
 
-            Table.writeIgorWave(writer, 
-                Table.makeUniqueIgorColumnName(twawm.columnName(col), 
-                    colNamesHashset),  
-                "", pa, units, isTimeStamp, "");
+                    Table.writeIgorWave(writer, 
+                        Table.makeUniqueIgorColumnName(twawm.columnName(col), 
+                            colNamesHashset),  
+                        "", pa, units, isTimeStamp, "");
+                }
+
+                //done!
+                writer.flush(); //essential
+            } finally {
+                writer.close();
+            }
+        } finally {
+            twawm.releaseResources();
         }
-
-        //done!
-        writer.flush(); //essential
-        writer.close();
-        twawm.releaseResources();
 
         if (reallyVerbose) String2.log("  EDDTable.saveAsIgor done. TIME=" + 
             (System.currentTimeMillis() - time) + "ms\n");
@@ -5968,8 +6102,8 @@ public abstract class EDDTable extends EDD {
         table.convertToStandardMissingValues();
 
         //open an OutputStream   
-        OutputStreamWriter writer = new OutputStreamWriter(outputStreamSource.outputStream(
-            String2.ISO_8859_1)); //ODV User's Guide 16.3 says ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStreamSource.outputStream(
+            String2.ISO_8859_1))); //ODV User's Guide 16.3 says ASCII (7bit), so might as well go for compatible common 8bit
 
         //write header
         //ODV says linebreaks can be \n or \r\n (see 2010-06-15 notes)
@@ -6289,9 +6423,9 @@ public abstract class EDDTable extends EDD {
         double tMin = twawm.columnMinValue(timeCol); 
         double tMax = twawm.columnMaxValue(timeCol);
         if (verbose) String2.log("  found time min=" + tMin + "=" +
-            (Double.isNaN(tMin)? "" : Calendar2.epochSecondsToIsoStringT(tMin)) + 
+            (Double.isNaN(tMin)? "" : Calendar2.epochSecondsToIsoStringTZ(tMin)) + 
             " max=" + tMax + "=" +
-            (Double.isNaN(tMax)? "" : Calendar2.epochSecondsToIsoStringT(tMax)));
+            (Double.isNaN(tMax)? "" : Calendar2.epochSecondsToIsoStringTZ(tMax)));
         dataVariables[timeIndex].setDestinationMinMax(tMin, tMax); //scaleFactor,addOffset not supported
         dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
     }
@@ -6408,6 +6542,7 @@ public abstract class EDDTable extends EDD {
         String sliderUserValuesCsvs[] = new String[nDv];
         int sliderInitFromPositions[] = new int[nDv];
         int sliderInitToPositions[] = new int[nDv];
+        Table tMinMaxTable = minMaxTable;
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = dataVariables[dv];
             double tMin = edv.destinationMin();
@@ -6551,8 +6686,8 @@ public abstract class EDDTable extends EDD {
 
                 //+- buttons
                 writer.write(
-                    "  <td class=\"B\">" +
-                    "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\"" +
+                    "  <td class=\"B\">" + //vertical-align: 'b'ottom
+                    "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\"" + //vertical-align: 'b'ottom
                     "  " + widgets.completeTooltip(EDStatic.selectPrevious) +
                         " alt=\"-\"\n" + 
                     //onMouseUp works much better than onClick and onDblClick
@@ -6565,8 +6700,8 @@ public abstract class EDDTable extends EDD {
                            "dis.options[dis.selectedIndex].text;\n" +
                     "    }\" >\n" + 
                     "  </td>\n" +
-                    "  <td class=\"B\">" +
-                    "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\"" +
+                    "  <td class=\"B\">" + //vertical-align: 'b'ottom
+                    "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\"" + //vertical-align: 'b'ottom
                     "  " + widgets.completeTooltip(EDStatic.selectNext) +
                         " alt=\"+\"\n" + 
                     //onMouseUp works much better than onClick and onDblClick
@@ -6591,13 +6726,25 @@ public abstract class EDDTable extends EDD {
                 //show min and max
                 String mins = edv.destinationMinString();
                 String maxs = edv.destinationMaxString();
+                if (tMinMaxTable != null && tMinMaxTable.nRows() >= 2 && 
+                    edv.destinationDataTypeClass() == String.class) {
+                    //Time variables are numeric,
+                    //and Strings vars never have scale_factor or add_offset, 
+                    //so String var sourceValue=destinationValue.
+                    mins = tMinMaxTable.getStringData(dv, 0);
+                    maxs = tMinMaxTable.getStringData(dv, 1);
+                    if (mins == null) mins = "";
+                    if (maxs == null) maxs = "";
+                    if (mins.length() > 18) mins = mins.substring(0, 16) + "...";
+                    if (maxs.length() > 18) maxs = mins.substring(0, 16) + "...";
+                    //web page is UTF-8, so it/browser will deal with all characters
+                    mins = String2.toJson(mins, 65536, true); //encodeNewline
+                    maxs = String2.toJson(maxs, 65536, true); //encodeNewline
+                }
                 writer.write(
                     "  <td>" + gap + mins + "</td>\n" +
                     "  <td>" + gap + maxs + "</td>\n");
 
-//            } else {
-//                //empty cell
-//                writer.write("  <td></td>\n");
             }
 
             //end of row
@@ -6648,8 +6795,8 @@ public abstract class EDDTable extends EDD {
 
         //functions
         String queryParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
-        int nOrderByDropdown = 5;
-        writeFunctionHtml(loggedInAs, queryParts, writer, widgets, formName, nOrderByDropdown);
+        int nOrderByComboBox = 5;
+        writeFunctionHtml(loggedInAs, queryParts, writer, widgets, formName, nOrderByComboBox);
 
         //fileType
         writer.write("<p><strong>" + EDStatic.EDDFileType + "</strong>\n" + 
@@ -6675,7 +6822,7 @@ public abstract class EDDTable extends EDD {
             "    tVal = eval(\"d." + formName + ".val\" + dv + \"_1\");\n" +
             "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.options[tOp.selectedIndex].value + percentEncode(tVal.value);\n" +
             "  }\n" +
-            functionJavaScript(formName, nOrderByDropdown) +
+            functionJavaScript(formName, nOrderByComboBox) +
             "  var ft = d." + formName + ".fileType.options[d." + formName + ".fileType.selectedIndex].text;\n" +
             "  result = \"" + tErddapUrl + "/tabledap/" + datasetID + 
               "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\" + percentEncode(rv.toString()) + q2;\n" + //if all is well, make result
@@ -6729,10 +6876,11 @@ public abstract class EDDTable extends EDD {
     /** 
      * This writes the Function options for the Make A Graph and Data Access Form web pages. 
      *
-     * @param nOrderByDropdown The number of variable list dropdowns must be 4 or 5.
+     * @param nOrderByComboBox The number of variable list comboBoxes must be 4 or 5.
+     * @param narrow if false, it will be standard
      */
     void writeFunctionHtml(String loggedInAs, String[] queryParts, Writer writer, 
-        HtmlWidgets widgets, String formName, int nOrderByDropdown) throws Throwable {
+        HtmlWidgets widgets, String formName, int nOrderByComboBox) throws Throwable {
 
         writer.write("\n&nbsp;\n"); //necessary for the blank line before the table (not <p>)
         writer.write(widgets.beginTable("class=\"compact W\"")); //not nowrap
@@ -6757,7 +6905,7 @@ public abstract class EDDTable extends EDD {
         StringArray dvNames0 = new StringArray(dataVariableDestinationNames);
         dvNames0.atInsert(0, "");
         String dvList0[] = dvNames0.toArray();
-        String important[]= nOrderByDropdown == 4?
+        String important[]= nOrderByComboBox == 4?
             //"most", "second most", "third most", ["fourth most",] "least"};
             new String[]{EDStatic.functionOrderBySort1, 
                          EDStatic.functionOrderBySort2, 
@@ -6782,57 +6930,26 @@ public abstract class EDDTable extends EDD {
                 }
             }
         }        
-        //String2.log("obPart=" + obPart); //orderBy("time")
-        String orderBy[] = String2.isSomething(obPart)?
-            String2.split(obPart.substring(orderByOptions[whichOb].length() + 2, obPart.length() - 2), ',') :
-            new String[0];
-        String orderByExtra = "";
-        if (whichOb > 0 && 
-            ((orderByOptions[whichOb].equals("orderByClosest") && orderBy.length >= 2) ||
-             (orderByOptions[whichOb].equals("orderByLimit")   && orderBy.length >= 1)))  {
-            //make the last csv value into the orderByExtra
-            int obl = orderBy.length;
-            orderByExtra = orderBy[obl - 1];
-            String tOrderBy[] = new String[obl - 1];
-            System.arraycopy(orderBy, 0, tOrderBy, 0, obl - 1);
-            orderBy = tOrderBy;
-        }
+        //String2.log("obPart=" + obPart); //orderBy("station,time/1day")
+        StringArray obsa = whichOb > 0?
+            StringArray.fromCSV(obPart.substring(orderByOptions[whichOb].length() + 2, obPart.length() - 2)) : //the part inside the ""
+            new StringArray();
+        obsa.trimAll();
+        obsa.removeIfNothing();
+
         writer.write("\n<tr><td>"); //not nowrap.  allow wrapping if varNames are long
-        String divComboStyle =   "<div style='position:relative;float: left;width:180px;height:21px;border:0;padding:0;margin:0;'>";
-        String divNoComboStyle = "<div style='position:relative;float: left;width:160px;height:21px;border:0;padding:0;margin:0;'>";
-        String textstyle = "style='position:absolute;top:0px;left:0px;width:160px;height:19px;border:1px solid #A9A9A9'";
-        String selectstyle = "style='position:absolute;top:0px;left:0px;width:180px; height:21px;line-height:20px;margin:0;padding:0;'";
-        writer.write(divComboStyle);
-        writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, 
-            selectstyle + " onChange='" + //orderByExtraDefaults won't conflict with ' 
-              " var ov=" + String2.toJsonArray(orderByExtraDefaults) + ";" +
-              " if (this.selectedIndex>=0) document." + formName + ".orderByExtra.value=ov[this.selectedIndex];" +
-              "'"));
-        writer.write("</div>");
-        writer.write("<span style='float: left;'>");       
+        writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, ""));
         writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByTooltip));
         writer.write("(\"");
-        writer.write("</span>");
-		for (int ob = 0; ob < nOrderByDropdown; ob++) {
-            writer.write(divComboStyle);
+        for (int ob = 0; ob < nOrderByComboBox; ob++) {
             //if (ob > 0) writer.write(",\n"); 
             String tooltip =  MessageFormat.format(EDStatic.functionOrderBySort, important[ob]);
-            writer.write(widgets.select("orderByDropdown" + ob,                 
-               tooltip, // was + \n
-                1, dvList0, 
-                Math.max(0, dvNames0.indexOf(ob < orderBy.length? orderBy[ob] : "")),
-                selectstyle
-                + " onchange=\"this.parentNode.querySelector('input').value=this.options[this.selectedIndex].text;this.selectedIndex=0;\""));
-            writer.write(widgets.textField("orderBy" + ob, tooltip, 20, 40, "", textstyle));
-            writer.write("</div>");
+            writer.write(widgets.comboBox(formName, "orderByComboBox" + ob,
+                tooltip, 18, 120, ob < obsa.size()? obsa.get(ob) : "",
+                dvList0, ""));
             writer.write("<wbr>");
         }
-        writer.write("\n"); //gap to distinguish orderByExtra
-        writer.write(divNoComboStyle);
-        writer.write(widgets.textField("orderByExtra", 
-            EDStatic.functionOrderByExtra, 8, 25, orderByExtra, textstyle));
-        writer.write("</div>");
-        writer.write("<span style='float: left;'>\")</span>");       
+        writer.write("\")");
         writer.write("</td></tr>\n");
 
         writer.write(widgets.endTable());
@@ -6843,7 +6960,7 @@ public abstract class EDDTable extends EDD {
      * rv holds the list of results variables.
      * q2 holds the &amp; queries.
      */
-    String functionJavaScript(String formName, int nOrderByDropdown) throws Throwable {
+    String functionJavaScript(String formName, int nOrderByComboBox) throws Throwable {
 
         return
             "\n" +
@@ -6854,30 +6971,17 @@ public abstract class EDDTable extends EDD {
             "    if (ObOS.selectedIndex > 0) {\n" +  //0 is ""
             "      var ObO = ObOS.options[ObOS.selectedIndex].text;\n" +
             "      var tq2 = \"\\x26\" + ObO + \"(%22\";\n" +  // &orderBy...("
-            "      for (var ob = 0; ob < " + nOrderByDropdown + "; ob++) {\n" +
-            "        var tOb = eval(\"d." + formName + ".orderBy\" + ob);\n" +
-			"        var obVar = tOb.value;\n" +
-            "        if (obVar != \"\") {\n" +             
-            "          tq2 += (nActiveOb++ == 0? \"\" : \"%2C\") + obVar;\n" +  // ,obVar
-            "          obVarNoInterval = obVar.split(\"/\")[0].trim();\n" +  // ,obVar
-            "          if (rv.indexOf(obVarNoInterval) < 0) rv.push(obVarNoInterval);\n" +
+            "      for (var ob = 0; ob < " + nOrderByComboBox + "; ob++) {\n" +
+            "        var tOb = eval(\"d." + formName + ".orderByComboBox\" + ob);\n" +
+            "        var obVal = tOb.value.trim();\n" +
+            "        if (obVal != \"\") {\n" +             
+            "          tq2 += (nActiveOb++ == 0? \"\" : \"%2C\") + obVal;\n" +  // obVal
+            "          var obVar = obVal.split(\"/\")[0].trim();\n" +  // obVar  (no interval)
+            //             last item in orderByLimit is just a number  '0'=48 '9'=57. If number, don't include in list of vars.
+            "          if (obVar.length > 0 && (obVar.charCodeAt(0) < 48 || obVar.charCodeAt(0) > 57) && rv.indexOf(obVar) < 0) rv.push(obVar);\n" + //make sure var is in list of results variables
             "        }\n" +
             "      }\n" +  
-            //valid?
-            //orderByClosest, orderByLimit require obev but can have nActiveOb=0
-            "      var obev = d." + formName + ".orderByExtra.value;\n" +
-            "      if (ObO == \"orderByClosest\") {\n" + 
-            "        if (nActiveOb > 0 && obev.length > 0)\n" +
-            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
-            "      } else if (ObO == \"orderByLimit\") {\n" + 
-            "        if (obev.length > 0)\n" +
-            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
-            "      }  else if (ObO == \"orderByMean\") {\n" +
-            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
-            //orderByCount can have nActiveOb = 0, all others require nActiveOb > 0
-            "      } else if (ObO == \"orderByCount\" || nActiveOb > 0) {\n" +
-            "        q2 += tq2 + \"%22)\";\n" +  //  ")
-            "      }\n" +
+            "      q2 += tq2 + \"%22)\";\n" +  //  ")
             "    }\n" +
             "\n";
     }
@@ -6931,7 +7035,8 @@ public abstract class EDDTable extends EDD {
         String daysAgo7 = Calendar2.formatAsISODate(daysAgo7Gc); 
 
         writer.write(  
-            "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\">Using tabledap to Request Data and Graphs from Tabular Datasets</a></h2>\n" +
+            "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\"\n" +
+            "      >Using tabledap to Request Data and Graphs from Tabular Datasets</a></h2>\n" +
             longDapDescription(tErddapUrl) +
             "<p><strong>Tabledap request URLs must be in the form</strong>\n" +
             "<br><kbd>" + dapBase + 
@@ -6941,7 +7046,8 @@ public abstract class EDDTable extends EDD {
             "<br>For example,\n" +
             "<br><a href=\"" + fullTimeExampleHA + "\"><kbd>" + 
                                fullTimeExampleHE + "</kbd></a>\n" +
-            "<br>Thus, the query is often a comma-separated list of desired variable names, followed by a collection of\n" +
+            "<br>Thus, the query is often a comma-separated list of desired variable names,\n" +
+            "   followed by a collection of\n" +
             "  constraints (e.g., <kbd><i>variable</i>&lt;<i>value</i></kbd>),\n" +
             "  each preceded by '&amp;' (which is interpreted as \"AND\").\n" +
             "\n");
@@ -6963,8 +7069,9 @@ public abstract class EDDTable extends EDD {
             "  <br>&nbsp;\n" +
 
             //datasetID
-            "<li><a class=\"selfLink\" id=\"datasetID\" href=\"#datasetID\" rel=\"bookmark\"><strong>datasetID</strong></a> identifies the name that ERDDAP\n" +
-            "  assigned to the source web site and dataset\n" +
+            "<li><a class=\"selfLink\" id=\"datasetID\" href=\"#datasetID\" rel=\"bookmark\"><strong>datasetID</strong></a>\n" +
+            "      identifies the name that ERDDAP\n" +
+            "  assigned to the source website and dataset\n" +
             "  (for example, <kbd>" + EDStatic.EDDTableIdExample + "</kbd>). You can see a list of\n" +
             "    <a rel=\"bookmark\" href=\"" + 
                 EDStatic.phEncode(tErddapUrl + "/" + dapProtocol) + 
@@ -6972,7 +7079,8 @@ public abstract class EDDTable extends EDD {
             "  <br>&nbsp;\n" +
 
             //fileType
-            "<li><a class=\"selfLink\" id=\"fileType\" href=\"#fileType\" rel=\"bookmark\"><strong>fileType</strong></a> specifies the type of table data file that you " +
+            "<li><a class=\"selfLink\" id=\"fileType\" href=\"#fileType\" rel=\"bookmark\"><strong>fileType</strong></a>\n" +
+            "       specifies the type of table data file that you " +
             "  want to download (for example, <kbd>.htmlTable</kbd>).\n" +
             "  The actual extension of the resulting file may be slightly different than the fileType (for example,\n" +
             "  <kbd>.htmlTable</kbd> returns an .html file).\n" +
@@ -7016,9 +7124,10 @@ public abstract class EDDTable extends EDD {
             //ArcGIS
             "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/index.html\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "  <a rel=\"help\" href=\"https://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">.esriCsv" +
+            "  <a rel=\"help\" href=\"https://desktop.arcgis.com/en/arcmap/latest/manage-data/tables/adding-an-ascii-or-text-file-table.htm\">.esriCsv" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "  - <a class=\"selfLink\" id=\"ArcGIS\" href=\"#ArcGIS\" rel=\"bookmark\">ArcGIS</a> is a family of Geographical Information Systems (GIS) products from ESRI:\n" +
+            "  - <a class=\"selfLink\" id=\"ArcGIS\" href=\"#ArcGIS\" rel=\"bookmark\">ArcGIS</a>\n" +
+            "      is a family of Geographical Information Systems (GIS) products from ESRI:\n" +
             "  ArcView, ArcEditor, and ArcInfo.  To get data from ERDDAP into your ArcGIS program (version 9.x and below):\n" +
             "  <ol>\n" +
             "  <li>In ERDDAP, save some data (which must include longitude and latitude) in an .esriCsv file\n" +
@@ -7027,8 +7136,8 @@ public abstract class EDDTable extends EDD {
             "    <ul>\n" +
             "    <li> Column names have been changed to be 10 characters or less\n" +
             "     (sometimes with A, B, C, ... at the end to make them unique).\n" +
-            "    <li> <kbd>longitude</kbd> is renamed <kbd>X</kbd>. <kbd>latitude</kbd> is renamed <kbd>Y</kbd> to make them the default\n" +
-            "     coordinate fields.\n" +
+            "    <li> <kbd>longitude</kbd> is renamed <kbd>X</kbd>. <kbd>latitude</kbd> is renamed\n" +
+            "      <kbd>Y</kbd> to make them the default coordinate fields.\n" +
             "    <li> Missing numeric values are written as -9999.\n" +
             "    <li> Double quotes in strings are double quoted.\n" +
             "    <li> Timestamp columns are separated into date (ISO 8601) and time (am/pm) columns.\n" +
@@ -7045,13 +7154,15 @@ public abstract class EDDTable extends EDD {
             "  </ol>\n" +
             "  The points will be drawn as an Event theme in ArcMap.\n" +
             "  (These instructions are a modified version of\n" +
-            "    <a rel=\"help\" href=\"https://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">ESRI's instructions" +
+            "    <a rel=\"help\" href=\"https://desktop.arcgis.com/en/arcmap/latest/manage-data/tables/adding-an-ascii-or-text-file-table.htm\"\n" +
+            "      >ESRI's instructions" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.)\n" +
             "\n" +
             //Ferret
-            "  <p><strong><a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://ferret.pmel.noaa.gov/Ferret/\">Ferret" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong> \n" +
-            "    <a class=\"selfLink\" id=\"Ferret\" href=\"#Ferret\" rel=\"bookmark\">is</a> a free program for visualizing and analyzing large and complex\n" +
+            "    <a class=\"selfLink\" id=\"Ferret\" href=\"#Ferret\" rel=\"bookmark\">is</a>\n" +
+            "    a free program for visualizing and analyzing large and complex\n" +
             "  <strong>gridded</strong> datasets.  Because tabledap's <strong>tabular</strong> datasets are very different\n" +
             "  from gridded datasets, it is necessary to use Ferret in a very specific way to\n" +
             "  avoid serious problems and misunderstandings:<ol>\n" +
@@ -7068,19 +7179,21 @@ public abstract class EDDTable extends EDD {
             "  to make them all unique! So treat these time values accordingly.\n" +
             "\n" +
             //IDL
-            "  <p><strong><a rel=\"bookmark\" href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://www.harrisgeospatial.com/Software-Technology/IDL/\">IDL" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong> - \n" +
-            "    <a class=\"selfLink\" id=\"IDL\" href=\"#IDL\" rel=\"bookmark\">IDL</a> is a commercial scientific data visualization program. To get data from\n" +
+            "    <a class=\"selfLink\" id=\"IDL\" href=\"#IDL\" rel=\"bookmark\">IDL</a>\n" +
+            "    is a commercial scientific data visualization program. To get data from\n" +
             "  ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  Then, use these\n" +
-            "    <a rel=\"help\" href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions" +
+            "    <a rel=\"help\" href=\"https://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
             "\n" +
             //json
             "  <p><strong><a rel=\"help\" href=\"https://www.json.org/\">JSON .json" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "    <a class=\"selfLink\" id=\"json\" href=\"#json\" rel=\"bookmark\">files</a> are widely used to transfer data to JavaScript scripts running on web pages.\n" +
+            "    <a class=\"selfLink\" id=\"json\" href=\"#json\" rel=\"bookmark\">files</a>\n" +
+            "    are widely used to transfer data to JavaScript scripts running on web pages.\n" +
             "  All .json responses from ERDDAP (metadata, gridded data, and tabular/in-situ data) use the\n" +
             "  same basic format: a database-like table.  Since data from EDDTable datasets is already a table\n" +
             "  (with a column for each requested variable), ERDDAP can easily store the data in a .json file.\n" +
@@ -7104,7 +7217,8 @@ public abstract class EDDTable extends EDD {
             "      All .json responses from ERDDAP have\n" +
             "      <ul>\n" +
             "      <li>a <kbd>table</kbd> object (with name=value pairs).\n" +
-            "      <li>a <kbd>columnNames, columnTypes,</kbd> and <kbd>columnUnits</kbd> array, with a value for each column.\n" +
+            "      <li>a <kbd>columnNames, columnTypes,</kbd> and <kbd>columnUnits</kbd> array,\n" +
+            "        with a value for each column.\n" +
             "      <li>a <kbd>rows</kbd> array of arrays with the rows and columns of data.\n" +
             "      <li><kbd>null</kbd>'s for missing values.\n" +
             "      </ul>\n" +
@@ -7118,10 +7232,13 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
             "    <a rel=\"help\" href=\"http://wiki.geojson.org/Main_Page\">.geoJson" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)</strong> -\n" +
-            "  <a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\">Jsonp</a> is an easy way for a JavaScript script on a web\n" +
+            "  <a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\">Jsonp</a>\n" +
+            "       is an easy way for a JavaScript script on a web\n" +
             "  page to import and access data from ERDDAP.  Requests for .geoJson, .json, and .ncoJson files may\n" +
-            "  include an optional jsonp request by adding <kbd>&amp;.jsonp=<i>functionName</i></kbd> to the end of the query.\n" +
-            "  Basically, this just tells ERDDAP to add <kbd><i>functionName</i>(</kbd> to the beginning of the response\n" +
+            "  include an optional jsonp request by adding <kbd>&amp;.jsonp=<i>functionName</i></kbd>\n" +
+            "  to the end of the query.\n" +
+            "  Basically, this just tells ERDDAP to add <kbd><i>functionName</i>(</kbd>\n" +
+            "  to the beginning of the response\n" +
             "  and <kbd>\")\"</kbd> to the end of the response.\n" +
             "  The functionName must be a series of 1 or more (period-separated) words.\n" +
             "  For each word, the first character of <i>functionName</i> must be an ISO 8859 letter or \"_\".\n" +
@@ -7130,16 +7247,18 @@ public abstract class EDDTable extends EDD {
             "  After the data download to the web page has finished, the data is accessible to the JavaScript\n" +
             "  script via that JavaScript function.\n" +
             "  Here is \n" +
-            "  <a rel=\"bookmark\" href=\"http://jsfiddle.net/jpatterson/mo7cbfz8/\">an example using jsonp with ERDDAP and jQuery" +
+            "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/mo7cbfz8/\"\n" +
+            "      >an example using jsonp with ERDDAP and jQuery" +
                     EDStatic.externalLinkHtml(tErddapUrl) + 
-                "</a> (thanks to Jenn Sevadjian, n&eacute;e Patterson, of CenCOOS/now PolarWatch).\n" +
+                "</a> (thanks to Jenn Patterson Sevadjian, of CenCOOS/now PolarWatch).\n" +
             "\n" +
             //matlab
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.mathworks.com/products/matlab/\">MATLAB" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "     <a rel=\"help\" href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat" +
+            "     <a rel=\"help\" href=\"https://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf\">.mat" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "   - <a class=\"selfLink\" id=\"matlab\" href=\"#matlab\" rel=\"bookmark\">Matlab</a> users can use tabledap's .mat file type to download data from within\n" +
+            "   - <a class=\"selfLink\" id=\"matlab\" href=\"#matlab\" rel=\"bookmark\">Matlab</a>\n" +
+            "      users can use tabledap's .mat file type to download data from within\n" +
             "  MATLAB.  Here is a one line example:<pre>\n" +
                  "load(urlwrite('" + fullTimeMatExampleHE + "', 'test.mat'));</pre>\n" +
             "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n" +
@@ -7169,7 +7288,8 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "     - <a class=\"selfLink\" id=\"nc\" href=\"#nc\" rel=\"bookmark\">Requests</a> for .nc files will always return the data in a table-like, NetCDF-3,\n" +
+            "     - <a class=\"selfLink\" id=\"nc\" href=\"#nc\" rel=\"bookmark\">Requests</a>\n" +
+            "      for .nc files will always return the data in a table-like, NetCDF-3,\n" +
             "  32-bit, .nc file:\n" +
             "  <ul>\n" +
             "  <li>All variables will use the file's \"row\" dimension.\n" +
@@ -7197,7 +7317,8 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc4" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "     - <a class=\"selfLink\" id=\"nc4\" href=\"#nc4\" rel=\"bookmark\">Requests</a> for .nc4 files will always return the data in a table-like, NetCDF-4,\n" +
+            "     - <a class=\"selfLink\" id=\"nc4\" href=\"#nc4\" rel=\"bookmark\">Requests</a>\n" +
+            "       for .nc4 files will always return the data in a table-like, NetCDF-4,\n" +
             "  64-bit, .nc file:\n" +
             "  <ul>\n" +
             "  <li>All variables will use the file's \"row\" dimension.\n" +
@@ -7211,9 +7332,11 @@ public abstract class EDDTable extends EDD {
             "\n" +
             //ncHeader
             "  <p><strong>.ncHeader</strong> and <strong>.nc4Header</strong>\n" +
-            "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a> for .ncHeader and .nc4Header files will return the header information (text)\n" +
+            "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a>\n" +
+            "      for .ncHeader and .nc4Header files will return the header information (text)\n" +
             "  that would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
+            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\"\n" +
+            "      >ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding NetCDF-3 or NetCDF-4 .nc file.\n" +
             "\n" +
@@ -7227,7 +7350,8 @@ public abstract class EDDTable extends EDD {
             "  as defined in the\n" +
             "    <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html\">CF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\">Discrete Geometries" +
+            "    <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\"\n" +
+            "      >Discrete Geometries" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> conventions\n" +
             "  (which were previously named \"CF Point Observation Conventions\").\n" +
             "  <ul>\n" +
@@ -7246,7 +7370,8 @@ public abstract class EDDTable extends EDD {
             "\n" +  
             //ncCFHeader
             "  <p><strong>.ncCFHeader</strong>\n" +
-            "    - <a class=\"selfLink\" id=\"ncCFHeader\" href=\"#ncCFHeader\" rel=\"bookmark\">Requests</a> for .ncCFHeader files will return the header information (text) that\n" +
+            "    - <a class=\"selfLink\" id=\"ncCFHeader\" href=\"#ncCFHeader\" rel=\"bookmark\">Requests</a>\n" +
+            "      for .ncCFHeader files will return the header information (text) that\n" +
             "  would be generated if you used\n" +
             "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
@@ -7254,14 +7379,15 @@ public abstract class EDDTable extends EDD {
             "\n" +
             //ncCFMA
             "  <p><a class=\"selfLink\" id=\"ncCFMA\" href=\"#ncCFMA\" rel=\"bookmark\"><strong>.ncCFMA</strong></a>\n" +
-            "     - Requests for a .ncCFMA file will return a verion 3, 32-bit,\n" +
+            "     - Requests for a .ncCFMA file will return a version 3, 32-bit,\n" +
             "    <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> file\n" +
             "   with the Complete or Incomplete, depending on the data, Multidimensional Array Representation\n" +
             "   associated with the dataset's cdm_data_type, as defined in the\n" +
             "     <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html\">CF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "     <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\">Discrete Sampling Geometries" +
+            "     <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\"\n" +
+            "      >Discrete Sampling Geometries" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "   conventions, which were previously named \"CF Point Observation Conventions\".\n" +
             "   This is the file type used by the <a rel=\"help\" href=\"https://www.nodc.noaa.gov/data/formats/netcdf/\">NODC Templates" +
@@ -7273,14 +7399,16 @@ public abstract class EDDTable extends EDD {
             "\n" +  
             //ncCFMAHeader
             "  <p><strong>.ncCFMAHeader</strong>\n" +
-            "    - <a class=\"selfLink\" id=\"ncCFMAHeader\" href=\"#ncCFMAHeader\" rel=\"bookmark\">Requests</a> for .ncCFMAHeader files will return the header information (text) that\n" +
+            "    - <a class=\"selfLink\" id=\"ncCFMAHeader\" href=\"#ncCFMAHeader\" rel=\"bookmark\">Requests</a>\n" +
+            "      for .ncCFMAHeader files will return the header information (text) that\n" +
             "  would be generated if you used\n" +
             "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding .ncCFMA file.\n" +
             "\n" +
             //netcdfjava
-            "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, and NetCDF-Perl" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\"\n" +
+            "      >NetCDF-Java, NetCDF-C, NetCDF-Fortran, and NetCDF-Perl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
             "  <a class=\"selfLink\" id=\"netcdfjava\" href=\"#netcdfjava\" rel=\"bookmark\">-</a>\n" +
             "  Don't try to access an ERDDAP tabledap dataset URL directly with a NetCDF library or tool\n" +
@@ -7296,7 +7424,8 @@ public abstract class EDDTable extends EDD {
             "    <ol>\n" +
             "    <li>Use the ERDDAP web pages or a program like\n" +
             "      <a rel=\"help\" href=\"#curl\">curl</a> to download a .nc file with a subset of the dataset.\n" +
-            "    <li>Open that local .nc file (which has the data in a grid format) with one of the NetCDF libraries or tools.\n" +
+            "    <li>Open that local .nc file (which has the data in a grid format)\n" +
+            "      with one of the NetCDF libraries or tools.\n" +
             "      With NetCDF-Java for example, use:\n" +
             "      <br><kbd>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");</kbd>\n" +
             "      <br>or\n" +
@@ -7329,22 +7458,24 @@ public abstract class EDDTable extends EDD {
             "  </ol>\n" +
             "\n" +
             //opendapLibraries
-            "  <p><strong><a class=\"selfLink\" id=\"opendapLibraries\" href=\"#opendapLibraries\" rel=\"bookmark\">OPeNDAP Libraries</a></strong> - Although ERDDAP is an\n" +
+            "  <p><strong><a class=\"selfLink\" id=\"opendapLibraries\" href=\"#opendapLibraries\" rel=\"bookmark\"\n" +
+            "      >OPeNDAP Libraries</a></strong> - Although ERDDAP is an\n" +
             "    <a rel=\"bookmark\" href=\"https://www.opendap.org/\">OPeNDAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>-compatible data server,\n" +
             "    you can't use\n" +
             "  most OPeNDAP client libraries, including\n" +
-            "  <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl" +
+            "  <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\"\n" +
+            "      >NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  or\n" +
-            "  <a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret" +
+            "  <a rel=\"bookmark\" href=\"https://ferret.pmel.noaa.gov/Ferret/\">Ferret" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  to get data directly from an ERDDAP tabledap dataset because those libraries don't\n" +
             "  support the OPeNDAP Selection constraints that tabledap datasets use for requesting\n" +
             "  subsets of the dataset, nor do they support the sequence data structure in the response.\n" +
             "  (But see this <a href=\"#netcdfjava\">other approach</a> that works with NetCDF libraries.)\n" + 
             "  But you can use the <a href=\"#PydapClient\">Pydap Client</a> or\n" +
-            "  <a rel=\"bookmark\" href=\"https://www.opendap.org/java-DAP\">Java-DAP2" +
+            "  <a rel=\"bookmark\" href=\"https://www.opendap.org/deprecated-software/java-dap\">Java-DAP2" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  because they both support Selection\n" +
             "  constraints.  With both the Pydap Client and Java-DAP2, when creating the initial\n" +
@@ -7359,37 +7490,42 @@ public abstract class EDDTable extends EDD {
             "  subset of a variable's data via a Selection-constraint.\n" +
             "\n" +
             //Pydap Client
-            "  <p><strong><a rel=\"bookmark\" href=\"http://pydap.org/en/latest/client.html\">Pydap Client" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://www.pydap.org/en/latest/client.html\">Pydap Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
             "    <a class=\"selfLink\" id=\"PydapClient\" href=\"#PydapClient\" rel=\"bookmark\">users</a>\n" +
             "    can access tabledap datasets via ERDDAP's standard OPeNDAP services.\n" +
             "  See the\n" + 
-            "    <a rel=\"help\" href=\"http://pydap.org/en/latest/client.html#accessing-sequential-data/\">Pydap Client instructions for accessing sequential data" +
+            "    <a rel=\"help\" href=\"https://www.pydap.org/en/latest/client.html#accessing-sequential-data\"\n" +
+            "      >Pydap Client instructions for accessing sequential data" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-            "  Note that the name of a dataset in tabledap will always be a single word, e.g., " + EDStatic.EDDTableIdExample + "\n" +
+            "  Note that the name of a dataset in tabledap will always be a single word, e.g.,\n" +
+                EDStatic.EDDTableIdExample + "\n" +
             "  in the OPeNDAP dataset URL\n" +
             "  <br><kbd>" + datasetBase + "</kbd>\n" +
             "  and won't ever have a file extension (unlike, for example, .cdp for the sample dataset in the\n" +
-            "  Pydap instructions).  Also, the name of the sequence in tabledap datasets will always be \"" + SEQUENCE_NAME + "\"\n" +
+            "  Pydap instructions).  Also, the name of the sequence in tabledap datasets\n" +
+            "  will always be \"" + SEQUENCE_NAME + "\"\n" +
             "  (unlike \"location\" for the sample dataset in the Pydap instructions).\n" +
             "\n" +
             //Python
-            "  <p><strong><a rel=\"bookmark\" href=\"http://python.org\">Python" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://www.python.org\">Python" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
-            "    <a class=\"selfLink\" id=\"Python\" href=\"#Python\" rel=\"bookmark\">is</a> a widely-used computer language that is very popular among scientists.\n" +
-            "    In addition to the <a rel=\"help\" href=\"#PydapClient\">Pydap Client</a>, you can use Python to download various files from ERDDAP\n" +
+            "    <a class=\"selfLink\" id=\"Python\" href=\"#Python\" rel=\"bookmark\">is</a>\n" +
+            "    a widely-used computer language that is very popular among scientists.\n" +
+            "    In addition to the <a rel=\"help\" href=\"#PydapClient\">Pydap Client</a>,\n" +
+            "    you can use Python to download various files from ERDDAP\n" +
             "    as you would download other files from the web:\n" +
             "<pre>import urllib\n" +
-            "urllib.urlretrieve(\"http://<i>baseurl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\", \"<i>outputFileName</i>\")</pre>\n" +
+            "urllib.urlretrieve(\"<i>https://baseUrl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\", \"<i>outputFileName</i>\")</pre>\n" +
             "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n" +
             "  <br>Or download the content to an object instead of a file:\n" +
             "<pre>import urllib2\n" +
-            "response = urllib2.open(\"http://<i>baseurl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\")\n" +
+            "response = urllib2.open(\"<i>https://baseUrl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\")\n" +
             "theContent = response.read()</pre>\n" +
             "  There are other ways to do this in Python. Search the web for more information.\n"+
             "\n" +
             //erddapy
-            "  <p><a rel=\"bookmark\" href=\"https://pyoceans.github.io/erddapy/\">erddapy" +
+            "  <p><a rel=\"bookmark\" href=\"https://github.com/ioos/erddapy#--erddapy\">erddapy" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python)</a>\n" +
             "    is a Python library that \"takes advantage of ERDDAP's RESTful web services and creates the\n" +
@@ -7398,7 +7534,8 @@ public abstract class EDDTable extends EDD {
             //Python/Jupyter Notebook
             "  <p>\"<a rel=\"bookmark\" href=\"https://jupyter.org/\">Jupyter Notebook" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "      <a class=\"selfLink\" id=\"JupyterNotebook\" href=\"#JupyterNotebook\" rel=\"bookmark\">is</a> an open-source web application that\n" +
+            "      <a class=\"selfLink\" id=\"JupyterNotebook\" href=\"#JupyterNotebook\" rel=\"bookmark\">is</a>\n" +
+            "      an open-source web application that\n" +
             "      allows you to create and\n" +
             "    share documents that contain live code, equations, visualizations and explanatory text\"\n" +
             "    using any of over 40 programming languages, including Python and R.\n" +
@@ -7411,20 +7548,35 @@ public abstract class EDDTable extends EDD {
             "      >ERDDAP Timing" + EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "    Thanks to Rich Signell.\n" +
             //R
-            "  <p><strong><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package" +
+            "  <p><strong><a rel=\"bookmark\" href=\"https://www.r-project.org/\">R Statistical Package" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong> -\n" +
-            "    <a class=\"selfLink\" id=\"R\" href=\"#R\" rel=\"bookmark\">R</a> is an open source statistical package for many operating systems.\n" +
+            "    <a class=\"selfLink\" id=\"R\" href=\"#R\" rel=\"bookmark\">R</a>\n" +
+            "    is an open source statistical package for many operating systems.\n" +
             "  In R, you can download a .csv file from ERDDAP\n" +
             "    and then import data from that .csv file\n" +
             "  into an R structure (e.g., <kbd>test</kbd>).  For example:<pre>\n" +
             "  download.file(url=\"" + fullTimeCsvExampleHE + "\", destfile=\"/home/bsimons/test.csv\")\n" +
             "  test&lt;-read.csv(file=\"/home/bsimons/test.csv\")</pre>\n" +
             "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n" +
+            "  <p>There are third-party R packages designed to make it easier to work with ERDDAP from within R:\n" +
+            "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/rerddap/index.html\">rerddap" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
+            "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/rerddapXtracto/index.html\">rerddapXtracto" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>, and\n" +
+            "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/plotdap/index.html\">plotdap" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
+            "  Thanks to \n" +
+            "  <a rel=\"bookmark\" href=\"https://ropensci.org/\">rOpenSci<img \n" +
+            "    src=\"../images/external.png\" alt=\" (external link)\" \n" +
+            "    title=\"This link to an external website does not constitute an endorsement.\"></a>\n" +
+            "  and Roy Mendelssohn.\n" +
+            "\n" +
             "\n" +
             //.wav
             "  <p><strong><a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/WAV\">.wav" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong> -\n" +
-            "    <a class=\"selfLink\" id=\"wav\" href=\"#wav\" rel=\"bookmark\">ERDDAP can return data in .wav files,</a> which are uncompressed audio files.\n" +
+            "    <a class=\"selfLink\" id=\"wav\" href=\"#wav\" rel=\"bookmark\">ERDDAP can return data in .wav files,</a>\n" +
+            "    which are uncompressed audio files.\n" +
             "  <ul>\n" +
             "  <li>You can save any numeric data in .wav files, but this file format is clearly intended to be used\n" +
             "    with <a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/Pulse-code_modulation\">PCM" +
@@ -7434,7 +7586,7 @@ public abstract class EDDTable extends EDD {
             "    Currently, because of a bug in Java 8, ERDDAP can't save float or double data in .wav files. That should\n" +
             "    change when ERDDAP is run with Java 9.\n" +             
             "  <li>The data variable values are just written as a long sequence of numbers (the sound wave).\n" +
-            "    Unfortunately, ERDDAP must create the entire .wav file before it can be begin to send the file to\n" +
+            "    Unfortunately, ERDDAP must create the entire .wav file before it can begin to send the file to\n" +
             "    you, so there will be a delay from when you submit the request and when you start to get the file.\n" +
             "    There is no limit in ERDDAP to the number of numbers that may be written to a .wav file,\n" +
             "    but requests for very large files may lead to timeout error messages because of the long\n" +
@@ -7456,10 +7608,12 @@ public abstract class EDDTable extends EDD {
 
         //imageFile Types, graphs and maps
         writer.write(
-            "  <p><a class=\"selfLink\" id=\"imageFileTypes\" href=\"#imageFileTypes\" rel=\"bookmark\"><strong>Making an Image File with a Graph or Map of Tabular Data</strong></a>\n" +
+            "  <p><a class=\"selfLink\" id=\"imageFileTypes\" href=\"#imageFileTypes\" rel=\"bookmark\"\n" +
+            "    ><strong>Making an Image File with a Graph or Map of Tabular Data</strong></a>\n" +
             "    If a tabledap request URL specifies a subset of data which is suitable for making a graph or\n" +
             "    a map, and the fileType is an image fileType, tabledap will return an image with a graph or map. \n" +
-            "    tabledap request URLs can include optional <a rel=\"help\" href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
+            "    tabledap request URLs can include optional\n" +
+            "    <a rel=\"help\" href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
             "    customize the graph or map.\n" +
             "    As with other tabledap request URLs, you can create these URLs by hand or have a computer\n" +
             "    program do it. \n" +
@@ -7499,7 +7653,8 @@ public abstract class EDDTable extends EDD {
             "  an image of any size.\n" +
             "\n" +
         //transparentPng
-            "  <p><a class=\"selfLink\" id=\"transparentPng\" href=\"#transparentPng\" rel=\"bookmark\">.transparentPng</a> - The .transparentPng file type will make a graph or map without\n" +
+            "  <p><a class=\"selfLink\" id=\"transparentPng\" href=\"#transparentPng\" rel=\"bookmark\"\n" +
+            "  >.transparentPng</a> - The .transparentPng file type will make a graph or map without\n" +
             "  the graph axes, landmask, or legend, and with a transparent (not opaque white)\n" +
             "  background.  This file type can be used for any type of graph or map.\n" +
             "  For graphs and maps, the default size is 360x360 pixels.\n" +
@@ -7516,22 +7671,30 @@ public abstract class EDDTable extends EDD {
             "\n" +
 
         //curl
-            "<p><a class=\"selfLink\" id=\"curl\" href=\"#curl\" rel=\"bookmark\"><strong>Command Line Downloads with curl</strong></a>\n" +
+            "<p><a class=\"selfLink\" id=\"curl\" href=\"#curl\" rel=\"bookmark\"\n" +
+            "><strong>Command Line Downloads with curl</strong></a>\n" +
             "<br>If you want to download a series of files from ERDDAP, you don't have to request each file's\n" +
-            "ERDDAP URL in your browser, sitting and waiting for each file to download. \n" +
+            "ERDDAP URL in your browser, sitting and waiting for each file to download.\n" +
             "If you are comfortable writing computer programs (e.g., with C, Java, Python, Matlab, r)\n" +
-            "you can write a program with a loop that imports all of the desired data files.\n" +
-            "Or, if you are comfortable with command line programs (just running a program, or using bash or tcsh\n" +
-            "scripts in Linux or Mac OS X, or batch files in Windows), you can use curl to save results files\n" +
-            "from ERDDAP into files on your hard drive, without using a browser or writing a computer program.\n" +
-            "ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
-            "<br>On Linux or Mac OS X, curl is probably already installed as /usr/bin/curl.\n" +
-            "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
+            "or scripts (e.g., Python, bash, tcsh, PowerShell, or Windows batch files),\n" +
+            "you can write a program or script with a loop (or a series of commands)\n" +
+            "that imports all of the desired data files.\n" +
+            "Or, if you are comfortable running command line programs\n" +
+            "(from a Linux or Windows command line, or a Mac OS Terminal), you can use curl (or a similar program like\n" +
+            "  <a rel=\"bookmark\" href=\"https://www.gnu.org/software/wget/\">wget" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
+            "to save results files from ERDDAP into files on your hard drive,\n" +
+            "without using a browser or writing a computer program or script.\n" +
+            "<p>ERDDAP + curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
+            "<br>On Linux and Mac OS X, curl is probably already installed.\n" +
+            "<br>On Mac OS X, to get to a command line, use \"Finder : Go : Utilities : Terminal\".\n" +              
+            "<br>On Windows, you need to\n" +
             "  <a rel=\"bookmark\" href=\"https://curl.haxx.se/download.html\">download curl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "and install it.  To get to a command line in Windows, click on \"Start\" and type\n" + 
-            "\"cmd\" into the search textfield.\n" +
-            "(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me in Windows 7.)\n" +
+            "  (the \"Windows 64 - binary, the curl project\" variant worked for me on Windows 10)\n" +            
+            "  and install it.\n" +
+            "<br>On Windows, to get to a command line, click on \"Start\" and type\n" + 
+              "\"cmd\" into the search text field.\n" +
             "<br><strong>Please be kind to other ERDDAP users: run just one script or curl command at a time.</strong>\n" +
             "<br>Instructions for using curl are on the \n" +
                 "<a rel=\"help\" href=\"https://curl.haxx.se/download.html\">curl man page" +
@@ -7540,14 +7703,16 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "<br>But here is a quick tutorial related to using curl with ERDDAP:\n" +
             "<ul>\n" +
-            "<li>To download and save one file, use \n" +
-            "  <br><kbd>curl -g \"<i>erddapUrl</i>\" -o <i>fileDir/fileName.ext</i></kbd>\n" +
-            "  <br>where <kbd>-g</kbd> disables curl's globbing feature,\n" +
+            "<li>To download and save one file, use\n" +
+            "  <br><kbd>curl --compressed -g \"<i>erddapUrl</i>\" -o <i>fileDir/fileName.ext</i></kbd>\n" +
+            "  <br>where <kbd>--compressed</kbd> tells curl to request a compressed response and automatically decompress it,\n" +
+            "  <br>&nbsp;&nbsp;<kbd>-g</kbd> disables curl's globbing feature,\n" +
             "  <br>&nbsp;&nbsp;<kbd><i>erddapUrl</i></kbd> is any ERDDAP URL that requests a data or image file, and\n" +
             "  <br>&nbsp;&nbsp;<kbd>-o <i>fileDir/fileName.ext</i></kbd> specifies the name for the file that will be created.\n" +
             "  <br>For example,\n" +
-            "<pre>curl -g \"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22TAML1%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmpTAML1.png</pre>\n" +           
-            "  <a class=\"N selfLink\" id=\"PercentEncoded\" href=\"#PercentEncoded\" rel=\"bookmark\">In curl, as in many other programs, the query part of the erddapUrl must be</a>\n" +
+            "<pre>curl --compressed -g \"https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22TAML1%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmpTAML1.png</pre>\n" +           
+            "  <a class=\"N selfLink\" id=\"PercentEncoded\" href=\"#PercentEncoded\" rel=\"bookmark\"\n" +
+            "  >In curl, as in many other programs, the query part of the erddapUrl must be</a>\n" +
             "  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
                 EDStatic.externalLinkHtml(tErddapUrl) + "</a>.  To do this, you need to convert\n" +
             "  special characters (other than the initial '&amp;' and the main '=') in all constraints\n" +
@@ -7564,16 +7729,18 @@ public abstract class EDDTable extends EDD {
             "  In some situations, you need to percent encode all characters other than\n" +
             "  A-Za-z0-9_-!.~'()* .\n" +
             "  Programming languages have tools to do this (for example, see Java's\n" +
-            "  <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+            "  <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"\n" +
+            "      >java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "     and JavaScript's\n" +
-                     "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
+                     "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"\n" +
+            "      >encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-            "  <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+            "  <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>&nbsp;\n" +
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
-            "  <br><kbd>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></kbd>\n" +
+            "  <br><kbd>curl --compressed \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></kbd>\n" +
             "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
             "  <br><a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encode" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
@@ -7586,7 +7753,10 @@ public abstract class EDDTable extends EDD {
             "  The <kbd>#1</kbd> within the output fileName causes the current value of the range or list\n" +
             "  to be put into the output fileName.\n" +
             "  For example, \n" +
-            "<pre>curl \"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22{TAML1,41009,46088}%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmp#1.png</pre>\n" +
+            "<pre>curl --compressed \"https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22{TAML1,41009,46088}%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmp#1.png</pre>\n" +
+            "  (That example includes <kbd>--compressed</kbd> because it is a generally useful option,\n" +
+            "  but there is little benefit to <kbd>--compressed</kbd> when requesting .png files\n" +
+            "  because they are already compressed.)\n" +
             "<li>To access a password-protected, private ERDDAP dataset with curl via https, use this\n" +
             "  two-step process:\n" +
             "  <br>&nbsp;\n" +
@@ -7594,7 +7764,7 @@ public abstract class EDDTable extends EDD {
             "  <li>Log in (authenticate) and save the certificate cookie in a cookie-jar file:\n" +
             "<pre>curl -v --data 'user=<i>myUserName</i>&amp;password=<i>myPassword</i>' -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/login.html</pre>\n" +
             "  <li>Repeatedly make data requests using the saved cookie: \n" +
-            "<pre>curl -v -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/tabledap/<i>datasetID.fileType?query</i> -o <i>outputFileName</i></pre>\n" +
+            "<pre>curl --compressed -v -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/tabledap/<i>datasetID.fileType?query</i> -o <i>outputFileName</i></pre>\n" +
             "  </ol>\n" +            
             "  Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
             "  <br>(Thanks to Liquid Robotics for the starting point and Emilio Mayorga of NANOOS and\n" +
@@ -7605,14 +7775,16 @@ public abstract class EDDTable extends EDD {
 
         //query
         writer.write(
-            "<li><a class=\"selfLink\" id=\"query\" href=\"#query\" rel=\"bookmark\"><strong>query</strong></a> is the part of the request after the \"?\".\n" +
+            "<li><a class=\"selfLink\" id=\"query\" href=\"#query\" rel=\"bookmark\"><strong>query</strong></a>\n" +
+            "  is the part of the request after the \"?\".\n" +
             "  It specifies the subset of data that you want to receive.\n" +
             "  In tabledap, it is an \n" +
             "  <a rel=\"bookmark\" href=\"https://www.opendap.org/\">OPeNDAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> " +
             "  <a rel=\"help\" href=\"https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "  <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraint" +
+            "  <a rel=\"help\" href=\"https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\"\n" +
+            "      >selection constraint" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> query" +
             "  in the form: <kbd>{<i>resultsVariables</i>}{<i>constraints</i>}</kbd> .\n " +
             "  For example,\n" +
@@ -7651,7 +7823,8 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> " +
             "      <a rel=\"help\" href=\"https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "      <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraints" +
+            "      <a rel=\"help\" href=\"https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\"\n" +
+            "      >selection constraints" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "      but with a few additional features.\n" +
             "    <li>Each constraint is in the form <kbd><i>VariableOperatorValue</i></kbd>\n" +
@@ -7667,14 +7840,17 @@ public abstract class EDDTable extends EDD {
             "      <li>For String variables, all operators act in a case-sensitive manner.\n" +
             "      <li>For String variables, queries for =\"\" and !=\"\" should work correctly for almost all\n" +
             "        datasets.\n" +
-            "    <li><a class=\"selfLink\" id=\"QuoteStrings\" href=\"#QuoteStrings\" rel=\"bookmark\">For</a> <a class=\"selfLink\" id=\"backslashEncoded\" href=\"#backslashEncoded\" rel=\"bookmark\">all</a> constraints of String variables and for regex constraints of numeric variables,\n" +
+            "    <li><a class=\"selfLink\" id=\"QuoteStrings\" href=\"#QuoteStrings\" rel=\"bookmark\">For</a>\n" +
+            "        <a class=\"selfLink\" id=\"backslashEncoded\" href=\"#backslashEncoded\" rel=\"bookmark\">all</a>\n" +
+            "        constraints of String variables and for regex constraints of numeric variables,\n" +
             "        the right-hand-side value MUST be enclosed in double quotes (e.g., <kbd>id=\"NDBC41201\"</kbd>)\n" +
             "        and any internal special characters must be backslash encoded: \\ into \\\\, \" into \\\",\n" +
             "        newline into \\n, and tab into \\t.\n" +
-            "    <li><a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\">For</a> all constraints, the value part of the <kbd><i>VariableOperatorValue</i></kbd>\n" +
+            "    <li><a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\">For</a>\n" +
+            "         all constraints, the value part of the <kbd><i>VariableOperatorValue</i></kbd>\n" +
             "        MUST be <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
-            "        special characters in the query values (the parts after the '=' signes) are encoded as %HH, where\n" +
+            "        special characters in the query values (the parts after the '=' signs) are encoded as %HH, where\n" +
             "        HH is the 2 digit hexadecimal value of the character (for example, ' ' is replaced with \"%20\").\n" +
             "        Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be\n" +
             "        percent encoded. Normally, when you use a browser, the browser takes care of this for you.\n" +
@@ -7683,22 +7859,26 @@ public abstract class EDDTable extends EDD {
             "        in all query values. Programming languages have tools to do this (for example, see Java's\n" +
                     "<a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a> and JavaScript's\n" +
-                     "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
+                     "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"\n" +
+            "        >encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-            "       <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+            "       <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-            "      <li><a class=\"selfLink\" id=\"comparingFloats\" href=\"#comparingFloats\" rel=\"bookmark\">WARNING:</a> Numeric queries involving =, !=, &lt;=, or &gt;= may not work as desired with\n" +
+            "      <li><a class=\"selfLink\" id=\"comparingFloats\" href=\"#comparingFloats\" rel=\"bookmark\">WARNING:</a>\n" +
+            "          Numeric queries involving =, !=, &lt;=, or &gt;= may not work as desired with\n" +
             "          floating point numbers. For example, a search for <kbd>longitude=220.2</kbd> may\n" +
             "          fail if the value is stored as 220.20000000000001. This problem arises because\n" +
             "          floating point numbers are " +
-            "            <a rel=\"help\" href=\"https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/\">not represented exactly within computers" +
+            "          <a rel=\"help\" href=\"https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/\"\n" +
+            "          >not represented exactly within computers" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "          When ERDDAP performs these tests, it allows for minor variations and tries\n" +
             "          to avoid the problem. But it is possible that some datasets will still\n" +
             "          have problems with these queries and return unexpected and incorrect results.\n" +
             "      <li><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/NaN\">NaN (Not-a-Number)" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> -\n" +
-            "            <a class=\"selfLink\" id=\"NaN\" href=\"#NaN\" rel=\"bookmark\">Many</a> numeric variables have an attribute which identifies a\n" +
+            "          <a class=\"selfLink\" id=\"NaN\" href=\"#NaN\" rel=\"bookmark\">Many</a>\n" +
+            "          numeric variables have an attribute which identifies a\n" +
             "          number (e.g., -99) as a missing_value or a _FillValue. When ERDDAP tests\n" +
             "          constraints, it always treats these values as NaN's. So:\n" +
             "          <br>Don't create constraints like <kbd>temperature!=-99</kbd> .\n" +
@@ -7718,18 +7898,22 @@ public abstract class EDDTable extends EDD {
             "          Similarly, tests of <kbd><i>variable</i>&lt;<i>aNonNaNValue</i></kbd> (or &lt;=, &gt;, &gt;=) will return false\n" +
             "          whenever the variable's value is NaN.\n" +
             "        </ul>\n" +
-            "      <li><a class=\"selfLink\" id=\"regularExpression\" href=\"#regularExpression\" rel=\"bookmark\"><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
+            "      <li><a class=\"selfLink\" id=\"regularExpression\" href=\"#regularExpression\" rel=\"bookmark\"\n" +
+            "          ><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
-            "         <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\">regular expression" +
+            "          <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\"\n" +
+            "          >regular expression" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "         on the right.\n" +
             "        <ul>\n" +
             "        <li>tabledap uses the same \n" +
-            "             <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\">regular expression syntax" +
+            "          <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\"\n" +
+            "          >regular expression syntax" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "             (<a rel=\"help\" href=\"http://www.vogella.com/tutorials/JavaRegularExpressions/article.html\">tutorial" +
+            "             (<a rel=\"help\" href=\"https://www.vogella.com/tutorials/JavaRegularExpressions/article.html\">tutorial" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>) as is used by Java.\n" +
-            "        <li>A common use of regular expressions is to provide the equivalent of an OR constraint, which DAP doesn't support.\n" +
+            "        <li>A common use of regular expressions is to provide the equivalent of an OR constraint,\n" +
+            "          which DAP doesn't support.\n" +
             "          For example, if you want to request data from station=\"Able\" OR station=\"Baker\" OR station=\"Charlie\",\n" +
             "          you can use a capture group in a regular expression (which is the =~ operator in DAP constraints).\n" +
             "          A capture group is surrounded by parentheses. \n" +
@@ -7742,7 +7926,7 @@ public abstract class EDDTable extends EDD {
             "          and/or add_offset metadata (which ERDDAP uses to unpack the data) or if the variable\n" +
             "          is an altitude variable that ERDDAP has converted from a depth value, the =~ test\n" +
             "          will be applied to the raw source values.  This is not a good situation, but there\n" +
-            "          is no easy way to deal with it. It is fine to try =~ tests of numeric variables, but\n" +
+            "          is no easy way to deal with it. It is fine to try =~ tests of numeric variables,\n" +
             "          but be very skeptical of the results.\n" +
             "        <li><strong>WARNING: queries with =~ may not work as desired</strong> since many data sources\n" +
             "          don't offer native support for these queries and ERDDAP can't always work\n" +
@@ -7763,7 +7947,8 @@ public abstract class EDDTable extends EDD {
             "      sometimes aren't practical because tabledap\n" +
             "      may need to download lots of extra data from the source (which takes time)\n" +
             "      in order to test the constraint.\n" +
-            "    <li><a class=\"selfLink\" id=\"timeConstraints\" href=\"#timeConstraints\" rel=\"bookmark\">tabledap</a> always stores date/time values as double precision floating point numbers\n" +
+            "    <li><a class=\"selfLink\" id=\"timeConstraints\" href=\"#timeConstraints\" rel=\"bookmark\">tabledap</a>\n" +
+            "      always stores date/time values as double precision floating point numbers\n" +
             "      (seconds since 1970-01-01T00:00:00Z, sometimes with some number of milliseconds).\n" +
             "      Here is an example of a query which includes date/time numbers:\n" +
             "      <br><a href=\"" + fullValueExampleHA + "\"><kbd>" + 
@@ -7795,7 +7980,8 @@ public abstract class EDDTable extends EDD {
                   String2.replaceAll(
                   String2.replaceAll(fullTimeExampleHE, "&", "<wbr>&"), 
                                                         "/", "<wbr>/") + "</kbd></a>\n" +
-            "      <br><a class=\"selfLink\" id=\"lenient\" href=\"#lenient\" rel=\"bookmark\">ERDDAP</a> is \"lenient\" when it parses date/time strings. That means that date/times\n" +
+            "      <br><a class=\"selfLink\" id=\"lenient\" href=\"#lenient\" rel=\"bookmark\">ERDDAP</a>\n" +
+            "      is \"lenient\" when it parses date/time strings. That means that date/times\n" +
             "      with the correct format, but with month, date, hour, minute, and/or second values\n" +
             "      that are too large or too small will be rolled to the appropriate date/times.\n" +
             "      For example, ERDDAP interprets 2001-12-32 as 2002-01-01, and interprets\n" +
@@ -7818,7 +8004,8 @@ public abstract class EDDTable extends EDD {
               "      <br>See also:\n" +
               "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
               "        ERDDAP Deals with Time</a>.\n" : "") +
-            "    <li><a class=\"selfLink\" id=\"now\" href=\"#now\" rel=\"bookmark\">tabledap</a> extends the OPeNDAP standard to allow you to specify constraints for\n" +
+            "    <li><a class=\"selfLink\" id=\"now\" href=\"#now\" rel=\"bookmark\">tabledap</a>\n" +
+            "      extends the OPeNDAP standard to allow you to specify constraints for\n" +
             "      time and timestamp variables relative to <kbd>now</kbd>. The constraint can be simply,\n" +
             "      for example, <kbd>time&lt;now</kbd>, but usually the constraint is in the form\n" +
             "      <br><kbd>now(+| |-)<i>positiveInteger</i>(second|seconds|minute|minutes|\n" +
@@ -7832,8 +8019,10 @@ public abstract class EDDTable extends EDD {
             "      Note that a '+' in the URL is percent-decoded as ' ', so you should\n" +
             "      percent-encode '+' as %2B.  However, ERDDAP interprets <kbd>\"now \"</kbd> as <kbd>\"now+\"</kbd>,\n" +
             "      so in practice you don't have to percent-encode it.\n" +
-            "    <li><a class=\"selfLink\" id=\"min\" href=\"#min\" rel=\"bookmark\">tabledap</a> <a class=\"selfLink\" id=\"max\" href=\"#max\" rel=\"bookmark\">extends</a> the OPeNDAP standard to allow you to refer to <kbd>min(<i>variableName</i>)</kbd> or\n" +
-            "      <kbd>max(<i>variableName</i>)</kbd> in the righthand part of a constraint.\n" +
+            "    <li><a class=\"selfLink\" id=\"min\" href=\"#min\" rel=\"bookmark\">tabledap</a>\n" +
+            "      <a class=\"selfLink\" id=\"max\" href=\"#max\" rel=\"bookmark\"\n" +
+            "      >extends</a> the OPeNDAP standard to allow you to refer to <kbd>min(<i>variableName</i>)</kbd> or\n" +
+            "      <kbd>max(<i>variableName</i>)</kbd> in the right hand part of a constraint.\n" +
             "      <ul>\n" +
             "      <li>If <i>variableName</i> is a timestamp variable, the constraint must be in the form:\n" +
             "        <br><kbd>min|max(<i>variableName</i>)[+|-<i>positiveInteger</i>[millis|seconds<wbr>|minutes|hours|days<wbr>|months|years]]</kbd>\n" +
@@ -7850,19 +8039,35 @@ public abstract class EDDTable extends EDD {
             "      <li>min() and max() can't be used with regex constraints (=~).\n" +
             "        <br>&nbsp;\n" +
             "      </ul>\n" + 
+
+            //polygon requests
+            "   <li><a class=\"selfLink\" id=\"polygonRequests\" href=\"#polygonRequests\" rel=\"bookmark\"\n" +
+            "     >Can users extract data from a polygon-defined geographic area?</a>\n" +
+            "     <br>No. ERDDAP does not support that.\n" +
+            "     You need to calculate the lat lon bounding box for the polygon\n" +
+            "     (it is easy to calculate: the lon range will be minLon to maxLon, the lat range will be minLat to maxLat)\n" +
+            "     and request that data from ERDDAP using the constraint system described above.\n" +
+            "     You can then do the polygon extraction (or calculations) in your favorite analysis software (ArcGIS, Matlab, Python, R, ...).\n" +
+            "     An advantage of this approach is that there is no limit to the number of points that define the polygon.\n" +
+            "     Note that this is the way the OPeNDAP standard (which ERDDAP uses for these requests) works:\n" +
+            "     users request a subset of the original data based on simple constraints.\n" +
+            "     <br>&nbsp;\n" +       
+
             "    </ul>\n" +
-            "  <li><a class=\"selfLink\" id=\"functions\" href=\"#functions\" rel=\"bookmark\"><strong>Server-side Functions</strong></a> - The OPeNDAP standard supports the idea of\n" +
+            "  <li><a class=\"selfLink\" id=\"functions\" href=\"#functions\" rel=\"bookmark\"\n" +
+            "      ><strong>Server-side Functions</strong></a> - The OPeNDAP standard supports the idea of\n" +
             "    server-side functions, but doesn't define any.\n" +
             "    TableDAP supports some server-side functions that modify the results table before\n" +
             "    the results table is sent to you.\n" +
             "    Server-side functions are OPTIONAL.  Other than 'distinct', they are rarely needed.\n" +
             "    Currently, each of the functions takes the results table as input and\n" +
-            "    returns a table with the same columns in the same order (but the rows may be\n" +
+            "    returns a table with the same columns in the same order (but the rows may\n" +
             "    be altered). If you use more than one function, they will be applied in the order\n" +
             "    that they appear in the request. Most of these options appear near the bottom\n" +
             "    of the Data Access Form and Make A Graph web page for each dataset.\n" + 
             "    <ul>\n" +
-            "    <li><a class=\"selfLink\" id=\"distinct\" href=\"#distinct\" rel=\"bookmark\"><kbd>&amp;distinct()</kbd></a>\n" +
+            "    <li><a class=\"selfLink\" id=\"distinct\" href=\"#distinct\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;distinct()</kbd></a>\n" +
             "      <br>If you add <kbd>&amp;distinct()</kbd> to the end of a query, ERDDAP will sort all of the\n" +
             "      rows in the results table (starting with the first requested variable, then using the\n" +
             "      second requested variable if the first variable has a tie, ...), then remove all\n" +
@@ -7873,106 +8078,183 @@ public abstract class EDDTable extends EDD {
             "      But in some cases, ERDDAP must look through all rows of the source dataset. \n" +
             "      If the data set isn't local, this may be VERY slow, may return only some of the\n" +
             "      results (without an error), or may throw an error.\n" +
-            "    <li><a class=\"selfLink\" id=\"orderBy\" href=\"#orderBy\" rel=\"bookmark\"><kbd>&amp;orderBy(\"<i>comma-separated list of 1 or more variable names</i>\")</kbd></a>\n" +
-            "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
-            "      table (starting with the first variable, then using the second variable if the first\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderBy\" href=\"#orderBy\" rel=\"bookmark\" " +
+                "><kbd>&amp;orderBy(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 1 or more variable names\n" +
+            "      lets you specify how the results table will be sorted\n" +
+            "      (starting with the first variable in the CSV list, then using the second variable if the first\n" +
             "      variable has a tie, ...).\n" +
-            "      Normally, the rows of data in the response table are in the order they arrived from\n" +
-            "      the data source.\n" +
-            "      orderBy allows you to request that the results table be sorted in a specific way.\n" +
+            "      All of the orderBy variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderBy CSV list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      <p>Without orderBy, the rows of data in the response table are in the order they arrived from\n" +
+            "      the data source, which may or may not be a nice logical order.\n" +
+            "      Thus, orderBy allows you to request that the results table be sorted in a specific way.\n" +
             "      For example, use the query\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"stationID,time\")</kbd>\n" +
-            "      <br>to get the results sorted by stationID, then time.\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"stationID,time\")</pre>\n" +
+            "      to get the results sorted by stationID, then time.\n" +
             "      Or use the query\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"time,stationID\")</kbd>\n" +
-            "      <br>to get the results sorted by time first, then stationID.\n" +
-            "      The orderBy variables MUST be included in the list of requested variables in the\n" +
-            "      query as well as in the orderBy list of variables.\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByClosest\" href=\"#orderByClosest\" rel=\"bookmark\"><kbd>&amp;orderByClosest(\"<i>comma-separated list</i>\")</kbd></a>\n" +
-            "      <br>The comma-separated list lets you specify how the results table will be sorted (1 or more\n" +
-            "      variable names) and an interval (with the format <i>n[timeUnits]</i>, e.g., 2 hours). Within\n" +
-            "      each sort group, only the rows closest to the interval will be kept.  For example,\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByClosest(\"stationID,time,2 hours\")</kbd>\n" +
-            "      <br>will sort by stationID and time, but only return the rows for each stationID where\n" +
-            "      the last orderBy column (time) are closest to 2 hour intervals.\n" +
-            "      If the last orderBy column is a timestamp column and the timeUnits are months or years,\n" +
-            "      n must be an integer and ERDDAP will increment by calendar months or years (not a\n" +
-            "      fixed length of time).\n" +
-            "      In general, the last orderBy column may be any numeric column (e.g., depth) and n\n" +
-            "      may be a floating point number (with the units of that variable (e.g., meters) implied).\n" +
-            "      The orderByClosest variables MUST be included in the list of requested variables in\n" +
-            "      the query as well as in the orderByClosest list of variables (the .html and .graph\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"time,stationID\")</pre>\n" +
+            "      to get the results sorted by time first, then stationID.\n" +
+            "      <p><kbd>orderBy()</kbd> doesn't support\n" +
+            "      the divisor options for numeric variables, i.e.,\n" +
+            "      <br><kbd>numericVariable[/number[timeUnits][:offset]]</kbd>\n" +
+            "      <br>because they would be nonsensical.\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByClosest\" href=\"#orderByClosest\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByClosest(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 1 or more variable names\n" +
+            "      lets you specify how the results table will be sorted.\n" +
+            "      For orderByClosest, the last item in the CSV list must be a numeric variable with a divisor.\n" +  
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor details</a>.)\n" +
+            "      Other variables in the CSV list may not have divisors.\n" +
+            "      <br>All of the orderByClosest variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByClosest CSV list of variables (the .html and .graph\n" +
             "      forms will do this for you).\n" +
+            "      <p>For orderByClosest, for each group, ERDDAP will return just the row where the\n" +
+            "      value of the last CSV variable is closest to the divisor (interval).  For example,\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByClosest(\"stationID,time/2hours\")</pre>\n" +
+            "      will sort by stationID and time, but only return the rows for each stationID where\n" +
+            "      the last orderBy column (time) are closest to 2hour intervals (12am, 2am, 4am, ...).\n" +
+            "      For numeric variables in orderByMax CSV list, for each group,\n" +
+            "      ERDDAP will return the exact value (e.g., the exact time) at\n" +
+            "      which the closest value occurred.\n" +
             "      This is the closest thing in tabledap to stride values in a griddap request.\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByMean\" href=\"#orderByMean\" rel=\"bookmark\"><kbd>&amp;orderByMean(\"<i>comma-separated list</i>\")</kbd></a>\n" +
-            "      <br>The comma-separated list lets you specify how the results table will be sorted (zero or more\n" +
-            "      variable names) each with an optional interval (with the format as <i>/n</i> or <i>/n[timeUnits]</i>, e.g., 1 day).\n"+
-            "      An offset may be included with the interval, for example <i>month/6:1</i> if months were numbered 1-12.\n" +
-            "      Within each sort group, the mean will be kept.  For example,\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMean(\"stationID,time/1 day\")</kbd>\n" +
-            "      <br>will sort by stationID and time, but only return the daily mean for each stationID.\n" +
-            "      If ordering with timeUnits of n months or years,\n" +
-            "      n must be an integer and ERDDAP will increment by calendar months or years (not a\n" +
-            "      fixed length of time).\n" +
-            "      In general, the last orderBy column may be any numeric column (e.g., depth) and n\n" +
-            "      may be a floating point number (with the units of that variable (e.g., meters) implied).\n" +
-            "      The orderByMean variables MUST be included in the list of requested variables in\n" +
-            "      the query as well as in the orderByMean list of variables (the .html and .graph\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByCount\" href=\"#orderByCount\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByCount(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 0 or more variable names\n" +
+            "      lets you specify how the results table will be sorted and grouped.\n" +
+            "      Numeric variables in the CSV list usually have an optional\n" +
+            "      divisor to identify groupings, e.g., time/1day .\n" +
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor&nbsp;details</a>.)\n" +
+            "      <br>All of the orderByCount variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByCount CSV list of variables (the .html and .graph\n" +
             "      forms will do this for you).\n" +
-            "      The mean values are generally returned as doubles (unless all are integers); any requested\n"+
-            "      string or character variables not in the orderByMean list by are discarded (unless the value does not vary).\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByCount\" href=\"#orderByCount\" rel=\"bookmark\"><kbd>&amp;orderByCount(\"<i>comma-separated list of 0 or more variable names</i>\")</kbd></a>\n" +
-            "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
-            "      table (starting with the first variable, then using the second variable if the first\n" +
-            "      variable has a tie, ...) and then just return the count of the number of non-NaN values\n" +
-            "      for each combination of those values).\n" +
+            "      <p>For orderByCount, for each group, ERDDAP will return just one row\n" +
+            "      with the count of the number of non-NaN values for each variable not in the CSV list.\n" +
             "      For example, use the query\n" +
-            "      <br><kbd>stationID,temperature,windSpeed&amp;time&gt;" + daysAgo7 + "&amp;orderByCount(\"stationID\")</kbd>\n" +
-            "      <br>to get a count of the number of non-NaN temperature and windspeed values for each stationID\n" +
+            "      <pre>?stationID,time,temperature,windspeed&amp;time&gt;" + daysAgo7 + "&amp;orderByCount(\"stationID,time/1day\")</pre>\n" +
+            "      to get a count of the number of non-NaN temperature and windspeed values for each stationID, for each day\n" +
             "      (for stations with data from after " + daysAgo7 + ").\n" +
-            "      (Without the time constraint, ERDDAP would have to look through all rows of the \n" +
-            "      the dataset, which might be VERY slow.)\n" +
-            "      The orderByCount variables MUST be included in the list of requested variables in the\n" +
-            "      query as well as in the orderByCount list of variables.\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByLimit\" href=\"#orderByLimit\" rel=\"bookmark\"><kbd>&amp;orderByLimit(\"<i>comma-separated list</i>\")</kbd></a>\n" +
-            "      <br>The comma-separated list lets you specify how the results table will be sorted (0 or more\n" +
-            "      variable names) and a limit number (e.g., 100). Within each sort group, only the first 'limit' rows will\n" +
-            "      be kept. For example,\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByLimit(\"stationID,100\")</kbd>\n" +
-            "      <br>will sort by stationID, but only return the first 100 rows for each stationID.\n" +
-            "      The orderByLimit variables MUST be included in the list of requested variables in\n" +
-            "      the query as well as in the orderByLimit list of variables.\n" +
+            "\n" +
+            "      <p><a class=\"selfLink\" id=\"orderByDivisorOptions\" href=\"#orderByDivisorOptions\" rel=\"bookmark\"\n" +
+            "      >Divisors</a> - All orderBy options\n" +
+            "      (other than the plain <kbd>orderBy()</kbd> and <kbd>orderByClosest()</kbd>) support\n" +
+            "      divisor options for any of the numeric variables in the orderBy... CSV list, in the form\n" +
+            "      <br><kbd>numericVariable[/number[timeUnits][:offset]]</kbd>\n" +
+            "      <br>Some examples are: time/10, time/2days, depth/10, depth/0.5, depth/10:5.\n" +
+            "      <ul>\n" +
+            "      <li>The divisor number must be a positive value.\n" +
+            "        If timeUnits aren't month or year, the number may be a floating point number.\n" +
+            "        The number is interpreted to have the same units as the variable;\n" +
+            "        for timestamp variables, unless modified by timeUnits, the number is interpreted as units=seconds.\n" +
+            "      <li>The optional timeUnits is only allowed if the numericVariable is a timestamp variable.\n" +
+            "        All common English time units are supported (singular or plural) and with many abbreviations:\n" +
+            "        <br>ms, msec, msecs, millis, millisec, millisecs, millisecond, milliseconds,\n" +
+            "        <br>s, sec, secs, second, seconds, m, min, mins, minute, minutes, h, hr, hrs, hour, hours,\n" +
+            "        <br>d, day, days, week, weeks, mon, mons, month, months, yr, yrs, year, or years.\n" +
+            "      <li>The optional :offset is only allowed if timeUnits isn't specified.\n" +
+            "      <li>If numericVariable is a timestamp variable and the timeUnits are months or years,\n" +
+            "        the number must be a positive integer and ERDDAP will increment by calendar\n" +
+            "        months or years (not a fixed length of time).\n" +
+            "        If timeUnits is month, number must be 1, 2, 3, 4, or 6.\n" +
+            "        <br>&nbsp;\n" +
+            "      </ul>\n" +
+            "      \n" +
+            "    <li><a class=\"selfLink\" id=\"orderByLimit\" href=\"#orderByLimit\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByLimit(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 0 or more variable names plus a limit number\n" +
+            "      lets you specify how the results table will be sorted and grouped.\n" +
+            "      Numeric variables in the CSV list usually have an optional\n" +
+            "      divisor to identify groupings, e.g., time/1day .\n" +
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor&nbsp;details</a>.)\n" +
+            "      <br>All of the orderByLimit variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByLimit CSV list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      <p>For orderByLimit, the last value in the CSV list must be the limit number (e.g., 10).\n" +
+            "      Within each sort group, only the first 'limit' rows will\n" +
+            "      be kept.\n" +
+            "      For example,\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByLimit(\"stationID,time/1day,10\")</pre>\n" +
+            "      will sort by stationID and time, but only return the first 10 rows for each stationID per day.\n" +
+            "      This will usually return the same rows as the first n rows per group of a similar\n" +
+            "      request with no orderByLimit, but not always.\n" + 
             "      This is similar to SQL's LIMIT clause.\n" +
-            "      <br>WARNING: This will usually return the same rows as the first n rows of a similar\n" +
-            "      request with no limit, but not always.\n" + 
-            "    <li><a class=\"selfLink\" id=\"orderByMax\" href=\"#orderByMax\" rel=\"bookmark\"><kbd>&amp;orderByMax(\"<i>comma-separated list of 1 or more variable names</i>\")</kbd></a>\n" +
-            "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
-            "      table (starting with the first variable, then using the second variable if the first\n" +
-            "      variable has a tie, ...) and then just keeps the rows where the value of the last\n" +
-            "      sort variable is highest (for each combination of other values).\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByMax\" href=\"#orderByMax\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByMax(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 1 or more variable names\n" +
+            "      lets you specify how the results table will be sorted and grouped.\n" +
+            "      Numeric variables in the CSV list usually have an optional\n" +
+            "      divisor to identify groupings, e.g., time/1day .\n" +
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor&nbsp;details</a>.)\n" +
+            "      <br>For orderByMax, the last variable name in the CSV list may\n" +
+            "      be a string or a numeric variable (if numeric, it must not include a divisor).\n" +
+            "      <br>All of the orderByMax variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByMax CSV list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      <p>orderByMax will sort results into groups based on values of the variables\n" +
+            "      in the CSV list except the last variable, then just keep the\n" +
+            "      row within each group where the last CSV list variable has the highest value.\n" +
+            "      (If there are two or more rows which have the same highest value, ERDDAP may return any of them.)\n" +
             "      For example, use the query\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMax(\"stationID,time\")</kbd>\n" +
-            "      <br>to get just the rows of data with each station's maximum time value (for stations\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMax(\"stationID,time/1day,temperature\")</pre>\n" +
+            "      to get just the rows of data with each station's maximum\n" +
+            "      temperature value for each day (for stations\n" +
             "      with data from after " + daysAgo7 + ").\n" +
-            "      (Without the time constraint, ERDDAP would have to look through all rows of the \n" +
-            "      the dataset, which might be VERY slow.)\n" +
-            "      The orderByMax variables MUST be included in the list of requested variables in the\n" +
-            "      query as well as in the orderByMax list of variables.\n" +
+            "      For numeric variables in orderByMax CSV list, for each group,\n" +
+            "      ERDDAP will return the exact value (e.g., the exact time) at\n" +
+            "      which the max value (e.g., temperature) occurred.\n" +
             "      This is the closest thing in tabledap to griddap's allowing requests for the <kbd>[last]</kbd>\n" +
             "      axis value.\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByMin\" href=\"#orderByMin\" rel=\"bookmark\"><kbd>&amp;orderByMin(\"<i>comma-separated list of 1 or more variable names</i>\")</kbd></a>\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByMin\" href=\"#orderByMin\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByMin(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
             "      <br>orderByMin is exactly like <a href=\"#orderByMax\">orderByMax</a>, except that it\n" +
-            "      returns the minimum value(s).\n" +
-            "    <li><a class=\"selfLink\" id=\"orderByMinMax\" href=\"#orderByMinMax\" rel=\"bookmark\"><kbd>&amp;orderByMinMax(\"<i>comma-separated list of 1 or more variable names</i>\")</kbd></a>\n" +
+            "      returns the row within each group which has the minimum value of the last variable in the CSV list.\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByMinMax\" href=\"#orderByMinMax\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByMinMax(\"<i>comma-separated list of 1 or more variable names</i>\")</kbd></a>\n" +
             "      <br>orderByMinMax is like <a href=\"#orderByMax\">orderByMax</a>, except that it returns\n" +
-            "      two rows for every combination of the n-1 variables: one row with the minimum value,\n" +
-            "      and one row with the maximum value.\n" +
+            "      the two rows within each group: the row which has the minimum value of the last variable in the CSV list\n" +
+            "      and the row which has the maximum value of the last variable in the CSV list.\n" +
             "      For example, use the query\n" +
-            "      <br><kbd>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMinMax(\"stationID,time\")</kbd>\n" +
-            "      <br>to get just the rows of data with each station's minimum time value and each station's\n" +
-            "      maximum time value (for stations with data from after " + daysAgo7 + ").\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMinMax(\"stationID,time/1day,temperature\")</pre>\n" +
+            "      to get just the rows of data with each station's minimum temperature value and each station's\n" +
+            "      maximum time value for each day (for stations with data from after " + daysAgo7 + ").\n" +
             "      If there is only one row of data for a given combination (e.g., stationID), there will\n" +
             "      still be two rows in the output (with identical data).\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByMean\" href=\"#orderByMean\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderByMean(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 0 or more variable names\n" +
+            "      lets you specify how the results table will be sorted and grouped.\n" +
+            "      Numeric variables in the CSV list usually have an optional\n" +
+            "      divisor to identify groupings, e.g., time/1day .\n" +
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor&nbsp;details</a>.)\n" +
+            "      <br>All of the orderByMean variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderByMean CSV list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      <p>For orderByMean, for each group, ERDDAP will return the mean\n" +
+            "      of each of the variables not in the CSV list.\n" +
+            "      You can use the same <a href=\"#orderByDivisorOptions\" rel=\"bookmark\" \n" +
+            "        >divisor options</a> as other orderBy options (e.g., time/1day or depth/10).\n" +
+            "      For example,\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMean(\"stationID,time/1day\")</pre>\n" +
+            "      will sort by stationID and time, but only return the mean temperature value for each stationID for each day.\n" +
+            "      <ul>\n" +
+            "      <li>The mean values are returned as doubles, with _FillValue=NaN used to represent empty cells\n" +
+            "        (groups with no finite values for a given variable).\n" +
+            "      <li>If a column has degree-related units, the mean is calculated differently:\n" +
+            "        by converting the angle to x and y components, calculating the means of the x and y components,\n" +
+            "        and then converting those back to the mean degrees value.\n" +
+            "        If the column's units are degree_true (or a variant), the returned mean will be in the range 0 to 360.\n" +
+            "        For other degree units (e.g., degree_east, degree_north), the returned mean will be in the range -180 to 180.\n" +
+            "      <li>Any requested string or character variables not in the orderByMean list are discarded\n" +
+            "        (unless the value does not vary) since asking for the mean of a string variable is meaningless.\n" +
+            "      </ul>\n" +
+            "      <br>&nbsp;\n" +
             "    <li><a class=\"selfLink\" id=\"units\" href=\"#units\" rel=\"bookmark\"><kbd>&amp;units(\"<i>value</i>\")</kbd></a>\n" +
             "      <br>If you add <kbd>&amp;units(\"UDUNITS\")</kbd> to the end of a query, the units will be described\n" +
             "      via the\n" +
@@ -7980,16 +8262,20 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> standard (for example, <kbd>degree_C</kbd>).\n" +
             "      <br>If you add <kbd>&amp;units(\"UCUM\")</kbd> to the end of a query, the units will be described\n" +
             "      via the\n" +
-            "        <a rel=\"help\" href=\"http://unitsofmeasure.org/ucum.html\">UCUM" +
+            "        <a rel=\"help\" href=\"https://unitsofmeasure.org/ucum.html\">UCUM" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> standard (for example, <kbd>Cel</kbd>).\n" +
             "      <br>On this ERDDAP, the default for most/all datasets is " + EDStatic.units_standard + ".\n" +
             (EDStatic.convertersActive? 
-            "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">units converter</a>.\n" : "") +
+            "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"\n" +
+            "      >units converter</a>.\n" : "") +
             "      <br>&nbsp;\n" +
             "    </ul>\n" +
-               
+
             //Graphics Commands
-            "  <li><a class=\"selfLink\" id=\"GraphicsCommands\" href=\"#GraphicsCommands\" rel=\"bookmark\"><strong>Graphics Commands</strong></a> - <a class=\"selfLink\" id=\"MakeAGraph\" href=\"#MakeAGraph\" rel=\"bookmark\">tabledap</a> extends the OPeNDAP standard by allowing graphics commands\n" +
+            "  <li><a class=\"selfLink\" id=\"GraphicsCommands\" href=\"#GraphicsCommands\" rel=\"bookmark\"\n" +
+            "    ><strong>Graphics Commands</strong></a> -\n" +
+            "    <a class=\"selfLink\" id=\"MakeAGraph\" href=\"#MakeAGraph\" rel=\"bookmark\"\n" +
+            "    >tabledap</a> extends the OPeNDAP standard by allowing graphics commands\n" +
             "    in the query. \n" +
             "    The Make A Graph web pages simplify the creation of URLs with these graphics commands\n" +
             "    (see the \"graph\" links in the table of <a href=\"" + 
@@ -7998,7 +8284,8 @@ public abstract class EDDTable extends EDD {
             "    needed, using the information here to modify the URLs for special purposes.\n" +
             "    These commands are optional.\n" +
             "    If present, they must occur after the data request part of the query. \n" +
-            "    These commands are used by tabledap if you request an <a rel=\"bookmark\" href=\"#imageFileTypes\">image fileType</a> (.png or .pdf)\n" +
+            "    These commands are used by tabledap if you request an\n" +
+            "    <a rel=\"bookmark\" href=\"#imageFileTypes\">image fileType</a> (.png or .pdf)\n" +
             "    and are ignored if you request a data file (e.g., .asc). \n" +
             "    If relevant commands are not included in your request, tabledap uses the defaults and\n" +
             "    tries its best to generate a reasonable graph or map. \n" +
@@ -8008,7 +8295,7 @@ public abstract class EDDTable extends EDD {
             "    <ul>\n" +
             "     <li><kbd>&amp;.bgColor=<i>bgColor</i></kbd>\n" +
             "       <br>This specifies the background color of a graph (not a map).\n" +
-            "       The color is specified as a 8 digit hexadecimal value in the form 0x<i>AARRGGBB</i>,\n" +
+            "       The color is specified as an 8 digit hexadecimal value in the form 0x<i>AARRGGBB</i>,\n" +
             "       where AA, RR, GG, and BB are the opacity, red, green and blue components, respectively.\n" +
             "       The canvas is always opaque white, so a (semi-)transparent graph background color\n" +
             "       blends into the white canvas.\n" +
@@ -8047,7 +8334,8 @@ public abstract class EDDTable extends EDD {
             "        The color value string is not case sensitive. The default is 0x000000 (black).\n" +
             "    <li><kbd>&amp;.draw=<i>value</i></kbd> \n" +
             "        <br>This specifies how the data will be drawn, as <kbd>lines</kbd>,\n" +
-            "        <kbd>linesAndMarkers</kbd>, <kbd>markers</kbd> (default), <kbd>sticks</kbd>, or <kbd>vectors</kbd>. \n" +
+            "        <kbd>linesAndMarkers</kbd>, <kbd>markers</kbd> (default),\n" +
+            "        <kbd>sticks</kbd>, or <kbd>vectors</kbd>. \n" +
             "    <li><kbd>&amp;.font=<i>scaleFactor</i></kbd>\n" +
             "        <br>This specifies a scale factor for the font\n" +
             "        (e.g., 1.5 would make the font 1.5 times as big as normal).\n" +
@@ -8090,20 +8378,34 @@ public abstract class EDDTable extends EDD {
             "    <li><kbd>&amp;.vec=<i>value</i></kbd>\n" +
             "      <br>This specifies the data vector length (in data units) to be scaled to the size\n" +
             "      of the sample vector in the legend. The default varies based on the data.\n" +
-            "    <li><kbd>&amp;.xRange=<i>min</i>|<i>max</i>|<i>ascending</i></kbd>\n" +
-            "      <br><kbd>&amp;.yRange=<i>min</i>|<i>max</i>|<i>ascending</i></kbd>\n" +
-            "      <br><kbd>min</kbd> and <kbd>max</kbd> specify the range of the X and Y axes. They can be numeric values or\n" +
-            "      nothing (the default, which tells ERDDAP to use an appropriate value based on the data).\n" +
-            "      <i>ascending</i> specifies whether the axis is drawn the normal way, or reversed (flipped).\n" +
-            "      <i>ascending</i> can be nothing or <kbd>true, t, false, </kbd>or<kbd> f</kbd>. These values are case insensitive.\n" +
-            "      The default is <kbd>true</kbd>.\n" +
-            "      <i>ascending</i> applies to graphs only, not maps.\n" +
+            "    <li><a class=\"selfLink\" id=\"xRange\" href=\"#xRange\" rel=\"bookmark\" \n" +
+            "       ><kbd>&amp;.xRange=<i>min</i>|<i>max</i>|<i>ascending</i>|<i>scale</i></kbd></a>\n" +
+            "    <br><kbd>&amp;.yRange=<i>min</i>|<i>max</i>|<i>ascending</i>|<i>scale</i></kbd>\n" +
+            "        <br>The .xRange and .yRange commands can have any number of values.\n" +
+            "        <br>If there are fewer than 4 values, the missing values are treated as default values.\n" +
+            "        <br>If there are more  than 4 values, the extra values are ignored.\n" +
+            "        <ul>\n" +
+            "        <li><kbd>min</kbd> and <kbd>max</kbd> specify the range of the X and Y axes. They can be numeric values or\n" +
+            "          nothing (the default, which tells ERDDAP to use an appropriate value based on the data).\n" +
+            "        <li><i>ascending</i> specifies whether the axis is drawn the normal way (ascending), or reversed (descending, flipped).\n" +
+            "          <i>ascending</i> can be nothing or <kbd>true, t, false, </kbd>or<kbd> f</kbd>. These values are case insensitive.\n" +
+            "          The default is <kbd>true</kbd>.\n" +
+            "          <i>ascending</i> applies to graphs only, not maps.\n" +
+            "        <li><i>scale</i> specifies a preference for the axis scale.\n" +
+            "          <i>scale</i> can be nothing (the default, which is dependent on the x or y axis variable's\n" +
+            "          colorBarScale setting), or Linear, or Log. These values are case insensitive.\n" +
+            "          <i>scale</i> applies to graphs only, not maps.\n" +
+            "          <i>scale</i> will be ignored (and the axis will be linear) if the axis is a time axis,\n" +
+            "          or if the minimum value on the axis is &lt;=0, or if the axis range is very narrow.\n" +
+            "        </ul>\n" +
+            "      </ul>\n" +
             "    </ul>\n" +
-            "    <br><a class=\"selfLink\" id=\"sampleGraphURL\" href=\"#sampleGraphURL\" rel=\"bookmark\">A sample graph URL is</a> \n" +
+            "    <br><a class=\"selfLink\" id=\"sampleGraphURL\" href=\"#sampleGraphURL\" rel=\"bookmark\"\n" +
+            "    >A sample URL to view a <strong>.png</strong> of a <strong>graph</strong> is</a> \n" +
             "    <br><a href=\"" + fullGraphExampleHA + "\">" + 
                                    fullGraphExampleHE + "</a>\n" +
             "\n" +
-            "    <p>Or, if you change the fileType in the URL from .png to .graph,\n" +
+            "    <p>Or, if you change the fileType in the URL from .png to <strong>.graph</strong>,\n" +
             "    you can see a Make A Graph web page with that request loaded:\n" +
             "    <br><a href=\"" + fullGraphMAGExampleHA + "\">" + 
                                    fullGraphMAGExampleHE + "</a>\n" +
@@ -8111,30 +8413,31 @@ public abstract class EDDTable extends EDD {
             "    similar graph or map.\n" +
             "\n" +
             "    <p>Or, if you change the fileType in the URL from .png to a data fileType\n" +
-            "    (e.g., .htmlTable), you can download the data that was graphed:\n" +
+            "    (e.g., <strong>.htmlTable</strong>), you can view or download the data that was graphed:\n" +
             "    <br><a href=\"" + fullGraphDataExampleHA + "\">" + 
                                    fullGraphDataExampleHE + "</a>\n" +
             "\n" +
-            "    <p>A sample map URL is \n" +
+            "    <p>A sample URL to view a <strong>.png</strong> of a <strong>map</strong> is \n" +
             "    <br><a href=\"" + fullMapExampleHA + "\">" + 
                                    fullMapExampleHE + "</a>\n" +
             "\n" +
-            "    <p>Or, if you change the fileType in the URL from .png to .graph,\n" +
+            "    <p>Or, if you change the fileType in the URL from .png to <strong>.graph</strong>,\n" +
             "    you can see a Make A Graph web page with that request loaded:\n" +
             "    <br><a href=\"" + fullMapMAGExampleHA + "\">" + 
                                    fullMapMAGExampleHE + "</a>\n" +
             "\n" +
             "    <p>Or, if you change the fileType in the URL from .png to a data fileType\n" +
-            "    (e.g., .htmlTable), you can download the data that was mapped:\n" +
+            "    (e.g., <strong>.htmlTable</strong>), you can view or download the data that was mapped:\n" +
             "    <br><a href=\"" + fullMapDataExampleHA + "\">" + 
                                    fullMapDataExampleHE + "</a>\n" +
-            "  </ul>\n" +
             "</ul>\n" +
 
             //other info
-            "<a class=\"selfLink\" id=\"otherInformation\" href=\"#otherInformation\" rel=\"bookmark\"><strong>Other Information</strong></a>\n" +
+            "<a class=\"selfLink\" id=\"otherInformation\" href=\"#otherInformation\" rel=\"bookmark\"\n" +
+            "      ><strong>Other Information</strong></a>\n" +
             "<ul>\n" +
-            "<li><a class=\"selfLink\" id=\"login\" href=\"#login\" rel=\"bookmark\"><strong>Log in to access private datasets.</strong></a>\n" +
+            "<li><a class=\"selfLink\" id=\"login\" href=\"#login\" rel=\"bookmark\"\n" +
+            "      ><strong>Log in to access private datasets.</strong></a>\n" +
             "<br>Many ERDDAP installations don't have authentication enabled and thus\n" +
             "don't provide any way for users to login, nor do they have any private datasets.\n" +
             "<p>Some ERDDAP installations do have authentication enabled.\n" +
@@ -8144,7 +8447,8 @@ public abstract class EDDTable extends EDD {
             "can log in, but they will only have access to the private datasets\n" +
             "that the ERDDAP administrator has explicitly authorized them to access.\n" +
             "For instructions on logging into ERDDAP from a browser or via a script, see\n" +
-            "<a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n" +
+            "<a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html\"\n" +
+            "      >Access to Private Datasets in ERDDAP</a>.\n" +
             "\n" +
             "<li><a class=\"selfLink\" id=\"dataModel\" href=\"#dataModel\" rel=\"bookmark\"><strong>Data Model</strong></a>\n" +
             "<br>Each tabledap dataset can be represented as a table with one\n" +
@@ -8174,7 +8478,8 @@ public abstract class EDDTable extends EDD {
             "      <br>&nbsp;\n" +
             "    </ul>\n" +
             "  </ul>\n" +
-            "<li><a class=\"selfLink\" id=\"specialVariables\" href=\"#specialVariables\" rel=\"bookmark\"><strong>Special Variables</strong></a>\n" +
+            "<li><a class=\"selfLink\" id=\"specialVariables\" href=\"#specialVariables\" rel=\"bookmark\"\n" +
+            "      ><strong>Special Variables</strong></a>\n" +
             "  <br>ERDDAP is aware of the spatial and temporal features of each dataset. The longitude,\n" +
             "  latitude, altitude, depth, and time axis variables (when present) always have specific\n" +
             "  names and units. This makes it easier for you to identify datasets with relevant data,\n" +
@@ -8200,7 +8505,8 @@ public abstract class EDDTable extends EDD {
             "      variable but have a different name.\n" +
             "      <br>&nbsp;\n" +
             "  </ul>\n" +
-            "<li><a class=\"selfLink\" id=\"incompatibilities\" href=\"#incompatibilities\" rel=\"bookmark\"><strong>Incompatibilities</strong></a>\n" +
+            "<li><a class=\"selfLink\" id=\"incompatibilities\" href=\"#incompatibilities\" rel=\"bookmark\"\n" +
+            "      ><strong>Incompatibilities</strong></a>\n" +
             "  <ul>\n" +
             "  <li>Constraints - Different types of data sources support different types of constraints.\n" +
             "    Most data sources don't support all of the types of constraints that tabledap\n" +
@@ -8215,9 +8521,10 @@ public abstract class EDDTable extends EDD {
             "    tabledap throws an error.\n" + 
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
-            "<li>" + OutputStreamFromHttpResponse.acceptEncodingHtml(tErddapUrl) +
+            "<li>" + EDStatic.acceptEncodingHtml("h3", tErddapUrl) +
             "    <br>&nbsp;\n" +
-"<li><a class=\"selfLink\" id=\"citeDataset\" href=\"#citeDataset\" rel=\"bookmark\"><strong>How to Cite a Dataset in a Paper</strong></a>\n" +
+"<li><a class=\"selfLink\" id=\"citeDataset\" href=\"#citeDataset\" rel=\"bookmark\"\n" +
+"      ><strong>How to Cite a Dataset in a Paper</strong></a>\n" +
 "<br>It is important to let readers of your paper know how you got the data that\n" +
 "you used in your paper. For each dataset that you used, please look at the\n" +
 "dataset's metadata in the Dataset Attribute Structure section at the bottom\n" +
@@ -8240,17 +8547,82 @@ public abstract class EDDTable extends EDD {
 "  href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\"\n" +
 "  >Digital Object Identifier (DOI)<img \n" +
 "  src=\"" + tErddapUrl + "/images/external.png\" alt=\"(external link)\"\n" +
-"  title=\"This link to an external web site does not constitute an endorsement.\"></a>, please\n" +
+"  title=\"This link to an external website does not constitute an endorsement.\"></a>, please\n" +
 "include that in the citation you create.\n" +
+"<br>&nbsp;\n" +
+
+"<li><a class=\"selfLink\" id=\"Errors\" href=\"#Errors\" rel=\"bookmark\"><strong>Errors</strong></a>\n" +
+"<br>Like other parts of the Internet (e.g., Tomcat, Apache, routers, your browser),\n" +
+"ERDDAP uses various HTTP status/error codes to make it easy to\n" +
+"distinguish different types of errors, including:\n" +
+"  <ul>\n" +
+"  <li>400 Bad Request - for syntax errors in the request URL and other request errors that will never succeed.\n" +
+"    If you fix the stated problem, your request should succeed\n" +
+"    (or you'll get a different error message for a different problem).\n" +
+"  <li>401 Unauthorized - when the user isn't currently authorized to access a given dataset.\n" +
+"    If you get this and think it unwarranted, please email the URL and error message to\n" +
+"     <a rel=\"help\" href=\"#contact\">this ERDDAP's administrator</a> to try to resolve the problem.\n" +
+"  <li>403 Forbidden - when the user's IP address is on this ERDDAP's blacklist.\n" +
+"    If you get this and think it unwarranted, please email the URL and error message to\n" +
+"     <a rel=\"help\" href=\"#contact\">this ERDDAP's administrator</a> to try to resolve the problem.\n" +
+"  <li>404 Not Found - for datasetID not found (perhaps temporarily),\n" +
+"    \"Your query produced no matching results.\", or other request errors.\n" +
+"    If the datasetID was not found but was there a few minutes ago, wait 15 minutes and try again.\n" +
+"  <li>408 Timeout - for timeouts. Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
+"  <li>413 Payload Too Large - when there isn't enough memory currently (or ever) available to process the response,\n" +
+"    or when the response is too large for the requested file type.\n" +
+"    Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
+"  <li>416 Range Not Satisfiable - for invalid byte range requests. Note that ERDDAP's\n" +
+"    \"files\" system does not allow byte range requests to the individual .nc or .hdf files\n" +
+"    because that approach is horribly inefficient -- either download the entire\n" +
+"    file or use the griddap or tabledap services to request a subset of a dataset.\n" +
+"  <li>500 Internal Server Error - for errors that aren't the user's fault or responsibility.\n" +
+"    For code=500 errors that look like they should use a different code, or for\n" +
+"    errors that look like bugs in ERDDAP, please email the URL and error message to bob.simons at noaa.gov .\n" +
+"  </ul>\n" +
+"<p>If the error response was generated by ERDDAP (not by some other part of the Internet,\n" +
+"  e.g., Tomcat, Apache, routers, or your browser),\n" +
+"  it will come with an (OPeN)DAPv2.0-formatted, plain text, UTF-8-encoded error message\n" +
+"  as the payload of the response, e.g.,\n" +
+"<br><kbd>Error {\n" +
+"<br>&nbsp;&nbsp;&nbsp;&nbsp;code=404;\n" +
+"<br>&nbsp;&nbsp;&nbsp;&nbsp;message=\"Not Found: Your query produced no matching results.\n" +
+"(time&gt;=2019-03-27T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to 2019-03-26T15:00:00Z)\";\n" +
+"<br>}</kbd>\n" +
+"<br>Notes:\n" +
+"<ul>\n" +
+"<li>The <kbd>message</kbd> is a JSON-encoded string. The first few words, e.g., Not Found,\n" +
+"  are the generic name of the HTTP error code (e.g., HTTP error 404).\n" +
+"<li>Of course, status code 200 OK (with the relevant payload)\n" +
+"  is used for completely successful requests.\n" +
+"<li>Errors generated by other parts of the Internet (e.g., Tomcat, Apache, routers, or your browser)\n" +
+"  won't return an (OPeN)DAPv2.0-formatted, plain text, error message.\n" +
+"  In fact, they may not return any payload with the HTTP error code.\n" +
+"  In a browser, errors are obvious. But in a script, the best way to check for errors\n" +
+"  is to look at the HTTP status code first (is it 200=OK ?) and only secondarily\n" +
+"  see if there is an error message payload (which may not be (OPeN)DAPv2.0-formatted).\n" + 
+"<li>If you need help resolving a problem, email the URL and error message to \n" +
+"  <a rel=\"help\" href=\"#contact\">this ERDDAP's administrator</a> to try to resolve the problem.\n" +
+"  Or, you can join the <a rel=\"help\"\n" +
+"  href=\"#ERDDAPMailingList\">ERDDAP Google Group / Mailing List</a> \n" +
+"  and post the URL, the error message, and your question there.\n" +
+"<li>If you see errors that have been assigned the wrong HTTP status code\n" +
+"  (especially code=500 errors that should be 4xx errors) or might be evidence of a bug in ERDDAP,\n" +
+"  please email the URL and error to bob.simons at noaa.gov .\n" +
+"</ul>\n" +
+"<br>&nbsp;\n" +
+
             "</ul>\n" +
             "<h2><a class=\"selfLink\" id=\"contact\" href=\"#contact\" rel=\"bookmark\">Contact Us</a></h2>\n" +
             "If you have questions, suggestions, or comments about ERDDAP in general (not this specific\n" +
             "ERDDAP installation or its datasets), please send an email to <kbd>bob dot simons at noaa dot gov</kbd>\n" +
             "and include the ERDDAP URL directly related to your question or comment.\n" +
-            "<p><a class=\"selfLink\" id=\"ERDDAPMailingList\" href=\"#ERDDAPMailingList\" rel=\"bookmark\">Or,</a> you can join the ERDDAP Google Group / Mailing List by visiting\n" +
-            "<a class=\"N\" rel=\"help\" href=\"https://groups.google.com/forum/#!forum/erddap\">https://groups.google.com/forum/#!forum/erddap<img \n" +
+            "<p><a class=\"selfLink\" id=\"ERDDAPMailingList\" href=\"#ERDDAPMailingList\" rel=\"bookmark\"\n" +
+            ">Or,</a> you can join the ERDDAP Google Group / Mailing List by visiting\n" +
+            "<a class=\"N\" rel=\"help\" href=\"https://groups.google.com/forum/#!forum/erddap\"\n" +
+            ">https://groups.google.com/forum/#!forum/erddap<img \n" +
             "  src=\"" + tErddapUrl + "/images/external.png\" alt=\" (external link)\" \n" +
-            "  title=\"This link to an external web site does not constitute an endorsement.\"></a> \n" +
+            "  title=\"This link to an external website does not constitute an endorsement.\"></a> \n" +
             "and clicking on \"Apply for membership\". \n" +
             "Once you are a member, you can post your question there or search to see if the question\n" +
             "has already been asked and answered.\n");
@@ -8374,7 +8746,7 @@ public abstract class EDDTable extends EDD {
 
         //*** write the header
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = new OutputStreamWriter(out, String2.UTF_8); 
+        Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
         writer.write(EDStatic.startHeadHtml(tErddapUrl,  
             title() + " - " + EDStatic.mag));
@@ -8947,6 +9319,12 @@ public abstract class EDDTable extends EDD {
             if (reallyVerbose)
                 String2.log("post set draw-related; resultsVariables=" + resultsVariables.toString());
 
+            //collect info for zoomX below if found
+            EDV zoomXEdv = null;
+            int zoomXCv = -1; //constraint row not yet known
+            double zoomXMin = Double.NaN; //will be set if known
+            double zoomXMax = Double.NaN;
+
             //pick variables
             for (int v = 0; v < nVars; v++) {
                 String tDvNames[] = varOptions[v];
@@ -8955,6 +9333,8 @@ public abstract class EDDTable extends EDD {
                 if (v >= resultsVariables.size()) 
                      resultsVariables.add(tDvNames[vi]);
                 else resultsVariables.set(v, tDvNames[vi]);
+                if (v == 0) 
+                    zoomXEdv = findVariableByDestinationName(tDvNames[vi]);
                 paramName = "var" + v;
                 writer.write(
                     "<tr>\n" +
@@ -9176,8 +9556,15 @@ public abstract class EDDTable extends EDD {
                             graphQueryNoLatLon.append(tq);
                         if (!(conEdv instanceof EDVTime))
                             graphQueryNoTime.append(tq);
-                    }
 
+                        if (conEdv != null && conEdv == zoomXEdv && //this constraint is for the x axis variable
+                            (zoomXCv < 0 || zoomXCv == cv)) {  //both constraints must be from 1 constraints row
+                            zoomXCv = cv;
+                            String top = OPERATORS[conOp[cv][con]];
+                            if      (top.indexOf('>') >= 0) zoomXMin = String2.parseDouble(tVal);
+                            else if (top.indexOf('<') >= 0) zoomXMax = String2.parseDouble(tVal);
+                        }
+                    }
                 }
 
                 //end of constraint row
@@ -9209,7 +9596,7 @@ public abstract class EDDTable extends EDD {
                                     XML.minimalEncodeSpaces(tConVala))),
                             //INACTIVE. 2 lines above were:
                             //  new String[]{""}, 0, //initially, just the 0="" element to hold place
-                            //onChange pushes selected value to textfield above
+                            //onChange pushes selected value to textField above
                             "id=\"dis" + cv + "\" onChange='" +
                               " document." + formName + ".cVal" + cv + "a.value=this.options[this.selectedIndex].text;" +
                               "'"));
@@ -9233,8 +9620,8 @@ public abstract class EDDTable extends EDD {
                     writer.write(
                         "      </td>\n" +
 
-                        "      <td class=\"B\">\n" +
-                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\" " +
+                        "      <td class=\"B\">\n" + //vertical-align: 'b'ottom
+                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\" " + //vertical-align: 'b'ottom
                         widgets.completeTooltip(EDStatic.magItemPrevious) +
                         "  alt=\"-\"\n" + 
                         //onMouseUp works much better than onClick and onDblClick
@@ -9246,8 +9633,8 @@ public abstract class EDDTable extends EDD {
                         "   }\" >\n" + 
                         "      </td>\n" +
 
-                        "      <td class=\"B\">\n" +
-                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\" " +
+                        "      <td class=\"B\">\n" + //vertical-align: 'b'ottom
+                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\" " + //vertical-align: 'b'ottom
                         widgets.completeTooltip(EDStatic.magItemNext) +
                         "  alt=\"+\"\n" + 
                         //onMouseUp works much better than onClick and onDblClick
@@ -9292,8 +9679,8 @@ public abstract class EDDTable extends EDD {
             }*/
 
             //*** function options
-            int nOrderByDropdown = 4; //to be narrower than Data Access Form
-            writeFunctionHtml(loggedInAs, queryParts, writer, widgets, formName, nOrderByDropdown);
+            int nOrderByComboBox = 4; //to be narrower than Data Access Form
+            writeFunctionHtml(loggedInAs, queryParts, writer, widgets, formName, nOrderByComboBox);
             if (String2.indexOf(queryParts, "distinct()") >= 0) {
                 graphQuery.append("&distinct()");
                 graphQueryNoLatLon.append("&distinct()");
@@ -9479,7 +9866,7 @@ public abstract class EDDTable extends EDD {
                     "    <td>" + gap + EDStatic.magGSMin + ":&nbsp;</td>" +
                     "    <td>" +
                     widgets.textField(paramName, EDStatic.magGSMinTooltip, 
-                       10, 40, palMin, "") + "</td>\n");
+                       10, 60, palMin, "") + "</td>\n");
 
                 paramName = "pMax";
                 String defaultMax = "";
@@ -9488,7 +9875,7 @@ public abstract class EDDTable extends EDD {
                     "    <td>&nbsp;" + EDStatic.magGSMax + ":&nbsp;</td>" +
                     "    <td>" +
                     widgets.textField(paramName, EDStatic.magGSMaxTooltip, 
-                       10, 40, palMax, "") + "</td>\n");
+                       10, 60, palMax, "") + "</td>\n");
 
                 paramName = "pSec";
                 pSections = Math.max(0, String2.indexOf(EDStatic.paletteSections, pParts.length > 5? pParts[5] : ""));
@@ -9567,7 +9954,7 @@ public abstract class EDDTable extends EDD {
                     "    <td>" + EDStatic.magGSVectorStandard + ":&nbsp;</td>\n" +
                     "    <td>" +
                     widgets.textField(paramName, 
-                        EDStatic.magGSVectorStandardTooltip, 10, 20, vec, "") + "</td>\n" +
+                        EDStatic.magGSVectorStandardTooltip, 10, 30, vec, "") + "</td>\n" +
                     "    <td></td>\n" +
                     "    <td></td>\n" +
                     "    <td></td>\n" +
@@ -9600,6 +9987,7 @@ public abstract class EDDTable extends EDD {
             //yRange
             String yRange[] = new String[]{"", ""};
             boolean yAscending = true;
+            String yAxisScale = "";
             if (true) {
                 paramName = "yRange";
                 String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
@@ -9614,6 +10002,14 @@ public abstract class EDDTable extends EDD {
                     if (tyRangeAr.length > 2) 
                         //if the param slot is there, the param determines Ascending
                         yAscending = String2.parseBoolean(tyRangeAr[2]); //"" -> true(the default)
+                    if (tyRangeAr.length > 3) {
+                        //if the param slot is there, the param determines Linear/Log
+                        //if the param slot is there, the param determines ""/Linear/Log                        
+                        yAxisScale = String2.toTitleCase(tyRangeAr[3].trim());
+                        if (!yAxisScale.equals("Linear") &&
+                            !yAxisScale.equals("Log"))
+                            yAxisScale = "";
+                    }
                 }
                 writer.write(
                     "  <tr>\n" +
@@ -9623,7 +10019,7 @@ public abstract class EDDTable extends EDD {
                         "<div class=\"narrow_max_width\">" + 
                         EDStatic.magGSYRangeMinTooltip + EDStatic.magGSYRangeTooltip +
                         "</div>", 
-                        10, 20, yRange[0], "") + "</td>\n" +
+                        10, 30, yRange[0], "") + "</td>\n" +
 
                     "    <td>&nbsp;" + EDStatic.magGSYAxisMax + ":&nbsp;</td>\n" +
                     "    <td>" +
@@ -9631,20 +10027,26 @@ public abstract class EDDTable extends EDD {
                         "<div class=\"narrow_max_width\">" + 
                         EDStatic.magGSYRangeMaxTooltip + EDStatic.magGSYRangeTooltip +
                         "</div>", 
-                        10, 20, yRange[1], "") + "</td>\n" +
+                        10, 30, yRange[1], "") + "</td>\n" +
 
-                    "    <td>&nbsp;Ascending:&nbsp;</td>\n" +
-                    "    <td>" +
+                    "    <td>&nbsp;" +
                     widgets.select("yRangeAscending", 
                         EDStatic.magGSYAscendingTooltip, 
-                        1, new String[]{"ascending", "descending"}, yAscending? 0 : 1, "") +
+                        1, new String[]{"Ascending", "Descending"}, yAscending? 0 : 1, "") +
+                        "</td>\n" +
+                    "    <td>" +
+                    widgets.select("yScale", 
+                        EDStatic.magGSYScaleTooltip, 
+                        1, new String[]{"", "Linear", "Log"}, 
+                        yAxisScale.equals("Linear")? 1 :
+                        yAxisScale.equals("Log")? 2 : 0, "") +
                         "</td>\n" +
                     "  </tr>\n");
 
                 //add to graphQuery
-                if (yRange[0].length() > 0 || yRange[1].length() > 0 || !yAscending) {
+                if (yRange[0].length() > 0 || yRange[1].length() > 0 || !yAscending || yAxisScale.length() > 0) {
                     String ts = "&.yRange=" + SSR.minimalPercentEncode(
-                        yRange[0] + "|" + yRange[1] + "|" + yAscending);
+                        yRange[0] + "|" + yRange[1] + "|" + yAscending + "|" + yAxisScale);
                     graphQuery.append(ts);
                     graphQueryNoLatLon.append(ts);
                     graphQueryNoTime.append(ts);
@@ -9689,7 +10091,7 @@ public abstract class EDDTable extends EDD {
             }
 
             //functions
-            writer.write(functionJavaScript(formName, nOrderByDropdown));
+            writer.write(functionJavaScript(formName, nOrderByComboBox));
 
             //graph settings   
             writer.write(                
@@ -9717,8 +10119,9 @@ public abstract class EDDTable extends EDD {
                 "    var yRMin=d.f1.yRangeMin.value; \n" +
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
                 "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n" +
-                "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1)\n" +
-                "      q2 += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0); \n");
+                "    var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text; \n" +
+                "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)\n" +
+                "      q2 += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0) + \"%7C\" + yScl; \n");
             //always add .bgColor to graphQuery so this ERDDAP's setting overwrites remote ERDDAP's
             writer.write(
                 "    q2 += \"&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8) + "\"; \n");
@@ -9887,8 +10290,118 @@ public abstract class EDDTable extends EDD {
                 writer.write("<br>");
             }
 
-            //*** zoomTime stuff
+            //*** zoomX 
+            boolean zoomX = !zoomLatLon &&
+                zoomXEdv != null && !(zoomXEdv instanceof EDVTimeStamp) &&
+                zoomXCv >= 0 &&
+                Double.isFinite(zoomXMin) && Double.isFinite(zoomXMax) && zoomXMin < zoomXMax; //already has > and < constraints
             boolean zoomTime = timeIndex >= 0 && !Double.isNaN(timeMin) && !Double.isNaN(timeMax);
+
+            //make controls table?
+            if (zoomX || zoomTime) 
+                writer.write("<table class=\"compact\">");
+
+            if (zoomX) {
+
+                //does var have known min and max?
+                double zoomXEdvMin = zoomXEdv.destinationMin(); //may be NaN
+                double zoomXEdvMax = zoomXEdv.destinationMax();
+                double zoomXEdvCenter = (zoomXEdvMin + zoomXEdvMax) / 2; //may be NaN
+                double zoomXEdvRange = zoomXEdvMax - zoomXEdvMin; //may be NaN
+                double zoomXCenter = (zoomXMin + zoomXMax ) / 2;
+                double zoomXRange = zoomXMax - zoomXMin;
+                double zoomXRange2 = zoomXRange / 2;
+                double zoomXRange4 = zoomXRange / 4;
+                String formTextField = formName + ".cVal" + zoomXCv; // + 'a' or 'b'
+                String tGap = "&nbsp;&nbsp;&nbsp;&nbsp;";
+
+                //beginning of row in controls table
+                writer.write("<tr><td><strong>X range:</strong>&nbsp;</td>\n" +
+                    "<td>");
+
+                //zoom in 
+                if (zoomXRange > 1e-10) {
+                    writer.write(widgets.htmlButton("button", "zoomXzoomIn", "", //value
+                        EDStatic.zoomIn, EDStatic.zoomIn,   //tooltip, labelHtml 
+                        "onMouseUp='" + formTextField + "a.value=\"" + (zoomXCenter - zoomXRange4) + "\"; " +
+                                        formTextField + "b.value=\"" + (zoomXCenter + zoomXRange4) + "\"; " +
+                                   "mySubmit(true);'"));
+                } else {
+                    writer.write(tGap + tGap + tGap);
+                }                    
+
+                //zoom out 
+                {
+                    writer.write(widgets.htmlButton("button", "zoomXzoomOut", "", //value
+                        EDStatic.zoomOut, EDStatic.zoomOut,   //tooltip, labelHtml 
+                        "onMouseUp='" + formTextField + "a.value=\"" + (zoomXCenter - zoomXRange) + "\"; " +
+                                        formTextField + "b.value=\"" + (zoomXCenter + zoomXRange) + "\"; " +
+                                   "mySubmit(true);'") + 
+                        "&nbsp;");
+                }                    
+                writer.write("</td>\n" +
+                    "<td>");
+
+                if (Double.isFinite(zoomXEdvRange)) {
+                    //all the way left
+                    writer.write(HtmlWidgets.htmlTooltipImage( 
+                        EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "|<",
+                        EDStatic.shiftXAllTheWayLeft, 
+                        "class=\"B\" " + //vertical-align: 'b'ottom
+                        "onMouseUp='" + formTextField + "a.value=\"" +  zoomXEdvMin                                        + "\"; " +
+                                        formTextField + "b.value=\"" + (zoomXEdvMin + Math.min(zoomXEdvRange, zoomXRange)) + "\"; " +
+                                   "mySubmit(true);'") + 
+                        "&nbsp;");
+                } else {
+                    writer.write(tGap);
+                }
+                writer.write("</td>\n" +
+                    "<td>");
+
+                //left
+                writer.write(HtmlWidgets.htmlTooltipImage( 
+                    EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-",
+                    EDStatic.shiftXLeft, 
+                    "class=\"B\" " + //vertical-align: 'b'ottom
+                    "onMouseUp='" + formTextField + "a.value=\"" + (zoomXMin - zoomXRange2) + "\"; " +
+                                    formTextField + "b.value=\"" + (zoomXMax - zoomXRange2) + "\"; " +
+                               "mySubmit(true);'") + 
+                    "&nbsp;");
+                writer.write("</td>\n" +
+                    "<td>");
+
+                //right
+                writer.write(HtmlWidgets.htmlTooltipImage( 
+                    EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+",
+                    EDStatic.shiftXRight, 
+                    "class=\"B\" " + //vertical-align: 'b'ottom
+                    "onMouseUp='" + formTextField + "a.value=\"" + (zoomXMin + zoomXRange2) + "\"; " +
+                                    formTextField + "b.value=\"" + (zoomXMax + zoomXRange2) + "\"; " +
+                               "mySubmit(true);'") + 
+                    "&nbsp;");
+                writer.write("</td>\n" +
+                    "<td>");
+
+                if (Double.isFinite(zoomXEdvRange)) {
+                    //all the way right
+                    writer.write(HtmlWidgets.htmlTooltipImage( 
+                        EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">|",
+                        EDStatic.shiftXAllTheWayRight, 
+                        "class=\"B\" " + //vertical-align: 'b'ottom
+                        "onMouseUp='" + formTextField + "a.value=\"" + (zoomXEdvMax - Math.min(zoomXEdvRange, zoomXRange)) + "\"; " +
+                                        formTextField + "b.value=\"" +  zoomXEdvMax                                        + "\"; " +
+                                   "mySubmit(true);'") + 
+                        "&nbsp;");
+
+                } else {
+                    //writer.write(tGap);  //no need
+                }
+
+                //end of row in tiny table
+                writer.write("</td></tr>");
+            }
+
+            //*** zoomTime stuff
             if (zoomTime) {
 
                 EDVTimeStamp edvTime = (EDVTimeStamp)dataVariables[timeIndex];
@@ -9901,8 +10414,8 @@ public abstract class EDDTable extends EDD {
                 //timeMin and timeMax are not NaN
                 double timeRange = timeMax - timeMin;
                 if (reallyVerbose)
-                    String2.log("zoomTime timeMin=" + Calendar2.epochSecondsToIsoStringT(timeMin) +
-                      "  timeMax=" + Calendar2.epochSecondsToIsoStringT(timeMax) +
+                    String2.log("zoomTime timeMin=" + Calendar2.epochSecondsToIsoStringTZ(timeMin) +
+                      "  timeMax=" + Calendar2.epochSecondsToIsoStringTZ(timeMax) +
                     "\n  range=" + Calendar2.elapsedTimeString(timeRange * 1000) +
                     "\n  edvTimeMin=" + Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, edvTimeMin, "NaN") +
                              "  max=" + Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, edvTimeMax, "NaN"));
@@ -9945,8 +10458,9 @@ public abstract class EDDTable extends EDD {
                 String gqnt = "window.location=\"" + tErddapUrl + "/tabledap/" + 
                     datasetID + ".graph?" + XML.encodeAsHTML(graphQueryNoTime.toString());
 
-                writer.write(
-                    "<strong>" + EDStatic.magTimeRange + "</strong>\n");
+                //beginning of row in controls table
+                writer.write("<tr><td><strong>" + EDStatic.magTimeRange + "</strong>&nbsp;</td>\n" +
+                    "<td>");
 
                 String timeRangeString = idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
                 String timeRangeParam = "&amp;.timeRange=" + idealTimeN + "," + 
@@ -9977,7 +10491,8 @@ public abstract class EDDTable extends EDD {
                     Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMax, "") +
                     "&amp;.timeRange=" + idealTimeN + ",\" + " +
                     "this.options[this.selectedIndex].text;'")); 
-
+                writer.write("&nbsp;</td>\n" +
+                    "<td>");
 
                 //beginning time
                 if (!Double.isNaN(edvTimeMin)) {
@@ -9996,22 +10511,23 @@ public abstract class EDDTable extends EDD {
 
                     if (timeMin > edvTimeMin || ratio < 0.99 || ratio > 1.01) {
                         writer.write(
-                        "&nbsp;&nbsp;\n" +
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "<<",
+                            EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "|<",
                             MessageFormat.format(EDStatic.magTimeRangeFirst, timeRangeString),
-                            "class=\"B\" onMouseUp='" + gqnt + 
+                            "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                             "&amp;time%3E=" + 
                             Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc) +
                             "&amp;time%3C"  + 
                             Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc) +
-                            timeRangeParam + "\";'"));
+                            timeRangeParam + "\";'") + "&nbsp;");
                     } else {
-                        writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                        writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
                     }
                 } else {
-                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
                 }
+                writer.write("</td>\n" +
+                    "<td>");
 
                 //time to left
                 if (Double.isNaN(edvTimeMin) || 
@@ -10020,23 +10536,23 @@ public abstract class EDDTable extends EDD {
                     //idealized (rounded) time shift
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
-                    writer.write(
-                    "&nbsp;&nbsp;\n" +
-                    HtmlWidgets.htmlTooltipImage( 
+                    writer.write(HtmlWidgets.htmlTooltipImage( 
                         EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-",
                         MessageFormat.format(EDStatic.magTimeRangeBack, timeRangeString),
-                        "class=\"B\" onMouseUp='" + gqnt + 
+                        "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                         "&amp;time%3E=" + 
                         Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc) + 
                         "&amp;time%3C"  + 
                         Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc) +
-                        timeRangeParam + "\";'"));
+                        timeRangeParam + "\";'") + "&nbsp;");
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
 
                 } else {
-                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
                 }
+                writer.write("</td>\n" +
+                    "<td>");
 
                 //time to right
                 if (Double.isNaN(edvTimeMax) || 
@@ -10048,23 +10564,23 @@ public abstract class EDDTable extends EDD {
                     String equals = 
                         (!Double.isNaN(edvTimeMax) && 
                         idMaxGc.getTimeInMillis() >= edvTimeMax * 1000)? "=" : "";
-                    writer.write(
-                    "&nbsp;&nbsp;\n" +
-                    HtmlWidgets.htmlTooltipImage( 
+                    writer.write(HtmlWidgets.htmlTooltipImage( 
                         EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+",
                         MessageFormat.format(EDStatic.magTimeRangeForward, timeRangeString),
-                        "class=\"B\" onMouseUp='" + gqnt + 
+                        "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                         "&amp;time%3E=" +          
                         Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc) + 
                         "&amp;time%3C"  + equals + 
                         Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc) + 
-                        timeRangeParam + "\";'"));
+                        timeRangeParam + "\";'") + "&nbsp;");
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
 
                 } else {
-                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
                 }
+                writer.write("</td>\n" +
+                    "<td>");
 
                 //end time
                 if (!Double.isNaN(edvTimeMax)) {
@@ -10081,28 +10597,30 @@ public abstract class EDDTable extends EDD {
                     double ratio = (timeMax - timeMin) / idRange;                    
 
                     if (timeMax < edvTimeMax || ratio < 0.99 || ratio > 1.01) {
-                        writer.write(
-                        "&nbsp;&nbsp;\n" +
-                        HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">>",
+                        writer.write(HtmlWidgets.htmlTooltipImage( 
+                            EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">|",
                             MessageFormat.format(EDStatic.magTimeRangeLast, timeRangeString),
-                            "class=\"B\" onMouseUp='" + gqnt + 
+                            "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                             "&amp;time%3E=" + 
                             Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc) +
                             "&amp;time%3C=" + 
                             Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc) +  //yes, =
-                            timeRangeParam + "\";'"));
+                            timeRangeParam + "\";'")
+                            //+ "&nbsp;" //not needed
+                            );
                     } else {
-                        writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                        //writer.write("&nbsp;&nbsp;&nbsp;&nbsp;"); //not needed
                     }
                 } else {
-                    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+                    //writer.write("&nbsp;&nbsp;&nbsp;&nbsp;"); //not needed
                 }
 
-                //trailing <br>
-                writer.write("<br>");
+                //end of row in tiny table
+                writer.write("</td></tr>");
 
             }
+            if (zoomX || zoomTime) 
+                writer.write("</table>\n");
 
 
             //display the graph
@@ -10561,7 +11079,7 @@ public abstract class EDDTable extends EDD {
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = new OutputStreamWriter(out, String2.UTF_8); 
+        Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
         writer.write(EDStatic.startHeadHtml(tErddapUrl,  
             title() + " - " + EDStatic.subset));
         writer.write("\n" + rssHeadLink());
@@ -10726,7 +11244,7 @@ public abstract class EDDTable extends EDD {
                     writer.write(
                         "      </td>\n" +
                         "      <td>\n" +
-                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\"\n" +
+                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "minus.gif\"\n" + //vertical-align: 'b'ottom
                         "  " + widgets.completeTooltip(EDStatic.selectPrevious) +
                         "  alt=\"-\" " + 
                         //onMouseUp works much better than onClick and onDblClick
@@ -10739,7 +11257,7 @@ public abstract class EDDTable extends EDD {
                         "      </td>\n" +
 
                         "      <td>\n" +
-                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\"\n" +
+                        "<img class=\"B\" src=\"" + widgets.imageDirUrl + "plus.gif\"\n" + //vertical-align: 'b'ottom
                         "  " + widgets.completeTooltip(EDStatic.selectNext) +
                         "  alt=\"+\" " + 
                         //onMouseUp works much better than onClick and onDblClick
@@ -11889,7 +12407,7 @@ public abstract class EDDTable extends EDD {
      * @param userDapQuery the part of the user's request after the '?', 
      *    still percentEncoded, may be null.
      * @param tableWriter
-     * @returns true if it was handled
+     * @return true if it was handled
      * @throws throwable e.g., if it should have been handled, but failed.
      *    Or if no data.
      */
@@ -12418,7 +12936,7 @@ public abstract class EDDTable extends EDD {
                         ", one variable must have cf_role=" + cdmLCNames[cdmi] + "_id.");
             }
             profile_idIndex    = cdmIdIndex[0];
-            timeseries_idIndex    = cdmIdIndex[1];
+            timeseries_idIndex = cdmIdIndex[1];
             trajectory_idIndex = cdmIdIndex[2]; 
             //???set old sosOfferingIndex to one of these? How is that used?
 
@@ -12711,7 +13229,7 @@ public abstract class EDDTable extends EDD {
 //    https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos-test/
 //    https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos-test/SOS?service=SOS&request=GetCapabilities
 //        which is c:/programs/sos/coops_capabilities_100430.xml
-//and http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi?service=SOS&request=GetCapabilities
+//and [was http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi?service=SOS&request=GetCapabilities ]
 //    which is C:/programs/sos/gomoos_capabilities_100430.xml
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //don't specify encoding (http does that)?
 "<Capabilities\n" +
@@ -12719,8 +13237,8 @@ public abstract class EDDTable extends EDD {
 "  xmlns:ows=\"http://www.opengis.net/ows/1.1\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sos/1.0.0 " +
     "http://schemas.opengis.net/sos/1.0.0/sosAll.xsd\" " +
     "version=\"1.0.0\">\n");
@@ -13020,13 +13538,13 @@ public abstract class EDDTable extends EDD {
 
             String minTimeString = Double.isNaN(minTime)?  
                 " indeterminatePosition=\"unknown\">" :
-                ">" + Calendar2.epochSecondsToIsoStringT(minTime) + "Z";
+                ">" + Calendar2.epochSecondsToIsoStringTZ(minTime);
             String maxTimeString = 
                 Double.isNaN(maxTime)?  
                     " indeterminatePosition=\"unknown\">" : 
                 System.currentTimeMillis() - maxTime < 3 * Calendar2.MILLIS_PER_DAY? //has data within last 3 days
                     " indeterminatePosition=\"now\">" : 
-                    ">" + Calendar2.epochSecondsToIsoStringT(maxTime) + "Z";
+                    ">" + Calendar2.epochSecondsToIsoStringTZ(maxTime);
 
             writer.write(
 "      <ObservationOffering gml:id=\"" + offeringType + "-" + 
@@ -13137,11 +13655,14 @@ public abstract class EDDTable extends EDD {
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<gml:Dictionary gml:id=\"PhenomenaDictionary0.6.1\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.2\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" + //2009-08-26 I changed from ../.. links to actual links for xsd's below
-"  xsi:schemaLocation=\"http://www.opengis.net/swe/1.0.2 http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/sweCommon/1.0.2/phenomenon.xsd http://www.opengis.net/gml/3.2 http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/gml/3.2.1/gml.xsd\"\n" + //GONE!
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" + //2009-08-26 I changed from ../.. links to actual links for xsd's below
+"  xsi:schemaLocation=\"http://www.opengis.net/swe/1.0.1 http://schemas.opengis.net/sweCommon/1.0.1/ \n" +
+//was http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/sweCommon/1.0.2/phenomenon.xsd   //GONE!
+"http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd\"\n" + 
+//was "http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/gml/3.2.1/gml.xsd\"\n" + //GONE!
 "  >\n" +
 "  <gml:description>Dictionary of observed phenomena for " + datasetID + ".</gml:description>\n" +
 "  <gml:identifier codeSpace=\"" + codeSpace + "\">PhenomenaDictionary</gml:identifier>\n");
@@ -13244,13 +13765,13 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(maxTimeD)) maxTimeD = dataVariables[timeIndex].destinationMax();
         String minTimeString = Double.isNaN(minTimeD)?  
             " indeterminatePosition=\"unknown\">" :
-            ">" + Calendar2.epochSecondsToIsoStringT(minTimeD) + "Z";
+            ">" + Calendar2.epochSecondsToIsoStringTZ(minTimeD);
         String maxTimeString = 
             Double.isNaN(maxTimeD)?  
                 " indeterminatePosition=\"unknown\">" : 
             System.currentTimeMillis() - maxTimeD < 3 * Calendar2.MILLIS_PER_DAY? //has data within last 3 days
                 " indeterminatePosition=\"now\">" : 
-                ">" + Calendar2.epochSecondsToIsoStringT(maxTimeD) + "Z";
+                ">" + Calendar2.epochSecondsToIsoStringTZ(maxTimeD);
 
         String tType = isNetwork? sosNetworkOfferingType : offeringType;
         String name2 = tType + "-" + shortName;
@@ -13261,8 +13782,8 @@ public abstract class EDDTable extends EDD {
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sensorML/1.0.1 http://schemas.opengis.net/sensorML/1.0.1/sensorML.xsd\"\n" +
@@ -13518,11 +14039,11 @@ public abstract class EDDTable extends EDD {
 //???this was patterned after C:/programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:Sensor \n" +
-"  xmlns:sml=\"http://www.w3.org/2001/XMLSchema\" \n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
+"  xmlns:sml=\"https://www.w3.org/2001/XMLSchema\" \n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\" \n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\" \n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\" \n" + //ogc doesn't show 1.0.2
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\">\n" +
 "<!-- This is a PROTOTYPE service.  The information in this response is NOT complete. -->\n" +
 "  <sml:identification>\n" +
 "    <sml:IdentifierList/>\n" +
@@ -13673,60 +14194,67 @@ public abstract class EDDTable extends EDD {
         String fileTypeName = sosResponseFormatToFileTypeName(responseFormat);
 
         OutputStream out = null;
-        if (isIoosSosXmlResponseFormat(responseFormat) ||
-            isOostethysSosXmlResponseFormat(responseFormat)) {
+        try {
+            if (isIoosSosXmlResponseFormat(responseFormat) ||
+                isOostethysSosXmlResponseFormat(responseFormat)) {
 
-            //*** handle the IOOS or OOSTETHYS SOS XML responses
-            //get the data
-            //Unfortunately, this approach precludes streaming the results.
-            TableWriterAllWithMetadata twawm = getTwawmForDapQuery(
-                loggedInAs, requestUrl, dapQuery); 
-            if (twawm.nRows() == 0)
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (from source)");
+                //*** handle the IOOS or OOSTETHYS SOS XML responses
+                //get the data
+                //Unfortunately, this approach precludes streaming the results.
+                TableWriterAllWithMetadata twawm = getTwawmForDapQuery(
+                    loggedInAs, requestUrl, dapQuery); 
+                try {
+                    if (twawm.nRows() == 0)
+                        throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (from source)");
 
-            //convert UDUNITS to UCUM units  (before direct use of twawm or get cumulativeTable)
-            if (EDStatic.units_standard.equals("UDUNITS")) {
-                int nColumns = twawm.nColumns();
-                for (int col = 0; col < nColumns; col++) {
-                    Attributes atts = twawm.columnAttributes(col);
-                    String units = atts.getString("units");
-                    if (units != null)
-                        atts.set("units", EDUnits.safeUdunitsToUcum(units)); 
+                    //convert UDUNITS to UCUM units  (before direct use of twawm or get cumulativeTable)
+                    if (EDStatic.units_standard.equals("UDUNITS")) {
+                        int nColumns = twawm.nColumns();
+                        for (int col = 0; col < nColumns; col++) {
+                            Attributes atts = twawm.columnAttributes(col);
+                            String units = atts.getString("units");
+                            if (units != null)
+                                atts.set("units", EDUnits.safeUdunitsToUcum(units)); 
+                        }
+                    }
+
+                    //get the cumulativeTable 
+                    //It will be reused in sosObservationsXml.
+                    //Do this now, so if not enough memory, 
+                    //    error will be thrown before get outputStream.
+                    Table table = twawm.cumulativeTable(); 
+
+                    //write the results
+                    //all likely errors are above, so it is now ~safe to get outputstream
+                    out = outputStreamSource.outputStream(String2.UTF_8);
+                    Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8));
+                    if (isIoosSosXmlResponseFormat(responseFormat)) 
+                        sosObservationsXmlInlineIoos(offeringType, offeringName, 
+                            twawm, writer, loggedInAs);
+                    else if (isOostethysSosXmlResponseFormat(responseFormat)) 
+                        sosObservationsXmlInlineOostethys(offeringType, offeringName, 
+                            twawm, writer, loggedInAs);            
+                } finally {
+                    try {twawm.releaseResources();} catch (Exception e) {}
                 }
+            } else {
+                //*** handle all other file types
+                //add the units function to dapQuery?
+                if (!EDStatic.units_standard.equals("UCUM"))
+                    dapQuery += "&units(%22UCUM%22)";
+
+                respondToDapQuery(null, null, loggedInAs, requestUrl, 
+                    dapQuery, outputStreamSource, dir, fileName, fileTypeName);
             }
-
-            //get the cumulativeTable 
-            //It will be reused in sosObservationsXml.
-            //Do this now, so if not enough memory, 
-            //    error will be thrown before get outputStream.
-            Table table = twawm.cumulativeTable(); 
-
-            //write the results
-            //all likely errors are above, so it is now ~safe to get outputstream
-            out = outputStreamSource.outputStream(String2.UTF_8);
-            Writer writer = new OutputStreamWriter(out, String2.UTF_8);
-            if (isIoosSosXmlResponseFormat(responseFormat)) 
-                sosObservationsXmlInlineIoos(offeringType, offeringName, 
-                    twawm, writer, loggedInAs);
-            else if (isOostethysSosXmlResponseFormat(responseFormat)) 
-                sosObservationsXmlInlineOostethys(offeringType, offeringName, 
-                    twawm, writer, loggedInAs);            
-
-        } else {
-            //*** handle all other file types
-            //add the units function to dapQuery?
-            if (!EDStatic.units_standard.equals("UCUM"))
-                dapQuery += "&units(%22UCUM%22)";
-
-            respondToDapQuery(null, null, loggedInAs, requestUrl, 
-                dapQuery, outputStreamSource, dir, fileName, fileTypeName);
+        } finally { 
+            try {
+                if (out != null) {
+                    if (out instanceof ZipOutputStream) 
+                        ((ZipOutputStream)out).closeEntry();
+                    out.close();             
+                }
+            } catch (Exception e) {}
         }
-
-        if (out == null)
-            out = outputStreamSource.outputStream("");
-        if (out instanceof ZipOutputStream) 
-            ((ZipOutputStream)out).closeEntry();
-        out.close();             
         return;        
     }
 
@@ -13888,7 +14416,7 @@ public abstract class EDDTable extends EDD {
             double maxTime = whichOffering == -1? dataVariables[timeIndex].destinationMax() : 
                 sosMaxTime.getDouble(whichOffering);
             double minTime = Calendar2.backNDays(7, maxTime);
-            dapQuery.append("&time>=" + Calendar2.epochSecondsToIsoStringT(minTime) + "Z" +
+            dapQuery.append("&time>=" + Calendar2.epochSecondsToIsoStringTZ(minTime) +
                 "&orderByMax" + SSR.minimalPercentEncode("(\"time\")"));
         } else {
             int spo = eventTime.indexOf('/');
@@ -14134,12 +14662,12 @@ public abstract class EDDTable extends EDD {
         //write the response
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" + //ogc doesn't show 1.0.2
-"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"" + datasetID +  //was WindsPointCollection
   "TimeSeriesObservation\">\n" + 
@@ -14407,12 +14935,12 @@ public abstract class EDDTable extends EDD {
         //write start of xml content for IOOS response
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"" + //ogc doesn't show 1.0.2
-"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"" + datasetID +  //was WindsPointCollection
   "TimeSeriesObservation\">\n" + 
@@ -14430,8 +14958,8 @@ public abstract class EDDTable extends EDD {
 "  </gml:boundedBy>\n" +
 "  <om:samplingTime>\n" +
 "    <gml:TimePeriod gml:id=\"ST\">\n" +
-"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringT(tw.columnMinValue(tTimeIndex)) + "Z</gml:beginPosition>\n" +
-"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringT(tw.columnMaxValue(tTimeIndex)) + "Z</gml:endPosition>\n" +
+"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(tw.columnMinValue(tTimeIndex)) + "</gml:beginPosition>\n" +
+"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(tw.columnMaxValue(tTimeIndex)) + "</gml:endPosition>\n" +
 "    </gml:TimePeriod>\n" +
 "  </om:samplingTime>\n" +
 "  <om:procedure>\n" +
@@ -14610,7 +15138,7 @@ public abstract class EDDTable extends EDD {
                 String stationNTN = sosOfferingType + stationNumber + "T" + nthTime;
                 String tTimeS = Double.isNaN(tTimeD)?
                     " indeterminatePosition=\"unknown\">":  //???correct???
-                    ">" + Calendar2.epochSecondsToIsoStringT(tTimeD) + "Z";
+                    ">" + Calendar2.epochSecondsToIsoStringTZ(tTimeD);
 
                 writer.write(
 "                    <ioos:Composite gml:id=\"" + stationNTN + 
@@ -14817,7 +15345,7 @@ public abstract class EDDTable extends EDD {
      *    this doesn't check.
      *
      * <p>This seeks to mimic Oostethys SOS servers like gomoosBuoy datasource
-     * http://www.gomoos.org/cgi-bin/sos/oostethys_sos.cgi.
+     * [was http://www.gomoos.org/cgi-bin/sos/oostethys_sos.cgi ].
      *
      * @param requesttOfferingType e.g., network or e.g., station
      * @param requestShortOfferingName e.g., all or 41004 or ...
@@ -14926,11 +15454,11 @@ public abstract class EDDTable extends EDD {
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<om:Observation\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 //???
 "  xsi:schemaLocation=\"http://www.opengis.net/om ../../../../../../ows4/schema0/swe/branches/swe-ows4-demo/om/current/commonObservation.xsd\"\n" +
 "  gml:id=\"" + datasetID + "TimeSeriesObservation\">\n" + 
@@ -14958,13 +15486,13 @@ public abstract class EDDTable extends EDD {
             writer.write(
             //use TimeInstant for a single measurement
 "    <gml:TimeInstant gml:id=\"DATA_TIME\">\n" +
-"      <gml:timePosition" + Calendar2.epochSecondsToIsoStringT(minTime) + "</gml:timePosition>\n" +
+"      <gml:timePosition" + Calendar2.epochSecondsToIsoStringTZ(minTime) + "</gml:timePosition>\n" +
 "    </gml:TimeInstant>\n");
         else writer.write(
             //use TimePeriod for a series of data 
 "    <gml:TimePeriod gml:id=\"DATA_TIME\">\n" +
-"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringT(minTime) + "Z</gml:beginPosition>\n" +
-"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringT(maxTime) + "Z</gml:endPosition>\n" +
+"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(minTime) + "</gml:beginPosition>\n" +
+"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(maxTime) + "</gml:endPosition>\n" +
 "    </gml:TimePeriod>\n");
         writer.write(
 "  </om:time>\n");
@@ -15097,7 +15625,7 @@ public abstract class EDDTable extends EDD {
                     writer.write(String2.toJson(tVal));            
                 else if (isTimeStampCol[col])
                     writer.write(tVal.length() == 0? mvString : 
-                        Calendar2.epochSecondsToIsoStringT(table.getDoubleData(col, row)) + "Z");            
+                        Calendar2.epochSecondsToIsoStringTZ(table.getDoubleData(col, row)));            
                 else writer.write(tVal.length() == 0? mvString : tVal);
             }
         }
@@ -15141,11 +15669,11 @@ public abstract class EDDTable extends EDD {
         GregorianCalendar gc = Double.isNaN(maxTime)?
             Calendar2.newGCalendarZulu() :
             Calendar2.epochSecondsToGc(maxTime);
-        String maxTimeS = Calendar2.formatAsISODateTimeT(gc) + "Z"; //use gc, not maxTime
+        String maxTimeS = Calendar2.formatAsISODateTimeTZ(gc); //use gc, not maxTime
         double minTime = Calendar2.backNDays(7, maxTime);
-        String minTimeS = Calendar2.epochSecondsToIsoStringT(minTime) + "Z";
+        String minTimeS = Calendar2.epochSecondsToIsoStringTZ(minTime);
         double networkMinTime = Calendar2.backNDays(1, maxTime);
-        String networkMinTimeS = Calendar2.epochSecondsToIsoStringT(networkMinTime) + "Z";
+        String networkMinTimeS = Calendar2.epochSecondsToIsoStringTZ(networkMinTime);
 
         //GetCapabilities
         String getCapabilitiesHtml = XML.encodeAsHTMLAttribute(
@@ -15280,7 +15808,7 @@ public abstract class EDDTable extends EDD {
             "<br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "<br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "<br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "\n";
 
@@ -15374,7 +15902,7 @@ public abstract class EDDTable extends EDD {
             "  <br>or script to format the requests and to parse and process the XML output from a given server.\n" +
             "  <br>Some of the information you need to write such software is below. Good luck.\n" +
             "<li>For additional information, please see the\n" +
-            "  <a rel=\"help\" href=\"http://www.opengeospatial.org/standards/sos\">OGC's SOS Specification" +
+            "  <a rel=\"help\" href=\"https://www.opengeospatial.org/standards/sos\">OGC's SOS Specification" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "</ul>\n" +
             "\n");
@@ -15382,7 +15910,7 @@ public abstract class EDDTable extends EDD {
         //*** sample SOS requests
         writer.write(
             "<h2>Sample SOS Requests for this Dataset and Details from the \n" +
-            "<a rel=\"help\" href=\"http://www.opengeospatial.org/standards/sos\">SOS Specification" +
+            "<a rel=\"help\" href=\"https://www.opengeospatial.org/standards/sos\">SOS Specification" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></h2>\n" +
             "SOS requests are specially formed URLs with queries.\n" +
             "<br>You can create these URLs yourself or write software to do it for you.\n" +
@@ -15809,7 +16337,7 @@ public abstract class EDDTable extends EDD {
             "      <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "      <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "      <br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "      <br>The data responseFormats are:<br>");
         charsWritten = 0;
@@ -15960,7 +16488,7 @@ public abstract class EDDTable extends EDD {
 
     /**
      * This generates an OPeNDAP query from a Google Visualization API Query Language string.
-     * <br>See Query Language reference http://code.google.com/apis/visualization/documentation/querylanguage.html
+     * <br>See Query Language reference https://developers.google.com/chart/interactive/docs/querylanguage?csw=1
      *
      * @param tgVisQuery  the case of the key words (e.g., SELECT) is irrelevant
      * @return dapQuery
@@ -16057,7 +16585,7 @@ public abstract class EDDTable extends EDD {
      * https://www.fgdc.gov/csdgmgraphical/index.htm
      *
      * <p>FGDC Metadata validator
-     * http://geolibportal.usm.maine.edu/geolib/fgdc_metadata_validator.html
+     * https://www.maine.edu/geolib/fgdc_metadata_validator.html
      * 
      * <p>If getAccessibleTo()==null, the fgdc refers to http: ERDDAP links; otherwise,
      * it refers to https: ERDDAP links.
@@ -16079,11 +16607,15 @@ public abstract class EDDTable extends EDD {
         String domain = EDStatic.baseUrl;
         if (domain.startsWith("http://"))
             domain = domain.substring(7);
+        else if (domain.startsWith("https://"))
+            domain = domain.substring(8);
         String eddCreationDate = String2.replaceAll(
-            Calendar2.millisToIsoZuluString(creationTimeMillis()).substring(0, 10), "-", "");
+            Calendar2.millisToIsoDateString(creationTimeMillis()), "-", "");
         String unknown = "Unknown"; //pg viii of FGDC document
 
-        String acknowledgement = combinedGlobalAttributes.getString("acknowledgement");
+        String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); //acdd 1.3
+        if    (acknowledgement == null)
+               acknowledgement = combinedGlobalAttributes.getString("acknowledgment");  //acdd 1.0
         String cdmDataType     = combinedGlobalAttributes.getString("cdm_data_type");
         String contributorName = combinedGlobalAttributes.getString("contributor_name");
         String contributorEmail= combinedGlobalAttributes.getString("contributor_email");
@@ -16219,7 +16751,7 @@ String adminCntinfo =
 //start writing xml
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 charset???
-"<metadata xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+"<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" " +
 "xsi:noNamespaceSchemaLocation=\"http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd\" " +
 //http://lab.usgin.org/groups/etl-debug-blog/fgdc-xml-schema-woes 
 //talks about using this
@@ -16840,9 +17372,13 @@ writer.write(
         String domain = EDStatic.baseUrl;
         if (domain.startsWith("http://"))
             domain = domain.substring(7);
-        String eddCreationDate = Calendar2.millisToIsoZuluString(creationTimeMillis()).substring(0, 10);
+        else if (domain.startsWith("https://"))
+            domain = domain.substring(8);
+        String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
 
-        String acknowledgement = combinedGlobalAttributes.getString("acknowledgement");
+        String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); //acdd 1.3
+        if    (acknowledgement == null)
+               acknowledgement = combinedGlobalAttributes.getString("acknowledgment");  //acdd 1.0
         String contributorName = combinedGlobalAttributes.getString("contributor_name");
         String contributorEmail= combinedGlobalAttributes.getString("contributor_email");
         String contributorRole = combinedGlobalAttributes.getString("contributor_role");
@@ -16850,7 +17386,7 @@ writer.write(
         String creatorEmail    = combinedGlobalAttributes.getString("creator_email");
         String creatorType     = combinedGlobalAttributes.getString("creator_type");
         creatorType = String2.validateAcddContactType(creatorType);
-        if (!isSomething(creatorType) && isSomething(creatorName)) 
+        if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName)) 
             creatorType = String2.guessAcddContactType(creatorName); 
         if (creatorType == null)     //creatorType will be something
             creatorType = "person";  //assume
@@ -16975,42 +17511,42 @@ writer.write(
 writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<gmi:MI_Metadata \n" +
-"  xmlns=\"http://www.isotc211.org/2005/gmi\"\n" +   //eddgrid doesn't have this
-"  xmlns:srv=\"http://www.isotc211.org/2005/srv\"\n" +
-"  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n" +
-"  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n" +
-"  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n" +
-"  xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
-"  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns=\"https://www.isotc211.org/2005/gmi\"\n" +   //eddgrid doesn't have this
+"  xmlns:srv=\"https://www.isotc211.org/2005/srv\"\n" +  //not there!!!
+"  xmlns:gmx=\"https://www.isotc211.org/2005/gmx\"\n" +
+"  xmlns:gsr=\"https://www.isotc211.org/2005/gsr\"\n" +
+"  xmlns:gss=\"https://www.isotc211.org/2005/gss\"\n" +
+"  xmlns:xs=\"https://www.w3.org/2001/XMLSchema\"\n" +
+"  xmlns:gts=\"https://www.isotc211.org/2005/gts\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-"  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" +
-"  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" +
-"  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" +
-"  xsi:schemaLocation=\"http://www.isotc211.org/2005/gmi https://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd\">\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"  xmlns:gco=\"https://www.isotc211.org/2005/gco\"\n" +
+"  xmlns:gmd=\"https://www.isotc211.org/2005/gmd\"\n" +
+"  xmlns:gmi=\"https://www.isotc211.org/2005/gmi\"\n" +
+"  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\">\n" +
 
 "  <gmd:fileIdentifier>\n" +
 "    <gco:CharacterString>" + datasetID() + "</gco:CharacterString>\n" +
 "  </gmd:fileIdentifier>\n" +
 "  <gmd:language>\n" +
 "    <gmd:LanguageCode " +
-       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
+       "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
        "codeListValue=\"eng\">eng</gmd:LanguageCode>\n" +
 "  </gmd:language>\n" +
 "  <gmd:characterSet>\n" +
 "    <gmd:MD_CharacterSetCode " +
-       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
+       "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
        "codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n" +
 "  </gmd:characterSet>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"service\">service</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n");
         
@@ -17059,7 +17595,7 @@ writer.write(
 "        </gmd:CI_Contact>\n" +
 "      </gmd:contactInfo>\n" +
 "      <gmd:role>\n" +
-"        <gmd:CI_RoleCode codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+"        <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
          "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "      </gmd:role>\n" +
 "    </gmd:CI_ResponsibleParty>\n" +
@@ -17091,7 +17627,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -17102,7 +17638,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -17115,7 +17651,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -17128,7 +17664,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -17185,7 +17721,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -17199,7 +17735,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -17229,7 +17765,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "          <gmd:citedResponsibleParty>\n" +
 "            <gmd:CI_ResponsibleParty>\n" +
 
-(isSomething(creatorName) && creatorType.matches("(person|position)")?  
+(String2.isSomething2(creatorName) && creatorType.matches("(person|position)")?  
 "              <gmd:individualName>\n" +
 "                <gco:CharacterString>" + XML.encodeAsXML(creatorName) + "</gco:CharacterString>\n" +
 "              </gmd:individualName>\n" :
@@ -17238,7 +17774,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              <gmd:organisationName>\n" +
 "                <gco:CharacterString>" + 
 XML.encodeAsXML(
-    isSomething(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
+    String2.isSomething2(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
                "</gco:CharacterString>\n" +
 "              </gmd:organisationName>\n" +
 
@@ -17246,7 +17782,7 @@ XML.encodeAsXML(
 "              <gmd:contactInfo>\n" +
 "                <gmd:CI_Contact>\n" +
 
-(isSomething(creatorEmail)?
+(String2.isSomething2(creatorEmail)?
 "                  <gmd:address>\n" +
 "                    <gmd:CI_Address>\n" +
 "                      <gmd:electronicMailAddress>\n" +
@@ -17276,7 +17812,7 @@ XML.encodeAsXML(
 "                      </gmd:description>\n" +
 "                      <gmd:function>\n" +
 "                        <gmd:CI_OnLineFunctionCode " +
-                           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                           "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                            "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                      </gmd:function>\n" +
 "                    </gmd:CI_OnlineResource>\n" +
@@ -17285,7 +17821,7 @@ XML.encodeAsXML(
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -17320,7 +17856,7 @@ if (contributorName != null || contributorRole != null)
 
 "              <gmd:role>\n" +  
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
   //contributor isn't in the codeList. I asked that it be added. 
   // ncISO used something *not* in the list.  Isn't this a controlled vocabulary?
                    "codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n" +
@@ -17352,7 +17888,7 @@ if (ii == iiDataIdentification) {
 "      <gmd:pointOfContact>\n" +
 "        <gmd:CI_ResponsibleParty>\n" +
 
-(isSomething(creatorName) && creatorType.matches("(person|position)")?  
+(String2.isSomething2(creatorName) && creatorType.matches("(person|position)")?  
 "          <gmd:individualName>\n" +
 "            <gco:CharacterString>" + XML.encodeAsXML(creatorName) + "</gco:CharacterString>\n" +
 "          </gmd:individualName>\n" :
@@ -17361,7 +17897,7 @@ if (ii == iiDataIdentification) {
 "          <gmd:organisationName>\n" +
 "            <gco:CharacterString>" + 
 XML.encodeAsXML(
-    isSomething(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
+    String2.isSomething2(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
            "</gco:CharacterString>\n" +
 "          </gmd:organisationName>\n" +
 
@@ -17399,7 +17935,7 @@ XML.encodeAsXML(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                       "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                        "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -17408,7 +17944,7 @@ XML.encodeAsXML(
 "          </gmd:contactInfo>\n" +
 "          <gmd:role>\n" +
 "            <gmd:CI_RoleCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "          </gmd:role>\n" +
 "        </gmd:CI_ResponsibleParty>\n" +
@@ -17450,7 +17986,7 @@ XML.encodeAsXML(
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -17473,7 +18009,7 @@ XML.encodeAsXML(
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -17499,7 +18035,7 @@ XML.encodeAsXML(
 "          </gmd:keyword>\n" +
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -17519,7 +18055,7 @@ XML.encodeAsXML(
         writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -17562,12 +18098,12 @@ XML.encodeAsXML(
 "          </gmd:aggregateDataSetName>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -17595,12 +18131,12 @@ if (!CDM_OTHER.equals(cdmDataType())) {
 "          </gmd:aggregateDataSetIdentifier>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -17747,7 +18283,7 @@ if (ii == iiERDDAP) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -17775,7 +18311,7 @@ if (ii == iiERDDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -17791,7 +18327,7 @@ if (ii == iiOPeNDAP) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -17819,7 +18355,7 @@ if (ii == iiOPeNDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -17835,7 +18371,7 @@ if (ii == iiWMS) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -17862,7 +18398,7 @@ if (ii == iiWMS) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -17878,7 +18414,7 @@ if (ii == iiSubset) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -17904,7 +18440,7 @@ if (ii == iiSubset) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -17929,7 +18465,7 @@ writer.write(
        //from http://www.schemacentral.com/sc/niem21/t-gco_CodeListValue_Type.html       
 "      <gmd:contentType>\n" +
 "        <gmd:MD_CoverageContentTypeCode " +
-           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
+           "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
            "codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n" +
 "      </gmd:contentType>\n");
 
@@ -17961,10 +18497,10 @@ for (int v = 0; v < dataVariables.length; v++) {
 "          </gmd:descriptor>\n" +
 
     //???I think units is used incorrectly, see
-    //http://grepcode.com/file/repo1.maven.org/maven2/org.jvnet.ogc/gml-v_3_2_1-schema/1.0.3/iso/19139/20060504/resources/uom/gmxUom.xml
+    //https://mvnrepository.com/artifact/org.jvnet.ogc/gml-v_3_2_1-schema/1.0.3/iso/19139/20060504/resources/uom/gmxUom.xml
     //which is really complex for derivedUnits.
     (tUnits == null? "" : 
-"          <gmd:units xlink:href=\"http://unitsofmeasure.org/ucum.html#" +
+"          <gmd:units xlink:href=\"https://unitsofmeasure.org/ucum.html#" +
              XML.encodeAsHTMLAttribute(SSR.minimalPercentEncode(edv.ucumUnits())) + "\"/>\n") +
 
 "        </gmd:MD_Band>\n" +
@@ -18024,7 +18560,7 @@ writer.write(
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +   //From list, "distributor" seems best here.
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -18064,7 +18600,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -18093,7 +18629,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -18115,7 +18651,7 @@ if (history != null)
 "        <gmd:DQ_Scope>\n" +
 "          <gmd:level>\n" +
 "            <gmd:MD_ScopeCode " +
-               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+               "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
                "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "          </gmd:level>\n" +
 "        </gmd:DQ_Scope>\n" +
@@ -18153,6 +18689,7 @@ writer.write(
      * With the info from only one table, there is no way to calculate the
      * true nDistinctValues for a column. This is very conservative.
      *
+     * <p>This i
      * @param sourceTable  a sample source table that has some data. This table won't be changed.
      * @param destTable  a table with columns paralleling sourceTable, 
      *   but with the destinationNames for the columns. This table won't be changed.
@@ -18169,24 +18706,15 @@ writer.write(
         int nCols = sourceTable.nColumns();
         Test.ensureEqual(nCols, destTable.nColumns(), "sourceTable.nColumns != destTable.nColumns");
         StringArray suggest = new StringArray();
-        DoubleArray commonMV9 = new DoubleArray(Math2.COMMON_MV9);
         for (int col = 0; col < nCols; col++) {
             PrimitiveArray pa = (PrimitiveArray)sourceTable.getColumn(col).clone();
             boolean isTimeStamp = Calendar2.isTimeUnits(
                 sourceTable.columnAttributes(col).getString("units"));
             pa.sort();
-            if (!(pa instanceof StringArray)) {
+            if (pa.elementClass() != String.class) {
                 //find missing value
-                double dmv = Double.NaN; //NaN?
-                if (!Double.isNaN(pa.getDouble(nRows - 1))) {
-                    //no NaNs, so look for eg 999.     pa has at least 2 values
-                    int            which = commonMV9.indexOf(pa.getDouble(0));
-                    if (which < 0) which = commonMV9.indexOf(pa.getDouble(nRows - 1));
-                    if (which < 0) which = commonMV9.indexOf(pa.getDouble(1));
-                    if (which < 0) which = commonMV9.indexOf(pa.getDouble(nRows - 2));
-                    if (which >= 0)
-                        dmv = commonMV9.get(which);
-                }
+                double dmv = pa.tryToFindNumericMissingValue();
+
                 BitSet keep = new BitSet();
                 keep.set(0, nRows);
                 pa.applyConstraint(false, //morePrecise, 
@@ -18260,7 +18788,7 @@ writer.write(
 "<?xml version=\"1.0\"?>\n" +
 "<Capabilities\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns=\"http://www.opengis.net/sos/1.0\"\n" +
@@ -18269,8 +18797,8 @@ writer.write(
 "  xmlns:ogc=\"http://www.opengis.net/ogc\"\n" +
 "  xmlns:tml=\"http://www.opengis.net/tml\"\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:myorg=\"http://www.myorg.org/features\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:myorg=\"http://www.myorg.org/features\"\n" +  //gone!!!
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sos/1.0 http://schemas.opengis.net/sos/1.0.0/sosAll.xsd\"\n" +
 "  version=\"1.0.0\">\n" +
 "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
@@ -18472,18 +19000,18 @@ writer.write(
         expected =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<gml:Dictionary gml:id=\"PhenomenaDictionary0.6.1\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.2\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xsi:schemaLocation=\"http://www.opengis.net/swe/1.0.2 http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/sweCommon/1.0.2/phenomenon.xsd http://www.opengis.net/gml/3.2 http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/OGC/gml/3.2.1/gml.xsd\"\n" + //GONE
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xsi:schemaLocation=\"http://www.opengis.net/swe/1.0.2 http://schemas.opengis.net/sweCommon/1.0.2/phenomenon.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd\"\n" + //GONE
 "  >\n" +
 "  <gml:description>Dictionary of observed phenomena for cwwcNDBCMet.</gml:description>\n" +
 "  <gml:identifier codeSpace=\"urn:ioos:phenomena:1.0.0.127.cwwcNDBCMet\">PhenomenaDictionary</gml:identifier>\n" +
 "  <gml:definitionMember >\n" +
 "    <swe:Phenomenon gml:id=\"wd\">\n" +
 "      <gml:description>Wind Direction</gml:description>\n" +
-            //switch from marinemetadata (GONE) to http://mmisw.org/ont/cf/parameter/ ?
+            //will they switch from marinemetadata (GONE) to http://mmisw.org/ont/cf/parameter/ ?
 "      <gml:identifier codeSpace=\"http://marinemetadata.org/cf\">wind_from_direction</gml:identifier>\n" +
 "    </swe:Phenomenon>\n" +
 "  </gml:definitionMember>\n" +
@@ -18616,8 +19144,8 @@ writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sensorML/1.0.1 http://schemas.opengis.net/sensorML/1.0.1/sensorML.xsd\"\n" +
@@ -18693,7 +19221,7 @@ writer.write(
 "        <sml:Document>\n" +
 "          <gml:description>Web page with background information from the source of this dataset</gml:description>\n" +
 "          <sml:format>text/html</sml:format>\n" +
-"          <sml:onlineResource xlink:href=\"http://www.ndbc.noaa.gov/\" />\n" +
+"          <sml:onlineResource xlink:href=\"https://www.ndbc.noaa.gov/\" />\n" +
 "        </sml:Document>\n" +
 "      </sml:documentation>\n" +
 "\n" +
@@ -19063,8 +19591,8 @@ writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sensorML/1.0.1 http://schemas.opengis.net/sensorML/1.0.1/sensorML.xsd\"\n" +
@@ -19146,7 +19674,7 @@ writer.write(
 "        <sml:Document>\n" +
 "          <gml:description>Web page with background information from the source of this dataset</gml:description>\n" +
 "          <sml:format>text/html</sml:format>\n" +
-"          <sml:onlineResource xlink:href=\"http://www.ndbc.noaa.gov/\" />\n" +
+"          <sml:onlineResource xlink:href=\"https://www.ndbc.noaa.gov/\" />\n" +
 "        </sml:Document>\n" +
 "      </sml:documentation>\n" +
 "\n" +
@@ -19526,8 +20054,8 @@ writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sensorML/1.0.1 http://schemas.opengis.net/sensorML/1.0.1/sensorML.xsd\"\n" +
@@ -19609,7 +20137,7 @@ writer.write(
 "        <sml:Document>\n" +
 "          <gml:description>Web page with background information from the source of this dataset</gml:description>\n" +
 "          <sml:format>text/html</sml:format>\n" +
-"          <sml:onlineResource xlink:href=\"http://www.ndbc.noaa.gov/\" />\n" +
+"          <sml:onlineResource xlink:href=\"https://www.ndbc.noaa.gov/\" />\n" +
 "        </sml:Document>\n" +
 "      </sml:documentation>\n" +
 "\n" +
@@ -19703,11 +20231,11 @@ writer.write(
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
 "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
@@ -19953,11 +20481,11 @@ writer.write(
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
 "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
@@ -20092,12 +20620,12 @@ writer.write(
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
-"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
 "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
@@ -20438,11 +20966,11 @@ writer.write(
             //String2.log(results);        
             expected = 
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    "<om:CompositeObservation xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
     "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
     "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-    "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-    "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+    "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
     "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
     "  gml:id=\"ndbcSosCurrentsTimeSeriesObservation\">\n" +
     "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
@@ -20637,11 +21165,11 @@ writer.write(
     //"-79.09, 32.5, 2008-08-01T01:00:00Z, 41004, 229, 10.1, 12.6, 1.68, 5.56, 4.36, NaN, 1008.0, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.6, 6.6\n";
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "<om:Observation\n" +
-    "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
     "  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
     "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
     "  xmlns:om=\"http://www.opengis.net/om\"\n" +
-    "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
     "  xsi:schemaLocation=\"http://www.opengis.net/om ../../../../../../ows4/schema0/swe/branches/swe-ows4-demo/om/current/commonObservation.xsd\"\n" +
     "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
     "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +

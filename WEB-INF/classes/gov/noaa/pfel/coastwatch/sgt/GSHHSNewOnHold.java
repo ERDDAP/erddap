@@ -265,14 +265,6 @@ public class GSHHSNewOnHold  {
         //A few islands straddle 180 so need subtract 360 
         boolean lonPM180 = westDeg < 0;
         int intShift = 360 * 1000000;
-
-        //open the file
-        //String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
-        DataInputStream dis = new DataInputStream(new BufferedInputStream(
-            new FileInputStream(gshhsDir + "gshhs_" + resolution + ".b")));
-        byte buffer[] = new byte[4];
-
-        //read the records
         //the xArrays and yArrays grow as needed
         int xArray[] = new int[1];
         int yArray[] = new int[1];
@@ -283,271 +275,282 @@ public class GSHHSNewOnHold  {
         boolean g2MsgDisplayed = false;
         boolean g3MsgDisplayed = false;
         int count = 0;
-        while (dis.available() > 0) {
-            //read the header
+        byte buffer[] = new byte[4];
 
-            //GSHHS v2.2.0  2011-07-15
-            //GPL License http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
-            int id        = dis.readInt(); // Unique polygon id number, starting at 0 
-            int n         = dis.readInt(); // Number of points in this polygon 
-            int flag      = dis.readInt(); // = level + version << 8 + greenwich << 16 + source << 24 + river << 25 
-            // flag contains 5 items, as follows:
-            // low byte:    level = flag & 255: Values: 1 land, 2 lake, 3 island_in_lake, 4 pond_in_island_in_lake
-            // 2nd byte:    version = (flag >> 8) & 255: Values: Should be 7 for GSHHS release 7 (i.e., version 2.0)
-            // 3rd byte:    greenwich = (flag >> 16) & 3: see below
-            // 4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
-            // 4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
-            //
-            int west      = dis.readInt(); // min/max extent in micro-degrees 
-            int east      = dis.readInt(); 
-            int south     = dis.readInt(); 
-            int north     = dis.readInt(); 
-            int area      = dis.readInt(); // Area of polygon in 1/10 km^2 
-            int area_full = dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2 
-            int container = dis.readInt(); // Id of container polygon that encloses this polygon (-1 if none) 
-            int ancestor  = dis.readInt(); // Id of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none) 
+        //open the file
+        //String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
+        DataInputStream dis = new DataInputStream(
+            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b"));
+        try {
 
-            int level = flag & 255;
-            //greenwich: 1=Greenwich is crossed, 2= dateline is crossed, 3=both crossed
-            int greenwich = (flag >> 16) & 3; 
-                        
-            //String2.log("id=" + id + " level=" + level + " gwch=" + greenwich + " ver=" + ((flag >> 8) & 255) + 
-            //  " n=" + n + " " + west + "/" + east + "/" + south + "/" + north);
+            //read the records
+            while (dis.available() > 0) {
+                //read the header
 
-            /* 
-            //tests show greenwich objects have a negative west bound
-            //(even though <0 lon values are stored +360)
-            if (!g1MsgDisplayed && greenwich == 1) { //crosses greenwich
-               //e.g., greenwich1 n=221 west=-17533778 east=51415417 south=-34830444 north=37349556
-                String2.log("greenwich1 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
-                g1MsgDisplayed = true;
-            }
-            if (!g2MsgDisplayed && greenwich == 2) { //crosses dateline 
-                //e.g., greenwich2 n=7 west=178651222 east=182603694 south=70777056 north=71603750
-                String2.log("greenwich2 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
-                g2MsgDisplayed = true;
-            }
-            if (!g3MsgDisplayed && greenwich == 3) { //crosses dateline and greenwich
-                //e.g., greenwich3 n=1028 west=-9500444 east=190359111 south=1268694 north=77719583
-                String2.log("greenwich3 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
-                g3MsgDisplayed = true;
-            }
-            */
+                //GSHHS v2.2.0  2011-07-15
+                //GPL License http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
+                int id        = dis.readInt(); // Unique polygon id number, starting at 0 
+                int n         = dis.readInt(); // Number of points in this polygon 
+                int flag      = dis.readInt(); // = level + version << 8 + greenwich << 16 + source << 24 + river << 25 
+                // flag contains 5 items, as follows:
+                // low byte:    level = flag & 255: Values: 1 land, 2 lake, 3 island_in_lake, 4 pond_in_island_in_lake
+                // 2nd byte:    version = (flag >> 8) & 255: Values: Should be 7 for GSHHS release 7 (i.e., version 2.0)
+                // 3rd byte:    greenwich = (flag >> 16) & 3: see below
+                // 4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
+                // 4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
+                //
+                int west      = dis.readInt(); // min/max extent in micro-degrees 
+                int east      = dis.readInt(); 
+                int south     = dis.readInt(); 
+                int north     = dis.readInt(); 
+                int area      = dis.readInt(); // Area of polygon in 1/10 km^2 
+                int area_full = dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2 
+                int container = dis.readInt(); // Id of container polygon that encloses this polygon (-1 if none) 
+                int ancestor  = dis.readInt(); // Id of ancestor polygon in the full resolution set that was the source of this polygon (-1 if none) 
 
-            if (//!aMsgDisplayed && 
-                south < -60000000) {
-                //e.g., antartic n=197 west=-180000000 east=180000000 south=-90000000 north=-63220028
-                String2.log("id=" + id + " antartic n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
-                aMsgDisplayed = true;
-            }
+                int level = flag & 255;
+                //greenwich: 1=Greenwich is crossed, 2= dateline is crossed, 3=both crossed
+                int greenwich = (flag >> 16) & 3; 
+                            
+                //String2.log("id=" + id + " level=" + level + " gwch=" + greenwich + " ver=" + ((flag >> 8) & 255) + 
+                //  " n=" + n + " " + west + "/" + east + "/" + south + "/" + north);
 
-            //Do the tests for the 3 possible independent uses of this data.
-            //Note that often 2 of the 3 are true.
-            //can I use this object with standard coordinates?
-            boolean useStandard = 
-                level == desiredLevel &&  
-                west  < desiredEast &&
-                east  > desiredWest &&
-                south < desiredNorth &&
-                north > desiredSouth;
-            
-            //can I use this object with coordinates shifted left (e.g., pm 180)?
-            boolean useShiftedLeft = 
-                lonPM180 &&
-                level == desiredLevel &&
-                west-intShift < desiredEast &&
-                east-intShift > desiredWest &&
-                south < desiredNorth &&
-                north > desiredSouth;
-            
-            //can I use this object with coordinates shifted right (for greenwich==1 objects when !pm180)?
-            boolean useShiftedRight = 
-                level == desiredLevel &&
-                west+intShift < desiredEast &&
-                east+intShift > desiredWest &&
-                south < desiredNorth &&
-                north > desiredSouth;
-
-            //skip small lakes
-            //@param resolution 0='f'ull, 1='h'igh, 2='i'ntermediate, 3='l'ow, 4='c'rude.
-            boolean skip = 
-                desiredLevel >= 2 && //lakes
-                ((resolution == 'c' && n < lakeMinN) || 
-                 (resolution == 'l' && n < lakeMinN / 2));
-            
-            //can I use the object?   
-            if ((useStandard || useShiftedLeft || useShiftedRight) && !skip) {
-                int cShift = 0;
-                if (useShiftedLeft) cShift = -intShift;
-                else if (useShiftedRight) cShift = intShift;
-
-                //read the data
-                if (n > xArray.length) {
-                    xArray = new int[n + 4];  //+4 for addAntarticCorners
-                    yArray = new int[n + 4];
+                /* 
+                //tests show greenwich objects have a negative west bound
+                //(even though <0 lon values are stored +360)
+                if (!g1MsgDisplayed && greenwich == 1) { //crosses greenwich
+                   //e.g., greenwich1 n=221 west=-17533778 east=51415417 south=-34830444 north=37349556
+                    String2.log("greenwich1 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
+                    g1MsgDisplayed = true;
                 }
-                for (int i = 0; i < n; i++) {
-                    xArray[i] = dis.readInt();
-                    yArray[i] = dis.readInt();
-                    //String2.log("xarray=" +String2.toCSSVString(xArray));
-                    //String2.log("yarray=" +String2.toCSSVString(yArray));
-                }  
+                if (!g2MsgDisplayed && greenwich == 2) { //crosses dateline 
+                    //e.g., greenwich2 n=7 west=178651222 east=182603694 south=70777056 north=71603750
+                    String2.log("greenwich2 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
+                    g2MsgDisplayed = true;
+                }
+                if (!g3MsgDisplayed && greenwich == 3) { //crosses dateline and greenwich
+                    //e.g., greenwich3 n=1028 west=-9500444 east=190359111 south=1268694 north=77719583
+                    String2.log("greenwich3 n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
+                    g3MsgDisplayed = true;
+                }
+                */
 
-                //test: is xArray range as promised?
-                {
-                    IntArray ia = new IntArray(xArray);
-                    ia.removeRange(n, ia.size());
-                    int[] nmm = ia.getNMinMaxIndex();
-                    if (Math.abs(west - xArray[nmm[1]]) > 500000) 
-                        String2.log("id=" + id + " bad west " + west + " != " + xArray[nmm[1]]);
-                    if (Math.abs(east - xArray[nmm[2]]) > 500000)
-                        String2.log("id=" + id + " bad east " + east + " != " + xArray[nmm[2]]);
+                if (//!aMsgDisplayed && 
+                    south < -60000000) {
+                    //e.g., antartic n=197 west=-180000000 east=180000000 south=-90000000 north=-63220028
+                    String2.log("id=" + id + " antartic n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
+                    aMsgDisplayed = true;
                 }
 
-                //for addAntarcticCorners, insert points at corners of map.
-                //antarctic object bounds (degrees) are west=0 east=360 south=-90 north=-63
-                //search for lon=0
-                if (south == -90000000) { //catches antarctic polygon
-                    if (desiredWest < 0 && desiredEast > 0) {
-                        //Desired is e.g. -180 to 180. 
-                        //To avoid seam in bad place, manually shift 1/2 of it left.
-                        useShiftedLeft = false; 
-                        for (int i = 0; i < n; i++) {
-                            if (xArray[i] >= 180000000) { //in practice there is no 180000000 point
-                                xArray[i] -= 360000000;
-                                if (i < n-1 && xArray[i+1] < 180000000) {
-                                    //We're crossing x=180, where we want the seam.
-                                    //These tests show x=180 isn't first or last point
-                                    //  and prev x is almost 0, next x is 360
-                                    //String2.log("antarctic x crosses 180 at x[" + 
-                                    //    i + "]=" + xArray[i] + " x[i+1]=" + xArray[i+1]);
+                //Do the tests for the 3 possible independent uses of this data.
+                //Note that often 2 of the 3 are true.
+                //can I use this object with standard coordinates?
+                boolean useStandard = 
+                    level == desiredLevel &&  
+                    west  < desiredEast &&
+                    east  > desiredWest &&
+                    south < desiredNorth &&
+                    north > desiredSouth;
+                
+                //can I use this object with coordinates shifted left (e.g., pm 180)?
+                boolean useShiftedLeft = 
+                    lonPM180 &&
+                    level == desiredLevel &&
+                    west-intShift < desiredEast &&
+                    east-intShift > desiredWest &&
+                    south < desiredNorth &&
+                    north > desiredSouth;
+                
+                //can I use this object with coordinates shifted right (for greenwich==1 objects when !pm180)?
+                boolean useShiftedRight = 
+                    level == desiredLevel &&
+                    west+intShift < desiredEast &&
+                    east+intShift > desiredWest &&
+                    south < desiredNorth &&
+                    north > desiredSouth;
 
-                                    if (addAntarcticCorners) {
-                                        //add the 4 antarctic corners  
-                                        //this puts a seam at x=-180 ... x=180
-                                        System.arraycopy(xArray, i + 1, xArray, i + 5, n - (i+1));
-                                        System.arraycopy(yArray, i + 1, yArray, i + 5, n - (i+1));
-                                        xArray[i + 1] = -180000000; yArray[i + 1] = yArray[i];
-                                        xArray[i + 2] = -180000000; yArray[i + 2] = -90000000;
-                                        xArray[i + 3] =  180000000; yArray[i + 3] = -90000000;
-                                        xArray[i + 4] =  180000000; yArray[i + 4] = yArray[i];
-                                        i += 4;
-                                        n += 4;
+                //skip small lakes
+                //@param resolution 0='f'ull, 1='h'igh, 2='i'ntermediate, 3='l'ow, 4='c'rude.
+                boolean skip = 
+                    desiredLevel >= 2 && //lakes
+                    ((resolution == 'c' && n < lakeMinN) || 
+                     (resolution == 'l' && n < lakeMinN / 2));
+                
+                //can I use the object?   
+                if ((useStandard || useShiftedLeft || useShiftedRight) && !skip) {
+                    int cShift = 0;
+                    if (useShiftedLeft) cShift = -intShift;
+                    else if (useShiftedRight) cShift = intShift;
+
+                    //read the data
+                    if (n > xArray.length) {
+                        xArray = new int[n + 4];  //+4 for addAntarticCorners
+                        yArray = new int[n + 4];
+                    }
+                    for (int i = 0; i < n; i++) {
+                        xArray[i] = dis.readInt();
+                        yArray[i] = dis.readInt();
+                        //String2.log("xarray=" +String2.toCSSVString(xArray));
+                        //String2.log("yarray=" +String2.toCSSVString(yArray));
+                    }  
+
+                    //test: is xArray range as promised?
+                    {
+                        IntArray ia = new IntArray(xArray);
+                        ia.removeRange(n, ia.size());
+                        int[] nmm = ia.getNMinMaxIndex();
+                        if (Math.abs(west - xArray[nmm[1]]) > 500000) 
+                            String2.log("id=" + id + " bad west " + west + " != " + xArray[nmm[1]]);
+                        if (Math.abs(east - xArray[nmm[2]]) > 500000)
+                            String2.log("id=" + id + " bad east " + east + " != " + xArray[nmm[2]]);
+                    }
+
+                    //for addAntarcticCorners, insert points at corners of map.
+                    //antarctic object bounds (degrees) are west=0 east=360 south=-90 north=-63
+                    //search for lon=0
+                    if (south == -90000000) { //catches antarctic polygon
+                        if (desiredWest < 0 && desiredEast > 0) {
+                            //Desired is e.g. -180 to 180. 
+                            //To avoid seam in bad place, manually shift 1/2 of it left.
+                            useShiftedLeft = false; 
+                            for (int i = 0; i < n; i++) {
+                                if (xArray[i] >= 180000000) { //in practice there is no 180000000 point
+                                    xArray[i] -= 360000000;
+                                    if (i < n-1 && xArray[i+1] < 180000000) {
+                                        //We're crossing x=180, where we want the seam.
+                                        //These tests show x=180 isn't first or last point
+                                        //  and prev x is almost 0, next x is 360
+                                        //String2.log("antarctic x crosses 180 at x[" + 
+                                        //    i + "]=" + xArray[i] + " x[i+1]=" + xArray[i+1]);
+
+                                        if (addAntarcticCorners) {
+                                            //add the 4 antarctic corners  
+                                            //this puts a seam at x=-180 ... x=180
+                                            System.arraycopy(xArray, i + 1, xArray, i + 5, n - (i+1));
+                                            System.arraycopy(yArray, i + 1, yArray, i + 5, n - (i+1));
+                                            xArray[i + 1] = -180000000; yArray[i + 1] = yArray[i];
+                                            xArray[i + 2] = -180000000; yArray[i + 2] = -90000000;
+                                            xArray[i + 3] =  180000000; yArray[i + 3] = -90000000;
+                                            xArray[i + 4] =  180000000; yArray[i + 4] = yArray[i];
+                                            i += 4;
+                                            n += 4;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            //probably just useStandard (e.g., 0..360)    
+                            //  or useLeft (limited range e.g., -130.. -120)
+                            if (addAntarcticCorners) {
+                                //this puts a seam at x=0 ... x=360
+                                for (int i = 0; i < n; i++) {
+                                    if (xArray[i] == 0) {
+                                        //these tests show x=0 isn't first or last point
+                                        //  and prev x is almost 0, next x is 360
+                                        //String2.log("antarctic x=0 at i=" + i + " n=" + n);
+                                        //if (i > 0) String2.log("  x[i-1]=" + xArray[i-1]);
+                                        //if (i < n-1) String2.log("  x[i+1]=" + xArray[i+1]);
+
+                                        //add the 2 antarctic corners  
+                                        System.arraycopy(xArray, i + 1, xArray, i + 3, n - (i+1));
+                                        System.arraycopy(yArray, i + 1, yArray, i + 3, n - (i+1));
+                                        xArray[i + 1] =         0; yArray[i + 1] = -90000000;
+                                        xArray[i + 2] = 360000000; yArray[i + 2] = -90000000;
+                                        n += 2;
+                                        break;
                                     }
                                 }
                             }
                         }
-                    } else {
-                        //probably just useStandard (e.g., 0..360)    
-                        //  or useLeft (limited range e.g., -130.. -120)
-                        if (addAntarcticCorners) {
-                            //this puts a seam at x=0 ... x=360
-                            for (int i = 0; i < n; i++) {
-                                if (xArray[i] == 0) {
-                                    //these tests show x=0 isn't first or last point
-                                    //  and prev x is almost 0, next x is 360
-                                    //String2.log("antarctic x=0 at i=" + i + " n=" + n);
-                                    //if (i > 0) String2.log("  x[i-1]=" + xArray[i-1]);
-                                    //if (i < n-1) String2.log("  x[i+1]=" + xArray[i+1]);
+                    }
 
-                                    //add the 2 antarctic corners  
-                                    System.arraycopy(xArray, i + 1, xArray, i + 3, n - (i+1));
-                                    System.arraycopy(yArray, i + 1, yArray, i + 3, n - (i+1));
-                                    xArray[i + 1] =         0; yArray[i + 1] = -90000000;
-                                    xArray[i + 2] = 360000000; yArray[i + 2] = -90000000;
-                                    n += 2;
-                                    break;
-                                }
+                    //if polygon crosses greenwich, x's < 0 are stored +360 degrees
+                    //see https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html  where is new gshhs.c?
+                    if ((greenwich & 1) == 1) {
+                        for (int i = 0; i < n; i++) 
+                            if (xArray[i] > east) xArray[i] -= intShift;
+                    }  
+                    
+
+                    //useShiftedLeft   (this is independent of useShiftedRight and useStandard)
+                    if (useShiftedLeft) {
+
+                        //copy the data into x/yArray2's  
+                        //so data is undisturbed for useShiftedRight and useStandard
+                        if (n > xArray2.length) {
+                            xArray2 = new int[n];
+                            yArray2 = new int[n];
+                        }
+                        System.arraycopy(xArray, 0, xArray2, 0, n);
+                        System.arraycopy(yArray, 0, yArray2, 0, n);
+
+                        //reduce and draw
+                        int tn = reduce(n, xArray2, yArray2, 
+                            desiredWest + intShift, desiredEast + intShift, //shifting desired is faster than shifting all x,y
+                            desiredSouth, desiredNorth);
+                        if (tn > 0) {
+                            lon.add(Integer.MAX_VALUE); //indicates moveTo next point
+                            lat.add(Integer.MAX_VALUE);
+                            for (int i = 0; i < tn; i++) {
+                                lon.add(xArray2[i] - intShift);
+                                lat.add(yArray2[i]);
                             }
                         }
                     }
-                }
 
-                //if polygon crosses greenwich, x's < 0 are stored +360 degrees
-                //see https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html  where is new gshhs.c?
-                if ((greenwich & 1) == 1) {
-                    for (int i = 0; i < n; i++) 
-                        if (xArray[i] > east) xArray[i] -= intShift;
-                }  
-                
+                    //useShiftedRight   (this is independent of useShiftedLeft and useStandard)
+                    if (useShiftedRight) {
+                        //copy the data into x/yArray2's
+                        //so data is undisturbed for useShiftedRight and useStandard
+                        if (n > xArray2.length) {
+                            xArray2 = new int[n];
+                            yArray2 = new int[n];
+                        }
+                        System.arraycopy(xArray, 0, xArray2, 0, n);
+                        System.arraycopy(yArray, 0, yArray2, 0, n);
 
-                //useShiftedLeft   (this is independent of useShiftedRight and useStandard)
-                if (useShiftedLeft) {
-
-                    //copy the data into x/yArray2's  
-                    //so data is undisturbed for useShiftedRight and useStandard
-                    if (n > xArray2.length) {
-                        xArray2 = new int[n];
-                        yArray2 = new int[n];
-                    }
-                    System.arraycopy(xArray, 0, xArray2, 0, n);
-                    System.arraycopy(yArray, 0, yArray2, 0, n);
-
-                    //reduce and draw
-                    int tn = reduce(n, xArray2, yArray2, 
-                        desiredWest + intShift, desiredEast + intShift, //shifting desired is faster than shifting all x,y
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray2[i] - intShift);
-                            lat.add(yArray2[i]);
+                        //reduce and draw
+                        int tn = reduce(n, xArray2, yArray2, 
+                            desiredWest - intShift, desiredEast - intShift, //shifting desired is faster than shifting all x,y
+                            desiredSouth, desiredNorth);
+                        if (tn > 0) {
+                            lon.add(Integer.MAX_VALUE); //indicates moveTo next point
+                            lat.add(Integer.MAX_VALUE);
+                            for (int i = 0; i < tn; i++) {
+                                lon.add(xArray2[i] + intShift);
+                                lat.add(yArray2[i]);
+                            }
                         }
                     }
-                }
 
-                //useShiftedRight   (this is independent of useShiftedLeft and useStandard)
-                if (useShiftedRight) {
-                    //copy the data into x/yArray2's
-                    //so data is undisturbed for useShiftedRight and useStandard
-                    if (n > xArray2.length) {
-                        xArray2 = new int[n];
-                        yArray2 = new int[n];
-                    }
-                    System.arraycopy(xArray, 0, xArray2, 0, n);
-                    System.arraycopy(yArray, 0, yArray2, 0, n);
-
-                    //reduce and draw
-                    int tn = reduce(n, xArray2, yArray2, 
-                        desiredWest - intShift, desiredEast - intShift, //shifting desired is faster than shifting all x,y
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray2[i] + intShift);
-                            lat.add(yArray2[i]);
+                    //useStandard   (this is independent of useShiftedLeft and useShiftedRight)
+                    if (useStandard) {
+                        //reduce and draw
+                        int tn = reduce(n, xArray, yArray, 
+                            desiredWest, desiredEast, 
+                            desiredSouth, desiredNorth);
+                        if (tn > 0) {
+                            //add to lon and lat
+                            lon.add(Integer.MAX_VALUE); //indicates moveTo next point
+                            lat.add(Integer.MAX_VALUE);
+                            for (int i = 0; i < tn; i++) {
+                                lon.add(xArray[i]);
+                                lat.add(yArray[i]);
+                            }
                         }
                     }
+
+                } else {
+                    //skip over the data
+                    long remain = 8L * n;   //2 (x,y) * 4 (bytes/int)
+                    while (remain > 0) 
+                        remain -= dis.skip(remain);
                 }
 
-                //useStandard   (this is independent of useShiftedLeft and useShiftedRight)
-                if (useStandard) {
-                    //reduce and draw
-                    int tn = reduce(n, xArray, yArray, 
-                        desiredWest, desiredEast, 
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        //add to lon and lat
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray[i]);
-                            lat.add(yArray[i]);
-                        }
-                    }
-                }
-
-            } else {
-                //skip over the data
-                long remain = 8L * n;   //2 (x,y) * 4 (bytes/int)
-                while (remain > 0) 
-                    remain -= dis.skip(remain);
             }
-
+        } finally {
+            dis.close();
         }
-        dis.close();
         if (reallyVerbose) String2.log("  GSHHS.getPathInfo done. res=" + resolution +
             " level=" + (desiredLevel==1? "land" : desiredLevel==2? "lake" : "" + desiredLevel) + 
             " TIME=" + (System.currentTimeMillis() - time) + "ms");

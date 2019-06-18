@@ -243,10 +243,10 @@ public class DigirHelper  {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<request \n" +
         "  xmlns=\"http://digir.net/schema/protocol/2003/1.0\" \n" + //default namespace
-        "  xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \n" +
+        "  xmlns:xsd=\"https://www.w3.org/2001/XMLSchema\" \n" +
         "  xmlns:darwin=\"http://digir.net/schema/conceptual/darwin/2003/1.0\" \n" +
         "  xmlns:obis=\"http://www.iobis.org/obis\" \n" +
-        "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+        "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" \n" +
         "  xsi:schemaLocation=\"http://digir.net/schema/protocol/2003/1.0 \n" + //if not provided, waits, then returns provider info
         "    http://digir.sourceforge.net/schema/protocol/2003/1.0/digir.xsd \n" +  //these are pars of xmlns+xsd
         "    http://digir.net/schema/conceptual/darwin/2003/1.0 \n" +
@@ -265,8 +265,8 @@ public class DigirHelper  {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<request \n" +
             "  xmlns=\"" + xmlnsNS[0] + "\" \n" + //default namespace
-            "  xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \n" +
-            "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n");
+            "  xmlns:xsd=\"https://www.w3.org/2001/XMLSchema\" \n" +
+            "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" \n");
         for (int i = 1; i < xmlnsNS.length; i++)  //1 because 0=default handled above
             request.append(
                 "  xmlns:" + xmlnsPrefix[i] + "=\"" + xmlnsNS[i] + "\" \n");
@@ -368,7 +368,7 @@ public class DigirHelper  {
         /* example from diveintodigir
         <?xml version="1.0" encoding="UTF-8"?>
         <request xmlns="http://digir.net/schema/protocol/2003/1.0"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://digir.net/schema/protocol/2003/1.0
                   http://digir.sourceforge.net/schema/protocol/2003/1.0/digir.xsd">
           <header>
@@ -441,22 +441,26 @@ public class DigirHelper  {
 
         //get the metadata xml and StringReader
         String xml = getMetadataXml(url, version);
-        StringReader reader = new StringReader(xml);
+        BufferedReader reader = new BufferedReader(new StringReader(xml));
         //for testing:
         //Test.ensureTrue(String2.writeToFile("c:/temp/ObisMetadata.xml", xml).equals(""), 
         //    "Unable to save c:/temp/Obis.Metadata.xml.");
-        //FileReader reader = new FileReader("c:/programs/digir/ObisMetadata.xml");
+        //Reader reader = new BufferedReader(new FileReader("c:/programs/digir/ObisMetadata.xml"));
+        try {
 
-        //read the resource data
-        Table table = new Table();
-        boolean validate = false; //since no .dtd specified by DOCTYPE in the file
-        table.readXml(new BufferedReader(reader), 
-            validate, "/response/content/metadata/provider/resource", null,
-            true); //simplify
-        if (reallyVerbose) String2.log("DigirHelper.getMetadataTable, first 3 rows:\n" + 
-            table.toString(3));
+            //read the resource data
+            Table table = new Table();
+            boolean validate = false; //since no .dtd specified by DOCTYPE in the file
+            table.readXml(reader, 
+                validate, "/response/content/metadata/provider/resource", null,
+                true); //simplify
+            if (reallyVerbose) String2.log("DigirHelper.getMetadataTable, first 3 rows:\n" + 
+                table.toString(3));
+            return table;
+        } finally {
+            reader.close();
+        }
 
-        return table;
 
     }
 
@@ -570,7 +574,7 @@ public class DigirHelper  {
         /* example from diveintodigir
         <?xml version="1.0" encoding="UTF-8"?>
         <request xmlns="http://www.namespaceTBD.org/digir"
-                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 xmlns:xsd="https://www.w3.org/2001/XMLSchema"
                  xmlns:darwin="http://digir.net/schema/conceptual/darwin/2003/1.0">
           <header>
             <version>1.0.0</version>
@@ -907,8 +911,8 @@ String2.log("inventoryTable:\n" + table.toString());
      *    e.g., {"", "darwin", "obis"} .  
      *    The array length must be at least 1.
      *    0th entry is ignored (it is default namespace).
-     *    xsd (http://www.w3.org/2001/XMLSchema) and 
-     *    xsi (http://www.w3.org/2001/XMLSchema-instance) are automatically added.        
+     *    xsd (https://www.w3.org/2001/XMLSchema) and 
+     *    xsi (https://www.w3.org/2001/XMLSchema-instance) are automatically added.        
      * @param xmlnsNS the xmlns values (pseudo URLs, not actual documents)
      *    e.g., {DIGIR_XMLNS, DARWIN_XMLNS, OBIS_XMLNS}
      *    These must correspond to the xmlnsPrefix values.
@@ -982,10 +986,10 @@ String2.log("inventoryTable:\n" + table.toString());
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<request \n" +
         "  xmlns=\"http://digir.net/schema/protocol/2003/1.0\" \n" + //default namespace
-        "  xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \n" +
+        "  xmlns:xsd=\"https://www.w3.org/2001/XMLSchema\" \n" +
         "  xmlns:darwin=\"http://digir.net/schema/conceptual/darwin/2003/1.0\" \n" +
         "  xmlns:obis=\"http://www.iobis.org/obis\" \n" +
-        "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+        "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" \n" +
         "  xsi:schemaLocation=\"http://digir.net/schema/protocol/2003/1.0 \n" + //if not provided, waits, then returns provider info
         "    http://digir.sourceforge.net/schema/protocol/2003/1.0/digir.xsd \n" +  //these are pars of xmlns+xsd
         "    http://digir.net/schema/conceptual/darwin/2003/1.0 \n" +
@@ -1276,7 +1280,7 @@ String2.log("inventoryTable:\n" + table.toString());
         //tTable.saveAsFlatNc("c:/temp/searchObis" + includeXYZT + ".nc", "row");
         /* */
         //Table tTable = new Table();
-        //tTable.readFlatNc("c:/temp/searchObis" + includeXYZT + ".nc", null, 1);
+        //tTable.readFlatNc("c:/temp/searchObis" + includeXYZT + ".nc", null, 1); //standardizeWhat=1
 
         int nRows = tTable.nRows();
         if (includeXYZT) {

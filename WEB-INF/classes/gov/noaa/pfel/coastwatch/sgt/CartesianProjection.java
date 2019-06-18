@@ -14,10 +14,15 @@ import com.cohort.util.Test;
  */
 public class CartesianProjection implements Projection {
 
-    private double graphMinX, graphMaxX, graphMinY, graphMaxY,
-           deviceMinX, deviceMaxX, deviceMinY, deviceMaxY,
-        graphXRange, graphYRange, deviceXRange, deviceYRange,
-        deviceOverGraphXRange, deviceOverGraphYRange;
+    private double 
+        graphMinX, graphMaxX, graphMinY, graphMaxY,
+        lgraphMinX, lgraphMaxX, lgraphMinY, lgraphMaxY, //log or linear applied
+        deviceMinX, deviceMaxX, deviceMinY, deviceMaxY,
+        lgraphXRange, lgraphYRange, deviceXRange, deviceYRange,
+        deviceOverLGraphXRange, deviceOverLGraphYRange;
+    private boolean xIsLogAxis, yIsLogAxis;
+    public final static String cantBecauseLog = 
+        "CartesianProjection.graphToDeviceX/YDistance() can't be used when the x and/or y axis is a log axis.";
 
     /**
      * This sets up a projection which converts a Cartesian graph's x,y coordinates 
@@ -36,7 +41,8 @@ public class CartesianProjection implements Projection {
         double graphMinX, double graphMaxX,
         double graphMinY, double graphMaxY,
         double deviceMinX, double deviceMaxX,
-        double deviceMinY, double deviceMaxY) {
+        double deviceMinY, double deviceMaxY,
+        boolean xIsLogAxis, boolean yIsLogAxis) {
 
         this.graphMinX = graphMinX;
         this.graphMaxX = graphMaxX;
@@ -46,12 +52,20 @@ public class CartesianProjection implements Projection {
         this.deviceMaxX = deviceMaxX;
         this.deviceMinY = deviceMinY;
         this.deviceMaxY = deviceMaxY;
-        graphXRange = graphMaxX - graphMinX;
-        graphYRange = graphMaxY - graphMinY;
+
+        this.xIsLogAxis = xIsLogAxis && graphMinX > 0 && graphMaxX > 0; //silently turn off logAxis if not allowed
+        this.yIsLogAxis = yIsLogAxis && graphMinY > 0 && graphMaxY > 0;
+        lgraphMinX = xIsLogAxis? Math.log(graphMinX) : graphMinX;
+        lgraphMaxX = xIsLogAxis? Math.log(graphMaxX) : graphMaxX;
+        lgraphMinY = yIsLogAxis? Math.log(graphMinY) : graphMinY;
+        lgraphMaxY = yIsLogAxis? Math.log(graphMaxY) : graphMaxY;
+
+        lgraphXRange = lgraphMaxX - lgraphMinX;
+        lgraphYRange = lgraphMaxY - lgraphMinY;
         deviceXRange = deviceMaxX - deviceMinX;
         deviceYRange = deviceMaxY - deviceMinY;
-        deviceOverGraphXRange = deviceXRange / graphXRange;
-        deviceOverGraphYRange = deviceYRange / graphYRange;
+        deviceOverLGraphXRange = deviceXRange / lgraphXRange;
+        deviceOverLGraphYRange = deviceYRange / lgraphYRange;
 
     }
 
@@ -75,8 +89,18 @@ public class CartesianProjection implements Projection {
      */
     public void graphToDevice(double graphX, double graphY, DoubleObject deviceX,
         DoubleObject deviceY) {
-        deviceX.d = deviceMinX + (graphX - graphMinX) * deviceOverGraphXRange; //doing like this minimizes roundoff errors
-        deviceY.d = deviceMinY + (graphY - graphMinY) * deviceOverGraphYRange;
+        if ((xIsLogAxis && graphX <= 0) || 
+            (yIsLogAxis && graphY <= 0)) {
+            //not an exception. 
+            deviceX.d = Double.NaN;
+            deviceY.d = Double.NaN;
+            return;
+        }
+
+        if (xIsLogAxis) graphX = Math.log(graphX);
+        if (yIsLogAxis) graphY = Math.log(graphY);
+        deviceX.d = deviceMinX + (graphX - lgraphMinX) * deviceOverLGraphXRange; //doing like this minimizes roundoff errors
+        deviceY.d = deviceMinY + (graphY - lgraphMinY) * deviceOverLGraphYRange;
     }
     
     /**
@@ -94,29 +118,37 @@ public class CartesianProjection implements Projection {
      */
     public void deviceToGraph(double deviceX, double deviceY, DoubleObject graphX,
         DoubleObject graphY) {
-        graphX.d = graphMinX + (deviceX - deviceMinX) / deviceOverGraphXRange; //doing like this minimizes roundoff errors
-        graphY.d = graphMinY + (deviceY - deviceMinY) / deviceOverGraphYRange;
+        graphX.d = lgraphMinX + (deviceX - deviceMinX) / deviceOverLGraphXRange; //doing like this minimizes roundoff errors
+        graphY.d = lgraphMinY + (deviceY - deviceMinY) / deviceOverLGraphYRange;
+        if (xIsLogAxis) graphX.d = Math.exp(graphX.d);
+        if (yIsLogAxis) graphY.d = Math.exp(graphY.d);
     }
 
     /** 
      * This converts a graphXDistance into a deviceXDistance.
+     * THIS DOESN'T WORK WITH xIsLogAxis!
      * 
      * @param graphXDistance
      * @return deviceXDistance
      */ 
     public double graphToDeviceXDistance(double graphXDistance) {
-         return graphXDistance * deviceOverGraphXRange;
+         if (xIsLogAxis)
+             throw new RuntimeException(cantBecauseLog);
+         return graphXDistance * deviceOverLGraphXRange;
      }
 
     /** 
      * This converts a graphYDistance into a deviceYDistance.
      * In the typical setup, a positive graphYDistance generates a positive deviceYDistance.
+     * THIS DOESN'T WORK WITH yIsLogAxis!
      *
      * @param graphYDistance
      * @return deviceYDistance
      */ 
     public double graphToDeviceYDistance(double graphYDistance) {
-         return graphYDistance * -deviceOverGraphYRange;
+         if (yIsLogAxis)
+             throw new RuntimeException(cantBecauseLog);
+         return graphYDistance * -deviceOverLGraphYRange;
      }
 
     /**
@@ -126,13 +158,14 @@ public class CartesianProjection implements Projection {
      */
     public String toString() {
         return "CartesianProjection(" + 
-            "graphMinX=" + graphMinX + " maxX=" + graphMaxX + " minY=" + graphMinY + " maxY=" + graphMaxY +
+            "graphMinX=" + graphMinX + " maxX=" + graphMaxX + " xIsLogAxis=" + xIsLogAxis + 
+                " minY=" + graphMinY + " maxY=" + graphMaxY + " yIsLogAxis=" + yIsLogAxis +
             "\n  deviceMinX=" + deviceMinX + " maxX=" + deviceMaxX + " minY=" + deviceMinY + " maxY=" + deviceMaxY + ")";
     }
 
     /** This tests this class. */
     public static void test() {
-        CartesianProjection cp = new CartesianProjection(100, 200, 10, 20, 30, 50, 120, 80);
+        CartesianProjection cp = new CartesianProjection(100, 200, 10, 20, 30, 50, 120, 80, false, false);
         String2.log("\nTest CartesianProjection\n" + cp);
         DoubleObject dox = new DoubleObject(0);
         DoubleObject doy = new DoubleObject(0);

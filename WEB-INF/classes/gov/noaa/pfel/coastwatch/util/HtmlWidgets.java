@@ -1,6 +1,6 @@
 /* 
  * HtmlWidgets Copyright 2007, NOAA.
- * See the LICENSE.txt file in this file's directory.
+ * See the LICENSE.txt file in this file'ss directory.
  */
 package gov.noaa.pfel.coastwatch.util;
 
@@ -51,9 +51,9 @@ public class HtmlWidgets {
     * This is specific to UTF-8. 
     * See comments about making xhtml render properly in browsers:
     *   Must use UTF-8; remove ?xml header; use mime type text/html;
-    *   http://www.w3.org/TR/xhtml1/#guidelines
+    *   https://www.w3.org/TR/xhtml1/#guidelines
     * <br>But it is more important that it be proper xml -- so leave xml tag in.
-    * <br>More useful clues from http://www.w3.org/MarkUp/Forms/2003/xforms-for-html-authors
+    * <br>More useful clues from https://www.w3.org/MarkUp/Forms/2003/xforms-for-html-authors
     *   which is xhtml that renders correctly.
     *   It needs head/meta tags and head/style tags. (see below)
     *   And use xhmtl validator at http://validator.w3.org/#validate_by_input for testing.
@@ -63,8 +63,8 @@ public class HtmlWidgets {
     public final static String DOCTYPE_XHTML_TRANSITIONAL = 
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
-        "  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" + //from www.w3.org documents -- it's visible in all browsers!
+        "  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+        "<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" + //from www.w3.org documents -- it's visible in all browsers!
         "<head>\n" +
         "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n";// +
 
@@ -91,7 +91,7 @@ public class HtmlWidgets {
     /** This will display a message to the user if JavaScript is not supported
      * or disabled. Last updated 2016-03-28. */
     public static String ifJavaScriptDisabled =
-        "<noscript><p><div style=\"color:red\"><strong>To work correctly, this web page requires that JavaScript be enabled in your browser.</strong> Please:\n" +
+        "<noscript><div style=\"color:red\"><strong>To work correctly, this web page requires that JavaScript be enabled in your browser.</strong> Please:\n" +
         "<br>1) Enable JavaScript in your browser:\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: (it should be always on!)\"\n" +
@@ -106,7 +106,7 @@ public class HtmlWidgets {
     /** The default tooltip for twoClickMap. */
     public static String twoClickMapDefaultTooltip =
         "Specify a rectangle by clicking on two diagonal corners.  Do it again if needed.";
-
+    public static String comboBoxAlt = "Hover here to see a list of options. Click on an option to select it.";
     public static String errorXWasntSpecified = "Error: \"{0}\" wasn''t specified.";
     public static String errorXWasTooLong = "\"{0}\" was more than {1} characters long.";
 
@@ -237,7 +237,7 @@ public class HtmlWidgets {
      * @param tHtmlTooltips if true, tooltip text can be any HTML text of any length.
      *     If true, caller must have called htmlTooltipScript above.
      *     If false, tooltips are plain text and should be (less than 60 char on some browsers).
-     * @param tImageDirUrl the public url for the image dir which has the
+     * @param tImageDirUrl the public URL for the image dir which has the
      *     arrow, p... and m... .gif files for the 'select' buttons
      *     (or null or "" if not needed).  Usually EDStatic.imageDirUrl(loggedInAs)
      */
@@ -258,6 +258,8 @@ public class HtmlWidgets {
      *
      * @param tooltip If htmlTooltips is true, this is already html.
      *     If it is false, this is plain text.  Or "" if no tooltip.
+     * @return nothing if tooltip is nothing. Else an htmlTooltip or title= tooltip,
+     *    with newline at start and space at end.
      */
     public String completeTooltip(String tooltip) {
         if (tooltip == null || tooltip.length() == 0)
@@ -332,7 +334,7 @@ public class HtmlWidgets {
     /**
      * This generates the HTML to add a cssTooltip to the specified item.
      *
-     * @param itemHtml
+     * @param itemHtml  The html for the thing (e.g., "?"-image) that is always visible
      * @param spanOther other parameters (e.g., style) for the inner span
      * @param tooltipHtml
      * @return the HTML to add a cssTooltip to the specified item.
@@ -341,7 +343,7 @@ public class HtmlWidgets {
         return 
             "<span class=\"cssTooltip\">" +
             itemHtml +
-            "<span class=\"cssTooltipInner\" " + 
+            "<span class=\"cssTooltipInner\"" + 
                 (spanOther.length() == 0? "" : " " + spanOther) +
                 ">" +
             tooltipHtml +
@@ -355,9 +357,10 @@ public class HtmlWidgets {
      * This is based on the idea for
      *   CSS-only image tooltip at https://codepen.io/electricalbah/pen/eJRLVd
      *
-     * @param imgUrl for the image for the user to hover over, e.g., questionMarkImageUrl.
+     * @param img1Url for the image for the user to hover over, e.g., questionMarkImageUrl.
      *   It must be in the images directory.
      * @param img1Alt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.
+     * @param img1Other additional parameter=values for img1. It should end with a space.
      * @param img2Url
      * @param img2ID  a unique (for the document) id, e.g., img1. 
      *   Just simple chars -- it isn't further encoded.
@@ -376,13 +379,12 @@ public class HtmlWidgets {
             cssTooltip(
             "<img " + img1Other + "src=\"" + img1UrlEncoded + 
                 "\" alt=\"" + XML.encodeAsHTMLAttribute(img1Alt) + "\"\n" +
-                "onmouseover=\"var el=document.getElementById('" + img2ID + "'); el.setAttribute('src',el.getAttribute('data-src'));\">",
+                "  onmouseover=\"var el=document.getElementById('" + img2ID + "'); el.setAttribute('src',el.getAttribute('data-src'));\">",
             "style=\"padding:0px; max-width:90%;\"",  
             "<img style=\"max-width:100%;\" " +
-                "id=\"" + img2ID + "\" class=\"B\" src=\"" + loadingUrlEncoded + "\"\n" +
-                "data-src=\"" + XML.encodeAsHTMLAttribute(img2Url) + 
-                "\" alt=\"" + XML.encodeAsHTMLAttribute(File2.getNameAndExtension(img2Url)) + "\"" +
-                ">");
+                    "id=\"" + img2ID + "\" class=\"B\" src=\"" + loadingUrlEncoded + "\"\n" + //vertical-align: 'b'ottom
+                "  data-src=\"" + XML.encodeAsHTMLAttribute(img2Url) + 
+                    "\" alt=\"" + XML.encodeAsHTMLAttribute(File2.getNameAndExtension(img2Url)) + "\">");
 
             /*
             //EXPERIMENT with leaflet
@@ -432,7 +434,7 @@ public class HtmlWidgets {
                 "<img " +
                   "onmousemove=\"myMouseMove(event, this);\" " +
                   "style=\"max-width:588px;\" " +
-                  "id=\"" + img2ID + "\" class=\"B\" src=\"" + loadingUrlEncoded + "\"\n" +
+                  "id=\"" + img2ID + "\" class=\"B\" src=\"" + loadingUrlEncoded + "\"\n" + //vertical-align: 'b'ottom
                   "data-src=\"" + XML.encodeAsHTMLAttribute(img2Url) + 
                   "\" alt=\"" + XML.encodeAsHTMLAttribute(File2.getNameAndExtension(img2Url)) + "\"" +
                 ">" +
@@ -450,6 +452,7 @@ public class HtmlWidgets {
      *
      * @param imgUrl for the image for the user to hover over, e.g., questionMarkImageUrl 
      * @param imgAlt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.
+     * @param imgOther additional parameter=values for the img. It should end with a space.
      * @param vidUrl works for me in Chrome with .mp4, .ogv, .webm, but not .3gp
      * @return the html for an image ('?') with a cssTooltip with a video player.
      */
@@ -461,7 +464,7 @@ public class HtmlWidgets {
                 "\" alt=\"" + XML.encodeAsHTMLAttribute(imgAlt) + "\">",  
             "style=\"padding:0px; max-width:90%;\"",
             "<video style=\"max-width:100%;\" " +
-                "controls preload=\"none\" class=\"B\">" +
+                "controls preload=\"none\" class=\"B\">" + //vertical-align: 'b'ottom
                 "<source src=\"" + XML.encodeAsHTMLAttribute(vidUrl) + "\">" + 
                 "</video>");
     }
@@ -474,6 +477,7 @@ public class HtmlWidgets {
      *
      * @param imgUrl for the image for the user to hover over, e.g., questionMarkImageUrl
      * @param imgAlt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.
+     * @param imgOther additional parameter=values for img. It should end with a space.
      * @param audUrl works for me in Chrome with .wav
      * @return the html for an image ('?') with a cssTooltip with a audio player,
      *    or "" if the audio file isn't a suitable type for the audio player.
@@ -491,7 +495,6 @@ public class HtmlWidgets {
     /** 
      * This returns an HTML audio control.
      *
-     * @param ext the file extension (e.g., .wav)
      * @param htmlAttEncodedUrlFileName
      * @return an HTML audio control (or "" if trouble)
      */
@@ -502,7 +505,7 @@ public class HtmlWidgets {
 
         return 
             //HTML oddity: <source> has no close tag or even /> at end
-            "<audio controls preload=\"none\" class=\"B\">" + //loop?
+            "<audio controls preload=\"none\" class=\"B\">" + //loop?  //vertical-align: 'b'ottom
             "<source src=\"" + htmlAttEncodedUrlFileName + "\"" +
                 (mime.length() == 0? "" : " type=\"audio/" + mime + "\"") + 
                 ">" +
@@ -578,7 +581,7 @@ public class HtmlWidgets {
     /** 
      * This creates the HTML code to begin a table.
      *
-     * @param other attributes e.g., "style=\"width:100%;\" class=\"b0p0\"" 
+     * @param otherAtts attributes e.g., "style=\"width:100%;\" class=\"b0p0\"" 
      * @return the HTML code to begin a table.
      */
     public String beginTable(String otherAtts) { 
@@ -687,7 +690,7 @@ public class HtmlWidgets {
     /**
      * This create the HTML code for a comment.
      *
-     * @param commentText
+     * @param comment
      * @return the HTML code for a comment.
      */
     public String comment(String comment) {
@@ -844,7 +847,7 @@ public class HtmlWidgets {
 
     /**
      * This variant of select deals with a special case where 
-     * JavaScript code that transfers an option to a textfield
+     * JavaScript code that transfers an option to a text field
      * e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
      * converts internal &gt;1 space ("ab   c") into 1 space ("ab c").
      * This also solves the problem of leading and trailing spaces being trimmed 
@@ -861,7 +864,7 @@ public class HtmlWidgets {
 
     /**
      * This variant of select deals with a special case where 
-     * JavaScript code that transfers an option to a textfield
+     * JavaScript code that transfers an option to a textField
      * e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
      * converts internal &gt;1 space ("ab   c") into 1 space ("ab c").
      * This also solves the problem of leading and trailing spaces being trimmed 
@@ -901,7 +904,7 @@ public class HtmlWidgets {
         //if buttons visible, put select and buttons in a table (to pack close together)
         if (nRows < 0 && nOptions > 1) {
             sb.append("<table class=\"compact\">\n");
-            sb.append("  <tr><td class=\"B\">");//td for <select>
+            sb.append("  <tr><td class=\"B\">");//td for <select>  //vertical-align: 'b'ottom
         }
 
         //the main 'select' widget
@@ -933,7 +936,7 @@ public class HtmlWidgets {
                 //  see http://jszen.blogspot.com/2007/01/ie6-select-value-gotcha.html
                 //  so I removed
                 //  (opt.length() == 0? " value=\"\"" : "") +
-                //2012-04-18 javascript code that transfers an option to a textfield
+                //2012-04-18 javascript code that transfers an option to a textField
                 //  e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
                 //  converts internal >1 space ("ab   c") into 1 space ("ab c").
                 ">" + opt +
@@ -963,6 +966,86 @@ public class HtmlWidgets {
         }
         return sb.toString();
     }
+
+    /**
+     * ComboBox lets users choose from drop down list or enter any text.
+     * This requires HTML5+.
+     * As of 2019-05-10, this doesn't work in Microsoft Edge: it is as if onChange
+     *   is never called (and the popup disappears). The javascript is like other places.
+     *   Is it because the list is in a popup?
+     *
+     * <p>Enter never submits the form. This ignores htmlWidgets.enterSubmitsForm setting.
+     *
+     * <p>Note current lack of encodeSpace option to deal with multiple adjacent spaces in an option.
+     *
+     * @param fieldLength  the size of the field, in mspaces(?), e.g., 10.
+     *     If the fieldLength <= 0, no 'size' value is specified in the html.
+     * @param maxLength    usually 255
+     * @param initialTextValue the initial text value, or null or "" if none
+     * @param imgUrl is the URL of the downArrow image
+     * @param options One of the options can be "".
+     * @param other Other attributes for the textField (usually "")
+     */    
+    public String comboBox(String formName, String name, String tooltip, 
+        int fieldLength, int maxLength,
+        String initialTextValue, String options[], String other) {
+
+        StringBuilder sb = new StringBuilder();
+        int nOptions = options.length;
+
+        //the cssTooltip approach
+        sb.append("<span class=\"nowrap\">");
+        sb.append(textField(name, tooltip, fieldLength, maxLength, initialTextValue, other));           
+        sb.append(cssTooltip(
+            "<img " + //imgOther + //there could be additional attributes for the image
+                " style=\"vertical-align:top;\" " +
+                completeTooltip(comboBoxAlt) +                 
+                "\n  src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif") + "\"\n" +
+                  "  alt=\"" + XML.encodeAsHTMLAttribute(comboBoxAlt) + "\"\n" +
+                  ">",  
+            "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
+            select(name + "TooltipSelect", "", Math.min(nOptions, 10),
+                options, -1, 
+//!!! This javascript is identical to other places (except within popup).
+//It works in all browsers except MS Edge (item is selected, but value not copied to 'name' textfield).
+                "\n  onChange=\"document." + formName + "." + name + 
+                    ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n")));  //
+        sb.append("</span>");
+
+/*
+        //the <input> widget and the <datalist> approach 
+        //The problem is that the list only shows options that match the start of the textfield text,
+        //so once you select something, all options go away. (It's the auto-complete feature.)
+        //Web has various work-arounds but none are good.
+        //see https://www.w3schools.com/tags/tag_datalist.asp
+        sb.append(
+            "<input type=\"text\" " + 
+              "name=\"" + XML.encodeAsHTMLAttribute(name) + "\" " +
+              "list=\"" + XML.encodeAsHTMLAttribute(name) + "_list\" " +
+              completeTooltip(tooltip) + 
+              " value=\"" + 
+              (initialTextValue == null? "" : XML.encodeAsHTMLAttribute(initialTextValue)) + 
+              "\" " +
+              (fieldLength > 0? "size=\"" + fieldLength + "\" " : "") + 
+              "maxlength=\"" + maxLength + "\" " +              
+              //"onmousedown=\"value='';\" " + //so when user clicks, previous value disappears  NOT GOOD
+              other + " >\n" +  //there is no need for </input> tag
+            "<datalist id=\"" + XML.encodeAsHTMLAttribute(name) + "_list\">\n");
+        for (int i = 0; i < nOptions; i++) {
+            //Security issue: the options are not user-specified.  And they are not HTML attributes.
+            //I don't think encodeAsHTMLAttributes is warranted and I know it will cause problems with encodeSpaces.
+            //if (encodeSpaces)
+            //    opt = XML.minimalEncodeSpaces(opt); //I think this requires a javascript handler to decode the %20's. No javascript here.
+            sb.append("<option value=\"" + XML.encodeAsHTML(options[i]) + "\">\n"); 
+        }
+        sb.append("</datalist>");
+*/
+
+        return sb.toString();
+    }
+
+
+
 
     /**
      * This creates the HTML to make a button to assist select().
@@ -995,17 +1078,17 @@ public class HtmlWidgets {
             else if (incr == Integer.MAX_VALUE) rhs  = "sel.length-1"; 
             else if (incr > 0)                  rhs  = "Math.min(sel.length-1, sel.selectedIndex+" + incr + ")";
             sb.append(
-                "<td class=\"B\">" +
-                "<img class=\"B\" src=\"" + 
+                "<td class=\"B\">" +  //vertical-align: 'b'ottom
+                "<img class=\"B\" src=\"" +  //vertical-align: 'b'ottom
                 XML.encodeAsHTMLAttribute(imageDirUrl + imageName) + "\" " +
                 completeTooltip(tooltip) +
                 " alt=\"" + 
                     (nRows == Integer.MIN_VALUE? "|&lt;" : nRows == Integer.MAX_VALUE? "&gt;|" : 
                      incr >=0? "+" + incr : "" + incr) + "\"\n" +
                 //onMouseUp works much better than onClick and onDblClick
-                " onMouseUp=\"var sel=" + formName + "." + name + "; sel.selectedIndex=" + rhs + ";" +   
-                    buttonJS + " \" >\n" +
-                "</td>\n");
+                "  onMouseUp=\"var sel=" + formName + "." + name + "; sel.selectedIndex=" + rhs + ";" +   
+                    buttonJS + " \"\n" +
+                "></td>");
         }
         return sb.toString();
     }
@@ -1071,9 +1154,9 @@ public class HtmlWidgets {
             (enterTextSubmitsForm? "" : 
                 "\n  onkeypress='" +  //supress submission
                     " var key = window.event? event.keyCode : event.which? event.which : 0; " + //'?' deals with IE vs. Netscape vs. ? 
-                    " return key != 13;' \n") +
+                    " return key != 13;' ") +
             completeTooltip(tooltip) +
-            "\n      " +
+            "\n  " +
             (fieldLength > 0? "size=\"" + fieldLength + "\" " : "") + 
             "maxlength=\"" + maxLength + "\"" +
             " " + other + " >";
@@ -1474,7 +1557,7 @@ sb.append(
     /** 
      * This generates the HTML and JavaScript to show a (world) map on image 
      * which the user can click on twice to specify a rectangle,
-     * the coordinates of which will be put in 4 textfields (rounded to nearest int).
+     * the coordinates of which will be put in 4 textFields (rounded to nearest int).
      *
      * <p>There can be only one twoClickMap per web page.
      *
@@ -1832,7 +1915,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         boolean tHtmlTooltips = true;
         HtmlWidgets widgets = new HtmlWidgets(tHtmlTooltips, imageDir);
 //            "http://localhost:8080/cwexperimental/images/");
-//            "http://coastwatch.pfeg.noaa.gov/erddap/images/"); //SANS_SERIF_STYLE);
+//            "https://coastwatch.pfeg.noaa.gov/erddap/images/"); //SANS_SERIF_STYLE);
         sb.append(
             DOCTYPE_HTML +
             "  <title>Test Html Widgets</title>\n" +
@@ -1855,14 +1938,14 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         sb.append("<br>Large image scaled down to max=600:\n" +
             imageInTooltip(
             "/programs/_tomcat/webapps/cwexperimental/images/HowDoISpecifyARegion.png", 
-            "http://coastwatch.pfeg.noaa.gov/coastwatch/images/HowDoISpecifyARegion.png",
-            "http://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
+            "https://coastwatch.pfeg.noaa.gov/coastwatch/images/HowDoISpecifyARegion.png",
+            "https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
 
         sb.append("<br>Small image (plus1000.gif):\n" +
             imageInTooltip(
             "/programs/_tomcat/webapps/cwexperimental/images/plus1000.gif", 
-            "http://coastwatch.pfeg.noaa.gov/erddap/images/plus1000.gif",
-            "http://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
+            "https://coastwatch.pfeg.noaa.gov/erddap/images/plus1000.gif",
+            "https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
 
         //pure CSS image tooltip    
         //try to defer loading the image
@@ -1887,18 +1970,18 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
 
         /*sb.append(        
             "<a href=\"\" class=\"cssTooltip\">" +  
-                "<img src=\"http://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\" " +
+                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\" " +
                 "onmouseover=\"var el=document.getElementById('img1'); el.setAttribute('src',el.getAttribute('data-src'));\">" +
             "<span>" +
                 "<strong>CSS only Tooltip</strong><br>And more.<br>" + //test text+image
-                "<img id=\"img1\" src=\"http://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"jplMURSST20150103090000.png\" " +
+                "<img id=\"img1\" src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"jplMURSST20150103090000.png\" " +
                     "data-src=\"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png\">" + 
             "</span></a>Subsequent text.\n");
 
         /* //original plain pre-load image
         sb.append(
             "<a href=\"#\" class=\"cssTooltip\">" +
-                "<img src=\"http://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\">" +
+                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\">" +
             "<span>" +
                 "<strong>CSS only Tooltip</strong><br>And more.<br>" + //test text+image
                 "<img src=\"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png\">" + //" style=\"float:right;\" 
@@ -1934,13 +2017,17 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             widgets.select("selectName", "selectTooltip literal: &lt;&gt;&amp;\"!", 6, options, 137, "") +
             "<br>Password: \n" +
             "<input type=\"password\" name=\"mypassword\" autocomplete=\"off\">\n" +
-            "<br>Testfield1: \n" + 
+            "<br>ComboBox: " + 
+            widgets.comboBox(formName, "myComboBox", "My comboBox tooltip", 25, 255,
+                "myInitialValue", new String[]{"", "able", "baker", "charlie"}, "") + //other
+            "<br>TextField1: \n" + 
             widgets.textField("textFieldName1", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, 
                 "initialValue<script>prompt(123)</script>", "") +
-            "<br>Textfield2: \n" +
+            "<br>TextField2: \n" +
             widgets.textField("textFieldName2", "", 20, 255, "has big tooltip <script>prompt(123)</script>", 
                 htmlTooltip("Hi <strong>bold</strong>!\n<br>There \\/'\"&amp;&brvbar;!")) +
             "<br>\n" +
+            //textbox
             "<textarea name=\"address\" cols=\"40\" rows=\"4\" maxlength=\"160\" wrap=\"soft\">" +
             "John Smith\n123 Main St\nAnytown, CA 94025\n" +
             XML.encodeAsHTMLAttribute("<>&\"<script>prompt(123)</script>\n") +
@@ -1958,7 +2045,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             "<br>\n" +
             widgets.color17("Color1: ", "color1", "Pick a color.", 2, "") +
             widgets.color17("Color2: ", "color2", "Pick a color.", 6, "") +
-            "some other text\n");
+            "some other text\n"); 
          
         //sliders
         String fromNames[] = {"f1.from0", "f1.from1", "", "f1.from3", "f1.from4", "f1.from5"};
@@ -2041,18 +2128,18 @@ widgets.slider(5, bgWidth, "") + //was "style=\"text-align:left\"") +
 "Something Else\n" +
 "</td></tr>\n" +
 "<tr><td>" +
-"<img src=\"" + imageDir + "arrow2U.gif\" alt=\"2up\">" +
-"<img src=\"" + imageDir + "arrow2D.gif\" alt=\"2down\">" +
-"<img src=\"" + imageDir + "arrow2L.gif\" alt=\"2left\">" +
-"<img src=\"" + imageDir + "arrow2R.gif\" alt=\"2right\">" +
+"<img src=\"" + imageDir + "arrow2U.gif\" alt=\"2U\">" +
+"<img src=\"" + imageDir + "arrow2D.gif\" alt=\"2D\">" +
+"<img src=\"" + imageDir + "arrow2L.gif\" alt=\"2L\">" +
+"<img src=\"" + imageDir + "arrow2R.gif\" alt=\"2R\">" +
 "<img src=\"" + imageDir + "arrowU.gif\" alt=\"up\">" +
 "<img src=\"" + imageDir + "arrowD.gif\" alt=\"down\">" +
 "<img src=\"" + imageDir + "arrowL.gif\" alt=\"left\">" +
 "<img src=\"" + imageDir + "arrowR.gif\" alt=\"right\">" +
-"<img src=\"" + imageDir + "arrowUU.gif\" alt=\"2up\">" +
-"<img src=\"" + imageDir + "arrowDD.gif\" alt=\"2down\">" +
-"<img src=\"" + imageDir + "arrowLL.gif\" alt=\"2left\">" +
-"<img src=\"" + imageDir + "arrowRR.gif\" alt=\"2right\">" +
+"<img src=\"" + imageDir + "arrowUU.gif\" alt=\"UU\">" +
+"<img src=\"" + imageDir + "arrowDD.gif\" alt=\"DD\">" +
+"<img src=\"" + imageDir + "arrowLL.gif\" alt=\"LL\">" +
+"<img src=\"" + imageDir + "arrowRR.gif\" alt=\"RR\">" +
 "<img src=\"" + imageDir + "minus.gif\" alt=\"-\">" +
 "<img src=\"" + imageDir + "minus10.gif\" alt=\"-10\">" +
 "<img src=\"" + imageDir + "minus100.gif\" alt=\"-100\">" +
@@ -2096,7 +2183,7 @@ sb.append(
 "</table>\n");
         sb.append(widgets.endForm());        
 sb.append(twoClickMap[2]);
-        //sb.append("<img src=\"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAssta8day.png?sst[(last)][(0.0)][(22):(50)][(225):(255)]%26.draw=surface%26.vars=longitude|latitude|sst%26.colorBar=Rainbow|C|Linear|8|32|\" alt=\"ERDDAP: SST, GOES Imager (8 Day Composite)\">\n");
+        //sb.append("<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAssta8day.png?sst[(last)][(0.0)][(22):(50)][(225):(255)]%26.draw=surface%26.vars=longitude|latitude|sst%26.colorBar=Rainbow|C|Linear|8|32|\" alt=\"ERDDAP: SST, GOES Imager (8 Day Composite)\">\n");
 
         sb.append(widgets.sliderScript(fromNames, toNames, nThumbs, userValuesCsvs, 
             initFromPositions, initToPositions, bgWidth));

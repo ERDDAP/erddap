@@ -56,36 +56,44 @@ public class GridDataAllAccessor {
      */
     public GridDataAllAccessor(GridDataAccessor tGridDataAccessor) throws Throwable {
 
+        int nDv = 0;
+        DataOutputStream dos[] = null;
         gridDataAccessor = tGridDataAccessor;
-        if (!gridDataAccessor.rowMajor())
-            throw new Exception("GridDataAllAccessor.constructor requires the gridDataAccessor to be rowMajor.");
+        try {
+            if (!gridDataAccessor.rowMajor())
+                throw new Exception("GridDataAllAccessor.constructor requires the gridDataAccessor to be rowMajor.");
 
-        //make the dataFiles
-        //This is set up to delete the cached files when the creator/owner is done.
-        //It could be changed to keep the files in the cache (which is cleared periodically).
-        EDV dataVars[] = gridDataAccessor.dataVariables();
-        int nDv = dataVars.length;
-        String tQuery = gridDataAccessor.userDapQuery();
-        baseFileName = gridDataAccessor.eddGrid().cacheDirectory() + //dir created by EDD.ensureValid
-            String2.md5Hex12(tQuery == null? "" : tQuery) + "_" +
-            Math2.random(Integer.MAX_VALUE) + "_"; //so two identical queries don't interfere with each other
+            //make the dataFiles
+            //This is set up to delete the cached files when the creator/owner is done.
+            //It could be changed to keep the files in the cache (which is cleared periodically).
+            EDV dataVars[] = gridDataAccessor.dataVariables();
+            nDv = dataVars.length;
+            String tQuery = gridDataAccessor.userDapQuery();
+            baseFileName = gridDataAccessor.eddGrid().cacheDirectory() + //dir created by EDD.ensureValid
+                String2.md5Hex12(tQuery == null? "" : tQuery) + "_" +
+                Math2.random(Integer.MAX_VALUE) + "_"; //so two identical queries don't interfere with each other
 
-        dataClass = new Class[nDv];
-        DataOutputStream dos[] = new DataOutputStream[nDv]; //1 per data variable        
-        for (int dv = 0; dv < nDv; dv++) {
-            dataClass[dv] = dataVars[dv].destinationDataTypeClass();
-            dos[dv] = new DataOutputStream(new BufferedOutputStream(
-                new FileOutputStream(baseFileName + dv)));            
-        }
-
-        //get all the data
-        while (gridDataAccessor.incrementChunk()) {
+            dataClass = new Class[nDv];
+            dos = new DataOutputStream[nDv]; //1 per data variable        
             for (int dv = 0; dv < nDv; dv++) {
-                gridDataAccessor.getPartialDataValues(dv).writeDos(dos[dv]);
+                dataClass[dv] = dataVars[dv].destinationDataTypeClass();
+                dos[dv] = new DataOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(baseFileName + dv)));            
             }
+
+            //get all the data
+            while (gridDataAccessor.incrementChunk()) {
+                for (int dv = 0; dv < nDv; dv++) {
+                    gridDataAccessor.getPartialDataValues(dv).writeDos(dos[dv]);
+                }
+            }
+        } finally {
+            if (dos != null) {
+                for (int dv = 0; dv < nDv; dv++) 
+                    try {if (dos[dv] != null) dos[dv].close();} catch (Exception e) {}
+            }
+            gridDataAccessor.releaseGetResources();
         }
-        for (int dv = 0; dv < nDv; dv++) 
-            dos[dv].close();
     }
 
 
@@ -98,8 +106,7 @@ public class GridDataAllAccessor {
      * @param throws RuntimeException if trouble
      */
     public DataInputStream getDataInputStream(int dv) throws Exception {
-        return new DataInputStream(new BufferedInputStream(
-                new FileInputStream(baseFileName + dv)));            
+        return new DataInputStream(File2.getDecompressedBufferedInputStream(baseFileName + dv));            
     }
 
 /* Future: This could allow access to all dataStreams in a 
@@ -120,40 +127,56 @@ public class GridDataAllAccessor {
         EDStatic.ensureArraySizeOkay(n, "GridDataAllAccessor");
         PrimitiveArray pa = PrimitiveArray.factory(dataClass[dv], (int)n, false);
         DataInputStream dis = getDataInputStream(dv);
-        pa.readDis(dis, (int)n);
-        dis.close();
+        try {
+            pa.readDis(dis, (int)n);
+        } finally {
+            dis.close();
+        }
         return pa;
     }
 
+
+    public void releaseGetResources() {
+        try {
+            if (gridDataAccessor != null)
+                gridDataAccessor.releaseGetResources();
+        } catch (Throwable t) {
+        }
+    }
+
     /** 
-     * This deletes the files.
+     * This releases all resources (e.g., files and threads).
      * It is recommended, but not required, that users of this class call this 
      * when they are done using this instance.
      * This won't throw an Exception.
      * 
      */
-    public void deleteFiles() {
-        int nDv = dataClass.length;
-        for (int dv = 0; dv < nDv; dv++) {
-            try {
-                File2.delete(baseFileName + dv);
-            } catch (Throwable t2) {
-                String2.log("ERROR in GridDataAllAccessor.deleteFiles: " + 
-                    MustBe.throwableToString(t2));
+    public void releaseResources() {
+        releaseGetResources();
+        try {
+            if (dataClass != null) {
+                int nDv = dataClass.length;
+                for (int dv = 0; dv < nDv; dv++) {
+                    try {
+                        File2.delete(baseFileName + dv);
+                    } catch (Throwable t2) {
+                        String2.log("ERROR in GridDataAllAccessor.deleteFiles: " + 
+                            MustBe.throwableToString(t2));
+                    }
+                }
+                dataClass = null;
             }
+        } catch (Throwable t) {
         }
     }
 
     /** 
-     * Users of this class shouldn't call this -- use deleteFiles() instead.
+     * Users of this class shouldn't call this -- use releaseResources() instead.
      * Java calls this when an object is no longer used, just before garbage collection. 
      * 
      */
     protected void finalize() throws Throwable {
-        try {  //extra insurance
-            deleteFiles();
-        } catch (Throwable t) {
-        }
+        releaseResources();
         super.finalize();
     }
 }

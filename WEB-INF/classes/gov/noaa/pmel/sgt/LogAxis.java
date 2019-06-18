@@ -12,6 +12,7 @@
  
 package  gov.noaa.pmel.sgt;
 
+import com.cohort.util.String2;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import gov.noaa.pmel.util.Point2D;
@@ -40,6 +41,9 @@ import gov.noaa.pmel.util.Debug;
  */
 
 public class LogAxis extends SpaceAxis implements Cloneable {
+
+  gov.noaa.pfel.coastwatch.sgt.GenEFormatter genEFormatter = new gov.noaa.pfel.coastwatch.sgt.GenEFormatter();
+
   public LogAxis(String id) {
     super(id);
     space_ = true;
@@ -70,14 +74,23 @@ public class LogAxis extends SpaceAxis implements Cloneable {
     String labelText;
     SGLabel title = getTitle();
     if(!visible_) return;
-    if(Double.isNaN(delta)) delta = (uRange_.end - uRange_.start)/10.0;
+
+    //Bob added
+    double uRangeStart = uRange_.start;
+    double uRangeEnd = uRange_.end;
+    if (uRangeStart > uRangeEnd) {
+        double t = uRangeStart; uRangeStart = uRangeEnd; uRangeEnd = t;
+    }
+    delta = Math.abs(delta);
+
+    if(Double.isNaN(delta)) delta = (uRangeEnd - uRangeStart)/10.0;
     if(title != null) title.setLayer(graph_.getLayer());
     //
     g.setColor(graph_.getLayer().getPane().getComponent().getForeground());
     //
 
     if(labelFormat_.length() <= 0) {
-      format = new Format(Format.computeFormat(uRange_.start, uRange_.end, sigDigits_));
+      format = new Format(Format.computeFormat(uRangeStart, uRangeEnd, sigDigits_));
     } else {
       format = new Format(labelFormat_);
     }
@@ -90,26 +103,26 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         yloc = graph_.getYUtoD(uLocation_.y);
         yp = graph_.getYUtoP(uLocation_.y);
       }
-      xloc = graph_.getXUtoD(uRange_.start);
-      xend = graph_.getXUtoD(uRange_.end);
+      xloc = graph_.getXUtoD(uRangeStart);
+      xend = graph_.getXUtoD(uRangeEnd);
       g.drawLine(xloc, yloc, xend, yloc);
 
       //X tics drawing
       dir = delta > 0? 1.0: -1.0;
-      xt = (int)((uRange_.start/delta + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001))*delta;
+      xt = (int)((uRangeStart/delta + (dir*uRangeStart > 0? 1.0: -1.0)*0.00001))*delta;
       
-      if(dir*xt < dir*uRange_.start) xt += delta;
-      istop = (int)((uRange_.end - xt)/delta + 0.00001);
+      if(dir*xt < dir*uRangeStart) xt += delta;
+      istop = (int)((uRangeEnd - xt)/delta + 0.00001);
       
-      if(uRange_.start<=0) return;
+      if(uRangeStart<=0) return;
 
-      int imin = (int)(Math.ceil(Math.log(uRange_.start)/Math.log(10))); // first large tic
-      int imax = (int)(Math.floor(Math.log(uRange_.end)/Math.log(10))); //last large tic
+      int imin = (int)(Math.ceil(Math.log10(uRangeStart) - 0.000000000001)); // first large tic //Bob added fudge
+      int imax = (int)(Math.floor(Math.log10(uRangeEnd)  + 0.000000000001)); //last large tic
       int nblabel = imax-imin +1;
       
       
-/*      System.out.println("uRange.start/end: "+uRange_.start+"/"+uRange_.end);
-      System.out.println("uRangeP: "+graph_.getYUtoP(uRange_.start)+"/"+graph_.getYUtoP(uRange_.end));
+/*      System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
+      System.out.println("uRangeP: "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
 */    
       double min = (double)Math.pow(10,imin);
       double max = (double)Math.pow(10,imax);
@@ -118,19 +131,13 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       x = xt;
       xp = graph_.getXUtoP(x);
 
-      for (j=min/10.0d;j<min;j=j+min/10.0d) {
-        xp = graph_.getXUtoP(j);
-        if(j>uRange_.start) drawXTic(g, xp, yp, smallTicHeight_);
-      }
-      
-      for (j=min;j<=max;j=j*10.0d) {
-        if(j>min) drawSmallXTics(g, j/10, uRange_.end, j, yp);
-        //if(j>min) drawSmallXTics(g, yp, j/10, uRange_.end, j);
+      drawSmallXTics(g, min/10, Math.min(min, uRangeEnd), min, yp, uRangeStart);
+      for (j=min; j<=max; j=j*10.0d) {
+        if(j>min) drawSmallXTics(g, j/10, j, j, yp, uRangeStart);
         xp = graph_.getXUtoP(j);
         drawXTic(g, xp, yp, largeTicHeight_);
       }
-      drawSmallXTics(g, j, uRange_.end, j, yp);
-      //drawSmallXTics(g, yp, j, uRange_.end, j);
+      drawSmallXTics(g, j/10, uRangeEnd, j, yp, uRangeStart);
       
       //
       if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
@@ -139,14 +146,14 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       int vertalign;
       int horzalign;
 
-      if(dir*uRange_.start <= 0 && dir*uRange_.end >= 0) {
-        x = ((int)(uRange_.start/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
+      if(dir*uRangeStart <= 0 && dir*uRangeEnd >= 0) {
+        x = ((int)(uRangeStart/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
       } else {
         x = xt;
       }
-      istop = (int)((uRange_.end - x)/(delta*labelInterval_) + 0.00001);
+      istop = (int)((uRangeEnd - x)/(delta*labelInterval_) + 0.00001);
       long jump = 10; // label display on each tic
-      if(istop<nblabel) jump = 100; // one on two
+      //if(istop<nblabel) jump = 100; // one on two
 
       if(labelPosition_ == POSITIVE_SIDE) {
         vertalign = SGLabel.BOTTOM;
@@ -168,26 +175,40 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         ytitle = yt - LABEL_RATIO*labelHeight_;
       }
       
-      for(j=min; j <= max; j*=jump) {
+      double tMin = min; //Bob added
+      double tMax = max;
+      double tJump = jump; 
+      boolean times = true;
+      if      (imax - imin > 27) tJump = 10000;
+      else if (imax - imin > 18) tJump = 1000; 
+      else if (imax - imin >  9) tJump = 100;   //e.g. 10, 1000, 100000
+      //else tJump = 10;                        //e.g. 10,  100,   1000
+      else if (imax < imin) { times = false; tMin = max; tMax = min; tJump = max; }  //within a decade, e.g., >10 and <100, increment by 10's
+      for(j=tMin; j<=tMax; j= times? j*tJump : j+tJump) {
+        //String2.log(">> uRange=" + uRangeStart + " " + uRangeEnd + " tMin=" + tMin + " tMax=" + tMax + " tJump=" + tJump + " j=" + j);
+        if (j < uRangeStart || j > uRangeEnd)
+            continue;
         xt = graph_.getXUtoP(j)-LABEL_RATIO*labelHeight_*0.25;
         //xt = graph_.getXUtoP(j);
-        //System.out.println("affich["+j+"]: 10e"+Math.round( Math.log(j)/Math.log(10) ));
-        labelText = "10e"+Math.round(Math.log(j)/Math.log(10));
+        //System.out.println("affich["+j+"]: 10e"+Math.round( Math.log10(j) ));
+        labelText =  
+            j >= 0.001 && j <= 1000? genEFormatter.format(j) :
+            "10^"+Math.round(Math.log10(j));
         label = new SGLabel("coordinate", labelText, new Point2D.Double(xt, yt)); 
         label.setAlign(vertalign, horzalign);
         label.setOrientation(SGLabel.HORIZONTAL);
         label.setFont(labelFont_);
-	label.setColor(labelColor_);
+        label.setColor(labelColor_);
         label.setHeightP(labelHeight_);
         label.setLayer(graph_.getLayer());
         try {
-          label.draw(g);
+            label.draw(g);
         } catch (LayerNotFoundException e) {} 
         //x = x + delta*labelInterval_;
       }
       if(title_ != null) {
-        //xtitle = (uRange_.end + uRange_.start)*0.5;
-        xtitle = graph_.getXUtoP(uRange_.end) + graph_.getXUtoP(uRange_.start);
+        //xtitle = (uRangeEnd + uRangeStart)*0.5;
+        xtitle = graph_.getXUtoP(uRangeEnd) + graph_.getXUtoP(uRangeStart);
         xt = xtitle*0.5; 
         yt = ytitle;
         xt = graph_.getXUtoP(xtitle);
@@ -207,45 +228,43 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         xloc = graph_.getXUtoD(uLocation_.x);
         xp = graph_.getXUtoP(uLocation_.x);
       }
-      yloc = graph_.getYUtoD(uRange_.start);
-      yend = graph_.getYUtoD(uRange_.end);
+      yloc = graph_.getYUtoD(uRangeStart);
+      yend = graph_.getYUtoD(uRangeEnd);
       g.drawLine(xloc, yloc, xloc, yend);
       
       //draw Y tics
       dir = delta > 0? 1.0: -1.0;
-      yt = (int)((uRange_.start/delta) + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001)*delta;
-      if(dir*yt < dir*uRange_.start) yt += delta;
-      istop = (int)((uRange_.end - yt)/delta + 0.00001);
+      yt = (int)((uRangeStart/delta) + (dir*uRangeStart > 0? 1.0: -1.0)*0.00001)*delta;
+      if(dir*yt < dir*uRangeStart) yt += delta;
+      istop = (int)((uRangeEnd - yt)/delta + 0.00001);
 
-      if(uRange_.start<=0) return;
+      if(uRangeStart<=0) return;
       
-      int imin = (int)(Math.ceil(Math.log(uRange_.start)/Math.log(10))); // premier large tic
-      int imax = (int)(Math.floor(Math.log(uRange_.end)/Math.log(10))); //dernier large tic
+      int imin = (int)(Math.ceil(Math.log10(uRangeStart) - 0.000000000001)); // premier large tic  //Bob added fudge
+      int imax = (int)(Math.floor(Math.log10(uRangeEnd)  + 0.000000000001)); //dernier large tic
       int nblabel = imax-imin +1;
       
-      //System.out.println("uRange.start/end: "+uRange_.start+"/"+uRange_.end);
-      //System.out.println("uRangeP: "+graph_.getYUtoP(uRange_.start)+"/"+graph_.getYUtoP(uRange_.end));
+      //System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
+      //System.out.println("uRangeP: "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
 
     
       double min = (double)Math.pow(10,imin);
       double max = (double)Math.pow(10,imax);
-
+      //System.out.println(">> LogAxis vertical imax=" + imax + " max=" + max);
       
       yt=min;
       y = yt;
       yp = graph_.getYUtoP(y);
 
-      for (j=min/10.0d;j<min;j=j+min/10.0d) {
+      drawSmallYTics(g, xp, min/10, Math.min(min, uRangeEnd), min, uRangeStart);
+      for (j=min; j<=max; j=j*10.0d) {
+        if(j>min) 
+            drawSmallYTics(g, xp, j/10, j, j, uRangeStart);
         yp = graph_.getYUtoP(j);
-        if(j>uRange_.start) drawYTic(g, xp, yp, smallTicHeight_);
-      }        
-      
-      for (j=min;j<=max;j=j*10.0d) {
-        if(j>min) drawSmallYTics(g, xp, j/10, uRange_.end, j);
-        yp = graph_.getYUtoP(j);
-        drawYTic(g, xp, yp, largeTicHeight_);
+        if (j >= uRangeStart && j <= uRangeEnd)
+            drawYTic(g, xp, yp, largeTicHeight_);
       }
-      drawSmallYTics(g, xp, j, uRange_.end, j);
+      drawSmallYTics(g, xp, j/10, uRangeEnd, j, uRangeStart);
  
       //
       if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
@@ -254,33 +273,37 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       int vertalign;
       int horzalign;
 
-      if(dir*uRange_.start <= 0 && dir*uRange_.end >= 0) {
-        y = ((int)(uRange_.start/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
+      if(dir*uRangeStart <= 0 && dir*uRangeEnd >= 0) {
+        y = ((int)(uRangeStart/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
       } else {
         y = yt;
       }
       
-      istop = (int)((uRange_.end - y)/(delta*labelInterval_) + 0.00001);
+      istop = (int)((uRangeEnd - y)/(delta*labelInterval_) + 0.00001);
       long jump = 10; // label display on each tic
-      if(istop<nblabel) jump = 100; // one on two
+      //if(istop<nblabel) jump = 100; // one on two
 
       Layer l = graph_.getLayer();
       double widthP=0;
       double maxWidthP=0;
+      /* Bob set labels to VERTICAL so fixed maxWidthP
       if (l!=null) {
-        for(j=min; j <= max; j*=jump) {
-          labelText = "10e"+Math.round(Math.log(j)/Math.log(10));
+        for(j=min; j<=max; j*=jump) {
+          labelText = 
+            j >= 0.001 && j <= 1000? genEFormatter.format(j) :
+            "10^"+Math.round(Math.log10(j));
           //get Y Label size in Device unit
           //widthP = l.getXDtoP(l.getFontMetrics(labelFont_).stringWidth(labelText));
-          label = new SGLabel("coordinate", labelText.trim(), new Point2D.Double(0, yt)); 
-          label.setOrientation(SGLabel.HORIZONTAL);
+          label = new SGLabel("coordinate", labelText, new Point2D.Double(0, yt)); 
+          label.setOrientation(SGLabel.VERTICAL);
           label.setFont(labelFont_);
           label.setHeightP(labelHeight_);
           label.setLayer(l);
           widthP = l.getXDtoP((int)label.getStringWidth(g));
           if (widthP>maxWidthP) maxWidthP = widthP;
         }
-      }
+      } */
+      maxWidthP = 1.2 * labelHeight_;
 
       if(labelPosition_ == NEGATIVE_SIDE) {
         vertalign = SGLabel.BOTTOM;
@@ -306,16 +329,31 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       
       //g.drawLine(l.getXPtoD(xt),l.getYPtoD(0.0),l.getXPtoD(xt),l.getYPtoD(4.0));
       //g.drawLine(l.getXPtoD(xtitle),l.getYPtoD(0.0),l.getXPtoD(xtitle),l.getYPtoD(4.0));
-      
-      for(j=min; j <= max; j*=jump) {
+
+      double tMin = min; //Bob added
+      double tMax = max;
+      double tJump = jump; 
+      boolean times = true;
+      if      (imax - imin > 27) tJump = 10000;
+      else if (imax - imin > 18) tJump = 1000; 
+      else if (imax - imin >  9) tJump = 100;   //e.g. 10, 1000, 100000
+      //else tJump = 10;                        //e.g. 10,  100,   1000
+      else if (imax < imin) { times = false; tMin = max; tMax = min; tJump = max; }  //within a decade, e.g., >10 and <100, increment by 10's
+      for(j=tMin; j<=tMax; j= times? j*tJump : j+tJump) {
+        //String2.log(">> uRange=" + uRangeStart + " " + uRangeEnd + " tMin=" + tMin + " tMax=" + tMax + " tJump=" + tJump + " j=" + j);
+        if (j < uRangeStart || j > uRangeEnd)
+            continue;
         yt = graph_.getYUtoP(j);//-LABEL_RATIO*labelHeight_*0.25;
-        //System.out.println("affich["+j+"]: 10e"+Math.round( Math.log(j)/Math.log(10) ));
-        labelText = "10e"+Math.round(Math.log(j)/Math.log(10));
+        //System.out.println("affich["+j+"]: 10e"+Math.round( Math.log10(j)));
+        labelText = 
+            j >= 0.001 && j <= 1000? genEFormatter.format(j) :
+            "10^"+Math.round(Math.log10(j));
+        //System.out.println(">> j=" + j + " labelText=" + labelText);
         label = new SGLabel("coordinate", labelText, new Point2D.Double(xt, yt)); 
-        label.setAlign(SGLabel.CENTER, horzalign);
-        label.setOrientation(SGLabel.HORIZONTAL);
+        label.setAlign(vertalign, SGLabel.CENTER);
+        label.setOrientation(SGLabel.VERTICAL);
         label.setFont(labelFont_);
-    	label.setColor(labelColor_);
+        label.setColor(labelColor_);
         label.setHeightP(labelHeight_);
         label.setLayer(graph_.getLayer());
         try {
@@ -324,7 +362,7 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         //y = j*10;//delta*labelInterval_;
       }
       if(title_ != null) {
-        ytitle = graph_.getYUtoP(uRange_.end) + graph_.getYUtoP(uRange_.start);
+        ytitle = graph_.getYUtoP(uRangeEnd) + graph_.getYUtoP(uRangeStart);
         yt = ytitle*0.5; 
         xt = xtitle;
         title.setLocationP(new Point2D.Double(xt, yt));

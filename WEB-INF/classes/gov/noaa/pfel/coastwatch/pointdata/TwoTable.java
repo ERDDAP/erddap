@@ -37,7 +37,7 @@ import java.util.Vector;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
 
@@ -182,6 +182,7 @@ public class TwoTable  {
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
 
             //rename the file to the specified name
             File2.rename(fullName + randomInt, fullName);
@@ -191,13 +192,14 @@ public class TwoTable  {
                 String2.log("Table.saveAsNc success=" + success + 
                     " created in " + (System.currentTimeMillis() - time) + 
                     " ms\n  fileName=" + fullName);
-            //ncDump("End of Table.saveAsNc", directory + name + ext, false);
+            //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
 
             //try to close the file
             try {
-                nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null)
+                    nc.close(); //it calls flush() and doesn't like flush called separately
             } catch (Exception e2) {
                 //don't care
             }

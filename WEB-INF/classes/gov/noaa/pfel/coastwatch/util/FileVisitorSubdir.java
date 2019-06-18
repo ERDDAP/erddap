@@ -212,15 +212,15 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         long time;
 
         alps = oneStep("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
-            ".*/NMFS/(|SWFSC/|NWFSC/)(|inport/)(|xml/)"); //tricky!
+            ".*/NMFS/(|SWFSC/|NWFSC/)(|inport-xml/)(|xml/)"); //tricky!
         String results = alps.toNewlineString();
         String expected = 
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport-xml/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport-xml/xml/\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport/xml/\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport-xml/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport-xml/xml/\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** FileVisitorSubdir.testWAF finished.");

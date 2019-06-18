@@ -84,7 +84,7 @@ public class LogTransform extends AxisTransform implements Cloneable {
           throw new NegativeLogException("Can't Log negative values");
         }
       }catch(NegativeLogException e){e.printStackTrace();}
-    return a_*(Math.log(u)/Math.log(10)) + b_;
+    return a_*Math.log10(u) + b_;
   }
   public double getTransP(GeoDate t) {
     throw new MethodNotImplementedError();
@@ -100,7 +100,7 @@ public class LogTransform extends AxisTransform implements Cloneable {
       try { //
         if(u<=0) throw new NegativeLogException("Can't Log negative values");
       }catch(NegativeLogException e){e.printStackTrace();}
-      return a_*(Math.log(u)/Math.log(10)) + b_;
+      return a_*Math.log10(u) + b_;
     }
   }
 
@@ -136,13 +136,13 @@ public class LogTransform extends AxisTransform implements Cloneable {
       }catch(NegativeLogException e){e.printStackTrace();}
 
       double denom;
-      denom = Math.log(u1_)/Math.log(10) - Math.log(u2_)/Math.log(10);
+      denom = Math.log10(u1_) - Math.log10(u2_);
       if(denom == 0) {
           a_ = 1.0f;
           b_ = 0.0f;
       } else {
           a_ = (p1_ - p2_)/denom;
-          b_ = p1_ - a_*(Math.log(u1_)/Math.log(10));
+          b_ = p1_ - a_*Math.log10(u1_);
       }
   }
 

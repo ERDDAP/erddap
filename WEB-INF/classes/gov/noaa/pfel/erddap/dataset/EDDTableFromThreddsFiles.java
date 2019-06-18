@@ -67,6 +67,15 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * It is unlikely anyone would want to change this. */
     public static boolean acceptDeflate = true;
 
+    /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+
 
 
     /** 
@@ -100,7 +109,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles, boolean tRemoveMVRows) throws Throwable {
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
+        int tStandardizeWhat, int tNThreads, 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        throws Throwable {
 
         super("EDDTableFromThreddsFiles", tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
@@ -114,7 +126,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
-            tRemoveMVRows);
+            tRemoveMVRows, tStandardizeWhat, 
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
     }
 
     /**
@@ -393,7 +406,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * @param fileDir receives fileDir Url for each accepted file
      * @param fileName receives fileName for each accepted file
      * @param fileLastMod receives lastModified time of each accepted file
-     * @returns true if the search was completely successful (no failure
+     * @return true if the search was completely successful (no failure
      *   to get any page).
      * @throws RuntimeException if trouble.
      *    Url not responding is not an error.
@@ -486,74 +499,77 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             //I think better to get the entire response (succeed or fail *now*).
             byte bytes[] = SSR.getUrlResponseBytes(catalogUrl);
             SimpleXMLReader xmlReader = new SimpleXMLReader(new ByteArrayInputStream(bytes));
-            while (true) {
-                xmlReader.nextTag();
-                String tags = xmlReader.allTags();
-                int whichDatasetTag    = String2.indexOf(datasetTags,    tags);
-                int whichEndDatasetTag = String2.indexOf(endDatasetTags, tags);
-                int whichEndDateTag    = String2.indexOf(endDateTags,    tags);
+            try {
+                while (true) {
+                    xmlReader.nextTag();
+                    String tags = xmlReader.allTags();
+                    int whichDatasetTag    = String2.indexOf(datasetTags,    tags);
+                    int whichEndDatasetTag = String2.indexOf(endDatasetTags, tags);
+                    int whichEndDateTag    = String2.indexOf(endDateTags,    tags);
 
-                //<catalogRef xlink:href="2008/catalog.xml" xlink:title="2008" ID="nmsp/wcos/WES001/2008" name=""/>
-                if (recursive && tags.endsWith("<catalogRef>")) {
-                    String href = xmlReader.attributeValue("xlink:href");
-                    if (href != null) { //look for /...
-                        if (!href.startsWith("http")) {  //if not a complete catalogUrl
-                            if (href.startsWith("/" + threddsName + "/catalog/"))
-                                href = threddsBase + href;
-                            else if (href.startsWith("./")) 
-                                href = File2.getDirectory(catalogUrl) + href.substring(2);
-                            else if (!href.startsWith("/")) 
-                                href = File2.getDirectory(catalogUrl) + href;
-                            else href = catalogBase + href.substring(1); //href starts with /
+                    //<catalogRef xlink:href="2008/catalog.xml" xlink:title="2008" ID="nmsp/wcos/WES001/2008" name=""/>
+                    if (recursive && tags.endsWith("<catalogRef>")) {
+                        String href = xmlReader.attributeValue("xlink:href");
+                        if (href != null) { //look for /...
+                            if (!href.startsWith("http")) {  //if not a complete catalogUrl
+                                if (href.startsWith("/" + threddsName + "/catalog/"))
+                                    href = threddsBase + href;
+                                else if (href.startsWith("./")) 
+                                    href = File2.getDirectory(catalogUrl) + href.substring(2);
+                                else if (!href.startsWith("/")) 
+                                    href = File2.getDirectory(catalogUrl) + href;
+                                else href = catalogBase + href.substring(1); //href starts with /
+                            }
+                        if (href.matches(pathRegex))
+                            if (!getThreddsFileInfo(href, fileNameRegex, recursive, pathRegex,
+                                fileDir, fileName, fileLastMod))
+                                completelySuccessful = false;
                         }
-                    if (href.matches(pathRegex))
-                        if (!getThreddsFileInfo(href, fileNameRegex, recursive, pathRegex,
-                            fileDir, fileName, fileLastMod))
-                            completelySuccessful = false;
-                    }
 
-                //<dataset name="WES001_030MTBD029R00_20080613.nc" ID="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc" urlPath="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc">
-                //  <date type="modified">2010-01-09 21:37:24Z</date>
-                //</dataset> 
-                } else if (whichDatasetTag > 0) {
-                    String tName = xmlReader.attributeValue("name");
-                    if (tName != null) {
-                        boolean matches = tName.matches(fileNameRegex);
-                        if ((verbose && nLogged < 5) || reallyVerbose) {
-                            String2.log("  tName=" + tName + " matches=" + matches);
-                            nLogged++;
+                    //<dataset name="WES001_030MTBD029R00_20080613.nc" ID="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc" urlPath="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc">
+                    //  <date type="modified">2010-01-09 21:37:24Z</date>
+                    //</dataset> 
+                    } else if (whichDatasetTag > 0) {
+                        String tName = xmlReader.attributeValue("name");
+                        if (tName != null) {
+                            boolean matches = tName.matches(fileNameRegex);
+                            if ((verbose && nLogged < 5) || reallyVerbose) {
+                                String2.log("  tName=" + tName + " matches=" + matches);
+                                nLogged++;
+                            }
+                            if (matches)
+                                names[whichDatasetTag] = tName;
                         }
-                        if (matches)
-                            names[whichDatasetTag] = tName;
+
+                    } else if (whichEndDatasetTag > 0) {
+                        names[whichEndDatasetTag] = null;
+                        
+                    } else if (whichEndDateTag > 0 && names[whichEndDateTag] != null) {
+                        //"<catalog><dataset><dataset></date>"
+                        String isoTime = xmlReader.content();
+                        double epochSeconds = Calendar2.safeIsoStringToEpochSeconds(isoTime);
+                        if (Double.isNaN(epochSeconds)) {
+                            if ((verbose && nLogged < 5) || reallyVerbose) 
+                                String2.log("    isoTime=" + isoTime + " evaluates to NaN");
+                        } else {
+
+                            //add to file list
+                            String dodsUrl = String2.replaceAll(File2.getDirectory(catalogUrl), 
+                                "/" + threddsName + "/catalog/", "/" + threddsName + "/dodsC/");
+                            if (reallyVerbose) String2.log("    found " + 
+                                dodsUrl + names[whichEndDateTag] + "   " + isoTime);
+
+                            fileDir.add(dodsUrl);
+                            fileName.add(names[whichEndDateTag]); 
+                            fileLastMod.add(Math2.roundToLong(epochSeconds * 1000));
+                        }
+
+                    } else if (tags.equals("</catalog>")) {
+                        break;
                     }
-
-                } else if (whichEndDatasetTag > 0) {
-                    names[whichEndDatasetTag] = null;
-                    
-                } else if (whichEndDateTag > 0 && names[whichEndDateTag] != null) {
-                    //"<catalog><dataset><dataset></date>"
-                    String isoTime = xmlReader.content();
-                    double epochSeconds = Calendar2.safeIsoStringToEpochSeconds(isoTime);
-                    if (Double.isNaN(epochSeconds)) {
-                        if ((verbose && nLogged < 5) || reallyVerbose) 
-                            String2.log("    isoTime=" + isoTime + " evaluates to NaN");
-                    } else {
-
-                        //add to file list
-                        String dodsUrl = String2.replaceAll(File2.getDirectory(catalogUrl), 
-                            "/" + threddsName + "/catalog/", "/" + threddsName + "/dodsC/");
-                        if (reallyVerbose) String2.log("    found " + 
-                            dodsUrl + names[whichEndDateTag] + "   " + isoTime);
-
-                        fileDir.add(dodsUrl);
-                        fileName.add(names[whichEndDateTag]); 
-                        fileLastMod.add(Math2.roundToLong(epochSeconds * 1000));
-                    }
-
-                } else if (tags.equals("</catalog>")) {
-                    xmlReader.close();
-                    break;
                 }
+            } finally {
+                xmlReader.close();
             }
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
@@ -574,7 +590,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
-    public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
+    public Table lowGetSourceDataFromFile(String tFileDir, String tFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
@@ -585,7 +601,11 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
         //read the file
         Table table = new Table();
-        table.readNDNc(fileDir + fileName, sourceDataNames.toArray(),
+        String decompFullName = FileVisitorDNLS.decompressIfNeeded(
+            tFileDir + tFileName, fileDir, decompressedDirectory(), 
+            EDStatic.decompressedCacheMaxGB, true); //reuseExisting
+        table.readNDNc(decompFullName, sourceDataNames.toArray(), 
+            standardizeWhat,
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
                 minSorted, maxSorted, 
             getMetadata);
@@ -623,7 +643,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
-        String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
+        String tSortFilesBySourceNames, 
+        int tStandardizeWhat,
+        Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
         tLocalDirUrl  = EDStatic.updateUrls(tLocalDirUrl);  //http: to https:
@@ -667,7 +689,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
-        dataSourceTable.readNDNc(dir + ncFileName, null,
+        tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
+        dataSourceTable.readNDNc(dir + ncFileName, null, tStandardizeWhat,
             "", Double.NaN, Double.NaN, //constraints
             true); //getMetadata
 
@@ -676,11 +700,14 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
-            dataAddTable.addColumn(c, colName, pa,
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+            PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
+                destPA.elementClass() != String.class, //tryToAddStandardName
+                destPA.elementClass() != String.class, //addColorBarMinMax
+                true); //tryToFindLLAT
+            dataAddTable.addColumn(c, colName, destPA, addAtts);                
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -694,15 +721,19 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                     if (Calendar2.isNumericTimeUnits(tUnits)) {
                         double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
                         maxTimeES = Calendar2.unitsSinceToEpochSeconds(
-                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                            tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
                     } else { //string time units
-                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                        maxTimeES = Calendar2.tryToEpochSeconds(destPA.getString(destPA.size() - 1)); //NaN if trouble
                     }
                 } catch (Throwable t) {
                     String2.log("caught while trying to get maxTimeES: " + 
                         MustBe.throwableToString(t));
                 }
             }
+
+            //add missing_value and/or _FillValue if needed
+            addMvFvAttsIfNeeded(colName, sourcePA, sourceAtts, addAtts); //sourcePA since strongly typed
+
         }
 
         if (tFileNameRegex == null || tFileNameRegex.length() == 0) {
@@ -780,6 +811,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -821,6 +853,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 1440, 
                 "", "_.*$", ".*", "stationID",
                 "Time", "stationID Time",
+                -1, //defaultStandardizeWhat
                 null) + "\n"; //externalAddGlobalAttributes
 
             //GenerateDatasetsXml
@@ -831,7 +864,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
                 "1440", 
                 "", "_.*$", ".*", "stationID",
-                "Time", "stationID Time"},
+                "Time", "stationID Time", 
+                "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -847,6 +881,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex>_.*$</postExtractRegex>\n" +
 "    <extractRegex>.*</extractRegex>\n" +
@@ -863,8 +898,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Version\">2</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
@@ -881,7 +916,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">NOAA National Oceanographic Data Center (NODC) data from https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"title\">NOAA NODC data from https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"Version\">null</att>\n" +
@@ -909,8 +944,10 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">seconds since 1970-01-01 00:00:00.000 0:00</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-9999.0</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00.000Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -925,6 +962,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">meter</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-9999.0</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
 "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
@@ -982,6 +1020,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>Temperature_flag</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"description\">flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data</att>\n" +
 "            <att name=\"long_name\">Temperature flag</att>\n" +
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
@@ -1005,6 +1044,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">Celsius</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">9999.0</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -1016,6 +1056,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>yearday_flag</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"description\">flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data</att>\n" +
 "            <att name=\"long_name\">Yearday flag</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -1033,8 +1074,10 @@ directionsForGenerateDatasetsXml() +
 
             /* This won't work because sample file is in testCacheDir (not regular cache dir)
             //ensure it is ready-to-use by making a dataset from it
+            String tDatasetID = "noaa_nodc_8fcf_be37_cbe4";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "noaa_nodc_8fcf_be37_cbe4", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "WES001 2008", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "stationID, yearday, latitude, time, Depth, longitude, Temperature_flag, " +
@@ -1188,7 +1231,7 @@ expected =
 "    Float64 Northernmost_Northing 48.325001;\n" +
 "    String sourceUrl \"https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 33.89511;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
 "    String summary \"The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n" +
 "\n" +
@@ -1375,7 +1418,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
             eddTable.className() + "_ShipEntire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
-        boolean with = false; //2014-01-09 several lines disappeared, 2016-09-16 returned
+        boolean with = true; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeard, 2019-05-20 returned
         expected =      
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -1423,8 +1466,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    String axis \"Y\";\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    Float32 data_precision 1.0e-5;\n" +
+"    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
 "    String observation_type \"measured\";\n" +
@@ -1441,8 +1484,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    String axis \"X\";\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    Float32 data_precision 1.0e-5;\n" +
+"    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String observation_type \"measured\";\n" +
@@ -1454,47 +1497,47 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  airPressure \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 958.88, 1047.82;\n" +
+"    Float32 actual_range 646.69, 1047.82;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 1050.0;\n" +
 "    Float64 colorBarMinimum 950.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
+"    Float32 data_precision 0.1;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"Vaisala PTB220\";\n" +
 "    String ioos_category \"Pressure\";\n" +
 "    String long_name \"Atmospheric Pressure\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String mslp_indicator \"at sensor height\";\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"hectopascal\";\n" +
-"    Int32 qcindex 11;\n" +
-"    Float32 sampling_rate 0.1;\n" +
+"    Int32 qcindex 19;\n" + //2018-09-15 was 18
+"    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_pressure\";\n" +
 "    String units \"millibar\";\n" +
 "  \\}\n" +
 "  airTemperature \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range -13.77, 48.07;\n" +  //before 2013-08-28 was 18.97
+"    Float32 actual_range -13.77, 90.32;\n" +  //before 2018-09-15 was 48.07, before 2013-08-28 was 18.97
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
+"    Float32 data_precision 0.1;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 41342\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Air Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    Int32 qcindex 12;\n" +
+"    Int32 qcindex 20;\n" +  //2018-09-15 was 12
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_temperature\";\n" +
@@ -1502,19 +1545,19 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 5.555556e\\+7;\n" + //2013-03-26 new value is nonsense.  was 4.78
+"    Float32 actual_range 0.0, 5.5556e\\+7;\n" + //2013-03-26 new value is nonsense.  was 4.78
 (with?
-    "    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared 2016-09-16 returned
-    "    Int16 average_length 60;\n" +           //2014-08-11 they returned, 2016-04-13 they disappeared
-    "    String average_method \"average\";\n" +
+    "    String average_center \"time at end of period\";\n" + 
+    "    Int16 average_length 60;\n" +            
+    "    String average_method \"average\";\n" + 
     "    Float32 centerline_offset -9999.0;\n": "") +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 (with?
-    "    Float32 data_precision -9999.0;\n" +
+    "    Float32 data_precision 1.0e-5;\n" +
     "    Float32 distance_from_bow -9999.0;\n" +
     "    Float32 height -9999.0;\n" +
-    "    String instrument \"unknown\";\n": "") +
+    "    String instrument \"SeaBird 45\";\n": "") +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1523,30 +1566,30 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    String original_units \"siemens meter-1\";\n": "") +
 "    Int32 qcindex 16;\n" +
 (with?
-    "    Float32 sampling_rate -9999.0;\n" +
+    "    Float32 sampling_rate 1.0;\n" +
     "    Float32 special_value -8888.0;\n": "") +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  \\}\n" +
 "  relativeHumidity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 23.4, 101.0;\n" +
+"    Float32 actual_range 17.0, 101.0;\n" + //2018-09-15 was 23.4
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 100.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
+"    Float32 data_precision 1.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 41382VC\";\n" +
 "    String ioos_category \"Meteorology\";\n" +
 "    String long_name \"Relative Humidity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"percent\";\n" +
-"    Int32 qcindex 13;\n" +
+"    Int32 qcindex 21;\n" + //2018-09-15 was 13
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"relative_humidity\";\n" +
@@ -1556,18 +1599,18 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
 (with?
-    "    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-    "    Int16 average_length -9999;\n" +        //2014-08-11 they returned //2016-04-13 disappeared
+    "    String average_center \"time at end of period\";\n" +
+    "    Int16 average_length 60;\n" +       
     "    String average_method \"average\";\n" +
     "    Float32 centerline_offset -9999.0;\n": "") +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 (with?
-    "    Int32 data_interval 60;\n" +
-    "    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
+//    "    Int32 data_interval 60;\n" +
+    "    Float32 data_precision 1.0e-4;\n" +  
     "    Float32 distance_from_bow -9999.0;\n" +
     "    Float32 height -9999.0;\n" +
-    "    String instrument \"unknown\";\n": "") +
+    "    String instrument \"SeaBird 45\";\n": "") +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Sea Water Practical Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1576,7 +1619,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    String original_units \"PSU\";\n": "") +
 "    Int32 qcindex 15;\n" +
 (with?
-    "    Float32 sampling_rate -9999.0;\n" +
+    "    Float32 sampling_rate 1.0;\n" +
     "    Float32 special_value -8888.0;\n": "") +
 "    String standard_name \"sea_water_practical_salinity\";\n" +
 (with?
@@ -1584,19 +1627,19 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  seaTemperature \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range -1.1, 7777777.0;\n" +  //nonsense!
+"    Float32 actual_range -1.3, 7777777.0;\n" +  //nonsense!
 (with?
-    "    String average_center \"time at end of period\";\n" + //2014-01-09 several lines disappeared
-    "    Int16 average_length 60;\n" +                         //2014-08-11 they returned
+    "    String average_center \"time at end of period\";\n" + 
+    "    Int16 average_length 60;\n" +                        
     "    String average_method \"average\";\n" +
     "    Float32 centerline_offset -9999.0;\n": "") +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
 (with?
-    "    Float32 data_precision -9999.0;\n" +
+    "    Float32 data_precision 1.0e-4;\n" +
     "    Float32 distance_from_bow -9999.0;\n" +
     "    Float32 height -9999.0;\n" +
-    "    String instrument \"unknown\";\n": "") +
+    "    String instrument \"SeaBird 45\";\n": "") +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1607,7 +1650,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    Float32 sampling_rate 1.0;\n" +
     "    Float32 special_value -8888.0;\n": "") +
 "    String standard_name \"sea_water_temperature\";\n" +
-"    Int16 ts_sensor_category 12;\n" +
+"    Int16 ts_sensor_category 12;\n" + 
 "    String units \"degree_C\";\n" +
 "  \\}\n" +
 "  windDirection \\{\n" +
@@ -1623,7 +1666,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 05106, Applanix POSMV V4, gyro\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Earth Relative Wind Direction\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1637,7 +1680,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  windSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 2850253.0;\n" +
+"    Float32 actual_range 0.0, 2850253.0;\n" +  //really?
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1648,13 +1691,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 05106, Applanix POSMV V4, gyro\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Earth Relative Wind Speed\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
 "    String original_units \"knot\";\n" +
-"    Int32 qcindex 9;\n" +
+"    Int32 qcindex 13;\n" + //2018-09-15 was 9
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +
@@ -1668,12 +1711,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_method \"average\";\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    Float32 data_precision 1.0e-5;\n" +
+"    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Platform Course\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String observation_type \"calculated\";\n" +
+"    String observation_type \"measured\";\n" + //2018-09-15 was calculated
 "    String original_units \"degrees \\(clockwise towards true north\\)\";\n" +
 "    Int32 qcindex 5;\n" +
 "    Float32 sampling_rate 1.0;\n" +
@@ -1688,12 +1731,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_method \"average\";\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    String instrument \"Quabrans IX3LU Paa00004-C\";\n" + //2018-09-15 was Applanix POSMV V4
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Platform Heading\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String observation_type \"calculated\";\n" +
+"    String observation_type \"measured\";\n" +  //2018-09-15 was calculated
 "    String original_units \"degrees \\(clockwise towards true north\\)\";\n" +
 "    Int32 qcindex 4;\n" +
 "    Float32 sampling_rate 1.0;\n" +
@@ -1702,21 +1745,21 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  platformSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 2850255.0;\n" +
+"    Float32 actual_range 0.0, 2850255.0;\n" +  //really
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Platform Speed Over Ground\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String observation_type \"calculated\";\n" +
+"    String observation_type \"measured\";\n" +  //2018-09-15 was calculated
 "    String original_units \"knot\";\n" +
-"    Int32 qcindex 8;\n" +
-"    Float32 sampling_rate 0.5;\n" +
+"    Int32 qcindex 12;\n" + //2018-09-15 was 8
+"    Float32 sampling_rate 1.0;\n" + //2018-09-15 was 0.5
 "    Float32 special_value -8888.0;\n" +
 "    String units \"meter second-1\";\n" +
 "  \\}\n" +
@@ -1730,21 +1773,21 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision -9999.0;\n" +
+"    Float32 data_precision 1.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Platform Relative Wind Direction\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"degrees \\(clockwise from bow\\)\";\n" +
-"    Int32 qcindex 7;\n" +
+"    Int32 qcindex 9;\n" + //2018-09-15 was 7
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_from_direction\";\n" +
 "    String units \"degrees \\(clockwise from bow\\)\";\n" +
-"    Float32 zero_line_reference -9999.0;\n" +
+"    Float32 zero_line_reference 0.0;\n" + //2018-09-15 was -9999.0
 "  \\}\n" +
 "  platformWindSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
@@ -1756,16 +1799,16 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision -9999.0;\n" +
+"    Float32 data_precision 0.1;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+"    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Platform Relative Wind Speed\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"knot\";\n" +
-"    Int32 qcindex 10;\n" +
+"    Int32 qcindex 16;\n" + //2018-09-15 was 10
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +
@@ -1811,7 +1854,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System \\(SAMOS\\)\";\n" +
 "    String creator_type \"group\";\n" +
-"    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
+"    String creator_url \"https://samos.coaps.fsu.edu/html/\";\n" +
 "    String Data_modification_date \".{19} E.T\";\n" + //changes
 "    String data_provider \"unknown at this time\";\n" +
 "    String defaultDataQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"\";\n" +
@@ -1830,25 +1873,16 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         String seek = "String history \"" + today;
         int tPo = results.indexOf(seek);
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureLinesMatch(results.substring(0, tPo + seek.length()), expected,
+        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + seek.length()), expected,
             "\nresults=\n" + results);
 
 //+ " http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "fsuNoaaShipWTEP.das\";\n" +
-"    String infoUrl \"http://samos.coaps.fsu.edu/html/\";\n" +
+"    String infoUrl \"https://samos.coaps.fsu.edu/html/\";\n" +
 "    String institution \"FSU\";\n" +
-"    String keywords \"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Humidity,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Salinity/Density > Conductivity,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"air, air_pressure, air_temperature, atmosphere, atmospheric, calender, conductivity, control, course, data, date, day, density, direction, dyson, earth, electrical, file, flags, from, fsu, ground, heading, history, humidity, information, level, measurements, meteorological, meteorology, oceans, oscar, over, platform, pressure, quality, relative, relative_humidity, salinity, sea, sea_water_electrical_conductivity, sea_water_practical_salinity, seawater, speed, static, surface, temperature, time, vapor, water, wind, wind_from_direction, wind_speed, winds\";\n" +
+"    String keywords \"air, air_pressure, air_temperature, atmosphere, atmospheric, calender, conductivity, control, course, data, date, day, density, direction, dyson, earth, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Surface Air Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Humidity, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Salinity, electrical, file, flags, from, fsu, ground, heading, history, humidity, information, level, measurements, meteorological, meteorology, oceans, oscar, over, platform, pressure, quality, relative, relative_humidity, salinity, sea, sea_water_electrical_conductivity, sea_water_practical_salinity, seawater, speed, static, surface, temperature, time, vapor, water, wind, wind_from_direction, wind_speed, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1858,11 +1892,12 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_modification_date \".{19} E.T\";\n" + //changes
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
 "    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data " +
     "\\(delayed ~10 days for quality control\\) are from the Shipboard " +
@@ -1883,7 +1918,7 @@ expected =
 "The '\\*' says to match the previous character 0 or more times.\n" +
 "\\(Don't include backslashes in your query.\\)\n" +
 "See the tutorial for regular expressions at\n" +
-"http://www.vogella.com/tutorials/JavaRegularExpressions/article.html\";\n" +
+"https://www.vogella.com/tutorials/JavaRegularExpressions/article.html\";\n" +
 "    String time_coverage_end \"20.{8}T.{8}Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
@@ -1892,7 +1927,7 @@ expected =
 "\\}\n";
             tPo = results.indexOf(expected.substring(0, 17));
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nThis often has small metadata changes."); 
@@ -2041,18 +2076,18 @@ expected =
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fileLastMod.size(); i++)
-            sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
+            sb.append(Calendar2.millisToIsoStringTZ(fileLastMod.get(i)) + "\n");
         results = sb.toString();
         expected = 
-"2011-08-22T00:02:00\n" +
-"2011-08-23T00:03:13\n" +
-"2011-08-24T00:04:06\n" +
-"2011-08-25T00:02:02\n" +
-"2011-08-26T00:03:13\n" +
-"2011-08-27T00:04:46\n" +
-"2011-08-28T00:05:25\n" +
-"2011-08-29T00:03:35\n" +
-"2011-08-30T00:05:39\n";
+"2011-08-22T00:02:00Z\n" +
+"2011-08-23T00:03:13Z\n" +
+"2011-08-24T00:04:06Z\n" +
+"2011-08-25T00:02:02Z\n" +
+"2011-08-26T00:03:13Z\n" +
+"2011-08-27T00:04:46Z\n" +
+"2011-08-28T00:05:25Z\n" +
+"2011-08-29T00:03:35Z\n" +
+"2011-08-30T00:05:39Z\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         }
 
@@ -2091,25 +2126,25 @@ expected =
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fileLastMod.size(); i++)
-            sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
+            sb.append(Calendar2.millisToIsoStringTZ(fileLastMod.get(i)) + "\n");
         results = sb.toString();
         expected = 
-//"2012-05-18T05:42:56\n" +
-//"2012-05-11T01:03:50\n" +
-//"2012-05-12T14:37:14\n" +
-//"2012-05-14T12:55:06\n" +
-//"2012-05-10T07:25:54\n" +
-//"2012-05-11T17:41:56\n" +
-//"2012-05-14T20:46:04\n";
+//"2012-05-18T05:42:56Z\n" +
+//"2012-05-11T01:03:50Z\n" +
+//"2012-05-12T14:37:14Z\n" +
+//"2012-05-14T12:55:06Z\n" +
+//"2012-05-10T07:25:54Z\n" +
+//"2012-05-11T17:41:56Z\n" +
+//"2012-05-14T20:46:04Z\n";
 //! changed in odd way 2017-12-15 ! now modified time is older! See
 //https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/2004/catalog.xml
-"2009-09-28T06:45:08\n" +
-"2010-01-05T09:16:32\n" +
-"2010-01-07T21:55:36\n" +
-"2010-01-09T22:13:44\n" +
-"2010-01-10T21:16:10\n" +
-"2010-01-10T21:35:00\n" +
-"2009-10-02T05:01:10\n";
+"2009-09-28T06:45:08Z\n" +
+"2010-01-05T09:16:32Z\n" +
+"2010-01-07T21:55:36Z\n" +
+"2010-01-09T22:13:44Z\n" +
+"2010-01-10T21:16:10Z\n" +
+"2010-01-10T21:35:00Z\n" +
+"2009-10-02T05:01:10Z\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         }
 

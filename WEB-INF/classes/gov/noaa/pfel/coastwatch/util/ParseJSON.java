@@ -48,7 +48,10 @@ public class ParseJSON {
      */
     public void close() {
         try {
-            reader.close();
+            if (reader != null) {
+                reader.close();
+                reader = null;
+            }
         } catch (Exception e) {
         }
     }

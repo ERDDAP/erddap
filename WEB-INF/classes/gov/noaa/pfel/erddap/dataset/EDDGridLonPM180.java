@@ -88,6 +88,8 @@ public class EDDGridLonPM180 extends EDDGrid {
         String tDefaultGraphQuery = null;
         int tReloadEveryNMinutes = Integer.MAX_VALUE; //unusual 
         int tUpdateEveryNMillis  = Integer.MAX_VALUE; //unusual 
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        boolean tDimensionValuesInMemory = true;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -152,6 +154,10 @@ public class EDDGridLonPM180 extends EDDGrid {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
+            else if (localTags.equals( "<dimensionValuesInMemory>")) {}
+            else if (localTags.equals("</dimensionValuesInMemory>")) tDimensionValuesInMemory = String2.parseBoolean(content);
 
             else xmlReader.unexpectedTagException();
         }
@@ -161,7 +167,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tChildDataset);
+            tChildDataset, tnThreads, tDimensionValuesInMemory);
 
     }
 
@@ -191,7 +197,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        EDDGrid oChildDataset) throws Throwable {
+        EDDGrid oChildDataset, int tnThreads, boolean tDimensionValuesInMemory) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridLonPM180 " + tDatasetID); 
@@ -202,6 +208,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         //save some of the parameters
         className = "EDDGridLonPM180"; 
         datasetID = tDatasetID;
+        Test.ensureFileNameSafe(datasetID, "datasetID");
         setAccessibleTo(tAccessibleTo);
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
@@ -212,10 +219,11 @@ public class EDDGridLonPM180 extends EDDGrid {
         iso19115File = tIso19115File;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        dimensionValuesInMemory = tDimensionValuesInMemory; 
 
         if (oChildDataset == null)
             throw new RuntimeException(errorInMethod + "childDataset=null!");
-        Test.ensureFileNameSafe(datasetID, "datasetID");
         if (datasetID.equals(oChildDataset.datasetID()))
             throw new RuntimeException(errorInMethod + 
                 "This dataset's datasetID must not be the same as the child's datasetID.");
@@ -226,9 +234,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         if (tErddap != null && oChildDataset instanceof EDDGridFromErddap) {
             EDDGridFromErddap tFromErddap = (EDDGridFromErddap)oChildDataset;
             String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
-            if (tSourceUrl.startsWith(EDStatic.baseUrl) ||   //normally
-                tSourceUrl.startsWith("http://127.0.0.1") ||
-                tSourceUrl.startsWith("http://localhost")) { //happens during testing
+            if (EDStatic.urlIsThisComputer(tSourceUrl)) { 
                 String lcdid = File2.getNameNoExtension(tSourceUrl);
                 if (datasetID.equals(lcdid))
                     throw new RuntimeException(errorInMethod + 
@@ -381,7 +387,7 @@ if (lonIndex < nAv - 1)
         }
 
         //make the new lon axis
-        EDVLonGridAxis newEDVLon = new EDVLonGridAxis(EDV.LON_NAME,
+        EDVLonGridAxis newEDVLon = new EDVLonGridAxis(tDatasetID, EDV.LON_NAME,
             new Attributes(childLon.combinedAttributes()), new Attributes(),
             newLonValues);
         axisVariables[lonIndex] = newEDVLon; 
@@ -403,6 +409,28 @@ if (lonIndex < nAv - 1)
             "localChildDatasetID=" + localChildDatasetID + "\n" +
             "\n*** EDDGridLonPM180 " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+
+        //very last thing: saveDimensionValuesInFile
+        if (!dimensionValuesInMemory)
+            saveDimensionValuesInFile();
+
+    }
+
+    /**
+     * This returns the childDataset (if not null) or the localChildDataset.
+     */
+    public EDDGrid getChildDataset() {
+        //Get childDataset or localChildDataset. Work with stable local reference.
+        EDDGrid tChildDataset = childDataset;
+        if (tChildDataset == null) {
+            tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
+            if (tChildDataset == null) {
+                EDD.requestReloadASAP(localChildDatasetID);
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
+            }
+        }
+        return tChildDataset;
     }
 
     /**
@@ -442,16 +470,7 @@ if (lonIndex < nAv - 1)
      */
     public Table accessibleViaFilesFileTable() {
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = childDataset;
-        if (tChildDataset == null) {
-            tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
-            if (tChildDataset == null) {
-                EDD.requestReloadASAP(localChildDatasetID);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
-            }
-        }
-
+        EDDGrid tChildDataset = getChildDataset();
         return tChildDataset.accessibleViaFilesFileTable();
     }
 
@@ -480,15 +499,7 @@ if (lonIndex < nAv - 1)
     public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = childDataset;
-        if (tChildDataset == null) {
-            tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
-            if (tChildDataset == null) {
-                EDD.requestReloadASAP(localChildDatasetID);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
-            }
-        }
+        EDDGrid tChildDataset = getChildDataset();
                 
         boolean changed = tChildDataset.lowUpdate(msg, startUpdateMillis);
         //catch and deal with time axis changes: by far the most common
@@ -508,6 +519,8 @@ if (lonIndex < nAv - 1)
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
+     * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
      * @param tConstraints  int[nAxisVariables*3] 
      *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
@@ -519,19 +532,16 @@ if (lonIndex < nAv - 1)
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+        EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = childDataset;
-        if (tChildDataset == null) {
-            tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
-            if (tChildDataset == null) {
-                EDD.requestReloadASAP(localChildDatasetID);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
-            }
-        }
+        //This isn't ideal (better if GridDataAccessor had stable reference to childDataset, 
+        //but it needs this dataset), but it is pretty good.
+        EDDGrid tChildDataset = getChildDataset();
+        tDirTable  = tChildDataset.getDirTable();
+        tFileTable = tChildDataset.getFileTable();
 
         //get the request lon start/stride/stop
         int li3 = lonIndex * 3;
@@ -554,7 +564,7 @@ if (lonIndex < nAv - 1)
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
             newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0));
             newConstraints.set(li3 + 2, rStop  - (dloni0 - sloni0));            
-            return tChildDataset.getSourceData(tDataVariables, newConstraints);
+            return tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
         }
 
         //easy: all the requested lons are from the left: <=dloni359
@@ -563,7 +573,8 @@ if (lonIndex < nAv - 1)
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
             newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
             newConstraints.set(li3 + 2, rStop  + sloni180); // (sloni180 - dloni180), but dloni180 is 0
-            PrimitiveArray results[] = tChildDataset.getSourceData(tDataVariables, newConstraints);
+            PrimitiveArray results[] = tChildDataset.getSourceData(tDirTable, tFileTable, 
+                tDataVariables, newConstraints);
             results[lonIndex] = (PrimitiveArray)results[lonIndex].clone();
             results[lonIndex].addOffsetScale(-360, 1);
             return results;
@@ -585,7 +596,7 @@ if (lonIndex < nAv - 1)
             //some values are from source loni180 to loni359
             newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
             newConstraints.set(li3 + 2, sloni359);
-            results180 = tChildDataset.getSourceData(tDataVariables, newConstraints);
+            results180 = tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
             results180[lonIndex] = (PrimitiveArray)results180[lonIndex].clone();
             results180[lonIndex].addOffsetScale(-360, 1);
             if (debugMode) String2.log(">> got results180 from source lon[" + 
@@ -636,7 +647,8 @@ if (lonIndex < nAv - 1)
             int tStop  = rStop - (dloni0 - sloni0);
             newConstraints.set(li3 + 0, tStart); 
             newConstraints.set(li3 + 2, tStop);            
-            results0 = tChildDataset.getSourceData(tDataVariables, newConstraints);
+            results0 = tChildDataset.getSourceData(tDirTable, tFileTable, 
+                tDataVariables, newConstraints);
             if (debugMode) String2.log(">> got results0 from source lon[" + 
                 tStart + ":" + rStride + ":" + tStop + "]");
         }
@@ -714,32 +726,32 @@ if (lonIndex < nAv - 1)
         return results;
     }
 
+
     /** 
      * This runs generateDatasetsXmlFromErddapCatalog.
      * 
-     * @param oLocalSourceUrl  A complete URL of an ERDDAP (ending with "/erddap/"). 
-     * @param datasetNameRegex  The lowest level name of the dataset must match this, 
-     *    e.g., ".*" for all dataset Names.
+     * @param oPublicSourceUrl  A complete URL of an ERDDAP (ending with "/erddap/"). 
+     * @param datasetIDRegex  E.g., ".*" for all dataset Names.
      * @return a String with the results
      */
     public static String generateDatasetsXmlFromErddapCatalog( 
-        String oLocalSourceUrl, String datasetNameRegex) throws Throwable {
+        String oPublicSourceUrl, String datasetIDRegex) throws Throwable {
 
         String2.log("*** EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(" +
-            oLocalSourceUrl + ")");
+            oPublicSourceUrl + ")");
 
-        if (oLocalSourceUrl == null)
+        if (oPublicSourceUrl == null)
             throw new RuntimeException(String2.ERROR + ": 'localSourceUrl' is null.");
-        if (!oLocalSourceUrl.endsWith("/erddap/"))
+        if (!oPublicSourceUrl.endsWith("/erddap/"))
             throw new RuntimeException(String2.ERROR + ": 'localSourceUrl' doesn't end with '/erddap/'.");
 
         //get table with datasetID minLon, maxLon
-        String query = oLocalSourceUrl + "tabledap/allDatasets.csv" + 
+        String query = oPublicSourceUrl + "tabledap/allDatasets.csv" + 
             "?datasetID,title,griddap,minLongitude,maxLongitude" +
             "&dataStructure=" + SSR.minimalPercentEncode("\"grid\"") + 
             "&maxLongitude%3E180" +
-            (String2.isSomething(datasetNameRegex)? 
-                "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetNameRegex + "\""): "") +
+            (String2.isSomething(datasetIDRegex)? 
+                "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetIDRegex + "\""): "") +
             "&orderBy(%22datasetID%22)";
         String lines[] = null;
         try {
@@ -787,7 +799,7 @@ sb.append(
 
         String2.log("\n*** EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog() ***\n");
         testVerboseOn();
-        String url = "http://coastwatch.pfeg.noaa.gov/erddap/";
+        String url = "https://coastwatch.pfeg.noaa.gov/erddap/"; //purposefully http:// to test if ERDDAP will promote to https://
         //erdMH1chlamday is -179 to 179, so nothing to do, so won't be in results
         //others are good, different test cases
         String regex = "(erdMH1chlamday|erdMWchlamday|erdMHsstnmday|erdMBsstdmday|erdRWdhws1day)";
@@ -799,15 +811,15 @@ sb.append(
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Child\">\n" +
 "        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)\n" +
 "             minLon=120.0 maxLon=320.0 -->\n" +
-"        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMHsstnmday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMHsstnmday_LonPM180Child\">\n" +
-"        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), 2003-2013, DEPRECATED OLDER VERSION (Monthly Composite)\n" +
+"        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), 2002-2013, DEPRECATED OLDER VERSION (Monthly Composite)\n" +
 "             minLon=0.0 maxLon=360.0 -->\n" +
-"        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n" +
@@ -815,7 +827,7 @@ sb.append(
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
 "        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xb0;, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
 "             minLon=205.0 maxLon=255.0 -->\n" +
-"        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n" +
@@ -823,7 +835,7 @@ sb.append(
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdRWdhws1day_LonPM180Child\">\n" +
 "        <!-- Coral Reef Watch, Degree Heating Weeks, 50 km, 2000-2011\n" +
 "             minLon=0.25 maxLon=359.75 -->\n" +
-"        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdRWdhws1day</sourceUrl>\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdRWdhws1day</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n\n";
@@ -831,7 +843,7 @@ sb.append(
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-            "EDDGridLonPM180FromErddapCatalog", url, regex},
+            "EDDGridLonPM180FromErddapCatalog", url, regex}, 
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, 
             "Unexpected results from GenerateDatasetsXml.doIt. results=\n" + results);
@@ -1400,7 +1412,7 @@ expected =
 
 //!!!??? what's with that gap near lon=0? It's from the source.
 //The source has odd gaps at lon 358 to 360, see
-//http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday.graph?sst[(2013-09-16T00:00:00Z)][(0.0)][(-2.479741):(-0.479278)][(357.999768):(360)]&.draw=surface&.vars=longitude|latitude|sst&.colorBar=|||||
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday.graph?sst[(2013-09-16T00:00:00Z)][(0.0)][(-2.479741):(-0.479278)][(357.999768):(360)]&.draw=surface&.vars=longitude|latitude|sst&.colorBar=|||||
 //2015-11-25 I notified Roy, but these are deprecated datasets so probably won't be fixed
 
         String2.log("\n*** EDDGridLonPM180.test0to360 finished.");
@@ -1442,15 +1454,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 86];\n" + //changes
+"  Float64 time[time = 127];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 86][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 127][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 86];\n" +  //changes
+"      Float64 time[time = 127];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1526,25 +1538,25 @@ expected =
         expected = 
 //erdMBsstdmday natively 120...320(-40)
 //verified by cw erddap  lon (128.55):2057:(180)  and (180):2057:(320)
-//http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday.htmlTable?sst[(2008-04-15):1:(2008-04-15)][(0.0):1:(0.0)][(0):1:(0)][(128.55):2057:(180)]
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday.htmlTable?sst[(2008-04-15):1:(2008-04-15)][(0.0):1:(0.0)][(0):1:(0)][(128.55):2057:(180)]
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-180.0,26.41\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-180.0,26.4708\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,179.975,26.515\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-180.0,26.41\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-180.0,26.4708\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, left+insert+right sections 
@@ -1556,18 +1568,18 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just left
@@ -1579,10 +1591,10 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-77.14999999999998,NaN\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just left, 1 point
@@ -1594,8 +1606,8 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just insert   //insert values are between -40 and 120
@@ -1607,10 +1619,10 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,25.7,NaN\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just insert, 1 point
@@ -1622,8 +1634,8 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-25.725,NaN\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just right
@@ -1635,10 +1647,10 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,179.975,26.515\n";
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just right, 1 point
@@ -1650,8 +1662,8 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n";
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, left + insert
@@ -1663,16 +1675,16 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-180.0,26.41\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-180.0,26.4708\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,25.7,NaN\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-180.0,26.41\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-180.0,26.4708\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, insert + right
@@ -1684,14 +1696,14 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,179.975,26.515\n";
+"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, left + right  (jump over insert)
@@ -1703,10 +1715,10 @@ expected =
         expected = 
 "time,altitude,latitude,longitude,sst\n" +
 "UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,2.498002E-15,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.1,128.55,30.36\n";
+"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
+"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
+"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test image
@@ -1790,8 +1802,8 @@ expected =
         testGT180();  //this also tests /files/ working for fromErddap localhost dataset
         test1to359(); //NEEDS UPDATE.   this also tests /files/ working for fromNcFiles dataset
         test0to360();
-        test120to320(); 
-        testHardFlag();
+        test120to320(); //if fails, try again
+        testHardFlag(); //if fails, try again
 
         //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
         //so there is a test for that in the constructor, 

@@ -60,7 +60,7 @@ public class MustBe {
     public static String NotNull = "{0} must not be null."; 
     public static String NotEmpty = "{0} must not be an empty string.";
     public static String InternalError = "Internal Error";
-    public static String OutOfMemoryError = "Out of Memory Error";
+    public static String OutOfMemoryError = "Out Of Memory Error";
 
     /**
      * This gets the current stack trace, which can be useful for debugging.
@@ -73,8 +73,11 @@ public class MustBe {
         //so generating lots of stackTraces takes a lot of time!
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
-        (new Exception()).printStackTrace(ps);
-        ps.close(); //it flushes first
+        try {
+            (new Exception()).printStackTrace(ps);
+        } finally {
+            ps.close(); //it flushes first
+        }
         return baos.toString();   
     }
 

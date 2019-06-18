@@ -50,85 +50,83 @@ public class SdsReader  {
         String errorIn = String2.ERROR + " in SdsReader.read(" + hdfFileName + "): ";
 
         //first thing in file is magic number
-        DataInputStream stream = new DataInputStream( new BufferedInputStream(
-            new FileInputStream(hdfFileName)));
-        int offset = 0;
-        int magicNumber = stream.readInt();
-        if (magicNumber != 0x0e031301) {
-            stream.close();
-            Test.error(errorIn + "Incorrect 'magic number' (0x" + 
-                Integer.toHexString(magicNumber) + " should be 0x0E031301) at start of file.");
-        }
-        offset += 4;
-
-        //read the Descriptor Blocks 
-        int nDataDescriptors;
-        int offsetOfNextDB;
-        do {
-            //Descriptor Block starts with nDataDescriptors and offset to next Descriptor Block
-            nDataDescriptors = stream.readShort();
-            offset += 2;
-            if (verbose) String2.log("DescriptorBlock nDataDescriptors=" + nDataDescriptors);
-            offsetOfNextDB = stream.readInt();
+        DataInputStream stream = new DataInputStream( 
+            File2.getDecompressedBufferedInputStream(hdfFileName));
+        try {
+            int offset = 0;
+            int magicNumber = stream.readInt();
+            if (magicNumber != 0x0e031301) 
+                Test.error(errorIn + "Incorrect 'magic number' (0x" + 
+                    Integer.toHexString(magicNumber) + " should be 0x0E031301) at start of file.");
             offset += 4;
-            ArrayList tagTypeList      = new ArrayList();
-            ArrayList tagRefNumberList = new ArrayList();
-            ArrayList tagOffsetList    = new ArrayList();
-            ArrayList tagLengthList    = new ArrayList();
 
-            //read all of the Data Descriptors 
-            for (int descriptor = 0; descriptor < nDataDescriptors; descriptor++) {
-                tagTypeList.add(new Short(stream.readShort())); 
-                tagRefNumberList.add(new Short(stream.readShort())); 
-                tagOffsetList.add(new Integer(stream.readInt())); 
-                tagLengthList.add(new Integer(stream.readInt())); 
-                offset += 2 * 2 + 2 * 4;
-            }
+            //read the Descriptor Blocks 
+            int nDataDescriptors;
+            int offsetOfNextDB;
+            do {
+                //Descriptor Block starts with nDataDescriptors and offset to next Descriptor Block
+                nDataDescriptors = stream.readShort();
+                offset += 2;
+                if (verbose) String2.log("DescriptorBlock nDataDescriptors=" + nDataDescriptors);
+                offsetOfNextDB = stream.readInt();
+                offset += 4;
+                ArrayList tagTypeList      = new ArrayList();
+                ArrayList tagRefNumberList = new ArrayList();
+                ArrayList tagOffsetList    = new ArrayList();
+                ArrayList tagLengthList    = new ArrayList();
 
-            //read all of the data
-            for (int descriptor = 0; descriptor < nDataDescriptors; descriptor++) {
-                short tagType   = ((Short)tagTypeList.get(descriptor)).shortValue(); 
-                short refNumber = ((Short)tagRefNumberList.get(descriptor)).shortValue(); 
-                int   length    = ((Integer)tagLengthList.get(descriptor)).intValue(); 
-                int   tagOffset = ((Integer)tagOffsetList.get(descriptor)).intValue();
-                if (tagType == HdfNull.TYPE) {
-                    tagOffset = offset; //in file it is always -1, since no data
-                    length = 0;         //in file it is always -1, since no data
+                //read all of the Data Descriptors 
+                for (int descriptor = 0; descriptor < nDataDescriptors; descriptor++) {
+                    tagTypeList.add(new Short(stream.readShort())); 
+                    tagRefNumberList.add(new Short(stream.readShort())); 
+                    tagOffsetList.add(new Integer(stream.readInt())); 
+                    tagLengthList.add(new Integer(stream.readInt())); 
+                    offset += 2 * 2 + 2 * 4;
                 }
-                if (tagOffset != offset) {
-                    stream.close();
-                    Test.error(
-                        errorIn + "offsetList value=" + tagOffset + 
-                        " not equal to current offset=" + offset + " for descriptor #" + descriptor);
+
+                //read all of the data
+                for (int descriptor = 0; descriptor < nDataDescriptors; descriptor++) {
+                    short tagType   = ((Short)tagTypeList.get(descriptor)).shortValue(); 
+                    short refNumber = ((Short)tagRefNumberList.get(descriptor)).shortValue(); 
+                    int   length    = ((Integer)tagLengthList.get(descriptor)).intValue(); 
+                    int   tagOffset = ((Integer)tagOffsetList.get(descriptor)).intValue();
+                    if (tagType == HdfNull.TYPE) {
+                        tagOffset = offset; //in file it is always -1, since no data
+                        length = 0;         //in file it is always -1, since no data
+                    }
+                    if (tagOffset != offset) 
+                        Test.error(
+                            errorIn + "offsetList value=" + tagOffset + 
+                            " not equal to current offset=" + offset + " for descriptor #" + descriptor);
+                    if (verbose) String2.logNoNewline("#" + String2.right("" + descriptor, 3) + 
+                        ", line#" + String2.right("" + lineNumber(offset), 3) + 
+                        " byte#=" + String2.right("" + byteNumberInLine(offset), 2) + 
+                        ", ");
+                    HdfTag tag;
+                    if      (tagType == 0x001e) tag = new HdfLibraryVersion(         refNumber, length, stream);
+                    else if (tagType == 0x0001) tag = new HdfNull(                   refNumber, length, stream);
+                    else if (tagType == 0x006a) tag = new HdfNumberType(             refNumber, length, stream);
+                    else if (tagType == 0x02d0) tag = new HdfNumericDataGroup(       refNumber, length, stream);
+                    else if (tagType == 0x02bd) tag = new HdfScientificDataDimension(refNumber, length, stream);
+                    else if (tagType == 0x07ab) tag = new HdfVData(                  refNumber, length, stream);
+                    else if (tagType == 0x07aa) tag = new HdfVDataDescription(       refNumber, length, stream);
+                    else if (tagType == 0x07ad) tag = new HdfVGroup(                 refNumber, length, stream);
+                    else if (tagType == 0x02be){tag = new HdfScientificData(         refNumber, length, stream);
+                        sdList.add(tag);
+                    } else {
+                        throw new RuntimeException(
+                            errorIn + "unsupported tag (type=0x" + Integer.toHexString(tagType) + 
+                            " tag#=" + descriptor + ")");
+                    }
+                    if (verbose) String2.log(tag.toString() + "\n");
+                    offset += length;
                 }
-                if (verbose) String2.logNoNewline("#" + String2.right("" + descriptor, 3) + 
-                    ", line#" + String2.right("" + lineNumber(offset), 3) + 
-                    " byte#=" + String2.right("" + byteNumberInLine(offset), 2) + 
-                    ", ");
-                HdfTag tag;
-                if      (tagType == 0x001e) tag = new HdfLibraryVersion(         refNumber, length, stream);
-                else if (tagType == 0x0001) tag = new HdfNull(                   refNumber, length, stream);
-                else if (tagType == 0x006a) tag = new HdfNumberType(             refNumber, length, stream);
-                else if (tagType == 0x02d0) tag = new HdfNumericDataGroup(       refNumber, length, stream);
-                else if (tagType == 0x02bd) tag = new HdfScientificDataDimension(refNumber, length, stream);
-                else if (tagType == 0x07ab) tag = new HdfVData(                  refNumber, length, stream);
-                else if (tagType == 0x07aa) tag = new HdfVDataDescription(       refNumber, length, stream);
-                else if (tagType == 0x07ad) tag = new HdfVGroup(                 refNumber, length, stream);
-                else if (tagType == 0x02be){tag = new HdfScientificData(         refNumber, length, stream);
-                    sdList.add(tag);
-                } else {
-                    stream.close();
-                    throw new RuntimeException(
-                        errorIn + "unsupported tag (type=0x" + Integer.toHexString(tagType) + 
-                        " tag#=" + descriptor + ")");
-                }
-                if (verbose) String2.log(tag.toString() + "\n");
-                offset += length;
-            }
 
 
-        } while (offsetOfNextDB != 0);
-        stream.close();
+            } while (offsetOfNextDB != 0);
+        } finally {
+            stream.close();
+        }
     }
 
     public static int lineNumber(int byteNumber) {return byteNumber / 16;}

@@ -25,7 +25,7 @@ public class ConvertTable {
      *
      * <p>A test which reads data from a 1-level opendap sequence and writes it to an .nc file: 
      * ConvertTable.main(new String[]{
-         "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?longitude,latitude,time,sal00,temperature0&amp;time=2002-08-19T08:58:00", "2",
+         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?longitude,latitude,time,sal00,temperature0&amp;time=2002-08-19T08:58:00", "2",
          "result.nc", "1", "row"});
      *
      * @param args must have 5 values: &lt;in&gt; &lt;inType&gt; &lt;out&gt; &lt;outType&gt; &lt;dimensionName&gt;

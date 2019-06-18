@@ -93,6 +93,13 @@ public class LongArray extends PrimitiveArray {
         size = anArray.length;
     }
 
+    /** The minimum value that can be held by this class. */
+    public String MINEST_VALUE() {return "" + Long.MIN_VALUE;}
+
+    /** The maximum value that can be held by this class 
+        (not including the cohort missing value). */
+    public String MAXEST_VALUE() {return "" + (Long.MAX_VALUE - 1);}
+
     /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
@@ -124,14 +131,17 @@ public class LongArray extends PrimitiveArray {
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
      * and stopIndex.
      *
+     * @param pa the pa to be filled (may be null). If not null, must be of same type as this class. 
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
      * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
-     * @return a new PrimitiveArray with the desired subset.
-     *    It will have a new backing array with a capacity equal to its size.
+     * @return The same pa (or a new PrimitiveArray if it was null) with the desired subset.
+     *    If new, it will have a backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
-    public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
+    public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
+        if (pa != null)
+            pa.clear();
         if (startIndex < 0)
             throw new IndexOutOfBoundsException(MessageFormat.format(
                 ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
@@ -141,11 +151,18 @@ public class LongArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return new LongArray(new long[0]);
+            return pa == null? new LongArray(new long[0]) : pa;
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-        Math2.ensureMemoryAvailable(8L * willFind, "LongArray"); 
-        long tar[] = new long[willFind];
+        LongArray la = null;
+        if (pa == null) {
+            la = new LongArray(willFind, true);
+        } else {
+            la = (LongArray)pa;
+            la.ensureCapacity(willFind);
+            la.size = willFind;
+        }
+        long tar[] = la.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -153,7 +170,7 @@ public class LongArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return new LongArray(tar);
+        return la;
     }
 
     /**
@@ -246,7 +263,8 @@ public class LongArray extends PrimitiveArray {
     /**
      * This adds n Strings to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
@@ -283,7 +301,8 @@ public class LongArray extends PrimitiveArray {
     /**
      * This adds n doubles to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
@@ -704,6 +723,19 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
+     * Return a value from the array as a String suitable for a JSON file. 
+     * char returns a String with 1 character.
+     * String returns a json String with chars above 127 encoded as \\udddd.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     */
+    public String getJsonString(int index) {
+        long b = get(index);
+        return b == Long.MAX_VALUE? "null" : String.valueOf(b);
+    }
+
+    /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
@@ -763,6 +795,8 @@ public class LongArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int indexOf(String lookFor, int startIndex) {
+        if (startIndex >= size)
+            return -1;
         return indexOf(String2.parseLong(lookFor), startIndex);
     }
 
@@ -1255,13 +1289,6 @@ public class LongArray extends PrimitiveArray {
     }
 
 
-    /** This returns the minimum value that can be held by this class. */
-    public String minValue() {return "" + Long.MIN_VALUE;}
-
-    /** This returns the maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String maxValue() {return "" + (Long.MAX_VALUE - 1);}
-
     /**
      * This finds the number of non-missing values, and the index of the min and
      *    max value.
@@ -1633,6 +1660,16 @@ public class LongArray extends PrimitiveArray {
         ss = anArray.subset(1, 1, 0);
         Test.ensureEqual(ss.toString(), "", "");
 
+        ss.trimToSize();
+        anArray.subset(ss, 1, 3, 4);
+        Test.ensureEqual(ss.toString(), "5, 19", "");
+        anArray.subset(ss, 0, 1, 0);
+        Test.ensureEqual(ss.toString(), "25", "");
+        anArray.subset(ss, 0, 1, -1);
+        Test.ensureEqual(ss.toString(), "", "");
+        anArray.subset(ss, 1, 1, 0);
+        Test.ensureEqual(ss.toString(), "", "");
+
         //evenlySpaced
         anArray = new LongArray(new long[] {10,20,30});
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
@@ -1689,12 +1726,19 @@ public class LongArray extends PrimitiveArray {
 
         //min max
         anArray = new LongArray();
-        anArray.addString(anArray.minValue());
-        anArray.addString(anArray.maxValue());
-        Test.ensureEqual(anArray.getString(0), anArray.minValue(), "");
+        anArray.addString(anArray.MINEST_VALUE());
+        anArray.addString(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
         Test.ensureEqual(anArray.getString(0), "-9223372036854775808", "");
-        Test.ensureEqual(anArray.getString(1), anArray.maxValue(), "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
 
+
+        //tryToFindNumericMissingValue() 
+        Test.ensureEqual((new LongArray(new long[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new LongArray(new long[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new LongArray(new long[] {Long.MIN_VALUE})).tryToFindNumericMissingValue(), Long.MIN_VALUE, "");
+        Test.ensureEqual((new LongArray(new long[] {Long.MAX_VALUE})).tryToFindNumericMissingValue(), Long.MAX_VALUE, "");
+        Test.ensureEqual((new LongArray(new long[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
     }
 
 }

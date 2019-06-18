@@ -16,8 +16,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 
+import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 /**
  * TableWriterDodsAscii provides a way to write a table to a DAP .asc format
@@ -36,7 +38,7 @@ public class TableWriterDodsAscii extends TableWriter {
 
     //set by firstTime
     protected boolean isCharOrString[];
-    protected OutputStreamWriter writer;
+    protected Writer writer;
 
     public long totalNRows = 0;
 
@@ -63,11 +65,10 @@ public class TableWriterDodsAscii extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation doesn't change them.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation doesn't change them.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
@@ -92,8 +93,8 @@ public class TableWriterDodsAscii extends TableWriter {
             table.saveAsDDS(outputStream, sequenceName);  
 
             //see OpendapHelper.EOL for comments
-            writer = new OutputStreamWriter(outputStream,
-                String2.ISO_8859_1); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            writer = new BufferedWriter(new OutputStreamWriter(outputStream,
+                String2.ISO_8859_1)); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             writer.write("---------------------------------------------" + 
                 OpendapHelper.EOL); //this exactly mimics the example
 

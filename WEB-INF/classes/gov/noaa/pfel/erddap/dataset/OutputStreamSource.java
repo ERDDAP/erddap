@@ -35,7 +35,8 @@ public interface OutputStreamSource {
      *     This only matters for some subclasses.
      * @param contentLength the number of bytes that will be sent (or -1 if not known).
      *     Currently, this causes Firefox to freeze, so this method ignores it.
-     * @return outputStream
+     * @return outputStream A buffered outputStream.  If outputStream has already been created,
+     *   the same one is returned.
      * @throws Throwable if trouble
      */
     public OutputStream outputStream(String characterEncoding, long contentLength) 

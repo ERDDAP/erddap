@@ -73,7 +73,7 @@ public class FileNameUtility  {
     public static String getCreatorName() {return DataHelper.CW_CREATOR_NAME;  }
     public static String getCreatorURL() {return DataHelper.CW_CREATOR_URL;  }
     public static String getDateCreated() {
-        return Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z";
+        return Calendar2.formatAsISODate(Calendar2.newGCalendarZulu());
     }
     public static String getKeywordsVocabulary() {return "GCMD Science Keywords";    }
     public static String getLatUnits() {return "degrees_north"; }
@@ -84,7 +84,7 @@ public class FileNameUtility  {
     public static String getProject() {return DataHelper.CW_PROJECT;  }
     public static String getStandardNameVocabulary() {
         //2015-04-17 new, longer name format is from ACDD 1.3
-        return "CF Standard Name Table v29"; } //was CF-1.0 and CF-11, 2015-04-17 was CF-12, 2015-07-23 was v27
+        return "CF Standard Name Table v55"; } //was CF-1.0 and CF-11, 2015-04-17 was CF-12, 2015-07-23 was v27 2018-06-20 was v29
 
     private String categoryLetters;
     private String[] categoryNames;
@@ -998,12 +998,17 @@ public class FileNameUtility  {
     }
 
     /** 
-     * This returns the unique id
-     * e.g., "LATsstaS1day_20030304_x-135_X-134.25_y22_Y23"
+     * This returns the dataset id (e.g., LATsstaS1day)
+     * [pre 2019-05-07 was getUniqueID(fileName): fileName minus extension, e.g., "LATsstaS1day_20030304_x-135_X-134.25_y22_Y23"]
      * (see MetaMetadata.txt).
      */
-    public static String getUniqueID(String fileName) {
+    public static String getID(String fileName) {
 
+        fileName = File2.getNameNoExtension(fileName);
+        int po = fileName.indexOf('_');
+        return po > 0? fileName.substring(0, po) : fileName;
+
+        /* pre 2019-05-07 this 
         //remove extension (if present) at end
         //This is fancy because filename may end in e.g., _Y33.0 or _Y33.0.grd
         //   so can't just search for last "."
@@ -1015,6 +1020,7 @@ public class FileNameUtility  {
         if (fileName.charAt(po - 1) == '.')  //. is start of extension
             return fileName.substring(0, po - 1);
         return fileName.substring(0, po);
+        */
     }
 
     /** 
@@ -1030,6 +1036,7 @@ public class FileNameUtility  {
      * @param minLat e.g., 22
      * @param maxLat e.g., 23
      */
+    /* 2019-05-07 see getID.
     public static String getUniqueID(String internalName, 
         boolean standardUnits, String timePeriodValue,
         String isoCenteredTime, double minLon, double maxLon,
@@ -1041,7 +1048,7 @@ public class FileNameUtility  {
                 timePeriodValue, isoCenteredTime) +
             makeWESNString(minLon, maxLon, minLat, maxLat);
         return name;
-    }
+    }*/
 
     /**
      * This generates the standard file name for a grid file.
@@ -1190,7 +1197,7 @@ public class FileNameUtility  {
     }
 
     /** 
-     * This returns the references, e.g., "NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html"
+     * This returns the references, e.g., "NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: https://www.ospo.noaa.gov/PSB/EPS/CW/coastwatch.html"
      * (see MetaMetadata.txt).
      *
      * @param fileName the CW fileName or the 7 charName (since only 6 char name is extracted)
@@ -1424,17 +1431,17 @@ public class FileNameUtility  {
             String2.log("history=" + fnu.getHistory(names[i]));
             Test.ensureTrue(fnu.getHistory(names[i]).startsWith("NOAA NWS Monterey and NOAA CoastWatch\n20"), "getHistory"); //changes every year
             Test.ensureTrue(fnu.getHistory(names[i]).endsWith("NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD"), "getHistory");
-            Test.ensureEqual(getDateCreated(), Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z", "getDateCreated");
+            Test.ensureEqual(getDateCreated(), Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()), "getDateCreated");
             Test.ensureEqual(getCreatorName(), "NOAA CoastWatch, West Coast Node", "getCreatorName");
-            Test.ensureEqual(getCreatorURL(), "http://coastwatch.pfeg.noaa.gov", "getCreatorURL");
-            Test.ensureEqual(getCreatorEmail(), "dave.foley@noaa.gov", "getCreatorEmail");
+            Test.ensureEqual(getCreatorURL(), "https://coastwatch.pfeg.noaa.gov", "getCreatorURL");
+            Test.ensureEqual(getCreatorEmail(), "erd.data@noaa.gov", "getCreatorEmail");
             Test.ensureEqual(fnu.getInstitution(names[i]), "NOAA CoastWatch, West Coast Node", "getInstitution");
-            Test.ensureEqual(getProject(), "CoastWatch (http://coastwatch.noaa.gov/)", "getProject");
+            Test.ensureEqual(getProject(), "CoastWatch (https://coastwatch.noaa.gov/)", "getProject");
             Test.ensureEqual(getProcessingLevel(), "3 (projected)", "getProcessingLevel");
             Test.ensureEqual(getAcknowledgement(), "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD", "getAcknowledgement");
             Test.ensureEqual(getLatUnits(), "degrees_north", "getLatUnits");
             Test.ensureEqual(getLonUnits(), "degrees_east", "getLonUnits");
-            Test.ensureEqual(getStandardNameVocabulary(), "CF Standard Name Table v29", "getStandardNameVocabulary");
+            Test.ensureEqual(getStandardNameVocabulary(), "CF Standard Name Table v55", "getStandardNameVocabulary");
             Test.ensureEqual(getLicense(), "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.", "getLicense");
             Test.ensureEqual(fnu.getContributorName(names[i]), fnu.getCourtesy(names[i]), "getContributorName");
             Test.ensureEqual(getContributorRole(), "Source of level 2 data.", "getContributorRole");
@@ -1443,10 +1450,10 @@ public class FileNameUtility  {
 
         }
 
-        String desired = "LATsstaSmday_20030116120000_x-135_X-105_y22_Y50";
-        Test.ensureEqual(getUniqueID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50"), desired, "");
-        Test.ensureEqual(getUniqueID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50.mat"), desired, "");
-        Test.ensureEqual(getUniqueID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50_other_stuff"), desired, "");
+        String desired = "LATsstaSmday";
+        Test.ensureEqual(getID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50"), desired, "");
+        Test.ensureEqual(getID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50.mat"), desired, "");
+        Test.ensureEqual(getID("LATsstaSmday_20030116120000_x-135_X-105_y22_Y50_other_stuff"), desired, "");
 
         names = new String[]{
             "LATsstaSmday_20030116120000_x-135_X-105_y22_Y50.5",  //note decimal digits on end of maxY

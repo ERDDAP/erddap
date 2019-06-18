@@ -35,12 +35,12 @@ public class TableWriterNccsv extends TableWriter {
     //set by constructor
 
     //set by firstTime
-    protected boolean isLong[];
-    protected boolean isTimeStamp[];
-    protected String time_precision[];
-    protected BufferedWriter writer;
+    protected volatile boolean isLong[];
+    protected volatile boolean isTimeStamp[];
+    protected volatile String time_precision[];
+    protected volatile BufferedWriter writer;
 
-    public long totalNRows = 0;
+    public volatile long totalNRows = 0;
 
     /**
      * The constructor.
@@ -63,11 +63,10 @@ public class TableWriterNccsv extends TableWriter {
      * The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
      *
-     * <p>The table should have missing values stored as destinationMissingValues
-     * or destinationFillValues.
-     * This implementation converts them to NaNs.
-     *
-     * @param table with destinationValues
+     * @param table with destinationValues.
+     *   The table should have missing values stored as destinationMissingValues
+     *   or destinationFillValues.
+     *   This implementation converts them to NaNs.
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {

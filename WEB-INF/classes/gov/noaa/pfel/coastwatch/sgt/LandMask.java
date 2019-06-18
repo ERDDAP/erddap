@@ -57,43 +57,45 @@ public class LandMask  {
 
         //open the file
         DataInputStream dis = DataStream.getDataInputStream(landMaskDatFileName);
-        int nRecords = dis.available() / 2048;
-        String2.log("bytes available = " + dis.available() + " nRecords=" + nRecords);
+        try {
+            int nRecords = dis.available() / 2048;
+            String2.log("bytes available = " + dis.available() + " nRecords=" + nRecords);
 
-        //read the header  (one 2048 byte record)
-        Test.ensureEqual(dis.readShort(),  128, "Unexpected value #0");
-        Test.ensureEqual(dis.readShort(), 9644, "Unexpected value #1");
-        Test.ensureEqual(dis.readShort(), 2048, "Unexpected value #2");
-        Test.ensureEqual(dis.readShort(), -180, "Unexpected value #3");
-        Test.ensureEqual(dis.readShort(),  180, "Unexpected value #4");
-        Test.ensureEqual(dis.readShort(),  -90, "Unexpected value #5");
-        Test.ensureEqual(dis.readShort(),   90, "Unexpected value #6");
-        dis.skip(1017 * 2);
+            //read the header  (one 2048 byte record)
+            Test.ensureEqual(dis.readShort(),  128, "Unexpected value #0");
+            Test.ensureEqual(dis.readShort(), 9644, "Unexpected value #1");
+            Test.ensureEqual(dis.readShort(), 2048, "Unexpected value #2");
+            Test.ensureEqual(dis.readShort(), -180, "Unexpected value #3");
+            Test.ensureEqual(dis.readShort(),  180, "Unexpected value #4");
+            Test.ensureEqual(dis.readShort(),  -90, "Unexpected value #5");
+            Test.ensureEqual(dis.readShort(),   90, "Unexpected value #6");
+            dis.skip(1017 * 2);
 
-        //read the record pointers (64 2048 byte records)
-        for (int tLat = 0; tLat < 180; tLat++)
-            for (int tLon = 0; tLon < 360; tLon++) 
-                pointers[tLon][tLat] = dis.readShort();
-        dis.skip(736 * 2);
+            //read the record pointers (64 2048 byte records)
+            for (int tLat = 0; tLat < 180; tLat++)
+                for (int tLon = 0; tLon < 360; tLon++) 
+                    pointers[tLon][tLat] = dis.readShort();
+            dis.skip(736 * 2);
 
-        //read the land mask records (records #65..nRecords-1
-        records = new short[nRecords][][]; //[record number][lat 0..127][lon 0..7]
-        for (int tRecord = 65; tRecord < nRecords; tRecord++) {
-            records[tRecord] = new short[128][8];
+            //read the land mask records (records #65..nRecords-1
+            records = new short[nRecords][][]; //[record number][lat 0..127][lon 0..7]
+            for (int tRecord = 65; tRecord < nRecords; tRecord++) {
+                records[tRecord] = new short[128][8];
+                for (int i = 0; i < 128; i++)
+                    for (int j = 0; j < 8; j++)
+                        records[tRecord][i][j] = dis.readShort();
+            }
+
+            //make a dummy record #0 (all water) and #1 (all land)
+            records[0] = new short[128][8]; //already all zeroes
+            records[1] = new short[128][8];
             for (int i = 0; i < 128; i++)
                 for (int j = 0; j < 8; j++)
-                    records[tRecord][i][j] = dis.readShort();
+                    records[1][i][j] = (short)0xFFFF;
+
+        } finally {
+            dis.close();
         }
-
-        //make a dummy record #0 (all water) and #1 (all land)
-        records[0] = new short[128][8]; //already all zeroes
-        records[1] = new short[128][8];
-        for (int i = 0; i < 128; i++)
-            for (int j = 0; j < 8; j++)
-                records[1][i][j] = (short)0xFFFF;
-
-        //close the file
-        dis.close();
 
         //if (verbose) 
             String2.log("LandMask constructor time=" + (System.currentTimeMillis() - time) + "ms"); 

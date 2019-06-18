@@ -58,11 +58,11 @@ public class ProxyServlet extends DispatchServlet {
       das.print(out);
     }
     catch (DODSException e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       e.print(out);
     }
     catch (Exception e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);
     }
@@ -87,11 +87,11 @@ public class ProxyServlet extends DispatchServlet {
       dds.print(out);
     }
     catch (DODSException e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       e.print(out);
     }
     catch (Exception e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);
     }
@@ -120,12 +120,12 @@ public class ProxyServlet extends DispatchServlet {
     }
     catch (DODSException e) {
       res.setContentType("text/plain");
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       res.setHeader("Content-Encoding", "none");
       e.print(out);
     }
     catch (Exception e) {
-      res.setHeader("Content-Description", "dods_error");
+      res.setHeader("Content-Description", "dods-error");
       DODSException de = new DODSException(DODSException.UNKNOWN_ERROR, e.getMessage());
       de.print(out);
     }

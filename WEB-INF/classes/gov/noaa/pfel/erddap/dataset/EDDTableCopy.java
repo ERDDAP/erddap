@@ -50,6 +50,18 @@ public class EDDTableCopy extends EDDTable{
     protected static int maxChunks = Integer.MAX_VALUE;  //some test methods reduce this
 
     /**
+     * This returns the default value for standardizeWhat for this subclass.
+     * See Attributes.unpackVariable for options.
+     * The default was chosen to mimic the subclass' behavior from
+     * before support for standardizeWhat options was added.
+     */
+    public int defaultStandardizeWhat() {return DEFAULT_STANDARDIZEWHAT; } 
+    public static int DEFAULT_STANDARDIZEWHAT = 0;
+    protected int standardizeWhat = Integer.MAX_VALUE; // =not specified by user
+    protected int nThreads = -1;  //interpret invalid values (like -1) as EDStatic.nTableThreads
+
+
+    /**
      * This constructs an EDDTableCopy based on the information in an .xml file.
      * 
      * @param erddap if known in this context, else null
@@ -80,6 +92,8 @@ public class EDDTableCopy extends EDDTable{
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
         boolean tAccessibleViaFiles = false;
+        int tStandardizeWhat = Integer.MAX_VALUE; //not specified by user
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nTableThreads
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -125,6 +139,10 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else if (localTags.equals( "<accessibleViaFiles>")) {}
             else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
+            else if (localTags.equals( "<standardizeWhat>")) {}
+            else if (localTags.equals("</standardizeWhat>")) tStandardizeWhat = String2.parseInt(content); 
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
             else if (localTags.equals("<dataset>")) {
                 if ("false".equals(xmlReader.attributeValue("active"))) {
                     //skip it - read to </dataset>
@@ -161,9 +179,9 @@ public class EDDTableCopy extends EDDTable{
         return new EDDTableCopy(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tStandardizeWhat,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
-            tSourceEdd, tFileTableInMemory, tAccessibleViaFiles);
+            tSourceEdd, tFileTableInMemory, tAccessibleViaFiles, tnThreads);
     }
 
     /**
@@ -212,11 +230,11 @@ public class EDDTableCopy extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tStandardizeWhat,
         String tExtractDestinationNames, String tOrderExtractBy,
         Boolean tSourceNeedsExpandedFP_EQ,
         EDDTable tSourceEdd, boolean tFileTableInMemory,
-        boolean tAccessibleViaFiles) throws Throwable {
+        boolean tAccessibleViaFiles, int tnThreads) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose); 
@@ -237,6 +255,9 @@ public class EDDTableCopy extends EDDTable{
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        standardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
+            defaultStandardizeWhat() : tStandardizeWhat;
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nTableThreads
 
         //check some things
         if (tSourceEdd instanceof EDDTableFromThreddsFiles) 
@@ -284,7 +305,7 @@ public class EDDTableCopy extends EDDTable{
                         throw new RuntimeException("datasets.xml error: " +
                             "There are no extractDestinationNames.");
                     if (reallyVerbose) String2.log("extractNames=" + extractNames);
-                    String query = String2.replaceAll(extractNames.toString(), " ", "") + 
+                    String query = SSR.minimalPercentEncode(String2.replaceAll(extractNames.toString(), " ", "")) + 
                         "&distinct()";
                     String cacheDir = cacheDirectory();
                     File2.makeDirectory(cacheDir);  //ensure it exists
@@ -320,7 +341,7 @@ public class EDDTableCopy extends EDDTable{
                         for (int col = 0; col < nCols; col++) {
                             String s = table.getStringData(col, row);
                             tQuery.append("&" + table.getColumnName(col) + "=" + 
-                                (isString[col]? String2.toJson(s) : 
+                                (isString[col]? SSR.minimalPercentEncode(String2.toJson(s)) : 
                                  "".equals(s)? "NaN" :
                                  s));
                         }
@@ -333,8 +354,9 @@ public class EDDTableCopy extends EDDTable{
                         }
                         File2.makeDirectory(fileDir.toString());
                         if (orderExtractBy != null)
-                            tQuery.append("&orderBy(\"" + 
-                                String2.replaceAll(orderExtractBy.toString(), " ", "") + "\")");
+                            tQuery.append("&" + 
+                                SSR.minimalPercentEncode("orderBy(\"" + 
+                                    String2.replaceAll(orderExtractBy.toString(), " ", "") + "\")"));
 
                         //make the task
                         Object taskOA[] = new Object[6];
@@ -393,7 +415,7 @@ public class EDDTableCopy extends EDDTable{
             Table table = new Table();
             String2.log("!!! sourceEDD is unavailable, so getting dataVariable info from youngest file\n" + 
                 getFromName);
-            table.readFlatNc(getFromName, null, 0);  //null=allVars, 0=data is already unpacked
+            table.readFlatNc(getFromName, null, 0);  //null=allVars, standardizeWhat=0 because data is already unpacked
             nDataVariables = table.nColumns();
             tDataVariables = new Object[nDataVariables][];
             for (int dv = 0; dv < nDataVariables; dv++) {
@@ -436,14 +458,14 @@ public class EDDTableCopy extends EDDTable{
             tOnChange, tFgdcFile, tIso19115File, 
             new Attributes(), //addGlobalAttributes
             tDataVariables,
-            tReloadEveryNMinutes,
+            tReloadEveryNMinutes, 
             copyDatasetDir, fileNameRegex, recursive, ".*", //pathRegex is for original source files 
             EDDTableFromFiles.MF_LAST,
             "", 1, 2, "", //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory); 
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, standardizeWhat, nThreads); 
 
         //copy things from localEdd 
         sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
@@ -490,7 +512,7 @@ public class EDDTableCopy extends EDDTable{
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableCopy " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
@@ -516,7 +538,8 @@ public class EDDTableCopy extends EDDTable{
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames, 
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+        int tStandardizeWhat, int tnThreads) 
         throws Throwable {
 
         return new EDDTableFromNcFiles(tDatasetID, 
@@ -524,7 +547,7 @@ public class EDDTableCopy extends EDDTable{
             tOnChange, tFgdcFile, tIso19115File, 
             "", "", "", //tSosOfferingPrefix, tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes, 0, //updateEveryNMillis
+            tDataVariables, tReloadEveryNMinutes, 0, //tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator, 
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
@@ -532,7 +555,9 @@ public class EDDTableCopy extends EDDTable{
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
             false, //accessibleViaFiles is always false. parent may or may not be.  
-            false); //removeMVrows is irrelevant for EDDTableFromNcFiles
+            false, //removeMVrows is irrelevant for EDDTableFromNcFiles
+            tStandardizeWhat, tnThreads, 
+            "", -1, ""); //cacheFromUrl, cacheSizeGB, cachePartialPathRegex
     }
 
 
@@ -870,7 +895,7 @@ public class EDDTableCopy extends EDDTable{
 "    Float64 geospatial_lon_min -126.2;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";
 //"    String history \"" + today + " 2012-07-29T19:11:09Z (local files; contact erd.data@noaa.gov)\n";  //date is from last created file, so varies sometimes
-//today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das"; //\n" +
+//today + " https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das"; //\n" +
 //today + " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
     expected2 = 

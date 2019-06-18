@@ -21,6 +21,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -78,6 +79,8 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (verbose) String2.log("\n*** constructing EDDGridFromEtopo(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         boolean tAccessibleViaWMS = true;
+        int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        boolean tDimensionValuesInMemory = true;
 
         //process the tags
         int startOfTagsN = xmlReader.stackSize();
@@ -98,10 +101,15 @@ public class EDDGridFromEtopo extends EDDGrid {
             //no support for onChange since dataset never changes
             if      (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else if (localTags.equals( "<nThreads>")) {}
+            else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
+            else if (localTags.equals( "<dimensionValuesInMemory>")) {}
+            else if (localTags.equals("</dimensionValuesInMemory>")) tDimensionValuesInMemory = String2.parseBoolean(content);
             else xmlReader.unexpectedTagException();
         }
 
-        return new EDDGridFromEtopo(tDatasetID, tAccessibleViaWMS);
+        return new EDDGridFromEtopo(tDatasetID, tAccessibleViaWMS, 
+            tnThreads, tDimensionValuesInMemory);
     }
 
     /**
@@ -109,7 +117,8 @@ public class EDDGridFromEtopo extends EDDGrid {
      *
      * @throws Throwable if trouble
      */
-    public EDDGridFromEtopo(String tDatasetID, boolean tAccessibleViaWMS) throws Throwable {
+    public EDDGridFromEtopo(String tDatasetID, boolean tAccessibleViaWMS, 
+        int tnThreads, boolean tDimensionValuesInMemory) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromEtopo " + tDatasetID); 
@@ -125,6 +134,8 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
+        nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
+        dimensionValuesInMemory = tDimensionValuesInMemory; 
 
         sourceGlobalAttributes = new Attributes();
         sourceGlobalAttributes.add("acknowledgement", "NOAA NGDC");
@@ -142,7 +153,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         sourceGlobalAttributes.add("data_source", "NOAA NGDC ETOPO1");
         sourceGlobalAttributes.add("drawLandMask", "under");
         sourceGlobalAttributes.add("history", "2011-03-14 Downloaded " + SgtMap.BATHYMETRY_SOURCE_URL);
-        sourceGlobalAttributes.add("id", "SampledFromETOPO1_ice_g_i2");
+        sourceGlobalAttributes.add("id", tDatasetID); //2019-05-07 was "SampledFromETOPO1_ice_g_i2");
         sourceGlobalAttributes.add("infoUrl", "https://www.ngdc.noaa.gov/mgg/global/global.html");
         sourceGlobalAttributes.add("institution", "NOAA NGDC");
         sourceGlobalAttributes.add("keywords", "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
@@ -168,11 +179,11 @@ public class EDDGridFromEtopo extends EDDGrid {
         //make the axisVariables
         axisVariables = new EDVGridAxis[2];
         latIndex = 0;
-        axisVariables[latIndex] = new EDVLatGridAxis(EDV.LAT_NAME, 
+        axisVariables[latIndex] = new EDVLatGridAxis(tDatasetID, EDV.LAT_NAME, 
             new Attributes(), new Attributes(), 
             new DoubleArray(DataHelper.getRegularArray(fileNLats, -90, 1/60.0)));
         lonIndex = 1;
-        axisVariables[lonIndex] = new EDVLonGridAxis(EDV.LON_NAME, 
+        axisVariables[lonIndex] = new EDVLonGridAxis(tDatasetID, EDV.LON_NAME, 
             new Attributes(), new Attributes(), 
             new DoubleArray(DataHelper.getRegularArray(fileNLons, is180? -180 : 0, 1/60.0)));
 
@@ -202,9 +213,14 @@ public class EDDGridFromEtopo extends EDDGrid {
 
         //finally
         if (verbose) String2.log(
-            (reallyVerbose? "\n" + toString() : "") +
+            (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromEtopo " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+
+        //very last thing: saveDimensionValuesInFile
+        if (!dimensionValuesInMemory)
+            saveDimensionValuesInFile();
+
     }
 
     /**
@@ -226,6 +242,8 @@ public class EDDGridFromEtopo extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
+     * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
      * @param tConstraints  int[nAxisVariables*3] 
      *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
@@ -237,7 +255,8 @@ public class EDDGridFromEtopo extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+        EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //Currently ETOPO1
@@ -284,23 +303,22 @@ public class EDDGridFromEtopo extends EDDGrid {
                     File2.touch(cacheName); 
                     DataInputStream dis = null;
                     try {
-                        dis = new DataInputStream( new BufferedInputStream( 
-                            new FileInputStream(cacheName)));
+                        dis = new DataInputStream(
+                            File2.getDecompressedBufferedInputStream(cacheName));
                         for (int i = 0; i < nLatsLons; i++) {
                             data[i] = dis.readShort();
                             //if (i < 10) String2.log(i + "=" + data[i]);
                         }
                         dis.close();
+                        dis = null;
                         nReadFromCache++;
                         if (verbose) String2.log(datasetID + " readFromCache.  time=" + 
                             (System.currentTimeMillis() - eTime) + "ms");
                         return results;
                     } catch (Throwable t) {
                         if (dis != null) {
-                            try {
-                                dis.close();
-                            } catch (Throwable t2) {
-                            }
+                            try {dis.close();
+                            } catch (Throwable t2) {}
                         }
                         nFailed++;
                         File2.delete(cacheName);
@@ -331,10 +349,7 @@ public class EDDGridFromEtopo extends EDDGrid {
                         (System.currentTimeMillis() - eTime));
                 } catch (Throwable t) {
                     if (dos != null) {
-                        try {
-                            dos.close();
-                        } catch (Throwable t2) {
-                        } 
+                        try {dos.close();} catch (Throwable t2) {} 
                     }
                     File2.delete(cacheName + random);
                     nFailed++;
@@ -406,22 +421,22 @@ public class EDDGridFromEtopo extends EDDGrid {
 
         //open the file  (reading is thread safe)
         RandomAccessFile raf = new RandomAccessFile(fileName, "r");
-
-        //fill data array
-        //lat is outer loop because file is lat major
-        //and loop is backwards since stored top to bottom
-        //(goal is to read basically from start to end of file, 
-        //but if 0 - 360, lons are read out of order)
-        for (int lati = nLats - 1; lati >= 0; lati--) { 
-            int po = lati * nLons;
-            for (int loni = 0; loni < nLons; loni++) { 
-               raf.seek(latOffsets[lati] + lonOffsets[loni]);
-               data[po++] = Short.reverseBytes(raf.readShort());
+        try {
+            //fill data array
+            //lat is outer loop because file is lat major
+            //and loop is backwards since stored top to bottom
+            //(goal is to read basically from start to end of file, 
+            //but if 0 - 360, lons are read out of order)
+            for (int lati = nLats - 1; lati >= 0; lati--) { 
+                int po = lati * nLons;
+                for (int loni = 0; loni < nLons; loni++) { 
+                   raf.seek(latOffsets[lati] + lonOffsets[loni]);
+                   data[po++] = Short.reverseBytes(raf.readShort());
+                }
             }
+        } finally {
+            raf.close();
         }
-
-        //close the file 
-        raf.close();
     }
 
     /** This returns the cache statistics String for this dataset. */
@@ -447,8 +462,8 @@ public class EDDGridFromEtopo extends EDDGrid {
         GridDataAccessor.reallyVerbose = true;
         String name, tName, axisDapQuery, userDapQuery, results, expected, error;
         int tPo;
-        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true);
-        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true);
+        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true, -1, true);
+        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true, -1, true);
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
 
@@ -456,7 +471,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         String2.log("\n****************** EDDGridFromEtopo test entire dataset\n");
         tName = data180.makeNewFileForDapQuery(null, null, "altitude[(-90):500:(90)][(-180):500:(180)]", 
             EDStatic.fullTestCacheDirectory, data180.className() + "_Entire", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
+        results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
         expected = 
 //"   latitude = 11;\n" +   // (has coord.var)\n" +  //changed when switched to netcdf-java 4.0, 2009-02-23
 //"   longitude = 22;\n" +   // (has coord.var)\n" +
@@ -523,7 +538,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 //today + 
 expected =   
 " http://localhost:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
-"  :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
+"  :id = \"etopo180\";\n" +
 "  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
 "  :keywords = \"Earth Science > Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
@@ -543,7 +558,7 @@ expected =
 "  :references = \"Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009.\";\n" +
 "  :sourceUrl = \"(local file)\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
 "  :summary = \"ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry. It was built from numerous global and regional data sets. This is the 'Ice Surface' version, with the top of the Antarctic and Greenland ice sheets. The horizontal datum is WGS-84, the vertical datum is Mean Sea Level. Keywords: Bathymetry, Digital Elevation. This is the grid/node-registered version: the dataset's latitude and longitude values mark the centers of the cells.\";\n" +
 "  :title = \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\";\n" +
 "  :Westernmost_Easting = -180.0; // double\n" +

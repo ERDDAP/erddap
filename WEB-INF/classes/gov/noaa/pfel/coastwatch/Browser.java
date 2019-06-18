@@ -31,6 +31,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.Image;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -79,7 +80,7 @@ import javax.servlet.http.HttpSession;
  * <li> .grd - GMT can read them
  * <li> .hdf - CDAT can read them (e.g., proper metadata)
  * <li> .mat - Luke has Matlab and can view them
- * <li> .nc  - ncDump or my MapViewer
+ * <li> .nc  - ncdump or my MapViewer
  * <li> .tif - [currently not working]
  * <li> .xyz - look at the data (.xyz is not for a specific purpose/program)
  * </ul>
@@ -748,7 +749,7 @@ public abstract class Browser extends HttpServlet {
                 " ipAddress=" + ipAddress);
             
         //most of the work (validation, html generation) is done in user.getHTMLForm()
-        //It has it's own try/catch.
+        //It has its own try/catch.
         StringBuilder htmlSB = new StringBuilder();
         if (user.getHTMLForm(request, htmlSB, timeStartedGetHTMLForm)) {
             if (doTally) {
@@ -1029,7 +1030,7 @@ public abstract class Browser extends HttpServlet {
      * data files.
      * A query is appended to the url for an instance of a CoastWatch browser.
      * Here is a sample url and query: 
-<tt>http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?
+<tt>https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?
 get=gridData&dataSet=SST,NOAAGOESImager,DayandNight,0.05degrees,WestCoastofUS&timePeriod=1observation&centeredTime=2006-04-11T00:00:00&
 minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
@@ -1900,7 +1901,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //save .ncHeader
                                     String2.writeToFile(dir + name + extension,
-                                        NcHelper.dumpString(dir + name + ".nc", false));
+                                        NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".nc")) { //always standardized here
                                     //since not all files cached, save .nc if it doesn't exist
@@ -2035,8 +2036,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                                 "      <north>" + north + "</north>\n" +
                                                 "    </LatLonBox>\n" +
                                                 "    <TimeSpan>\n" +
-                                                "      <begin>" + Calendar2.epochSecondsToIsoStringT(tBeginSpan) + "Z</begin>\n" +
-                                                "      <end>"   + Calendar2.epochSecondsToIsoStringT(tEndSpan) + "Z</end>\n" +
+                                                "      <begin>" + Calendar2.epochSecondsToIsoStringTZ(tBeginSpan) + "</begin>\n" +
+                                                "      <end>"   + Calendar2.epochSecondsToIsoStringTZ(tEndSpan) + "</end>\n" +
                                                 "    </TimeSpan>\n" +
                                                 "    <visibility>1</visibility>\n" +
                                                 "  </GroundOverlay>\n");
@@ -2214,7 +2215,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //then save .ncHeader
                                     String2.writeToFile(dir + name + extension,
-                                        NcHelper.dumpString(dir + name + ".nc", false));
+                                        NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".xyz")) { //always standardized here
                                     //no attributes needed
@@ -2268,7 +2269,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (table == null) {
                                         table = new Table();
-                                        table.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        table.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
                                     table.saveAsTabbedASCII(dir + name + extension); 
 
@@ -2276,7 +2277,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (table == null) {
                                         table = new Table();
-                                        table.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        table.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
 
                                     //save as png
@@ -2288,7 +2289,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (table == null) {
                                         table = new Table();
-                                        table.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        table.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
 
                                     //make query for medium.png to be embedded in html file
@@ -2317,7 +2318,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (table == null) {
                                         table = new Table();
-                                        table.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        table.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
                                     table.saveAsMatlab(dir + name + extension, 
                                         gridDataSet.internalName.substring(1)); 
@@ -2326,7 +2327,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //already done
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     String2.writeToFile(dir + name + fileExtension,
-                                        NcHelper.dumpString(dir + tDataName + ".nc", false));
+                                        NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else {
                                     Test.error("internal error Browser.doQuery:\n" +
                                         "unexpected gridTimeSeries extension: " + extension);
@@ -2395,7 +2396,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //save .ncHeader
                                     String2.writeToFile(dir + name + extension,
-                                        NcHelper.dumpString(dir + name + ".nc", false));
+                                        NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".nc")) { //always standardized here
                                     grid.saveAs(dir, name, SgtMap.BATHYMETRY_7NAME.substring(1), 
@@ -2541,7 +2542,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //reuse existing file
                                     String2.log("  GET doQuery reusing datafile " + tDataName + ".nc");
                                     subsetTable = new Table();
-                                    subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                    subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                 } else {
                                     //make table: x,y,z,t,id,data
                                     subsetTable = pointDataSet.makeAveragedTimeSeries(
@@ -2612,7 +2613,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" + //abgr   orange
                                         //"      <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "  </Style>\n" +
@@ -2621,7 +2622,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" +
                                         //"      <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "    <LabelStyle><scale>0</scale></LabelStyle>\n" +
@@ -2790,7 +2791,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //save as .nc done above
                                     String2.writeToFile(dir + name + fileExtension,
-                                        NcHelper.dumpString(dir + tDataName + ".nc", false));
+                                        NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     stationSaveAsPng(pointDataSet, subsetTable, dir, name, 
                                         minLon, maxLon, minLat, maxLat, minDepthValue, maxDepthValue,
@@ -2866,7 +2867,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (subsetTable == null) {
                                         subsetTable = new Table();
-                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
                                     subsetTable.saveAsTabbedASCII(dir + name + extension); 
                                 } else if (extension.equals("GoogleEarth")) { //always standardized here
@@ -2876,7 +2877,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //remember this may be many stations one time, or one station many times, or many/many
                                     if (subsetTable == null) {
                                         subsetTable = new Table();
-                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
 
                                     //sort by lat, lon, depth, then time
@@ -2926,7 +2927,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" + //abgr   orange
                                         //"      <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "  </Style>\n" +
@@ -2935,7 +2936,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" +
                                         //"      <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "    <LabelStyle><scale>0</scale></LabelStyle>\n" +
@@ -3070,7 +3071,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (subsetTable == null) {
                                         subsetTable = new Table();
-                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
 
                                     //make query for medium.png to be embedded in html file
@@ -3105,7 +3106,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //make table
                                     if (subsetTable == null) {
                                         subsetTable = new Table();
-                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
                                     subsetTable.saveAsMatlab(dir + name + extension, 
                                         xPointDataSet.internalName.substring(1)); 
@@ -3114,12 +3115,12 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //first save as .nc
                                     String2.writeToFile(dir + name + fileExtension,
-                                        NcHelper.dumpString(dir + tDataName + ".nc", false));
+                                        NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     //make table
                                     if (subsetTable == null) {
                                         subsetTable = new Table();
-                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                        subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                     }
 
                                     //save as png
@@ -3154,7 +3155,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //reuse existing file
                                     String2.log("  GET doQuery reusing datafile " + tDataName + ".nc");
                                     subsetTable = new Table();
-                                    subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1);
+                                    subsetTable.readFlatNc(dir + tDataName + ".nc", null, 1); //standardizeWhat=1
                                 } else {
                                     //make table: x,y,z,t,id,dataVariables
                                     subsetTable = tableDataSet.makeSubset(null, null,
@@ -3211,7 +3212,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" + //abgr   orange
                                         //"      <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "  </Style>\n" +
@@ -3220,7 +3221,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "      <color>ff0099ff</color>\n" +
                                         //"        <scale>0.40</scale>\n" +
                                         "      <Icon>\n" +
-                                        "        <href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
+                                        "        <href>https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n" +
                                         "      </Icon>\n" +
                                         "    </IconStyle>\n" +
                                         "    <LabelStyle><scale>0</scale></LabelStyle>\n" +
@@ -3344,7 +3345,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //save as .nc done above
                                     String2.writeToFile(dir + name + fileExtension,
-                                        NcHelper.dumpString(dir + tDataName + ".nc", false));
+                                        NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     trajectorySaveAsPng(tableDataSet, subsetTable, dir, name, 
                                         individualsValue, whichImage);
@@ -3420,45 +3421,44 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                             //Accept-Encoding should be a csv list of acceptable encodings.
                             String encoding = request.getHeader("Accept-Encoding");  //case insensitive
                             encoding = encoding == null? "" : encoding.toLowerCase();
-                            OutputStream out;
+                            OutputStream out = new BufferedOutputStream(response.getOutputStream());
                             if (fileExtension.equals(".gif") || fileExtension.equals(".png")) {
                                 //no compression  (gifs and pngs are already compressed)
-                                out = response.getOutputStream(); //after setHeader
                             //ZipOutputStream too finicky.  outputStream.closeEntry() MUST be called at end or it fails
                             //} else if (encoding.indexOf("compress") >= 0) {
                             //    String2.log("  using encoding=compress"); 
                             //    response.setHeader("Content-Encoding", "compress");
-                            //    out = new ZipOutputStream(response.getOutputStream());
+                            //    out = new ZipOutputStream(out);
                             //    ((ZipOutputStream)out).putNextEntry(new ZipEntry(name + fileExtension));
                             } else if (encoding.indexOf("gzip") >= 0) {
                                 String2.log("    using encoding=gzip"); 
                                 response.setHeader("Content-Encoding", "gzip");
-                                out = new GZIPOutputStream(response.getOutputStream());
+                                out = new GZIPOutputStream(out);
                             } else if (encoding.indexOf("deflate") >= 0) {
                                 String2.log("    using encoding=deflate"); 
                                 response.setHeader("Content-Encoding", "deflate");
-                                out = new DeflaterOutputStream(response.getOutputStream());
-                            } else {
-                                //no compression
-                                out = response.getOutputStream(); //after setHeader
+                                out = new DeflaterOutputStream(out);
+                            } else { //no compression
                             }
-
-                            //transfer the file to response.getOutputStream
-                            String2.log("  GET copying file to outputStream. file=" + 
-                                dir + name + fileExtension);
-                            if (!File2.copy(dir + name + fileExtension, out)) {
-                                //outputStream contentType already set, so can't
-                                //go back to html and display error message
-                                String errorInMethod = String2.ERROR + " in " + 
-                                    oneOf.shortClassName() + ".doQuery(\n" +
-                                    query + "):\n";
-                                //note than the message is thrown if user cancels the transmission; so don't email to me
-                                String2.log(errorInMethod + "error while transmitting " + name + fileExtension);
+                            try {
+                                //transfer the file to response.getOutputStream
+                                String2.log("  GET copying file to outputStream. file=" + 
+                                    dir + name + fileExtension);
+                                if (!File2.copy(dir + name + fileExtension, out)) {
+                                    //outputStream contentType already set, so can't
+                                    //go back to html and display error message
+                                    String errorInMethod = String2.ERROR + " in " + 
+                                        oneOf.shortClassName() + ".doQuery(\n" +
+                                        query + "):\n";
+                                    //note than the message is thrown if user cancels the transmission; so don't email to me
+                                    String2.log(errorInMethod + "error while transmitting " + name + fileExtension);
+                                }
+                                
+                                //essential
+                                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                            } finally {
+                                out.close(); 
                             }
-                            
-                            //essential
-                            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
-                            out.close(); 
 
                             //collect statistics
                             oneOf.tally().add("HTTP GET queries: get=?", cleanGetValue);
@@ -4328,12 +4328,12 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 urlValue = (String)String2.alternateGetValue(alternate, "url");  //must be lowercase attName
                 if (urlValue == null || urlValue.length() == 0) {   
                     String[] urlExamples = {
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?month&amp;unique()",
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0&#44;oxygen&amp;month=&quot;5&quot;", //was "5"
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long",
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long&amp;program=&quot;MESO_1&quot;", //was "MESO_1"
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?stn_id&amp;unique()",
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?abund_m3&amp;stn_id=&quot;NH05&quot;" //was "NH05"
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?month&amp;unique()",
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0&#44;oxygen&amp;month=&quot;5&quot;", //was "5"
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long",
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long&amp;program=&quot;MESO_1&quot;", //was "MESO_1"
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?stn_id&amp;unique()",
+                        "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?abund_m3&amp;stn_id=&quot;NH05&quot;" //was "NH05"
                         };
                     error = listError("url", urlValue, cleanQuery, false, 
                         urlExamples, null, "dimensionName");
@@ -4439,32 +4439,33 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 //Accept-Encoding should be a csv list of acceptable encodings.
                 String encoding = request.getHeader("Accept-Encoding"); //case-insensitive
                 encoding = encoding == null? "" : encoding.toLowerCase();
-                OutputStream out = null;
+                OutputStream out = new BufferedOutputStream(response.getOutputStream());
                 if (encoding.indexOf("compress") >= 0) {
                     response.addHeader("Content-Encoding", "compress");
-                    out = new ZipOutputStream(response.getOutputStream());
+                    out = new ZipOutputStream(out);
                     out.putNextEntry(new ZipEntry(name + extension));
                 } else if (encoding.indexOf("gzip") >= 0) {
                     response.addHeader("Content-Encoding", "gzip");
-                    out = new GZIPOutputStream(response.getOutputStream());
+                    out = new GZIPOutputStream(out);
                 } else if (encoding.indexOf("deflate") >= 0) {
                     response.addHeader("Content-Encoding", "deflate");
-                    out = new DeflaterOutputStream(response.getOutputStream());
-                } else {
-                    out = response.getOutputStream();
+                    out = new DeflaterOutputStream(out);
                 }
 
                 //transfer the file to response.getOutputStream
-                if (!File2.copy(dir + name + extension, out)) {
-                    //outputStream contentType already set, so can't
-                    //go back to html and display error message
-                    String errorInMethod = String2.ERROR + " in " + 
-                        oneOf.shortClassName() + ".doQuery(\n" +
-                        query + "):\n";
-                    error = errorInMethod + "error while transmitting " + name + extension;
-                    String2.log(error);
+                try {
+                    if (!File2.copy(dir + name + extension, out)) {
+                        //outputStream contentType already set, so can't
+                        //go back to html and display error message
+                        String errorInMethod = String2.ERROR + " in " + 
+                            oneOf.shortClassName() + ".doQuery(\n" +
+                            query + "):\n";
+                        error = errorInMethod + "error while transmitting " + name + extension;
+                        String2.log(error);
+                    } 
+                } finally {
+                    try {out.close();} catch (Exception e) {} //essential, to end compression
                 }
-                out.close(); //essential, to end compression
 
                 return true;
             }
@@ -4924,8 +4925,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.legendTitle2(),
             oneOf.fullContextDirectory() + "images/", 
             oneOf.lowResLogoImageFile(),
-            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true,
-            true, false, //x/yIsTimeAxis
+            Double.NaN, Double.NaN, true, true,  false, //x isAscending, isTime, isLog
+            Double.NaN, Double.NaN, true, false, false,
             graphDataLayers,
             g2D,
             0, 0, imageWidth, imageHeight, 2, //graph width/height
@@ -5072,8 +5073,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
-                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
-                true, false, //x/yIsTimeAxis
+                Double.NaN, Double.NaN, true, true,  false, //x isAscending, isTime, isLog
+                Double.NaN, Double.NaN, true, false, false, 
                 graphDataLayers,
                 g2D,
                 0, 0, imageWidth, imageHeight, 2, //graph width/height
@@ -5221,8 +5222,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
-                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
-                true, false, //x/yIsTimeAxis
+                Double.NaN, Double.NaN, true, true,  false,//x isAscending, isTime, isLog
+                Double.NaN, Double.NaN, true, false, false,
                 graphDataLayers,
                 g2D,
                 0, 0, imageWidth, imageHeight, 2, //graph width/height
@@ -5386,12 +5387,13 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
         try {
             String tName = "coverage.kml";
             File2.delete(testDir + tName);
-            String url = "http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
+            String url = "https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
                 "get=gridData&dataSet=TMBchla&timePeriod=8day&centeredTime=2006-01-23T00:00:00" +
                 "&maxLat=50&minLon=220&maxLon=250&minLat=20&fileType=GoogleEarth";
             SSR.downloadFile(url, testDir + tName, true);
             SSR.displayInBrowser("file://" + testDir + tName);
-            String2.pressEnterToContinue("Is GoogleEarth showing a coverage? \n" +
+            String2.pressEnterToContinue(
+                "Is GoogleEarth showing a coverage? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 
@@ -5402,13 +5404,14 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String tName = "station.kml";
             File2.delete(testDir + tName);
             SSR.downloadFile(
-                "http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
+                "https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
                 "get=stationData&dataSet=PNBwtmp&timePeriod=8day&beginTime=2008-08-26T22:00:00" +
                 "&endTime=2008-09-26T22:00:00&minLon=220.0&maxLon=250.0&minLat=20.0&maxLat=50.0" +
                 "&minDepth=0&maxDepth=0&fileType=GoogleEarth",
                 testDir + tName, true);
             SSR.displayInBrowser("file://" + testDir + tName);
-            String2.pressEnterToContinue("Is GoogleEarth showing stations? \n" +
+            String2.pressEnterToContinue(
+                "Is GoogleEarth showing stations? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 

@@ -69,8 +69,11 @@ public class StoredIndex  {
         //save indexPA in file
         DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
             new FileOutputStream(indexFileName)));
-        indexPA.writeDos(dos);
-        dos.close();
+        try {
+            indexPA.writeDos(dos);
+        } finally {
+            dos.close();
+        }
 
         String2.log("StoredIndex time=" + (System.currentTimeMillis() - time) + "ms");
     }
@@ -111,13 +114,16 @@ public class StoredIndex  {
         //search sorted index in file for first and last rows in range
         long time = System.currentTimeMillis();
         RandomAccessFile raf = new RandomAccessFile(indexFileName, "r");
-        results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementClass, //safe since reading an int
-            0,  //byte in file that values start at 
-            0, nFinite - 1, desiredMin, 5); //precision=5
-        results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementClass,
-            0,  //byte in file that values start at 
-            results[0], nFinite - 1, desiredMax, 5); //precision=5
-        raf.close();
+        try {
+            results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementClass, //safe since reading an int
+                0,  //byte in file that values start at 
+                0, nFinite - 1, desiredMin, 5); //precision=5
+            results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementClass,
+                0,  //byte in file that values start at 
+                results[0], nFinite - 1, desiredMax, 5); //precision=5
+        } finally {
+            raf.close();
+        }
 
         if (verbose) String2.log("  first=" + results[0] + " last=" + results[1] +
             " time=" + (System.currentTimeMillis() - time) + "ms");
@@ -140,21 +146,23 @@ public class StoredIndex  {
         for (int i = 0; i < n; i++)
             pa.add(i * 0.1);
         StoredIndex index = new StoredIndex(dir + name, pa);
+        try {
+            //get all
+            Test.ensureEqual(String2.toCSSVString(index.subset(0, n/.1)), "0, 999999", "");
 
-        //get all
-        Test.ensureEqual(String2.toCSSVString(index.subset(0, n/.1)), "0, 999999", "");
+            //get some
+            Test.ensureEqual(String2.toCSSVString(index.subset(1, 2)), "10, 20", "");
 
-        //get some
-        Test.ensureEqual(String2.toCSSVString(index.subset(1, 2)), "10, 20", "");
+            //between 2 indices
+            Test.ensureEqual(String2.toCSSVString(index.subset(1.55, 1.56)), "16, 15", "");
 
-        //between 2 indices
-        Test.ensureEqual(String2.toCSSVString(index.subset(1.55, 1.56)), "16, 15", "");
+            //get none
+            Test.ensureEqual(String2.toCSSVString(index.subset(-.1, -.1)), "-1, -1", "");
+            Test.ensureEqual(String2.toCSSVString(index.subset(100000, 100000)), "-1, -1", "");
 
-        //get none
-        Test.ensureEqual(String2.toCSSVString(index.subset(-.1, -.1)), "-1, -1", "");
-        Test.ensureEqual(String2.toCSSVString(index.subset(100000, 100000)), "-1, -1", "");
-
-        index.close();
+        } finally {
+            index.close();
+        }
         String2.log("\n***** StoredIndex.main finished successfully");
 
     }

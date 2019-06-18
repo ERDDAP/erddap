@@ -144,6 +144,13 @@ public class CharArray extends PrimitiveArray {
         return s == null || s.length() == 0? Character.MAX_VALUE : s.charAt(0);
     }
 
+    /** This returns the minimum value that can be held by this class. */
+    public String MINEST_VALUE() {return "\u0000";}
+
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
+    public String MAXEST_VALUE() {return "\uFFFE";}
+
     /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
@@ -175,14 +182,17 @@ public class CharArray extends PrimitiveArray {
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
      * and stopIndex.
      *
+     * @param pa the pa to be filled (may be null). If not null, must be of same type as this class. 
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
      * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
-     * @return a new PrimitiveArray with the desired subset.
-     *    It will have a new backing array with a capacity equal to its size.
+     * @return The same pa (or a new PrimitiveArray if it was null) with the desired subset.
+     *    If new, it will have a backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
-    public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
+    public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
+        if (pa != null)
+            pa.clear();
         if (startIndex < 0)
             throw new IndexOutOfBoundsException(MessageFormat.format(
                 ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
@@ -192,11 +202,18 @@ public class CharArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return new CharArray(new char[0]);
+            return pa == null? new CharArray(new char[0]) : pa;
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-        Math2.ensureMemoryAvailable(2L * willFind, "CharArray"); 
-        char tar[] = new char[willFind];
+        CharArray ca = null;
+        if (pa == null) {
+            ca = new CharArray(willFind, true);
+        } else {
+            ca = (CharArray)pa;
+            ca.ensureCapacity(willFind);
+            ca.size = willFind;
+        }
+        char tar[] = ca.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -204,7 +221,7 @@ public class CharArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i += stride) 
                 tar[po++] = array[i];
         }
-        return new CharArray(tar);
+        return ca;
     }
 
     /**
@@ -297,7 +314,8 @@ public class CharArray extends PrimitiveArray {
     /**
      * This adds n Strings to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
@@ -334,7 +352,8 @@ public class CharArray extends PrimitiveArray {
     /**
      * This adds n doubles to the array.
      *
-     * @param n the number of times 'value' should be added
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
@@ -769,7 +788,21 @@ public class CharArray extends PrimitiveArray {
      */
     public String getString(int index) {
         char ch = get(index);
+        //String2.log(">> CharArray.getString index=" + index + " ch=" + ch);
         return ch == Character.MAX_VALUE? "" : "" + ch;
+    }
+
+    /**
+     * Return a value from the array as a String suitable for a JSON file. 
+     * char returns a String with 1 character.
+     * String returns a json String with chars above 127 encoded as \\udddd.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     */
+    public String getJsonString(int index) {
+        char ch = get(index);
+        return ch == Character.MAX_VALUE? "null" : String2.toJson("" + ch);
     }
 
     /**
@@ -880,6 +913,8 @@ public class CharArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int indexOf(String lookFor, int startIndex) {
+        if (startIndex >= size)
+            return -1;
         return indexOf(firstChar(lookFor), startIndex);
     }
 
@@ -1438,13 +1473,6 @@ public class CharArray extends PrimitiveArray {
         return -1;
     }
 
-    /** This returns the minimum value that can be held by this class. */
-    public String minValue() {return "\u0000";}
-
-    /** This returns the maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String maxValue() {return "\uFFFE";}
-
     /**
      * This finds the number of non-missing values, and the index of the min and
      *    max value.
@@ -1795,6 +1823,16 @@ public class CharArray extends PrimitiveArray {
         ss = anArray.subset(1, 1, 0);
         Test.ensureEqual(ss.toString(), "", "");
 
+        ss.trimToSize();
+        anArray.subset(ss, 1, 3, 4);
+        Test.ensureEqual(ss.toString(), "\\u0005, \\u0013", "");
+        anArray.subset(ss, 0, 1, 0);
+        Test.ensureEqual(ss.toString(), "\\u0019", "");
+        anArray.subset(ss, 0, 1, -1);
+        Test.ensureEqual(ss.toString(), "", "");
+        anArray.subset(ss, 1, 1, 0);
+        Test.ensureEqual(ss.toString(), "", "");
+
         //evenlySpaced
         anArray = new CharArray(new char[] {10,20,30});
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
@@ -1851,10 +1889,19 @@ public class CharArray extends PrimitiveArray {
 
         //min max
         anArray = new CharArray();
-        anArray.addString("\u0000");
-        anArray.addString("\uffff");
+        anArray.addString(anArray.MINEST_VALUE());
+        anArray.addString(anArray.MAXEST_VALUE());
+        anArray.addString("");
         Test.ensureEqual(anArray.getString(0), "\u0000", "");
-        Test.ensureEqual(anArray.getString(1), "", "");
+        Test.ensureEqual(anArray.getString(1), "\uFFFE", "");
+        Test.ensureEqual(anArray.getString(2), "", "");
+
+        //tryToFindNumericMissingValue() 
+        Test.ensureEqual((new CharArray(new char[] {                   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new CharArray(new char[] {'1', '2'           })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new CharArray(new char[] {Character.MIN_VALUE})).tryToFindNumericMissingValue(), Character.MIN_VALUE, "");
+        Test.ensureEqual((new CharArray(new char[] {Character.MAX_VALUE})).tryToFindNumericMissingValue(), Character.MAX_VALUE, "");
+        Test.ensureEqual((new CharArray(new char[] {'1', '\uffff'      })).tryToFindNumericMissingValue(), Double.NaN, "");
     }
 
 }

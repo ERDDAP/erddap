@@ -314,7 +314,7 @@ public class RegexFilenameFilter implements FilenameFilter {
      *
      * @param dir a full file directory (e.g., c:/u00/satellite/temp/)
      *    (trailing slash is optional)
-     * @returns all the error messages, or "" if no trouble. 
+     * @return all the error messages, or "" if no trouble. 
      *   If dir is not a directory, this returns "".
      */
     public static String recursiveDelete(String dir) {
@@ -350,6 +350,37 @@ public class RegexFilenameFilter implements FilenameFilter {
         return sb.toString();
     }
 
+    /**
+     * This touches the specified file.
+     * If the file exists and fullName matches File2.NETCDF_INDEX_EXT (.grib or .bufr),
+     * this also touches any related index files (e.g., .gbx9 or .ncx3).
+     *
+     * <p>This is efficient because it only takes extra time (search dir for related files)
+     * if the file exists and has .grib or .bufr (or similar) extension.
+     *
+     * @return true if fullName isFile().
+     */
+    public static boolean touchFileAndRelated(String fullName) {
+
+        if (!File2.isFile(fullName)) 
+            return false;
+
+        if (String2.indexOf(File2.NETCDF_INDEX_EXT, File2.getExtension(fullName)) >= 0) {
+            //It's .grib or .bufr or ..., so touch index files (e.g., .gbx9 or .ncx3), too.
+            //Note that if NETCDF_INDEX_EXT doesn't catch one of these files,
+            //it's okay because netcdf-java will just re-make the index files
+            //and give them a NOW timestamp.
+            String dir = File2.getDirectory(fullName);
+            String files[] = RegexFilenameFilter.list(dir, 
+                String2.plainTextToRegex(File2.getNameAndExtension(fullName)) + 
+                ".*"); //.* catches the file and all related index files
+            for (int i = 0; i < files.length; i++) 
+                File2.touch(dir + files[i]);
+        } else {
+            File2.touch(fullName);
+        }
+        return true;
+    }
 
 
     /**
@@ -435,7 +466,7 @@ public class RegexFilenameFilter implements FilenameFilter {
             "obis.xsd, obisInventory.txt", "");
         //lastMod and size verified by using DOS dir command
         Test.ensureEqual(lastMod.toString(),                                 
-            "2007-04-23T18:24:38Z, 2007-05-02T19:18:33Z", "");
+            "2007-04-23T18:24:38Z, 2007-05-02T19:18:32Z", "");  //2018-08-07 was :33Z on M4700, but :32 on Lenovo!
         Test.ensureEqual(info[3].toString(), 
             "21509, 3060", "");
     }

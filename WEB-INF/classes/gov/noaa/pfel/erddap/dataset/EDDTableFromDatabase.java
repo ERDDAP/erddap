@@ -347,7 +347,7 @@ public class EDDTableFromDatabase extends EDDTable{
      *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -578,7 +578,7 @@ public class EDDTableFromDatabase extends EDDTable{
 
         if (verbose) 
             String2.log(
-                (reallyVerbose? "\n" + toString() : "") +
+                (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromDatabase " + datasetID + " constructor finished. TIME=" + 
                 (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
@@ -744,12 +744,12 @@ public class EDDTableFromDatabase extends EDDTable{
                 String2.log(msg + "2=\n" +
                     MustBe.throwableToString(t2));
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + EDStatic.databaseUnableToConnect + 
-                    ": " + t.toString() + ")");
+                    "\n(" + EDStatic.databaseUnableToConnect + ": " + t.toString() + ")");
             }
         }
 
-        //try/catch to ensure connection is closed at the end
+        //try/catch to ensure connection and statement are closed at the end
+        PreparedStatement statement = null;
         try {
 
             //build the sql query
@@ -829,7 +829,7 @@ public class EDDTableFromDatabase extends EDDTable{
             //(see https://en.wikipedia.org/wiki/SQL_injection) by using
             //preparedStatements (so String values are properly escaped and
             //numbers are assured to be numbers).
-            PreparedStatement statement = connection.prepareStatement(query.toString());
+            statement = connection.prepareStatement(query.toString());
             EDV constraintEDVs[] = new EDV[nCv];
             for (int cv = 0; cv < nCv; cv++) {
                 int tv = cv + 1; //+1 since sql uses 1..
@@ -939,7 +939,8 @@ public class EDDTableFromDatabase extends EDDTable{
             connection.close();
 
         } catch (Throwable t) {
-            connection.close();
+            try {connection.close();} catch (Exception e) {}
+            try {if (statement != null) statement.close();} catch (Exception e) {}
 
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
@@ -1003,111 +1004,111 @@ public class EDDTableFromDatabase extends EDDTable{
         //get the connection
         Connection con = makeConnection(null, null, //dataSource not available in static situations
             url, driverName, connectionProperties);        
+        ResultSet rs = null;
+        try {
 
-        //*** basically, make a Table which has the dataset's info
-        //for databases, there is no metadata, so just get the column names and data types
-        Table table = new Table();
+            //*** basically, make a Table which has the dataset's info
+            //for databases, there is no metadata, so just get the column names and data types
+            Table table = new Table();
 
-        //get databaseMetaData
-        DatabaseMetaData dm = con.getMetaData();
+            //get databaseMetaData
+            DatabaseMetaData dm = con.getMetaData();
 
-        if (catalogName != null && catalogName.equals("!!!LIST!!!")) {
-            if (verbose) String2.log("getting catalog list");
-            table.readSqlResultSet(dm.getCatalogs());
-            con.close();
-            return table.saveAsCsvASCIIString();
-        }
-
-        if (schemaName != null && schemaName.equals("!!!LIST!!!")) {
-            if (verbose) String2.log("getting schema list");
-            table.readSqlResultSet(dm.getSchemas());
-            con.close();
-            return table.saveAsCsvASCIIString();
-        }
-
-        if (tableName.equals("!!!LIST!!!")) {
-            if (verbose) String2.log("getting tables list");
-            table.readSqlResultSet(dm.getTables(catalogName, schemaName, null, null));
-            con.close();
-            return table.saveAsCsvASCIIString();
-        }
-
-        //from here on, we are working with a specific table
-        //get the primary keys for the table
-        if (verbose) String2.log("getting primaryKey list");
-        Table pkTable = new Table();
-        pkTable.readSqlResultSet(dm.getPrimaryKeys(catalogName, schemaName, tableName));
-        PrimitiveArray pkSA = pkTable.nColumns() >= 4? pkTable.getColumn(3) : new StringArray();  //table columns are 0..
-
-        //get the foreign keys for the table
-        if (verbose) String2.log("getting foreignKey list");
-        Table fkTable = new Table();
-        fkTable.readSqlResultSet(dm.getImportedKeys(catalogName, schemaName, tableName));
-        PrimitiveArray fkNames = fkTable.nColumns() >= 8 ? fkTable.getColumn(7) : new StringArray(); //table columns are 0..
-
-        //get all column types for the given catalog/schema/table 
-        addDummyRequiredGlobalAttributesForDatasetsXml(table.globalAttributes(), null,
-            "database/" + //fake file name
-            (catalogName == null? "" : catalogName + "/") +
-            (schemaName  == null? "" : schemaName + "/") +
-            tableName + "/");
-        ResultSet rs = dm.getColumns(catalogName, schemaName, tableName, "%");
-        //get dbObject metadata
-        //javaDoc for dm.getColumns defines the info in each column
-        //for (int i = 1; i <= 18; i++) 
-        //    String2.log(col + " i=" + i + " " + rs.getString(i));
-
-        //gather/print column information
-        int col = 0;
-        StringArray booleanList = new StringArray(); //sourceNames
-        sb.append(
-            String2.left("Col", 4) + 
-            String2.left("Key", 4) + 
-            String2.left("Name", 24) + 
-            String2.left("java.sql.Types", 15) + 
-            String2.left("Java Type", 10) +
-            "Remarks\n");   
-        while (rs.next()) {
-            //see javadocs for DatabaseMetaData.getColumns for column meanings
-            String sqlName = rs.getString(4);
-            int    sqlType = rs.getInt(5);
-            String remarks = rs.getString(12);
-            if (remarks == null) 
-                remarks = "";
-            String key = pkSA.indexOf(sqlName) >= 0? "P" : "";
-            int fkRow = fkNames.indexOf(sqlName);
-            if (fkRow >= 0) {
-                key += "F";
-                remarks = remarks + 
-                    (remarks.length() > 0? " " : "") +
-                    "[FK from " +
-                    fkTable.getStringData(0, fkRow) + "." +
-                    fkTable.getStringData(1, fkRow) + "." +
-                    fkTable.getStringData(2, fkRow) + "." +
-                    fkTable.getStringData(3, fkRow) + "]";
+            if (catalogName != null && catalogName.equals("!!!LIST!!!")) {
+                if (verbose) String2.log("getting catalog list");
+                table.readSqlResultSet(dm.getCatalogs());
+                return table.saveAsCsvASCIIString();
             }
-            boolean isTime = sqlType == Types.DATE || sqlType == Types.TIMESTAMP;
-            if (sqlType == Types.BIT || sqlType == Types.BOOLEAN) 
-                booleanList.add(sqlName);             
 
-            PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);
+            if (schemaName != null && schemaName.equals("!!!LIST!!!")) {
+                if (verbose) String2.log("getting schema list");
+                table.readSqlResultSet(dm.getSchemas());
+                return table.saveAsCsvASCIIString();
+            }
+
+            if (tableName.equals("!!!LIST!!!")) {
+                if (verbose) String2.log("getting tables list");
+                table.readSqlResultSet(dm.getTables(catalogName, schemaName, null, null));
+                return table.saveAsCsvASCIIString();
+            }
+
+            //from here on, we are working with a specific table
+            //get the primary keys for the table
+            if (verbose) String2.log("getting primaryKey list");
+            Table pkTable = new Table();
+            pkTable.readSqlResultSet(dm.getPrimaryKeys(catalogName, schemaName, tableName));
+            PrimitiveArray pkSA = pkTable.nColumns() >= 4? pkTable.getColumn(3) : new StringArray();  //table columns are 0..
+
+            //get the foreign keys for the table
+            if (verbose) String2.log("getting foreignKey list");
+            Table fkTable = new Table();
+            fkTable.readSqlResultSet(dm.getImportedKeys(catalogName, schemaName, tableName));
+            PrimitiveArray fkNames = fkTable.nColumns() >= 8 ? fkTable.getColumn(7) : new StringArray(); //table columns are 0..
+
+            //get all column types for the given catalog/schema/table 
+            addDummyRequiredGlobalAttributesForDatasetsXml(table.globalAttributes(), null,
+                "database/" + //fake file name
+                (catalogName == null? "" : catalogName + "/") +
+                (schemaName  == null? "" : schemaName + "/") +
+                tableName + "/");
+            rs = dm.getColumns(catalogName, schemaName, tableName, "%");
+            //get dbObject metadata
+            //javaDoc for dm.getColumns defines the info in each column
+            //for (int i = 1; i <= 18; i++) 
+            //    String2.log(col + " i=" + i + " " + rs.getString(i));
+
+            //gather/print column information
+            int col = 0;
+            StringArray booleanList = new StringArray(); //sourceNames
             sb.append(
-                String2.left("" + col, 4) + 
-                String2.left(key, 4) +
-                String2.left(sqlName, 24) + 
-                String2.left( 
-                  (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
-                   sqlType == 91? "Date" : 
-                   sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
-                String2.left(pa.elementClassString(), 10) +
-                (remarks == null? "" : remarks) +
-                "\n");    //remarks
-            col++;
-        }
+                String2.left("Col", 4) + 
+                String2.left("Key", 4) + 
+                String2.left("Name", 24) + 
+                String2.left("java.sql.Types", 15) + 
+                String2.left("Java Type", 10) +
+                "Remarks\n");   
+            while (rs.next()) {
+                //see javadocs for DatabaseMetaData.getColumns for column meanings
+                String sqlName = rs.getString(4);
+                int    sqlType = rs.getInt(5);
+                String remarks = rs.getString(12);
+                if (remarks == null) 
+                    remarks = "";
+                String key = pkSA.indexOf(sqlName) >= 0? "P" : "";
+                int fkRow = fkNames.indexOf(sqlName);
+                if (fkRow >= 0) {
+                    key += "F";
+                    remarks = remarks + 
+                        (remarks.length() > 0? " " : "") +
+                        "[FK from " +
+                        fkTable.getStringData(0, fkRow) + "." +
+                        fkTable.getStringData(1, fkRow) + "." +
+                        fkTable.getStringData(2, fkRow) + "." +
+                        fkTable.getStringData(3, fkRow) + "]";
+                }
+                boolean isTime = sqlType == Types.DATE || sqlType == Types.TIMESTAMP;
+                if (sqlType == Types.BIT || sqlType == Types.BOOLEAN) 
+                    booleanList.add(sqlName);             
 
-        //free the database resources
-        rs.close();
-        con.close();
+                PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);
+                sb.append(
+                    String2.left("" + col, 4) + 
+                    String2.left(key, 4) +
+                    String2.left(sqlName, 24) + 
+                    String2.left( 
+                      (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
+                       sqlType == 91? "Date" : 
+                       sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
+                    String2.left(pa.elementClassString(), 10) +
+                    (remarks == null? "" : remarks) +
+                    "\n");    //remarks
+                col++;
+            }
+        } finally {
+            //free the database resources
+            try {if (rs != null)  rs.close();  } catch (Exception e) {}
+            try {if (con != null) con.close(); } catch (Exception e) {}
+        }
         
         return sb.toString();
     }
@@ -1163,106 +1164,117 @@ public class EDDTableFromDatabase extends EDDTable{
         if (schemaName  != null && schemaName.equals( "null")) schemaName  = null;
 
         //Overview of how to get table info: http://www.jguru.com/faq/view.jsp?EID=1184
-        
-        //get the connection
-        Connection con = makeConnection(null, null, //dataSource not available in static situations
-            url, driverName, connectionProperties);        
-
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes.
         //for databases, there is no metadata, so just get the column names and data types
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
-
-        //get databaseMetaData
-        DatabaseMetaData dm = con.getMetaData();
-
-        //from here on, we are working with a specific table
-        //get the primary keys for the table
-        if (verbose) String2.log("getting primaryKey list");
-        Table pkTable = new Table();
-        pkTable.readSqlResultSet(dm.getPrimaryKeys(catalogName, schemaName, tableName));
-        PrimitiveArray pkSA = pkTable.nColumns() >= 4? 
-            pkTable.getColumn(3) : //table columns are 0..
-            new StringArray();  
-
-        //get the foreign keys for the table
-        if (verbose) String2.log("getting foreignKey list");
-        Table fkTable = new Table();
-        fkTable.readSqlResultSet(dm.getImportedKeys(catalogName, schemaName, tableName));
-        PrimitiveArray fkNames = fkTable.nColumns() >= 8 ? 
-            fkTable.getColumn(7) : //table columns are 0..
-            new StringArray();
-
-        //get all column types for the given catalog/schema/table 
-        ResultSet rs = dm.getColumns(catalogName, schemaName, tableName, "%");
-        //get dbObject metadata
-        //javaDoc for dm.getColumns defines the info in each column
-        //for (int i = 1; i <= 18; i++) 
-        //    String2.log(col + " i=" + i + " " + rs.getString(i));
-
-        //gather/print column information
-        int col = 0;
         StringArray booleanList = new StringArray();
-        if (verbose) String2.log("\n" +
-            String2.left("Col", 4) + 
-            String2.left("Key", 4) + 
-            String2.left("Name", 24) + 
-            String2.left("java.sql.Types", 15) + 
-            String2.left("Java Type", 10) +
-            "Remarks");   
-        while (rs.next()) {
-            //see javadocs for DatabaseMetaData.getColumns for column meanings
-            String sqlName = rs.getString(4);
-            int    sqlType = rs.getInt(5);
-            String remarks = rs.getString(12);
-            if (remarks == null) 
-                remarks = "";
-            String key = pkSA.indexOf(sqlName) >= 0? "P" : "";
-            int fkRow = fkNames.indexOf(sqlName);
-            if (fkRow >= 0) {
-                key += "F";
-                remarks = remarks + 
-                    (remarks.length() > 0? " " : "") +
-                    "[FK from " +
-                    fkTable.getStringData(0, fkRow) + "." +
-                    fkTable.getStringData(1, fkRow) + "." +
-                    fkTable.getStringData(2, fkRow) + "." +
-                    fkTable.getStringData(3, fkRow) + "]";
-            }
-            boolean isTime = sqlType == Types.DATE || sqlType == Types.TIMESTAMP;
-            if (sqlType == Types.BIT || sqlType == Types.BOOLEAN) 
-                booleanList.add(sqlName);             
+        
+        //get the connection
+        Connection con = makeConnection(null, null, //dataSource not available in static situations
+            url, driverName, connectionProperties);        
+        ResultSet rs = null;
+        try {
 
-            PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);
-            Attributes sourceAtts = new Attributes();
-            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                null, //no source global attributes
-                sourceAtts, null, sqlName, true, true); //sourceAtts, addAtts, sourceName, addColorBarMinMax, tryToFindLLAT
-            if (isTime) {
-                addAtts.add("ioos_category", "Time");
-                addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");  //no "???"
-            }
+            //get databaseMetaData
+            DatabaseMetaData dm = con.getMetaData();
 
-            dataSourceTable.addColumn(col, sqlName,               pa, sourceAtts);
-            dataAddTable.addColumn(   col, sqlName.toLowerCase(), 
-                makeDestPAForGDX(pa, sourceAtts), addAtts);
-            if (verbose) String2.log(
-                String2.left("" + col, 4) + 
-                String2.left(key, 4) +
-                String2.left(sqlName, 24) + 
-                String2.left( 
-                  (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
-                   sqlType == 91? "Date" : 
-                   sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
-                String2.left(pa.elementClassString(), 10) +
-                (remarks == null? "" : remarks));    //remarks
-            col++;
+            //from here on, we are working with a specific table
+            //get the primary keys for the table
+            if (verbose) String2.log("getting primaryKey list");
+            Table pkTable = new Table();
+            pkTable.readSqlResultSet(dm.getPrimaryKeys(catalogName, schemaName, tableName));
+            PrimitiveArray pkSA = pkTable.nColumns() >= 4? 
+                pkTable.getColumn(3) : //table columns are 0..
+                new StringArray();  
+
+            //get the foreign keys for the table
+            if (verbose) String2.log("getting foreignKey list");
+            Table fkTable = new Table();
+            fkTable.readSqlResultSet(dm.getImportedKeys(catalogName, schemaName, tableName));
+            PrimitiveArray fkNames = fkTable.nColumns() >= 8 ? 
+                fkTable.getColumn(7) : //table columns are 0..
+                new StringArray();
+
+            //get all column types for the given catalog/schema/table 
+            rs = dm.getColumns(catalogName, schemaName, tableName, "%");
+            //get dbObject metadata
+            //javaDoc for dm.getColumns defines the info in each column
+            //for (int i = 1; i <= 18; i++) 
+            //    String2.log(col + " i=" + i + " " + rs.getString(i));
+
+            //gather/print column information
+            int col = 0;
+            if (verbose) String2.log("\n" +
+                String2.left("Col", 4) + 
+                String2.left("Key", 4) + 
+                String2.left("Name", 24) + 
+                String2.left("java.sql.Types", 15) + 
+                String2.left("Java Type", 10) +
+                "Remarks");   
+            while (rs.next()) {
+                //see javadocs for DatabaseMetaData.getColumns for column meanings
+                String sqlName = rs.getString(4);
+                int    sqlType = rs.getInt(5);
+                String remarks = rs.getString(12);
+                if (remarks == null) 
+                    remarks = "";
+                String key = pkSA.indexOf(sqlName) >= 0? "P" : "";
+                int fkRow = fkNames.indexOf(sqlName);
+                if (fkRow >= 0) {
+                    key += "F";
+                    remarks = remarks + 
+                        (remarks.length() > 0? " " : "") +
+                        "[FK from " +
+                        fkTable.getStringData(0, fkRow) + "." +
+                        fkTable.getStringData(1, fkRow) + "." +
+                        fkTable.getStringData(2, fkRow) + "." +
+                        fkTable.getStringData(3, fkRow) + "]";
+                }
+                boolean isTime = sqlType == Types.DATE || sqlType == Types.TIMESTAMP;
+                if (sqlType == Types.BIT || sqlType == Types.BOOLEAN) 
+                    booleanList.add(sqlName);             
+
+                Attributes sourceAtts = new Attributes();
+                Attributes addAtts    = new Attributes();
+                if (isTime) {
+                    addAtts.add("ioos_category", "Time");
+                    addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");  //no "???"
+                }
+                PrimitiveArray sourcePA = PrimitiveArray.sqlFactory(sqlType);
+                PrimitiveArray destPA   = makeDestPAForGDX(sourcePA, sourceAtts);
+                addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    null, //no source global attributes
+                    sourceAtts, addAtts, sqlName,  //sourceAtts, addAtts, sourceName
+                    destPA.elementClass() != String.class, //tryToAddStandardName
+                    destPA.elementClass() != String.class, //addColorBarMinMax
+                    true); //tryToFindLLAT
+
+                dataSourceTable.addColumn(col, sqlName,               sourcePA, sourceAtts);
+                dataAddTable.addColumn(   col, sqlName.toLowerCase(), destPA,   addAtts);
+                if (verbose) String2.log(
+                    String2.left("" + col, 4) + 
+                    String2.left(key, 4) +
+                    String2.left(sqlName, 24) + 
+                    String2.left( 
+                      (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
+                       sqlType == 91? "Date" : 
+                       sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
+                    String2.left(sourcePA.elementClassString(), 10) +
+                    (remarks == null? "" : remarks));    //remarks
+
+                //add missing_value and/or _FillValue if needed
+                //But for database, no data available
+                //addMvFvAttsIfNeeded(sqlName.toLowerCase(), sourcePA, sourceAtts, addAtts); //sourcePA since strongly typed
+
+                col++;
+            }
+        } finally {
+            //free the database resources
+            try {if (rs  != null) rs.close(); } catch (Exception e) {}
+            try {if (con != null) con.close();} catch (Exception e) {}
         }
-
-        //free the database resources
-        rs.close();
-        con.close();
 
         //globalAttributes
         if (externalAddGlobalAttributes == null)
@@ -1437,7 +1449,8 @@ password = "MyPassword";
                 "http://www.pfeg.noaa.gov", //s9  infoUrl
                 "NOAA NMFS SWFSC ERD", //s10 institution
                 "", //s11 summary
-                ""}, //s12 title
+                "", //s12 title
+                "-1"}, //defaultStandardizeWhat
                 false); //doIt loop?
 
 expected = 
@@ -1485,8 +1498,8 @@ expected =
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
@@ -1500,7 +1513,7 @@ expected =
 "        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, height_cm, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local database)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
 "        <att name=\"title\">NOAA NMFS SWFSC ERD data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -1590,8 +1603,9 @@ expected =
 
             //ensure it is ready-to-use by making a dataset from it
             //!!! This doesn't actually request data, so it isn't a complete test
-            EDD edd = oneFromXmlFragment(null, results);
             String tDatasetID = "myschema_mytable";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "id, first, last, height_cm, weight_kg, time, category", 
@@ -1695,13 +1709,13 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(source database\\)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"category\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
 "  \\}\n" +
 "\\}\n";
-            Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+            Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
   
             //.dds 
             tName = tedd.makeNewFileForDapQuery(null, null, "", 

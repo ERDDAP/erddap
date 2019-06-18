@@ -414,27 +414,28 @@ public class Gif89Encoder {
     try {
 
       Toolkit      tk = Toolkit.getDefaultToolkit();
-      OutputStream out = new BufferedOutputStream(
-        new FileOutputStream("gif89out.gif")
+      OutputStream out = new BufferedOutputStream(new FileOutputStream("gif89out.gif")
       );
-      
-      if (args[0].toUpperCase().endsWith(".JPG"))
-        new Gif89Encoder(tk.getImage(args[0])).encode(out);
-      else
-      {
-        BufferedReader in = new BufferedReader(new FileReader(args[0]));   
-        Gif89Encoder   ge = new Gif89Encoder();   
+      try { //2018-05-23 Bob Simons added
+          if (args[0].toUpperCase().endsWith(".JPG"))
+            new Gif89Encoder(tk.getImage(args[0])).encode(out);
+          else {
+            BufferedReader in = new BufferedReader(new FileReader(args[0]));   
+            try { //2018-05-23 Bob Simons added
+                Gif89Encoder   ge = new Gif89Encoder();   
 
-        String line;
-        while ((line = in.readLine()) != null)
-          ge.addFrame(tk.getImage(line.trim()));
-        ge.setLoopCount(0);  // let's loop indefinitely 
-        ge.encode(out);
-
-        in.close();
-      }   
-      out.close();
-      
+                String line;
+                while ((line = in.readLine()) != null)
+                  ge.addFrame(tk.getImage(line.trim()));
+                ge.setLoopCount(0);  // let's loop indefinitely 
+                ge.encode(out);
+            } finally {
+                in.close();
+            }
+          }   
+      } finally {
+          out.close();
+      }      
     }
     catch (Exception e) { e.printStackTrace(); }
     finally { System.exit(0); } // must kill VM explicitly (Toolkit thread?)

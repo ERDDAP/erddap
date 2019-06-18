@@ -28,7 +28,7 @@ import javax.servlet.ServletConfig;
  * User requests get parsed into this immutable object.
  *
  * @author jcaron
- * @deprecated This class has been replaced by <code>dods.servlet.ReqState</code>
+ * @Deprecated This class has been replaced by <code>dods.servlet.ReqState</code>
  *             which allows the servlet to use bundled files for configuration.
  */
 

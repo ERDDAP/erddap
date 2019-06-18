@@ -62,7 +62,7 @@ import java.beans.PropertyVetoException;
  * @author Donald Denbo
  * @version $Revision: 1.8 $, $Date: 2003/08/22 23:02:39 $
  * @see LineCartesianRenderer
- * @deprecated As of v2.0, replaced by {@link gov.noaa.pmel.sgt.swing.JPlotLayout}
+ * @Deprecated As of v2.0, replaced by {@link gov.noaa.pmel.sgt.swing.JPlotLayout}
 **/
 /*oodE***********************************************/
 public class JLineProfileLayout extends JGraphicLayout {

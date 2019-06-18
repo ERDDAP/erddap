@@ -439,7 +439,7 @@ Fix perfectly if need to make active
         Test.ensureEqual(grid.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_created");
         Test.ensureEqual(grid.globalAttributes().get("creator_name"),               new StringArray(new String[]{"NOAA NESDIS CoastWatch WCRN"}), "creator_name");
         Test.ensureEqual(grid.globalAttributes().get("creator_url"),                new StringArray(new String[]{"http://coastwatch.pfel.noaa.gov"}), "creator_url");
-        Test.ensureEqual(grid.globalAttributes().get("creator_email"),              new StringArray(new String[]{"dave.foley@noaa.gov"}), "creator_email");
+        Test.ensureEqual(grid.globalAttributes().get("creator_email"),              new StringArray(new String[]{"erd.data@noaa.gov"}), "creator_email");
         Test.ensureEqual(grid.globalAttributes().get("institution"),                new StringArray(new String[]{"NOAA NESDIS CoastWatch WCRN (http://coastwatch.pfel.noaa.gov)"}), "institution");
         Test.ensureEqual(grid.globalAttributes().get("project"),                    new StringArray(new String[]{"CoastWatch (http://coastwatch.noaa.gov/)"}), "project");
         Test.ensureEqual(grid.globalAttributes().get("processing_level"),           new StringArray(new String[]{"3"}), "processing_level");
@@ -533,7 +533,7 @@ Fix perfectly if need to make active
         Test.ensureEqual(grid.dataAttributes().get("coordsys"),                     new StringArray(new String[]{"geographic"}), "coordsys");    //string
         Test.ensureEqual(grid.dataAttributes().get("fraction_digits"),              new IntArray(new int[]{1}), "fraction_digits"); //int32
 
-        //if (verbose) ncDump("Grid.main", "c:/backup/data/AT8day_wcs.nc", false);
+        //if (verbose) String2.log(NcHelper.ncdump("c:/backup/data/AT8day_wcs.nc", "-h"));
 
     }
 

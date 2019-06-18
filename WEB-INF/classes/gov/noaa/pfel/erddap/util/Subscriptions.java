@@ -10,6 +10,7 @@ import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -152,7 +153,7 @@ public class Subscriptions {
      */
     public synchronized void close() throws IOException {
         if (persistentTable != null) {
-            persistentTable.close();
+            try {persistentTable.close();} catch (Exception e) {}
             persistentTable = null;
         }
     }
@@ -246,7 +247,7 @@ public class Subscriptions {
      * emailSubscriptions or datasetSubscriptions map. 
      * Here, key is the key for the map (not the subscription key). 
      *
-     * @returns true if row was already in the hashset.
+     * @return true if row was already in the hashset.
      */
 
     protected synchronized boolean _addSubscription(HashMap map, String key, int row) {
@@ -270,7 +271,7 @@ public class Subscriptions {
      * emailSubscriptions or datasetSubscriptions map. 
      * Here, key is the key for the map (not the subscription key). 
      *
-     * @returns true if the row was in the hashset.
+     * @return true if the row was in the hashset.
      */
     protected synchronized boolean _removeSubscription(HashMap<String,HashSet> map, String key, int row) {
         HashSet rowNumbers = map.get(key);
@@ -316,7 +317,7 @@ public class Subscriptions {
     /** 
      * This adds comboKey = Integer(row) to the pendingSubscriptions or validSubscriptions map. 
      *
-     * @returns true if the row was already in the hashmap.
+     * @return true if the row was already in the hashmap.
      */
     protected synchronized boolean addPVSubscription(HashMap map, String comboKey, int row) {
         return map.put(comboKey, new Integer(row)) != null;
@@ -325,7 +326,7 @@ public class Subscriptions {
     /** 
      * This removes comboKey = Integer(row) from the pendingSubscriptions or validSubscriptions map. 
      *
-     * @returns true if the row was in the hashmap.
+     * @return true if the row was in the hashmap.
      */
     protected synchronized boolean removePVSubscription(HashMap map, String comboKey) {
         return map.remove(comboKey) != null;
@@ -365,7 +366,7 @@ public class Subscriptions {
     /** This tests that an email address is valid.
      *
      * @param email
-     * @returns an error message or "" if no error.
+     * @return an error message or "" if no error.
      */
     public synchronized String testEmailValid(String email) {
         if (!String2.isEmailAddress(email)) 
@@ -391,7 +392,7 @@ public class Subscriptions {
     public synchronized void ensureEmailValid(String email) throws Exception {
         String msg = testEmailValid(email);
         if (msg.length() > 0)
-            throw new Exception(msg);
+            throw new SimpleException(msg);
     }
 
     /**

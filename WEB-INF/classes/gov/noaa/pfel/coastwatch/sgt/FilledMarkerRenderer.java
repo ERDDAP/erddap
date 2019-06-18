@@ -20,6 +20,7 @@ import gov.noaa.pmel.sgt.ColorMap;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.Layer;
+import gov.noaa.pmel.sgt.LogTransform;
 import gov.noaa.pmel.sgt.Transform;
 import gov.noaa.pmel.util.Range2D;
 
@@ -49,6 +50,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
 
     //things set by constructor
     private CartesianGraph graph;
+    private boolean xIsLogAxis, yIsLogAxis;
     private PrimitiveArray xPA, yPA, dataPA, idPA;
     private int markerType;
     private ColorMap colorMap;
@@ -109,6 +111,8 @@ public class FilledMarkerRenderer extends CartesianRenderer {
             boolean drawLine) {
 
         this.graph = graph;
+        xIsLogAxis = graph.getXTransform() instanceof LogTransform;
+        yIsLogAxis = graph.getYTransform() instanceof LogTransform;
         this.sourceID = sourceID;
         this.xPA = xPA;
         this.yPA = yPA;
@@ -119,6 +123,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
         this.markerType = markerType;
         this.markerSize = markerSize;
         this.drawLine = drawLine;
+
     }
     
     /** 
@@ -141,8 +146,8 @@ public class FilledMarkerRenderer extends CartesianRenderer {
         Shape originalClip = g2.getClip(); 
 
         //modify the transform  so degrees is converted to device coordinates
-        gov.noaa.pmel.sgt.LinearTransform xt = (gov.noaa.pmel.sgt.LinearTransform)graph.getXTransform();
-        gov.noaa.pmel.sgt.LinearTransform yt = (gov.noaa.pmel.sgt.LinearTransform)graph.getYTransform();
+        gov.noaa.pmel.sgt.AxisTransform xt = (gov.noaa.pmel.sgt.AxisTransform)graph.getXTransform();
+        gov.noaa.pmel.sgt.AxisTransform yt = (gov.noaa.pmel.sgt.AxisTransform)graph.getYTransform();
         Range2D xUserRange = xt.getRangeU();       
         Range2D yUserRange = yt.getRangeU();       
         int leftX  = graph.getXUtoD(xUserRange.start); 
@@ -155,9 +160,10 @@ public class FilledMarkerRenderer extends CartesianRenderer {
         //    " xUserRange.start=" + xUserRange.start + " xUserRange.end=" + xUserRange.end);
 
         CartesianProjection cartesianProjection = new CartesianProjection(
-            xUserRange.start, xUserRange.end,
+            xUserRange.start, xUserRange.end, 
             yUserRange.start, yUserRange.end,
-            leftX, rightX, lowerY, upperY);
+            leftX, rightX, lowerY, upperY,
+            xIsLogAxis, yIsLogAxis);
 
         //change clip before changing transform
         g2.clipRect(leftX, upperY, rightX - leftX, lowerY - upperY);
