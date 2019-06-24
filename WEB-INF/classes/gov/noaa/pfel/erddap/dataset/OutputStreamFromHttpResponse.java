@@ -339,7 +339,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         } else if (extension.equals(".mpp")) {
             response.setContentType("application/vnd.ms-project"); 
 
-        } else if (extension.equals(".nc")) {
+        } else if (extension.equals(".nc") || 
+                   extension.equals(".cdf")) {
             response.setContentType("application/x-netcdf"); 
 
         } else if (extension.equals(".odb")) {
@@ -735,9 +736,9 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         if (characterEncoding != null && characterEncoding.length() > 0)
             response.setCharacterEncoding(characterEncoding);
 
-        //specify the file's name  (this may force show File Save As dialog box in user's browser)
-        
+        //specify the file's name  (this may force show File Save As dialog box in user's browser)        
         if (genericCompressed ||         //include all genericCompressed types
+            extension.equals(".cdf")  || 
             extension.equals(".csv")  || 
             extension.equals(".itx")  || 
             extension.equals(".js")   || 

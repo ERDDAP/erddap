@@ -37,7 +37,7 @@ public class File2 {
     //compressed and image ext from wikipedia
     //many ext from http://www.fileinfo.com/filetypes/common
     public static final String BINARY_EXT[] = {
-        ".accdb", ".bin", ".bufr", ".cab", ".cer", ".class", ".cpi", ".csr",
+        ".accdb", ".bin", ".bufr", ".cab", ".cdf", ".cer", ".class", ".cpi", ".csr",
         ".db", ".dbf", ".dll", ".dmp", ".drv", ".dwg", ".dxf", ".fnt", ".fon", 
         ".grb", ".grib", ".grib2", ".ini", ".keychain", 
         ".lnk", ".mat", ".mdb", ".mim", ".nc", 

@@ -17678,9 +17678,9 @@ expected =
      *
      */
     public static void test() throws Throwable {
-/* for releases, this line should have open/close comment 
+/* for releases, this line should have open/close comment */
         testBasic();
-*/        testJsonld();
+        testJsonld();
     }
 
 }

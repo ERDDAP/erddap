@@ -26175,6 +26175,8 @@ String2.log(table.dataToString());
             new StringArray(new String[]{getColumnName(lastKeyColumn)}), 
             new StringArray(new String[]{"!="}),
             new StringArray(new String[]{lastKCMV}));
+        if (nRows == 0) 
+            return;
 
         //sort based on keys
         ascendingSort(keyColumns); 
@@ -26246,7 +26248,7 @@ String2.log(table.dataToString());
             new StringArray(new String[]{getColumnName(lastKeyColumn)}), 
             new StringArray(new String[]{"!="}),
             new StringArray(new String[]{lastKCMV}));
-        if (nRows <= 1)
+        if (nRows == 0) 
             return;
 
         //sort based on keys
@@ -26323,6 +26325,8 @@ String2.log(table.dataToString());
             new StringArray(new String[]{getColumnName(lastKeyColumn)}), 
             new StringArray(new String[]{"!="}),
             new StringArray(new String[]{lastKCMV}));
+        if (nRows == 0)
+            return;
 
         //sort based on keys
         ascendingSort(keyColumns); 

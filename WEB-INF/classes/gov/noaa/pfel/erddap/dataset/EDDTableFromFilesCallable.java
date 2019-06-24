@@ -35,7 +35,7 @@ public class EDDTableFromFilesCallable implements Callable {
      * not by changing the code here)
      * if you want every possible diagnostic message sent to String2.log.
      */
-    public static boolean debugMode = true; 
+    public static boolean debugMode = false; 
 
     String identifier;
     int task;
