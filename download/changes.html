@@ -161,6 +161,9 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     <br>It is an OAuth 2.0 authentication system, much like Google authentication. 
     ORCID is widely used by researchers to uniquely identify themselves.
     ORCID accounts are free and don't have the privacy issues that Google accounts have.
+    See ERDDAP's <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationOrcid"
+        >Orcid authentication instructions</a>.
     Thanks to BCO-DMO (Adam Shepard, Danie Kinkade, etc.).
     <br>&nbsp;
   <li>NEW: A new URL converter converts out-of-date URLs into up-to-date URLs.
@@ -192,7 +195,7 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     This feature is also used by the standardizeWhat feature of EDDTableFromFiles.    
     Thanks to Bob Simons.
     <br>&nbsp;
-  <li>NEW: For non-lat/lon maps and non-surface graphs on griddap's and tabledap's 
+  <li>NEW: For graphs (other than surface graphs) on griddap's and tabledap's 
     Make A Graph web pages, when the x axis isn't a time axis,
     if only a subset of the x axis variable's range is visible,
     there are now buttons above the graph to shift the X Axis leftwards or rightwards.
@@ -283,7 +286,7 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
         the -XX:MaxPermSize setting, which (Adopt)OpenJDK no longer supports.
     <br>&nbsp;
   <li>TO DO: The new default and recommend &lt;fontFamily&gt; setting in setup.xml is
-      <kbd>DejaVu Sans</kbd> which are built into AdoptOpenJDK's Java. See the 
+      <br><kbd>DejaVu Sans</kbd> which are built into AdoptOpenJDK's Java. See the 
     <br><a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#fonts"
         >revised font installation instructions</a>.
@@ -337,7 +340,7 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
       (other than for &lt;startBodyHtml5&gt; and &lt;theShortDescriptionHtml&gt;), 
       please consider switching to the new default.
       After you copy each value, delete the tag and its description 
-      from datasets.xml
+      from setup.xml
       They (and other similar tags) are now better described in 
       <a rel="help" 
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#basicStructure"
@@ -364,6 +367,12 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     Usually, users will just want the latest version of the dataset, with all
     changes applied. But there is the option for users to request data from the 
     dataset as it was at any point in time. This facilitates reproducible science.
+    Thus, unlike most other near-real-time datasets, these datasets are eligible for 
+    <a rel="bookmark" href="https://en.wikipedia.org/wiki/Digital_object_identifier"
+        >DOIs<img src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>. 
+    because they meet the DOI requirement
+    that the dataset by unchanging, except by aggregation. 
     See 
     <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromHttpGet"
@@ -371,23 +380,25 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     Thanks to OOI (from long ago and now) for talking about the need for this
     and Eugene Burger for the reminder about working on what is important.
     <br>&nbsp;
-  <li>BIG NEW FEATURE: ERDDAP can now serve data directly from compressed data files,
-    <br>including .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, .bz2, or .Z.
-    Datasets may include a mix of compressed files (perhaps the older data files?)
-    and non-compressed files, and you can compress/decompress a file at any time.
+
+  <li>BIG NEW FEATURE: ERDDAP can now serve data directly from externally-compressed data files,
+    including .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, .bz2, or .Z.
+    Datasets may include a mix of externally-compressed files (perhaps the older data files?)
+    and non-externally-compressed files, and you can compress/decompress a file at any time.
     <p>This works great! 
     <br>In most cases, the slowdown related to decompressing the
-    files is minor. We strongly encourage you to try this.
+    files is minor. We strongly encourage you to try this, notably for datasets 
+    and/or data files that are infrequently used.
     <p>This may save you $30,000 or more!
     <br>This is one of the few ERDDAP features that can save you lots of money --
     if you compress a lot of data files, you will need far fewer RAIDs/hard drives
-    to store the data, or conversely, you can serve far more data (10x ?) with the
+    to store the data, or conversely, you can serve far more data (up to 10x) with the
     RAIDs you already have. If this feature saves you from buying another RAID,
     then it has saved you about $30,000.
 
     <p>See the <a rel="help"
-        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#CompressedFiles"
-        >Compressed Files documentation</a>.
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ExternallyCompressedFiles"
+        >Externally Compressed Files documentation</a>.
     Thanks to Benoit Perrimond and Paloma Delavallee.
 
   <li>BIG NEW FEATURE: All EDDGridFromFiles and all EDDTableFromFiles datasets support a
@@ -398,7 +409,9 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     this will download files from the remote dataset, as needed,
     into a local cache with a limited size, 
     which is useful when working with cloud-based (e.g., S3) data files.
-    See the <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl" rel="bookmark">cacheFromUrl documentation</a> for details.
+    See the 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl" rel="bookmark"
+    >cacheFromUrl documentation</a> for details.
     Thanks to Bob Simons and Roy Mendelssohn (who for years have been writing scripts
     to handle making local copies of remote dataset files), Eugene Burger, 
     Conor Delaney (when he was at Amazon Web Services), and the Google Cloud Platform.
@@ -417,18 +430,36 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
 
   <li>NEW: All EDDGrid and all EDDTableFromFiles datasets support an <kbd>&lt;nThreads&gt;</kbd> setting,
     which tells ERDDAP how many threads to use when responding to a request.
-    <p>tl;dr Rule of Thumb: 
+    <p>Rule of Thumb: 
     For most datasets on most systems, use nThreads=1, the default.
     If you have a powerful computer (lots of CPU cores, lots of memory), 
-    then set nThreads to 2, 3, or 4 for datasets that will benefit the most 
-    (e.g., lots of small files stored on a high-bandwidth parallel file system),
-    but keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
+    then consider setting nThreads to 2, 3, or 4 for datasets that will benefit the most,
+    notably datasets where something causes a lag before a chunk of data can actually 
+    be processed. For example:
+        <ul>
+        <li>Datasets with 
+            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ExternallyCompressedFiles"
+            >externally-compressed (e.g., .gz)</a>     
+            binary (e.g., .nc) files, because ERDDAP has to decompress the whole file
+            before it can start to read the file.
+        <li>Datasets that use 
+            <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl" rel="bookmark"
+            >cacheFromUrl and cacheSizeGB</a>,
+            because ERDDAP often has to download the file before it can read it.
+        <li>Datasets with data files stored on a high-bandwidth parallel file system,
+            because it can deliver more data, faster, when requested. Examples of
+            parallel file systems include JBOD, pNFS, GlusterFS, 
+            Amazon S3, and Google Cloud Storage.
+        </ul>
+    Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
     (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
     >ERDDAP's status page</a>).
     See the 
-    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#nThreads" rel="bookmark">nThreads</a> documentation for details.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#nThreads" rel="bookmark">nThreads</a> 
+    documentation for details.
     Thanks to Rob Bochenek of Axiom Data Science, Eugene Burger, 
     Conor Delaney (when he was at Amazon Web Services), and Google Cloud Platform.
+    <br>&nbsp;
 
   <li>NEW standardizeWhat for all EDDTableFromFiles subclasses -
     <br>Previously, if for a given variable, the values of the important attributes (e.g., 
@@ -471,13 +502,16 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
   <li>IMPROVED -- The system for automatically converting non-ISO 8601 times
     into ISO 8601 times (introduced in v1.82) has been greatly expanded
     to deal with a large number of additional formats. 
+    This affects GenerateDatasetsXml and ERDDAP's handling of source metadata.
     <br>&nbsp;
+
   <li>IMPROVED -- With its third major revision of the String time parsing system 
     (and hopefully the last), 
     ERDDAP no longer uses Java's DateTimeFormatter because of bugs 
     which sometimes affect extreme times (years &lt;=0000). 
     ERDDAP now uses its own system for parsing time strings.
     <br>&nbsp;
+
   <li>WARNING: The new String time parsing system is somewhat stricter. 
     If one of your datasets suddenly has only missing values for time values,
     the cause is almost certainly that the time format string is slightly wrong.
@@ -487,22 +521,24 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     which "Convert[s] any common string time into an ISO 8601 string time" --
     it indicates the format that the converter used to parse the source string.    
     <br>&nbsp;
+
   <li>RECOMMENDATION: The quickest, easiest, and cheapest way to speed up ERDDAP's
     access to tabular data is to put the data files on a Solid State Drive (SSD).
     Most tabular datasets are relatively small, so a 1 or 2 TB SSD is probably
     sufficient to hold all of the data files for all of your tabular datasets.
     SSD's eventually wear out if you write data to a cell, delete it, 
     and write new data to that cell too many times.
-    Instead, I recommend that you just use your SSD to write the data once 
+    Instead, I recommend that (as much as possible) you just use your SSD to write the data once 
     and read it many times. Then,
     even a consumer-grade SSD should last a very long time, probably much longer
     than any Hard Disk Drive (HDD).
     Consumer-grade SSD's are now cheap (in 2018, ~$200 for 1 TB or ~$400 for 2 TB)
     and prices are still falling fast.
     When ERDDAP accesses a data file, an SSD offers both 
-    <br>shorter latency (~0.1ms, versus ~3ms for an HDD, versus ~10(?)ms for a RAID, versus ~55ms for Amazon S3)
-    <br>and higher throughput (~500 MB/S, versus ~75 MB/s for an HDD versus ~500 MB/s for a RAID).
-    <br>So you can get up to a ~10X performance boost (vs a HDD) for $200!
+    <ul>
+    <li>shorter latency (~0.1ms, versus ~3ms for an HDD, versus ~10(?)ms for a RAID, versus ~55ms for Amazon S3), and
+    <li>higher throughput (~500 MB/S, versus ~75 MB/s for an HDD versus ~500 MB/s for a RAID).
+    </ul>So you can get up to a ~10X performance boost (vs a HDD) for $200!
     Compared to most other possible changes to your system 
     (a new server for $10,000? a new RAID for $35,000? a new network switch for $5,000? etc.),
     this is by far the best Return On Investment (ROI).
@@ -514,7 +550,7 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
   <li>NEW: Everyone who is logged in gets role=[anyoneLoggedIn], even if there
     is no &lt;user&gt; tag for them in datasets.xml.
     If you set dataset's &lt;accessibleTo&gt; to <kbd>[anyoneLoggedIn]</kbd>, 
-    then anyone who has logged in to ERDDAP (e.g., via their Gmail account) 
+    then anyone who has logged in to ERDDAP (e.g., via their Gmail or Orcid account) 
     will be authorized to access the dataset, 
     even if you haven't specified a &lt;user&gt; tag for them in datasets.xml.
     Thanks to Maurice Libes.
@@ -678,6 +714,10 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     <br>&nbsp;
   <li>BUG FIX: Two bugs related to EDDTableCopy.
     Thanks to Sam McClatchie.  
+    <br>&nbsp;
+  <li>CHANGE: The number of failed requests shown on the status.html page 
+    will increase because more things
+    are counted as failures than before.
     <br>&nbsp;
   <li>CHANGE: ERDDAP's status.html now shows "Requests (median times in ms)" in the time series.
     Previously, it showed median times truncated to integer seconds.

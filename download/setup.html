@@ -607,11 +607,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddapContent" href="#erddapContent" rel="bookmark"
 >Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
-  <!-- 
-    <br>A New Version is Coming Tomorrow (2015-03-12)! 
-    <br>So, no version is available for downloading today. 
-      Please check back here tomorrow. Sorry for the inconvenience,
-      but the new version is worth the wait. -->
+  <!-- -->
+    <br>Starting 2019-06-18, we are currently testing ERDDAP v2.00. 
+    We hope to make it publicly available around 2019-06-26. 
+    Unless getting ERDDAP is urgent, we advise waiting for v2.00 to avoid the transition from v1.82 to v2.00.
+    We're sorry for the inconvenience, but the new version is worth the wait. 
+    <br>&nbsp;
+
   <br>On Linux, Mac, and Windows, download
      <!-- Use: md5 erddapContent1.82.zip -->
     <a rel="bookmark"
@@ -2322,46 +2324,50 @@ and change the location of the certificateKeystoreFile.
   tag for each user with username, password (if <kbd>authorization=custom</kbd>), 
     and roles information.
   This is the authorization part of ERDDAP's security system.
+      <br>&nbsp;
 <li>In datasets.xml, add an
   <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"
   ><kbd>&lt;accessibleTo&gt;</kbd></a>
   tag to each dataset that shouldn't have public access.
   <kbd>&lt;accessibleTo&gt;</kbd> lets you specify which roles have access to that dataset.
+      <br>&nbsp;
 <li>Restart Tomcat.
   Trouble? Check the Tomcat logs.
+      <br>&nbsp;
 <li>CHECK YOUR WORK! Any mistake could lead to a security flaw.
+      <br>&nbsp;
 <li>Check that the login page uses https (not http).
   Attempts to login via http should be automatically redirected to 
   https and port 8443 (although the port number may be hidden via an Apache proxy).
   You may need to work with your network administrator to allow external web 
   requests to access port 8443 on your server.
+      <br>&nbsp;
 <li>You can change the <kbd>&lt;user&gt;</kbd> and <kbd>&lt;accessibleTo&gt;</kbd> 
   tags at any time.
   The changes will be applied at the next regular reload of any dataset,
   or ASAP if you use a <a rel="help" href="#flag">flag</a>. 
 </ul>
 
-<p><a class="selfLink" id="authentication" href="#authentication" rel="bookmark">Authentication (logging in)</a>
+<p><a class="selfLink" id="authentication" href="#authentication" rel="bookmark"><strong>Authentication (logging in)</strong></a>
   <br>If you don't want to allow users to log in, don't specify a value for <kbd>&lt;authentication&gt;</kbd> in setup.xml.
 <br>If you do want to allow users to log in, you must specify a value for 
   <kbd>&lt;authentication&gt;</kbd>. Currently, ERDDAP supports 
-  <kbd>custom</kbd> (don't use this), <kbd>email</kbd> (don't use this), 
-  <kbd>google</kbd> (recommended)
-  <!-- a rel="help" href="https://openid.net/"><kbd>openid</kbd><img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> -->
-      (recommended) authentication.
-If you want to enable logging in, 
-we strongly recommend the <kbd>google, orcid, or auth2</kbd> options because they frees you from storing
-and handling user's passwords (needed for <kbd>custom</kbd>)
-and is more secure than the <kbd>email</kbd> option.
+  <br><a rel="help" href="#authenticationCustom"><kbd>custom</kbd></a> (don't use this),
+  <br><a rel="help" href="#authenticationEmail"><kbd>email</kbd></a> (don't use this), 
+  <br><a rel="help" href="#authenticationGoogle"><kbd>google</kbd></a> (recommended), 
+  <br><a rel="help" href="#authenticationOrcid"><kbd>orcid</kbd></a> (recommended), and
+  <br><a rel="help" href="#authenticationOauth2"><kbd>oauth2</kbd></a> (recommended) for the authentication method.
+<br>If you want to enable logging in, 
+we strongly recommend the <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> options because they 
+free you from storing and handling user's passwords (needed for <kbd>custom</kbd>)
+and are more secure than the <kbd>email</kbd> option.
 Remember that users often use the same password at different sites.
 So they may be using the same password for your ERDDAP as they do at their bank.
 That makes their password very valuable -- much more valuable to the user than 
-the data they are requesting.
+just the data they are requesting.
 So you need to do as much as you can to keep the passwords private.
 That is a big responsibility.
-The <kbd>email</kbd> and <kbd>google</kbd> options take care of passwords, 
+The <kbd>email, google, orcid,</kbd> and <kbd>oauth2</kbd> options take care of passwords, 
 so you don't have to gather, store, or work with them. 
 So you are freed from that responsibility.
 
@@ -2369,9 +2375,10 @@ So you are freed from that responsibility.
     <a rel="help" href="https://en.wikipedia.org/wiki/HTTP_cookie">cookie<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
-    on the user's computer, so the user's browser must be 
+  on the user's computer, so the user's browser must be 
   set to allow cookies.  If a user is making ERDDAP requests from a computer
-  program (not a browser), cookies are hard to work with. Sorry.
+  program (not a browser), cookies and authentication are hard to work with. 
+  That's a common problem with all authentication systems. Sorry.
 
 
 <p>The details of the <kbd>&lt;authentication&gt;</kbd> options are:
@@ -2384,9 +2391,9 @@ So you are freed from that responsibility.
   This prevents hackers from simply trying millions
   of passwords until they find the right one.
 
-  <p>This is secure because the User Name and Password are transmitted via https 
+  <p>This is somewhat secure because the User Name and Password are transmitted via https 
   (not http),
-  but <kbd>authentication=google</kbd> is better because it frees you from
+  but <kbd>authentication=google, orcid,</kbd> or <kbd>oauth2</kbd> are better because they free you from
   having to handle passwords.
   The <kbd>custom</kbd> approach requires you to collect a user's Name and 
   a hash digest of their Password 
@@ -2406,15 +2413,20 @@ So you are freed from that responsibility.
 
   <p>To increase the security of this option:
   <ul>
-  <li>Use <kbd>UEPSHA256</kbd> for <kbd>&lt;passwordEncoding&gt;</kbd>
-    in setup.xml.
-  <li>Use an as-secure-as-possible method to pass the hash digest
-    of the user's password from the user to the ERDDAP administrator (phone?).
-  <li>Make sure that other users on the server (i.e., Linux users, not ERDDAP users) 
-    can't read files in the Tomcat directory or ERDDAP's bigParentDirectory. 
+  <li>You MUST make sure that other users on the server (i.e., Linux users, not ERDDAP users) 
+    can't read files in the Tomcat directory (especially the datasets.xml file!)
+    or ERDDAP's bigParentDirectory. 
     <br>On Linux, as user=tomcat, use: 
     <br><kbd>chmod -R g-rwx <i>bigParentDirectory</i></kbd>
+    <br><kbd>chmod -R o-rwx <i>bigParentDirectory</i></kbd>
     <br><kbd>chmod -R g-rwx <i>tomcatDirectory</i></kbd>
+    <br><kbd>chmod -R o-rwx <i>tomcatDirectory</i></kbd>
+      <br>&nbsp;
+  <li>Use <kbd>UEPSHA256</kbd> for <kbd>&lt;passwordEncoding&gt;</kbd>
+    in setup.xml.
+      <br>&nbsp;
+  <li>Use an as-secure-as-possible method to pass the hash digest
+    of the user's password from the user to the ERDDAP administrator (phone?).
     <br>&nbsp;
   </ul>
 
@@ -2439,7 +2451,10 @@ So you are freed from that responsibility.
     can't read files in the Tomcat directory or ERDDAP's bigParentDirectory. 
     <br>On Linux, as user=tomcat, use: 
     <br><kbd>chmod -R g-rwx <i>bigParentDirectory</i></kbd>
+    <br><kbd>chmod -R o-rwx <i>bigParentDirectory</i></kbd>
     <br><kbd>chmod -R g-rwx <i>tomcatDirectory</i></kbd>
+    <br><kbd>chmod -R o-rwx <i>tomcatDirectory</i></kbd>
+      <br>&nbsp;
   <li>Set things up to get end-to-end security for the emails
     sent from ERDDAP to the users.
     For example, you could make a Google-centric system by 
@@ -2452,27 +2467,19 @@ So you are freed from that responsibility.
   </ul>
 
   <p>Not Recommended
-  <br>We only recommend the <kbd>email</kbd> authentication option only as a 
-  temporary alternative to the 
-  <a rel="help" href="#authenticationGoogle"><kbd>google</kbd> authentication option</a>,
-  and only if you follow the security suggestions above. 
-  The weakness of the <kbd>google</kbd> option is that it 
-  relies on an external authentication system (Google Sign-In),
-  which may suddenly cease
-  to work with ERDDAP, leaving your users unable to log in. In that case,
-  switching temporarily to the <kbd>email</kbd> option solves the problem
-  until the <kbd>google</kbd> option is again working.
+  <br>The <kbd>email</kbd> authentication option isn't recommended. 
+  Please use the <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> option instead.
 
-  <p>As with the <kbd>google</kbd> option, <kbd>email</kbd> is very convenient for 
-  ERDDAP administrators -- 
+  <p>As with the <kbd>google, orcid, and oauth2</kbd> options, 
+  <kbd>email</kbd> is very convenient for ERDDAP administrators -- 
   you don't ever have to deal with passwords or their hash digests.
   All you need to create is a 
   <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
   ><kbd>&lt;user&gt;</kbd></a>
-  tag for a user in datasets.xml is the user's Google email address,
+  tag for a user in datasets.xml is the user's email address,
   which ERDDAP uses as the user's name.
-  (The <kbd>password</kbd> attribute isn't used when authentication=email or google.)
+  (The <kbd>password</kbd> attribute isn't used when authentication=email, google, orcid, or oauth2.)
 
   <p>With the <kbd>email</kbd> option, only users that have a <kbd>&lt;user&gt;</kbd> tag
   in datasets.xml can try to log in to ERDDAP by providing their
@@ -2483,7 +2490,7 @@ So you are freed from that responsibility.
   or users enter (on the login form) to their all lowercase version.
 
   <p>To set up authentication=email:
-  <ul>
+  <ol>
   <li>In your setup.xml, change the &lt;baseHttpsUrl&gt; tag's value.
     <br>For experimenting/working on your personal computer, use 
     <br><kbd>https://localhost:8443</kbd>
@@ -2491,13 +2498,16 @@ So you are freed from that responsibility.
     <br><kbd>https://<i>your.domain.org</i>:8443</kbd> 
     <br>or without the :8443 if you are using an Apache 
     <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
+      <br>&nbsp;
 
   <li>In your setup.xml, change the &lt;authentication&gt; tag's value to <kbd>email</kbd>:
     <br><kbd>&lt;authentication&gt;email&lt;/authentication&gt;</kbd>
+      <br>&nbsp;
 
   <li>In your setup.xml, make sure the email system is setup via all of the
     <kbd>&lt;email...&gt;</kbd> tags, so that ERDDAP can send out emails.
     If possible, set this up to use a secure connection (SSL / TLS) to the email server.
+      <br>&nbsp;
 
   <li>In your datasets.xml, create 
     <a rel="help" 
@@ -2505,101 +2515,138 @@ So you are freed from that responsibility.
       ><kbd>&lt;user&gt;</kbd></a>    
     tags for each user who will have access to private datasets.
     <br>Use the user's email address as the <kbd>username</kbd> in the tag.
-    <br>Don't specify the <kbd>password</kbd> attribute for the user. 
+    <br>Don't specify the <kbd>password</kbd> attribute in the <kbd>user</kbd> tag. 
+      <br>&nbsp;
 
   <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
     <br>&nbsp;
-  </ul>
+  </ol>
 
   
-<li><a class="selfLink" id="authenticationGoogle" href="#authenticationGoogle" rel="bookmark"><kbd><strong>google</strong></kbd></a>  (recommended)
-  <br>The <kbd>google</kbd> option uses 
-  <a rel="help" href="https://developers.google.com/identity/sign-in/web/"
-  >Google Sign-In<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>, 
-  which is based on 
-  <a rel="help" href="https://oauth.net/2/"
-  >OAuth 2.0<img 
+<li><a class="selfLink" id="authenticationGoogle" href="#authenticationGoogle" rel="bookmark"><kbd><strong>google</strong></kbd></a>, 
+    <a class="selfLink" id="authenticationOrcid"  href="#authenticationOrcid"  rel="bookmark"><kbd><strong>orcid</strong></kbd></a>, and 
+    <a class="selfLink" id="authenticationOauth2" href="#authenticationOauth2" rel="bookmark"><kbd><strong>oauth2</strong></kbd></a>&nbsp; (recommended)
+  <br>All three of these options are the recommended ERDDAP authentication options.
+  They are all the most secure options. 
+  The other options have significantly weaker security.
+    <br>&nbsp;
+
+  <ul>
+  <li>The <kbd>google</kbd> authentication option uses 
+    <a rel="help" href="https://developers.google.com/identity/sign-in/web/"
+    >Google Sign-In<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-  the current version of the OAuth protocol.
+    which is an implementation of the 
+    <a rel="help" href="https://oauth.net/2/"
+    >OAuth 2.0 authentication protocol<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+    ERDDAP users sign into their Google email account, 
+    including Google-managed accounts such as @noaa.gov accounts.
+    This allows ERDDAP to verify the user's identity (name and email address) 
+    and access their profile image, 
+    but does not give ERDDAP access to their emails, their Google Drive, 
+    or any other private information.
+    <br>&nbsp;
 
-  <p>The <kbd>google</kbd> option lets users log in by signing into their
-  Google email account, 
-  including Google-managed accounts such as @noaa.gov accounts.
-  This allows ERDDAP to verify the user's identity (name and email address) 
-  and access their profile image, 
-  but does not give ERDDAP access to their emails, their Google Drive, 
-  or any other private information.
+  <li>The <kbd>orcid</kbd> authentication option uses 
+    <a rel="help" href="https://members.orcid.org/api/integrate/orcid-sign-in"
+    >Orcid authentication<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>,
+    which is an implementation of the 
+    <a rel="help" href="https://oauth.net/2/"
+    >OAuth 2.0 authentication protocol<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+    ERDDAP users sign into their 
+    <a rel="help" href="https://members.orcid.org/api/integrate/orcid-sign-in"
+    >Orcid account<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>,
+    which is commonly used by researchers to identify themselves.
+    This allows ERDDAP to verify the user's Orcid identity and get their Orcid account number,   
+    but does not give ERDDAP access to their other Orcid account information.
+    <br>&nbsp;
 
-  <p>The <kbd>google</kbd> option is the successor to the <kbd>openid</kbd> option,
+  <li>The <kbd>oauth2</kbd> option lets users sign in with either their Google account 
+    or their Orcid account.  
+  </ul>
+
+  <p>The <kbd>google, orcid,</kbd> and <kbd>oauth2</kbd> options are the successors
+  to the <kbd>openid</kbd> option,
   which was discontinued after ERDDAP version 1.68, 
   and which was based on a version of openID that is now out-of-date.
-  Please switch to the <kbd>google</kbd> option.
+  Please switch to the <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> option.
 
-  <p>Google Sign-In is very convenient for ERDDAP administrators -- 
+  <p>These options are very convenient for ERDDAP administrators -- 
   you don't ever have to deal with passwords or their hash digests.
   All you need to create is a 
   <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
   ><kbd>&lt;user&gt;</kbd></a>
   tag for a user in datasets.xml which specifies the user's Google email address
-  as the username attribute.
+  or Orcid account number as the username attribute.
   (The <kbd>password</kbd> attribute isn't used when 
-  <kbd>authentication=google</kbd> or <kbd>email</kbd>.)
+  <kbd>authentication=email, google, orcid</kbd> or <kbd>oauth2</kbd>.)
 
-  <p>With the <kbd>google</kbd> option, anyone can log in to ERDDAP by 
-  signing into their Google email account, 
+  <p>With these options, anyone can log in to ERDDAP by 
+  signing into their Google email account or Orcid account, 
   but no one will have the right to access private datasets
   until you (the ERDDAP administrator) create a <kbd>&lt;user&gt;</kbd> tag,  
-  specifying their email address as the username and specifying their roles.
-
-  <p>Recommended
-  <br>This is the authentication option which we believe is by far the most 
-  secure option. 
-  The other options have significantly weaker security.
+  specifying their Google email address or Orcid account number
+  as the username, and specifying their roles.
 
   <p>ERDDAP treats email addresses as case-insensitive. It does this by
   converting email addresses you enter (in &lt;user&gt; tags)
   or users enter (on the login form) to their all lowercase version.
 
-  <p>To set up authentication=google:
+  <p>To set up <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> authentication:
   <ul>
   <li>In your setup.xml, change the &lt;baseHttpsUrl&gt; tag's value.
     <br>For experimenting/working on your personal computer, use 
     <br><kbd>https://localhost:8443</kbd>
     <br>For your public ERDDAP, use
     <br><kbd>https://<i>your.domain.org</i>:8443</kbd> 
-    <br>or without the :8443 if you are using an Apache 
-    <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
+    <br>or, better, without the :8443 if you are using an Apache 
+      <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
+    <br>&nbsp;
 
-  <li>In your setup.xml, change the &lt;authentication&gt; tag's value to <kbd>google</kbd>:
-    <br><kbd>&lt;authentication&gt;google&lt;/authentication&gt;</kbd>
+  <li>In your setup.xml, change the &lt;authentication&gt; tag's value to 
+    <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd>, for example:
+    <br><kbd>&lt;authentication&gt;oauth2&lt;/authentication&gt;</kbd>
+    <br>&nbsp;
+ 
+  <li><a class="selfLink" id="authenticationGoogleDetails" href="#authenticationGoogleDetails" rel="bookmark">For the google and oauth2 options:</a>  
+    <br>Follow the instructions below to set up Google authentication for your ERDDAP. 
+    <br>&nbsp;
+    <ol>
+    <li>If you don't have a Google email account, 
+      <a rel="help" href="https://www.google.com/intl/en_us/mail/help/about.html"
+      >create one<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+      <br>&nbsp;
 
-  <li>If you don't have a Google email account, 
-    <a rel="help" href="https://www.google.com/intl/en_us/mail/help/about.html"
-    >create one<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  <li>Follow 
-   <a rel="help" href="https://developers.google.com/identity/sign-in/web/devconsole-project"
-   >these instructions<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-    to create a Google Developers Console project and get a client ID.
+    <li>Follow 
+     <a rel="help" href="https://developers.google.com/identity/sign-in/web/devconsole-project"
+     >these instructions<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+      to create a Google Developers Console project and get a client ID.
 
-    <p>For <kbd>authorized JavaScript origins</kbd>, 
-    enter the value from <kbd>&lt;baseHttpsUrl&gt;</kbd> 
-    from your personal computer's ERDDAP setup.xml, e.g., 
-    <br><kbd>https://localhost:8443</kbd>
-    <br>On a second line, add the <kbd>&lt;baseHttpsUrl&gt;</kbd> 
-      from your public ERDDAP setup.xml, e.g., 
-    <br><kbd>https://<i>your.domain.org</i>:8443</kbd> 
+      <p>When the Google form asks for <kbd>authorized JavaScript origins</kbd>, 
+      enter the value from <kbd>&lt;baseHttpsUrl&gt;</kbd> 
+      from your personal computer's ERDDAP setup.xml, e.g., 
+      <br><kbd>https://localhost:8443</kbd>
+      <br>On a second line, add the <kbd>&lt;baseHttpsUrl&gt;</kbd> 
+        from your public ERDDAP setup.xml, e.g., 
+      <br><kbd>https://<i>your.domain.org</i>:8443</kbd> 
 
-    <p>Don't specify any <kbd>Authorized redirect URIs</kbd>.
+      <p>Don't specify any <kbd>Authorized redirect URIs</kbd>.
 
-    <p>When you see your Client ID for this project, 
+      <p>When you see your Client ID for this project, 
       copy and paste it into your setup.xml
       (usually just below <kbd>&lt;authentication&gt;</kbd> to be orderly, 
       but placement doesn't actually matter), 
@@ -2608,134 +2655,107 @@ So you are freed from that responsibility.
       <br>The client ID will be a string of about 75 characters, 
         probably starting with several digits and ending with 
         <kbd>.apps.googleusercontent.com</kbd> .
+      <br>&nbsp;
 
-
-  <li>In your datasets.xml, create 
-    <a rel="help" 
+    <li>In your datasets.xml, create a
+      <a rel="help" 
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
       ><kbd>&lt;user&gt;</kbd></a>    
-    tags for each user who will have access to private datasets.
-    <br>Use the user's email address as the <kbd>username</kbd> in the tag.
-    <br>Don't specify the <kbd>password</kbd> attribute for the user. 
+      tag for each user who will have access to private datasets.
+      For the <kbd>username</kbd> attribute in the tag:
+      <ul>
+      <li>For users who will sign in with google, use the user's Google email address.
+      <li>For users who will sign in with orcid, use the user's Orcid account number (with dashes).
+      </ul>
+      Don't specify the <kbd>password</kbd> attribute for the <kbd>user</kbd> tag. 
+      <br>&nbsp;
 
-  <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
-  </ul>
+    <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
+      <br>&nbsp;
+    </ol>
 
-  <p>The <kbd>google</kbd> option relies on Google Sign-In. If that suddenly 
-  ceases to work (for whatever reason), users won't be able to sign in to your
-  ERDDAP. As a temporary solution, you can (it's up to you) switch to ERDDAP's 
-  <kbd>email</kbd> authentication option temporarily. 
-  The <kbd>&lt;user&gt;</kbd> tag setup is the same, so the only thing
-  you need to do is change the &lt;authentication&gt; tag's value in setup.xml, to
-  <br><kbd>&lt;authentication&gt;email&lt;/authentication&gt;</kbd>
+  <li><a class="selfLink" id="authenticationOrcidDetails" href="#authenticationOrcidDetails" rel="bookmark">For the orcid and oauth2 options:</a>  
+     <br>Follow the instructions below to set up Orcid authentication for your ERDDAP. 
+     <br>(For details, see  
+     <a rel="help" href="https://members.orcid.org/api/integrate/orcid-sign-in"
+     >Orcid's authentication API documentation<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>.)
+    <br>&nbsp;
+    <ol>
+    <li>If you don't have an Orcid account, 
+      <a rel="help" href="https://orcid.org/signin"
+      >create one<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+      <br>&nbsp;
+    <li>Log into Orcid 
+        <a rel="help" href="https://orcid.org/signin">https://orcid.org/signin<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+        using your personal Orcid account.
+      <br>&nbsp;
+    <li>Click on "Developer Tools" (under "For Researchers" at the top).
+      <br>&nbsp;
+    <li>Click on "Register for the free ORCID public API". Enter this information:
+         <br>Name: ERDDAP at [your organization] 
+         <br>Website: [your ERDDAP's domain]
+         <br>Description: ERDDAP is a scientific data server. Users need to authenticate with Google or Orcid to access non-public datasets. 
+         <br>Redirect URIs: [your ERDDAP's domain]/erddap/loginOrcid.html 
+      <br>&nbsp;
+    <li>Click on the Save icon (it looks like a 3.5" disk!).
+      <br>You can then see your ORCID APP Client ID and ORCID Client Secret.
+      <br>&nbsp;
+    <li>Copy and paste the ORCID APP Client ID (which will start with "APP-")
+         into setup.xml in the &lt;orcidClientID&gt; tag, e.g.,
+         <pre>&lt;orcidClientID&gt;APP-<i>ALPHANUMERICCHARACTERS</i>&lt;/orcidClientID&gt;</pre>
+    <li>Copy and paste the ORCID Client Secret (lower case alpha-numeric characters
+         with dashes) into setup.xml in the &lt;orcidClientSecret&gt; tag, e.g.,
+         <pre>&lt;orcidClientSecret&gt;<i>alpha-numeric-characters-with-dashes</i>&lt;/orcidClientSecret&gt;</pre>
 
-<li><a class="selfLink" id="authenticationOrcid" href="#authenticationOrcid" rel="bookmark"><kbd><strong>orcid</strong></kbd></a>  (recommended)
-  <br>The <kbd>orcid</kbd> option uses 
-  <a rel="help" href="???"
-  >Orcid Sign-In<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>, 
-  which is based on 
-  <a rel="help" href="https://oauth.net/2/"
-  >OAuth 2.0<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>,
-  the current version of the OAuth protocol.
-
-  <p>The <kbd>orcid</kbd> option lets users log in by signing into their
-  Orcid account.
-  ORCID is widely used by researchers to uniquely identify themselves. 
-  This allows ERDDAP to verify the user's identity (orcid number) 
-  but does not give ERDDAP access to other account information.
-  ORCID accounts are free and don't have the privacy issues that Google accounts have.
-    
-  <p>The <kbd>google, orcid, and oauth2</kbd> options are a successor to the <kbd>openid</kbd> option,
-  which was discontinued after ERDDAP version 1.68, 
-  and which was based on a version of openID that is now out-of-date.
-  Please switch to the <kbd>google, orcid, or oauth2</kbd> options.
-
-  <p>Orcid Sign-In is very convenient for ERDDAP administrators -- 
-  you don't ever have to deal with passwords or their hash digests.
-  All you need to create is a 
-  <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
-  ><kbd>&lt;user&gt;</kbd></a>
-  tag for a user in datasets.xml which specifies the user's Orcid number
-  as the username attribute.
-  (The <kbd>password</kbd> attribute isn't used when 
-  <kbd>authentication=orcid</kbd>.)
-
-  <p>With the <kbd>orcid</kbd> option, anyone can log in to ERDDAP by 
-  signing into their Orcid account, 
-  but no one will have the right to access private datasets
-  until you (the ERDDAP administrator) create a <kbd>&lt;user&gt;</kbd> tag,  
-  specifying their email address as the username and specifying their roles.
-
-  <p>Recommended
-  <br>We only recommend the <kbd>google, orcid, and oauth2</kbd> authentication options. 
-
-  <p>To set up authentication=orcid:
-  <ul>
-  <li>In your setup.xml, change the &lt;baseHttpsUrl&gt; tag's value.
-    <br>For experimenting/working on your personal computer, use 
-    <br><kbd>https://localhost:8443</kbd>
-    <br>For your public ERDDAP, use
-    <br><kbd>https://<i>your.domain.org</i>:8443</kbd> 
-    <br>or without the :8443 if you are using an Apache 
-    <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
-
-  <li>In your setup.xml, change the &lt;authentication&gt; tag's value to <kbd>google</kbd>:
-    <br><kbd>&lt;authentication&gt;google&lt;/authentication&gt;</kbd>
-
-  <li>If you don't have an Orcid account, 
-    <a rel="help" href="???"
-    >create one<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-
-  <li>Setup the ORCID connection. 
-    <br>...you must supply your ORCID APP Client ID
-      (which will start with "APP-") and ORCID Client Secret (a hex number with hyphens). 
-      Get these by logging into Orcid at https://orcid.org/signin.
-      Then click on "Developer Tools" (under "For Researchers" at the top).
-      Then click on "Register for the free ORCID public API". 
-        Name: ERDDAP at [your organization] 
-        Website: [your ERDDAP's domain]
-        Description: ERDDAP is a scientific data server. Users need to authenticate with Google or Orcid to access non-public datasets. 
-        Redirect URIs: [your ERDDAP's domain]/erddap/loginOrcid.html 
-      Then click on the Save icon (looks like a 3.5" disk!).
-
-
-  <li>In your datasets.xml, create 
-    <a rel="help" 
+    <li>In your datasets.xml, create a
+      <a rel="help" 
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
       ><kbd>&lt;user&gt;</kbd></a>    
-    tags for each user who will have access to private datasets.
-    <br>Use the user's email address as the <kbd>username</kbd> in the tag.
-    <br>Don't specify the <kbd>password</kbd> attribute for the user. 
+      tag for each user who will have access to private datasets.
+      For the <kbd>username</kbd> attribute in the tag:
+      <ul>
+      <li>For users who will sign in with google, use the user's Google email address.
+      <li>For users who will sign in with orcid, use the user's Orcid account number (with dashes).
+      </ul>
+      Don't specify the <kbd>password</kbd> attribute for the <kbd>user</kbd> tag. 
+      <br>&nbsp;
 
-  <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
+    <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
+      <br>&nbsp;
+    </ol>
+
   </ul>
-
-  <p>The <kbd>orcid</kbd> option relies on Orcid Sign-In. If that suddenly 
-  ceases to work (for whatever reason), users won't be able to sign in to your
-  ERDDAP. As a temporary solution, you can (it's up to you) switch to ERDDAP's 
-  <kbd>google</kbd> authentication option temporarily. 
-  The <kbd>&lt;user&gt;</kbd> tag setup is the same, so the only thing
-  you need to do is change the &lt;authentication&gt; tag's value in setup.xml, to
-  <br><kbd>&lt;authentication&gt;google&lt;/authentication&gt;</kbd>
-
-<li>oauth2 
-
-...  See the google and orcid authentication options.
-
 </ul>
+
+<a class="selfLink" id="logInEitherWay" href="#logInEitherWay" rel="bookmark">Log In Either Way --</a>  
+<br>If you use the <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> authentication options,
+and Google Sign-In or Orcid's Authentication API suddenly 
+ceases to work (for whatever reason) or ceases to work as ERDDAP expects,
+users won't be able to log in to your ERDDAP. 
+As a temporary (or permanent) solution, you can ask users to sign up with the other system
+(get a Google email account, or get an Orcid account). To do this:
+<ol>
+<li>Change the <kbd>&lt;authentication&gt;</kbd> tag so that it allows the 
+ other authentication system. 
+ The <kbd>oauth2</kbd> option allows users to log in with either system.
+<li>Duplicate each of the <kbd>&lt;user&gt;</kbd> tags and 
+ change the <kbd>username</kbd> attribute from the 
+ Google email address to the corresponding Orcid account number
+ (or vice-versa), but keep the <kbd>roles</kbd> attribute the same. 
+</ol>
 
 <p>ERDDAP no longer supports the <kbd>openid</kbd> authentication option,
 which was based on a version of openID that is now out-of-date.
-Please use the <kbd>google</kbd> option instead. 
+Please use the <kbd>google, orcid,</kbd> or <kbd>oauth2</kbd> options instead. 
 
-<p>ERDDAP doesn't support BASIC authentication because:
+<p><a class="selfLink" id="authenticationBasic" href="#authenticationBasic" rel="bookmark"
+>ERDDAP doesn't support BASIC authentication because:</a>  
 <ul>
 <li>BASIC seems geared toward predefined web pages needing secure access or
   blanket on/off access 
@@ -2746,7 +2766,8 @@ Please use the <kbd>google</kbd> option instead.
 </ul>
 
 
-<p>Secure Data Sources
+<p><a class="selfLink" id="secureDataSources" href="#secureDataSources" rel="bookmark"
+><strong>Secure Data Sources</strong></a>  
 <br>If a data set is to have restricted access to ERDDAP users, 
 the data source (from where ERDDAP gets the data) should not be publicly accessible.
 So how can ERDDAP get the data for restricted access datasets? Some options are:
@@ -2788,7 +2809,8 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
 
 </ul>
 
-<p><a class="selfLink" id="defensesAgainstHackers" href="#defensesAgainstHackers" rel="bookmark">Defenses Against Hackers</a>
+<p><a class="selfLink" id="defensesAgainstHackers" href="#defensesAgainstHackers" rel="bookmark"
+><strong>Defenses Against Hackers</strong></a>
 <br>There are bad guy hackers who 
 try to exploit security weaknesses in server software like ERDDAP. 
 ERDDAP follows the common security advice to have several layers of defenses:
@@ -2870,7 +2892,7 @@ They redid the scan. If you would like to see the report and my responses
 
 </ul>
 
-<p>Questions? Suggestions? 
+<p><strong>Questions? Suggestions?</strong> 
 <br>If you have any questions about ERDDAP's security system
 or have any questions, doubts, concerns, or suggestions about how it is set up, 
 please email <kbd>bob dot simons at noaa dot gov</kbd>.
