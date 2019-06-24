@@ -164,7 +164,7 @@ public class EDStatic {
      * <br>1.78 released on 2017-05-27
      * <br>1.80 released on 2017-08-04
      * <br>1.82 released on 2018-01-26
-     * <br>2.00 released on 2019-06-18
+     * <br>2.00 released on 2019-06-24
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 

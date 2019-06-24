@@ -1019,9 +1019,9 @@ by pasting the XML text into an XML checker like
     <a rel="help" href="#EDDGridCopy">EDDGridCopy</a> and 
     <a rel="help" href="#EDDTableCopy">EDDTableCopy</a> datasets
     and any <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a> or 
-    <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> datasets using 
-    <a rel="help" href="#cacheFromUrl">cacheFromUrl</a>
-). 
+    <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> datasets that use 
+    <a rel="help" href="#cacheFromUrl">cacheFromUrl</a> (but not cacheSizeGB)
+  ). 
 <li>If you get stuck, please send an email with the details to <kbd>bob dot simons at noaa dot gov</kbd>.
     <br>Or, you can join the <a rel="help"
         href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
@@ -1746,14 +1746,6 @@ currently recommend
       </ul>
   <li>All EDDGrid datasets support an <kbd>nThreads</kbd> setting,
     which tells ERDDAP how many threads to use when responding to a request.
-    <p>tl;dr Rule of Thumb: 
-    For most datasets on most systems, use nThreads=1, the default.
-    If you have a powerful computer (lots of CPU cores, lots of memory), 
-    then set nThreads to 2, 3, or 4 for datasets that will benefit the most 
-    (e.g., lots of small files stored on a high-bandwidth parallel file system),
-    but keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-    (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-    >ERDDAP's status page</a>).
     See the <a href="#nThreads" rel="bookmark">nThreads</a> documentation for details.
     <br>&nbsp;
   </ul>
@@ -2721,12 +2713,12 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     (e.g., ioos_category and units) to the axis variable.
     <br>&nbsp;
 
-<li><a class="selfLink" id="CompressedFiles" href="#CompressedFiles" rel="bookmark"
-><strong>Compressed Files</strong></a>
+<li><a class="selfLink" id="ExternallyCompressedFiles" href="#ExternallyCompressedFiles" rel="bookmark"
+><strong>Externally Compressed Files</strong></a>
   <ul>
   <li>Datasets that are subsets of EDDGridFromFiles and EDDTableFromFiles
-    can serve data directly from compressed data files,
-    including .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, .bz2, or .Z.
+    can serve data directly from externally compressed data files,
+    including .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, .bz2, and .Z files.
     <br>&nbsp;
   <li><strong>This works surprisingly well!</strong> 
     <br>In most cases, the slowdown related to decompressing small and 
@@ -2765,11 +2757,11 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     indicating that they are externally compressed files
     will be decompressed on-the-fly as the file is read.
     <br>&nbsp;
-  <li>REQUIREMENT: If the type of compressed file used (e.g., .tgz or .zip) 
+  <li>REQUIREMENT: If the type of externally compressed file used (e.g., .tgz or .zip) 
     supports more than 1 file inside the compressed file,
     the compressed file must contain just 1 file.
     <br>&nbsp;
-  <li>REQUIREMENT: This feature assumes that the contents of the compressed files 
+  <li>REQUIREMENT: This feature assumes that the contents of the externally compressed files 
     don't change, so that a cached decompressed file can be reused. If some or all 
     of a dataset's data files are sometimes changed, don't compress those files.
     This is consistent with common usage, since people don't normally compress files that they 
@@ -2824,21 +2816,36 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <br>To decompress each of the .gz files in directory and its subdirectories , recursively, use
     <br><kbd>gunzip -r <i>directorName</i></kbd>
     <br>&nbsp;
-  <li>Don't compress (gzip) files that are already internally compressed!
+  <li>WARNING: Don't externally compress (gzip) files that are already internally compressed!
     <br>Many files already have compressed data internally. If you gzip these
     files, the resulting files won't be much smaller (&lt; 5%) and ERDDAP will waste time
     decompressing them when it needs to read them. For example:
     <ul>
     <li>data files:  e.g., .nc 4, and .hdf 5 files: Some files use internal compression; some don't. 
        How to tell: compressed variables have "_ChunkSize" attributes.
+       Also, if a group of gridded .nc or .hdf files are all different sizes, 
+         they are likely internally compressed. 
+         If they are all the same size, they are not internally compressed.
     <li>image files: e.g., .gif, .jpg, and .png
     <li>audio files: e.g., .mp3, and .ogg.  
     <li>video files: e.g., .mp4, .ogv, and .webm.
     </ul>
-    One unfortunate odd case: .wav audio files are huge and not interally compressed.
+    <br>One unfortunate odd case: .wav audio files are huge and not interally compressed.
     It would be nice to compress (gzip) them, but generally you shouldn't because
     if you do, users won't be able to play the compressed files in their browser.
-    <br>
+    <br>&nbsp;
+  <li>Test Case: compressing (with gzip) a dataset with 1523 gridded .nc files.
+    <ul>
+    <li>The data in the source files was sparse (lots of missing values).
+    <li>Total disk space went from 57 GB before compression to 7 GB after.
+    <li>A request for lots of data from 1 time point is &lt; 1 s before and after compression.
+    <li>A request for 1 data point for 365 time points (the worst case situation) went from 4 s to 71 s.
+    <br>&nbsp;
+    </ul>
+    To me that is a reasonable trade-off for any dataset, and certainly for 
+    datasets that are infrequently used.
+    <br>&nbsp;
+
   <li>Internal versus External Compression --
     <br>Compared to the internal file compression offered by .nc4 and .hdf5 files,
     ERDDAP's approach for externally compressed binary files has advantages and disadvantages.
@@ -2847,7 +2854,8 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     a few chunk(s) of the file, not the entire file.
     But ERDDAP's approach has some advantages:
     <ul>
-    <li>ERDDAP supports compression of all types of data files, binary and non-binary,
+    <li>ERDDAP supports compression of all types of data files
+      (binary and non-binary, e.g., .nc3 and .csv)
       not just .nc4 and .hdf4.
     <li>If the bulk of a file need to be read more than once in a short period of time,
       then it saves time to decompress the file once and read it many times.
@@ -2932,7 +2940,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <br>All EDDGridFromFiles and all EDDTableFromFiles datasets support a
     set of tags which tell ERDDAP to download and maintain a copy of 
     all of a remote dataset's files, or a cache of a few files (downloaded as needed).
-    This is rarely used but can be incredibly useful.
+    This can be incredibly useful.
     See the <a rel="help" href="#cacheFromUrl">cacheFromUrl documentation</a>.
   <br>&nbsp;
 
@@ -5814,7 +5822,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   <br>The source data files for all EDDTableFromFiles subclasses 
     can be externally compressed
     (e.g., .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, .bz2, or .Z).
-    See the <a rel="help" href="#CompressedFiles">Compressed Files documentation</a>.
+    See the <a rel="help" href="#ExternallyCompressedFiles">Externally Compressed Files documentation</a>.
     <br>&nbsp;
 
 <li><a class="selfLink" id="EDDTableFromFiles_CachedFileInformation" href="#EDDTableFromFiles_CachedFileInformation" rel="bookmark"><strong>Cached File Information</strong></a>
@@ -6134,6 +6142,10 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
           (although perhaps only after a delay while the file is first downloaded 
           from the remote server to the local cache.)
         </ul>
+      <li>Datasets that use cacheSizeGB may benefit from using an 
+        <a href="#nThreads" rel="bookmark">nThreads</a> setting greater than 1,
+        because this will enable the dataset to download more than 1 remote
+        file at a time.
       </ul>
 
     <li>The &lt;cachePartialPathRegex&gt; tag is a rarely used tag that 
@@ -7156,12 +7168,21 @@ unrealistic expectations or get yourself into trouble that is hard to fix.
     <a rel="help" href="https://en.wikipedia.org/wiki/Reproducibility"
     >Reproducible Science<img 
     src="../images/external.png" alt=" (external link)" 
-    title="This link to an external website does not constitute an endorsement."></a>
-    -- 
+    title="This link to an external website does not constitute an endorsement."></a> 
+    / DOIs -- 
     <br>Situations where you need to be able to make changes to the data
-    (e.g., change a quality control flag), know the author of each change,
+    (e.g., change a quality control flag), know which author made each change,
     know the timestamp of when the author made the change, 
-    and (upon request) be able to see the original data from before the change was made.
+    and (upon request) be able to see the original data from before the change was made.  
+    Thus, these datasets are eligible for 
+    <a rel="bookmark" href="https://en.wikipedia.org/wiki/Digital_object_identifier"
+        >DOIs<img src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>. 
+    because they meet the DOI requirement
+    that the dataset by unchanging, except by aggregation. In general,
+    near real time datasets are not eligible for DOIs because the
+    data is often retroactively changed (e.g., for QA/QC purposes).
+
     <br>&nbsp;
   </ul>
   Once data is in an EDDTableFromHttpGet dataset, any user can request
@@ -7348,7 +7369,7 @@ to store data to and retrieve data from this dataset very quickly and very effic
 <br>Every .insert and .delete command must include <kbd>&amp;author=<i>author_key</i></kbd>
 as the last parameter,
 where author_key is composed of the author's identifier (you chose: name, initials,
-pseudonym, number) and a secret key. The ERDDAP administrator will work with authors
+pseudonym, number), an underscore, and a secret key. The ERDDAP administrator will work with authors
 to generate the list of valid author_key values, which can be changed at any time.
 
 <br>When EDDTableFromHttpGet receives an .insert or .delete command,
@@ -7371,7 +7392,7 @@ This ensures that the information being transferred is kept secret during transi
 received the request) to each command that it stores in the log files.
 Because ERDDAP generates the timestamp, not the authors,  
 it doesn't matter if different authors are making changes from computers 
-with clocks set to different times. The timestamp reliably indicates 
+with clocks set to slightly different times. The timestamp reliably indicates 
 the time when the change was made to the dataset.
 <br>&nbsp;
 
@@ -7381,7 +7402,7 @@ the time when the change was made to the dataset.
 <br>HTTP <a rel="help" href="https://en.wikipedia.org/wiki/POST_(HTTP)">POST<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
-is an alternative way to HTTP GET for sending information from a client to an HTTP server.
+is the better alternative (compared to HTTP GET) for sending information from a client to an HTTP server.
 If you can, or if you really want to improve security, use POST instead of GET to 
 send the information to ERDDAP. 
 POST is more secure because: with GET and https, the URL is transmitted in a secure way,
@@ -7647,7 +7668,7 @@ Here are the recommended steps to setting up an EDDTableFromHttpGet dataset:
   to get data for a specific station).
   <br>&nbsp;
 
-<li>In the future, we envision that tools will be build (by us? by you?) for
+<li>In the future, we envision that tools will be built (by us? by you?) for
   working with these datasets. For example, there could be a script which 
   reads the raw log files, applies a different calibration equation,
   and generates/updates a different dataset with that derived information. 
@@ -9561,6 +9582,9 @@ Here are detailed descriptions of common tags and attributes.
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
     for restricting access to some datasets to some users.
   <li>Make a separate <kbd>&lt;user&gt;</kbd> tag for each user.
+    Optionally, if authentication=oauth2, you can set up two <kbd>&lt;user&gt;</kbd> tags for each user:
+    one for when the user logs in via Google, one for when the user logs in via Orcid,
+    presumably with the same <kbd>roles</kbd>.
   <li>If there is no <kbd>&lt;user&gt;</kbd> tag for a client, s/he will only be 
     able to access public datasets,
     i.e., datasets which don't have an <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>
@@ -9570,10 +9594,16 @@ Here are detailed descriptions of common tags and attributes.
       digits, underscores, and periods.
     <br>For authentication=email, the username is the user's email address.
       It may be any email address.
-    <br>For authentication=google, the username is the user's full Google email address.
+    <br>For authentication=google, 
+      the username is the user's full Google email address.
       This includes Google-managed accounts like @noaa.gov accounts.    
+    <br>For authentication=orcid, 
+      the username is the user's Orcid account number (with dashes).    
+    <br>For authentication=oauth2, 
+      the username is the user's full Google email address or 
+      the user's Orcid account number (with dashes).   
   <li><kbd>password</kbd>
-    <br>For authentication=email and google, don't specify a password attribute.
+    <br>For authentication=email, google, orcid, or oauth2, don't specify a password attribute.
     <br>For authentication=custom, you must specify a password attribute for each user.
     <ul>
     <li>The passwords that users enter are case sensitive 
@@ -10062,147 +10092,144 @@ when any subclass of EDDTableFromFiles or EDDGrid reads data from its source,
 it can read one chunk of data (e.g., one source file) at a time (in one thread) (that's the default) 
 or more than one chunk of data (e.g., 2+ source files) at a time (in 2 or more threads)
 while processing each request. 
-For a given dataset, this <kbd>nThreads</kbd> setting can come from different places:
-<ul>
-<li>If the datasets.xml chunk for a dataset has an <kbd>&lt;nThreads&gt;</kbd> tag
-  (within the <kbd>&lt;dataset&gt;</kbd> tag, not as a global attribute)
-  with a value &gt;= 1,
-  that value of nThreads is used. So, you can specify a different number for each 
-  dataset.
-<li>Otherwise, if datasets.xml 
-has an <kbd>&lt;nTableThreads&gt;</kbd> tag (for EDDTableFromFiles datasets)
-or  an <kbd>&lt;nGridThreads&gt;</kbd> tag (for EDDGrid datasets)
-with a value &gt;= 1,
-  outside of a <kbd>&lt;dataset&gt;</kbd> tag, that value of nThreads is used.
-<li>Otherwise, 1 thread is used, which is a safe choice since it uses the
-  smallest amount of memory.
-</ul>
+<br>&nbsp;
 
-<p>tl;dr Rule of Thumb: For most datasets on most systems, use nThreads=1, the default.
-  If you have a powerful computer (lots of CPU cores, lots of memory), 
-  then consider setting nThreads to 2, 3, or 4 for datasets that will benefit the most 
-  (e.g., lots of small files stored on a high-bandwidth parallel file system),
-  but keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-  (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-  >ERDDAP's status page</a>).
+    <ul>
+    <li>Rule of Thumb:
+        <br>For most datasets on most systems, use nThreads=1, the default.
+        If you have a powerful computer (lots of CPU cores, lots of memory), 
+        then consider setting nThreads to 2, 3, or 4 for datasets that might benefit,
+        notably datasets where something causes a lag before a chunk of data can actually 
+        be processed. For example:
+        <ul>
+        <li>Datasets with 
+            <a rel="help" href="#ExternallyCompressedFiles">externally-compressed (e.g., .gz)</a>     
+            binary (e.g., .nc) files, because ERDDAP has to decompress the whole file
+            before it can start to read the file.
+        <li>Datasets that use 
+            <a href="#cacheFromUrl" rel="bookmark">cacheFromUrl and cacheSizeGB</a>,
+            because ERDDAP often has to download the file before it can read it.
+        <li>Datasets with data files stored on a high-bandwidth parallel file system,
+            because it can deliver more data, faster, when requested. Examples of
+            parallel file systems include 
+            <a rel="help" href="https://en.wikipedia.org/wiki/Non-RAID_drive_architectures">JBOD<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>,
 
-<p>Which requests benefit from more threads?   There are lots of factors:
-<ul>
-<li>Requests where ERDDAP needs to read lots of files benefit more.
-<li>Requests to datasets with relatively small files benefit more.
-<li>Requests to datasets stored on storage systems with a long lag to start reading the file
-  (the "latency" time) benefit more. 
-  <ul>
-  <li>Local SSD (solid state) drives (with a lag of ~0.1ms) benefit the least in this sense.
-  <li>Regular local HDD (hard disk) drives and RAIDs (with a lag of ~3ms) benefit a little.
-  <li>"Remote" storage systems like Amazon's S3 (with a lag of ~55ms) benefit a lot.
-  <li>Remote web services like OPeNDAP benefit a lot.
-  </ul>
-<li>Requests to datasets with a high bandwidth connection benefit more.
-  <ul>
-  <li>Higher bandwidth devices like SSDs (~500 MB/s), RAIDs (~500 MB/s), and
-    cloud storage systems (Google Cloud Storage and Amazon S3) benefit 
-    more than lower bandwidth devices like single HDDs (~75 MB/s).
-  <li>Devices with newer SATA III (600 MB/s) and USB 3.0 (640 MB/s) connections benefit 
-    more than ones with older SATA II (300 MB/s) and USB 2.0 (60 MB/s) connections.
-  <li>Servers with higher bandwidth network connections benefit more than lower bandwidth connections.
-  <li>Cloud compute instances with higher bandwidth network connections benefit 
-    more than instances with lower bandwidth connections.
-  </ul>
-<li>Requests to datasets stored on storage systems that offer truly parallel requests benefit more.
-  <ul>
-  <li>So regular local HDD (hard disk) drives and RAIDs benefit little.
-  <li>Requests to truly parallel file systems 
-    (<a rel="help" href="https://en.wikipedia.org/wiki/Non-RAID_drive_architectures">JBOD<img 
-  src="../images/external.png" alt=" (external link)" 
-  title="This link to an external website does not constitute an endorsement."></a>,
+         <a rel="help" href="https://www.ibm.com/developerworks/library/l-pnfs/index.html">pNFS<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>, 
 
-     <a rel="help" href="https://www.ibm.com/developerworks/library/l-pnfs/index.html">pNFS<img 
-  src="../images/external.png" alt=" (external link)" 
-  title="This link to an external website does not constitute an endorsement."></a>, 
+         <a rel="help" href="https://en.wikipedia.org/wiki/Gluster">GlusterFS<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>,
 
-     <a rel="help" href="https://en.wikipedia.org/wiki/Gluster">GlusterFS<img 
-  src="../images/external.png" alt=" (external link)" 
-  title="This link to an external website does not constitute an endorsement."></a>,
+          Amazon S3, and Google Cloud Storage.
+        </ul>
+        Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
+        (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
+        >ERDDAP's status page</a>).
+      <br>&nbsp;      
 
-  Amazon S3, and Google Cloud Storage) benefit a lot.
-  </ul>
-</ul>
+    <li>For a given dataset, this <kbd>nThreads</kbd> setting can come from different places:
+        <ul>
+        <li>If the datasets.xml chunk for a dataset has an <kbd>&lt;nThreads&gt;</kbd> tag
+          (within the <kbd>&lt;dataset&gt;</kbd> tag, not as a global attribute)
+          with a value &gt;= 1,
+          that value of nThreads is used. So, you can specify a different number for each 
+          dataset.
+        <li>Otherwise, if datasets.xml 
+          has an <kbd>&lt;nTableThreads&gt;</kbd> tag (for EDDTableFromFiles datasets)
+          or  an <kbd>&lt;nGridThreads&gt;</kbd> tag (for EDDGrid datasets)
+          with a value &gt;= 1,
+          outside of a <kbd>&lt;dataset&gt;</kbd> tag, that value of nThreads is used.
+        <li>Otherwise, 1 thread is used, which is a safe choice since it uses the
+          smallest amount of memory.
+          <br>&nbsp;      
+        </ul>
 
-<p>What should you set <kbd>&lt;nThreads&gt;</kbd> to?
-<ul>
-<li>Rule of Thumb: For most datasets on most systems, use nThreads=1.
-  If you have a powerful computer (lots of CPU cores, lots of memory), 
-  then consider setting nThreads to 2, 3, or 4 for datasets that will benefit the most 
-  (e.g., lots of small files stored on a high-bandwidth parallel file system),
-  but keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-  (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-  >ERDDAP's status page</a>).
+    <li>There are diminishing returns to increasing the nThreads setting. 
+      <br>For most requests to most datasets on most systems, there is almost no benefit to 
+      setting nThreads &gt; 1.
+      Even in ideal circumstances, you will probably only get a 75% speed up because
+      there's no getting around
+      <a rel="help" href="https://en.wikipedia.org/wiki/Amdahl%27s_law">Amdahl's Law<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>. 
+      And there are diminishing returns: 2 threads will be way better than 1. 
+      But 3 will be only a chunk better than 2. 
+      And 4 will be only marginally better than 3.  
+      It will be rare that you see much benefit to &gt;4 threads.
+      <br>&nbsp;      
 
-<li>There are diminishing returns to increasing the nThreads setting. 
-  <br>For most requests to most datasets on most systems, there is almost no benefit to 
-  setting nThreads &gt; 1.
-  Even in ideal circumstances, you will probably only get a 50% speed up because
-  there's no getting around
-  <a rel="help" href="https://en.wikipedia.org/wiki/Amdahl%27s_law">Amdahl's Law<img 
-  src="../images/external.png" alt=" (external link)" 
-  title="This link to an external website does not constitute an endorsement."></a>. 
-  And there are diminishing returns: 2 threads will be way better than 1. 
-  But 3 will be only a chunk better than 2. 
-  And 4 will be only marginally better than 3.  
-  It will be rare that you see much benefit to &gt;4 threads.
+    <li>WARNING: Decreased Responsiveness -
+      <br>In isolation, ERDDAP will fulfill a request to a dataset with a higher 
+      nThreads setting faster than if nThreads=1.  But while that request is being processed,
+      other requests from other users will be crowded out and get a slower response.
+      The overall system responsiveness will be worse when there are datasets with 
+      higher nThreads settings -- this can be very annoying to users!
+      nThreads=1 is the fairest setting since each request (among several simultaneous requests)
+      will get an equal share of computing resources.
+      But the more powerful the computer, the less this will be a problem.
+      <br>&nbsp;      
 
-<li>WARNING: Decreased Responsiveness -
-  <br>In isolation, ERDDAP will fulfill a request to a dataset with a higher 
-  nThreads setting faster than if nThreads=1.  But while that request is being processed,
-  other requests from other users will be crowded out and get a slower response.
-  The overall system responsiveness will be worse when there are datasets with 
-  higher nThreads settings -- this can be very annoying to users!
-  nThreads=1 is the fairest setting since each request (among several simultaneous requests)
-  will get an equal share of computing resources.
-  But the more powerful the computer, the less this will be a problem.
+    <li>WARNING: Higher Memory Use -
+      <br>Memory use is directly proportional to the nThreads setting.
+      A reasonably safe rule of thumb is: 
+      you need to set 
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#memory"
+      >ERDDAP's memory settings</a> to at least 2GB + (2GB * nThreads).
+      For example, setting nThreads=3 for any dataset
+      means that the -Xmx setting should be at least -Xmx8000M.
+      Some requests to some datasets will need more memory than that, 
+      so keep a close eye on the memory usage statistics on your 
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
+      >ERDDAP's status page</a>. You shouldn't ever come close to maxing out the memory usage
+      in ERDDAP; otherwise there will be serious errors and failures.
+      <br>&nbsp;      
 
-<li>WARNING: Higher Memory Use -
-  <br>Memory use is directly proportional to the nThreads setting.
-  A reasonably safe rule of thumb is: 
-  you need to set 
-  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#memory"
-  >ERDDAP's memory settings</a> to at least 2GB + (2GB * nThreads).
-  For example, setting nThreads=3 for any dataset
-  means that the -Xmx setting should be at least -Xmx8000M.
-  Some requests to some datasets will need more memory than that, 
-  so keep a close eye on the memory usage statistics on your 
-  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-  >ERDDAP's status page</a>. You shouldn't ever come close to maxing out the memory usage
-  in ERDDAP; otherwise there will be serious errors and failures.
+    <li>Processor Threads -
+      <br>You shouldn't ever set nThreads to a number larger than half the number
+      of threads that the server's processor supports. 
+      Most processors these days
+      support 2 threads per core, so a 4 core processor can support up to 8 threads.
+      On such a system, you should never exceed nThreads=4.
+      Computers / operating systems are set up to handle far more threads than
+      the processor can actually handle, but remember that
+      <ul>
+      <li>The nThreads setting is per request.
+      <li>ERDDAP often handles multiple requests simultaneously.
+      <li>ERDDAP does things other than process requests, e.g., reload datasets.
+      <li>The operating system does things other than run ERDDAP.
+        <br>&nbsp;      
+      </ul>
 
-<li>You generally shouldn't ever set nThreads to a number larger than the number
-  of threads that the server's processor supports. 
-  (That's an overgeneralization -- it's complicated -- but that's a good rule of thumb.)
-  Most processors these days
-  support 2 threads per core, so a 4 core processor can support up to 8 threads.
-  
-</ul>
+    <li>YMMV - 
+    <br>The results of different nThreads settings will vary greatly for different
+    requests to different datasets on different systems.
+    If you really want to know the effect of different nThreads settings, 
+    run realistic tests. 
+    <br>&nbsp;
 
-<p>The results of different nThreads settings will vary greatly for different
-requests to different datasets on different systems.
-If you really want to know the effect of different nThreads settings, 
-run realistic tests. 
-
-<p><a class="selfLink" id="nThreadsUnfortunately" href="#nThreadsUnfortunately" rel="bookmark">Unfortunately,</a>
-ERDDAP's nThreads system will never be as effective
-as true parallelizing via multiple worker computers, 
-with each working on a chunk of data,
-in the way that Hadoop or Apache Spark are usually used. When the task is
-truly parallelized/distributed to multiple computers, each computer can use all of its
-resources on its part of the task. With ERDDAP's nThreads system, each of the
-threads is competing for the same computer's bandwidth, disk drives, memory, etc.
-Unfortunately, most of us don't have the resources or funds to set up or even rent
-(on Amazon Web Services (AWS) or Google Cloud Platform (GCP)) massive grids of computers. 
-Also, unlike a relational database which is allowed to returns the result rows in any order,
-ERDDAP makes a promise to return the result rows in a consistent order. This constraint
-makes ERDDAP's nThreads implementation somewhat considerably efficient.
-But ERDDAP's nThreads is useful in some cases.
+    <li><a class="selfLink" id="nThreadsUnfortunately" href="#nThreadsUnfortunately" rel="bookmark">Unfortunately,</a>
+    ERDDAP's nThreads system will never be as effective
+    as true parallelizing via multiple worker computers, 
+    with each working on a chunk of data,
+    in the way that Hadoop or Apache Spark are usually used. When the task is
+    truly parallelized/distributed to multiple computers, each computer can use all of its
+    resources on its part of the task. With ERDDAP's nThreads system, each of the
+    threads is competing for the same computer's bandwidth, disk drives, memory, etc.
+    Unfortunately, most of us don't have the resources or funds to set up or even rent
+    (on Amazon Web Services (AWS) or Google Cloud Platform (GCP)) massive grids of computers. 
+    Also, unlike a relational database which is allowed to return the result rows in any order,
+    ERDDAP makes a promise to return the result rows in a consistent order. This constraint
+    makes ERDDAP's nThreads implementation less efficient.
+    But ERDDAP's nThreads is useful in some cases.
+    <p>However, there are ways to make ERDDAP scale to handle a huge number of requests
+    quickly by setting up a 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+      >grid/cluster/federation of ERDDAPs</a>.
+    </ul>
 
 <li><a class="selfLink" id="onChange" href="#onChange" rel="bookmark"><kbd><strong>&lt;onChange&gt;</strong></kbd></a>
   is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag that specifies an action which 
