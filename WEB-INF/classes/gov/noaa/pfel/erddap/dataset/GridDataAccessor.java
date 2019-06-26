@@ -73,7 +73,7 @@ public class GridDataAccessor {
      * not by changing the code here)
      * if you want all diagnostic messages sent to String2.log.
      */
-    public static boolean debugMode = true; 
+    public static boolean debugMode = false; 
 
     //things passed into the constructor
     protected EDDGrid eddGrid;
