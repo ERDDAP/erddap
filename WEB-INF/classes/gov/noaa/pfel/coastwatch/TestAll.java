@@ -156,7 +156,7 @@ public class TestAll  {
 //    Table.testReadMultidimNc();
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {                
-//      String tFileName = "C:/data/gtspp/bestNcZip/gtspp_31645513_xb_111.nc"; 
+//      String tFileName = "C:/temp/gtspp_34775909_ba_111.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
@@ -837,12 +837,12 @@ m Pathfinder Version 5.2 grid.";
 //        "", // tSortFilesBySourceNames, 
 //        "", "", "", "", 0, "", null));  //info, institution, summary, title, standardizeWhat=0, cacheFromUrl, atts
 
-
 //    Sync with various remote directories
-//    Table table = FileVisitorDNLS.sync(
-//        "http://flux.aos.wisc.edu/data/aoss/ghg/DataLog_User_Sync/2016/07/",
-//        "/u00/data/points/lterWiscAoss/2016/07/",
-//        ".*\\.dat", true, ".*", true); //doIt
+//    FileVisitorDNLS.sync(
+//        "https://www.ngdc.noaa.gov/thredds/catalog/dart_bpr/processed",  //omit /catalog.html
+//        "/u00/data/points/nceiDartBpr/",
+//        ".*\\.nc", true, ".*", false).dataToString(); //recursive, doAll (or just 1)
+//    String2.log(NcHelper.ncdump("/u00/data/points/nceiDartBpr/ed/21413/21413_20061126to20080422_qc.nc", "-h"));
 
 //    Do this periodically to update the local cache of InPort xml files
 //      Last done: 2017-08-09, now /inport-xml/
@@ -1071,9 +1071,9 @@ m Pathfinder Version 5.2 grid.";
 
 
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
-/*      s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        //EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
-        "/data/joe/", "20171208.syslog\\.nc", "",
+/* 
+      s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
+        "/u00/data/points/nceiDartBpr", ".*\\.nc", "",
         "", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
@@ -1082,10 +1082,10 @@ m Pathfinder Version 5.2 grid.";
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
         "", //treatDimensionsAs
-        "", //cacheFromUrl
+        "https://www.ngdc.noaa.gov/thredds/catalog/dart_bpr/processed", //cacheFromUrl  /catalog.html
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
-    /* */
+    // */
 //    Table.debugMode = true; DasDds.main(new String[]{"joe", "-verbose"});
 //    EDDTableFromMultidimNcFiles.testBasic();
 //    EDDTableFromMultidimNcFiles.testCharAsString(true);
@@ -1225,6 +1225,7 @@ m Pathfinder Version 5.2 grid.";
 
          EDDGridAggregateExistingDimension.testGenerateDatasetsXml();  //after EDDGridFromDap
          EDDGridFromAudioFiles.testGenerateDatasetsXml();
+         EDDGridFromAudioFiles.testGenerateDatasetsXml2();
          EDDGridFromDap.testGenerateDatasetsXml();  //often not accessible
          EDDGridFromDap.testGenerateDatasetsXml2();
          //EDDGridFromDap.testGenerateDatasetsXml3(); //source is gone
@@ -1236,6 +1237,8 @@ m Pathfinder Version 5.2 grid.";
          EDDGridFromNcFiles.testGenerateDatasetsXml2();
          EDDGridFromNcFiles.testGenerateDatasetsXml3();
          EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3();  //slow!
+         EDDGridFromNcFiles.testGenerateDatasetsXmlCopy();
+         EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles();  
          EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml();
          EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog(); 
   
@@ -1264,11 +1267,13 @@ m Pathfinder Version 5.2 grid.";
          EDDTableFromJsonlCSVFiles.testGenerateDatasetsXml(); 
          EDDTableFromMultidimNcFiles.testGenerateDatasetsXml();
          EDDTableFromMultidimNcFiles.testGenerateDatasetsXmlSeaDataNet();
+         EDDTableFromMultidimNcFiles.testGenerateDatasetsXmlDimensions();
          EDDTableFromNcCFFiles.testGenerateDatasetsXml();
          EDDTableFromNcCFFiles.testGenerateDatasetsXml2();
          EDDTableFromNccsvFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml2();
+         EDDTableFromNcFiles.testCopyFilesGenerateDatasetsXml();
          //EDDTableFromNWISDV.testGenerateDatasetsXml(); //inactive
          EDDTableFromOBIS.testGenerateDatasetsXml();
          EDDTableFromSOS.testGenerateDatasetsXml(true); //useCachedInfo); 
@@ -1280,9 +1285,9 @@ m Pathfinder Version 5.2 grid.";
 
 //2018-09-13 https: works in browser by not yet in Java
 //    String2.log(EDDTableFromThreddsFiles.generateDatasetsXml(
-//        "http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/2012/catalog.xml", 
+//        "https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/2012/catalog.xml", 
 //          "WTEP_20120215.*",
-//          "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2012/WTEP_20120215v10002.nc",
+//          "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2012/WTEP_20120215v10002.nc",
 //        "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/catalog.xml",
 //          "BodegaMarineLabBuoyCombined.nc",
 //          "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc",
@@ -1479,7 +1484,7 @@ m Pathfinder Version 5.2 grid.";
 
     // set jplG1SST flags !!!!! 
     //SSR.touchUrl(
-    //    "http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=jplG1SST&flagKey=1879976078",
+    //    "https://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=jplG1SST&flagKey=1879976078",
     //    60000);
     
     //while email systems are down...
@@ -1496,7 +1501,7 @@ m Pathfinder Version 5.2 grid.";
 //    Projects.erddapTunnelTest();
 //    Projects.makeNetcheckErddapTests( //results are on clipboard
 //        "https://coastwatch.pfeg.noaa.gov/erddap/");
-//        "http://upwell.pfeg.noaa.gov/erddap/");
+//        "https://upwell.pfeg.noaa.gov/erddap/");
 //        "http://75.101.155.155/erddap/");
 //     :8081 led to out-of-date oceanwatch dataset!!  but now disabled
 //    Projects.testOpendapAvailability("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/CM/usfc/hday", 

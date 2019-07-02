@@ -743,8 +743,6 @@ public class EDDTableFromOBIS extends EDDTable{
         //generate the datasets.xml
         StringBuilder sb = new StringBuilder();
         sb.append(
-directionsForGenerateDatasetsXml() +
-"-->\n\n" +
 "<dataset type=\"EDDTableFromOBIS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) +
         "\" active=\"true\">\n" +
 "    <sourceUrl>" + XML.encodeAsXML(tLocalSourceUrl) + "</sourceUrl>\n" +
@@ -794,9 +792,6 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromOBIS\" datasetID=\"rutgers_marine_6cb4_a970_1d67\" active=\"true\">\n" +
 "    <sourceUrl>http://iobis.marine.rutgers.edu/digir2/DiGIR.php</sourceUrl>\n" +
 "    <sourceCode>OBIS-SEAMAP</sourceCode>\n" +

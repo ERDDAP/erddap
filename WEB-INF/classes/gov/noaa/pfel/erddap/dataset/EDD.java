@@ -9208,7 +9208,7 @@ public abstract class EDD {
                 addAtts.add("ioos_category", "Currents");
 
             } else if (
-                (lcu.indexOf("o2") >= 0 && lcu.indexOf("co2") < 0) || //no2 was caught above
+                lcu.indexOf("|o2|")         >= 0 || //no2 was caught above
                 lcu.indexOf("oxygen")       >= 0) { 
                 addAtts.add("ioos_category", "Dissolved O2");
 

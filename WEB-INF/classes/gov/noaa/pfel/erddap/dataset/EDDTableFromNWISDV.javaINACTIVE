@@ -1440,7 +1440,6 @@ public class EDDTableFromNWISDV extends EDDTable{
             tPublicWaterMLUrl + "?" + tParameterCode + "_" + tStatisticCode + "_" +
             nonQualifierVars.toString());
         sb.append(
-            (includeInstructions? directionsForGenerateDatasetsXml() + "-->\n\n" : "") +
             "<dataset type=\"EDDTableFromNWISDV\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
             "    <sourceUrl>" + XML.encodeAsXML(tLocalWaterMLUrl) + "</sourceUrl>\n" +
@@ -1692,9 +1691,6 @@ public class EDDTableFromNWISDV extends EDDTable{
             NWISDailyValueQualificationCodes);
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromNWISDV\" datasetID=\"usgs_waterservices_5411_c757_e669\" active=\"true\">\n" +
 "    <sourceUrl>http://interim.waterservices.usgs.gov/NWISQuery/GetDV1</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1000000000</reloadEveryNMinutes>\n" +

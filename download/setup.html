@@ -607,18 +607,18 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddapContent" href="#erddapContent" rel="bookmark"
 >Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
-  <!-- -->
+  <!-- 
     <br>Starting 2019-06-18, we are currently testing ERDDAP v2.00. 
     We hope to make it publicly available around 2019-06-26. 
     Unless getting ERDDAP is urgent, we advise waiting for v2.00 to avoid the transition from v1.82 to v2.00.
     We're sorry for the inconvenience, but the new version is worth the wait. 
-    <br>&nbsp;
+    <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
      <!-- Use: md5 erddapContent1.82.zip -->
     <a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.82, 21,414 bytes, MD5=85AAD46840A7E4A7691C6433B59A2458, dated 2018-01-26)
+    (version 2.00, 19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2018-01-26)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
@@ -630,17 +630,14 @@ or Mac server instead.
     
   <p>[Some previous versions are also available:  
     <br><a rel="bookmark"
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.74.zip">1.74</a>
-    (26,708 bytes, MD5=D70DF53AE98785CC35614571E719BC54, dated 2016-10-07)
-    <br><a rel="bookmark"
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.76.zip">1.76</a>
-    (23,878 bytes, MD5=D988149831895B41164F53F4245BF5AD, dated 2017-05-12)
-    <br><a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.78.zip">1.78</a>
     (23,878 bytes, MD5=9AB513BE1DFB6C9EA8DAA24A8114E855, dated 2017-05-27)
     <br><a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.80.zip">1.80</a>
     (23,878 bytes, MD5=7F85DEF1445B247010049C73984554EB, dated 2017-08-04)
+    <br><a rel="bookmark"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.82.zip">1.82</a>
+    (21,414 bytes, MD5=85AAD46840A7E4A7691C6433B59A2458, dated 2018-01-26)
     ]
 
   <p>Then,
@@ -702,26 +699,23 @@ or Mac server instead.
     <!-- use: c:\content\bat\md5.bat erddap1.80.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.82/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 1.82, 504,431,073 bytes, MD5=2B342B3E6CD9CE562236753ED28ED5FB, dated
-    <span class="N">2018-01-26</span>)
+    <br>(version 2.00, 512,875,729 bytes, MD5=B5FA224EDDB0BC8F2B257B0FF7F6936D, dated
+    <span class="N">2019-06-26</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
   <p>[Some previous versions are also available.
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.74/erddap.war">1.74</a>
-    (552,359,929 bytes, MD5=5976EDF01CC9D3A6046D83DB0CF10EA0, dated 2016-10-07)
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.76/erddap.war">1.76</a>
-    (534,583,353 bytes, MD5=72F90E2C26E9E3806573CADD239855F0, dated 2017-05-12)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddap.war">1.78</a>
     (534,713,263 bytes, MD5=E8407EDC977C073CB816D873EF85320F, dated 2017-05-27)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v1.80/erddap.war">1.80</a>
     (502,908,740 bytes, MD5=F09D55AAACF1221F13276541FEF61AE8, dated 2017-08-04)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v1.82/erddap.war">1.82</a>
+    (504,431,073 bytes, MD5=2B342B3E6CD9CE562236753ED28ED5FB, dated 2018-01-26)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -860,10 +854,10 @@ or Mac server instead.
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.82/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 1.82, 504,431,073 bytes, MD5=2B342B3E6CD9CE562236753ED28ED5FB, dated
-    <span class="N">2018-01-26</span>)
+    <br>(version 2.00, 512,875,729 bytes, MD5=B5FA224EDDB0BC8F2B257B0FF7F6936D, dated
+    <span class="N">2019-06-26</span>)
 
   <br>&nbsp;
 
@@ -880,14 +874,13 @@ or Mac server instead.
     <br>The new standard messages.xml will be installed automatically 
     (amongst the .class files via erddap.war).
     <br>&nbsp;
-  <li>Rare: If you always make changes to the standard messages, 
+  <li>Rare: If you always make changes to the standard messages.xml file (in place), 
     <br>you need to make those changes to the new messages.xml file (which is
     <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml after erddap.war 
     is decompressed by Tomcat).
     <br>&nbsp;
-  <li>Rare: If you maintain a custom messages.xml file 
-    <br>in <i>tomcat</i>/content/erddap/,
-    you need to figure out (via diff) what changes have been made to the default messages.xml 
+  <li>Rare: If you maintain a custom messages.xml file in <i>tomcat</i>/content/erddap/,
+    <br>you need to figure out (via diff) what changes have been made to the default messages.xml 
     (which are in the new erddap.war as
     <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml)
     and modify your custom messages.xml file accordingly.
@@ -3115,6 +3108,21 @@ These are details that you don't need to know until a need arises.
   and resubmit the request to the reloaded dataset.
   Often this succeeds. When it does, the user will simply see that a given request took a little longer 
   than usual. If it fails, the user should (as the message says) wait a minute, then try again.
+
+<li><strong><a class="selfLink" id="filesNotBeingDeleted" href="#filesNotBeingDeleted" rel="bookmark">Files Not Being Deleted</a></strong>
+  <br>For a few ERDDAP installations, there has been a problem with some temporary files 
+  being created by ERDDAP staying open (mistakenly) and thus not being deleted.
+  In a few cases, many of these files have accumulated and taken up a significant
+  amount of disk space. 
+  <p>Hopefully, these problems are fixed (as of ERDDAP v2.00). If you see this problem,
+  please email the directory+names of the offending files to bob.simons at noaa.gov.
+  You have a few options for dealing with the problem:
+  <ul>
+  <li>If the files aren't big and aren't causing you to run out of disk space, you can ignore the problem. 
+  <li>The simplest solution is to shut down tomcat/erddap (after hours so fewer users are affected).
+    During the shutdown, if the operating system doesn't delete the files, delete them by hand. Then restart ERDDAP.
+    <br>&nbsp;
+  </ul>
 
 <li><strong><a class="selfLink" id="jsonld" href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a></strong>
   <br>ERDDAP now uses 

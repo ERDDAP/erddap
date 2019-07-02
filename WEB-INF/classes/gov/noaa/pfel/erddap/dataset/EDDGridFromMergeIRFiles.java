@@ -515,22 +515,20 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         StringBuilder sb = new StringBuilder();
         //gather the results 
         String tDatasetID = "mergeIR";
-        sb.append(directionsForGenerateDatasetsXml());
 
         //???
-        //sb.append( "!!! The source for " + tDatasetID + " has nGridVariables=" + 2 +".\n");
+        //sb.append( "<!-- NOTE! The source for " + tDatasetID + " has nGridVariables=" + 2 +". -->\n");
 
         sb.append(
-            "-->\n\n" +
             "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"" + tDatasetID +  "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n");
          
@@ -641,9 +639,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             gdxResults.length() + " " + results.length());
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIR\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +

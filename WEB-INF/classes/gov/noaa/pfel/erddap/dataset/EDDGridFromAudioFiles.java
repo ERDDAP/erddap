@@ -400,21 +400,18 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 
         //write results
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n" +
-            "\n" +
             "<dataset type=\"EDDGridFromAudioFiles\" datasetID=\"" + tDatasetID +                      
                 "\" active=\"true\">\n" +
-            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
             "    <defaultGraphQuery>" + XML.encodeAsXML(defGraph) + "</defaultGraphQuery>\n" +
             "    <defaultDataQuery>" + XML.encodeAsXML(defData) + "</defaultDataQuery>\n" +
+            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
             "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
@@ -462,14 +459,11 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             -1, null, null) + "\n";
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromAudioFiles\" datasetID=\"floatWav_1fc2_a353_7a36\" active=\"true\">\n" +
-"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <defaultGraphQuery>channel_1[0][(0):(1)]&amp;.draw=lines&amp;.vars=elapsedTime|time</defaultGraphQuery>\n" +
 "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/audio/floatWav/</fileDir>\n" +
 "    <fileNameRegex>aco_acoustic\\.[0-9]{8}_[0-9]{6}\\.wav</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
@@ -595,14 +589,11 @@ directionsForGenerateDatasetsXml() +
             -1, null, null) + "\n";
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromAudioFiles\" datasetID=\"wav_b2fb_4111_6998\" active=\"true\">\n" +
-"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <defaultGraphQuery>channel_1[0][(0):(1)]&amp;.draw=lines&amp;.vars=elapsedTime|time</defaultGraphQuery>\n" +
 "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/audio/wav/</fileDir>\n" +
 "    <fileNameRegex>aco_acoustic\\.[0-9]{8}_[0-9]{6}\\.wav</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +

@@ -255,7 +255,7 @@ public class GenerateDatasetsXml {
                     s2  = get(args,  2,  s2, "ReloadEveryNMinutes (e.g., " + 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ", recommended: -1 generates suggested values)");
                     String2.log("working...");
-                    printToBoth(EDDGridFromDap.generateDatasetsXml(true, //writeInstructions
+                    printToBoth(EDDGridFromDap.generateDatasetsXml(
                         s1, null, null, null, 
                         String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
