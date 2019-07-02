@@ -982,11 +982,13 @@ public class Erddap extends HttpServlet {
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);   //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t;
+        } finally {
 
-        //end of home page
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of home page
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -1007,9 +1009,11 @@ public class Erddap extends HttpServlet {
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
     }
 
     /**
@@ -1039,9 +1043,11 @@ public class Erddap extends HttpServlet {
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
     }
 
     /** This is used by doLogin to add a failed login attempt to failedLogins */
@@ -1443,10 +1449,11 @@ public class Erddap extends HttpServlet {
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t;
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -1624,10 +1631,11 @@ public class Erddap extends HttpServlet {
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t;
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -1738,10 +1746,11 @@ public class Erddap extends HttpServlet {
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t;
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         } 
 
@@ -1759,9 +1768,11 @@ public class Erddap extends HttpServlet {
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -1863,10 +1874,11 @@ public class Erddap extends HttpServlet {
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
+                    throw t;
+                } finally {
+                    writer.write("</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
                 }
-
-                writer.write("</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
                 return;
             }
 
@@ -1970,9 +1982,11 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -2207,12 +2221,15 @@ writer.write(widgets.endForm());
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            if (out == null || writer == null)
-                throw t;
-            else writer.write(EDStatic.htmlForException(t));
+            if (writer != null)
+                writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            if (writer != null) {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -2313,7 +2330,7 @@ writer.write(widgets.endForm());
                 tCreatorType, creatorTypes.length - 1, errorMsgSB);
             tCreatorEmail   = HtmlWidgets.validateIsSomethingNotTooLong("creator_email", "", tCreatorEmail,      80, errorMsgSB);
             tInstitution    = HtmlWidgets.validateIsSomethingNotTooLong("institution",   "", tInstitution,       80, errorMsgSB);
-            tInfoUrl        = HtmlWidgets.validateIsSomethingNotTooLong("infoUrl",       "", tInfoUrl,          120, errorMsgSB);
+            tInfoUrl        = HtmlWidgets.validateIsSomethingNotTooLong("infoUrl",       "", tInfoUrl,          200, errorMsgSB);
             tLicense        = HtmlWidgets.validateIsSomethingNotTooLong("license", "[standard]", tLicense,      500, errorMsgSB);
             tCdmDataType    = HtmlWidgets.validate0ToMax("cdm_data_type", defaultCdmDataType, 
                 tCdmDataType, cdmDataTypes.length - 1, errorMsgSB);
@@ -2656,12 +2673,15 @@ writer.write(widgets.endForm());
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            if (out == null || writer == null)
-                throw t;
-            else writer.write(EDStatic.htmlForException(t));
+            if (writer != null)
+                writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            if (writer != null) {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -3073,12 +3093,15 @@ writer.write(widgets.endForm());
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            if (out == null || writer == null)
-                throw t;
-            else writer.write(EDStatic.htmlForException(t));
+            if (writer != null)
+                writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            if (writer != null) {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -3216,12 +3239,15 @@ writer.write(widgets.endForm());
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            if (out == null || writer == null)
-                throw t;
-            else writer.write(EDStatic.htmlForException(t));
+            if (writer != null)
+                writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            if (writer != null) {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -3272,12 +3298,15 @@ writer.write(
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            if (out == null || writer == null)
-                throw t;
-            else writer.write(EDStatic.htmlForException(t));
+            if (writer != null) 
+                writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            if (writer != null) {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
         return;
     }
 
@@ -3318,14 +3347,17 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+
+            //end of status.html
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+
+            //as a convenience to admins, viewing status.html calls String2.flushLog()
+            String2.flushLog();
         }
 
-        //end of status.html
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
-
-        //as a convenience to admins, viewing status.html calls String2.flushLog()
-        String2.flushLog();
     }
 
     /**
@@ -3788,10 +3820,11 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
-
     }
 
     /**
@@ -4044,9 +4077,11 @@ writer.write(
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t;
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -4126,10 +4161,15 @@ writer.write(
                     writer.write(EDStatic.htmlForException(t));
                 }
                 writer.write("</div>\n");
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
                 writer.write(EDStatic.endBodyHtml(tErddapUrl));
+                writer.write("</html>");           
                 writer.flush(); //essential
                 if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
-            } finally {
                 writer.close(); 
             }
 
@@ -4427,26 +4467,33 @@ writer.write(
             table.addColumn("Description",   new StringArray(new String[]{"Documentation for ERDDAP's \"files\" system."}));
             OutputStream out = getHtmlOutputStream(request, response);
             Writer writer = getHtmlWriter(loggedInAs, "Browse Source Files", out);
-            writer.write(
-                "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "files") + 
-                EDStatic.filesDescription + 
-                "\n<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " +
-                EDStatic.filesWarning + "\n" +
-                "(<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
-                    MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
-                ", including <a rel=\"help\" href=\"" + tErddapUrl + 
-                  "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
-                "<br>&nbsp;\n");
-            writer.flush();
-            writer.write(
-                table.directoryListing(
-                    null, fullRequestUrl, userDapQuery, //may have sort instructions
-                    EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
-                    EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
-                    true, subDirNames, subDirDes)); //addParentDir
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+            try {
+                writer.write(
+                    "<div class=\"standard_width\">\n" +
+                    EDStatic.youAreHere(loggedInAs, "files") + 
+                    EDStatic.filesDescription + 
+                    "\n<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " +
+                    EDStatic.filesWarning + "\n" +
+                    "(<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
+                        MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
+                    ", including <a rel=\"help\" href=\"" + tErddapUrl + 
+                      "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
+                    "<br>&nbsp;\n");
+                writer.flush();
+                writer.write(
+                    table.directoryListing(
+                        null, fullRequestUrl, userDapQuery, //may have sort instructions
+                        EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
+                        EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
+                        true, subDirNames, subDirDes)); //addParentDir
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
 
             //tally
             EDStatic.tally.add("files browse DatasetID (since startup)", "");
@@ -4476,12 +4523,19 @@ writer.write(
             if (id.equals("documentation.html")) {
                 OutputStream out = getHtmlOutputStream(request, response);
                 Writer writer = getHtmlWriter(loggedInAs, "ERDDAP \"files\" Documentation", out);
-                writer.write("<div class=\"standard_width\">\n");
-                writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
-                writer.write(EDStatic.filesDocumentation(tErddapUrl));
-                writer.write("\n" +
-                    "</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
+                try {
+                    writer.write("<div class=\"standard_width\">\n");
+                    writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
+                    writer.write(EDStatic.filesDocumentation(tErddapUrl));
+                } catch (Exception e) {
+                    EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                    writer.write(EDStatic.htmlForException(e));
+                    throw e; 
+                } finally {
+                    writer.write("\n" +
+                        "</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
+                }
                 return;
 
             } else {
@@ -4650,40 +4704,47 @@ writer.write(
         fileTable.addColumn("Description", new StringArray(fileTableNRows, true));
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = getHtmlWriter(loggedInAs, "files/" + id + "/" + nextPath, out);
-        writer.write("<div class=\"standard_width\">\n");
-        writer.write(
-            nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
-            "\n<h1>" + EDStatic.erddapHref(tErddapUrl) +
-            "\n &gt; <a rel=\"contents\" href=\"" + 
-                XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files")) +
-                "\">files</a>" +
-            "\n &gt; <a rel=\"contents\" href=\"" + 
-                XML.encodeAsHTMLAttribute(
-                    EDStatic.erddapUrl(loggedInAs) + "/files/" + id + "/") + 
-                "\">" + id + "</a>" +  
-            "\n &gt; " + XML.encodeAsXML(nextPath) + 
-            "</h1>\n");
-        writer.write(EDStatic.filesDescription + "\n");
-        if (!(edd instanceof EDDTableFromFileNames))
+        try {
+            writer.write("<div class=\"standard_width\">\n");
             writer.write(
-                "<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " + 
-                EDStatic.filesWarning + "\n");
-        writer.write(" (<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
-            MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
-            ", including <a rel=\"help\" href=\"" + tErddapUrl + 
-              "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
-            "<br>&nbsp;\n");
-        edd.writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, true, "", "");
-        writer.write("<br>");  //causes nice spacing between datasetInfo and file table
-        writer.flush();
-        writer.write(
-            fileTable.directoryListing(
-                localDir, fullRequestUrl, userDapQuery, //may have sort instructions
-                EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
-                EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
-                true, subDirs, null));  //addParentDir                
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+                nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
+                "\n<h1>" + EDStatic.erddapHref(tErddapUrl) +
+                "\n &gt; <a rel=\"contents\" href=\"" + 
+                    XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files")) +
+                    "\">files</a>" +
+                "\n &gt; <a rel=\"contents\" href=\"" + 
+                    XML.encodeAsHTMLAttribute(
+                        EDStatic.erddapUrl(loggedInAs) + "/files/" + id + "/") + 
+                    "\">" + id + "</a>" +  
+                "\n &gt; " + XML.encodeAsXML(nextPath) + 
+                "</h1>\n");
+            writer.write(EDStatic.filesDescription + "\n");
+            if (!(edd instanceof EDDTableFromFileNames))
+                writer.write(
+                    "<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " + 
+                    EDStatic.filesWarning + "\n");
+            writer.write(" (<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
+                MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
+                ", including <a rel=\"help\" href=\"" + tErddapUrl + 
+                  "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
+                "<br>&nbsp;\n");
+            edd.writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, true, "", "");
+            writer.write("<br>");  //causes nice spacing between datasetInfo and file table
+            writer.flush();
+            writer.write(
+                fileTable.directoryListing(
+                    localDir, fullRequestUrl, userDapQuery, //may have sort instructions
+                    EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
+                    EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
+                    true, subDirs, null));  //addParentDir                
+        } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(e));
+            throw e; 
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
 
         //tally
         EDStatic.tally.add("files browse DatasetID (since startup)", id);
@@ -4948,11 +5009,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
 
@@ -5063,9 +5126,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -5354,9 +5419,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t; 
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
 
     }
 
@@ -5458,9 +5525,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -5653,9 +5722,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
 
     }
 
@@ -6355,11 +6426,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
-
     }
 
     /**
@@ -7710,23 +7781,23 @@ scripts.append(
         //*** html head
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = new BufferedWriter(new OutputStreamWriter(out));
-        writer.write(EDStatic.startHeadHtml(tErddapUrl, eddGrid.title() + " - WMS"));
-        writer.write("\n" + eddGrid.rssHeadLink());
-        if (thisWmsClientActive)
-            writer.write(HtmlWidgets.leafletHead(tErddapUrl));
-        writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
-        writer.write(
-            "</head>\n");
-
-        //*** html body
-        String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">" +
-            EDStatic.mag + "</a>";
-        writer.write(
-            EDStatic.startBodyHtml(loggedInAs) + "\n" +
-            HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)) +
-            "<div class=\"standard_width\">\n" +
-            EDStatic.youAreHere(loggedInAs, "wms", tDatasetID));
         try {
+            writer.write(EDStatic.startHeadHtml(tErddapUrl, eddGrid.title() + " - WMS"));
+            writer.write("\n" + eddGrid.rssHeadLink());
+            if (thisWmsClientActive)
+                writer.write(HtmlWidgets.leafletHead(tErddapUrl));
+            writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
+            writer.write(
+                "</head>\n");
+
+            //*** html body
+            String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">" +
+                EDStatic.mag + "</a>";
+            writer.write(
+                EDStatic.startBodyHtml(loggedInAs) + "\n" +
+                HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)) +
+                "<div class=\"standard_width\">\n" +
+                EDStatic.youAreHere(loggedInAs, "wms", tDatasetID));
             String queryString = request.getQueryString();
             if (queryString == null)
                 queryString = "";
@@ -7921,14 +7992,15 @@ scripts.append(
 
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(scripts.toString());
-        } catch (Throwable t) {
-            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(t));
+
+            writer.write("</div>\n");
+        } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(e));
+            throw e; 
+        } finally {
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
-
     }
 
     /**
@@ -7998,16 +8070,23 @@ scripts.append(
             String title = "Index of " + tErddapUrl + "/" + endOfRequest;
             OutputStream out = getHtmlOutputStream(request, response);
             Writer writer = getHtmlWriter(loggedInAs, title, out); 
-            writer.write(
-                "<div class=\"standard_width\">\n" +
-                "<h1>" + title + "</h1>\n");
-            writer.write(
-                table.directoryListing(
-                    null, tErddapUrl + "/" + endOfRequest, userQuery, 
-                    fileIconsDir, questionMarkUrl, 
-                    true, dirNames, null));  
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+            try {
+                writer.write(
+                    "<div class=\"standard_width\">\n" +
+                    "<h1>" + title + "</h1>\n");
+                writer.write(
+                    table.directoryListing(
+                        null, tErddapUrl + "/" + endOfRequest, userQuery, 
+                        fileIconsDir, questionMarkUrl, 
+                        true, dirNames, null));  
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
             return;
         }
 
@@ -8042,15 +8121,22 @@ scripts.append(
             String title = "Index of " + tErddapUrl + "/" + endOfRequest;
             OutputStream out = getHtmlOutputStream(request, response);
             Writer writer = getHtmlWriter(loggedInAs, title, out); 
-            writer.write(
-                "<div class=\"standard_width\">\n" +
-                "<h1>" + title + "</h1>\n");
-            writer.write(
-                table.directoryListing(
-                    null, tErddapUrl + "/" + endOfRequest, userQuery, 
-                    fileIconsDir, questionMarkUrl, true, dirNames, null));  
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+            try {
+                writer.write(
+                    "<div class=\"standard_width\">\n" +
+                    "<h1>" + title + "</h1>\n");
+                writer.write(
+                    table.directoryListing(
+                        null, tErddapUrl + "/" + endOfRequest, userQuery, 
+                        fileIconsDir, questionMarkUrl, true, dirNames, null));  
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
             return;
         }
 
@@ -8361,6 +8447,7 @@ scripts.append(
                 OutputStream out = getHtmlOutputStream(request, response);
                 Writer writer = getHtmlWriter(loggedInAs, 
                     "Folder: /", out); 
+                try {
                 writer.write(
 //?? "<div class=\"standard_width\">\n" +
 //esri has different header
@@ -8396,7 +8483,13 @@ breadCrumbs + endBreadCrumbs +
 //"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + erddapRestServices + "?f=sitemap\">Sitemap</a>\n" +
 //"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + erddapRestServices + "?f=geositemap\">Geo Sitemap</a>\n" +
 "<br/>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
+                } catch (Exception e) {
+                    EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                    writer.write(EDStatic.htmlForException(e));
+                    throw e; 
+                } finally {
+                    endHtmlWriter(out, writer, tErddapUrl, false);
+                }
 
             } else {
                 sendGeoServicesRestError(request, response, 
@@ -8796,6 +8889,10 @@ breadCrumbs + endBreadCrumbs +
 "&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "/query\">Query</a>\n" +
 "&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "/identify\">Identify</a>\n" +
 "<br/>\n");
+                } catch (Exception e) {
+                    EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                    writer.write(EDStatic.htmlForException(e));
+                    throw e; 
                 } finally {
                     endHtmlWriter(out, writer, tErddapUrl, false); //better to call writer.close() here
                 }
@@ -9647,11 +9744,12 @@ breadCrumbs + endBreadCrumbs +
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t;
+        } finally {
 
-        writer.write("</div>\n"); 
-        endHtmlWriter(out, writer, tErddapUrl, false);
-        
+            writer.write("</div>\n"); 
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }        
     }
 
 
@@ -10062,11 +10160,13 @@ breadCrumbs + endBreadCrumbs +
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of slidesorter
-        writer.write("</div>\n"); 
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of slidesorter
+            writer.write("</div>\n"); 
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
         
     }
 
@@ -10259,11 +10359,13 @@ breadCrumbs + endBreadCrumbs +
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
-                }
+                    throw t; 
+                } finally {
 
-                //end of document
-                writer.write("</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
+                    //end of document
+                    writer.write("</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
+                }
                 return;
             }
 
@@ -10318,9 +10420,11 @@ breadCrumbs + endBreadCrumbs +
             } catch (Throwable t2) {
                 EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t2));
+                throw t2; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
     }
@@ -11086,8 +11190,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 writer.write(EDStatic.htmlForException(t));
                 writer.write("</div>\n");
                 endHtmlWriter(out, writer, tErddapUrl, false);
-                return;
-            }
+                throw t; 
+            } //otherwise there is more to the document below...
         }
 
         //*** do the search
@@ -11341,9 +11445,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
+                throw t;
+            } finally {
+                writer.write("</div>\n");  //which controls width
+                endHtmlWriter(out, writer, tErddapUrl, false);
             }
-            writer.write("</div>\n");  //which controls width
-            endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
 
@@ -11846,9 +11952,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
+                    throw t; 
+                } finally {
+                    writer.write("</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
                 }
-                writer.write("</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
             }
             return;
         }   
@@ -11937,9 +12045,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
+                    throw t; 
+                } finally {
+                    writer.write("</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
                 }
-                writer.write("</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
             }
             return;
         }           
@@ -12070,11 +12180,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
-            }
+                throw t; 
+            } finally {
 
-            //end of document
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+                //end of document
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
             return;
         }
 
@@ -12274,11 +12386,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
-                }
+                    throw t; 
+                } finally {
 
-                //end of document
-                writer.write("</div>\n");
-                endHtmlWriter(out, writer, tErddapUrl, false);
+                    //end of document
+                    writer.write("</div>\n");
+                    endHtmlWriter(out, writer, tErddapUrl, false);
+                }
             } else {
                 if (error != null)
                     throw new SimpleException(error[0] + " " + error[1]);
@@ -12515,11 +12629,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
-            }
+                throw t; 
+            } finally {
 
-            //end of document
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+                //end of document
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
             return;
         }
 
@@ -12962,11 +13078,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
 
@@ -13176,11 +13294,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -13296,11 +13416,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -13425,11 +13547,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
 
@@ -13555,12 +13679,14 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
-    }
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
+    }   
 
 
     /**
@@ -13711,11 +13837,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -13916,11 +14044,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -14127,11 +14257,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -14335,11 +14467,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
 
@@ -14554,11 +14688,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -14918,11 +15054,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
 
@@ -15129,11 +15267,13 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
-        }
+            throw t; 
+        } finally {
 
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }
     }
 
     /**
@@ -15235,11 +15375,12 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t; 
+        } finally {
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
         }
-
-        //end of document
-        writer.write("</div>\n");
-        endHtmlWriter(out, writer, tErddapUrl, false);
   
     }
 

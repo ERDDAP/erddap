@@ -427,15 +427,13 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
-            sb.append(directionsForGenerateDatasetsXml());
 
             if (nGridsAtSource > dataAddTable.nColumns())
                 sb.append(
-                    "!!! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
-                    "but this dataset will only serve " + dataAddTable.nColumns() + 
-                    " because the others use different dimensions.\n");
+                    "<!-- NOTE! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
+                    "  but this dataset will only serve " + dataAddTable.nColumns() + 
+                    " because the others use different dimensions. -->\n");
             sb.append(
-                "-->\n\n" +
                 "<dataset type=\"EDDGridFromMatFiles\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
@@ -502,9 +500,6 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwind1day_52db_1ed3_22ce\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "erdQSwind1day/</fileDir>\n" +

@@ -405,32 +405,30 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 tSortFilesBySourceNames = tSortedColumnSourceName;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            " * Since the source files don't have any metadata, you must add metadata\n" +
-            "   below, notably 'units' for each of the dataVariables.\n" +
-            "-->\n\n" +
+            "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+            "  below, notably 'units' for each of the dataVariables. -->\n" +
             "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + 
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-            "</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnSeparator>" + XML.encodeAsXML(columnSeparator) + "</columnSeparator>\n" + 
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)?  //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -487,11 +485,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-" * Since the source files don't have any metadata, you must add metadata\n" +
-"   below, notably 'units' for each of the dataVariables.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -741,11 +736,8 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-" * Since the source files don't have any metadata, you must add metadata\n" +
-"   below, notably 'units' for each of the dataVariables.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"Temp_2e43_7944_fda7\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -759,10 +751,6 @@ directionsForGenerateDatasetsXml() +
 "    <columnSeparator></columnSeparator>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>3</firstDataRow>\n" +
-"    <preExtractRegex></preExtractRegex>\n" +
-"    <postExtractRegex></postExtractRegex>\n" +
-"    <extractRegex></extractRegex>\n" +
-"    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -887,11 +875,8 @@ directionsForGenerateDatasetsXml() +
                 -1, "", externalAddAttributes) + "\n";
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-" * Since the source files don't have any metadata, you must add metadata\n" +
-"   below, notably 'units' for each of the dataVariables.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -905,10 +890,6 @@ directionsForGenerateDatasetsXml() +
 "    <columnSeparator></columnSeparator>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
-"    <preExtractRegex></preExtractRegex>\n" +
-"    <postExtractRegex></postExtractRegex>\n" +
-"    <extractRegex></extractRegex>\n" +
-"    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortedColumnSourceName></sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -3465,7 +3446,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -3638,7 +3619,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -4046,7 +4027,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -4181,7 +4162,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
@@ -5266,10 +5247,8 @@ today + " GenerateDatasetsXml in ERDDAP v1.83 (contact: bob.simons@noaa.gov) con
                         tSortFilesBySourceNames = tSortedColumnSourceName;
                 }
                 sb.append(
-                    //directionsForGenerateDatasetsXml() +
-                    //" * Since the source files don't have any metadata, you must add metadata\n" +
-                    //"   below, notably 'units' for each of the dataVariables.\n" +
-                    //"-->\n\n" +
+                    //"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+                    //"  below, notably 'units' for each of the dataVariables. -->\n" +
                     "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + tDatasetID + 
                         "\" active=\"true\">\n" +
                     "    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +

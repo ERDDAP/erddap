@@ -921,7 +921,6 @@ public class EDDGridFromDap extends EDDGrid {
      * <p>If this fails because no Grid or Array variables found, it automatically calls
      * EDDTableFromDapSequence.generateDatasetsXml to see if that works.
      *
-     * @param writeDirections
      * @param tLocalSourceUrl the base url for the dataset (no extension), e.g., 
      *   "https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day"
      * @param das  The das for the tLocalSourceUrl, or null.
@@ -940,7 +939,7 @@ public class EDDGridFromDap extends EDDGrid {
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXml(boolean writeDirections, 
+    public static String generateDatasetsXml( 
         String tLocalSourceUrl, DAS das, DDS dds, String dimensionNames[], 
         int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
 
@@ -1023,8 +1022,6 @@ public class EDDGridFromDap extends EDDGrid {
         boolean otherComboFound = false; 
         String sourceDimensionNamesInBrackets = null;
         String destDimensionNamesInBrackets = null;
-        if (writeDirections) 
-            results.append(directionsForGenerateDatasetsXml() + "-->\n\n");
         NEXT_VAR:
         while (vars.hasMoreElements()) {
             BaseType bt = (BaseType)vars.nextElement();
@@ -1097,7 +1094,7 @@ public class EDDGridFromDap extends EDDGrid {
                 if (!alreadyExisted) {
                     //It shouldn't fail. But if it does, keep going.
                     try {
-                        results.append(generateDatasetsXml(false, //writeDirections handled above
+                        results.append(generateDatasetsXml(
                             tLocalSourceUrl, das, dds, tDimensionNames, tReloadEveryNMinutes,
                             externalAddGlobalAttributes));
                     } catch (Throwable t) {
@@ -1468,7 +1465,7 @@ public class EDDGridFromDap extends EDDGrid {
         tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); //http: to https:
         try {
             //append to results  (it should succeed completely, or fail)
-            results.write(generateDatasetsXml(false, tLocalSourceUrl, 
+            results.write(generateDatasetsXml(tLocalSourceUrl, 
                 null, null, null,
                 tReloadEveryNMinutes, externalAddGlobalAttributes));
             time = System.currentTimeMillis() - time;
@@ -1613,8 +1610,6 @@ public class EDDGridFromDap extends EDDGrid {
         Writer results = new BufferedWriter(new OutputStreamWriter(
             new BufferedOutputStream(new FileOutputStream(resultsFileName)), String2.ISO_8859_1));
         try {
-            results.write(directionsForGenerateDatasetsXml() + "-->\n\n");
-
             //crawl THREDDS catalog
             crawlThreddsCatalog(
                 oLocalSourceUrl == null? 
@@ -1927,7 +1922,6 @@ String expected2 =
         int mainCount = 0;
 
         StringBuilder sb = new StringBuilder();
-        sb.append(directionsForGenerateDatasetsXml());
 
         while (true) {
             //search for and extract from... 
@@ -4815,9 +4809,6 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
 
 String expected1 = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_418c_b59f_8e9e\" active=\"true\">\n" +
 "    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.1.6</sourceUrl>\n" +
 "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
@@ -5018,7 +5009,7 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_90cf_3790_6762\" active=\"true\">\n";
 
         try {
-            String results = generateDatasetsXml(true, url, 
+            String results = generateDatasetsXml(url, 
                 null, null, null, -1, null);
             
             Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
@@ -5067,9 +5058,6 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml2");
 
 String expected1 = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_cada_f1d6_7111\" active=\"true\">\n" +
 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday</sourceUrl>\n" +
 "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" +   //60 or 180, important test of suggestReloadEveryNMinutes
@@ -5238,7 +5226,7 @@ String expected2 =
 "\n";
 
         try {
-            String results = generateDatasetsXml(true, url, 
+            String results = generateDatasetsXml(url, 
                 null, null, null, -1, null);
             
             Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
@@ -5271,7 +5259,7 @@ String expected2 =
         String url = "http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/ncom/global/NCOM_Global_Ocean_Model_fmrc.ncd";
 
         try {
-            String results = generateDatasetsXml(true, url, 
+            String results = generateDatasetsXml(url, 
                 null, null, new String[]{"run", "time"}, -1, null);
             throw new RuntimeException("Shouldn't get here.");
             
@@ -8902,7 +8890,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testGenerateDatasetsXml4() throws Throwable {
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXml4");
         try {
-        String results = generateDatasetsXml(false, 
+        String results = generateDatasetsXml(
             "https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc", 
             null, null, null, 10080, null);
         String expected = 
@@ -9368,7 +9356,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testGenerateDatasetsXml5() throws Throwable {
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
         try {
-        String results = generateDatasetsXml(false, 
+        String results = generateDatasetsXml(
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day", 
             null, null, null, -1, null);
         String2.log(results);
@@ -9965,9 +9953,6 @@ String2.log(String2.annotatedString(results));
         String2.log("\n*** EDDGridFromDap.testFromJson");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_6f13_e4f4_fe70\" active=\"true\">\n" +
 "    <sourceUrl>https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/tos_AMSRE_L3_v7_200206-201012.nc</sourceUrl>\n" +
 "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
@@ -10091,7 +10076,7 @@ directionsForGenerateDatasetsXml() +
 "\n";
 
         try {
-            String results = generateDatasetsXml(true, url, 
+            String results = generateDatasetsXml(url, 
                 null, null, null, -1, null);
             
             Test.ensureEqual(results, expected, 
@@ -11093,86 +11078,86 @@ directionsForGenerateDatasetsXml() +
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "Dataset {\n" +
-"  Float64 time[time = 1183];\n" +   //time=# changes here and below
+"  Float64 time[time = 1203];\n" +   //time=# changes here and below
 "  Float64 latitude[latitude = 62];\n" +
 "  Float64 longitude[longitude = 122];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SST[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 SST[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SST;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSS[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 SSS[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSS;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pCO2sw[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 pCO2sw[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pCO2sw;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TA[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 TA[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TC[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 TC[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TC;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pH[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 pH[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pH;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSA[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 SSA[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 HCO3[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 HCO3[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } HCO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 CO3[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 CO3[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } CO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 surface_flag[time = 1183][latitude = 62][longitude = 122];\n" +
+"      Float32 surface_flag[time = 1203][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1183];\n" +
+"      Float64 time[time = 1203];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } surface_flag;\n" +

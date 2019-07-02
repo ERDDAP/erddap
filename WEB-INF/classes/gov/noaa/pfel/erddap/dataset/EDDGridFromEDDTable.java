@@ -831,9 +831,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         }
 
         //write the information
-        StringBuilder results = new StringBuilder(directionsForGenerateDatasetsXml());
-        results.append(
-            "-->\n\n");
+        StringBuilder results = new StringBuilder();
         results.append(
             "<dataset type=\"EDDGridFromEDDTable\" datasetID=\"" + 
                 suggestDatasetID(eddTableID + "/EDDGridFromEDDTable") + 
@@ -882,9 +880,6 @@ public class EDDGridFromEDDTable extends EDDGrid {
         String tid = "erdNph";
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDGridFromEDDTable\" datasetID=\"erdNph_c2e8_7f71_e246\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <gapThreshold>1000</gapThreshold>\n" +

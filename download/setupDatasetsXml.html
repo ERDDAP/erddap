@@ -381,7 +381,7 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
          GenerateDatasetsXml will often print the ncdump-like structure of the
          file after it first reads the file. This may give you information
          to answer the questions better on a subsequent loop through GenerateDatasetsXml.
-      <li>GenerateDatasetsXml will generate a rough draft of the dataset XML for that dataset.
+      <li>GenerateDatasetsXml will then generate a rough draft of the dataset XML for that dataset.
       <li>Diagnostic information and the rough draft of the dataset XML will be written to
         <i>bigParentDirectory</i>/logs/GenerateDatasetsXml.log .
       <li>The rough draft of the dataset XML will be written to 
@@ -425,6 +425,53 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
         Similarly, if it seems like the appropriate EDDType for a given dataset
         doesn't work with that dataset, or if there is no appropriate EDDType,
         please send an email to Bob with the details (and a sample file if relevant).
+        <br>&nbsp;
+
+      <li><a class="selfLink" id="EditingGDXOutput" href="#EditingGDXOutput" rel="bookmark"
+        ><strong>You need to edit the output from GenerateDatasetsXml to make it better.</strong></a>
+        <br>&nbsp;
+        <ul>
+        <li>DISCLAIMER:
+          <br>THE CHUNK OF datasets.xml MADE BE GenerateDatasetsXml ISN'T PERFECT.
+          YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
+          GenerateDatasetsXml RELIES ON A LOT OF RULES-OF-THUMB WHICH AREN'T ALWAYS CORRECT.
+          YOU ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML THAT YOU
+          ADD TO ERDDAP'S datasets.xml FILE.
+
+          <p>(Fun Fact: I'm not shouting. For historical legal reasons, disclaimers must be written in all caps.)
+
+          <p>The output of GenerateDatasetsXml is a rought draft.           
+          <br>You will almost always need to edit it. 
+          <br>We've made and continue to make a huge effort
+          to make the output as ready-to-go as possible, but there are limits.
+          Often, needed information is simply not available from the source metadata.
+          Even when it is available, it currently isn't possible for the software
+          to do a better job than a human. (That day may come, but it hasn't yet.)
+          Good metadata helps users understand the dataset and use it correctly.
+
+        <li>For informational purposes, the output shows the global 
+          sourceAttributes and variable sourceAttributes as comments.
+          ERDDAP combines sourceAttributes and addAttributes (which have
+          precedence) to make the combinedAttributes that are shown to the user.
+          (And other attributes are automatically added to longitude, latitude,
+          altitude, depth, and time variables when ERDDAP actually makes the dataset).
+          <br>&nbsp;
+        <li>If you don't like a sourceAttribute, overwrite it by adding an
+          addAttribute with the same name but a different value
+          (or no value, if you want to remove it).
+          <br>&nbsp;
+        <li>All of the addAttributes are computer-generated suggestions. Edit them!
+          If you don't like an addAttribute, change it.
+          <br>&nbsp;
+        <li>If you want to add other addAttributes, add them.
+          <br>&nbsp;
+        <li>If you want to change a destinationName, change it.
+          But don't change sourceNames.
+          <br>&nbsp;
+        <li>You can change the order of the dataVariables or remove any of them.
+          <br>&nbsp;
+        </ul>
+      
       <li>You can then use <a rel="help" href="#DasDds">DasDds</a>
         (see below) to repeatedly test the XML for that dataset
         to ensure that the resulting dataset appears as you want it to in ERDDAP.
@@ -489,13 +536,6 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
         </ul>
       </ul>
       If you use "GenerateDatasetsXml -verbose", it will print more diagnostic messages than usual.
-
-      <p>DISCLAIMER:
-      The chunk of datasets.xml made by GenerateDatasetsXml isn't perfect.
-      YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
-      GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always correct.
-      YOU ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML THAT YOU
-      ADD TO ERDDAP'S datasets.xml FILE.
 
 
       <p><a class="selfLink" id="SpecialPseudoDatasetTypes" href="#SpecialPseudoDatasetTypes" rel="bookmark">Special/Pseudo Dataset Types</a>
@@ -6755,7 +6795,7 @@ which are hard to do in a script in a text editor. You may need to write a littl
     hard-coded rules should be used to determine which files should 
     be downloaded from the server. Currently, the only valid <i>mode</i>
     is SAMOS which is used with datasets from
-    http://tds.coaps.fsu.edu/thredds/catalog/samos to download only the 
+    https://tds.coaps.fsu.edu/thredds/catalog/samos to download only the 
     files with the last version number. --&gt;
   &lt;sourceUrl&gt;...&lt;/sourceUrl&gt;  &lt;-- For subclasses like 
     EDDTableFromHyraxFiles and EDDTableFromThreddsFiles, this is where 
@@ -8794,7 +8834,7 @@ Sensor Observation Service
   which can be used to specify that special, hard-coded rules should be
   used to determine which files should be downloaded from the server.
   Currently, the only valid <kbd><i>mode</i></kbd> is <kbd>SAMOS</kbd> which is used with datasets
-  from http://tds.coaps.fsu.edu/thredds/catalog/samos to download only the files with 
+  from https://tds.coaps.fsu.edu/thredds/catalog/samos to download only the files with 
   the last version number.  
 <li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.

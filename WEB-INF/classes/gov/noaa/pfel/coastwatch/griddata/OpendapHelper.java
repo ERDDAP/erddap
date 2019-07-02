@@ -1179,8 +1179,8 @@ public class OpendapHelper  {
 
 
         //test of DArray DAP dataset
-//2018-09-13 https: works in browser by not yet in Java
-        url = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        //2018-09-13 https: works in browser by not yet in Java. 2019-06-28 https works in Java
+        url = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + url);
         try {
             dConnect = new DConnect(url, true, 1, 1);
@@ -2134,8 +2134,8 @@ public class OpendapHelper  {
 
     /** This tests getting attibutes, notably the DODS_strlen attribute. */
     public static void testGetAttributes() throws Throwable {
-        //https almost works, but java objects to invalid certificate
-        String url = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        //https almost works, but java objects to invalid certificate.  2019-06 https works in Java
+        String url = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n* OpendapHelper.testGetAttributes\n" + url);
         try {
         DConnect dConnect = new DConnect(url, true, 1, 1);
@@ -2189,7 +2189,7 @@ public class OpendapHelper  {
         String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
         fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
-        String dArrayUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        String dArrayUrl = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         try {
             dapToNc(dArrayUrl, 
                 //note that request for zztop is ignored (because not found)
@@ -2328,7 +2328,7 @@ public class OpendapHelper  {
         try {
             String2.log("\n* testDapToNcDArray Subset");
             fileName = SSR.getTempDirectory() + "testDapToNcDArraySubset.nc";
-            String dArraySubsetUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+            String dArraySubsetUrl = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
             dapToNc(dArraySubsetUrl, 
                 new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, "[0:10:99]", //projection
                 fileName, false); //jplMode
@@ -2418,7 +2418,7 @@ public class OpendapHelper  {
 "  {75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.11}\n" +
 "}\n";
 /* from
-http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.ascii?time[0:10:99],lat[0:10:99],lon[0:10:99],PL_HD[0:10:99]
+https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.ascii?time[0:10:99],lat[0:10:99],lon[0:10:99],PL_HD[0:10:99]
 time[10]  16870896, 16870906, 16870916, 16870926, 16870936, 16870946, 16870956, 16870966, 16870976, 16870986
 lat[10]   44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.61
 lon[10]   235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.91
@@ -2463,7 +2463,7 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
             results = t.toString();
 expected = 
 "java.lang.RuntimeException: ERROR in OpendapHelper.dapToNc\n" +
-"  url=http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
+"  url=https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
 "  varNames=zztop,time,lat,lon,PL_HD,history  projection=null\n" +
 "  file=C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
 "var=history has different dimensions than previous vars.";

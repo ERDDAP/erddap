@@ -7035,7 +7035,7 @@ So I will make ERDDAP able to read
             throw new RuntimeException("No stations found! Try a different sosServerType.\n" +
                 "  offeringTag=" + offeringTag +
                 "  stationID name tag=" + "<gml:name>");
-        sb.append("You have to choose which observedProperties will be used for this dataset.\n\n");
+        sb.append("<!-- You have to choose which observedProperties will be used for this dataset.\n\n");
         int longestStationID = Math.max(19, stationIDs.maxStringLength());
         int longestHasProp = stationHasObsProp.maxStringLength(); 
         sb.append("\n" + 
@@ -7108,14 +7108,12 @@ So I will make ERDDAP able to read
         //don't use suggestSubsetVariables() since sourceTable not available
 
         //*** generate the datasets.xml       
-        sb.append("\n");
-        sb.append(directionsForGenerateDatasetsXml());
         sb.append("\n" +
-            "<!-- For SOS datasets, you must look at the observedProperty's\n" +
+            "NOTE! For SOS datasets, you must look at the observedProperty's\n" +
             "phenomenaDictionary URL (or an actual GetObservations response)\n" +
             "to see which dataVariables will be returned for a given phenomenon.\n" +
             "(longitude, latitude, altitude, and time are handled separately.)\n" +
-            "-->\n\n");
+            "-->\n");
 
         sb.append(
             "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) + 
@@ -7163,7 +7161,7 @@ So I will make ERDDAP able to read
                 "\n";
 
 String expected1 = 
-"You have to choose which observedProperties will be used for this dataset.\n" +
+"<!-- You have to choose which observedProperties will be used for this dataset.\n" +
 "\n" +
 "\n" +
 "   n  Station (shortened)                 Has ObservedProperty\n" +
@@ -7188,41 +7186,11 @@ String expected2 =
 "  H  http://mmisw.org/ont/cf/parameter/waves\n" +
 "  I  http://mmisw.org/ont/cf/parameter/winds\n" +
 "\n" +
-"<!--\n" +
-" DISCLAIMER:\n" +
-"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
-"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
-"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
-"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
-"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
-"\n" +
-" DIRECTIONS:\n" +
-" * Read about this type of dataset in\n" +
-"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
-"   so that you understand about sourceAttributes and addAttributes.\n" +
-" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
-"   below as comments, for informational purposes only.\n" +
-"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
-"   precedence) to make the combinedAttributes that are shown to the user.\n" +
-"   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
-"   addAttribute with the same name but a different value\n" +
-"   (or no value, if you want to remove it).\n" +
-" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
-"   If you don't like an addAttribute, change it.\n" +
-" * If you want to add other addAttributes, add them.\n" +
-" * If you want to change a destinationName, change it.\n" +
-"   But don't change sourceNames.\n" +
-" * You can change the order of the dataVariables or remove any of them.\n" +
-"\n" +
-"<!-- For SOS datasets, you must look at the observedProperty's\n" +
+"NOTE! For SOS datasets, you must look at the observedProperty's\n" +
 "phenomenaDictionary URL (or an actual GetObservations response)\n" +
 "to see which dataVariables will be returned for a given phenomenon.\n" +
 "(longitude, latitude, altitude, and time are handled separately.)\n" +
 "-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"noaa_ndbc_6a36_2db7_1aab\" active=\"true\">\n" +
 "    <sourceUrl>https://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>\n" +
 "    <sosVersion>1.0.0</sosVersion>\n" +
@@ -7673,12 +7641,10 @@ String expected2 =
         //write the station/obsProp info
         StringBuilder sb = new StringBuilder();
         sb.append(
-            directionsForGenerateDatasetsXml() + 
-            "\n" + //make these comments stand out
-            " * !!! Some of the standard_names below probably aren't CF standard names!\n" +
+            "<!-- NOTE! Some of the standard_names below probably aren't CF standard names!\n" +
             "   Check them and delete the ones that aren't CF standard names.\n" +
             "\n" +
-            " * !!! Be wary of suggested dataType=byte. It may just mean there was no\n" +
+            "NOTE! Be wary of suggested dataType=byte. It may just mean there was no\n" +
             "   data for that variable in the data that was sampled.\n" +
             "   Change it to short/int/float/double as needed.\n" +            
             "\n");
@@ -7704,7 +7670,7 @@ String expected2 =
                     "___  __________________________________________________\n");
         for (int op = 0; op < uniqueObsProp.size(); op++) 
             sb.append(String2.right("" + (char)(65 + op), 3) + "  " + uniqueObsProp.get(op) + "\n");
-        sb.append("-->\n\n");
+        sb.append("-->\n");
 
 
         //make a dataset for each observed_property

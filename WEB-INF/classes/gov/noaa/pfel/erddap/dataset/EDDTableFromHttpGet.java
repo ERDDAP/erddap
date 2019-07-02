@@ -1838,10 +1838,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         //write the information
         StringBuilder sb = new StringBuilder();
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "\nNOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
-            "of datasets.xml below to add all of the metadata (especially \"units\").\n" +
-            "-->\n\n" +
+            "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+            "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
             "<dataset type=\"EDDTableFromHttpGet\" datasetID=\"" + 
                 suggestDatasetID(tFileDir +  //dirs can't be made public
                     String2.replaceAll(tFileNameRegex, '\\', '|') + //so escape chars not treated as subdirs
@@ -1919,12 +1917,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"\n" +
-"NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
-"of datasets.xml below to add all of the metadata (especially \"units\").\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+"  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
 "<dataset type=\"EDDTableFromHttpGet\" datasetID=\"testFromHttpGet_25bf_9033_586b\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +

@@ -253,11 +253,8 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
             gdxResults.length() + " " + results.length());
 
         expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for nc_5633_008e_cd85 has nGridVariables=4,\n" +
-"but this dataset will only serve 1 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for nc_5633_008e_cd85 has nGridVariables=4,\n" +
+"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
