@@ -2396,10 +2396,13 @@ public abstract class EDDGrid extends EDD {
                         "<hr>\n");
                     writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
                     writer.write("</div>\n");
-                    writer.write(EDStatic.endBodyHtml(tErddapUrl));
-                    writer.write("\n</html>\n");
-                    writer.flush(); //essential
+                } catch (Exception e) {
+                    EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                    writer.write(EDStatic.htmlForException(e));
+                    throw e; 
                 } finally {
+                    writer.write(EDStatic.endBodyHtml(tErddapUrl));
+                    writer.write("</html>");
                     writer.close();
                 }
                 return;
@@ -4422,12 +4425,13 @@ public abstract class EDDGrid extends EDD {
                 sliderInitFromPositions, sliderInitToPositions, EDV.SLIDER_PIXELS - 1));
 
             writer.write("</div>\n");  //standard_width
-            writer.write(EDStatic.endBodyHtml(tErddapUrl));
-            writer.write("\n</html>\n");
-
-            //essential
-            writer.flush(); 
+        } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(e));
+            throw e; 
         } finally {
+            writer.write(EDStatic.endBodyHtml(tErddapUrl));
+            writer.write("</html>");
             if (!dimensionValuesInMemory)
                 setDimensionValuesToNull();
 
@@ -11497,7 +11501,7 @@ Attributes {
      * @throws Throwable if trouble (there shouldn't be)
      */
     public void wcsDatasetHtml(String loggedInAs, Writer writer) throws Throwable {
-      
+     
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         
         String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;

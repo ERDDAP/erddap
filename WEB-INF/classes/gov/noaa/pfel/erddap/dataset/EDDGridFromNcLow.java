@@ -613,15 +613,13 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                            dataAddTable.columnAttributes(dv).set("actual_range", "null");
                 }
 
-            } else {
-                sb.append(directionsForGenerateDatasetsXml());
             }
 
             if (nGridsAtSource > dataAddTable.nColumns())
                 sb.append(generateDatasetsXmlCoastwatchErdMode? "":
-                    "!!! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
-                    "but this dataset will only serve " + dataAddTable.nColumns() + 
-                    " because the others use different dimensions.\n");
+                    "<!-- NOTE! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
+                    "  but this dataset will only serve " + dataAddTable.nColumns() + 
+                    " because the others use different dimensions. -->\n");
 
             //tryToFindLLAT 
             tryToFindLLAT(   axisSourceTable, axisAddTable); //just axisTables
@@ -641,20 +639,16 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
             //write results
             sb.append(
-                (generateDatasetsXmlCoastwatchErdMode? "": "-->\n") +
-                "\n" +
                 "<dataset type=\"" + subclassname + "\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-                (String2.isRemote(tCacheFromUrl)? "" :
-                "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-                   "</updateEveryNMillis>\n") +  
+                (String2.isUrl(tCacheFromUrl)? 
+                  "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+                  "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
                 "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
                 "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
                 "    <recursive>true</recursive>\n" +
                 "    <pathRegex>.*</pathRegex>\n" +
-                (String2.isRemote(tCacheFromUrl)? 
-                "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
                 "    <metadataFrom>last</metadataFrom>\n" +
                 "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
                 "    <fileTableInMemory>false</fileTableInMemory>\n" +

@@ -143,11 +143,8 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
             gdxResults.length() + " " + results.length());
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for " + suggDatasetID + " has nGridVariables=7,\n" +
-"but this dataset will only serve 3 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for " + suggDatasetID + " has nGridVariables=7,\n" +
+"  but this dataset will only serve 3 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -396,11 +393,8 @@ directionsForGenerateDatasetsXml() +
             String2.unitTestBigDataDir + "geosgrib/.*");
 
         String expected = //as of 2012-02-20. Will change if John Caron fixes bugs I reported.
-directionsForGenerateDatasetsXml() +
-"!!! The source for " + suggDatasetID + " has nGridVariables=17,\n" +
-"but this dataset will only serve 3 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for " + suggDatasetID + " has nGridVariables=17,\n" +
+"  but this dataset will only serve 3 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -612,11 +606,8 @@ directionsForGenerateDatasetsXml() +
 
         String expected = 
 //wind_speed is important additional test where scale_factor=1 and add_offset=0
-directionsForGenerateDatasetsXml() +
-"!!! The source for 1day_1fe9_4979_3661 has nGridVariables=14,\n" +
-"but this dataset will only serve 11 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for 1day_1fe9_4979_3661 has nGridVariables=14,\n" +
+"  but this dataset will only serve 11 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>12000</reloadEveryNMinutes>\n" +  
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -1094,11 +1085,8 @@ directionsForGenerateDatasetsXml() +
             gdxResults.length() + " " + results.length());
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for 1day_328e_9133_37c0 has nGridVariables=8,\n" +
-"but this dataset will only serve 5 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for 1day_328e_9133_37c0 has nGridVariables=8,\n" +
+"  but this dataset will only serve 5 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"1day_328e_9133_37c0\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //because using updateEveryNMillis
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -1442,18 +1430,15 @@ expected =
             gdxResults.length() + " " + results.length());
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for testAwsS3NexDcp_1136_fade_0b0e has nGridVariables=7,\n" +
-"but this dataset will only serve 1 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testAwsS3NexDcp_1136_fade_0b0e\" active=\"true\">\n" +
+"<!-- NOTE! The source for testAwsS3NexDcp_3312_e3e8_65ae has nGridVariables=7,\n" +
+"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testAwsS3NexDcp_3312_e3e8_65ae\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" +
+"    <cacheFromUrl>http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n" +
 "    <fileDir>/u00/data/points/testAwsS3NexDcp/</fileDir>\n" +
 "    <fileNameRegex>.*_CESM1-CAM5_201.*\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
-"    <cacheFromUrl>http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -1462,7 +1447,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"CMIPtable\">Amon</att>\n" +
 "        <att name=\"contact\">Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org</att>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +
-"        <att name=\"creation_date\">Wed Sep 12 14:44:16 PDT 2012</att>\n" +
+"        <att name=\"creation_date\">Wed Sep 12 14:44:42 PDT 2012</att>\n" + //varies a little with sample file
 "        <att name=\"DOI\">http://dx.doi.org/10.7292/W0WD3XH4</att>\n" +
 "        <att name=\"downscalingModel\">BCSD</att>\n" +
 "        <att name=\"driving_data_tracking_ids\">N/A</att>\n" +
@@ -1495,7 +1480,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"resolution_id\">800m</att>\n" +
 "        <att name=\"table_id\">Table Amon</att>\n" +
 "        <att name=\"title\">800m Downscaled NEX CMIP5 Climate Projections for the Continental US</att>\n" +
-"        <att name=\"tracking_id\">d7ed8c4a-af11-11e2-9608-e41f13ef9be2</att>\n" +
+"        <att name=\"tracking_id\">da8a69d2-af11-11e2-a9d5-e41f134d5304</att>\n" + //varies with sample file
 "        <att name=\"variableName\">tasmin</att>\n" +
 "        <att name=\"version\">1.0</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -4242,8 +4227,8 @@ expected =
         //  The advantage is: curl will detect if outputstream isn't being closed.
         //2018-05-17 problems with curl, switched to SSR.downloadFile
         String baseRequest = "http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles"; 
-        String userDapQuery = "?" + SSR.minimalPercentEncode("y_wind[(1.1999664e9)][0][][0:719]" + //719 avoids esriAsc cross lon=180
-            "&.vec="); //avoid get cached response
+        String userDapQuery = "?" + SSR.minimalPercentEncode("y_wind[(2008-01-07T12:00:00Z)][0][][0:719]") + //719 avoids esriAsc cross lon=180
+            "&.vec="; //avoid get cached response
         String baseOut = EDStatic.fullTestCacheDirectory + "EDDGridFromNcFilesTestSpeed";
         ArrayList al;
         int timeOutSeconds = 120;
@@ -5484,9 +5469,6 @@ expected =
         String results = generateDatasetsXml(dir, regex, dir + fileName,
             DEFAULT_RELOAD_EVERY_N_MINUTES, null, null) + "\n"; //cacheFromUrl
         String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "zztop\n\n";
         Test.ensureEqual(results, expected, 
             "results.length=" + results.length() + " expected.length=" + expected.length() + 
@@ -6297,38 +6279,8 @@ expected =
 String2.setClipboardString(results);
 
         expected = 
-"<!--\n" +
-" DISCLAIMER:\n" +
-"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
-"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
-"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
-"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
-"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
-"\n" +
-" DIRECTIONS:\n" +
-" * Read about this type of dataset in\n" +
-"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
-"   so that you understand about sourceAttributes and addAttributes.\n" +
-" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
-"   below as comments, for informational purposes only.\n" +
-"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
-"   precedence) to make the combinedAttributes that are shown to the user.\n" +
-"   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
-"   addAttribute with the same name but a different value\n" +
-"   (or no value, if you want to remove it).\n" +
-" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
-"   If you don't like an addAttribute, change it.\n" +
-" * If you want to add other addAttributes, add them.\n" +
-" * If you want to change a destinationName, change it.\n" +
-"   But don't change sourceNames.\n" +
-" * You can change the order of the dataVariables or remove any of them.\n" +
-"!!! The source for noaa_nodc_a2c2_29ed_1915 has nGridVariables=5,\n" +
-"but this dataset will only serve 2 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for noaa_nodc_a2c2_29ed_1915 has nGridVariables=5,\n" +
+"  but this dataset will only serve 2 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_a2c2_29ed_1915\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
@@ -8081,11 +8033,8 @@ expected =
             DEFAULT_RELOAD_EVERY_N_MINUTES, null, null) + "\n"; //cacheFromUrl
 
         String expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for nc_7d6c_1a03_1145 has nGridVariables=154,\n" +
-"but this dataset will only serve 1 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for nc_7d6c_1a03_1145 has nGridVariables=154,\n" +
+"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_7d6c_1a03_1145\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -8892,7 +8841,7 @@ expected =
         Test.ensureEqual(nTasks, expectedN, "nFilesToDownload");
         String2.pressEnterToContinue("\nPress Enter when the download tasks are finished (" +
             expectedN + " minutes?).");
-        
+        try {        
         results = FileVisitorDNLS.oneStep(tLocalDir, 
             tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
 expected = 
@@ -8903,6 +8852,11 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** EDDGridFromNcFiles.testMakeCopyFileTasks finished successfully");
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
+
 
         FileVisitorDNLS.debugMode=false;
 
@@ -8937,18 +8891,15 @@ expected =
             DEFAULT_RELOAD_EVERY_N_MINUTES, tSourceUrl, null) + "\n";  //cacheFromUrl
 
         expected = 
-directionsForGenerateDatasetsXml() +
-"!!! The source for testEDDGridCopyFiles_2192_6b1a_7764 has nGridVariables=5,\n" +
-"but this dataset will only serve 1 because the others use different dimensions.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! The source for testEDDGridCopyFiles_2192_6b1a_7764 has nGridVariables=5,\n" +
+"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testEDDGridCopyFiles_2192_6b1a_7764\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <cacheFromUrl>http://localhost:8080/cwexperimental/files/erdMWchla1day/</cacheFromUrl>\n" +
 "    <fileDir>/u00/data/points/testEDDGridCopyFiles/</fileDir>\n" +
 "    <fileNameRegex>MW200219.*\\.nc(|\\.gz)</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
-"    <cacheFromUrl>http://localhost:8080/cwexperimental/files/erdMWchla1day/</cacheFromUrl>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -11130,7 +11081,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-/* for releases, this line should have open/close comment */ 
+/* for releases, this line should have open/close comment */
         testNc(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
         testHdf();

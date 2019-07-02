@@ -315,27 +315,26 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
                 tSortFilesBySourceNames = tColumnNameForExtract;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"" + 
                 suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <defaultGraphQuery>" + XML.encodeAsXML(defGraph) + "</defaultGraphQuery>\n" +
             "    <defaultDataQuery>" + XML.encodeAsXML(defData) + "</defaultDataQuery>\n" +
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(Table.ELAPSED_TIME) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -391,12 +390,9 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"wav_56d5_230d_1887\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <defaultGraphQuery>elapsedTime,channel_1&amp;time=min(time)&amp;elapsedTime&gt;=0&amp;elapsedTime&lt;=1&amp;.draw=lines</defaultGraphQuery>\n" +
 "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" +
 "    <fileDir>/erddapTest/audio/wav/</fileDir>\n" +

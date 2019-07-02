@@ -68,10 +68,37 @@ those great suggestions coming!
 
 -->
 
+<!-- ****************************************************************************** -->
+<h2><a class="selfLink" id="changes2.01" href="#changes2.01" rel="bookmark">Changes</a> 
+in ERDDAP version 2.01 (released 2019-07-02)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>None.
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>BUG FIX: A bug in the code which generates the Data Access Form for tabledap datasets 
+    caused that web page to be blank for some datasets.
+    Also, I improved the handling of unexpected errors on all HTML pages so they 
+    will (usually) display an error message.
+    Thanks to Marco Alba.
+  <li>CHANGE: GenerateDatasetsXml no longer prints a lengthy warning at the top of the output. 
+    Instead, please see 
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EditingGDXOutput"
+        >Editing GenerateDatasetsXml Output</a>.
+    Thanks to Steven Baum.
+  <li>CHANGE: GenerateDatasetsXml now makes slightly different recommendations 
+    in different situations for &lt;updateEveryNMillis&gt; for EDD...From...Files datasets.
+    Also, GenerateDatasetsXml now discourages the original "extract" system for EDDTableFromFiles datasets.
+  </ul>
+</ul>
+
 
 <!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.00" href="#changes2.00" rel="bookmark">Changes</a> 
-in ERDDAP version 2.00 (released 2019-06-18)</h2>
+in ERDDAP version 2.00 (released 2019-06-26)</h2>
 <ul>
 <li><strong>ERDDAP v2.00 is finally here! Yea!</strong> 
     <br>&nbsp;
@@ -303,7 +330,7 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
     the changes will take effect the next time ERDDAP reads datasets.xml.
     <br>&nbsp;
     <ol>  
-    <li>Copy this content into your datasets.xml file:
+    <li>Copy this content into your datasets.xml file (anywhere near the start of the file, after &lt;erddapDatasets&gt;):
 <pre>
 &lt;!-- The tags below are described in setupDatasetsXml.html.
      The defaults listed below are as of ERDDAP v2.00. --&gt;
@@ -335,13 +362,22 @@ in ERDDAP version 2.00 (released 2019-06-18)</h2>
 &lt;standardPrivacyPolicy&gt;&lt;/standardPrivacyPolicy&gt;
 </pre>
     <li>One-by-one, copy the value (if any) for each of those tags from your setup.xml
-      file into the new tag in datasets.xml.
-      If your value is different
-      (other than for &lt;startBodyHtml5&gt; and &lt;theShortDescriptionHtml&gt;), 
-      please consider switching to the new default.
-      After you copy each value, delete the tag and its description 
-      from setup.xml
-      They (and other similar tags) are now better described in 
+      file into the new tag that you just pasted (above) in datasets.xml.
+      For example, if you had used a value of 30 for &lt;cacheMinutes&gt; in setup.xml,
+      you should copy that value into the new &lt;cacheMinutes&gt; tag in datasets.xml
+      (although if the value is the same as the new default value, it is best to just
+      leave the tag in datasets.xml blank).
+      
+      <p>If your value is different from the new suggested default
+      (other than for &lt;startBodyHtml5&gt; and &lt;theShortDescriptionHtml&gt;,
+      which are useful for customizing your ERDDAP installation), 
+      please consider switching to the new default values.
+      This is particularly true of &lt;partialRequestMaxBytes&gt; and &lt;partialRequestMaxCells&gt;,
+      where the default/suggested value has changed significantly over the years.
+
+      <p>After you copy each value, delete the tag and its description 
+      from setup.xml.
+      It is better to have these tags in datasets.xml. And there are now better descriptions in 
       <a rel="help" 
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#basicStructure"
         >setupDatasetsXml.html</a>.

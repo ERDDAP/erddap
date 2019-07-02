@@ -300,10 +300,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         //write the information
         StringBuilder sb = new StringBuilder();
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            " * Since the source files don't have any metadata, you must add metadata\n" +
-            "   below, notably 'units' for each of the dataVariables.\n" +
-            "-->\n\n" +
+            "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+            "  below, notably 'units' for each of the dataVariables. -->\n" +
             "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"" + tDatasetID +
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
@@ -319,10 +317,11 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //"    <charset>UTF-8</charset>\n" +
             //"    <columnNamesRow>1</columnNamesRow>\n" +
             //"    <firstDataRow>3</firstDataRow>\n" +
-            //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            //"    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
+            //(String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+            //  "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            //  "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            //  "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+            //  "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" : "") +
             //"    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             //"    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
@@ -365,11 +364,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             externalAddAttributes) + "\n";
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-" * Since the source files don't have any metadata, you must add metadata\n" +
-"   below, notably 'units' for each of the dataVariables.\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
 "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"uky_kgs_658a_9173_c8f0\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +

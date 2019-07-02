@@ -691,8 +691,6 @@ public class EDDTableFromFileNames extends EDDTable{
         //write the information
         StringBuilder sb = new StringBuilder();
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
@@ -770,9 +768,6 @@ public class EDDTableFromFileNames extends EDDTable{
         //datasetID changes with different unitTestDataDir
         String tDatasetID = "fileNames_e21d_ef79_13da";
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <fileDir>" + tDir + "/</fileDir>\n" +
 "    <fileNameRegex>.*\\.png</fileNameRegex>\n" +
@@ -930,9 +925,6 @@ directionsForGenerateDatasetsXml() +
         String tTitle = "My Great Title";
         String tDatasetID = "s3nasanex_803b_6c09_f004";
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <fileDir>" + tDir + "/</fileDir>\n" +
 "    <fileNameRegex>" + tRegex + "</fileNameRegex>\n" +

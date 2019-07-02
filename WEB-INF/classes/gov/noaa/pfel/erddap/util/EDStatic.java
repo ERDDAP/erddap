@@ -165,6 +165,7 @@ public class EDStatic {
      * <br>1.80 released on 2017-08-04
      * <br>1.82 released on 2018-01-26
      * <br>2.00 released on 2019-06-26
+     * <br>2.01 released on 2019-07-02
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -178,7 +179,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.00"; //see comment above
+    public static String erddapVersion = "2.01"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -4074,14 +4075,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * aren't available.
      */
     public static String htmlForException(Throwable t) {
-        String message = MustBe.getShortErrorMessage(t);
-        String2.log("HtmlForException is processing:\n " + 
-            MustBe.throwableToString(t)); //log full message with stack trace
+        String message = MustBe.throwableToShortString(t);
         return 
             "<p>&nbsp;<hr>\n" +
             "<p><span class=\"warningColor\"><strong>" + errorOnWebPage + "</strong></span>\n" +
             "<pre>" + XML.encodeAsPreHTML(message, 100) +
-            "</pre>\n";
+            "</pre><hr><p>&nbsp;<p>\n";
     }
 
     /** This interrupts/kill all of the thredds in runningThreads. 

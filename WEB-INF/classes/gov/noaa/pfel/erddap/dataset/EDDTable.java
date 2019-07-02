@@ -2719,50 +2719,57 @@ public abstract class EDDTable extends EDD {
             //With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
             OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
             Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
-            writer.write(EDStatic.startHeadHtml(tErddapUrl,  
-                title() + " - " + EDStatic.daf));
-            writer.write("\n" + rssHeadLink());
-            writer.write("\n</head>\n");
-            writer.write(EDStatic.startBodyHtml(loggedInAs));
-            writer.write("\n");
-            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
-            writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));      //this is a link to a script
-            writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
-            writer.write(
-                "<div class=\"standard_width\">\n");
-            writer.write(EDStatic.youAreHereWithHelp(loggedInAs, dapProtocol, 
-                EDStatic.daf, 
-                "<div class=\"standard_max_width\">" + 
-                EDStatic.dafTableTooltip + 
-                "<p>" + EDStatic.EDDTableDownloadDataTooltip +
-                "</ol>\n" +
-                EDStatic.dafTableBypassTooltip + 
-                "</div>"));
-            writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
-                userDapQuery, "");
-            if (userDapQuery.length() == 0) 
-                userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
-            writeDapHtmlForm(loggedInAs, userDapQuery, writer);
+            try {
+                writer.write(EDStatic.startHeadHtml(tErddapUrl,  
+                    title() + " - " + EDStatic.daf));
+                writer.write("\n" + rssHeadLink());
+                writer.write("\n</head>\n");
+                writer.write(EDStatic.startBodyHtml(loggedInAs));
+                writer.write("\n");
+                writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
+                writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));      //this is a link to a script
+                writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
+                writer.write(
+                    "<div class=\"standard_width\">\n");
+                writer.write(EDStatic.youAreHereWithHelp(loggedInAs, dapProtocol, 
+                    EDStatic.daf, 
+                    "<div class=\"standard_max_width\">" + 
+                    EDStatic.dafTableTooltip + 
+                    "<p>" + EDStatic.EDDTableDownloadDataTooltip +
+                    "</ol>\n" +
+                    EDStatic.dafTableBypassTooltip + 
+                    "</div>"));
+                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
+                    userDapQuery, "");
+                if (userDapQuery.length() == 0) 
+                    userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
+                writeDapHtmlForm(loggedInAs, userDapQuery, writer);
 
-            //info at end of page
+                //info at end of page
 
-            //then das (with info about this dataset
-            writer.write("<hr>\n");
-            writer.write("<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">" + 
-                EDStatic.dasTitle + "</a></h2>\n" +
-                "<pre style=\"white-space:pre-wrap;\">\n");
-            table.writeDAS(writer, SEQUENCE_NAME, true); //useful so search engines find all relevant words
-            writer.write("</pre>\n");
+                //then das (with info about this dataset
+                writer.write("<hr>\n");
+                writer.write("<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">" + 
+                    EDStatic.dasTitle + "</a></h2>\n" +
+                    "<pre style=\"white-space:pre-wrap;\">\n");
+                table.writeDAS(writer, SEQUENCE_NAME, true); //useful so search engines find all relevant words
+                writer.write("</pre>\n");
 
-            //then dap instructions
-            writer.write("<br>&nbsp;\n");
-            writer.write("<hr>\n");
-            writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
-            writer.write("</div>\n");
-            writer.write(EDStatic.endBodyHtml(tErddapUrl));
-            writer.write("\n</html>\n");
-            writer.flush(); //essential
-            return;
+                //then dap instructions
+                writer.write("<br>&nbsp;\n");
+                writer.write("<hr>\n");
+                writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
+                writer.write("</div>\n");
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e;
+            } finally {
+                writer.write(EDStatic.endBodyHtml(tErddapUrl));
+                writer.write("\n</html>\n");
+                writer.flush(); //essential
+                return;
+            }
         }
 
         if (fileTypeName.endsWith("Info") && 
@@ -6445,6 +6452,7 @@ public abstract class EDDTable extends EDD {
      */
     public void writeDapHtmlForm(String loggedInAs,
         String userDapQuery, Writer writer) throws Throwable {
+
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
 
         //parse userDapQuery 
@@ -6735,8 +6743,8 @@ public abstract class EDDTable extends EDD {
                     maxs = tMinMaxTable.getStringData(dv, 1);
                     if (mins == null) mins = "";
                     if (maxs == null) maxs = "";
-                    if (mins.length() > 18) mins = mins.substring(0, 16) + "...";
-                    if (maxs.length() > 18) maxs = mins.substring(0, 16) + "...";
+                    if (mins.length() > 20) mins = mins.substring(0, 18) + "...";
+                    if (maxs.length() > 20) maxs = maxs.substring(0, 18) + "...";
                     //web page is UTF-8, so it/browser will deal with all characters
                     mins = String2.toJson(mins, 65536, true); //encodeNewline
                     maxs = String2.toJson(maxs, 65536, true); //encodeNewline
@@ -6869,7 +6877,6 @@ public abstract class EDDTable extends EDD {
 
         //be nice
         writer.flush(); 
-
     }
 
 
@@ -8747,16 +8754,16 @@ public abstract class EDDTable extends EDD {
         //*** write the header
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
         Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
-        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
-        writer.write(EDStatic.startHeadHtml(tErddapUrl,  
-            title() + " - " + EDStatic.mag));
-        writer.write("\n" + rssHeadLink());
-        writer.write("\n</head>\n");
-        writer.write(EDStatic.startBodyHtml(loggedInAs));
-        writer.write("\n");
-        writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs))); //this is a link to a script
-        writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
         try {
+            HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
+            writer.write(EDStatic.startHeadHtml(tErddapUrl,  
+                title() + " - " + EDStatic.mag));
+            writer.write("\n" + rssHeadLink());
+            writer.write("\n</head>\n");
+            writer.write(EDStatic.startBodyHtml(loggedInAs));
+            writer.write("\n");
+            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs))); //this is a link to a script
+            writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(
                 "<div class=\"standard_width\">\n");
             writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "tabledap", 
@@ -10666,17 +10673,19 @@ public abstract class EDDTable extends EDD {
                 "<hr>\n");
             writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
 
+            writer.write("</div>\n");
             //*** end of document
-        } catch (Throwable t) {
-            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(t));
-        }
-        writer.write("</div>\n");
-        writer.write(EDStatic.endBodyHtml(tErddapUrl));
-        writer.write("\n</html>\n");
+        } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(e));
+            throw e;
+        } finally {
+            writer.write(EDStatic.endBodyHtml(tErddapUrl));
+            writer.write("\n</html>\n");
 
-        //essential
-        writer.flush(); 
+            //essential
+            writer.flush(); 
+        }
     }
 
     /**
@@ -11080,16 +11089,16 @@ public abstract class EDDTable extends EDD {
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
         Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
-        writer.write(EDStatic.startHeadHtml(tErddapUrl,  
-            title() + " - " + EDStatic.subset));
-        writer.write("\n" + rssHeadLink());
-        writer.write("\n</head>\n");
-        writer.write(EDStatic.startBodyHtml(loggedInAs));
-        writer.write("\n");
-        writer.write("<div class=\"standard_width\">\n");
-        writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
-        writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
         try {
+            writer.write(EDStatic.startHeadHtml(tErddapUrl,  
+                title() + " - " + EDStatic.subset));
+            writer.write("\n" + rssHeadLink());
+            writer.write("\n</head>\n");
+            writer.write(EDStatic.startBodyHtml(loggedInAs));
+            writer.write("\n");
+            writer.write("<div class=\"standard_width\">\n");
+            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
+            writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(EDStatic.youAreHereWithHelp(loggedInAs, dapProtocol, 
                 EDStatic.subset, 
                 "<div class=\"narrow_max_width\">" + EDStatic.subsetTooltip +
@@ -11913,15 +11922,17 @@ public abstract class EDDTable extends EDD {
                     String2.replaceAll(EDStatic.subsetWarn, "<br>", " ") + "\n");
             }
 
+            writer.write("</div>\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
+            throw t;
+        } finally {
+            writer.write(EDStatic.endBodyHtml(tErddapUrl));
+            writer.write("\n</html>\n");
+            writer.flush(); //essential
         }
-        writer.write("</div>\n");
-        writer.write(EDStatic.endBodyHtml(tErddapUrl));
-        writer.write("\n</html>\n");
-        writer.flush(); //essential
     }
 
     /** 

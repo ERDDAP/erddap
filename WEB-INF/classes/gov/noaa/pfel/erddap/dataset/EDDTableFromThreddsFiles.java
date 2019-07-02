@@ -800,8 +800,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 tSortFilesBySourceNames = tSortedColumnSourceName;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"" + 
                 tDatasetID + "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
@@ -812,10 +810,11 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -870,9 +869,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_d91a_eb5f_b55f\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
@@ -1876,7 +1872,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + seek.length()), expected,
             "\nresults=\n" + results);
 
-//+ " http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
+//+ " https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "fsuNoaaShipWTEP.das\";\n" +
@@ -1895,7 +1891,7 @@ expected =
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
-"    String sourceUrl \"http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
+"    String sourceUrl \"https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
@@ -2032,10 +2028,10 @@ expected =
         StringArray fileName    = new StringArray();
         LongArray   fileLastMod = new LongArray();
 
-        //*** test http://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/2011/catalog.html
+        //*** test https://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/2011/catalog.html
         if (true) {
         getThreddsFileInfo(
-            "http://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
+            "https://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
             "WTEP_2011082.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
         
@@ -2050,15 +2046,15 @@ expected =
 
         results = fileDir.toNewlineString();
         expected = 
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n";
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = fileName.toNewlineString();

@@ -400,12 +400,13 @@ public class File2 {
             }
             int nDeleted = files.length - nDir + nRemain;
             if (nDir != 0 || nDeleted != 0 || nRemain != 0) 
-                String2.log("File2.deleteIfOld(" + dir + 
-                    (time == Long.MAX_VALUE? "" : 
-                        ", " + Calendar2.safeEpochSecondsToIsoStringTZ(time / 1000.0, "" + time)) +
-                    ") nDir=" + nDir + 
-                    " nDeleted=" + nDeleted + 
-                    " nRemain=" + (nRemain < 0? String2.ERROR : nRemain));
+                String2.log("File2.deleteIfOld(" + 
+                    String2.left(dir + 
+                        (time == Long.MAX_VALUE? "" : 
+                            ", " + Calendar2.safeEpochSecondsToIsoStringTZ(time / 1000.0, "" + time)), 50) +
+                    ") nDir=" +    String2.right("" + nDir, 2) + 
+                    " nDeleted=" + String2.right("" + nDeleted, 4) + 
+                    " nRemain=" +  String2.right(nRemain < 0? String2.ERROR : "" + nRemain, 2));
             return nRemain;
         } catch (Exception e3) {
             String2.log(MustBe.throwable(String2.ERROR + " in File2.deleteIfOld(" + 

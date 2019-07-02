@@ -316,29 +316,28 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
             //    tSortFilesBySourceNames = tSortedColumnSourceName;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "\nNOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
-            "of datasets.xml below to add all of the metadata (especially \"units\").\n" +
-            "-->\n\n" +
+            "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+            "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
             "<dataset type=\"EDDTableFromJsonlCSVFiles\" datasetID=\"" + 
                 suggestDatasetID(tFileDir +  //dirs can't be made public
                     String2.replaceAll(suggestedRegex, '\\', '|') + //so escape chars not treated as subdirs
                     "EDDTableFromJsonlCSVFiles") +  //so different dataset types -> different md5
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             //"    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -397,25 +396,17 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"\n" +
-"NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
-"of datasets.xml below to add all of the metadata (especially \"units\").\n" +
-"-->\n" +
-"\n" +
+"<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
+"  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
 "<dataset type=\"EDDTableFromJsonlCSVFiles\" datasetID=\"jsonl_af39_7bae_632f\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/jsonl/</fileDir>\n" +
 "    <fileNameRegex>sampleCSV\\.jsonl</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <standardizeWhat>0</standardizeWhat>\n" +
-"    <preExtractRegex></preExtractRegex>\n" +
-"    <postExtractRegex></postExtractRegex>\n" +
-"    <extractRegex></extractRegex>\n" +
-"    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortFilesBySourceNames>ship time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +

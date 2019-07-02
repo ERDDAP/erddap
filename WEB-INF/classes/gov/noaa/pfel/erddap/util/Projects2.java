@@ -99,7 +99,7 @@ public class Projects2  {
             handXmlBasePo = handXmlSource2Po;
 
             String url = handXml.substring(handXmlSource1Po + 11, handXmlSource2Po);
-            if (url.startsWith("http://upwell."))
+            if (url.startsWith("https://upwell."))
                 continue;
             if (url.endsWith("hdayCompress"))
                 break;
@@ -211,15 +211,15 @@ public class Projects2  {
         String servers[] = {
             "https://coastwatch.pfeg.noaa.gov/erddap/griddap/",
             "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/",
-            "http://upwell.pfeg.noaa.gov/erddap/griddap/",
-            "http://upwell.pfeg.noaa.gov/erddap/tabledap/"};
+            "https://upwell.pfeg.noaa.gov/erddap/griddap/",
+            "https://upwell.pfeg.noaa.gov/erddap/tabledap/"};
 
         String keywords = "";
         String2.log("datasetID=" + datasetID);
         for (int serv = 0; serv < servers.length; serv++) {
             try {
                 //try EDDGrid
-                String s = EDDGridFromDap.generateDatasetsXml(false, 
+                String s = EDDGridFromDap.generateDatasetsXml( 
                     servers[serv] + datasetID, 
                     null, null, null, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES, new Attributes());
 
@@ -370,7 +370,7 @@ public class Projects2  {
     }
 
     public static void touchUsgs() throws Throwable {
-SSR.touchUrl("http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=usgs_waterservices_0125_011b_2920&flagKey=780628796", 60000);
+SSR.touchUrl("https://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=usgs_waterservices_0125_011b_2920&flagKey=780628796", 60000);
     }
 
 

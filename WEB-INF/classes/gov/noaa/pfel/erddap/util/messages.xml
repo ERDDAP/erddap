@@ -5341,7 +5341,7 @@ please include that in the citation you create.
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">How to Cite ERDDAP in a Paper</a></strong>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
 <br><kbd>
-Simons, R.A. 2017. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+Simons, R.A. 2019. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">What does the acronym "ERDDAP" stand for?</a></strong>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.
@@ -5982,8 +5982,14 @@ https://secoora.org/
 http://serverfault.com
 https://serverfault.com
 
+http://spray.ucsd.edu
+https://spray.ucsd.edu
+
 http://stackoverflow.com
 https://stackoverflow.com
+
+http://tds.coaps.fsu.edu   
+https://tds.coaps.fsu.edu
 
 http://tds.glos.us
 https://tds.glos.us
@@ -6354,6 +6360,7 @@ https://fgdcxml.sourceforge.net
 https://geoport.whoi.edu/
 https://geoport.whoi.edu/thredds/catalog.html
 https://hadobs.metoffice.com
+https://hfrnet-tds.ucsd.edu/thredds/catalog.html 
 https://hudson.dl.stevens-tech.edu/maritimeforecast/
 https://hydromet-thredds.princeton.edu/erddap/index.html  (http uses :8000)
 https://jkorpela.fi
@@ -6376,8 +6383,6 @@ https://sccoos.org/erddap/index.html
 https://schemas.opengis.net
 https://sensorweb.demo.52north.org
 https://sfbaynutrients.sfei.org/erddap/index.html
-https://spray.ucsd.edu
-https://tds.coaps.fsu.edu   close, but java doesn't like it yet, see OpendapHelper.testGetAttributes
 https://tds.marine.rutgers.edu/thredds/catalog.html
 https://tds.marine.rutgers.edu/erddap/info/index.html?page=1&amp;itemsPerPage=1000
 https://udig.refractions.net

@@ -450,26 +450,24 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 tSortFilesBySourceNames = tSortedColumnSourceName;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"" + 
                 suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-            "</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -530,9 +528,6 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"ndbcMet_5df7_b363_ad99\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -559,8 +554,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2019-06-07</att>\n" + //changes
-"        <att name=\"date_issued\">2019-06-07</att>\n" +  //changes
+"        <att name=\"date_created\">2019-07-01</att>\n" + //changes
+"        <att name=\"date_issued\">2019-07-01</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -588,7 +583,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
 "\n" + //changes 2 places...  date is old, but this is what's in the file
 "This dataset has both historical data (quality controlled, before 2018-11-01T00:00:00) and near real time data (less quality controlled, from 2018-11-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2019-06-07T21:00:00Z</att>\n" + //changes
+"        <att name=\"time_coverage_end\">2019-07-01T15:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -626,7 +621,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5599412E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5619932E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -935,7 +930,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-5.3 5.4</att>\n" +  //changes
+"            <att name=\"actual_range\" type=\"floatList\">-2.7 3.4</att>\n" +  //changes
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
 "            <att name=\"long_name\">Pressure Tendency</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -10616,7 +10611,7 @@ expected =
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, "\nresults=\n" + results);
 
 //today + " (local files)\n" +  //from upwell, so time not to seconds until ver 1.40
-//today + " http://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
+//today + " https://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
 //today + " (local files)\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/
 /* 2013-10-28 Too hard to get summary converted to regex. So skip testing it.
@@ -17392,23 +17387,15 @@ FileVisitorDNLS.debugMode = true;
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testEDDTableCopyFiles_e52a_9290_6c34\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <cacheFromUrl>https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/</cacheFromUrl>\n" +
 "    <fileDir>/u00/data/points/testEDDTableCopyFiles/</fileDir>\n" +
 "    <fileNameRegex>19\\d7\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
-"    <cacheFromUrl>https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/</cacheFromUrl>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <standardizeWhat>0</standardizeWhat>\n" +
-"    <preExtractRegex></preExtractRegex>\n" +
-"    <postExtractRegex></postExtractRegex>\n" +
-"    <extractRegex></extractRegex>\n" +
-"    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>region year</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -17624,7 +17611,7 @@ directionsForGenerateDatasetsXml() +
             String tDatasetID = "testEDDTableCopyFiles_e52a_9290_6c34";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Math2.sleep(25000);
+            Math2.sleep(20000);
             String2.pressEnterToContinue(
                 "\n*** When the tasks are finished, press Enter.");
             edd = oneFromXmlFragment(null, results);
@@ -18075,7 +18062,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 34760170;\n" + //changes
+"    Int32 actual_range 1, 35341816;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18120,7 +18107,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.55369232e+9;\n" + //changes
+"    Float64 actual_range 4.811229e+8, 1.5591264e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18182,7 +18169,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2019-05-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2019-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18580,7 +18567,7 @@ FileVisitorDNLS.debugMode = false;
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
    "(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source " +
-   "min=1970-02-26T20:00:00Z, max=2019-06-07T21:00:00Z, and hasNaN=false.)\";\n" +  //end date changes
+   "min=1970-02-26T20:00:00Z, max=2019-07-01T15:00:00Z, and hasNaN=false.)\";\n" +  //end date changes
 "})", 
             "results=\n" + results + comment);
 
@@ -18652,7 +18639,7 @@ FileVisitorDNLS.debugMode = false;
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. (No data matches " +
     "time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, " +
-    "max=2019-06-07T21:00:00Z, and hasNaN=false.)\";\n" + //end date changes
+    "max=2019-07-01T15:00:00Z, and hasNaN=false.)\";\n" + //end date changes
 "})", 
             "results=\n" + results + comment);
 

@@ -871,8 +871,6 @@ public class EDDTableFromDapSequence extends EDDTable{
         boolean isDapper = tLocalSourceUrl.indexOf("dapper") > 0;
         StringBuilder sb = new StringBuilder();
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"" + 
                 suggestDatasetID(tPublicSourceUrl) + 
                 "\" active=\"true\">\n" +
@@ -915,9 +913,6 @@ public class EDDTableFromDapSequence extends EDDTable{
         String tUrl = "http://cimt.dyndns.org:8080/dods/drds/vCTD";
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"dyndns_cimt_8cad_5f3b_717e\" active=\"true\">\n" +
 "    <sourceUrl>http://cimt.dyndns.org:8080/dods/drds/vCTD</sourceUrl>\n" +
 "    <outerSequenceName>vCTD</outerSequenceName>\n" +
@@ -1128,7 +1123,7 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
             //EDDGridFromDap should fail and try EDDTableFromDapSequence and generate same result
-            results = EDDGridFromDap.generateDatasetsXml(true, tUrl, null, null, null, 1440, null) + "\n";
+            results = EDDGridFromDap.generateDatasetsXml(tUrl, null, null, null, 1440, null) + "\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it
@@ -1158,9 +1153,6 @@ directionsForGenerateDatasetsXml() +
         String results = generateDatasetsXml(tUrl, 1440, null) + "\n";
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"localhost_a9c0_2412_8777\" active=\"true\">\n" +
 "    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar</sourceUrl>\n" +
 "    <outerSequenceName>s</outerSequenceName>\n" +

@@ -314,25 +314,24 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             //    tSortFilesBySourceNames = tSortedColumnSourceName;
         }
         sb.append(
-            directionsForGenerateDatasetsXml() +
-            "-->\n\n" +
             "<dataset type=\"EDDTableFromNccsvFiles\" datasetID=\"" + 
                 suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
+            (String2.isUrl(tCacheFromUrl)? 
+              "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" :
+              "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + "</updateEveryNMillis>\n") +  
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
             "    <pathRegex>.*</pathRegex>\n" +
-            (String2.isRemote(tCacheFromUrl)? 
-            "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n" : "") +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage sourceName=***fileName,...
+              "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+              "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+              "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+              "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             //"    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -391,22 +390,15 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-directionsForGenerateDatasetsXml() +
-"-->\n" +
-"\n" +
 "<dataset type=\"EDDTableFromNccsvFiles\" datasetID=\"nccsv_9632_f0df_07b0\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/nccsv/</fileDir>\n" +
 "    <fileNameRegex>sampleScalar\\.csv</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <standardizeWhat>0</standardizeWhat>\n" +
-"    <preExtractRegex></preExtractRegex>\n" +
-"    <postExtractRegex></postExtractRegex>\n" +
-"    <extractRegex></extractRegex>\n" +
-"    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortFilesBySourceNames>ship time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
@@ -2465,7 +2457,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 //"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 1.83</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.01</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
