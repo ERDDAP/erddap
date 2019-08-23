@@ -228,7 +228,7 @@ public class FileNameUtility  {
             return;
         } else if (String2.isUrl(infoUrl)) {
             try {
-                SSR.getUrlResponseLines(infoUrl);  
+                SSR.getUrlResponseArrayList(infoUrl);  
                 return;
             } catch (Exception e) {
                 throw new Exception(String2.ERROR + " in FileNameUtility.ensureInfoUrlExists: error while reading InfoUrl for " + 

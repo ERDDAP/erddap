@@ -959,10 +959,18 @@ public class CharArray extends PrimitiveArray {
      * Test if o is an CharArray with the same size and values.
      *
      * @param o
-     * @return true if equal.  o=null throws an exception.
+     * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        return testEquals(o).length() == 0;
+        if (!(o instanceof CharArray)) //handles o==null
+            return false;
+        CharArray other = (CharArray)o;
+        if (other.size() != size)
+            return false;
+        for (int i = 0; i < size; i++)
+            if (array[i] != other.array[i])
+                return false;
+        return true;
     }
 
     /**
@@ -979,17 +987,8 @@ public class CharArray extends PrimitiveArray {
                 o.getClass().getName() + ".";
         CharArray other = (CharArray)o;
         if (other.size() != size)
-            return "The two CharArrays aren't equal: one has " + size + " value" +
-               (size == 0? "s" :
-                size == 1? " (" + getNccsvDataString(0) + ")" :  //safe char to int type conversion
-                           "s (from " + getNccsvDataString(0) + " to " + 
-                                        getNccsvDataString(size - 1) + ")") + //safe char to int type conversion
-               "; the other has " + other.size() + " value" +
-               (other.size == 0? "s" :
-                other.size == 1? " (" + other.getNccsvDataString(0) + ")" : //safe char to int type conversion
-                                 "s (from " + other.getNccsvDataString(0) + " to " +
-                                              other.getNccsvDataString(other.size - 1) + ")") + //safe char to int type conversion
-               ".";
+            return "The two CharArrays aren't equal: one has " + size + 
+               " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (array[i] != other.array[i])
                 return "The two CharArrays aren't equal: this[" + i + "]=" + 
@@ -1728,7 +1727,7 @@ public class CharArray extends PrimitiveArray {
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a CharArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
-            "The two CharArrays aren't equal: one has 2 values (from a to u); the other has 1 value (a).", "");
+            "The two CharArrays aren't equal: one has 2 value(s); the other has 1 value(s).", "");
         Test.ensureTrue(!anArray.equals(anArray2), "");
         anArray2.addString("7");
         Test.ensureEqual(anArray.testEquals(anArray2), 

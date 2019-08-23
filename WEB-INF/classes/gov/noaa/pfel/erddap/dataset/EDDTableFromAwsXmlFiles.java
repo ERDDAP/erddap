@@ -131,7 +131,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         }
 
         //unpack
-        table.unpack(standardizeWhat);
+        table.standardize(standardizeWhat);
 
         return table;
     }
@@ -225,7 +225,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         //and make a parallel table to hold addAttributes
         Table dataAddTable = new Table();

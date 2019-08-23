@@ -6,10 +6,12 @@ package com.cohort.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
@@ -835,7 +837,7 @@ public class File2 {
         String ext = getExtension(fullFileName); //if e.g., .tar.gz, this returns .gz
 
         InputStream is = new BufferedInputStream( //recommended by https://commons.apache.org/proper/commons-compress/examples.html
-            new FileInputStream(fullFileName));
+            new FileInputStream(fullFileName));  //1MB buffer makes no difference
 
 
         //handle .Z (capital Z) specially first
@@ -910,7 +912,7 @@ public class File2 {
         }
         //.7z is possible but different and harder
 
-        return is;
+        return new BufferedInputStream(is);
     }
 
 
@@ -1235,6 +1237,26 @@ public class File2 {
         return dir + slash;
     }
 
+
+    /** 
+     * This creates a buffered, decompressed (e.g., from .gz file) FileReader. 
+     *
+     * @param fullFileName the full file name
+     * @return a buffered FileReader
+     * @throws Exception if trouble  
+     */
+    public static BufferedReader getDecompressedBufferedFileReader(String fullFileName, 
+        String charset) throws Exception {
+
+        InputStream is = getDecompressedBufferedInputStream(fullFileName);
+        try {
+            return new BufferedReader(new InputStreamReader(is,  
+                String2.isSomething(charset)? charset : String2.ISO_8859_1)); //invalid charset throws exception
+        } catch (Exception e) {
+            try {if (is != null) is.close();} catch (Exception e2) {}
+            throw e;
+        }
+    }
 
 
 }

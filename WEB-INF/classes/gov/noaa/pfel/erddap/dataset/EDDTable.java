@@ -89,6 +89,11 @@ import ucar.ma2.*;
 /** 
  * This class represents a dataset where the results can be presented as a table.
  * 
+ * <p>There is no saveAsNCML() because NCML's data model is dimensions and 
+ * multidimensional variables. But tabular dimensions have no "row" dimension (isUnlimited="true")
+ * used by the dataVariables. To say so would invite software to query it that way.
+ * OR: NCML is a convenient and reasonable way to represent the data.
+ *
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-08
  */
 public abstract class EDDTable extends EDD { 
@@ -3581,9 +3586,9 @@ public abstract class EDDTable extends EDD {
             MessageFormat.format(EDStatic.imageDataCourtesyOf, institution());
         double iconSize = maxRange > 90? 1.2 : maxRange > 45? 1.0 : maxRange > 20? .8 : 
             maxRange > 10? .6 : maxRange > 5 ? .5 : .4;
-        writer.write(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+        writer.write(  //KML
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +  
+            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +  
             "<Document>\n" +
             //human-friendly, but descriptive, <name>
             //name is used as link title -- leads to <description> 
@@ -3753,6 +3758,7 @@ public abstract class EDDTable extends EDD {
         return true;
 
     }
+
 
     /**
      * This saves the data in the table to the outputStream as an image.
@@ -12571,9 +12577,11 @@ public abstract class EDDTable extends EDD {
                         tSubsetVariables[i] = sa.get(i);
                     else {
                         //tAccessibleViaSubset = 
+                        String2.log("destinationNames=" + String2.toCSSVString(dataVariableDestinationNames()));
                         throw new SimpleException(
                             "<subsetVariables> wasn't set up correctly: \"" + 
                             sa.get(i) + "\" isn't a valid variable destinationName.");
+
                         //String2.log(String2.ERROR + " for datasetID=" + datasetID + ": " + tAccessibleViaSubset);
                         //tSubsetVariables = new String[0];
                         //break;
@@ -13156,7 +13164,7 @@ public abstract class EDDTable extends EDD {
      * <p>This seeks to comply with the IOOS SOS Template, v1.0
      * https://code.google.com/p/ioostech/source/browse/trunk/templates/Milestone1.0/OM-GetCapabilities.xml
      * and to mimic IOOS SOS servers like 
-     * 52N (the OGC reference implementation) http://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
+     * 52N (the OGC reference implementation) https://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
      * and ndbcSosWind https://sdf.ndbc.noaa.gov/sos/ .
      *
      * @param queryMap the parts of the query, stored as a name=value map, where
@@ -13229,7 +13237,6 @@ public abstract class EDDTable extends EDD {
         EDVLat edvLat = (EDVLat)dataVariables[latIndex];
         EDVLon edvLon = (EDVLon)dataVariables[lonIndex];
 
-        writer.write(
 //2013-11-19 This is patterned after IOOS 1.0 templates
 //https://code.google.com/p/ioostech/source/browse/trunk/templates/Milestone1.0/SOS-GetCapabilities.xml
 //previously
@@ -13242,9 +13249,10 @@ public abstract class EDDTable extends EDD {
 //        which is c:/programs/sos/coops_capabilities_100430.xml
 //and [was http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi?service=SOS&request=GetCapabilities ]
 //    which is C:/programs/sos/gomoos_capabilities_100430.xml
+        writer.write( //SOS GetCapabilities
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //don't specify encoding (http does that)?
 "<Capabilities\n" +
-"  xmlns:sos=\"http://www.opengis.net/sos/1.0\"\n" +
+"  xmlns:sos=\"http://www.opengis.net/sos/1.0\"\n" +   
 "  xmlns:ows=\"http://www.opengis.net/ows/1.1\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
@@ -13640,7 +13648,7 @@ public abstract class EDDTable extends EDD {
      *    (so redirected to login, instead of getting an error here).
      *
      * <p>This seeks to mimic IOOS SOS servers like 
-     * 52N (the OGC reference implementation) http://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
+     * 52N (the OGC reference implementation) https://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
      * and ndbcSosWind https://sdf.ndbc.noaa.gov/sos/ 
      * in particular
      * https://ioos.github.io/sos-dif/dif/welcome.html
@@ -13663,10 +13671,10 @@ public abstract class EDDTable extends EDD {
         String vocab = combinedGlobalAttributes().getString("standard_name_vocabulary");
         boolean usesCfNames = vocab != null && vocab.startsWith("CF-");
 
-        writer.write(
+        writer.write( //sosPhenomenaDictionary
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<gml:Dictionary gml:id=\"PhenomenaDictionary0.6.1\"\n" +
-"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +  
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.2\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" + //2009-08-26 I changed from ../.. links to actual links for xsd's below
@@ -13730,7 +13738,7 @@ public abstract class EDDTable extends EDD {
      *    (so redirected to login, instead of getting an error here).
      *
      * <p>This seeks to mimic IOOS SOS servers like 
-     * 52N (the OGC reference implementation) http://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
+     * 52N (the OGC reference implementation) https://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
      * and IOOS SOS servers like 
      *   https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos-test/get/describesensor/getstation.jsp
      *
@@ -13789,10 +13797,10 @@ public abstract class EDDTable extends EDD {
         String gmlName = getSosGmlNameStart(tType) + shortName;
 
         //based on https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos-test/get/describesensor/getstation.jsp
-        writer.write(
+        writer.write( //sosDescribeSensor
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
-"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
+"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +   
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
@@ -14050,7 +14058,7 @@ public abstract class EDDTable extends EDD {
 //???this was patterned after C:/programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:Sensor \n" +
-"  xmlns:sml=\"https://www.w3.org/2001/XMLSchema\" \n" +
+"  xmlns:sml=\"https://www.w3.org/2001/XMLSchema\" \n" +   
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\" \n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\" \n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\" \n" + //ogc doesn't show 1.0.2
@@ -14170,7 +14178,7 @@ public abstract class EDDTable extends EDD {
      *    this doesn't check.
      *
      * <p>This seeks to mimic IOOS SOS servers like 
-     * 52N (the OGC reference implementation) http://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
+     * 52N (the OGC reference implementation) https://sensorweb.demo.52north.org/52nSOSv3.2.1/sos
      * and ndbcSosWind https://sdf.ndbc.noaa.gov/sos/ .
      *
      * @param sosQuery
@@ -14671,13 +14679,13 @@ public abstract class EDDTable extends EDD {
             
 
         //write the response
-        writer.write(
+        writer.write( //sosObservationsXmlOutOfBand
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +  
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" + //ogc doesn't show 1.0.2
-"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"" + datasetID +  //was WindsPointCollection
@@ -14944,13 +14952,13 @@ public abstract class EDDTable extends EDD {
 
 
         //write start of xml content for IOOS response
-        writer.write(
+        writer.write( //sosObservationsXmlInlineIoos
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +  
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"" + //ogc doesn't show 1.0.2
-"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"" + datasetID +  //was WindsPointCollection
@@ -15462,10 +15470,10 @@ public abstract class EDDTable extends EDD {
         }
 
         //write start of xml content for Oostethys response
-        writer.write(
+        writer.write( //sosObservationsXmlInlineOostethys
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<om:Observation\n" +
-"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +  
 "  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om\"\n" +
@@ -16760,9 +16768,9 @@ String adminCntinfo =
 
 
 //start writing xml
-        writer.write(
+        writer.write( //FGDC
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 charset???
-"<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" " +
+"<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" " +  
 "xsi:noNamespaceSchemaLocation=\"http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd\" " +
 //http://lab.usgin.org/groups/etl-debug-blog/fgdc-xml-schema-woes 
 //talks about using this
@@ -17519,23 +17527,23 @@ writer.write(
         if (!Float.isNaN(latMax)) latMax = (float)Math2.minMax(-90, 90, latMax);
 
 //write the xml       
-writer.write(
+writer.write( //ISO19115
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<gmi:MI_Metadata \n" +
-"  xmlns=\"https://www.isotc211.org/2005/gmi\"\n" +   //eddgrid doesn't have this
-"  xmlns:srv=\"https://www.isotc211.org/2005/srv\"\n" +  //not there!!!
-"  xmlns:gmx=\"https://www.isotc211.org/2005/gmx\"\n" +
-"  xmlns:gsr=\"https://www.isotc211.org/2005/gsr\"\n" +
-"  xmlns:gss=\"https://www.isotc211.org/2005/gss\"\n" +
-"  xmlns:xs=\"https://www.w3.org/2001/XMLSchema\"\n" +
-"  xmlns:gts=\"https://www.isotc211.org/2005/gts\"\n" +
-"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+//see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_Namespaces#Declaring_Namespaces_in_ISO_XML
+//This doesn't have to make sense or be correct. It is simply what their system/validator deems correct.
+//2019-08-15 from Anna Milan:
+"<gmi:MI_Metadata  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\"\n" +
+"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" +
+"  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" +
+"  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
-"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
-"  xmlns:gco=\"https://www.isotc211.org/2005/gco\"\n" +
-"  xmlns:gmd=\"https://www.isotc211.org/2005/gmd\"\n" +
-"  xmlns:gmi=\"https://www.isotc211.org/2005/gmi\"\n" +
-"  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\">\n" +
+"  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n" +
+"  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n" +
+"  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n" +
+"  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" +
+"  xmlns:srv=\"http://www.isotc211.org/2005/srv\">\n" +
 
 "  <gmd:fileIdentifier>\n" +
 "    <gco:CharacterString>" + datasetID() + "</gco:CharacterString>\n" +
@@ -18322,7 +18330,7 @@ if (ii == iiERDDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -18366,7 +18374,7 @@ if (ii == iiOPeNDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -18409,7 +18417,7 @@ if (ii == iiWMS) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -18451,7 +18459,7 @@ if (ii == iiSubset) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -18611,7 +18619,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -18640,7 +18648,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -18798,7 +18806,7 @@ writer.write(
         expected = 
 "<?xml version=\"1.0\"?>\n" +
 "<Capabilities\n" +
-"  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
+"  xmlns:gml=\"http://www.opengis.net/gml\"\n" +    
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
@@ -18808,7 +18816,7 @@ writer.write(
 "  xmlns:ogc=\"http://www.opengis.net/ogc\"\n" +
 "  xmlns:tml=\"http://www.opengis.net/tml\"\n" +
 "  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
-"  xmlns:myorg=\"http://www.myorg.org/features\"\n" +  //gone!!!
+"  xmlns:myorg=\"http://www.myorg.org/features\"\n" +  
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/sos/1.0 http://schemas.opengis.net/sos/1.0.0/sosAll.xsd\"\n" +
 "  version=\"1.0.0\">\n" +
@@ -19011,7 +19019,7 @@ writer.write(
         expected =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<gml:Dictionary gml:id=\"PhenomenaDictionary0.6.1\"\n" +
-"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +  
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.2\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -19154,7 +19162,7 @@ writer.write(
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
-"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
+"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +  
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
@@ -19601,7 +19609,7 @@ writer.write(
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
-"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
+"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +   
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
@@ -20064,7 +20072,7 @@ writer.write(
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<sml:SensorML\n" +
-"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +
+"  xmlns:sml=\"http://www.opengis.net/sensorML/1.0.1\"\n" +  
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
@@ -20242,10 +20250,10 @@ writer.write(
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +  
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
@@ -20495,7 +20503,7 @@ writer.write(
 "<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
@@ -20631,11 +20639,11 @@ writer.write(
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +   
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
 "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
 "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"\n" +
-"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
 "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
 "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
@@ -20977,12 +20985,12 @@ writer.write(
             //String2.log(results);        
             expected = 
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    "<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+    "<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +   
     "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
     "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-    "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"https://www.noaa.gov/ioos/0.6.1\"\n" +
+    "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
     "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
-    "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
+    "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 http://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
     "  gml:id=\"ndbcSosCurrentsTimeSeriesObservation\">\n" +
     "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
     "  <gml:description>ndbcSosCurrents observations at a series of times</gml:description>\n" +
@@ -21176,7 +21184,7 @@ writer.write(
     //"-79.09, 32.5, 2008-08-01T01:00:00Z, 41004, 229, 10.1, 12.6, 1.68, 5.56, 4.36, NaN, 1008.0, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.6, 6.6\n";
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "<om:Observation\n" +
-    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +   
     "  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
     "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
     "  xmlns:om=\"http://www.opengis.net/om\"\n" +

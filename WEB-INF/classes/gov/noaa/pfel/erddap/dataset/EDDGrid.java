@@ -4832,7 +4832,7 @@ Attributes {
      */
     public void saveAsNCML(String loggedInAs, String requestUrl, 
         OutputStreamSource outputStreamSource) throws Throwable {
-        if (reallyVerbose) String2.log("  EDDGrid.saveAsNCML"); 
+        if (reallyVerbose) String2.log("  EDDGrid.saveAsNCML " + datasetID); 
         long time = System.currentTimeMillis();
 
         //get the writer
@@ -4840,9 +4840,9 @@ Attributes {
             outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8)); 
         try {
             String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
-            writer.write(
+            writer.write(  //NCML
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" " +
+                "<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" " +  
                     "location=\"" + opendapBaseUrl + "\">\n"); 
             
             //global atts
@@ -7193,9 +7193,9 @@ Attributes {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
             outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
         try {
-            writer.write(
+            writer.write( //KML
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+                "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +   
                 "<Document>\n" +
                 //human-friendly, but descriptive, <name>
                 //name is used as link title -- leads to <description> 
@@ -10628,10 +10628,10 @@ Attributes {
         if (version == null || version.equals("1.0.0")) {
             if (version == null)
                 version = "1.0.0";
-            writer.write(
+            writer.write( //WCS 1.0.0
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<WCS_Capabilities version=\"" + version + "\"\n" +
-"  xmlns=\"http://www.opengis.net/wcs\"\n" +
+"  xmlns=\"http://www.opengis.net/wcs\"\n" +   
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -10746,7 +10746,7 @@ Attributes {
             writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<Capabilities version=\"" + version + "\"\n" +
-"  xmlns=\"http://www.opengis.net/wcs/1.1\"\n" +
+"  xmlns=\"http://www.opengis.net/wcs/1.1\"\n" +   
 "  xmlns:ows=\"http://www.opengis.net/ows/1.1\"\n" +
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -10977,10 +10977,10 @@ Attributes {
         if (version == null || version.equals("1.0.0")) {
             if (version == null)
                 version = "1.0.0";
-            writer.write(
+            writer.write( //WCS 1.0.0
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<CoverageDescription version=\"1.0.0\"\n" +
-"  xmlns=\"http://www.opengis.net/wcs\"\n" +
+"  xmlns=\"http://www.opengis.net/wcs\"\n" +   
 "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
 "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -12234,10 +12234,10 @@ String adminCntinfo =
 
 
 //start writing xml
-        writer.write(
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 ???
-"<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" " +
-"xsi:noNamespaceSchemaLocation=\"https://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" " +
+        writer.write( //FGDC
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   
+"<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" " +   
+"xsi:noNamespaceSchemaLocation=\"http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" " + //INVALID!!!
 //http://lab.usgin.org/groups/etl-debug-blog/fgdc-xml-schema-woes 
 //talks about instead using
 //  http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd
@@ -13060,22 +13060,24 @@ writer.write(
         float latMax = (float)Math2.minMax(-90, 90, latEdv.destinationMax());
 
 //write the xml       
-writer.write(
+//see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_Namespaces
+writer.write(  //ISO 19115
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<gmi:MI_Metadata \n" +
-"  xmlns:srv=\"https://www.isotc211.org/2005/srv\"\n" + //not there!!!
-"  xmlns:gmx=\"https://www.isotc211.org/2005/gmx\"\n" +
-"  xmlns:gsr=\"https://www.isotc211.org/2005/gsr\"\n" +
-"  xmlns:gss=\"https://www.isotc211.org/2005/gss\"\n" +
-"  xmlns:xs=\"https://www.w3.org/2001/XMLSchema\"\n" +
-"  xmlns:gts=\"https://www.isotc211.org/2005/gts\"\n" +
-"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+//see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_Namespaces#Declaring_Namespaces_in_ISO_XML
+//This doesn't have to make sense or be correct. It is simply what their system/validator deems correct.
+//2019-08-15 from Anna Milan:
+"<gmi:MI_Metadata  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\"\n" +
+"  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" +
+"  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" +
+"  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n" +
 "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
-"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
-"  xmlns:gco=\"https://www.isotc211.org/2005/gco\"\n" +
-"  xmlns:gmd=\"https://www.isotc211.org/2005/gmd\"\n" +
-"  xmlns:gmi=\"https://www.isotc211.org/2005/gmi\"\n" +
-"  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\">\n" +
+"  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n" +
+"  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n" +
+"  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n" +
+"  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" +
+"  xmlns:srv=\"http://www.isotc211.org/2005/srv\">\n" +
 
 "  <gmd:fileIdentifier>\n" +
 "    <gco:CharacterString>" + datasetID() + "</gco:CharacterString>\n" +
@@ -13886,7 +13888,7 @@ if (ii == iiERDDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -13929,7 +13931,7 @@ if (ii == iiOPeNDAP) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -13971,7 +13973,7 @@ if (ii == iiWMS) {
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
-                   "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                    "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "              </gmd:function>\n" +
 "            </gmd:CI_OnlineResource>\n" +
@@ -14136,7 +14138,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -14165,7 +14167,7 @@ writer.write(
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                       "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
                        "codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -14233,7 +14235,7 @@ writer.write(
         if (String2.isUrl(datasetID)) {
             Table table = new Table();
             table.readASCII(datasetID, 
-                SSR.getUrlResponseLines(datasetID + ".csvp?time"), //returns String lines[]
+                SSR.getBufferedUrlReader(datasetID + ".csvp?time"), 
                 0, 1, ",", null, null, null, null, false);
             PrimitiveArray isoPA = table.getColumn(0);
             int n = isoPA.size();

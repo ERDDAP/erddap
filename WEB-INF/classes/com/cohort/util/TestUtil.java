@@ -1293,6 +1293,23 @@ public class TestUtil {
         Test.ensureEqual(String2.removeLeading("00a0", '0'), "a0", "");
         Test.ensureEqual(String2.removeLeading("b", 'a'), "b", "");
 
+        //getAwsS3BucketName(String url) {
+        Test.ensureEqual(String2.getAwsS3BucketName("http://buc-k.et.s3.region.amazonaws.com"), "buc-k.et", "");
+        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.s3.region.amazonaws.com/"), "buc-k.et", "");
+        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.s3.region.amazonaws.com/prefix"), "buc-k.et", "");
+        Test.ensureEqual(String2.getAwsS3BucketName("https://bu_c-k.et.s3.region.amazonaws.com/pr.e/F-i_x/"), "bu_c-k.et", "");
+
+        Test.ensureEqual(String2.getAwsS3BucketName("https://bu_c-k.et.s3.amazonaws.com/pr.e/F-i_x/"), null, ""); //no region
+        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.amazonaws.com/pre/fix"), null, "");  //no s3
+
+        Test.ensureEqual(String2.getAwsS3Prefix("http://buc-k.et.s3.region.amazonaws.com"), "", "");  
+        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.s3.region.amazonaws.com/"), "", "");
+        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.s3.region.amazonaws.com/prefix"), "prefix", "");
+        Test.ensureEqual(String2.getAwsS3Prefix("https://bu_c-k.et.s3.region.amazonaws.com/pr.e/F-i_x/"), "pr.e/F-i_x/", "");
+
+        Test.ensureEqual(String2.getAwsS3Prefix("http://buc-k.et.s3.amazonaws.com"), null, "");  //no region
+        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.region.amazonaws.com/pre/fix"), null, ""); //no s3
+
         //noLongLines
         s = "asdf asdf asfd asdf (b)asdflakjf(a) abc flkjf aflkjj(b) sl;kj abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlkj(b) f aflkja(b) fasl faslfkj(b) flkajf sflkj(b) adfsl;kj";
         s = String2.noLongLines(s, 25, "  "); 
@@ -1610,11 +1627,28 @@ public class TestUtil {
 
         //utf8 conversions
         String os = " s\\\n\t√\u20ac ";
-
         byte bar[] = String2.stringToUtf8Bytes(os);
         Test.ensureEqual(String2.toCSSVString(bar), "32, 115, 92, 10, 9, -61, -125, -30, -126, -84, 32", "");
         s = String2.utf8BytesToString(bar); 
         Test.ensureEqual(s, os, "s=" + String2.annotatedString(s));
+
+        long time = System.currentTimeMillis();
+        for (i = 0; i < 1000000; i++) {
+            bar = String2.stringToUtf8Bytes(os);
+        }
+        time = System.currentTimeMillis() - time;
+        String2.log("time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
+        if (time > 250)
+            String2.pressEnterToContinue();
+
+        time = System.currentTimeMillis();
+        for (i = 0; i < 1000000; i++) {
+            s = String2.utf8BytesToString(bar);
+        }
+        time = System.currentTimeMillis() - time;
+        String2.log("time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
+        if (time > 200)
+            String2.pressEnterToContinue();
 
         s = String2.stringToUtf8String(os);
         Test.ensureEqual(String2.annotatedString(s), 
@@ -1623,6 +1657,46 @@ public class TestUtil {
             "s=" + String2.annotatedString(s));
         s = String2.utf8StringToString(s);
         Test.ensureEqual(s, os, "s=" + String2.annotatedString(s));
+
+        //compareTo times
+        time = System.currentTimeMillis();
+        a = "aaaaabc";
+        b = "aaaaaa";
+        int sum = 0;
+        for (i = 0; i < 1000000; i++) {
+            sum += b.compareTo(a);
+        }
+        Test.ensureEqual(sum, -1000000, "");
+        time = System.currentTimeMillis() - time;
+        String2.log("time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
+        if (time > 70)
+            String2.pressEnterToContinue();
+
+        //compareTo times
+        time = System.currentTimeMillis();
+        StringHolder sha = new StringHolder("aaaaabc");
+        StringHolder shb = new StringHolder("aaaaaa");
+        sum = 0;
+        for (i = 0; i < 1000000; i++) {
+            sum += shb.compareTo(sha);
+        }
+        Test.ensureEqual(sum, -1000000, "");
+        time = System.currentTimeMillis() - time;
+        String2.log("time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
+        if (time > 70)
+            String2.pressEnterToContinue();
+
+        //compareTo times
+        time = System.currentTimeMillis();
+        sum = 0;
+        for (i = 0; i < 1000000; i++) {
+            sum += shb.toString().compareTo(sha.toString());
+        }
+        Test.ensureEqual(sum, -1000000, "");
+        time = System.currentTimeMillis() - time;
+        String2.log("time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
+        if (time > 200)
+            String2.pressEnterToContinue();
 
         
 
@@ -5630,7 +5704,7 @@ expected =
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
         long time1 = System.currentTimeMillis();
-        Test.ensureEqual(time1 >= fileTime + 10, true, "a1 " + time1 + " " + fileTime);
+        Test.ensureEqual(time1 >= fileTime + 10,  true, "a1 " + time1 + " " + fileTime);
         Test.ensureEqual(time1 <= fileTime + 100, true, "a2 " + time1 + " " + fileTime);
         Test.ensureEqual(File2.touch(utilDir + "temp.txt"), true,  "a"); //touch the file
         long time2 = System.currentTimeMillis();
@@ -5898,14 +5972,14 @@ expected =
         for (int i = 0; i < reps; i++)
             result1 += s.indexOf(find);
         String2.log("String.indexOf reps=" + reps + 
-            " time=" + (System.currentTimeMillis() - time) + "ms  (~115ms on Java 1.7M4700)");
+            " time=" + (System.currentTimeMillis() - time) + "ms  (504ms on Lenovo, was ~115ms on Java 1.7M4700)");
 
         time = System.currentTimeMillis();
         int result2 = 0;
         for (int i = 0; i < reps; i++)
             result2 += String2.indexOf(sBytes, findBytes, jump);
         String2.log("String2 byteIndexOf reps=" + reps + 
-            " time=" + (System.currentTimeMillis() - time) + "ms  (~470ms on Java 1.7M4700)");
+            " time=" + (System.currentTimeMillis() - time) + "ms  (656ms on Lenovo, ~470ms on Java 1.7M4700)");
         //so if 1000 datasets (or 500 and 2word search), time~=9ms 
         //and I think most dataset searchStrings are shorter
     }
@@ -5988,12 +6062,15 @@ expected =
             String sa[] = new String[95*95];
             long oMemoryInUse = -1;
             Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+            String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
+                String2.canonicalStatistics());
             int canSize = -1;
+            int canSHSize = -1;
 
-            //for each outer loop, create a different group of 100 canonical strings 
+            //for each outer loop, create a different group of 95*95 canonical strings 
             for (int outer = 0; outer < 10; outer++) {
 
-                //create 1000000 strings, but only 95*95 different strings per outer loop
+                //create 1000000 strings, but only 1000 different strings per outer loop
                 //With each outer loop, sa values are overwritten. 
                 //  So previous values should be garbage collected.
                 //  If not, memory use and count of nStrings in canonical system
@@ -6018,30 +6095,119 @@ expected =
                 time = System.currentTimeMillis() - time;
                 Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
                 long memoryInUse = Math2.getMemoryInUse();
-                int shouldBe = outer == 0? 320 : 185;
-                String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + "ms (should be Java 1.8=~" + shouldBe + 
+                int shouldBe = outer == 0? 415 : 260;
+                String2.log(String2.canonicalStatistics() + 
+                    "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
+                    "ms [1st pass is slower]) " + 
+                    Math2.memoryString());
+                Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
+                if (oMemoryInUse == -1) {
+                    //initial sizes
+                    oMemoryInUse = memoryInUse; 
+                    canSize   = String2.canonicalSize();             //added strings should be gc'd after each iteration
+                    canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
+                } else {
+                    //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));  too inaccurate to be useful
+                    Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
+                    Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
+                }
+                Test.ensureEqual(String2.canonicalSize(),             canSize,            
+                     "Unexpected String2.canonicalSize!");
+                Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
+                     "Unexpected String2.canonicalStringHolderSize!");
+
+            }   
+            //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
+            String2.log(
+                "\n2019-07 memory use is constant at ~45MB"); 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(
+                "\nUnexpected TestUtil.testString2canonical() error:\n" +
+                MustBe.throwableToString(t)); 
+        }
+    }
+
+    /**
+     * This tests String2.canonicalStringHolder().
+     */
+    public static void testString2canonicalStringHolder() throws Exception {
+        String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
+        try {
+            //find a way to make != strings (for tests below)
+            byte[] a = String2.stringToUtf8Bytes("" + 1);
+            int i = 1;
+            byte[] b = String2.stringToUtf8Bytes("" + i);
+            Test.ensureTrue(a != b, "");
+
+            String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+            int n = 1000;
+            StringHolder sa[] = new StringHolder[95*95];
+            long oMemoryInUse = -1;
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+            String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
+                String2.canonicalStatistics());
+            int canSize = -1;
+            int canSHSize = -1;
+
+            //for each outer loop, create a different group of 95*95 canonical strings 
+            for (int outer = 0; outer < 10; outer++) {
+
+                //create 1000000 strings, but only 1000 different strings per outer loop
+                //With each outer loop, sa values are overwritten. 
+                //  So previous values should be garbage collected.
+                //  If not, memory use and count of nStrings in canonical system
+                //    (tested below) will increase with each outer loop.
+                long time = System.currentTimeMillis();
+                for (int inner = 0; inner < n; inner++) {
+                    for (int inner2 = 0; inner2 < n; inner2++) {
+                        int j = (inner % 95) * 95 + (inner2 % 95);
+                        sa[j] = String2.canonicalStringHolder(new StringHolder(
+                            //makes 95*95 different strings, dispersed to different canonical maps
+                            ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
+                            ((char)(32 + (inner2 % 95))) + "" + 
+                            //make this string unique to this outer loop iteration
+                            ((char)(65 + outer)) + "" + 
+                             //make it a long string
+                            filler100));
+                        //String2.log(">[" + j + "]=" + sa[j]);
+                    }
+                }
+
+                //ensure that memory use and nStrings in maps don't grow unexpectedly
+                time = System.currentTimeMillis() - time;
+                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
+                long memoryInUse = Math2.getMemoryInUse();
+                int shouldBe = outer == 0? 415 : 260; //ms
+                String2.log(String2.canonicalStatistics() + 
+                    "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
                     "ms [1st pass is slower]) " + 
                     Math2.memoryString());
                 Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
                 if (oMemoryInUse == -1) {
                     oMemoryInUse = memoryInUse; 
-                    canSize = String2.canonicalSize();
+                    canSize = String2.canonicalSize();           //added strings should be gc'd after each iteration
+                    canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
                 } else {
-                    String2.log("  excess bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
+                    //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));   too inaccurate to be useful
                     Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
                     Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
                         "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
                 }
-                Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
+                Test.ensureEqual(String2.canonicalSize(),             canSize, 
+                    "Unexpected String2.canonicalSize!");
+                Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
+                    "Unexpected String2.canonicalStringHolderSize!");
             }   
             //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-            String2.log(
-                "\n2016-03 memory use is constant at ~37MB"); 
+            String2.pressEnterToContinue(
+                "\n2019-07 memory use is constant at ~44MB\n" +
+                "No error. I'm just pausing so you can read these diagnostics."); 
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                "\nUnexpected TestUtil.testString2canonical() error:\n" +
+                "\nUnexpected TestUtil.testString2canonicalStringHolder() error:\n" +
                 MustBe.throwableToString(t)); 
         }
     }
@@ -6137,6 +6303,7 @@ expected =
         testMath2();
         testString2();
         testString2canonical();
+        testString2canonicalStringHolder();
         testString2canonical2();
         testString2LogOutputStream();
         testByteIndexOf();

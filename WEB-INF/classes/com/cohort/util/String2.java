@@ -32,6 +32,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -91,11 +92,18 @@ public class String2 {
 //    public final static String  CHARSET = "charset";       //the name  of the charset att
     public final static String  ISO_8859_1 = "ISO-8859-1"; //the value of the charset att and usable in Java code
     public final static String  ISO_8859_1_LC = ISO_8859_1.toLowerCase();
-    public final static Charset ISO_8859_1_CHARSET = Charset.forName(ISO_8859_1);
+    public final static Charset ISO_8859_1_CHARSET = StandardCharsets.ISO_8859_1;
     public final static String ENCODING = "_Encoding";    //the name  of the _Encoding att
     public final static String UTF_8 = "UTF-8";           //a   value of the _Encoding att and usable in Java code
     public final static String UTF_8_LC = UTF_8.toLowerCase();
+    public final static Charset UTF_8_CHARSET = StandardCharsets.UTF_8;
     public final static String JSON = "JSON";          
+    public final static StringComparatorIgnoreCase STRING_COMPARATOR_IGNORE_CASE = new StringComparatorIgnoreCase();
+    public final static String EMPTY_STRING = "";
+    public final static byte[] BAR_ZERO = new byte[0];
+    public final static char[] CAR_ZERO = new char[0];
+    public final static StringHolder STRING_HOLDER_NULL = new StringHolder((String)null);
+    public final static StringHolder STRING_HOLDER_ZERO = new StringHolder("");
 
     /** Returns true if the current Operating System is Windows. */
     public static String OSName = System.getProperty("os.name");
@@ -106,7 +114,9 @@ public class String2 {
         2014-01-09 was System.getProperty("mrj.version") != null
         https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
     public static boolean OSIsMacOSX = OSName.contains("OS X");
-    public final static String  AWS_S3_REGEX = "https?://(\\w*)\\.s3\\.amazonaws\\.com/(.*)";
+    //see https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html including Legacy Bucket names
+    //the capture groups are bucketName, regionName, prefix
+    public final static String  AWS_S3_REGEX = "https?://([\\w\\-\\._]+)\\.s3\\.([\\w\\-]+)\\.amazonaws\\.com/(.*)";
     /** If testing a "dir", url should have a trailing slash.
         Patterns are thread-safe. */
     public final static Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
@@ -179,12 +189,15 @@ public class String2 {
 
     private static String classPath; //lazy creation by getClassPath
 
-    //splitting canonicalMap into 4 maps allows each to be bigger
-    //and makes synchronized contention less common.
+    //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
+    //to be bigger and makes synchronized contention less common.
     private static Map canonicalMap[] = new Map[6];
+    private static Map canonicalStringHolderMap[] = new Map[6];
     static {
-        for (int i = 0; i < canonicalMap.length; i++)
-            canonicalMap[i] = new WeakHashMap();
+        for (int i = 0; i < canonicalMap.length; i++) {
+            canonicalMap[i]             = new WeakHashMap();
+            canonicalStringHolderMap[i] = new WeakHashMap();
+        }
     }
 
     //EDStatic may change this
@@ -826,29 +839,18 @@ public class String2 {
         //BufferedReader and results are declared outside try/catch so 
         //that they can be accessed from within either try/catch block.
         long time = System.currentTimeMillis();
-        InputStream fis = null;
-        Reader isr = null;
+        BufferedReader br = File2.getDecompressedBufferedFileReader(fileName, charset);
         StringBuilder sb = new StringBuilder(8192);
         try {
-
-            fis = File2.getDecompressedBufferedInputStream(fileName);
-            isr = new BufferedReader(new InputStreamReader(fis, 
-                charset == null || charset.length() == 0? ISO_8859_1 : charset));
 
             //get the text from the file
             char buffer[] = new char[8192];
             int nRead;
-            while ((nRead = isr.read(buffer)) >= 0)  //-1 = end-of-file
+            while ((nRead = br.read(buffer)) >= 0)  //-1 = end-of-file
                 sb.append(buffer, 0, nRead);
             return sb.toString();
         } finally {
-            try {
-                if (isr != null)
-                    isr.close();
-                else if (fis != null)
-                    fis.close();
-            } catch (Exception e) {
-            }
+            try {br.close(); } catch (Exception e) {}
         }
     }
 
@@ -901,9 +903,7 @@ public class String2 {
         //BufferedReader and results are declared outside try/catch so 
         //that they can be accessed from within either try/catch block.
         long time = System.currentTimeMillis();
-        InputStream is = null;
-        InputStreamReader isr = null;
-        BufferedReader bufferedReader = null;
+        BufferedReader br = null;
         String results[] = {"", ""};
         int errorIndex = 0;
         int contentsIndex = 1;
@@ -915,9 +915,7 @@ public class String2 {
             maxAttempt = Math.max(1, maxAttempt);
             for (int attempt = 1; attempt <= maxAttempt; attempt++) {
                 try {
-                    is = File2.getDecompressedBufferedInputStream(fileName);
-                    isr = new InputStreamReader(is, 
-                        charset == null || charset.length() == 0? ISO_8859_1 : charset);
+                    br = File2.getDecompressedBufferedFileReader(fileName, charset);
                 } catch (Exception e) {
                     if (attempt == maxAttempt) {
                         log(ERROR + ": String2.readFromFile was unable to read " + fileName);
@@ -931,7 +929,6 @@ public class String2 {
                     }
                 }
             }
-            bufferedReader = new BufferedReader(isr);
                          
             //get the text from the file
             //This uses bufferedReader.readLine() to repeatedly
@@ -940,11 +937,11 @@ public class String2 {
             //The lines (with \n added at the end) are added to a 
             //StringBuilder.
             StringBuilder sb = new StringBuilder(8192);
-            String s = bufferedReader.readLine();
+            String s = br.readLine();
             while (s != null) { //null = end-of-file
                 sb.append(s);
                 sb.append('\n');
-                s = bufferedReader.readLine();
+                s = br.readLine();
             }
 
             //save the contents as results[1]
@@ -957,10 +954,7 @@ public class String2 {
         //close whatever got opened
         try {
             //close the highest level file object available
-            if (bufferedReader != null) bufferedReader.close();
-            else if (isr       != null) isr.close();
-            else if (is        != null) is.close();
-
+            br.close();
         } catch (Exception e) {
             if (results[errorIndex].length() == 0)
                 results[errorIndex] = e.toString(); 
@@ -987,48 +981,35 @@ public class String2 {
      * @param fileName is the (usually canonical) path (dir+name) for the file
      * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
      * @param maxAttempt e.g. 3   (the tries are 1 second apart)
-     * @return String[] with the lines from the file
+     * @return ArrayList with the lines from the file
      * @throws Exception if trouble
      */
-    public static String[] readLinesFromFile(String fileName, String charset,
+    public static ArrayList<String> readLinesFromFile(String fileName, String charset,
         int maxAttempt) throws Exception {
 
         long time = System.currentTimeMillis();
-        InputStream is = null;
-        InputStreamReader isr = null;
+        BufferedReader bufferedReader = null;
         try {
             for (int i = 0; i < maxAttempt; i++) {
                 try {
-                    is = File2.getDecompressedBufferedInputStream(fileName);
-                    isr = new InputStreamReader(is, 
-                        charset == null || charset.length() == 0? ISO_8859_1 : charset);
+                    bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);
                     break; //success
                 } catch (RuntimeException e) {
-                    if (is != null) {
-                        is.close();
-                        is = null;
-                    }
                     if (i == maxAttempt - 1)
                         throw e;
                     Math2.sleep(100);
                 }
             }
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            try {
-                ArrayList<String> al = new ArrayList();                         
-                String s = bufferedReader.readLine();
-                while (s != null) { //null = end-of-file
-                    al.add(s);
-                    s = bufferedReader.readLine();
-                }
-                return al.toArray(new String[0]);
-            } finally {
-                bufferedReader.close();
-                isr = null;
+            ArrayList<String> al = new ArrayList();                         
+            String s = bufferedReader.readLine();
+            while (s != null) { //null = end-of-file
+                al.add(s);
+                s = bufferedReader.readLine();
             }
+            return al;
         } finally {
-            if (isr != null)
-                isr.close();
+            if (bufferedReader != null)
+                bufferedReader.close();
         }
     }
 
@@ -1822,6 +1803,50 @@ public class String2 {
     }
 
     /**
+     * This counts all occurrences of <tt>findS</tt> in s.
+     * if (s == null || findS == null || findS.length() == 0) return 0;
+     * 
+     * @param s the source string
+     * @param findS the char to be searched for
+     */
+    public static int countAll(String s, char findS) {
+        if (s == null) return 0;
+        int n = 0;
+        int sLength = s.length();
+        for (int po = 0; po < sLength; po++) {
+            if (s.charAt(po) == findS) 
+                n++;
+        }
+        return n;
+    }
+
+    /**
+     * This returns the index of the nth occurrence of <tt>findS</tt> in s.
+     * If s == null, or "", or nth &lt;0, or nth occurence not found, return -1.
+     * If s.length()==0 or nth==0, return -1;
+     * 
+     * @param s the source string
+     * @param findS the char to be searched for
+     * @param nth 1+
+     * @return This returns the index of the nth occurrence of <tt>findS</tt> in s.
+     */
+    public static int findNth(String s, char findS, int nth) {
+        if (s == null || nth <= 0) 
+            return -1;
+        int sLength = s.length();
+        if (sLength == 0) 
+            return -1;
+        int nFound = 0;
+        for (int po = 0; po < sLength; po++) {
+            if (s.charAt(po) == findS) {
+                if (++nFound == nth)
+                    return po;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Replaces all occurences of <tt>oldS</tt> in sb with <tt>newS</tt>.
      * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
@@ -2399,7 +2424,18 @@ public class String2 {
      * @return the decoded string
      */
     public static String fromNccsvString(String s) {
-        return replaceAll(fromJson(s), "\"\"", "\"");
+        //Avoid the effort if no " or \ in the string.
+        //If s starts with ", this will quickly (and correctly) go to full effort.
+        //This is significant time savings for Table.readASCII().
+        int sLength = s.length();
+        for (int i = 0; i < sLength; i++) {
+            char ch = s.charAt(i);
+            if (ch == '\"' || ch == '\\')
+                return replaceAll(fromJson(s), "\"\"", "\"");  //do the full conversion
+        }
+        return s;
+
+        //return replaceAll(fromJson(s), "\"\"", "\"");
     }
 
     /**
@@ -2611,7 +2647,7 @@ public class String2 {
     }
     public static String toCSVString(Set set) {
         Object ar[] = set.toArray();
-        Arrays.sort(ar, new StringComparatorIgnoreCase());
+        Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
         return toCSVString(ar);
     }
 
@@ -2693,7 +2729,7 @@ public class String2 {
      */
     public static String toCSSVString(Set set) {
         Object ar[] = set.toArray();
-        Arrays.sort(ar, new StringComparatorIgnoreCase());
+        Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
         return toCSSVString(ar);
     }
 
@@ -4854,7 +4890,7 @@ and zoom and pan with controls in
             Object key = it.next();
             al.add(key.toString() + ": " + map.get(key).toString());
         }
-        Collections.sort(al, new StringComparatorIgnoreCase());
+        Collections.sort(al, STRING_COMPARATOR_IGNORE_CASE);
         return toNewlineString(al.toArray());
     }
 
@@ -5456,31 +5492,22 @@ and zoom and pan with controls in
      * This returns the UTF-8 encoding of the string (or null if trouble).
      * The inverse of this is utf8BytesToString.
      * This won't throw an exception and returns ERROR (as bytes) if trouble.
+     *
+     * @return the byte[]. null in returns null. length=0 returns BAR_ZERO. 
      */
     public static byte[] stringToUtf8Bytes(String s) {
-        try {
-            return s.getBytes(UTF_8);   
-        } catch (Exception e) {  //danger is invalid encoding name -- won't happen
-            log("Caught " + ERROR + " in String2.stringToUtf8Bytes(" + s + "): " + 
-                MustBe.throwableToString(e));
-            return new byte[]{59, 92, 92, 79, 92}; //ERROR
-        }
+        return s == null? null : 
+               s.length() == 0? BAR_ZERO : s.getBytes(UTF_8_CHARSET);   
     }
 
     /**
      * This returns a string from the UTF-8 encoded byte[] (or ERROR if trouble).
      * The inverse of this is stringToUtf8Bytes.
-     * This won't throw an exception and returns ERROR if trouble.
+     * This won't throw an exception unless bar is invalid and returns ERROR if trouble.
+     * null in returns null out.
      */
     public static String utf8BytesToString(byte[] bar) {
-        try {
-            return new String(bar, UTF_8); 
-            //alternatively, you could use (char)bar[i]
-        } catch (Exception e) { //danger is invalid UTF-8
-            log("Caught " + ERROR + " in String2.utf8BytesToString(" + toCSSVString(bar) + "): " + 
-                MustBe.throwableToString(e));
-            return ERROR; 
-        }
+        return bar == null? null : new String(bar, UTF_8_CHARSET); 
     }
 
     /**
@@ -6078,7 +6105,7 @@ and zoom and pan with controls in
         if (s == null)
             return null;
         if (s.length() == 0)
-            return "";
+            return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
         char ch0 = s.charAt(0);
         Map tCanonicalMap = canonicalMap[
@@ -6104,11 +6131,86 @@ and zoom and pan with controls in
         }
     }
 
+    /** 
+     * This is like String.intern(), but uses a WeakHashMap so the canonical 
+     * StringHolder can be garbage collected.
+     * <br>This is thread safe.
+     * <br>It is fast: ~0.002ms per call.
+     * <br>See TestUtil.testString2canonicalStringHolder().
+     *
+     * <p>Using this increases memory use by ~6 bytes per canonical byte[]
+     * (4 for pointer * ~.5 hashMap load factor).
+     * <br>So it only saves memory if many strings would otherwise be duplicated.
+     * <br>But if lots of strings are originally duplicates, it saves *lots* of memory.
+     *
+     * @param sh  byte[] doesn't implement hashCode or equals,
+     *     so need to store byte[] in canonicalStringHolderMap as StringHolder.
+     *     sh can't be null.
+     * @return a canonical StringHolder with the same characters as sh.
+     */
+    public static StringHolder canonicalStringHolder(StringHolder sh) {
+        char[] car = sh.charArray();
+        if (car == null)
+            return STRING_HOLDER_NULL;
+        if (car.length == 0)
+            return STRING_HOLDER_ZERO;
+        char b = car[0];
+        int which = //b == -128? 7 : Math.abs(b)/16; //0..7
+            b < 'A'? 0 : b < 'N'? 1 : //divide uppercase into 2 parts
+            b < 'a'? 2 : b < 'j'? 3 : //divide lowercase into 3 parts
+            b < 'r'? 4 : 5;
+        Map tCanonicalStringHolderMap = canonicalStringHolderMap[which];
+       
+        //faster and logically better to synchronized(canonicalStringHolderMap) once 
+        //  (and use a few times in consistent state)
+        //than to synchronize canonicalStringHolderMap and lock/unlock twice
+        synchronized (tCanonicalStringHolderMap) {
+            WeakReference wr = (WeakReference)tCanonicalStringHolderMap.get(sh);
+            //wr won't be garbage collected, but reference might (making wr.get() return null)
+            StringHolder canonical = wr == null? null : (StringHolder)(wr.get());
+            if (canonical == null) {
+                canonical = sh; //use this object
+                tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
+                //log("new canonical string: " + canonical);
+            }
+            return canonical;
+        }
+    }
+
+    /** This is only used to test canonical. There isn't a trailing newline. */
+    public static String canonicalStatistics() {
+        StringBuilder sb = new StringBuilder("canonical map sizes: ");
+        int sum = 0;
+        for (int i = 0; i < canonicalMap.length; i++) {
+            int tSize = canonicalMap[i].size();
+            sum += tSize;
+            sb.append((i==0? "" : " + ") + tSize);
+        }
+        sb.append(" = " + sum + 
+            "\ncanonicalStringHolder map sizes: ");
+        sum = 0;
+        for (int i = 0; i < canonicalStringHolderMap.length; i++) {
+            int tSize = canonicalStringHolderMap[i].size();
+            sum += tSize;
+            sb.append((i==0? "" : " + ") + tSize);
+        }
+        sb.append(" = " + sum);
+        return sb.toString();
+    }
+
     /** This is only used to test canonical. */
     public static int canonicalSize() {
         int sum = 0;
         for (int i = 0; i < canonicalMap.length; i++)
             sum += canonicalMap[i].size();
+        return sum;
+    }
+
+    /** This is only used to test canonicalStringHolder. */
+    public static int canonicalStringHolderSize() {
+        int sum = 0;
+        for (int i = 0; i < canonicalStringHolderMap.length; i++)
+            sum += canonicalStringHolderMap[i].size();
         return sum;
     }
 
@@ -6273,7 +6375,17 @@ and zoom and pan with controls in
 
     /** This returns true if s isn't null and s.trim().length() &gt; 0. */
     public static boolean isSomething(String s) {
-        return s != null && s.trim().length() > 0;
+        //this behaves like:
+        //return s != null && s.trim().length() > 0;
+
+        if (s == null) 
+            return false;
+        int sLength = s.length();
+        for (int i = 0; i < sLength; i++) {
+            if (s.charAt(i) > 32) //!isWhitespace (the test in trim())
+                return true;
+        }
+        return false;        
     }
 
     /** This returns true if s isn't null, "", "-", "null", "nd", "N/A", "...", "???", etc. */
@@ -6307,9 +6419,12 @@ and zoom and pan with controls in
                      s.equals("null"));
         } else if (ch == 'u') {
             return !(s.equals("unknown") || s.equals("unspecified"));
-        } else {
-            return !(s.equals("...") || s.equals("???"));
+        } else if (ch == '.') {
+            return !s.equals("...");
+        } else if (ch == '?') {
+            return !s.equals("???");
         }
+        return true;
     }
 
 
@@ -6367,11 +6482,14 @@ and zoom and pan with controls in
 
     /** 
      * Given an Amazon AWS S3 URL, this returns the bucketName.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
      * If files have file-system-like names, e.g., 
      *   https?://(bucketName).s3.amazonaws.com/(prefix)
-     *   where the prefix is usually in the form dir1/dir2/fileName.ext
-     *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     *   where the aws-region and prefix are optional,
+     *   where a prefix is usually in the form dir1/dir2/ but may be "",
+     *   where a key (objectName) is usually in the form dir1/dir2/fileName.ext
+     *   https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
      *
      * @param url
      * @return the bucketName or null if not an s3 URL
@@ -6379,7 +6497,7 @@ and zoom and pan with controls in
     public static String getAwsS3BucketName(String url) {
         if (url == null)
             return null;
-        if (url.endsWith(".s3.amazonaws.com"))
+        if (url.endsWith(".amazonaws.com"))
             url = File2.addSlash(url);
         Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
@@ -6389,25 +6507,26 @@ and zoom and pan with controls in
 
     /** 
      * Given an Amazon AWS S3 URL, this returns the objectName or prefix.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
      * If files have file-system-like names, e.g., 
-     *   https?://(bucketName).s3.amazonaws.com/(prefix)
-     *   where a prefix is usually in the form dir1/dir2/ 
-     *   where an objectName is usually in the form dir1/dir2/fileName.ext
-     *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     *   https?://(bucketName).s3.[aws-region.]amazonaws.com/(prefix)  
+     *   where the aws-region and prefix are optional,
+     *   where a prefix is usually in the form dir1/dir2/ but may be "",
+     *   where a key (objectName) is usually in the form dir1/dir2/fileName.ext
+     *   https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
      *
-     * @param url  If the url is supposed to be for a prefix, use 
-     *    getAwsS3Prefix(File2.addSlash(url))
+     * @param url  The URL with directory(s). The directory(s) usually have a trailing /, but that isn't required.
      * @return the prefix or null if not an s3 URL
      */
     public static String getAwsS3Prefix(String url) {
         if (url == null)
             return null;
-        if (url.endsWith(".s3.amazonaws.com"))
+        if (url.endsWith(".amazonaws.com"))
             url = File2.addSlash(url);
         Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
-            return matcher.group(2); //prefix
+            return matcher.group(3); //prefix
         return null;
     }
 

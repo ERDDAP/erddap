@@ -28,8 +28,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.BufferedReader;
 import java.text.MessageFormat;
-
+import java.util.ArrayList;
 
 /** 
  * This class creates an EDDGrid with longitude values in the range -180 to 180
@@ -463,15 +464,21 @@ if (lonIndex < nAv - 1)
 
     /** 
      * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-     * and size is LongArray of epochMillis)
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+     * and lastMod is LongArray of epochMillis)
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
      */
-    public Table accessibleViaFilesFileTable() {
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = getChildDataset();
-        return tChildDataset.accessibleViaFilesFileTable();
+        return tChildDataset.accessibleViaFilesFileTable(nextPath);
     }
 
     /**
@@ -753,9 +760,9 @@ if (lonIndex < nAv - 1)
             (String2.isSomething(datasetIDRegex)? 
                 "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetIDRegex + "\""): "") +
             "&orderBy(%22datasetID%22)";
-        String lines[] = null;
+        BufferedReader br = null;
         try {
-            lines = SSR.getUrlResponseLines(query);
+            br = SSR.getBufferedUrlReader(query);
         } catch (Throwable t) {
             if (t.toString().indexOf("no data") >= 0)
                 return "<!-- No griddap datasets at that ERDDAP match that regex\n" +
@@ -763,7 +770,8 @@ if (lonIndex < nAv - 1)
             throw t;
         }
         Table table = new Table();
-        table.readASCII(query, lines, 0, 2, "", null, null, null, null, false); //simplify
+        table.readASCII(query, 
+            br, 0, 2, "", null, null, null, null, false); //simplify
         PrimitiveArray datasetIDPA = table.findColumn("datasetID");
         PrimitiveArray titlePA     = table.findColumn("title");
         PrimitiveArray minLonPA    = table.findColumn("minLongitude");
@@ -1454,15 +1462,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 127];\n" + //changes
+"  Float64 time[time = 129];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 127][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 129][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 127];\n" +  //changes
+"      Float64 time[time = 129];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +

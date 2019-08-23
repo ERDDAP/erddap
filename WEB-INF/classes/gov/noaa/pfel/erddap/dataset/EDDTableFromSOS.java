@@ -37,6 +37,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
@@ -1615,7 +1616,8 @@ public class EDDTableFromSOS extends EDDTable{
             long processTime = System.currentTimeMillis();
             Table sosTable = new Table();
             boolean simplify = false;
-            sosTable.readASCII(grabFileName, String2.splitNoTrim(sar[1], '\n'), 
+            sosTable.readASCII(grabFileName, 
+                new BufferedReader(new StringReader(sar[1])), 
                 0, 1, "", null, null, null, null, simplify); 
             sar = null; //encourage garbage collection
 
@@ -7739,7 +7741,6 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 
         if (!String2.isSomething(tLicense))
             tLicense = "[standard]";
-        StringBuilder sb = new StringBuilder();
         int po, po1;
 
         //get the response
@@ -7773,21 +7774,34 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         } else {
 
             //read the file
-            String sar[] = String2.readFromFile(safeFileName, null, 2);
-            //an error message from String2.readFromFile?
-            if (sar[0].length() > 0) 
-                throw new SimpleException(sar[0]);
-            if (reallyVerbose) String2.log("ASCII response=\n" + 
-                sar[1].substring(0, Math.min(5000, sar[1].length())) + " ...\n");
+            BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null);
+            /* needs fix to work with BufferedReader
+            if (reallyVerbose) {
+                String2.log("ASCII response=");
+                int stop = Math.min(100, sa.size());
+                for (int i = 0; i < stop; i++)
+                    String2.log(sa.get(i));
+                String2.log("...\n");
+            }*/
             
             //is it an xml file (presumably an error report)?
-            if (sar[1].startsWith("<?xml")) 
-                throw new SimpleException(sar[1]);
+            br.mark(10000); //max read-ahead bytes
+            String s = br.readLine();
+            if (s.startsWith("<?xml")) {
+                StringBuilder sb = new StringBuilder();
+                while (s != null) { //initially, s has first line
+                    sb.append(s);
+                    sb.append('\n');
+                    s = br.readLine();
+                }
+                throw new SimpleException(sb.toString());
+            }
+            br.reset();
 
             //read into sosTable
             boolean simplify = true;
             sosTable = new Table();
-            sosTable.readASCII(safeFileName, String2.splitNoTrim(sar[1], '\n'), 
+            sosTable.readASCII(safeFileName, br, 
                 0, 1, "", null, null, null, null, simplify); 
             timeSourceName = "date_time";
             longitudeSourceName = "longitude (degree)";
@@ -7849,7 +7863,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         po = sosTable.findColumnNumber("station_id");          if (po >= 0) sosTable.removeColumn(po);
 
         //write the main parts
-
+        StringBuilder sb = new StringBuilder();
         sb.append(        
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>" + XML.encodeAsXML(tLocalBaseUrl) + "</sourceUrl>\n" +

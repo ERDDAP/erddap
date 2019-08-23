@@ -1414,10 +1414,10 @@ password = "MyPassword";
             results = getDatabaseInfo(testUrl, testDriver, connectionProps,
                 "", "myschema", "!!!LIST!!!"); //catalog, schema, table
             expected = 
-"table_cat,table_schem,table_name,table_type,remarks\n" +
-",,,,\n" +
-",myschema,id,INDEX,\n" +
-",myschema,mytable,TABLE,\n";
+"table_cat,table_schem,table_name,table_type,remarks,type_cat,type_schem,type_name,self_referencing_col_name,ref_generation\n" +
+",,,,,,,,,\n" +
+",myschema,id,INDEX,,,,,,\n" +
+",myschema,mytable,TABLE,,,,,,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //getDatabaseInfo

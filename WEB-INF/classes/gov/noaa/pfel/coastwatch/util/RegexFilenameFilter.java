@@ -7,7 +7,6 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
@@ -159,7 +158,7 @@ public class RegexFilenameFilter implements FilenameFilter {
             return paAr;
 
         //for each, determine if it is a file or a dir
-        Arrays.sort(names, new StringComparatorIgnoreCase());
+        Arrays.sort(names, String2.STRING_COMPARATOR_IGNORE_CASE);
         int n = names.length;
         for (int i = 0; i < n; i++) {
             String tName = names[i];

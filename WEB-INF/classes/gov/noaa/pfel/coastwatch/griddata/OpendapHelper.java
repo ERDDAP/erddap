@@ -1351,7 +1351,7 @@ public class OpendapHelper  {
                         
                         //make numeric variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getDataType(tClass), tDims);
+                            NcHelper.getNc3DataType(tClass), tDims);
                     }
 
                 } else if (baseType instanceof DArray) {
@@ -1390,7 +1390,7 @@ public class OpendapHelper  {
                     } else {
                         //make numeric variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getDataType(tClass), tDims);
+                            NcHelper.getNc3DataType(tClass), tDims);
                     }
 
                 } else {
@@ -1429,7 +1429,7 @@ public class OpendapHelper  {
                         //make numeric scalar variable
                         varShape[v] = new int[0];
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getDataType(tClass), new ArrayList());
+                            NcHelper.getNc3DataType(tClass), new ArrayList());
                     }
                 }
 
@@ -1926,7 +1926,7 @@ public class OpendapHelper  {
                                 dimSize, true, false, false));
                             PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
                             newDimVars[d] = ncOut.addVariable(rootGroup, dimName, 
-                                NcHelper.getDataType(getElementClass(pv)), 
+                                NcHelper.getNc3DataType(getElementClass(pv)), 
                                 Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
@@ -1942,7 +1942,7 @@ public class OpendapHelper  {
                     Class tClass = getElementClass(pv);
                     //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
                     newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                        NcHelper.getDataType(tClass), dims);
+                        NcHelper.getNc3DataType(tClass), dims);
 
                 } else if (baseType instanceof DArray) {
                     //dArray is usually 1 dim, but may be multidimensional
@@ -2004,7 +2004,7 @@ public class OpendapHelper  {
                     } else {
                         //a regular variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getDataType(tClass), dims);
+                            NcHelper.getNc3DataType(tClass), dims);
                     }
 
                 } else {

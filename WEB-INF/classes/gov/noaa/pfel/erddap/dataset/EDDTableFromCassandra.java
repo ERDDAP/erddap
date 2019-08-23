@@ -254,7 +254,10 @@ import gov.noaa.pfel.erddap.variable.*;
 //  https://github.com/datastax/java-driver/tree/3.0/upgrade_guide
 import com.datastax.driver.core.*;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Date;
@@ -743,8 +746,9 @@ public class EDDTableFromCassandra extends EDDTable{
      * This uses class variables: partitionKeyCSV and rvToResultsEDV.
      *
      * @return the expanded primaryKey table
+     * @throws Exception if trouble
      */
-    protected Table expandPartitionKeyCSV() {
+    protected Table expandPartitionKeyCSV() throws Exception {
 
         Test.ensureNotNull(partitionKeyCSV, "partitionKeyCSV is null. Shouldn't get here.");
         Test.ensureNotNull(rvToResultsEDV,   "rvToResultsEDV is null. Shouldn't get here.");
@@ -755,7 +759,7 @@ public class EDDTableFromCassandra extends EDDTable{
         //  1007,2014-11-07T00:00:00Z           //1.4153184E9
         Table table = new Table();
         table.readASCII("<partitionKeyCSV>", 
-            String2.split(partitionKeyCSV, '\n'),
+            new BufferedReader(new StringReader(partitionKeyCSV)),
             0, 1, ",", null, null, null, null, false); //simplify
         if (debugMode) { String2.log(">> <partitionKeyCSV> as initially parsed:");
             String2.log(table.dataToString());

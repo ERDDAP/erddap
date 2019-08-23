@@ -2559,21 +2559,21 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
      */
     public static void oneSsc(Writer writer, String baseUrl, String url) throws Exception { 
         String2.log("oneSsc entering " + url);
-        String sar[] = SSR.getUrlResponseLines(baseUrl + url);
+        ArrayList<String> sa = SSR.getUrlResponseArrayList(baseUrl + url);
         int line = 0;
         //read to "parent directory" line
-        while (line < sar.length && sar[line].indexOf("parent directory") < 0)
+        while (line < sa.size() && sa.get(line).indexOf("parent directory") < 0)
             line++;
         line++;
-        if (line == sar.length)
+        if (line == sa.size())
             throw new Exception("No 'parent directory' found\n" + baseUrl + url + 
-                "\n" + String2.toNewlineString(sar));
+                "\n" + String2.toNewlineString(sa.toArray(new String[0])));
 
         String aStart = "<a href=\"";
         while (true) {
 
             //are we done with this file?
-            if (line >= sar.length || sar[line].startsWith("</pre>")) {
+            if (line >= sa.size() || sa.get(line).startsWith("</pre>")) {
                 String2.log("  oneSsc leaving " + url);
                 return;
             }
@@ -2584,7 +2584,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             //ANO001_021MTBD000R00_20050617.nc">File information</a>] 
             //[<a href="http://biloxi-bay.ssc.hpc.msstate.edu/dods-bin/pyt.sh/WCOS/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc">OPeNDAP direct</a>] 
             //Thu Feb 23 13:48:30 2006          627120 
-            String s = sar[line];
+            String s = sa.get(line);
             //String2.log("  line#" + line + "=" + s.substring(0, Math.min(70, s.length())));
             int po;
             int po2 = s.indexOf("\">OPeNDAP direct</a>");
@@ -2720,7 +2720,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                     values.append((Calendar2.isoStringToEpochSeconds(year + "-" + String2.zeroPad(""+i, 2) + "-16") / 
                         Calendar2.SECONDS_PER_DAY) + " ");
                 writer.write(
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
 "  location=\"" + name + ".nc\">\n" +
 "  <variable name=\"time\">\n" +
 "    <attribute name='units' value='days since 1970-01-01' />\n" +
@@ -3631,9 +3631,7 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        dataTable.readASCII(sourceDir + sourceCsv, 
-            String2.readLinesFromFile(sourceDir + sourceCsv, null, 3), 
-            -1, 0, "", 
+        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1, -1, 0, "", 
             null, null, null, null, false); //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
@@ -3892,7 +3890,7 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        dataTable.readASCII(sourceDir + sourceCsv, String2.readLinesFromFile(sourceDir + sourceCsv, null, 3), 
+        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1,  
             -1, 0, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
@@ -6325,7 +6323,8 @@ project)
      * Created 2011-05-01.
      * 2014-04-08 Changed PSU to 1e-3 (used in cf std names 25)
      */
-    public static void convertCchdoBottle() throws Exception {
+//2019-07-26 needs to be converted to new readASCII
+/*    public static void convertCchdoBottle() throws Exception {
         String inDir  = "c:/data/cchdo/botcsv/";
         String outDir = "c:/u00/data/points/cchdoBot/";
         String logFile = "c:/data/cchdo/convertCchdoBottle.log";
@@ -6349,7 +6348,7 @@ project)
         for (int f = 0; f < fileNames.length; f++) {
             try {
                 String2.log("\n#" + f + " " + fileNames[f]);
-                String lines[] = String2.readLinesFromFile(inDir + fileNames[f], null, 2);
+                ArrayList<String> lines = String2.readLinesFromFile(inDir + fileNames[f], null, 2);
 
                 //BOTTLE,20030711WHPSIODMB
                 //#code : jjward hyd_to_exchange.pl 
@@ -6364,32 +6363,33 @@ project)
                 //BOTTLE,20081117PRINUNIVRMK
                 Table table = new Table();
                 Attributes gatts = table.globalAttributes();
-                String s = lines[0];
+                String s = lines.get(0);
                 gatts.add("processed", s.substring(6, 14));
                 gatts.add("DivInsWho", s.substring(14)); //DivisionInstituteWho
 
                 //skip # lines  (It's history, but would be lost when files aggregated.)
                 int colNamesLine = 1;
-                while (lines[colNamesLine].startsWith("#"))
+                while (lines.get(colNamesLine).startsWith("#"))
                     colNamesLine++;
                 //String2.log("  colNamesLine=" + colNamesLine);
 
                 //remove END_DATA and other rows at end
-                int endDataLine = lines.length - 1; //index 0.. of endDataLine
-                while (!lines[endDataLine].startsWith("END_DATA"))
+                int endDataLine = lines.size() - 1; //index 0.. of endDataLine
+                while (!lines.get(endDataLine).startsWith("END_DATA")) {
+                    lines.remove(endDataLine);
                     endDataLine--;
-                String tLines[] = new String[endDataLine];
-                System.arraycopy(lines, 0, tLines, 0, endDataLine);
-                lines = tLines;
+                }
+                String[] units = String2.split(lines.get(colNamesLine + 1), ',');
 
                 //read ASCII info into a table
-                table.readASCII(inDir + fileNames[f], lines, 
+                table.readASCII(inDir + fileNames[f], 
+                    lines,  //WARNING: individual lines in lines will be set to null 
                     colNamesLine, colNamesLine + 2, "", 
                     null, null, null, null, false); //false=simplify
+                lines = null;
                 int nRows = table.nRows();
 
                 //clean up
-                String[] units = String2.split(lines[colNamesLine + 1], ',');
                 for (int col = 0; col < units.length; col++) {
                     //make column names safe for .nc
                     String colName = table.getColumnName(col).toLowerCase();
@@ -6911,7 +6911,7 @@ project)
         String2.log("colInfo:");
         String2.log(colInfo.toString());
         String2.returnLoggingToSystemOut();
-    }
+    } */
 
     /** 
      * This makes the NetCheck tests for all of an ERDDAP's datasets. 
@@ -6923,12 +6923,12 @@ project)
     public static String makeNetcheckErddapTests(String erddapUrl) throws Throwable {
         Table table = new Table();
         erddapUrl += "tabledap/allDatasets.csv0?datasetID";
-        StringArray rows = new StringArray(SSR.getUrlResponseLines(erddapUrl)); //default is String2.ISO_8859_1
+        ArrayList<String> rows = SSR.getUrlResponseArrayList(erddapUrl); //default is String2.ISO_8859_1
         int nRows = rows.size();
-        rows.sortIgnoreCase();
+        rows.sort(String2.STRING_COMPARATOR_IGNORE_CASE);
         StringBuilder sb = new StringBuilder();
         for (int row = 0; row < nRows; row++) 
-            sb.append("    <responseMustInclude>" + rows.getString(row) + "</responseMustInclude>\n");
+            sb.append("    <responseMustInclude>" + rows.get(row) + "</responseMustInclude>\n");
         String s = sb.toString();
         sb = null;
         String2.setClipboardString(s);
@@ -7131,7 +7131,7 @@ project)
                             //String2.log("    dim#" + d + "=" + tName + " size=" + tSize);
                             dims[d] = ncOut.addDimension(rootGroup, tName, tSize, true, false, false);
                             newDimVars[d] = ncOut.addVariable(rootGroup, tName, 
-                                NcHelper.getDataType(pas[d + 1].elementClass()), 
+                                NcHelper.getNc3DataType(pas[d + 1].elementClass()), 
                                 Arrays.asList(dims[d])); 
                         }
                     }
@@ -7140,7 +7140,7 @@ project)
                     Class tClass = OpendapHelper.getElementClass(pv);
                     //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
                     newVars[v] = ncOut.addVariable(rootGroup, vars[v], 
-                        NcHelper.getDataType(tClass), dims);
+                        NcHelper.getNc3DataType(tClass), dims);
 
                 } else {
                    throw new RuntimeException(beginError + 
@@ -8060,8 +8060,7 @@ towTypesDescription);
         HashSet<String> others = new HashSet();
         String source;
 
-        InputStream is = File2.getDecompressedBufferedInputStream(datasetsXmlFileName); 
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        BufferedReader in = File2.getDecompressedBufferedFileReader(datasetsXmlFileName, String2.ISO_8859_1); 
         try {
             while ((source = in.readLine()) != null) {
                 source = source.trim();
@@ -8144,14 +8143,14 @@ towTypesDescription);
                 atts.add("units", "degrees_north");
                 Dimension latDim = nc.addDimension(rootGroup, latName, nLat);
                 Variable latVar = nc.addVariable(rootGroup, latName, 
-                    NcHelper.getDataType(double.class), Arrays.asList(latDim)); 
+                    NcHelper.getNc3DataType(double.class), Arrays.asList(latDim)); 
                 NcHelper.setAttributes(nc3Mode, latVar, atts);
 
                 //lon
                 atts.add("units", "degrees_east");
                 Dimension lonDim = nc.addDimension(rootGroup, lonName, nLon);
                 Variable lonVar = nc.addVariable(rootGroup, lonName, 
-                    NcHelper.getDataType(double.class), Arrays.asList(lonDim)); 
+                    NcHelper.getNc3DataType(double.class), Arrays.asList(lonDim)); 
                 NcHelper.setAttributes(nc3Mode, lonVar, atts);
 
                 //write global attributes
@@ -8514,12 +8513,12 @@ towTypesDescription);
             String result = "";
             try {
                 //request time[last] and get the date from the 3rd line   2007-04-12T14:00:00Z
-                String response[] = SSR.getUrlResponseLines(
+                ArrayList<String> response = SSR.getUrlResponseArrayList(
                     griddapUrl + datasetIDs.get(i) + ".csv?time[last]");
-                if (response.length >= 3)
-                    result = response[2];
-                else if (response.length >= 1)
-                    result = response[0];
+                if (response.size() >= 3)
+                    result = response.get(2);
+                else if (response.size() >= 1)
+                    result = response.get(0);
                 else result = "[Response = \"\"]";
             } catch (Throwable t) {
                 result = t.toString();
@@ -8835,14 +8834,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncml1day/V2014365.ncml is
-<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='l3m_data'/>\n" +
@@ -8887,14 +8886,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncml8day/V20120012012008.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='l3m_data'/>\n" +
@@ -8932,7 +8931,7 @@ towTypesDescription);
                         varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncmlmon/V20120012012031.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
@@ -8940,7 +8939,7 @@ towTypesDescription);
    </aggregation>
  </netcdf>
  */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='l3m_data'/>\n" +
@@ -8976,14 +8975,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncml1day/V2014365.ncml is
-<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9029,14 +9028,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncml8day/V20120012012008.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9076,7 +9075,7 @@ towTypesDescription);
                         varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncmlmon/V20120012012031.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
@@ -9084,7 +9083,7 @@ towTypesDescription);
    </aggregation>
  </netcdf>
  */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9120,14 +9119,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncml1day/V2014365.ncml is
-<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9173,14 +9172,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncml8day/V20120012012008.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9220,7 +9219,7 @@ towTypesDescription);
                         varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncmlmon/V20120012012031.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
@@ -9228,7 +9227,7 @@ towTypesDescription);
    </aggregation>
  </netcdf>
  */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9264,14 +9263,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncml1day/V2014365.ncml is
-<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9317,14 +9316,14 @@ towTypesDescription);
                         varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncml8day/V20120012012008.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
      <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
    </aggregation>
  </netcdf> */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9364,7 +9363,7 @@ towTypesDescription);
                         varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncmlmon/V20120012012031.ncml is
- <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+ <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
    <variable name='time' type='int' shape='time' />
    <aggregation dimName='time' type='joinNew'>
      <variableAgg name='l3m_data'/>
@@ -9372,7 +9371,7 @@ towTypesDescription);
    </aggregation>
  </netcdf>
  */
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
 "  <variable name='time' type='int' shape='time' />\n" +
 "  <aggregation dimName='time' type='joinNew'>\n" +
 "    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
@@ -9473,14 +9472,15 @@ towTypesDescription);
         String regex = "\\d{14}-NODC.*\\.nc";
 
         //String names[] = RegexFilenameFilter.list(dir, regex);
-        String names[] = String2.readLinesFromFile(
+        ArrayList<String> names = String2.readLinesFromFile(
             "/u00/satellite/PH2/" + sstdn + "/names.txt", null, 1);
 
         //for each file
-        for (int i = 0; i < names.length; i++) {
+        int nNames = names.size();
+        for (int i = 0; i < nNames; i++) {
 
             //extract date yyyyddd
-            String tName = names[i];
+            String tName = names.get(i);
 //19811101145206-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA07_G_1981305_day-v02.0-fv01.0.nc
             double epochSeconds = 
                 (Calendar2.parseYYYYDDDZulu(tName.substring(72, 79)).getTimeInMillis() /
@@ -9490,7 +9490,7 @@ towTypesDescription);
             Writer writer = new BufferedWriter(new FileWriter(dir + tName + ".ncml"));
             StringBuilder values = new StringBuilder();
             writer.write(
-"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
+"<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
 "  location=\"" + tName + "\">\n" +
 "  <variable name=\"time\">\n" +
 "    <attribute name='units' value='seconds since 1970-01-01T00:00:00Z' />\n" +
@@ -9527,15 +9527,16 @@ towTypesDescription);
         for (int year = 2019; year <= 2019; year++) {
             for (int daynight = 0; daynight < 2; daynight++) {
 
-                String names[] = String2.readLinesFromFile(
+                ArrayList<String> names = String2.readLinesFromFile(
                     ncmlDir + dayNight[daynight] + "names" + year + ".txt", null, 1);
                 HashMap<String,String> hm = new HashMap();
                 //for each file
                 //19811101145206-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA07_G_1981305_day-v02.0-fv01.0.nc
-                for (int i = 0; i < names.length; i++) {
+                int nNames = names.size();
+                for (int i = 0; i < nNames; i++) {
 
                     //extract date yyyyddd
-                    String tName = File2.getNameAndExtension(names[i]);
+                    String tName = File2.getNameAndExtension(names.get(i));
                     String date = String2.extractCaptureGroup(tName, ".*_(\\d{7})_.*", 1);
                     if (date == null)
                         continue;
@@ -9553,7 +9554,7 @@ towTypesDescription);
                     Writer writer = new BufferedWriter(new FileWriter(ncmlDir + dayNight[daynight] + "Ncml/" +tName + ".ncml"));
                     try {
                         writer.write(
-        "<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
+        "<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
         "  location=\"" + tName + "\">\n" +
         "  <variable name=\"time\">\n" +
         "    <attribute name='units' value='seconds since 1970-01-01T00:00:00Z' />\n" +

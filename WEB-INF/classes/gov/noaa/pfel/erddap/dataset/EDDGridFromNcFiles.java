@@ -1406,7 +1406,7 @@ expected =
 
         try {
 
-        String cacheFromUrl = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
+        String cacheFromUrl = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
         String regex = ".*_CESM1-CAM5_201.*\\.nc";
         String dir = "/u00/data/points/testAwsS3NexDcp/";
         String name = ""; //with cacheFromUrl, use nothing.   Was: dir + "tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc";
@@ -1434,7 +1434,7 @@ expected =
 "  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testAwsS3NexDcp_3312_e3e8_65ae\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" +
-"    <cacheFromUrl>http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n" +
+"    <cacheFromUrl>https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n" +
 "    <fileDir>/u00/data/points/testAwsS3NexDcp/</fileDir>\n" +
 "    <fileNameRegex>.*_CESM1-CAM5_201.*\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
@@ -1447,7 +1447,7 @@ expected =
 "        <att name=\"CMIPtable\">Amon</att>\n" +
 "        <att name=\"contact\">Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org</att>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +
-"        <att name=\"creation_date\">Wed Sep 12 14:44:42 PDT 2012</att>\n" + //varies a little with sample file
+"        <att name=\"creation_date\">Wed Sep 12 14:44:44 PDT 2012</att>\n" + //varies a little with sample file
 "        <att name=\"DOI\">http://dx.doi.org/10.7292/W0WD3XH4</att>\n" +
 "        <att name=\"downscalingModel\">BCSD</att>\n" +
 "        <att name=\"driving_data_tracking_ids\">N/A</att>\n" +
@@ -1480,7 +1480,7 @@ expected =
 "        <att name=\"resolution_id\">800m</att>\n" +
 "        <att name=\"table_id\">Table Amon</att>\n" +
 "        <att name=\"title\">800m Downscaled NEX CMIP5 Climate Projections for the Continental US</att>\n" +
-"        <att name=\"tracking_id\">da8a69d2-af11-11e2-a9d5-e41f134d5304</att>\n" + //varies with sample file
+"        <att name=\"tracking_id\">e0141f38-af11-11e2-a585-e41f13ef5a36</att>\n" + //varies with sample file
 "        <att name=\"variableName\">tasmin</att>\n" +
 "        <att name=\"version\">1.0</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -1670,7 +1670,7 @@ expected =
 "    Float64 valid_range 0.0, 360.0;\n" +
 "  }\n" +
 "  tasmin {\n" +
-"    Float32 _FillValue 1.0E20;\n" +
+"    Float32 _FillValue 1.0e+20;\n" +
 "    String associated_files \"baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc\";\n" +
 "    String cell_measures \"area: areacella\";\n" +
 "    String cell_methods \"time: minimum (interval: 30 days) within days time: mean over days\";\n" +
@@ -1723,7 +1723,7 @@ expected =
 
 expected = 
 //"2015-06-24T17:36:33Z http://localhost:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
-    "String infoUrl \"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
+    "String infoUrl \"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
 "    String initialization_method \"1\";\n" +
 "    String institute_id \"NASA-Ames\";\n" +
 "    String institution \"NASA Earth Exchange, NASA Ames Research Center, Moffett Field, CA 94035\";\n" +
@@ -11075,6 +11075,178 @@ expected =
         
     }
 
+
+    /**
+     * This tests reading a file with a long variable.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGenerateDatasetsXmlLong2() throws Throwable {
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlLong2()");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        int po;
+        EDV edv;
+
+        results = EDDGridFromNcFiles.generateDatasetsXml(
+            //file isn't in /erddapTest because it is proprietary
+            "/data/long2/", ".*\\.nc", "", -1, "", null);
+        String2.log(results);
+        expected = 
+"<!-- NOTE! The source for long2_fb1b_899d_dde4 has nGridVariables=5,\n" +
+"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"long2_fb1b_899d_dde4\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/data/long2/</fileDir>\n" +
+"    <fileNameRegex>.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"Conventions\">CF-1.6</att>\n" +
+"        <att name=\"forcing_data_source\">Met Office; Global UM</att>\n";
+        //proprietary
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+expected = 
+    "<addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"history_of_appended_files\">Wed Jul  3 07:35:02 2019: Appended file maxwvht.tmp.nc had no &quot;history&quot; attribute</att>\n" +
+"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"institution\">???</att>\n" +
+"        <att name=\"keywords\">data, height, latitude, local, longitude, maximum, sea, sea_surface_wave_maximum_height, source, surface, surface waves, time, VHMAX, wave, waves</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"NCO\">netCDF Operators version 4.7.6 (Homepage = http://nco.sf.net, Code = https://github.com/nco/nco)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"summary\">Data from a local source.</att>\n" +
+"        <att name=\"testOutOfDate\">now-32days</att>\n" +
+"        <att name=\"title\">Data from a local source.</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">524288</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"calendar\">Julian</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>latitude</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">391</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degree_north</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">90.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>longitude</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">737</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degree_east</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">360.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">0.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>VHMAX</sourceName>\n" +
+"        <destinationName>VHMAX</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">61 391 737</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"calculation_method\">Expected wave height greater than 95.0th percentile of distribution</att>\n" +
+"            <att name=\"cell_methods\">time:point</att>\n" +
+"            <att name=\"coordinates\">forecast_period forecast_reference_time</att>\n" +
+"            <att name=\"grid_mapping\">crs</att>\n" +
+"            <att name=\"long_name\">Maximum wave height</att>\n" +
+"            <att name=\"pdf\">Rayleigh</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.002</att>\n" +
+"            <att name=\"standard_name\">sea_surface_wave_maximum_height</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"            <att name=\"valid_max\" type=\"int\">16000</att>\n" +
+"            <att name=\"valid_min\" type=\"int\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Surface Waves</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        try {
+            po = results.indexOf(expected.substring(0,15));
+            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nThe testOutOfDate recommendatation changes. That's okay."); 
+        }
+        
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "long2_fb1b_899d_dde4";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "Data from a local source.", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "VHMAX", "");
+        tName = edd.makeNewFileForDapQuery(null, null, 
+            "VHMAX[(2019-07-03T00:00:00Z):1:(2019-07-03T00:00:00Z)][(25):1:(25.01)][(52):1:(52.01)]", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_TestLong2Grid", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,latitude,longitude,VHMAX\n" +
+"UTC,degrees_north,degrees_east,m\n" +
+"2019-07-03T00:00:00Z,25.004124,52.004135,0.552\n" +
+"2019-07-03T00:00:00Z,25.004124,52.01247,0.566\n" +
+"2019-07-03T00:00:00Z,25.012457,52.004135,0.558\n" +
+"2019-07-03T00:00:00Z,25.012457,52.01247,0.566\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlLong2 passed the test.");
+
+    }
+
     /**
      * This tests this class.
      *
@@ -11093,6 +11265,7 @@ expected =
         testGenerateDatasetsXml2();
         testGenerateDatasetsXml3();
         testGenerateDatasetsXml4();
+        testGenerateDatasetsXmlLong2();
         testSpeed(0, 1000);  
         testAVDVSameSource();
         test2DVSameSource();
@@ -11138,9 +11311,9 @@ expected =
         testInvalidShortenedNcFile();
         testLogAxis(-1); //-1=all
 
-        //testGenerateDatasetsXmlAwsS3();        //2019-05-17 test files gone?! http://nasanex.s3.amazonaws.com/NEX-DCP30
-        //testAwsS3(true);  //deleteCachedInfo   //  Is this "making the data publicly accessible"?
-        //testAwsS3(false);  //deleteCachedInfo 
+        testGenerateDatasetsXmlAwsS3();       
+        testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+        testAwsS3(false);  //deleteCachedInfo 
 
         /* */
 

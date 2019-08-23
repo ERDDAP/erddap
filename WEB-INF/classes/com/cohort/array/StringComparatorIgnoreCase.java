@@ -36,7 +36,7 @@ public class StringComparatorIgnoreCase implements Comparator {
         int c = s1.compareToIgnoreCase(s2);
         if (c != 0) 
             return c;
-        return s1.compareTo(s2);
+        return s1.compareTo(s2); //be nice and sort case-sensitive
     }
 
     /**

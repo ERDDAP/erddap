@@ -2174,7 +2174,7 @@ If you want the examples to point to your ERDDAP, the easiest method is:
 <errorRequestQuery>Your request query:</errorRequestQuery>
 <errorTheError>The error:</errorTheError>
 <errorCopyFrom>Unable to copy from {0}.</errorCopyFrom>
-<errorFileNotFound>File not found: {0}.</errorFileNotFound>
+<errorFileNotFound>File not found: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>File not found in cache. Recreate the image and try again.</errorFileNotFoundImage>
 <errorInternal>Internal error:</errorInternal>
 <!-- Don't include the invalid (malicious?) functionName in the error message. -->
@@ -3812,7 +3812,7 @@ with <kbd>WindSpeed</kbd>.
 <searchNotAvailable>Sorry.  The search system is not available right now.</searchNotAvailable>
 
 <!-- The tooltip text for the full text search's text field. -->
-<searchTip>Like Google, enter space-separated word(s), for example, &quot;noaa wind&quot;.</searchTip>
+<searchTip>Like Google search, enter space-separated word(s), for example, &quot;noaa wind&quot;.</searchTip>
 
 <searchSpelling>Check the spelling of the word(s) you searched for.</searchSpelling>
 <searchFewerWords>Try using fewer search words.</searchFewerWords>
@@ -5745,6 +5745,9 @@ https://coastwatch.noaa.gov
 http://coastwatch.pfeg.noaa.gov
 https://coastwatch.pfeg.noaa.gov
 
+http://cordc.ucsd.edu
+https://cordc.ucsd.edu
+
 http://cpo.noaa.gov
 https://cpo.noaa.gov
 
@@ -5757,8 +5760,14 @@ https://currents.soest.hawaii.edu
 http://cwcgom.aoml.noaa.gov
 https://cwcgom.aoml.noaa.gov
 
+http://darchive.mblwhoilibrary.org
+https://darchive.mblwhoilibrary.org
+
 http://data.giss.nasa.gov
 https://data.giss.nasa.gov
+
+http://data.glos.us
+https://data.glos.us
 
 http://data.nodc.noaa.gov
 https://data.nodc.noaa.gov
@@ -5802,6 +5811,9 @@ https://ecowatch.ncddc.noaa.gov
 http://en.wikipedia.org
 https://en.wikipedia.org
 
+http://erddap.emodnet-physics.eu
+https://erddap.emodnet-physics.eu
+
 http://erddap.marine.ie
 https://erddap.marine.ie
 
@@ -5825,6 +5837,9 @@ https://gmt.soest.hawaii.edu
 
 http://gtopp.org
 https://gtopp.org
+
+http://hfrnet-tds.ucsd.edu
+https://hfrnet-tds.ucsd.edu
 
 http://httpd.apache.org
 https://httpd.apache.org
@@ -5978,6 +5993,9 @@ https://sdf.ndbc.noaa.gov
 
 http://secoora.org/
 https://secoora.org/
+
+http://sensorweb.demo.52north.org
+https://sensorweb.demo.52north.org
 
 http://serverfault.com
 https://serverfault.com
@@ -6336,15 +6354,13 @@ https://esgf-node.llnl.gov/projects/cmip5/
 
 http://www.aviso.oceanobs.com to https://www.aviso.altimetry.fr/   no simple fix?
 
-https://apdrc.soest.hawaii.edu
+https://apdrc.soest.hawaii.edu works but e.g., http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php  doesn't
 https://atm-phys.nies.go.jp
 https://bcodata.whoi.edu
 https://cfconventions.org  and in setupDatasetsXml.html
 https://climate.geog.udel.edu
 https://colossus.dl.stevens-tech.edu/thredds/catalog.html
-https://darchive.mblwhoilibrary.org/bitstream/handle/1912/7908/1/GT10_11_cellular_element_quotas.tsv base url is secure, but requests are not secure
 https://data.bcodmo.org/GEOTRACES/cruises/Atlantic_2010/KN199-04_crtrk.jpg  other security stuff with this server?
-https://data.glos.us    close
 https://data1.gfdl.noaa.gov from http://data1.gfdl.noaa.gov:8380  not fully
    e.g., https://data1.gfdl.noaa.gov/opendap/gfdl_cm2_1/Fv_NetCDF_test/pp/ocean_interp/ts/monthly/mld_OD.197901-199812.nc.html
    or    https://data1.gfdl.noaa.gov/opendap/
@@ -6352,15 +6368,13 @@ https://data1.gfdl.noaa.gov from http://data1.gfdl.noaa.gov:8380  not fully
 https://dust.ess.uci.edu
 https://edac-dap.northerngulfinstitute.org
 https://edac-dap3.northerngulfinstitute.org
-https://erddap.emodnet-physics.eu
 https://erddap.incois.gov.in
-https://erddap.secoora.org/erddap/   almost. needs correct baseHttpsUrl 
+https://erddap.secoora.org/erddap/   almost. needs correct baseHttpsUrl.  redirects to http://??
 https://erddap.sensors.ioos.us/erddap/   almost. needs correct baseHttpsUrl 
 https://fgdcxml.sourceforge.net
 https://geoport.whoi.edu/
 https://geoport.whoi.edu/thredds/catalog.html
 https://hadobs.metoffice.com
-https://hfrnet-tds.ucsd.edu/thredds/catalog.html 
 https://hudson.dl.stevens-tech.edu/maritimeforecast/
 https://hydromet-thredds.princeton.edu/erddap/index.html  (http uses :8000)
 https://jkorpela.fi
@@ -6381,7 +6395,6 @@ https://rtech-engineering.com/?lang=en
 https://sbc.lternet.edu    ?! want me to sign in
 https://sccoos.org/erddap/index.html
 https://schemas.opengis.net
-https://sensorweb.demo.52north.org
 https://sfbaynutrients.sfei.org/erddap/index.html
 https://tds.marine.rutgers.edu/thredds/catalog.html
 https://tds.marine.rutgers.edu/erddap/info/index.html?page=1&amp;itemsPerPage=1000
@@ -6401,6 +6414,7 @@ https://www.geotraces.org/science/intercalibration/322-standards-and-reference-m
 https://www.globec.org
 https://www.iobis.org
 https://www.iooc.us
+http://www.isotc211.org/2005/srv  Don't ever switch these to https. They are for URIs in 19115 docs.
 https://www.j2eeprogrammer.com
 https://www.jdom.org
 https://www.libpng.org

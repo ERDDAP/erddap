@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,7 +148,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         //String2.log(">> lowGetSourceData:\n" + table.dataToString(5));
 
         //unpack
-        table.unpack(standardizeWhat);
+        table.standardize(standardizeWhat);
 
         return table;
     }
@@ -172,27 +173,27 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         StringArray colNames, IntArray start, IntArray stop) throws Exception {
 
         //read the lines of the sample file
-        String lines[] = String2.readLinesFromFile(sampleFileName, charset, 2);
+        ArrayList<String> lines = String2.readLinesFromFile(sampleFileName, charset, 2);
 
         //hueristic: col with low usage then col with high usage (or vice versa)
         //  indicates new column
-        int nLines = lines.length;
+        int nLines = lines.size();
         int longest = 0;
         if (columnNamesRow >= 1)
-            longest = lines[columnNamesRow-1].length();
+            longest = lines.get(columnNamesRow-1).length();
         for (int i = firstDataRow - 1; i < nLines; i++)
-            longest = Math.max(longest, lines[i].length());
+            longest = Math.max(longest, lines.get(i).length());
         longest++; //ensure at least one empty col at end
         int nCharsInCol[] = new int[longest]; 
         if (columnNamesRow >= 1) {
-            String s = lines[columnNamesRow - 1];
+            String s = lines.get(columnNamesRow - 1);
             int len = s.length();
             for (int po = 0; po < len; po++)
                 if (s.charAt(po) != ' ')
                     nCharsInCol[po]++;
         }
         for (int i = firstDataRow - 1; i < nLines; i++) {
-            String s = lines[i];
+            String s = lines.get(i);
             int len = s.length();
             for (int po = 0; po < len; po++)
                 if (s.charAt(po) != ' ')
@@ -240,7 +241,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
         //read column names
         String namesLine = columnNamesRow >= 1 && columnNamesRow < nLines?
-            lines[columnNamesRow - 1] : "";
+            lines.get(columnNamesRow - 1) : "";
         int namesLineLength = namesLine.length();
         for (int col = 0; col < nCols; col++) {            
             String cn = start.get(col) < namesLineLength?
@@ -346,7 +347,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         //globalAttributes 
         if (externalAddGlobalAttributes == null)
@@ -1508,18 +1509,17 @@ boolean columnar = false;  // are there any? how detect?
                 colNames.toArray(), colStart.toArray(), colStop.toArray(), null); //null = dest classes
             sourceTable.convertIsSomething2();
             sourceTable.simplify();
-            sourceTable.unpack(tStandardizeWhat);
+            sourceTable.standardize(tStandardizeWhat);
 
         } else { 
             //read comma, space, or tab separated
-            sourceTable.readASCII(
-                emlDir + dataFileName, charset, 
+            sourceTable.readASCII(emlDir + dataFileName, charset, 
                 numHeaderLines - 1, //namesRow (0..)  -1 for none
                 numHeaderLines, "", //dataRow  (0..)
                 null, null, null, null, false);  //simplify
             sourceTable.convertIsSomething2();
             sourceTable.simplify();
-            sourceTable.unpack(tStandardizeWhat);
+            sourceTable.standardize(tStandardizeWhat);
         }
         if (verbose) String2.log(
             "\nlocal data file=" + emlDir + dataFileName + "\n" +
