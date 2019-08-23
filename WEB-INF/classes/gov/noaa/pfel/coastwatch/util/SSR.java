@@ -1798,22 +1798,23 @@ public class SSR {
      *   This can be a url or a local file (with or without file://).
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @return a String[] with the response (one string per line of the file).
+     * @return an ArrayList with strings from the response (one string per line of the file)
+     *   (on the assumption that basically all the lines of the file are different).
      * @throws Exception if error occurs
      */
-    public static String[] getUrlResponseLines(String urlString) throws Exception {
+    public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
         try {
             if (!String2.isUrl(urlString))
-                return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 2);
+                return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 1);
 
             BufferedReader in = getBufferedUrlReader(urlString);
             try {
-                ArrayList<String> al = new ArrayList();
+                ArrayList<String> sa = new ArrayList();
                 String s;
                 while ((s = in.readLine()) != null) {
-                    al.add(s);
+                    sa.add(s);
                 }
-                return al.toArray(new String[0]);
+                return sa;
             } finally {
                 in.close();
             }
@@ -1823,6 +1824,22 @@ public class SSR {
                 throw e;
             throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
+    } 
+
+    /**
+     * This gets the response from a url.
+     * This is useful for short responses.
+     * This tries to use compression.
+     *
+     * @param urlString The query MUST be already percentEncoded as needed.
+     *   This can be a url or a local file (with or without file://).
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     * @return a String[] with the response (one string per line of the file).
+     * @throws Exception if error occurs
+     */
+    public static String[] getUrlResponseLines(String urlString) throws Exception {
+        return getUrlResponseArrayList(urlString).toArray(new String[0]);
     } 
 
     /**

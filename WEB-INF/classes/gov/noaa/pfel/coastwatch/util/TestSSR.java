@@ -447,7 +447,8 @@ public class TestSSR {
                 "This test requires MUR 4.1 in the local host ERDDAP.");
             Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
         } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "This requires localhost ERDDAP."); 
         }
     }
 

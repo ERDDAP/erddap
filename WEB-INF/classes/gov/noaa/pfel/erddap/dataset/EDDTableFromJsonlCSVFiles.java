@@ -122,7 +122,7 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
             sourceDataTypes, false);  //this supports "boolean", simplify? no
 
         //unpack
-        table.unpack(standardizeWhat);
+        table.standardize(standardizeWhat);
 
         return table;
     }
@@ -210,7 +210,7 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         Table dataAddTable = new Table();
         double maxTimeES = Double.NaN;

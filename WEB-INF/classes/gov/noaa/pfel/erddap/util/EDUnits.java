@@ -13,6 +13,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap; 
@@ -1751,15 +1752,15 @@ String2.log("5/9=" + (5/9.0));
         throws RuntimeException {
         try {
             HashMap ht = new HashMap();
-            String[] sar = String2.readLinesFromFile(fileName, charset, 2);
-            int n = sar.length;
+            ArrayList<String> sar = String2.readLinesFromFile(fileName, charset, 2);
+            int n = sar.size();
             int i = 0;
             while (i < n) {
-                String s = sar[i++];
+                String s = sar.get(i++);
                 if (s.startsWith("#"))
                     continue;
                 while (i < n && s.endsWith("\\")) 
-                    s = s.substring(0, s.length() - 1) + sar[i++];
+                    s = s.substring(0, s.length() - 1) + sar.get(i++);
                 int po = s.indexOf('=');
                 if (po < 0) 
                     continue;
@@ -1939,9 +1940,10 @@ String2.log("5/9=" + (5/9.0));
                  f == 1? "datasetsFEDCW.xml" :
                          "uniqueCFUnits.txt");
 
-            String lines[] = String2.readLinesFromFile(fileName, String2.ISO_8859_1, 1); //nAttempts
-            for (int i = 0; i < lines.length; i++) {
-                String s = String2.extractCaptureGroup(lines[i], pattern, 1); //captureGroupNumber
+            ArrayList<String> lines = String2.readLinesFromFile(fileName, String2.ISO_8859_1, 1); //nAttempts
+            int nLines = lines.size();
+            for (int i = 0; i < nLines; i++) {
+                String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); //captureGroupNumber
                 if (String2.isSomething(s)) 
                     set.add(XML.decodeEntities(s));
             }
@@ -2042,13 +2044,14 @@ String2.log("5/9=" + (5/9.0));
      */
     public static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
 
-        String lines[] = String2.readLinesFromFile(fullCFXMLFileName, String2.UTF_8, 1); //nAttempts
+        ArrayList<String> lines = String2.readLinesFromFile(fullCFXMLFileName, String2.UTF_8, 1); //nAttempts
         HashSet reject = new HashSet();
         HashSet set = new HashSet();
         set.add("degree_C");  //test it, too
         Pattern pattern = Pattern.compile(".*<canonical_units>(.*)</canonical_units>.*");
-        for (int i = 0; i < lines.length; i++) {
-            String s = String2.extractCaptureGroup(lines[i], pattern, 1); //captureGroupNumber
+        int nLines = lines.size();
+        for (int i = 0; i < nLines; i++) {
+            String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); //captureGroupNumber
             if (s != null) {
                 if (s.startsWith("1e-") || //eg. "1e-3 kg m-2"  All are present and better without 1e-3.
                     s.equals("m -1") ||    //I think those aren't valid udunits

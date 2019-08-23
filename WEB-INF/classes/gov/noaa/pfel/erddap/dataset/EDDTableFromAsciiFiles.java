@@ -33,7 +33,9 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -204,7 +206,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         }
 
         //unpack
-        table.unpack(standardizeWhat);
+        table.standardize(standardizeWhat);
 
         return table;
     }
@@ -297,7 +299,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             null, null, null, null, false);  //simplify
         dataSourceTable.convertIsSomething2(); //convert e.g., "N/A" to ""
         dataSourceTable.simplify();            
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         //globalAttributes 
         if (externalAddGlobalAttributes == null)
@@ -2789,7 +2791,7 @@ expected =
         //clean up sourceTable
         sourceTable.convertIsSomething2();  //convert e.g., "N/A" to ""
         sourceTable.simplify();
-        sourceTable.unpack(tStandardizeWhat);
+        sourceTable.standardize(tStandardizeWhat);
 
         //make addTable
         Table addTable    = new Table();
@@ -3446,7 +3448,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -3619,7 +3621,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -4027,7 +4029,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -4162,7 +4164,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
@@ -4794,22 +4796,31 @@ today + " GenerateDatasetsXml in ERDDAP v2.01 (contact: bob.simons@noaa.gov) con
                 //look for colNamesRow after rows starting with "# ".
                 //see /u00/data/points/bcodmo/488871_20140127/data_ctdmocness1.tsv
                 //Adam says tsv files are US-ASCII chars only
-                int colNamesRow = 0; //0-based
-                String lines[] = String2.readLinesFromFile(tsvName, bcodmoCharset, 2);
-                int nLines = lines.length;
-                while (colNamesRow < nLines && lines[colNamesRow].startsWith("# "))
+                BufferedReader br = File2.getDecompressedBufferedFileReader(tsvName, bcodmoCharset);
+
+                //skip "# " comment rows to get to columnNames row
+                int colNamesRow = -1;
+                while (true) {
                     colNamesRow++;
-                lines = null; //gc
+                    br.mark(10000); //max read-ahead bytes
+                    String s = br.readLine();
+                    if (s == null)
+                        throw new Exception("The file contains only comment lines.");
+                    if (s.startsWith("# ")) 
+                        continue;
+                    br.reset(); //go back to mark
+                    break;
+                }
 
                 //read the data
-                sourceTable.readASCII(tsvName, bcodmoCharset, 
-                    colNamesRow, colNamesRow + 1, "\t",
+                sourceTable.readASCII(tsvName, br, 
+                    0, 1, "\t",
                     null, null, null, null, false); //don't simplify until "nd" removed
                 //custom alternative to sourceTable.convertIsSomething2(); //convert e.g., "nd" to ""
                 for (int col = 0; col < sourceTable.nColumns(); col++) 
                     sourceTable.getColumn(col).switchFromTo("nd", ""); //the universal BCO-DMO missing value?
                 sourceTable.simplify();  
-                sourceTable.unpack(tStandardizeWhat); 
+                sourceTable.standardize(tStandardizeWhat); 
 
                 Table addTable = (Table)(sourceTable.clone());
                 addTable.globalAttributes().add(gatts);
@@ -6038,7 +6049,7 @@ String expected =
     }
 
     /**
-     * This tests that a dataset can be quick restarted, 
+     * This tests that a dataset can be quick restarted.
      */
     public static void testQuickRestart() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testQuickRestart\n");
@@ -6094,6 +6105,143 @@ String expected =
         }
     }
 
+    /**
+     * This tests querying a dataset that is using standardizeWhat. 
+     */
+    public static void testStandardizeWhat() throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiFiles.testStandardizeWhat\n");
+        String tID = "testStandardizeWhat";
+        EDD.deleteCachedDatasetInfo(tID);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, tID); 
+        String tName, results, expected;
+
+        //generateDatasetsXml doesn't suggest standardizeWhat
+        //Admin must request it.
+        results = EDDTableFromAsciiFiles.generateDatasetsXml(
+            "/erddapTest/ascii/", "standardizeWhat.*\\.csv", "",
+            "", 1, 2, ",", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
+            "", "", "", "", "",  //regex
+            "", // tSortFilesBySourceNames, 
+            "", "", "", "", 2048, "", null);  //info, institution, summary, title, standardizeWhat=0, cacheFromUrl, atts
+        expected = 
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"ascii_7d47_7f77_dc41\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/erddapTest/ascii/</fileDir>\n" +
+"    <fileNameRegex>standardizeWhat.*\\.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>2048</standardizeWhat>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator>,</columnSeparator>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <sortedColumnSourceName>date</sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>date</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"institution\">???</att>\n" +
+"        <att name=\"keywords\">data, date, local, source, time</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"summary\">Data from a local source.</att>\n" +
+"        <att name=\"title\">Data from a local source.</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>date</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Date</att>\n" +
+"            <att name=\"source_name\">date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>data</sourceName>\n" +
+"        <destinationName>data</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Data</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //das 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestStandadizeWhat", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.262304e+9, 1.2625632e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Date\";\n" +
+"    String source_name \"date\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00Z\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  data {\n" +
+"    Int32 actual_range 1, 4;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Data\";\n" +
+"  }\n" +
+" }\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        //get data from first file
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestStandadizeWhat", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,data\n" +
+"UTC,\n" +
+"2010-01-01T00:00:00Z,1\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //get data from second file
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestStandadizeWhat", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,data\n" +
+"UTC,\n" +
+"2010-01-03T00:00:00Z,3\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+    }
 
     /**
      * This tests the methods in this class.
@@ -6117,6 +6265,7 @@ String expected =
         testTimeMV();
         testTimeRange();
         testTimeRange2();
+        testStandardizeWhat();
 
         /* */
 

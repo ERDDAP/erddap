@@ -528,7 +528,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
 //2014-10-29 is (but without newlines) (note that ID now points to the name, and name now has ID!
 //<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope
-///" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soapenv:
+///" xmlns:xsd="https://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soapenv:
 //Body><ActiveStations xmlns="https://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/wsdl"><stations>
 //<station ID="Nawiliwili" name="1611400">
 //<metadata><location><lat>21.9544</lat><long>-159.3561</long>

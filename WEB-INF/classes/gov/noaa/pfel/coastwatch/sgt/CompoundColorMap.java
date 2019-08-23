@@ -154,7 +154,7 @@ public class CompoundColorMap extends ColorMap {
     protected static void populate(CompoundColorMap ccm, String cptFileName) 
         throws Exception {
         //set up a colorMap based on info in the .cpt file
-        String[] lines = String2.readLinesFromFile(cptFileName, null, 3);
+        ArrayList<String> lines = String2.readLinesFromFile(cptFileName, null, 3);
 
         //set up temporary PrimitiveArrays
         DoubleArray rangeLowAr  = new DoubleArray(); //stores the low ends of a piece
@@ -169,11 +169,13 @@ public class CompoundColorMap extends ColorMap {
         ccm.annotationFlags.setLength(0);
 
         //go through the lines of the file
-        for (int i = 0; i < lines.length; i++) {
+        int nLines = lines.size();
+        for (int i = 0; i < nLines; i++) {
             //go through the lines
-            if (lines[i].startsWith("#")) 
+            String tLine = lines.get(i);
+            if (tLine.startsWith("#")) 
                 continue; //a comment
-            String[] items = String2.split(lines[i], '\t');
+            String[] items = String2.split(tLine, '\t');
             if (items.length >= 4) {
                 double low  = String2.parseDouble(items[0]);
                 if (!Double.isNaN(low) && items.length >= 8) {
@@ -207,11 +209,11 @@ public class CompoundColorMap extends ColorMap {
                             String2.parseInt(items[3])));
                 } else {
                     String2.log(String2.ERROR + ": CompoundColorMap unexpected line in " + 
-                        cptFileName + "\n" + lines[i]);
+                        cptFileName + "\n" + lines.get(i));
                 }
-            } else if (lines[i].trim().length() > 0) {
+            } else if (tLine.trim().length() > 0) {
                 String2.log(String2.ERROR + ": CompoundColorMap unexpected line in " + 
-                    cptFileName + "\n" + lines[i]);
+                    cptFileName + "\n" + lines.get(i));
             }
         }
 

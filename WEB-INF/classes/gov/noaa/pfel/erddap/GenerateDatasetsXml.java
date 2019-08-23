@@ -866,9 +866,7 @@ public class GenerateDatasetsXml {
 
             //copy datasets.xml line-by-line to new file, 
             tempName = datasetsXmlName + localCompactTime;
-            inFile = new BufferedReader(new InputStreamReader(
-                //below not File2.getDecompressedBufferedInputStream() Read file as is.
-                new BufferedInputStream(new FileInputStream(datasetsXmlName)), String2.ISO_8859_1)); //charset to match datasets.xml  
+            inFile = File2.getDecompressedBufferedFileReader(datasetsXmlName, String2.ISO_8859_1); //charset to match datasets.xml  
             outFile = new BufferedWriter(new OutputStreamWriter(
                 new BufferedOutputStream(new FileOutputStream(tempName)), String2.ISO_8859_1)); //charset to match datasets.xml
             

@@ -217,7 +217,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         //remove col[0], OBJECTID, which is an internal number created within this WFS response.
 

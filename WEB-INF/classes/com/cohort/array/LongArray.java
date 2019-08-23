@@ -351,7 +351,7 @@ public class LongArray extends PrimitiveArray {
         if (otherPA.elementClass() == elementClass()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
-                    " in CharArray.addFromPA: otherIndex=" + otherIndex + 
+                    " in LongArray.addFromPA: otherIndex=" + otherIndex + 
                     " + nValues=" + nValues + 
                     " > otherPA.size=" + otherPA.size);
             ensureCapacity(size + nValues);            
@@ -840,10 +840,18 @@ public class LongArray extends PrimitiveArray {
      * Test if o is an LongArray with the same size and values.
      *
      * @param o
-     * @return true if equal.  o=null throws an exception.
+     * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        return testEquals(o).length() == 0;
+        if (!(o instanceof LongArray)) //handles o==null
+            return false;
+        LongArray other = (LongArray)o;
+        if (other.size() != size)
+            return false;
+        for (int i = 0; i < size; i++)
+            if (array[i] != other.array[i])
+                return false;
+        return true;
     }
 
     /**
@@ -860,15 +868,8 @@ public class LongArray extends PrimitiveArray {
                 o.getClass().getName() + ".";
         LongArray other = (LongArray)o;
         if (other.size() != size)
-            return "The two LongArrays aren't equal: one has " + size + " value" +
-               (size == 0? "s" :
-                size == 1? " (" + array[0] + ")" : 
-                           "s (from " + array[0] + " to " + array[size - 1] + ")") +
-               "; the other has " + other.size() + " value" +
-               (other.size == 0? "s" :
-                other.size == 1? " (" + other.array[0] + ")" : 
-                                 "s (from " + other.array[0] + " to " + other.array[other.size - 1] + ")") +
-               ".";
+            return "The two LongArrays aren't equal: one has " + size + 
+               " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (array[i] != other.array[i])
                 return "The two LongArrays aren't equal: this[" + i + "]=" + array[i] + 
@@ -1565,7 +1566,7 @@ public class LongArray extends PrimitiveArray {
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a LongArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
-            "The two LongArrays aren't equal: one has 2 values (from 0 to 8); the other has 1 value (0).", "");
+            "The two LongArrays aren't equal: one has 2 value(s); the other has 1 value(s).", "");
         Test.ensureTrue(!anArray.equals(anArray2), "");
         anArray2.addString("7");
         Test.ensureEqual(anArray.testEquals(anArray2), 

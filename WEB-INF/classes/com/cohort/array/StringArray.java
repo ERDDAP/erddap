@@ -36,27 +36,33 @@ import java.util.Set;
  * StringArray is a thin shell over a String[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  * All of the methods which add strings to StringArray (e.g., add()),
- * use String2.canonical(), to ensure that canonical Strings are stored (to save memory
+ * use String2.canonicalStringHolder(), to ensure that canonical Strings are stored (to save memory
  * if there are duplicates).
  *
  * <p>This class uses "" to represent a missing value (NaN).
+ *
+ * <p>Technically, this class might support element=null, but not fully tested.
  */
 public class StringArray extends PrimitiveArray {
 
+    static StringHolderComparator           stringHolderComparator           = new StringHolderComparator();
+    static StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase = new StringHolderComparatorIgnoreCase();
+
     /**
      * This is the main data structure.
-     * This should be private, but is public so you can manipulate it if you 
-     * promise to be careful.
+     * This is private, because the Strings are stored as utf8 byte[].
      * Note that if the PrimitiveArray's capacity is increased,
      * the PrimitiveArray will use a different array for storage.
+     * Active elements won't be null, 
+     *   but string in an element may be null (but that's not fully supported/tested).
      */
-    public String[] array;
-
+    private StringHolder[] array; 
+    
     /**
      * A constructor for a capacity of 8 elements. The initial 'size' will be 0.
      */
     public StringArray() {
-        array = new String[8];
+        array = new StringHolder[8];
     }
 
     /**
@@ -66,7 +72,7 @@ public class StringArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public StringArray(PrimitiveArray primitiveArray) {
-        array = new String[primitiveArray.size()]; //exact size
+        array = new StringHolder[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
 
@@ -79,25 +85,27 @@ public class StringArray extends PrimitiveArray {
      */
     public StringArray(int capacity, boolean active) {
         Math2.ensureMemoryAvailable(16L * capacity, "StringArray"); //16 is lame estimate of space needed per String
-        array = new String[capacity];
+        array = new StringHolder[capacity];
         if (active) {
             size = capacity;
             for (int i = 0; i < size; i++)
-                array[i] = "";
+                array[i] = String2.STRING_HOLDER_ZERO;
         }
     }
 
     /**
-     * A constructor which (at least initially) uses the array and all its 
-     * elements ('size' will equal anArray.length).
+     * A constructor which gets values from anArray[i].
+     * THERE IS NO StringArray CONSTRUCTOR WHICH LET'S YOU SPECIFY THE BACKING ARRAY!
+     * The values anArray are stored in a different way in a different data structure.
      *
-     * @param anArray the array to be used as this object's array.
+     * @param anArray 
      */
     public StringArray(String[] anArray) {
-        array = anArray;
-        size = anArray.length;
-        for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(array[i]);
+        int al = anArray.length;
+        array = new StringHolder[al];
+        size = 0;
+        for (int i = 0; i < al; i++) 
+            add(anArray[i]);
     }
 
     /**
@@ -106,10 +114,11 @@ public class StringArray extends PrimitiveArray {
      * @param anArray 
      */
     public StringArray(Object[] anArray) {
-        size = anArray.length;
-        array = new String[size];
-        for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(anArray[i] == null? "" : anArray[i].toString());
+        int al = anArray.length;
+        array = new StringHolder[al];
+        size = 0;
+        for (int i = 0; i < al; i++) 
+            add(anArray[i] == null? String2.EMPTY_STRING : anArray[i].toString());            
     }
 
     /**
@@ -119,7 +128,7 @@ public class StringArray extends PrimitiveArray {
      *    changed by another thread (e.g., use ConcurrentHashMap instead of HashMap).
      */
     public StringArray(Iterator iterator) {
-        array = new String[8];
+        array = new StringHolder[8];
         while (iterator.hasNext()) {
             add(iterator.next().toString());
         }
@@ -132,7 +141,7 @@ public class StringArray extends PrimitiveArray {
      *    changed by another thread (e.g., use ConcurrentHashMap instead of HashMap).
      */
     public StringArray(Enumeration enumeration) {
-        array = new String[8];
+        array = new StringHolder[8];
         while (enumeration.hasMoreElements()) {
             add(enumeration.nextElement().toString());
         }
@@ -140,12 +149,13 @@ public class StringArray extends PrimitiveArray {
 
     /**
      * A special method which encodes all the Unicode strings in this to ISO_8859_1.
+     * Special chars are converted to "?".
      *
      * @return this for convenience
      */
     public StringArray toIso88591() {
         for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(String2.toIso88591String(array[i]));
+            set(i, String2.toIso88591String(get(i)));
         return this;
     }
 
@@ -159,7 +169,7 @@ public class StringArray extends PrimitiveArray {
      */
     public StringArray fromUTF8() {
         for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(String2.utf8StringToString(array[i]));
+            set(i, String2.utf8StringToString(get(i)));
         //String2.log(">>after fromUTF8: " + toNccsvAttString());
         return this;
     }
@@ -173,7 +183,7 @@ public class StringArray extends PrimitiveArray {
      */
     public StringArray toUTF8() {
         for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(String2.stringToUtf8String(array[i]));
+            set(i, String2.stringToUtf8String(get(i)));
         //String2.log(">>after toUTF8: " + toNccsvAttString());
         return this;
     }
@@ -185,7 +195,7 @@ public class StringArray extends PrimitiveArray {
      */
     public StringArray toJson() {
         for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(String2.toJson(array[i], 127));
+            set(i, String2.toJson(get(i), 127));
         return this;
     }
 
@@ -196,7 +206,7 @@ public class StringArray extends PrimitiveArray {
      */
     public void fromJson() {
         for (int i = 0; i < size; i++) 
-            array[i] = String2.canonical(String2.fromJsonNotNull(array[i])); //doesn't require enclosing "'s
+            set(i, String2.fromJsonNotNull(get(i))); //doesn't require enclosing "'s
     }
 
     /** 
@@ -206,7 +216,7 @@ public class StringArray extends PrimitiveArray {
      */
     public void fromNccsv() {
         for (int i = 0; i < size; i++) 
-            array[i] = String2.canonical(String2.fromNccsvString(array[i])); //doesn't require enclosing "'s
+            set(i, String2.fromNccsvString(get(i))); //doesn't require enclosing "'s
     }
 
     /* *  probably works, but not tested
@@ -220,7 +230,7 @@ public class StringArray extends PrimitiveArray {
      * /    
     public StringArray(Map map) {
         Set keySet = map.keySet();
-        array = new String[keySet.size()];
+        array = new StringHolder[keySet.size()];
         Iterator it = keySet.iterator();
         while (it.hasNext()) {
             Object key = it.next();
@@ -244,33 +254,23 @@ public class StringArray extends PrimitiveArray {
      * This reads the text contents of the specified file and makes a StringArray
      * with an item from each line of the file (not trim'd).
      * 
-     * @param charset e.g., ISO-8859-1; or "" or null for the default
+     * @param charset e.g., ISO-8859-1 (the default); or "" or null for the default
+     * @return StringArray with not canonical strings (on the assumption that 
+     *   lines of all file are usually all different).
      * @throws Exception if trouble (e.g., file not found)
      */
     public static StringArray fromFile(String fileName, String charset) throws Exception {
         Math2.ensureMemoryAvailable(File2.length(fileName), "StringArray.fromFile"); //canonical may lessen memory requirement
         StringArray sa = new StringArray();
-        InputStream fis = null;
-        InputStreamReader isr = null;
-        BufferedReader bufferedReader = null;
+        BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);
         try {
-            fis = File2.getDecompressedBufferedInputStream(fileName);
-            isr = charset == null || charset.length() == 0?
-                new InputStreamReader(fis) :
-                new InputStreamReader(fis, charset);
-            bufferedReader = new BufferedReader(isr);
             String s = bufferedReader.readLine();
             while (s != null) { //null = end-of-file
-                sa.add(s);
+                sa.addNotCanonical(s);
                 s = bufferedReader.readLine();
             }
         } finally {
-            if (bufferedReader != null)
-                try {bufferedReader.close();} catch (Exception e) {}
-            else if (isr != null) 
-                try {isr.close();           } catch (Exception e) {}
-            else if (fis != null)
-                try {fis.close();           } catch (Exception e) {}
+            try {bufferedReader.close();} catch (Exception e) {}
         }
         return sa;
     }
@@ -313,7 +313,7 @@ public class StringArray extends PrimitiveArray {
                          
             //write the text to the file
             for (int i = 0; i < size; i++) {
-                bufferedWriter.write(array[i]);
+                bufferedWriter.write(get(i));
                 bufferedWriter.write(lineSeparator);
             }
 
@@ -367,7 +367,7 @@ public class StringArray extends PrimitiveArray {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
         //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         int code = 0;
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) 
             code = 31*code + array[i].hashCode();
         return code;
     }
@@ -399,7 +399,7 @@ public class StringArray extends PrimitiveArray {
             return pa == null? new StringArray(new String[0]) : pa;
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-        StringArray sa = null;
+        StringArray sa = null;  //for the results
         if (pa == null) {
             sa = new StringArray(willFind, true);
         } else {
@@ -407,7 +407,7 @@ public class StringArray extends PrimitiveArray {
             sa.ensureCapacity(willFind);
             sa.size = willFind;
         }
-        String tar[] = sa.array;
+        StringHolder tar[] = sa.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -444,35 +444,36 @@ public class StringArray extends PrimitiveArray {
     public void add(String value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = String2.canonical(value);
+        array[size++] = value == null?        String2.STRING_HOLDER_NULL : //quick, saves time
+                        value.length() == 0?  String2.STRING_HOLDER_ZERO :
+                        String2.canonicalStringHolder(new StringHolder(value));
     }
 
-    /**
-     * This trims each of the strings.
+    /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is currently implemented.
+     * This adds an item to the array (increasing 'size' by 1).
      *
-     */
-    public void trimAll() {
-        for (int i = 0; i < size; i++) {
-            String s = array[i];
-            String st = s.trim();
-            if (st.length() < s.length())
-                array[i] = String2.canonical(st);
-        }
-    }
+     * @param value the value to be added to the array
+     * /
+    public void add(StringHolder value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        array[size++] = value == null? String2.STRING_HOLDER_NULL : //quick, saves time
+                        String2.canonicalStringHolder(value);
+    } 
 
-    /**
-     * This trims the end of each of the strings.
+    / **
+     * Use this for temporary arrays to add an item to the array (increasing 'size' by 1)
+     * without using String2.canonical.
      *
-     */
-    public void trimEndAll() {
-        for (int i = 0; i < size; i++) {
-            String s = array[i];
-            String st = String2.trimEnd(s);
-            if (st.length() < s.length())
-                array[i] = String2.canonical(st);
-        }
-    }
-
+     * @param value the value to be added to the array
+     * /
+    public void addNotCanonical(StringHolder value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        //still do most common canonicallization
+        array[size++] = value == null? String2.STRING_HOLDER_NULL : value;
+    } */
+ 
     /**
      * Use this for temporary arrays to add an item to the array (increasing 'size' by 1)
      * without using String2.canonical.
@@ -482,7 +483,36 @@ public class StringArray extends PrimitiveArray {
     public void addNotCanonical(String value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = value;
+        //still do most common canonicallization
+        array[size++] = value == null?        String2.STRING_HOLDER_NULL :
+                        value.length() == 0?  String2.STRING_HOLDER_ZERO :
+                                              new StringHolder(value);
+    }
+
+    /**
+     * This trims each of the strings.
+     *
+     */
+    public void trimAll() {
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            String st = s.trim();
+            if (st.length() < s.length())
+                set(i, st);
+        }
+    }
+
+    /**
+     * This trims the end of each of the strings.
+     *
+     */
+    public void trimEndAll() {
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            String st = String2.trimEnd(s);
+            if (st.length() < s.length())
+                set(i, st);
+        }
     }
 
     /**
@@ -491,7 +521,7 @@ public class StringArray extends PrimitiveArray {
      */
     public void makeCanonical() {
         for (int i = 0; i < size; i++)
-            array[i] = String2.canonical(array[i]);
+            array[i] = String2.canonicalStringHolder(array[i]);
     }
 
     /**
@@ -503,8 +533,7 @@ public class StringArray extends PrimitiveArray {
         int otherSize = sar.length; 
         ensureCapacity(size + (long)otherSize);
         for (int i = 0; i < otherSize; i++)
-            array[size + i] = String2.canonical(sar[i]);
-        size += otherSize;
+            add(sar[i]);
     }    
 
     /**
@@ -518,9 +547,9 @@ public class StringArray extends PrimitiveArray {
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAddN, getClass().getSimpleName(), "" + n));
-        value = String2.canonical(value);
+        StringHolder sh = String2.canonicalStringHolder(new StringHolder(value));
         ensureCapacity(size + (long)n);
-        Arrays.fill(array, size, size + n, value);
+        Arrays.fill(array, size, size + n, sh);
         size += n;
     }
 
@@ -539,7 +568,7 @@ public class StringArray extends PrimitiveArray {
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
         size++;
-        array[index] = String2.canonical(value);
+        set(index, value);
     }
 
     /**
@@ -644,7 +673,7 @@ public class StringArray extends PrimitiveArray {
         if (otherPA.elementClass() == elementClass()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
-                    " in CharArray.addFromPA: otherIndex=" + otherIndex + 
+                    " in StringArray.addFromPA: otherIndex=" + otherIndex + 
                     " + nValues=" + nValues + 
                     " > otherPA.size=" + otherPA.size);
             ensureCapacity(size + nValues);            
@@ -710,14 +739,18 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This removes any/all the 0-length strings at the end.
+     * This removes any/all the null and 0-length strings at the end.
      *
      * @return the new size
      */
     public int removeEmptyAtEnd() {
         int last = size;
-        while (last > 0 && array[last - 1].length() == 0)
-            last--;
+        while (last > 0) {
+            char[] car = array[last - 1].charArray(); 
+            if (car == null || car.length == 0)
+                last--;
+            else break;
+        }
         removeRange(last, size);
         return size;
     }
@@ -730,7 +763,8 @@ public class StringArray extends PrimitiveArray {
     public int removeIfNothing() {
         int nGood = 0;
         for (int po = 0; po < size; po++) {
-            if (array[po] != null && array[po].length() > 0) {
+            char[] car = array[po].charArray();
+            if (car != null && car.length > 0) {
                 if (po > nGood)
                     array[nGood] = array[po];
                 nGood++;
@@ -773,7 +807,7 @@ public class StringArray extends PrimitiveArray {
 
         //store the range to be moved
         int nToMove = last - first;
-        String[] temp = new String[nToMove];
+        StringHolder[] temp = new StringHolder[nToMove];
         System.arraycopy(array, first, temp, 0, nToMove);
 
         //if moving to left...    (draw diagram to visualize this)
@@ -826,8 +860,8 @@ public class StringArray extends PrimitiveArray {
             int newCapacity = (int)Math.min(Integer.MAX_VALUE - 1, array.length + (long)array.length); 
             if (newCapacity < minCapacity) 
                 newCapacity = (int)minCapacity; //safe since checked above
-            Math2.ensureMemoryAvailable(4L * newCapacity, "StringArray"); //4 since just copying pointers
-            String[] newArray = new String[newCapacity];
+            Math2.ensureMemoryAvailable(8L * newCapacity, "StringArray"); //8L is guess
+            StringHolder[] newArray = new StringHolder[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
             array = newArray; //do last to minimize concurrency problems
         }
@@ -839,11 +873,10 @@ public class StringArray extends PrimitiveArray {
      * @return an array (perhaps 'array') which has 'size' elements.
      */
     public String[] toArray() {
-        if (array.length == size)
-            return array;
-        Math2.ensureMemoryAvailable(4L * size, "StringArray.toArray"); //4L since just copying pointers
+        Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); //8L is guess
         String[] tArray = new String[size];
-        System.arraycopy(array, 0, tArray, 0, size);
+        for (int i = 0; i < size; i++)
+            tArray[i] = array[i].string();
         return tArray;
     }
    
@@ -867,7 +900,7 @@ public class StringArray extends PrimitiveArray {
         Math2.ensureMemoryAvailable(8L * size, "StringArray.toDoubleArray"); 
         double dar[] = new double[size];
         for (int i = 0; i < size; i++)
-            dar[i] = String2.parseDouble(array[i]);
+            dar[i] = String2.parseDouble(get(i));
         return dar;
     }
 
@@ -889,7 +922,7 @@ public class StringArray extends PrimitiveArray {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in StringArray.get: index (" + 
                 index + ") >= size (" + size + ").");
-        return array[index];
+        return array[index].string();
     }
 
     /**
@@ -902,7 +935,7 @@ public class StringArray extends PrimitiveArray {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in StringArray.set: index (" + 
                 index + ") >= size (" + size + ").");
-        array[index] = String2.canonical(value);
+        array[index] = String2.canonicalStringHolder(new StringHolder(value));
     }
 
 
@@ -1038,7 +1071,7 @@ public class StringArray extends PrimitiveArray {
     public String getTsvString(int index) {
         String s = get(index);
         if (s == null)
-            return "";
+            return String2.EMPTY_STRING;
         s = String2.toJson(s);
         return s.substring(1, s.length() - 1); //remove enclosing quotes
     }
@@ -1064,10 +1097,11 @@ public class StringArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int indexOf(String lookFor, int startIndex) {
-        if (startIndex >= size)
+        if (lookFor == null || startIndex >= size)
             return -1;
+        char[] lookForc = lookFor.toCharArray();
         for (int i = startIndex; i < size; i++) 
-            if (array[i].equals(lookFor)) 
+            if (Arrays.equals(array[i].charArray(), lookForc)) //could use == if assume canonical; it's okay if either/both c[] are null
                 return i;
         return -1;
     }
@@ -1091,9 +1125,11 @@ public class StringArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int indexOfIgnoreCase(String lookFor, int startIndex) {
+        if (lookFor == null)
+            return -1;
         lookFor = lookFor.toLowerCase();
         for (int i = startIndex; i < size; i++) 
-            if (array[i].toLowerCase().equals(lookFor)) 
+            if (get(i).toLowerCase().equals(lookFor)) 
                 return i;
         return -1;
     }
@@ -1106,11 +1142,14 @@ public class StringArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
+        if (lookFor == null)
+            return -1;
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in StringArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
+        char[] lookForc = lookFor.toCharArray();
         for (int i = startIndex; i >= 0; i--) 
-            if (array[i].equals(lookFor)) 
+            if (Arrays.equals(array[i].charArray(), lookForc)) //could use == if assume canonical. it's okay if either/both b[] are null
                 return i;
         return -1;
     }
@@ -1127,19 +1166,27 @@ public class StringArray extends PrimitiveArray {
      *     [0]=index, [1]=po, where 'lookFor' is found, or {-1,-1} if not found.
      */
     public int[] indexWith(String lookFor, int start[]) {
-        int startPo = start[1];
-        for (int i = start[0]; i < size; i++) {
-            int po = array[i].indexOf(lookFor, startPo);
-            if (po >= 0) {
-                start[0] = i;
-                start[1] = po;
-                return start;
+        if (lookFor != null) {
+            int startPo = start[1];
+            for (int i = start[0]; i < size; i++) {
+                int po = get(i).indexOf(lookFor, startPo);
+                if (po >= 0) {
+                    start[0] = i;
+                    start[1] = po;
+                    return start;
+                }
+                startPo = 0;
             }
-            startPo = 0;
         }
         start[0] = -1;
         start[1] = -1;
         return start;
+    }
+    /**
+     * A simpler form of indexWith that finds the first matching line.
+     */
+    public int lineContaining(String lookFor) {
+        return indexWith(lookFor, new int[]{0, 0})[0];
     }
 
 
@@ -1148,17 +1195,29 @@ public class StringArray extends PrimitiveArray {
      * so capacity will equal size.
      */
     public void trimToSize() {
-        array = toArray();
+        if (size == array.length)
+            return;
+        StringHolder[] newArray = new StringHolder[size];
+        System.arraycopy(array, 0, newArray, 0, size);
+        array = newArray;
     }
 
     /**
      * Test if o is an StringArray with the same size and values.
      *
      * @param o
-     * @return true if equal.  o=null throws an exception.
+     * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        return testEquals(o).length() == 0;
+        if (!(o instanceof StringArray)) //handles o==null
+            return false;
+        StringArray other = (StringArray)o;
+        if (other.size() != size)
+            return false;
+        for (int i = 0; i < size; i++)
+            if (!array[i].equals(other.array[i])) //could use == if assume canonical
+                return false;
+        return true;
     }
 
     /**
@@ -1175,19 +1234,12 @@ public class StringArray extends PrimitiveArray {
                 o.getClass().getName() + ".";
         StringArray other = (StringArray)o;
         if (other.size() != size)
-            return "The two StringArrays aren't equal: one has " + size + " value" +
-               (size == 0? "s" :
-                size == 1? " (\"" + array[0] + "\")" : 
-                           "s (from \"" + array[0] + "\" to \"" + array[size - 1] + "\")") +
-               "; the other has " + other.size() + " value" +
-               (other.size == 0? "s" :
-                other.size == 1? " (\"" + other.array[0] + "\")" : 
-                                 "s (from \"" + other.array[0] + "\" to \"" + other.array[other.size - 1] + "\")") +
-               ".";
+            return "The two StringArrays aren't equal: one has " + size + 
+               " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (!array[i].equals(other.array[i]))
-                return "The two StringArrays aren't equal: this[" + i + "]=\"" + array[i] + 
-                                                     "\"; other[" + i + "]=\"" + other.array[i] + "\".";
+                return "The two StringArrays aren't equal: this[" + i + "]=\"" + get(i) + 
+                                                     "\"; other[" + i + "]=\"" + other.get(i) + "\".";
         return "";
     }
 
@@ -1236,7 +1288,7 @@ public class StringArray extends PrimitiveArray {
      * to the beginning.
      */
     public void sort() {
-        Arrays.sort(array, 0, size);
+        Arrays.sort(array, 0, size, stringHolderComparator);
     }
 
     /** 
@@ -1247,7 +1299,7 @@ public class StringArray extends PrimitiveArray {
      * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      */
     public void sortIgnoreCase() {
-        Arrays.sort(array, 0, size, new StringComparatorIgnoreCase());
+        Arrays.sort(array, 0, size, stringHolderComparatorIgnoreCase);
     }
 
     /**
@@ -1281,8 +1333,8 @@ public class StringArray extends PrimitiveArray {
      * the value at index2.
      */
     public int compareIgnoreCase(int index1, int index2) {
-        String s1 = array[index1];
-        String s2 = array[index2];
+        StringHolder s1 = array[index1];
+        StringHolder s2 = array[index2];
         int c = s1.compareToIgnoreCase(s2);
         if (c != 0) 
             return c;
@@ -1315,7 +1367,7 @@ public class StringArray extends PrimitiveArray {
     public void reorder(int rank[]) {
         int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
-        String newArray[] = new String[array.length]; 
+        StringHolder[] newArray = new StringHolder[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
@@ -1341,7 +1393,7 @@ public class StringArray extends PrimitiveArray {
      */
     public int writeDos(DataOutputStream dos) throws Exception {
         for (int i = 0; i < size; i++)
-            dos.writeUTF(array[i]);
+            dos.writeUTF(get(i)); 
         return size == 0? 0 : 10; //generic answer
     }
 
@@ -1356,7 +1408,7 @@ public class StringArray extends PrimitiveArray {
      */
     public int writeDos(DataOutputStream dos, int i) throws Exception {
         int po = dos.size();
-        dos.writeUTF(array[i]);
+        dos.writeUTF(get(i));
         return dos.size() - po;
     }
 
@@ -1370,7 +1422,7 @@ public class StringArray extends PrimitiveArray {
     public void readDis(DataInputStream dis, int n) throws Exception {
         ensureCapacity(size + (long)n);
         for (int i = 0; i < n; i++)
-            array[size++] = String2.canonical(dis.readUTF());
+            add(dis.readUTF());
     }
 
     /**
@@ -1386,7 +1438,7 @@ public class StringArray extends PrimitiveArray {
         dos.writeShort(elementClassIndex()); 
         dos.writeInt(size);
         for (int i = 0; i < size; i++) 
-            String2.writeNccsvDos(dos, array[i]);
+            String2.writeNccsvDos(dos, get(i));
     }
 */
     /**
@@ -1398,7 +1450,7 @@ public class StringArray extends PrimitiveArray {
      */
 /* project not finished or tested
     public void writeNccsvDos(DataOutputStream dos, int i) throws Exception {
-        String2.writeNccsvDos(dos, array[i]); 
+        String2.writeNccsvDos(dos, get(i)); 
     }
 */
 
@@ -1439,7 +1491,7 @@ public class StringArray extends PrimitiveArray {
         dos.writeInt(size);
         dos.writeInt(size); //yes, a second time
         for (int i = 0; i < size; i++)
-            externalizeForDODS(dos, array[i]);
+            externalizeForDODS(dos, get(i));
     }
 
     /**
@@ -1452,7 +1504,7 @@ public class StringArray extends PrimitiveArray {
      * @throws Exception if trouble
      */
     public void externalizeForDODS(DataOutputStream dos, int i) throws Exception {
-        externalizeForDODS(dos, array[i]);
+        externalizeForDODS(dos, get(i));
     }
 
     /**
@@ -1512,19 +1564,19 @@ public class StringArray extends PrimitiveArray {
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof StringArray) {
             System.arraycopy(((StringArray)pa).array, 0, array, size, otherSize);
+            size += otherSize; 
         //2017-04-06 this was contemplated, but better to handle this some other way, 
         //  e.g., CharArray.getString()
         //} else if (pa instanceof CharArray) { //for Argo
         //    CharArray ca = (CharArray)pa;
         //    for (int i = 0; i < otherSize; i++) {
         //        char ch = ca.get(i);
-        //        array[size + i] = String2.canonical(ch == Character.MAX_VALUE? "" : ch + ""); 
+        //        array[size + i] = String2.canonicalStringHolder(ch == Character.MAX_VALUE? "" : ch + ""); 
         //    }
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = String2.canonical(pa.getString(i)); //this converts mv's
+                add(pa.getString(i)); //this converts mv's
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1539,11 +1591,11 @@ public class StringArray extends PrimitiveArray {
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof StringArray) {
             System.arraycopy(((StringArray)pa).array, 0, array, size, otherSize);
+            size += otherSize; //do last to minimize concurrency problems
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = String2.canonical(pa.getRawString(i)); //this DOESN'T convert mv's
+                add(pa.getRawString(i)); //this DOESN'T convert mv's
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1553,8 +1605,10 @@ public class StringArray extends PrimitiveArray {
      */
     public int maxStringLength() {
         int max = 0;
-        for (int i = 0; i < size; i++)
-            max = Math.max(max, array[i] == null? 0 : array[i].length());
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            max = Math.max(max, s == null? 0 : s.length());
+        }
         return max;
     }
 
@@ -1578,11 +1632,11 @@ public class StringArray extends PrimitiveArray {
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
         HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
-        String lastValue = array[0]; //since lastValue often equals currentValue, cache it
+        String lastValue = get(0); //since lastValue often equals currentValue, cache it
         hashMap.put(lastValue, dummy);   //special for String
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            String currentValue = array[i];
+            String currentValue = get(i);
             int compare = lastValue.compareTo(currentValue); //special for String,    read "is bigger than"
             if (compare != 0) {    //special for String
                 if (compare > 0)   //special for String
@@ -1614,7 +1668,7 @@ public class StringArray extends PrimitiveArray {
                 ") != count(" + count + ")!");
 
         //sort them
-        Arrays.sort(unique); //a variant could use new StringComparatorIgnoreCase());
+        Arrays.sort(unique); //a variant could use String2.STRING_COMPARATOR_IGNORE_CASE);
 
         //special for StringArray: "" (missing value) sorts highest
         if (((String)unique[0]).length() == 0) {
@@ -1628,14 +1682,14 @@ public class StringArray extends PrimitiveArray {
 
         //convert original values to ranks
         int ranks[] = new int[size];
-        lastValue = array[0];
+        lastValue = get(0);
         ranks[0] = ((Integer)hashMap.get(lastValue)).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
-            if (array[i] == lastValue) {
+            if (get(i).equals(lastValue)) { 
                 ranks[i] = lastRank;
             } else {
-                lastValue = array[i];
+                lastValue = get(i);
                 ranks[i] = ((Integer)hashMap.get(lastValue)).intValue();
                 lastRank = ranks[i];
             }
@@ -1658,11 +1712,12 @@ public class StringArray extends PrimitiveArray {
     public int switchFromTo(String from, String to) {
         if (from.equals(to))
             return 0;
-        to = String2.canonical(to);
+        char[] fromc = from.toCharArray();
+        StringHolder tosh = String2.canonicalStringHolder(new StringHolder(to));
         int count = 0;
         for (int i = 0; i < size; i++) {
-            if (array[i].equals(from)) {
-                array[i] = to;
+            if (Arrays.equals(array[i].charArray(), fromc)) {  //could be == if assume all elements are canonical
+                array[i] = tosh;
                 count++;
             }
         }
@@ -1749,14 +1804,12 @@ public class StringArray extends PrimitiveArray {
      *    The items are trim'd.
      */
     public static StringArray fromCSVNoBlanks(String searchFor) {
-        StringArray sa = new StringArray(arrayFromCSV(searchFor));
-        int tSize = sa.size;
-        String tArray[] = sa.array;
-        BitSet bitset = new BitSet(tSize); //initially all false
+        String[] sar = arrayFromCSV(searchFor);
+        int tSize = sar.length;
+        StringArray sa = new StringArray();
         for (int i = 0; i < tSize; i++)
-            if (tArray[i].length() > 0) 
-                bitset.set(i);
-        sa.justKeep(bitset);
+            if (sar[i].length() > 0)
+                sa.add(sar[i]);
         return sa;
     }
 
@@ -1778,7 +1831,7 @@ public class StringArray extends PrimitiveArray {
      *   <br>An element may be nothing.
      */
     public static String[] arrayFromCSV(String searchFor) {
-        return arrayFromCSV(searchFor, ",");
+        return arrayFromCSV(searchFor, ",", true, true); //trim, keepNothing
     }    
 
     /**
@@ -1981,7 +2034,7 @@ public class StringArray extends PrimitiveArray {
      * This is a purposely <strong>simple</strong>, 2-double-quotes-aware, backslash-aware, splitter
      * that makes an ArrayString from the items in an NCCSV-style string.
      *
-     * <br>This avoids String2.canonical(to), so will be faster if just parsing 
+     * <br>The elements won't be canonical, so will be faster if just parsing 
      *   then discarding or storing in some other data structure.
      *
      * <p>Strings should be JSON-like, but \char are left as-is (not converted
@@ -2024,22 +2077,18 @@ public class StringArray extends PrimitiveArray {
 
             } else if (ch == ',') {
                 //end of item
-                if (sa.size == sa.array.length) //if we're at capacity
-                    sa.ensureCapacity(sa.size + 1L);
-                sa.array[sa.size++] = csv.substring(start, po - 1).trim(); //avoid canonical
+                sa.addNotCanonical(csv.substring(start, po - 1).trim()); //avoid canonical
                 start = po;
             }
         }
-        if (sa.size == sa.array.length) //if we're at capacity
-            sa.ensureCapacity(sa.size + 1L);
-        sa.array[sa.size++] = csv.substring(start, po).trim(); //avoid canonical
+        sa.addNotCanonical(csv.substring(start, po).trim()); //avoid canonical
         return sa;
     }
 
     /**
      * This is a purposely <strong>simple</strong> JSON array parser.
      *
-     * <br>This avoids String2.canonical(to), so will be faster if just parsing 
+     * <br>The elements won't be canonical, so will be faster if just parsing 
      *   then discarding or storing in some other data structure.
      *
      * <p>Strings should be JSON strings (double quoted, backslash escaped)
@@ -2103,10 +2152,7 @@ public class StringArray extends PrimitiveArray {
                     throw new SimpleException(
                         "A value in a JSON array must not be nothing.");
 
-                //don't use add() because it uses canonical
-                if (sa.size == sa.array.length) //if we're at capacity
-                    sa.ensureCapacity(sa.size + 1L);
-                sa.array[sa.size++] = s; 
+                sa.addNotCanonical(s); 
                 start = po;
 
                 if (ch == ']') {
@@ -2137,17 +2183,20 @@ public class StringArray extends PrimitiveArray {
     public String isAscending() {
         if (size == 0)
             return "";
-        if (array[0] == null) 
+        String s = get(0);
+        if (s == null) 
             return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                 "[0]=null");
         for (int i = 1; i < size; i++) {
-            if (array[i] == null)
+            String oldS = s;
+            s = get(i);
+            if (s == null)
                 return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                     "[" + i + "]=null");
-            if (array[i - 1].compareTo(array[i]) > 0) {
+            if (oldS.compareTo(s) > 0) {
                 return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                    "[" + (i-1) + "]=" + String2.toJson(array[i-1]) + 
-                     " > [" + i + "]=" + String2.toJson(array[i]));
+                    "[" + (i-1) + "]=" + String2.toJson(get(i-1)) + 
+                     " > [" + i + "]=" + String2.toJson(get(i)));
             }
         }
         return "";
@@ -2164,17 +2213,20 @@ public class StringArray extends PrimitiveArray {
     public String isDescending() {
         if (size == 0)
             return "";
-        if (array[0] == null) 
+        String s = get(0);
+        if (s == null) 
             return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                 "[0]=null");
         for (int i = 1; i < size; i++) {
-            if (array[i] == null)
+            String oldS = s;
+            s = get(i);
+            if (s == null)
                 return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                     "[" + i + "]=null");
-            if (array[i - 1].compareTo(array[i]) < 0) {
+            if (oldS.compareTo(s) < 0) {
                 return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                    "[" + (i-1) + "]=" + String2.toJson(array[i-1]) + 
-                     " < [" + i + "]=" + String2.toJson(array[i]));
+                    "[" + (i-1) + "]=" + String2.toJson(get(i-1)) + 
+                     " < [" + i + "]=" + String2.toJson(get(i)));
             }
         }
         return "";
@@ -2188,10 +2240,7 @@ public class StringArray extends PrimitiveArray {
      */
     public int firstTie() {
         for (int i = 1; i < size; i++) {
-            if (array[i - 1] == null) {
-                if (array[i] == null)
-                    return i - 1;
-            } else if (array[i - 1].equals(array[i])) {
+            if (Arrays.equals(array[i - 1].charArray(), array[i].charArray())) { //either or both can be null
                 return i - 1;
             }
         }
@@ -2226,17 +2275,21 @@ public class StringArray extends PrimitiveArray {
 
     /** Thie replaces any instances of 'from' with 'to' within each string. */
     public void intraReplaceAll(String from, String to) {
-        for (int i = 0; i < size; i++)
-            if (array[i] != null) 
-                array[i] = String2.canonical(String2.replaceAll(array[i], from, to));
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            if (s != null) 
+                set(i, String2.replaceAll(s, from, to));
+        }
     }
 
     /** Thie replaces any instances of 'from' with 'to' within each string, 
      * regardless of 'from's case in the string. */
     public void intraReplaceAllIgnoreCase(String from, String to) {
-        for (int i = 0; i < size; i++)
-            if (array[i] != null) 
-                array[i] = String2.canonical(String2.replaceAllIgnoreCase(array[i], from, to));
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            if (s != null) 
+                set(i, String2.replaceAllIgnoreCase(s, from, to));
+        }
     }
 
     /**
@@ -2252,7 +2305,7 @@ public class StringArray extends PrimitiveArray {
         String tmin = "\uFFFF";
         String tmax = "\u0000";
         for (int i = 0; i < size; i++) {
-            String s = array[i];
+            String s = get(i);
             if (s != null && s.length() > 0) {
                 n++;
                 if (s.compareTo(tmin) <= 0) {tmini = i; tmin = s; }
@@ -2309,7 +2362,7 @@ public class StringArray extends PrimitiveArray {
     public HashSet<String> toHashSet() {
         HashSet<String> hs = new HashSet(Math.max(8, size * 4 / 3));
         for (int i = 0; i < size; i++)
-            hs.add(array[i]);
+            hs.add(get(i));
         return hs;
     }
 
@@ -2342,7 +2395,7 @@ public class StringArray extends PrimitiveArray {
      */
     public int firstNonMatch(Pattern p) {
         for (int i = 0; i < size; i++) {
-            String s = array[i];
+            String s = get(i);
             if (s == null || !p.matcher(s).matches())
                 return i;                
         }
@@ -2356,12 +2409,11 @@ public class StringArray extends PrimitiveArray {
      */
     public int convertIsSomething2() {
         int count = 0;
-        String nothing = String2.canonical("");
         for (int i = 0; i < size; i++) {
-            String s = array[i];
-            if        (s == null)                {array[i] = nothing; count++; 
-            } else if (s.length() == 0)          {
-            } else if (!String2.isSomething2(s)) {array[i] = nothing; count++; 
+            char[] car = array[i].charArray();
+            if (car == null || (car.length > 0 && !String2.isSomething2(get(i)))) {
+                array[i] = String2.STRING_HOLDER_ZERO; 
+                count++; 
             }
         }
         return count;
@@ -2379,6 +2431,12 @@ public class StringArray extends PrimitiveArray {
 /* for releases, this line should have open/close comment */
         String sar[];
         StringArray anArray = new StringArray();
+
+        StringArray sa1 = null;
+
+        Test.ensureEqual("test".equals(null),             false, "");
+        Test.ensureEqual(sa1 instanceof StringArray,      false, "");
+        Test.ensureEqual((new StringArray()).equals(sa1), false, "");
 
         //** test default constructor and many of the methods
         Test.ensureEqual(anArray.isIntegerType(), false, "");
@@ -2551,6 +2609,11 @@ public class StringArray extends PrimitiveArray {
 
         //test compareIgnoreCase
         StringArray cic = fromCSV("A, a, ABE, abe");
+        Test.ensureEqual(cic.compare(0, 1), -32, "");
+        Test.ensureEqual(cic.compare(1, 2), 32, "");
+        Test.ensureEqual(cic.compare(2, 3), -32, "");
+        Test.ensureEqual(cic.compare(1, 3), -2, "");
+
         Test.ensureEqual(cic.compareIgnoreCase(0, 1), -32, "");
         Test.ensureEqual(cic.compareIgnoreCase(1, 2), -2, "");
         Test.ensureEqual(cic.compareIgnoreCase(2, 3), -32, "");
@@ -2571,12 +2634,17 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(stats[STATS_SUM], 20, "");
 
         //test indexOf(int) indexOf(String)
+        Test.ensureEqual(anArray.indexOf(null),   -1, "");
         Test.ensureEqual(anArray.indexOf("0", 0),  0, "");
         Test.ensureEqual(anArray.indexOf("0", 1), -1, "");
         Test.ensureEqual(anArray.indexOf("8", 0),  4, "");
         Test.ensureEqual(anArray.indexOf("9", 0), -1, "");
 
+        Test.ensureEqual(anArray.indexOfIgnoreCase(null),   -1, "");
+        Test.ensureEqual(anArray.indexOfIgnoreCase("8", 0),  4, "");
+
         //test lastIndexOf
+        Test.ensureEqual(anArray.lastIndexOf(null),   -1, "");
         Test.ensureEqual(anArray.lastIndexOf("0", 0),  0, "");
         Test.ensureEqual(anArray.lastIndexOf("0", 0),  0, "");
         Test.ensureEqual(anArray.lastIndexOf("8", 4),  4, "");
@@ -2627,7 +2695,7 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a StringArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
-            "The two StringArrays aren't equal: one has 2 values (from \"0\" to \"8\"); the other has 1 value (\"0\").", "");
+            "The two StringArrays aren't equal: one has 2 value(s); the other has 1 value(s).", "");
         Test.ensureTrue(!anArray.equals(anArray2), "");
         anArray2.addString("7");
         Test.ensureEqual(anArray.testEquals(anArray2), 

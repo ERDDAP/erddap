@@ -7,7 +7,6 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -106,7 +105,7 @@ public class Tally  {
         Object categoryArray[] = categorySet.toArray();
 
         //sort the categoryNames
-        Arrays.sort(categoryArray, new StringComparatorIgnoreCase());
+        Arrays.sort(categoryArray, String2.STRING_COMPARATOR_IGNORE_CASE);
 
         //for each category
         StringBuilder results = new StringBuilder();

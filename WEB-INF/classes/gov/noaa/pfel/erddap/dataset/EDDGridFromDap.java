@@ -4816,7 +4816,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Wed May 08 13:25:46 HST 2019 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"history\">Fri Jul 19 13:30:40 HST 2019 : imported by GrADS Data Server 2.0</att>\n" + //changes
 "        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -8282,7 +8282,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n" +
-"<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/erdBAssta5day\">\n" +
+"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/erdBAssta5day\">\n" +
 "  <attribute name=\"acknowledgement\" value=\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\" />\n" +
 "  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
 "  <attribute name=\"composite\" value=\"true\" />\n" +
@@ -9368,8 +9368,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgment\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n" +
 "        <att name=\"cdm_data_type\">grid</att>\n" +
-"        <att name=\"comment\">Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = &quot;Multi-scale Ultra-high Reolution&quot;</att>\n" +
-"        <att name=\"Conventions\">CF-1.5</att>\n" +
+"        <att name=\"comment\">Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = &quot;Multi-scale Ultra-high Resolution&quot;</att>\n" +
+"        <att name=\"Conventions\">CF-1.7</att>\n" +
 "        <att name=\"creator_email\">ghrsst@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">JPL MUR SST project</att>\n" +
 "        <att name=\"creator_url\">http://mur.jpl.nasa.gov</att>\n";
@@ -9378,11 +9378,11 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
 expected = 
         "<att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
-"        <att name=\"file_quality_level\">3</att>\n" +  //this may change depending on source file (eg, 1 or 3)
+"        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +  //this may change depending on source file (eg, 1 or 3)
 "        <att name=\"gds_version_id\">2.0</att>\n" +
-"        <att name=\"geospatial_lat_resolution\">0.01 degrees</att>\n" +
+"        <att name=\"geospatial_lat_resolution\" type=\"float\">0.01</att>\n" +
 "        <att name=\"geospatial_lat_units\">degrees north</att>\n" +
-"        <att name=\"geospatial_lon_resolution\">0.01 degrees</att>\n" +
+"        <att name=\"geospatial_lon_resolution\" type=\"float\">0.01</att>\n" +
 "        <att name=\"geospatial_lon_units\">degrees east</att>\n" +
 "        <att name=\"history\">near real time (nrt) version created at nominal 1-day latency.</att>\n" +
 "        <att name=\"id\">MUR-JPL-L4-GLOB-v04.1</att>\n" +
@@ -9395,7 +9395,7 @@ expected =
 "        <att name=\"naming_authority\">org.ghrsst</att>\n" +
 "        <att name=\"netcdf_version_id\">4.1</att>\n" +
 "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
-"        <att name=\"platform\">Terra, Aqua, GCOM-W, NOAA-19, MetOp-A, Buoys/Ships</att>\n" +
+"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-A, MetOp-B, Buoys/Ships</att>\n" +
 "        <att name=\"processing_level\">L4</att>\n" +
 "        <att name=\"product_version\">04.1nrt</att>\n" +
 "        <att name=\"project\">NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program</att>\n" +
@@ -9404,7 +9404,7 @@ expected =
 "        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" +
 "        <att name=\"references\">http://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
 "        <att name=\"sensor\">MODIS, AMSR2, AVHRR, in-situ</att>\n" +
-"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
+"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRRMTA_G-NAVO, AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
 "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
 "        <att name=\"spatial_resolution\">0.01 degrees</att>\n" +
 "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n";
@@ -9425,7 +9425,7 @@ expected =
 "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n" +
 "        <att name=\"acknowledgment\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.7, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://mur.jpl.nasa.gov</att>\n";
         po = results.indexOf(expected.substring(0, 80));
@@ -9436,7 +9436,7 @@ expected =
         "<att name=\"easternmost_longitude\">null</att>\n" +
 "        <att name=\"file_quality_level\">null</att>\n" +
 "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/ws/metadata/dataset/?format=iso&amp;shortName=MUR-JPL-L4-GLOB-v04.1</att>\n" +
-"        <att name=\"keywords\">1day, 1km, analysed, analysed_sst, analysis_error, area, binary, composite, daily, data, day, deviation, distribution, dt_1km_data, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, error, estimated, field, foundation, fraction, high, ice, ice distribution, identifier, interim, jet, jpl, laboratory, land, land_binary_mask, latitude, longitude, mask, most, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, product, propulsion, real, recent, resolution, scale, science, sea, sea ice area fraction, sea/land, sea_ice_fraction, sea_surface_foundation_temperature, sst, standard, statistics, surface, temperature, time, time to most recent 1km data, ultra, ultra-high</att>\n" +
+"        <att name=\"keywords\">1day, 1km, 2003-2014, analysed, analysed_sst, analysis_error, anomaly, area, based, binary, climatology, composite, cryosphere, daily, data, day, deviation, distribution, dt_1km_data, earth, Earth Science &gt; Cryosphere &gt; Sea Ice &gt; Ice Extent, Earth Science &gt; Land Surface &gt; Land Temperature &gt; Land Surface Temperature, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Sea Ice &gt; Ice Extent, error, estimated, extent, field, foundation, fraction, high, ice, ice distribution, identifier, interim, jet, jpl, laboratory, land, land_binary_mask, latitude, longitude, mask, most, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, over, period, product, propulsion, real, recent, resolution, scale, science, sea, sea/land, sea_ice_area_fraction, sea_ice_fraction, sea_surface_foundation_temperature, seasonal, sst, sst_anomaly, standard, statistics, surface, surface_temperature_anomaly, temperature, time, ultra, ultra-high</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"metadata_link\">https://podaac.jpl.nasa.gov/ws/metadata/dataset/?format=iso&amp;shortName=MUR-JPL-L4-GLOB-v04.1</att>\n" +
@@ -9491,7 +9491,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_ChunkSizes\" type=\"int\">17999</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
-"            <att name=\"comment\">none</att>\n" +
+"            <att name=\"comment\">geolocations inherited from the input data without correction</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
 "            <att name=\"units\">degrees_north</att>\n" +
@@ -9500,7 +9500,6 @@ expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_ChunkSizes\">null</att>\n" +
-"            <att name=\"comment\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "        </addAttributes>\n" +
@@ -9511,7 +9510,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_ChunkSizes\" type=\"int\">36000</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
-"            <att name=\"comment\">none</att>\n" +
+"            <att name=\"comment\">geolocations inherited from the input data without correction</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
 "            <att name=\"units\">degrees_east</att>\n" +
@@ -9520,7 +9519,6 @@ expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_ChunkSizes\">null</att>\n" +
-"            <att name=\"comment\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "        </addAttributes>\n" +
@@ -9536,7 +9534,7 @@ expected =
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">analysed sea surface temperature</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.001</att>\n" +
-"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
+"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRRMTA_G-NAVO, AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
 "            <att name=\"standard_name\">sea_surface_foundation_temperature</att>\n" +
 "            <att name=\"units\">kelvin</att>\n" +
 "            <att name=\"valid_max\" type=\"short\">32767</att>\n" +
@@ -9559,7 +9557,7 @@ expected =
 "            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
-"            <att name=\"comment\">none</att>\n" +
+"            <att name=\"comment\">uncertainty in &quot;analysed_sst&quot;</att>\n" +
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">estimated error standard deviation of analysed_sst</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
@@ -9571,7 +9569,6 @@ expected =
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"comment\">null</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
@@ -9587,8 +9584,7 @@ expected =
 "            <att name=\"comment\">mask can be used to further filter the data.</att>\n" +
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"flag_masks\" type=\"byteList\">1 2 4 8 16</att>\n" +
-"            <att name=\"flag_meanings\">1=open-sea, 2=land, 5=open-lake, 9=open-sea with ice in the grid, 13=open-lake with ice in the grid</att>\n" +
-"            <att name=\"flag_values\" type=\"byteList\">1 2 5 9 13</att>\n" +
+"            <att name=\"flag_meanings\">open_sea land open_lake open_sea_with_ice_in_the_grid open_lake_with_ice_in_the_grid</att>\n" +
 "            <att name=\"long_name\">sea/land field composite mask</att>\n" +
 "            <att name=\"source\">GMT &quot;grdlandmask&quot;, ice flag from sea_ice_fraction data</att>\n" +
 "            <att name=\"valid_max\" type=\"byte\">31</att>\n" +
@@ -9611,13 +9607,12 @@ expected =
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
 "            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
-"            <att name=\"comment\">ice data interpolated by a nearest neighbor approach.</att>\n" +
+"            <att name=\"comment\">ice fraction is a dimensionless quantity between 0 and 1; it has been interpolated by a nearest neighbor approach.</att>\n" +
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">sea ice area fraction</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
 "            <att name=\"source\">EUMETSAT OSI-SAF, copyright EUMETSAT</att>\n" +
-"            <att name=\"standard_name\">sea ice area fraction</att>\n" +
-"            <att name=\"units\">fraction (between 0 and 1)</att>\n" +
+"            <att name=\"standard_name\">sea_ice_area_fraction</att>\n" +
 "            <att name=\"valid_max\" type=\"byte\">100</att>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -9640,7 +9635,6 @@ expected =
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">time to most recent 1km data</att>\n" +
 "            <att name=\"source\">MODIS and VIIRS pixels ingested by MUR</att>\n" +
-"            <att name=\"standard_name\">time to most recent 1km data</att>\n" +
 "            <att name=\"units\">hours</att>\n" +
 "            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
 "            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
@@ -9651,6 +9645,30 @@ expected =
 "            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sst_anomaly</sourceName>\n" +
+"        <destinationName>sst_anomaly</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">anomaly reference to the day-of-year average between 2003 and 2014</att>\n" +
+"            <att name=\"coordinates\">lon lat</att>\n" +
+"            <att name=\"long_name\">SST anomaly from a seasonal SST climatology based on the MUR data over 2003-2014 period</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.001</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"short\">32767</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-32767</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-3.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"standard_name\">surface_temperature_anomaly</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -11078,86 +11096,86 @@ String expected =
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "Dataset {\n" +
-"  Float64 time[time = 1203];\n" +   //time=# changes here and below
+"  Float64 time[time = 1251];\n" +   //time=# changes here and below
 "  Float64 latitude[latitude = 62];\n" +
 "  Float64 longitude[longitude = 122];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SST[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 SST[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SST;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSS[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 SSS[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSS;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pCO2sw[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 pCO2sw[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pCO2sw;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TA[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 TA[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TC[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 TC[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TC;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pH[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 pH[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pH;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSA[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 SSA[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 HCO3[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 HCO3[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } HCO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 CO3[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 CO3[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } CO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 surface_flag[time = 1203][latitude = 62][longitude = 122];\n" +
+"      Float32 surface_flag[time = 1251][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1203];\n" +
+"      Float64 time[time = 1251];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } surface_flag;\n" +
@@ -11201,7 +11219,7 @@ String expected =
 "  }\n" +
 "  SST {\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 23.75, 30.75;\n" +  //source actual_range is Float64   values from 1 file and so changes often! in real life -> null
+"    Float32 actual_range 27.72, 31.43;\n" +  //source actual_range is Float64   values from 1 file and so changes often! in real life -> null
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String coordsys \"geographic\";\n" +

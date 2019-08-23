@@ -4,8 +4,6 @@
  */
 package com.cohort.util;
 
-import com.cohort.array.StringComparatorIgnoreCase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.text.MessageFormat;
@@ -404,7 +402,7 @@ public class MustBe {
             }
 
             //sort
-            Arrays.sort(sar, 0, count, new StringComparatorIgnoreCase());
+            Arrays.sort(sar, 0, count, String2.STRING_COMPARATOR_IGNORE_CASE);
 
             //write to StringBuilder
             StringBuilder sb = new StringBuilder();

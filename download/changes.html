@@ -69,6 +69,117 @@ those great suggestions coming!
 -->
 
 <!-- ****************************************************************************** -->
+<h2><a class="selfLink" id="changes2.02" href="#changes2.02" rel="bookmark">Changes</a> 
+in ERDDAP version 2.02 (released 2019-08-16)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>NEW: There are now two ways to search for datasets on multiple ERDDAPs.
+    They work slightly differently and have different interfaces and options.
+    <ul>
+    <li><a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+        >SearchMultipleERDDAPs.html</a> from Bob Simons/NOAA NMFS SWFSC ERD.
+    <li><a rel="help" href="http://erddap.com"
+        >http://erddap.com</a> from Rob Fuller/The Marine Institute of Ireland.
+    </ul>
+    Thanks to Tylar Murray for the original request.
+    <br>&nbsp;
+
+  <li>CHANGE: a request to the "files" to download a file that is actually at a
+   remote site (e.g., AWS S3) now leads to a redirect, 
+   so the user will actually download the data from the source,
+   instead of using ERDDAP as an intermediary.
+    <br>&nbsp;
+  </ul>
+
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>THINGS YOU NEED TO DO: none
+      <br>&nbsp;
+
+  <li>IMPROVEMENT: ERDDAP's method of storing arrays of strings (StringArray) 
+    is now much more memory efficient. 
+    These are used throughout ERDDAP, notably when reading tabular ASCII data files.
+    Also, other changes make reading CSV/TSV/SSV ASCII, columnar ASCII, and jsonlCSV 
+    tabular data files faster and much more memory efficient.
+    The result is: for a 764 MB ASCII data test file (but compressed to a 52MB .gz file)
+    with 3,503,266 rows and 33 columns, 
+    the maximum memory usage went from 10GB down to 0.6GB (at peak).
+    The time to read it went from ~7 minutes 
+    (but varies greatly with how much physical memory is in the computer)
+    down to ~36 seconds (including 10s for simplify() which is only used by GenerateDatasetsXml).
+    Many other places in ERDDAP will benefit from this increased memory efficiency.
+    Thanks to Tylar Murray and Mathew Biddle.
+
+    <p>I explored a different solution (storing strings in StringArray as UTF-8-encoded byte arrays).
+    That reduces memory usage another ~33%, but at the cost of ~33% slowdown. 
+    Compared to the system that is now being used, that seemed like a not good trade off.
+    It's easier to give a computer more memory (buy more memory for ~$200) 
+    than to make it faster (buy a whole new computer).
+
+    <p>If it is convenient, it's still always a good idea to split huge tabular data files 
+    into several smaller files based on some criteria like stationID and/or time. 
+    ERDDAP will often only have to open one of the small files
+    in response to a user's request, and thus be able to respond much faster.
+
+  <li>CHANGE: GenerateDatasetsXml now treats additional common missing_values
+    stand-ins as missing values
+    and so is more likely to convert a column to a numeric data type.
+    Also, PrimitiveArray.simplify() now logs which particular data value
+    caused it to treat a given column as a column of strings.
+    Thanks to Mathew Biddle.
+      <br>&nbsp;
+
+  <li>CHANGE: &lt;requestBlacklist&gt; now supports .*.* (or :*:* for IPv6) 
+    at the end of the IP addresses so that you can blacklist a bigger chunk
+    of IP addresses, e.g., 110.52.*.* (China Unicom Tianjin).
+    See the documentation for <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+        >&lt;requestBlacklist&gt;</a>
+    Thanks to China Unicom and China Telecom.
+      <br>&nbsp;
+
+  <li>CHANGE: If the source doesn't specify "institution", GenerateDatasetsXml and loadDataset now
+    get it from "creator_institution" (if available).
+    Thanks to Micah Wengren.
+      <br>&nbsp;
+
+  <li>IMPROVEMENT: There is now 
+      <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#AwsS3Files"
+        >ERDDAP AWS S3 documentation</a>, 
+        which describes how to get ERDDAP to work with data files in AWS S3 buckets.
+    <br>Also, ERDDAP now uses new features in the AWS S3 Java API. 
+    <br>Also, ERDDAP now allows AWS S3 URLs to include additional
+      characters (period, hyphen, underscore) in bucket names
+    <br>Also, ERDDAP now requires that AWS S3 bucket URLs be identified in a specific way:
+    <br>&nbsp;&nbsp;https://<i>bucketName</i>.s3.<i>aws-region.</i>amazonaws.com/<i>prefix</i>/ 
+    <br>&nbsp;&nbsp;where prefix are optional.
+    <br>Thanks to Andy Ziegler and NOAA.
+    <br>&nbsp;
+
+  <li>BUG FIX: standardizeWhat wasn't always applied to ASCII data files.
+    <br>Also, EDDTable didn't properly handle constraints on time values 
+      when the source had String time values and standardizeWhat was being used.
+
+    <p>NOTE: just use standardizeWhat features when you actually need them, 
+    because requests to datasets that use standardizeWhat will be processed more slowly.
+
+    <p>Thanks to Paloma de la Vallee.
+
+  <li>BUG FIX: A bug in code used by EDDGridFromNcFiles caused it to fail with
+    .nc4 and .hdf files that have "long" (int64) variables. This is now fixed.
+    Thanks to Friedemann Wobus.
+      <br>&nbsp;
+
+  <li>BUG FIX: Small changes to ISO 19115 files to make a different validator happy.
+    Thanks to Chris MacDermaid and Anna Milan.
+      <br>&nbsp;
+  </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.01" href="#changes2.01" rel="bookmark">Changes</a> 
 in ERDDAP version 2.01 (released 2019-07-02)</h2>
 <ul>
@@ -120,8 +231,8 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     <li>partly to celebrate 10 years (now 11) since the
       first public release of ERDDAP (v1.00 on 2008-05-06, which outwardly looked
       remarkably like v2.00). In that time, ERDDAP has gone from one installation 
-      to almost 100 installations in at least 10 countries 
-      (Australia, Canada, France, Ireland, Italy, South Africa, Spain, Thailand, UK, USA).
+      to almost 100 installations in at least 12 countries 
+      (Australia, Belgium, Canada, France, India, Ireland, Italy, South Africa, Spain, Thailand, UK, USA).
     <li>partly to mark a major addition in an entirely new direction:
       ERDDAP now has a data ingest system
       to go with the existing data server services
@@ -435,7 +546,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     <p>See the <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ExternallyCompressedFiles"
         >Externally Compressed Files documentation</a>.
-    Thanks to Benoit Perrimond and Paloma Delavallee.
+    Thanks to Benoit Perrimond and Paloma de la Vallee.
 
   <li>BIG NEW FEATURE: All EDDGridFromFiles and all EDDTableFromFiles datasets support a
     <kbd>&lt;cacheFromUrl&gt;</kbd> tag and a <kbd>&lt;cacheSizeGB&gt;</kbd> tag.
@@ -632,7 +743,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     <br>See <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
         >this documentation</a>.
-    Thanks to Paloma Delavallee.
+    Thanks to Paloma de la Vallee.
     <br>&nbsp;
   <li>NEW: Now, all EDDTableFrom...Files datasets support additional pseudo variable sourceNames
     which extract information from the file's fileName (just filename.ext)
@@ -643,7 +754,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     (see <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#pathNameSourceNames"
         >***pathName</a>).
-    Thanks to Paloma Delavallee.
+    Thanks to Paloma de la Vallee.
     <br>&nbsp;
   <li>NEW: If an EDDGrid dataset has one or more very large dimensions (e.g., millions of values) 
     which take up a lot of memory, you can set the new 
@@ -5486,7 +5597,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.00
+<p>ERDDAP, Version 2.02
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

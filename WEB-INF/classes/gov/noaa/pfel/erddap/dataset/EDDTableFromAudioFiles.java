@@ -127,7 +127,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         table.readAudioFile(decompFullName, mustGetData, true); //addElapsedTime
 
         //unpack
-        table.unpack(standardizeWhat);
+        table.standardize(standardizeWhat);
         //String2.log(">> EDDTableFromAudioFiles.lowGetSourceDataFromFile header after unpack (nCol=" + table.nColumns() + "):\n" + table.getNCHeader("row"));
 
         return table;
@@ -216,7 +216,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.unpack(tStandardizeWhat);
+        dataSourceTable.standardize(tStandardizeWhat);
 
         Table dataAddTable = new Table();
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {

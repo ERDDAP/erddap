@@ -29,7 +29,7 @@ public class PipeToStringArray extends PipeTo {
      * The run method is the standard starting place when the thread is run.
      */
     public void run() {
-        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));  //uses default charset for this OS
         try {
             String s;
             while ((s = bufferedReader.readLine()) != null) {

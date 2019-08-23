@@ -14,7 +14,6 @@ import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -675,6 +674,8 @@ public abstract class EDD {
             "combinedGlobalAttributes (but probably caused by the source attributes)");
         Test.ensureSomethingUnicode(title(),                 errorInMethod + "title");
         Test.ensureSomethingUnicode(summary(),               errorInMethod + "summary");
+        if (!String2.isSomething(institution()))
+            institution = combinedGlobalAttributes.getString("creator_institution"); //may be null
         Test.ensureSomethingUnicode(institution(),           errorInMethod + "institution");
         Test.ensureSomethingUnicode(infoUrl(),               errorInMethod + "infoUrl");
         Test.ensureSomethingUnicode(publicSourceUrl(),       errorInMethod + "sourceUrl");
@@ -1701,12 +1702,18 @@ public abstract class EDD {
 
     /** 
      * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-     * and size is LongArray of epochMillis)
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+     * and lastMod is LongArray of epochMillis)
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
      */
-    public Table accessibleViaFilesFileTable() {
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
         return null;
     }
 
@@ -2298,6 +2305,7 @@ public abstract class EDD {
             for (int i = 0; i < dataVariables.length; i++)
                 tNames[i] = dataVariables[i].destinationName();
             dataVariableDestinationNames = tNames;
+            //String2.log(">>tNames=" + String2.toCSSVString(tNames));
         }
         return dataVariableDestinationNames;
     }
@@ -3919,6 +3927,9 @@ public abstract class EDD {
         //remove . at end of sentence or abbreviation, but not within number or word.word
         if (phrase == null || phrase.length() == 0)
             return hashSet;
+        if (String2.isUrl(phrase)) 
+            return hashSet;
+        //if (phrase.indexOf("http") >= 0) String2.log(">> chopUpAndAdd " + phrase);
         phrase = String2.replaceAll(phrase, ". ", " ");         //too aggressive?
         if (phrase.endsWith(".") && phrase.indexOf(' ') > 0)    //too aggressive?
             phrase = phrase.substring(0, phrase.length() - 1);
@@ -3929,7 +3940,7 @@ public abstract class EDD {
         char car[] = phraseLC.toCharArray();
         int nc = car.length;
         for (int c = 0; c < nc; c++) {
-            //want to break things up, but not parts of equations.  
+            //want to break things up, but not parts of equations or URLs.  
             //  keep /: mg/ml 
             //    but break up in Title and GCMD keywords before calling this method, 
             //    so Salinity/Density broken up
@@ -3939,6 +3950,9 @@ public abstract class EDD {
             if (car[c] == '%') {
                 hashSet.add("percent");
                 car[c] = ' ';
+            } else if (car[c] == ':' && c+6 < nc && // +6=several more characters, but at least 2 more
+                car[c+1] == '/' && car[c+2] == '/') { //probably part of url
+                //don't change car[c] to ' '
             } else if ("`~!@#$()_={}[];:'\"<>,?".indexOf(car[c]) >= 0) {
                 car[c] = ' ';
             }
@@ -3948,6 +3962,10 @@ public abstract class EDD {
         for (int tw = 0; tw < ntWords; tw++) {
             String s = tWords.get(tw);
             //String2.log(">> chop s=" + s);
+            if (String2.isUrl(s)) {
+                //don't add to hashSet because lowercase'd
+                continue; //don't split further
+            }
             s = removeExtensionsFromTitle(s);
             if (s.length() > 2) {
                 //String2.log("  add " + s);
@@ -3955,7 +3973,7 @@ public abstract class EDD {
             } else if (String2.indexOf(KEEP_SHORT_KEYWORDS, s) >= 0 ||
                        String2.indexOf(KEEP_SHORT_UC_KEYWORDS, s) >= 0) {
                 hashSet.add(s); //uppercase will be upper-cased when written to generateDatasetsXml
-            }                
+            }             
 
             //if it contains internal '-' or '/', also: split it and add words
             if (s.indexOf('-') > 0 ||
@@ -5372,8 +5390,9 @@ public abstract class EDD {
 
         //institution
         name = "institution";
-        value =    getAddOrSourceAtt(addAtts, sourceAtts, name,          null);
-        value =    getAddOrSourceAtt(addAtts, sourceAtts, "origin",      value); 
+        value =    getAddOrSourceAtt(addAtts, sourceAtts, name,                  null);
+        value =    getAddOrSourceAtt(addAtts, sourceAtts, "creator_institution", value); 
+        value =    getAddOrSourceAtt(addAtts, sourceAtts, "origin",              value); 
         value =    getAddOrSourceAtt(addAtts, sourceAtts, "Originating_or_generating_Center", value); 
         if (String2.isSomething2(value)) {
             //improve some common institution values
@@ -6826,7 +6845,7 @@ public abstract class EDD {
             String keywordSar[] = (String[])suggestedKeywords.toArray(new String[0]); 
             //they are consistently capitalized, so will sort very nicely:
             //  single words then gcmd
-            Arrays.sort(keywordSar, new StringComparatorIgnoreCase()); 
+            Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE); 
             for (int w = 0; w < keywordSar.length; w++) {
 
                 //don't save numbers
@@ -11191,7 +11210,7 @@ sb.append(
 "    <data-presentation-form>" + 
     XML.encodeAsXML("Table (digital)") + //odd for grids, but close enough
    "</data-presentation-form>\n" +
-//Bob says see https://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\
+//Bob says see http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\
 //  which has OnLineFunctionCodes and OnLinePresentationCodes (this)
 //  There isn't an option for Grids: "Table (digital)" is closest and reasonable.
 //Enter one data presentation form from the following list of possible values: Document (digital), Document (hardcopy), Image (digital), Image (hardcopy), Map (digital), Map (hardcopy), Profile (digital), Profile (hardcopy), Table (digital), Table (hardcopy), Video (digital), Video (hardcopy), Audio, Other
@@ -11661,14 +11680,14 @@ sb.append(
         long eTime = System.currentTimeMillis();
 
         //get a list of datasets from addDatasets on coastwatch Erddap
-        String lines[] = SSR.getUrlResponseLines(
+        ArrayList<String> lines = SSR.getUrlResponseArrayList(
             "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/allDatasets.csv0?datasetID,dataStructure");
-        int nLines = lines.length;
+        int nLines = lines.size();
 
         //make HashSet with datasetIDs
         HashSet hashset = new HashSet();
         for (int line = 0; line < nLines; line++) 
-            hashset.add(String2.split(lines[line], ',')[0]);
+            hashset.add(String2.split(lines.get(line), ',')[0]);
 
         //consider making InPort Xml for these datasets
         for (int line = 0; line < nLines; line++) {
@@ -11677,7 +11696,7 @@ if (nSuccess >= 2)
             String tDatasetID = "?";
             try {
 
-            String parts[] = String2.split(lines[line], ',');
+            String parts[] = String2.split(lines.get(line), ',');
             tDatasetID = parts[0];
             if (hashset.contains(tDatasetID + "_LonPM180")) {
                 String2.log("skip " + tDatasetID + " because there's a _LonPM180 version of it.");
@@ -12174,10 +12193,9 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
 
         String urlString = EDStatic.sparqlP01toP02pre + p01 + EDStatic.sparqlP01toP02post;
         try {
-            String response[] = SSR.getUrlResponseLines(urlString);
-            String2.log("response=\n" + String2.toNewlineString(response));
             Table table = new Table();
-            table.readASCII("sparqlP01toP02", response, 0, 1, "", 
+            table.readASCII("sparqlP01toP02", 
+                SSR.getBufferedUrlReader(urlString), 0, 1, "", 
                 null, null, null, null, false); //readColumns, simplify
             //String2.log(table.dataToString(5));
 //row,Identifier,PrefLabel,Definition,Version,related,Date,Url
@@ -12275,10 +12293,11 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         }
         String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";
         try {
-            String response[] = SSR.getUrlResponseLines(vUrl); //has timeout and descriptive error 
+            ArrayList<String> response = SSR.getUrlResponseArrayList(vUrl); //has timeout and descriptive error 
             double v = Double.NaN;
-            if (response[0].startsWith("ERDDAP_version=")) 
-                v = String2.parseDouble(response[0].substring(15));
+            String response0 = response.get(0);
+            if (response0.startsWith("ERDDAP_version=")) 
+                v = String2.parseDouble(response0.substring(15));
             if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
             return Double.isNaN(v)? 1.22 : v;
         } catch (Throwable t) {

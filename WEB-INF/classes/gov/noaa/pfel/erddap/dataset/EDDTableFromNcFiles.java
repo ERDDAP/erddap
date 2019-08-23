@@ -551,11 +551,11 @@ String expected =
 "        <att name=\"contributor_name\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
 "        <att name=\"contributor_role\">Source of data.</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
-"        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2019-07-01</att>\n" + //changes
-"        <att name=\"date_issued\">2019-07-01</att>\n" +  //changes
+"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"date_created\">2019-06-25</att>\n" + //changes
+"        <att name=\"date_issued\">2019-06-25</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -581,9 +581,9 @@ String expected =
 "        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
-"\n" + //changes 2 places...  date is old, but this is what's in the file
-"This dataset has both historical data (quality controlled, before 2018-11-01T00:00:00) and near real time data (less quality controlled, from 2018-11-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2019-07-01T15:00:00Z</att>\n" + //changes
+"\n" + //changes sometimes (why only sometimes?)...  date is old, but this is what's in the file
+"This dataset has both historical data (quality controlled, before 2019-06-01T00:00:00) and near real time data (less quality controlled, from 2019-06-01T00:00:00 on).</att>\n" +
+"        <att name=\"time_coverage_end\">2019-06-25T18:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -593,9 +593,7 @@ cdmSuggestion() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
-"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
-"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
 "        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere, atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, earth, Earth Science &gt; Atmosphere &gt; Air Quality &gt; Visibility, Earth Science &gt; Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Significant Wave Height, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Swells, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Period, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Speed/Direction, eastward, eastward_wind, GST, gust, height, identifier, latitude, layer, level, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans, participators, period, planetary, point, pressure, PTDY, quality, real, science, sea, sea level, sea_surface_swell_wave_period, sea_surface_temperature, sea_surface_wave_significant_height, sea_surface_wave_to_direction, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
@@ -621,7 +619,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5619932E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5614856E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -2838,8 +2836,8 @@ expected =
 "2012-01-01T08:00:00Z,41004,288,19.0,20.2\n" +
 "2012-01-01T09:00:00Z,41004,270,18.8,20.2\n" +
 "2012-01-01T10:00:00Z,41004,262,18.6,20.3\n" +
-"2012-01-01T11:00:00Z,41004,249,18.5,20.4\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+"2012-01-01T11:00:00Z,41004,249,18.5,20.4\n"; 
+Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
         //quick reject -> orderBy var not in results vars
@@ -2924,7 +2922,7 @@ expected =
 ",count,count,count,count\n" +
 "41001,24,0,0,0\n" +
 //"41002,24,24,24,24\n" +  //2018-09-15 gone
-"41004,24,24,24,24\n" +
+"41004,24,24,24,24\n" +  
 "41008,24,24,24,24\n" +
 "41009,24,24,24,24\n" +
 "41010,24,24,24,24\n" +
@@ -2945,7 +2943,7 @@ expected =
 "41001,2000-01-01T01:00:00Z,0,0,0\n" +
 "41001,2000-01-01T02:00:00Z,0,0,0\n" +
 "41001,2000-01-01T03:00:00Z,0,0,0\n" +
-"41004,2000-01-01T00:00:00Z,1,1,1\n" +
+"41004,2000-01-01T00:00:00Z,1,1,1\n" + 
 "41004,2000-01-01T01:00:00Z,1,1,1\n" +
 "41004,2000-01-01T02:00:00Z,1,1,1\n" +
 "41004,2000-01-01T03:00:00Z,1,1,1\n" +
@@ -2972,7 +2970,7 @@ expected =
 "41001,2000-01-01T06:00:00Z,0,0,0\n" +
 "41001,2000-01-01T12:00:00Z,0,0,0\n" +
 "41001,2000-01-01T18:00:00Z,0,0,0\n" +
-"41004,2000-01-01T00:00:00Z,6,6,6\n" +
+"41004,2000-01-01T00:00:00Z,6,6,6\n" +  
 "41004,2000-01-01T06:00:00Z,6,6,6\n" +
 "41004,2000-01-01T12:00:00Z,6,6,6\n" +
 "41004,2000-01-01T18:00:00Z,6,6,6\n" +
@@ -3023,7 +3021,7 @@ expected =
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,count,count,count,count\n" +
-"2012-01-01T00:00:00Z,6,5,5,5\n" +   
+"2012-01-01T00:00:00Z,6,5,5,5\n" + 
 "2012-01-01T06:00:00Z,6,6,6,6\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -3128,7 +3126,7 @@ expected =
 "\n" +
 "*END_METADATA*\n" +
 "time,station,wd,atmp,wtmp\n" +
-"2012-01-01T00:00:00Z,6,5,5,5\n" +
+"2012-01-01T00:00:00Z,6,5,5,5\n" +  
 "2012-01-01T06:00:00Z,6,6,6,6\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3179,7 +3177,7 @@ expected =
 "\t\twd:units = \"count\" ;\n" +
 "\tint atmp(row) ;\n" +
 "\t\tatmp:_FillValue = 2147483647 ;\n" +
-"\t\tatmp:actual_range = 5, 6 ;\n" +
+"\t\tatmp:actual_range = 5, 6 ;\n" + 
 "\t\tatmp:comment = \"Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations.\" ;\n" +
 "\t\tatmp:ioos_category = \"Temperature\" ;\n" +
 "\t\tatmp:long_name = \"Air Temperature\" ;\n" +
@@ -3187,7 +3185,7 @@ expected =
 "\t\tatmp:units = \"count\" ;\n" +
 "\tint wtmp(row) ;\n" +
 "\t\twtmp:_FillValue = 2147483647 ;\n" +
-"\t\twtmp:actual_range = 5, 6 ;\n" +
+"\t\twtmp:actual_range = 5, 6 ;\n" + 
 "\t\twtmp:comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\" ;\n" +
 "\t\twtmp:ioos_category = \"Temperature\" ;\n" +
 "\t\twtmp:long_name = \"SST\" ;\n" +
@@ -3261,7 +3259,7 @@ expected =
 "\t\t:title = \"NDBC Standard Meteorological Buoy Data, 1970-present\" ;\n" +
 "}\n" +
 "time,station,wd,atmp,wtmp\n" +
-"1.325376E9,6,5,5,5\n" +
+"1.325376E9,6,5,5,5\n" + 
 "1.3253976E9,6,6,6,6\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -6589,7 +6587,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 35341816;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 35765154;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6634,7 +6632,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.5591264e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.56193914e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6696,7 +6694,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2019-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6724,9 +6722,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2019-06-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2019-07-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2019-06-10 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2019-07-20 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -6743,7 +6741,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2019-06-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6768,7 +6766,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the May 2019 data\\) but is a subset of the " + //month changes
+    "up to and including the June 2019 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -6781,7 +6779,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2019-05-29T10:40:00Z\";\n" + //changes
+"    String time_coverage_end \"2019-06-30T23:59:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -11094,7 +11092,7 @@ String expected3 = expected2 +
         int n = 100;  //use 1000 so it dominates program run time if profiling
         for (int i = 0; i < n; i++)  
             tableDataset.writeDapHtmlForm(null, "", writer);
-        double results = ((System.currentTimeMillis() - time) / (float)n);
+        float results = ((System.currentTimeMillis() - time) / (float)n);
         double expected = 5.31;
         String2.log("\nEDDTableFromNcFiles.testSpeedDAF time per .html = " +
             results + "ms (java 1.7M4700 " + expected + "ms, 1.6 14.6ms, 1.5 40.8ms)\n" +  //slow because of info for sliders and subset variables
@@ -14144,7 +14142,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2019-06-03 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2019-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -17140,12 +17138,11 @@ expected =
 ",,,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
 "ME_TE_33PF_Q590410717,ME,TE,33PF,Q590410717,28178811,-129.651,31.432,2017-01-28T17:19:00Z,200.0,10.0,33.61\n" +
 "ME_TE_61PF_Q590250317,ME,TE,61PF,Q590250317,28081602,116.295,-45.927,2017-01-22T16:02:00Z,200.0,10.0,34.75\n" +
+"ME_TE_33AW_68942 17,ME,TE,33AW,68942 17,28404309,-9.91,56.86,2017-02-28T15:47:00Z,200.0,10.0,35.33\n" +
 "ME_TE_33PF_Q590480817,ME,TE,33PF,Q590480817,28252348,93.943,-43.403,2017-02-14T06:09:00Z,200.0,10.0,34.67\n" +
 "ME_TE_09PF_Q590424217,ME,TE,09PF,Q590424217,28252286,122.487,-38.964,2017-02-14T22:50:00Z,200.0,10.0,34.73\n" +
-"ME_TE_33AW_68942 17,ME,TE,33AW,68942 17,28404309,-9.91,56.86,2017-02-28T15:47:00Z,200.0,10.0,35.33\n" +
-"ME_DB_33TT_52006 17,ME,DB,33TT,52006 17,28403335,165.1,8.1,2017-03-07T20:00:00Z,200.0,10.0,NaN\n" +
-"ME_BA_09WX_VNVZ 17,ME,BA,09WX,VNVZ 17,28532225,128.767,7.917,2017-03-21T14:29:00Z,200.0,10.0,NaN\n" +
 "ME_TE_33AW_68944 17,ME,TE,33AW,68944 17,28404467,-11.26,57.37,2017-03-04T20:11:00Z,200.0,10.0,35.31\n" +
+"ME_DB_33TT_52006 17,ME,DB,33TT,52006 17,28403335,165.1,8.1,2017-03-07T20:00:00Z,200.0,10.0,NaN\n" +
 "ME_TE_33PF_Q590465217,ME,TE,33PF,Q590465217,28417679,-171.046,-46.9,2017-03-06T18:53:00Z,200.0,10.0,34.71\n" +
 "ME_TE_33PF_Q490166617,ME,TE,33PF,Q490166617,28613687,-135.913,36.571,2017-04-04T06:54:00Z,200.0,10.0,33.88\n" +
 "ME_BA_49TK_7JWN 17,ME,BA,49TK,7JWN 17,28918431,137.0,33.761,2017-05-15T16:50:00Z,200.0,10.0,NaN\n" +
@@ -17220,19 +17217,18 @@ nThreads=1 time=67 47 69
              results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);            
             expected =  //ensure that order is correct
-"station,latitude,longitude,time,wd,wspd,wtmp\n" +
+"station,latitude,longitude,time,wd,wspd,wtmp\n" +   //2019-07-27 results change once in awhile
 ",degrees_north,degrees_east,UTC,degrees_true,m s-1,degree_C\n" +
 "41001,34.675,-72.698,1988-12-12T14:00:00Z,15,10.0,20.4\n" +
 "41001,34.675,-72.698,1990-09-04T19:00:00Z,15,10.0,26.8\n" +
-//"41002,32.309,-75.483,1994-10-17T02:00:00Z,15,10.0,24.6\n" +
-//"41002,32.309,-75.483,1994-10-17T03:00:00Z,15,10.0,24.6\n" +
-//"41002,32.309,-75.483,2013-11-08T23:00:00Z,15,10.0,24.6\n" +
 "41004,32.501,-79.099,1994-12-02T15:00:00Z,15,10.0,22.7\n" +
 "41004,32.501,-79.099,1995-01-29T21:00:00Z,15,10.0,18.8\n" +
 "41004,32.501,-79.099,1996-01-22T10:00:00Z,15,10.0,16.8\n" +
 "41004,32.501,-79.099,2015-02-05T17:00:00Z,15,10.0,20.3\n" +
 "41006,29.3,-77.4,1990-02-13T00:00:00Z,15,10.0,24.2\n" +
-"41008,31.402,-80.869,1997-10-16T10:00:00Z,15,10.0,25.9\n";
+"41008,31.402,-80.869,1997-10-16T10:00:00Z,15,10.0,25.9\n" +
+"41008,31.402,-80.869,2002-10-24T12:00:00Z,15,10.0,24.6\n" +
+"41008,31.402,-80.869,2003-01-12T19:00:00Z,15,10.0,12.4\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         }
@@ -17611,7 +17607,7 @@ String expected =
             String tDatasetID = "testEDDTableCopyFiles_e52a_9290_6c34";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
-            Math2.sleep(20000);
+            Math2.sleep(15000);
             String2.pressEnterToContinue(
                 "\n*** When the tasks are finished, press Enter.");
             edd = oneFromXmlFragment(null, results);
@@ -18062,7 +18058,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 35341816;\n" + //changes
+"    Int32 actual_range 1, 35765154;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18107,7 +18103,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.5591264e+9;\n" + //changes
+"    Float64 actual_range 4.811229e+8, 1.56193914e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18169,7 +18165,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2019-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18540,7 +18536,7 @@ FileVisitorDNLS.debugMode = false;
   500 Internal Server Error - for errors while responding to the request and unexpected errors
 */
 
-        //400 Bad Request: syntax error
+        //test of 400 Bad Request: syntax error
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.csv?time&time==2002-07-06");  // ==
         } catch (Throwable t) {
@@ -18554,24 +18550,20 @@ FileVisitorDNLS.debugMode = false;
 "})", 
             "results=\n" + results + comment);
 
-        //400 Bad Request: Tomcat rejects this (doesn't show in ERDDAP log.txt) 
+        //test of 400 Bad Request: Tomcat rejects this (doesn't show in ERDDAP log.txt) 
         //because of unencoded >, so no dap formatted error and no details. 
         try {
-            results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.csv?time&time%3E2050-01-01&distinct%28%29");
+            results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.csv?time&time>2050-01-01&distinct%28%29");
         } catch (Throwable t) {
             results = t.toString();
         }
-        Test.ensureEqual(results, 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?time&time%3E2050-01-01&distinct%28%29\n" +
-"(Error {\n" +
-"    code=404;\n" +
-"    message=\"Not Found: Your query produced no matching results. " +
-   "(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source " +
-   "min=1970-02-26T20:00:00Z, max=2019-07-01T15:00:00Z, and hasNaN=false.)\";\n" +  //end date changes
-"})", 
+expected = 
+"java.io.IOException: HTTP status code=400 for URL: " +
+"http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?time&time>2050-01-01&distinct%28%29";
+        Test.ensureEqual(results.substring(0, expected.length()), expected,
             "results=\n" + results + comment);
 
-        //400 Bad Request: syntax error: two commas
+        //test of 400 Bad Request: syntax error: two commas
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.csv?time,,stationID&time%3E2050-01-01&distinct%28%29");
         } catch (Throwable t) {
@@ -18585,7 +18577,7 @@ FileVisitorDNLS.debugMode = false;
 "})", 
             "results=\n" + results + comment);
 
-        //400 Bad Request: unsupported file type  (vs 404: emphasis here on syntax error, and permanent error)
+        //test of 400 Bad Request: unsupported file type  (vs 404: emphasis here on syntax error, and permanent error)
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.zztop");
         } catch (Throwable t) {
@@ -18599,7 +18591,7 @@ FileVisitorDNLS.debugMode = false;
 "})", 
             "results=\n" + results + comment);
 
-        //401 Unauthorized
+        //test of 401 Unauthorized
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "noaaOSPv1.html");
         } catch (Throwable t) {
@@ -18613,7 +18605,7 @@ FileVisitorDNLS.debugMode = false;
 "})", 
             "results=\n" + results + comment);
 
-        //404 not found: unknown datasetID (vs 400: emphasis here on correct syntax, but no such resource (perhaps temporary)
+        //test of 404 not found: unknown datasetID (vs 400: emphasis here on correct syntax, but no such resource (perhaps temporary)
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMetzztop.html");
         } catch (Throwable t) {
@@ -18627,23 +18619,24 @@ FileVisitorDNLS.debugMode = false;
 "})", 
             "results=\n" + results + comment);
 
-        //404 not found: No matching results.  (request needs to be percent encoded, else tomcat rejects with 400)
+        //test of 404 not found: No matching results.  (request needs to be percent encoded, else tomcat rejects with 400)
         try {
             results = SSR.getUrlResponseStringNewline(baseRequest + "cwwcNDBCMet.csv?time&time%3E2050-01-01&distinct%28%29");
         } catch (Throwable t) {
             results = t.toString();
         }
-        Test.ensureEqual(results, 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?time&time%3E2050-01-01&distinct%28%29\n" +
+expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?time&time%3E2050-01-01&distinct%28%29\n" +
 "(Error {\n" +
 "    code=404;\n" +
-"    message=\"Not Found: Your query produced no matching results. (No data matches " +
-    "time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, " +
-    "max=2019-07-01T15:00:00Z, and hasNaN=false.)\";\n" + //end date changes
-"})", 
+"    message=\"Not Found: Your query produced no matching results. " +
+    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to ";
+//2019-07-27T20:00:00Z)\";\n" + //end date changes
+//"})", 
+
+        Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);
 
-        //timeout, but not caught by ERDDAP (caught by tomcat? this java?) so not in desired format
+        //test of timeout, but not caught by ERDDAP (caught by tomcat? this java?) so not in desired/testable format
         if (false) {
             String2.log("!!! This next test is very slow (about 5 minutes)!");
             try {

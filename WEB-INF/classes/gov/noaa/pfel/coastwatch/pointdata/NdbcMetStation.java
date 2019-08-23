@@ -19,10 +19,12 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -209,7 +211,7 @@ public class NdbcMetStation  {
      * This changes every month when I get the latest historical data.
      * For the processing on the ~25th, change this to the beginning of this month.
      */
-    public static String firstNearRealTimeData = "2019-06-01T00:00:00";
+    public static String firstNearRealTimeData = "2019-07-01T00:00:00";
     /** Change current year ~Feb 28 when Jan historical files become available. */
     public static String HISTORICAL_FILES_CURRENT_YEAR = "2019";  
 
@@ -414,7 +416,7 @@ public class NdbcMetStation  {
      */
     public static Table readStationTxtUrl(String url, String stationID, 
             float lon, float lat) throws Exception {
-        return readStationTxt(url, SSR.getUrlResponseLines(url), stationID, lon, lat);
+        return readStationTxt(url, SSR.getUrlResponseArrayList(url), stationID, lon, lat);
     }
 
     /**
@@ -424,7 +426,7 @@ public class NdbcMetStation  {
             float lon, float lat) throws Exception {
         //read the file
         String2.log("fullFileName=" + fullFileName);
-        String lines[] = String2.readLinesFromFile(fullFileName, null, 2); 
+        ArrayList<String> lines = String2.readLinesFromFile(fullFileName, null, 1); 
         String shortFileName = File2.getNameAndExtension(fullFileName);
         return readStationTxt(shortFileName, lines, stationID, lon, lat);
     }
@@ -455,38 +457,41 @@ public class NdbcMetStation  {
      * 1hPa = 1000 bar see https://en.wikipedia.org/wiki/Bar_(unit)
      *
      * @param fileName used for diagnostic error messages
-     * @param lines the String[] with the lines from the text file
+     * @param lines the StringArray with the lines from the text file
      * @param stationID 4 or (usually) 5 characters, uppercase.
      *    It will be stored as 5 char, uppercase.
      * @param lon the longitude of the station  (degrees_east)
      * @param lat the latitude of the station  (degrees_north)
      * @return a table, cleaned up   with packed data values
      */
-    public static Table readStationTxt(String fileName, String lines[], 
+    public static Table readStationTxt(String fileName, ArrayList<String> lines, 
             String stationID, float lon, float lat) throws Exception {
 
         String errorInMethod = String2.ERROR + " in NdbcMetStation.readStationTxt\n" +
             "fileName=" + fileName + "\n";
  
-         //ensure column names on line 0
-        int columnNamesLine = String2.lineContaining(lines, " MM DD hh");
-        Test.ensureNotEqual(columnNamesLine, -1, 
+        //ensure column names on line 0
+        int nLines = lines.size();
+        int columnNamesLine = 0;
+        while (columnNamesLine < nLines && lines.get(columnNamesLine).indexOf(" MM DD hh") < 0)
+            columnNamesLine++;
+        Test.ensureNotEqual(columnNamesLine, nLines, 
             errorInMethod + "columnNames not found.\n" +
               "fullFileName=" + fileName + 
-              (lines.length > 1? "\nline 0=" + lines[0] : "") + 
-              (lines.length > 2? "\nline 1=" + lines[1] : "") + 
-              (lines.length > 3? "\nline 2=" + lines[2] : "") + 
-              (lines.length > 4? "\nline 3=" + lines[3] : ""));
+              (nLines > 1? "\nline 0=" + lines.get(0) : "") + 
+              (nLines > 2? "\nline 1=" + lines.get(1) : "") + 
+              (nLines > 3? "\nline 2=" + lines.get(2) : "") + 
+              (nLines > 4? "\nline 3=" + lines.get(3) : ""));
 
         //ensure data starts on line 1 (before March 2007) or 2 (March 2007 and after)
         int dataStartLine = columnNamesLine + 1;
-        while (dataStartLine < lines.length && lines[dataStartLine].startsWith("#"))
+        while (dataStartLine < nLines && lines.get(dataStartLine).startsWith("#"))
             dataStartLine++;
 
         //replace the various mv's with NaN's
-        //if (verbose) String2.log("firstLineBefore=" + lines[dataStartLine]);
+        //if (verbose) String2.log("firstLineBefore=" + lines.get(dataStartLine));
         Pattern pattern = Pattern.compile("\\S [9]+(\\.[0]+)? ");
-        for (int i = dataStartLine; i < lines.length; i++) {
+        for (int i = dataStartLine; i < nLines; i++) {
             //https://www.ndbc.noaa.gov/measdes.shtml#stdmet says
             //"Any data field that contains "9 filled" represents missing data
             //  for that observation hour. (Example: 999.0, 99.0, 99.00)"
@@ -494,25 +499,33 @@ public class NdbcMetStation  {
             //  but he may be not saving BAR
             //I can't use String.replaceAll because the space at end of one pattern
             //  is the space at beginning of next pattern.
-            lines[i] += ' '; //so pattern works in interior and at end
-            Matcher matcher = pattern.matcher(lines[i]);
+            String tline = lines.get(i) + ' '; //so pattern works in interior and at end
+            Matcher matcher = pattern.matcher(tline);
             int matcherPo = 0;
             while (matcher.find(matcherPo)) {
-                lines[i] = lines[i].substring(0, matcher.start() + 1) + //+1: keep the non-space char at beginning of match
-                    " NaN " + lines[i].substring(matcher.end());
+                tline = tline.substring(0, matcher.start() + 1) + //+1: keep the non-space char at beginning of match
+                    " NaN " + tline.substring(matcher.end());
                 matcherPo = matcher.start() + 4;
-                matcher = pattern.matcher(lines[i]);
+                matcher = pattern.matcher(tline);
             }
-            lines[i] = lines[i].replaceAll(" [M]+", " NaN"); //first param is regex
-            lines[i] = lines[i].trim();
+            tline = tline.replaceAll(" [M]+", " NaN"); //first param is regex
+            tline = tline.trim();
+            lines.set(i, tline);
         }
         //if (verbose) String2.log("firstLineAfter =" + lines[dataStartLine]);
 
         //read the data into the table
         Table table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileName, lines, columnNamesLine, dataStartLine, "", 
+        String linesArray[] = lines.toArray(new String[0]);
+        lines = null;
+        String linesString = String2.toNewlineString(linesArray);
+        linesArray = null;
+        table.readASCII(fileName, 
+            new BufferedReader(new StringReader(linesString)),  
+            columnNamesLine, dataStartLine, "", 
             null, null, null, null, true);
+        linesString = null;
         int nRows = table.nRows();
 
         //convert YY (byte) (in some files) to YYYY (short)
@@ -933,25 +946,26 @@ public class NdbcMetStation  {
      */
     public static StringArray getFileList(String url, String regex) throws Exception {
 
-        String[] sar = SSR.getUrlResponseLines(url);
-        int nLines = sar.length;
+        ArrayList<String> sourceSa = SSR.getUrlResponseArrayList(url);
+        int nLines = sourceSa.size();
         StringArray sa = new StringArray();
 
-        //look for pre
+        //look for Parent Directory
         int line = 0;
-        while (line < nLines && (sar[line] == null || sar[line].indexOf("Parent Directory") < 0)) 
+        while (line < nLines && (sourceSa.get(line).indexOf("Parent Directory") < 0)) 
             line++;
         if (line >= nLines)
             return sa;
 
         //gather the text matching regex
         while (line < nLines) {
-            String s = sar[line];
-            if (s != null) 
-                s = String2.extractRegex(s, regex, 0);
-            if (s != null) 
-                sa.add(s);
-            if (sar[line] != null && sar[line].indexOf("</table>") >= 0)
+            String s = sourceSa.get(line);
+            if (s != null) {
+                String ts = String2.extractRegex(s, regex, 0);
+                if (ts != null) 
+                    sa.add(ts);
+            }
+            if (s.indexOf("</table>") >= 0)
                 return sa;
             line++;
         }
@@ -1321,9 +1335,9 @@ public class NdbcMetStation  {
         String stationUrl = "https://www.ndbc.noaa.gov/station_page.php?station=" + 
             lcOfficialStationName;
         if (File2.isFile(htmlFileName)) {
-            lines = String2.readLinesFromFile(htmlFileName, null, 2);
+            lines = String2.readLinesFromFile(htmlFileName, null, 2).toArray(new String[0]);
         } else {
-            lines = SSR.getUrlResponseLines(stationUrl);
+            lines = SSR.getUrlResponseArrayList(stationUrl).toArray(new String[0]);
             Test.ensureEqual(String2.writeToFile(htmlFileName, String2.toNewlineString(lines)), "", "");
         }
         if (verbose) 
@@ -1430,6 +1444,7 @@ public class NdbcMetStation  {
         double lon = Double.NaN;
         String location = lines[ownerLine + 3];
         if        (stationName.equals("41117")) { lat = 30.000; lon =  -81.080;
+        } else if (stationName.equals("41119")) { lat = 33.842; lon =  -78.483; 
         } else if (stationName.equals("41002")) { lat = 32.309; lon =  -75.483; 
         } else if (stationName.equals("42095")) { lat = 24.407; lon =  -81.967; 
         } else if (stationName.equals("46108")) { lat = 59.760; lon = -152.090; 
@@ -1834,6 +1849,7 @@ public class NdbcMetStation  {
                     lcStationName.equals("b040z") ||
                     lcStationName.equals("b058m") ||
                     lcStationName.equals("et01z") ||
+                    lcStationName.equals("f022l") ||
                     lcStationName.equals("misma") ||
                     lcStationName.equals("plsfa") ||
                     lcStationName.equals("q004w") ||
@@ -1891,10 +1907,11 @@ public class NdbcMetStation  {
             String ndbcDirectoryUrl = "https://www.ndbc.noaa.gov/data/historical/stdmet/";
             //String ndbcDirectoryUrl = "https://52.84.246.225/data/historical/stdmet/"; //git bash
             //String ndbcDirectoryUrl = "https://52.84.246.27/data/historical/stdmet/";  //windows 10
-            String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
+            ArrayList<String> lines = SSR.getUrlResponseArrayList(ndbcDirectoryUrl);
             StringArray fileNames = new StringArray();
-            for (int i = 0; i < lines.length; i++) {
-                String extract = String2.extractRegex(lines[i], 
+            int nLines = lines.size();
+            for (int i = 0; i < nLines; i++) {
+                String extract = String2.extractRegex(lines.get(i), 
                     "<a href=\".{4,5}h\\d{4}\\.txt\\.gz\">", 0); //some stations (EBxx) have 4 character IDs
                 if (extract != null)
                     fileNames.add(extract.substring(9, extract.length() - 5));
@@ -1946,11 +1963,12 @@ public class NdbcMetStation  {
                 //"13.35.125.44" +
                 "/data/stdmet/" + 
                 Calendar2.getMonthName3(month) + "/";
-            String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
-            String2.log(String2.toNewlineString(lines));
+            ArrayList<String> lines = SSR.getUrlResponseArrayList(ndbcDirectoryUrl);
+            String2.log(String2.toNewlineString(lines.toArray(new String[0])));
             StringArray fileNames = new StringArray();
-            for (int i = 0; i < lines.length; i++) {
-                String extract = String2.extractRegex(lines[i], 
+            int nLines = lines.size();
+            for (int i = 0; i < nLines; i++) {
+                String extract = String2.extractRegex(lines.get(i), 
                     //in 2006, Jan, July, Aug, Sep names are e.g., 4100112006.txt.gz 
                     // and others are just <5charID>.txt
                     //all current stations have 5 character ID
@@ -2011,10 +2029,11 @@ public class NdbcMetStation  {
 
         //get the names of the available real time standard meteorological files
         //search for e.g., "<a href="42OTP.txt">"
-        String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
+        ArrayList<String> lines = SSR.getUrlResponseArrayList(ndbcDirectoryUrl);
         StringArray stationNames = new StringArray();
-        for (int i = 0; i < lines.length; i++) {
-            String extract = String2.extractRegex(lines[i], "<a href=\".{5}\\.txt\">", 0); //all current stations have 5 character ID
+        int nLines = lines.size();
+        for (int i = 0; i < nLines; i++) {
+            String extract = String2.extractRegex(lines.get(i), "<a href=\".{5}\\.txt\">", 0); //all current stations have 5 character ID
             if (extract != null)
                 stationNames.add(extract.substring(9, extract.length() - 6));
         }
@@ -2471,27 +2490,27 @@ public class NdbcMetStation  {
         //  https://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day   //top line has precedence
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2019 06 01 01 20 230 10.0 12.0   0.7     4   3.3 251 1015.2  11.6  10.9  10.6   MM   MM    MM
-        //2019 06 01 00 50 240 10.0 11.0   0.7     3   3.4 265 1015.7  11.9  11.0  10.6   MM -1.7    MM
-        seconds = Calendar2.isoStringToEpochSeconds("2019-06-01T01"); //50 min rounds to next hour; usually test 01T01
+        //2019 07 01 01 20 260  5.0  6.0    MM    MM    MM  MM 1018.0  14.4  12.5  11.6   MM   MM    MM
+        //2019 07 01 00 50 250  5.0  6.0    MM    MM    MM  MM 1018.1  14.3  12.5  12.2   MM -1.6    MM
+        seconds = Calendar2.isoStringToEpochSeconds("2019-07-01T01"); //50 min rounds to next hour; usually test 01T01
         row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getDoubleData(wdIndex, row), 230, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 10f, "");
-        Test.ensureEqual(table.getFloatData(gstIndex, row), 12f, "");    
-        Test.ensureEqual(table.getFloatData(wvhtIndex, row), 0.7f, ""); 
-        Test.ensureEqual(table.getFloatData(dpdIndex, row), 4, ""); 
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 3.3f, "");
-        Test.ensureEqual(table.getFloatData(mwdIndex, row), 251, "");  
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1015.2f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 11.6f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 10.9f, "");
-        Test.ensureEqual(table.getFloatData(dewpIndex, row), 10.6f, "");
+        Test.ensureEqual(table.getDoubleData(wdIndex, row), 260, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 5f, "");
+        Test.ensureEqual(table.getFloatData(gstIndex, row), 6f, "");    
+        Test.ensureEqual(table.getFloatData(wvhtIndex, row), Float.NaN, ""); 
+        Test.ensureEqual(table.getFloatData(dpdIndex, row), Float.NaN, ""); 
+        Test.ensureEqual(table.getFloatData(apdIndex, row), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(mwdIndex, row), Float.NaN, "");  
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1018f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 14.4f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 12.5f, "");
+        Test.ensureEqual(table.getFloatData(dewpIndex, row), 11.6f, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
-        Test.ensureEqual(table.getFloatData(ptdyIndex, row), -1.7f, "");
+        Test.ensureEqual(table.getFloatData(ptdyIndex, row), -1.6f, "");
         Test.ensureEqual(table.getFloatData(tideIndex, row), Float.NaN, ""); //(float)Math2.roundTo(3.0 * Math2.meterPerFoot, decimalDigits[tideIndex]), "");
 
         String2.log("test46088 was successful");
@@ -2526,26 +2545,26 @@ public class NdbcMetStation  {
         //top row has precedence, but not if file already had lower row of data
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2019 06 25 20 20  MM  0.0  1.0   0.2    MM   4.0  MM 1011.6  13.9  13.6  10.8   MM   MM    MM
-        //2019 06 25 19 50  MM  0.0  1.0   0.2    MM   4.4  MM 1011.8  13.4  13.3  10.8   MM +0.0    MM
-        double seconds = Calendar2.isoStringToEpochSeconds("2019-06-25T20"); //rounded
+        //2019 07 26 12 20 250  2.0  2.0    MM    MM    MM  MM 1016.9  12.4  11.9  12.4   MM   MM    MM
+        //2019 07 26 11 50 260  2.0  3.0    MM    MM    MM  MM 1016.9  12.4  11.8  12.4   MM +0.0    MM
+        double seconds = Calendar2.isoStringToEpochSeconds("2019-07-26T12"); //rounded
         int row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureTrue(row >= 0, "row=" + row);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getFloatData(wdIndex, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 0f, "");
-        Test.ensureEqual(table.getFloatData(gstIndex, row), 1f, "");
-        Test.ensureEqual(table.getFloatData(wvhtIndex, row), .2f, "");
+        Test.ensureEqual(table.getFloatData(wdIndex, row), 250, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 2f, "");
+        Test.ensureEqual(table.getFloatData(gstIndex, row), 2f, "");
+        Test.ensureEqual(table.getFloatData(wvhtIndex, row), Float.NaN, "");
         Test.ensureEqual(table.getFloatData(dpdIndex, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 4f, "");
+        Test.ensureEqual(table.getFloatData(apdIndex, row), Float.NaN, "");
         Test.ensureEqual(table.getFloatData(mwdIndex, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1011.6f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 13.9f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 13.6f, "");
-        Test.ensureEqual(table.getFloatData(dewpIndex, row), 10.8f, "");
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1016.9f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 12.4f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 11.9f, "");
+        Test.ensureEqual(table.getFloatData(dewpIndex, row), 12.4f, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
         Test.ensureEqual(table.getFloatData(ptdyIndex, row), 0f, "");
         Test.ensureEqual(table.getFloatData(tideIndex, row), Float.NaN, "");//(float)Math2.roundTo(3.0 * Math2.meterPerFoot, decimalDigits[tideIndex]), "");
@@ -2768,6 +2787,35 @@ public class NdbcMetStation  {
         String2.log("testTAML1 was successful");
     }
 
+    /** This compares the data in 2 .nc files. 
+     * @return true if same
+     */
+    public static boolean compareCommonRows(String fileName1, String fileName2) throws Exception {
+        String2.log("\n*** NdbcMetStation.compareCommonRows\n  " + fileName1 + "\n  " + fileName2);
+        Table table1 = new Table();
+        Table table2 = new Table();
+        table1.read4DNc(fileName1, null, 0, ID_NAME, 4); //standardizeWhat=0
+        table2.read4DNc(fileName2, null, 0, ID_NAME, 4); //standardizeWhat=0
+        int nRows = Math.min(table1.nRows(), table2.nRows());
+        int nCols = table1.nColumns();
+        String2.log("nRows=" + nRows + " nCols=" + nCols);
+        boolean equal = true;
+        for (int col = 0; col < nCols; col++) {
+            PrimitiveArray pa1 = table1.getColumn(col);
+            PrimitiveArray pa2 = table2.getColumn(col);
+            pa1.removeRange(nRows, pa1.size());
+            pa2.removeRange(nRows, pa2.size());
+            String result = pa1.testEquals(pa2);
+            if (result.length() > 0) {
+                String2.log("col=" + col + ": " + result);
+                equal = false;
+            }
+        }
+        return equal;
+    }
+
+        
+
 
     /**
      * This is used for maintenance and testing of this class.
@@ -2826,21 +2874,21 @@ public class NdbcMetStation  {
         //historical monthly files are from: https://www.ndbc.noaa.gov/data/stdmet/<month3Letter>/  e.g., Jan
         //!!!!**** Windows GUI My Computer doesn't show all the files in the directory! 
         //  Use DOS window "dir" or Linux ls instead of the GUI.
-        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir); //time varies, last done 2019-06-25
+        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir); //time varies, last done 2019-07-25
         //if (true) return;
 
         // 3) *** get latest 45 day files
         //DON'T download45DayTextFiles after 45 days after last historicalTxt date.
-        //download45DayTxtFiles(ndbc45DayTxtDir);  //15-30 minutes, last done 2019-06-25
+        //download45DayTxtFiles(ndbc45DayTxtDir);  //15-30 minutes, last done 2019-07-25
 
         // 4) *** Make the nc files
         //!!!!**** EACH MONTH, SOME TESTS NEED UPDATING: SEE "UPDATE_EACH_MONTH"
         //no station info for a station?  search for "no station info" above
         // or lat lon available? search for "get the lat and lon" above
-        boolean testMode = false;  //I used to always run 'true' then run 'false', but not usually now    
+        boolean testMode = true;  //I used to always run 'true' then run 'false', but not usually now    
         String ignoreStationsBefore = " "; //use " " to process all stations   or lowercase characters to start in middle
-        //makeSeparateNcFiles(ndbcStationHtmlDir, ndbcHistoricalTxtDir, ndbc45DayTxtDir, 
-        //    ndbcNcDir, ignoreStationsBefore, testMode); //M4700 ~2 hrs, was ~3 hrs  //last done 2019-06-25
+        makeSeparateNcFiles(ndbcStationHtmlDir, ndbcHistoricalTxtDir, ndbc45DayTxtDir, 
+            ndbcNcDir, ignoreStationsBefore, testMode); //M4700 ~2 hrs, was ~3 hrs  //last done 2019-07-25
         test31201Nc(ndbcNcDir);
         test41009Nc(ndbcNcDir);
         test41015Nc(ndbcNcDir);
@@ -2858,7 +2906,7 @@ public class NdbcMetStation  {
         //(5 days takes 12 minutes)
         //but 45 is more likely to get more information (if needed and if available)
         //(45 days takes 25 minutes)
-        testMode = false; //always run 'true' then run 'false'   
+        testMode = true; //always run 'true' then run 'false'   
         //addLastNDaysInfo(ndbcNcDir, 5, testMode);  //5 or 45
         //!!!!**** EACH MONTH, THIS TEST NEED UPDATING
         test46088AddLastNDaysNc(ndbcNcDir); 

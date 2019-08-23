@@ -4,19 +4,21 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.HeadBucketRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -39,6 +41,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
@@ -46,11 +49,15 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
@@ -85,6 +92,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     //not that . doesn't match line terminator characters!
     public final static String  TT_REGEX         = "<tt>.*</tt>";
 
+    public static String keepGoing = "FileVisitorDNLS caught an Exception but is continuing and returning the info it has: ";
+
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not by changing the code here)
@@ -99,8 +108,21 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public final static String NAME         = "name";
     public final static String LASTMODIFIED = "lastModified";
     public final static String SIZE         = "size";
+    public final static String DNLS_COLUMN_NAMES[]      = {DIRECTORY, NAME,     LASTMODIFIED, SIZE};
+    public final static String DNLS_COLUMN_TYPES_SSLL[] = {"String",  "String", "long",       "long"};
 
     public final static String URL          = "url"; //in place of directory for oneStepAccessibleViaFiles
+
+    /** For working files. Set here but reset by EDStatic to be bigParentDir/dataset/_FileVisitorDNLS/ . */
+    public static String FILE_VISITOR_DIRECTORY = null;
+    static {
+        try {
+            FILE_VISITOR_DIRECTORY = File2.getSystemTempDirectory() + "_FileVisitor/";
+        } catch (Exception e) {
+            String2.log(String2.ERROR + " while creating _FileVisitor directory:\n" + 
+                MustBe.throwableToString(e));
+        }
+    }
 
     /** pruneCache is a mini system to keep track of the total size of files in a cache
       and periodically prune the cache (remove old files) until total size is 
@@ -259,6 +281,29 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return table;
     }
 
+    /**
+     * This makes an empty table with urls (not names) and doubles and metadata. 
+     */
+    public static Table makeEmptyTableWithUrlsAndDoubles() {
+        //"url,name,lastModified,size\n" +
+        //"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421272444E9,46482.0\n" +
+        Table sourceTable = new Table();
+        sourceTable.addColumn(0,  FileVisitorDNLS.URL,          new StringArray(), new Attributes()
+            .add("ioos_category", "Identifier")
+            .add("long_name",     "URL"));
+        sourceTable.addColumn(1,  FileVisitorDNLS.NAME,         new StringArray(), new Attributes()
+            .add("ioos_category", "Identifier")
+            .add("long_name",     "File Name"));
+        sourceTable.addColumn(2,  FileVisitorDNLS.LASTMODIFIED, new DoubleArray(), new Attributes()
+            .add("ioos_category", "Time")
+            .add("long_name",     "Last Modified")
+            .add("units",         "seconds since 1970-01-01T00:00:00Z"));
+        sourceTable.addColumn(3,  FileVisitorDNLS.SIZE,         new DoubleArray(), new Attributes()
+            .add("ioos_category", "Other")
+            .add("long_name",     "Size")
+            .add("units",         "bytes"));
+        return sourceTable;
+    }
 
 
     /**
@@ -285,58 +330,118 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public static Table oneStep(String tDir, String tFileNameRegex, boolean tRecursive,
         String tPathRegex, boolean tDirectoriesToo) throws IOException {
         long time = System.currentTimeMillis();
+        if (!String2.isSomething(tPathRegex))
+            tPathRegex = ".*";
 
         //is tDir an http URL?
         if (tDir.matches(FileVisitorDNLS.HTTP_REGEX)) {
 
             //Is it an S3 bucket with "files"?
             //If testing a "dir", url should have a trailing slash.
-            //S3 gives precise time and lastModified
+            //S3 gives precise file size and lastModified
             Matcher matcher = AWS_S3_PATTERN.matcher(File2.addSlash(tDir)); //force trailing slash
             if (matcher.matches()) {
+                //it matches with /, so actually add it (if not already there)
+                tDir = File2.addSlash(tDir);
+
                 //http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
                 //If files have file-system-like names, e.g., 
-                //  http://bucketname.s3.amazonaws.com/dir1/dir2/fileName.ext)
-                //  http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
-                //  you still can't request just dir2 info because they aren't directories.
+                //  url=http://bucketname.s3.region.amazonaws.com/  key=dir1/dir2/fileName.ext
+                //  e.g., http://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
                 //  They are just object keys with internal slashes. 
                 //So specify prefix in request.
+                Pattern fileNameRegexPattern = Pattern.compile(tFileNameRegex);
+                Pattern pathRegexPattern = Pattern.compile(tPathRegex);
                 Table table = makeEmptyTable();
                 StringArray directoryPA    = (StringArray)table.getColumn(DIRECTORY);
                 StringArray namePA         = (StringArray)table.getColumn(NAME);
                 LongArray   lastModifiedPA = (  LongArray)table.getColumn(LASTMODIFIED);
                 LongArray   sizePA         = (  LongArray)table.getColumn(SIZE);
 
-                String bucketName = matcher.group(1); 
-                String prefix = matcher.group(2); 
-                String baseURL = tDir.substring(0, matcher.start(2));
-                AmazonS3 s3client = new AmazonS3Client(new ProfileCredentialsProvider());
-                try {
-                    if (verbose) 
-                        String2.log("FileVisitorDNLS.oneStep getting info from AWS S3 at" + 
-                            "\nURL=" + tDir);
-                            //"\nbucket=" + bucketName + " prefix=" + prefix);
+                //results may be slow (>12 hours) and huge (>10GB).
+                //So, if >10000 files, accumulate results to a temporary jsonlCSV file 
+                //(not in memory) and read when done.
+                String dnlsFileName = FILE_VISITOR_DIRECTORY +
+                    String2.modifyToBeFileNameSafe(tDir) + 
+                    Calendar2.getCompactCurrentISODateTimeStringLocal() + "_" + 
+                    Math2.random(1000) + ".jsonlCsv";
+                boolean writtenToFile = false;
 
-                    //I wanted to generate lastMod for dir based on lastMod of files
-                    //but it would be inconsistent for different requests (recursive, fileNameRegex).
-                    //so just a set of dir names.
-                    HashSet<String> dirHashSet = new HashSet(); 
-                    ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                        .withBucketName(bucketName)
-                        .withPrefix(prefix);
-                    ObjectListing objectListing;                     
+                String bucketName = matcher.group(1); 
+                String region     = matcher.group(2); 
+                String prefix     = matcher.group(3); 
+                String baseURL = tDir.substring(0, matcher.start(3));
+                if (verbose) 
+                    String2.log("FileVisitorDNLS.oneStep getting info from AWS S3 at" + 
+                        "\nURL=" + tDir);
+                        //"\nbucket=" + bucketName + " prefix=" + prefix);
+
+                //This code is from https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
+                //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3ClientBuilder.html
+                AmazonS3 s3client = AmazonS3ClientBuilder.standard()
+                    .withCredentials(new ProfileCredentialsProvider())
+                    .withRegion(region)  //com.amazonaws.regions.Regions.DEFAULT_REGION) //since I want code to be able to run from anywhere
+                    .build();               
+
+                //I wanted to generate lastMod for dir based on lastMod of files
+                //but it would be inconsistent for different requests (recursive, fileNameRegex).
+                //so just a set of dir names.
+                //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/ListObjectsV2Request.html
+                HashSet<String> dirHashSet = new HashSet(); 
+                ListObjectsV2Request req = new ListObjectsV2Request()
+                    .withBucketName(bucketName)
+                    .withPrefix(prefix)
+                    //I read (not in these docs) 1000 is max. 
+                    //For me, 1000 or 100000 returns ~1000 for first few responses, then ~100 for subsequent !
+                    //so getting a big bucket's contents takes ~12 hours on a non-Amazon network
+                    .withMaxKeys(10000); //be optimistic
+
+                if (!tRecursive)
+                    req = req.withDelimiter("/"); //Using it just gets files in this dir (not subdir)
+
+                ListObjectsV2Result result = null;
+                int chunk = 0;
+
+                try {
                     do {
-                        objectListing = s3client.listObjects(listObjectsRequest);
-                        for (S3ObjectSummary objectSummary : 
-                            objectListing.getObjectSummaries()) {
+                        chunk++;
+                        int nTry = 0;
+                        while (nTry <= 3) {
+                            String msg = ">> calling s3client.listObjects chunk#" + chunk + " try#" + nTry;
+                            try {
+                                nTry++;
+                                if (debugMode) String2.log(msg);
+                                result = s3client.listObjectsV2(req);
+                                break;  //success
+                            } catch (Exception ev2) {
+                                //try again
+                                String2.log((debugMode? "" : msg + "\n") +
+                                    "caught error (will try again):\n" + MustBe.throwableToString(ev2));
+                                Math2.sleep(5000);
+                            }
+                        }
+
+                        //get common prefixes
+                        if (tDirectoriesToo) {
+                            List<String> list = result.getCommonPrefixes();
+                            int tn = list.size();
+                            for (int i = 0; i < tn; i++) {
+                                String td2 = baseURL + list.get(i); //list.get(i)= e.g., BCSD/
+                                dirHashSet.add(td2);
+                                //String2.log(">> add dir=" + td2);
+                            }                          
+                        }
+
+                        for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
                             String keyFullName = objectSummary.getKey();
                             String keyDir = File2.getDirectory(baseURL + keyFullName);
                             String keyName = File2.getNameAndExtension(keyFullName);
-                            if (debugMode) String2.log("keyFullName=" + keyFullName +
-                                "\nkeyDir=" + keyDir +
-                                "\n  tDir=" + tDir);
-                            if (keyDir.startsWith(tDir) && //it should
-                                (tRecursive || keyDir.length() == tDir.length())) {
+                            boolean matchesPath = keyDir.startsWith(tDir) && //it should
+                                ((keyDir.length() == tDir.length() ||
+                                  tRecursive && pathRegexPattern.matcher(keyDir).matches()));
+                            if (debugMode) String2.log(">> key=" + keyFullName);
+                                //+ "\n>> matchesPathRegex=" + matchesPath);
+                            if (matchesPath) {
 
                                 //store this dir
                                 if (tDirectoriesToo) {
@@ -354,11 +459,11 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                                 }
 
                                 //store this file's information
-                                //Sometimes directories appear as files are named "" with size=0.
+                                //Sometimes directories appear as files named "" with size=0.
                                 //I don't store those as files.
-                                if (debugMode) String2.log("keyName=" + keyFullName +
-                                          "\n tFileNameRegex=" + tFileNameRegex + " matches=" + keyName.matches(tFileNameRegex));
-                                if (keyName.length() > 0 && keyName.matches(tFileNameRegex)) {
+                                boolean matches = keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
+                                //if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" + matches);
+                                if (matches) {
                                     directoryPA.add(keyDir);
                                     namePA.add(keyName);
                                     lastModifiedPA.add(objectSummary.getLastModified().getTime()); //epoch millis
@@ -366,30 +471,62 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                                 }
                             }
                         }
-                        listObjectsRequest.setMarker(objectListing.getNextMarker());
-                    } while (objectListing.isTruncated());
+                        String token = result.getNextContinuationToken();
+                        req.setContinuationToken(token);
 
-                    //add directories to the table
-                    if (tDirectoriesToo) {
-                        Iterator<String> it = dirHashSet.iterator();
-                        while (it.hasNext()) {
-                            directoryPA.add(it.next());
-                            namePA.add("");
-                            lastModifiedPA.add(Long.MAX_VALUE); 
-                            sizePA.add(Long.MAX_VALUE);
+                        //write a chunk to file?
+                        if ((result.isTruncated() && table.nRows() > 10000) ||  //write a chunk
+                            (!result.isTruncated() && writtenToFile)) {         //write final chunk
+                            if (!writtenToFile)
+                                File2.makeDirectory(File2.getDirectory(dnlsFileName));  //ensure dir exists
+                            table.writeJsonlCSV(dnlsFileName, writtenToFile? true : false); //append
+                            table.removeAllRows();
+                            writtenToFile = true;
                         }
-                    }
 
-                    table.leftToRightSortIgnoreCase(2);
-                    return table;
+                    } while (result.isTruncated());
+
+                    //read the file
+                    if (writtenToFile) {
+                        table = new Table();
+                        table.readJsonlCSV(dnlsFileName, null, null, false); //simplify
+                        int col = table.findColumnNumber(LASTMODIFIED);
+                        table.setColumn(col, new LongArray(table.getColumn(col)));
+                        col = table.findColumnNumber(SIZE);
+                        table.setColumn(col, new LongArray(table.getColumn(col)));
+                        //if no error:
+                        File2.delete(dnlsFileName);
+                    } //else use table as is
 
                 } catch (AmazonServiceException ase) {
-                    throw new IOException("AmazonServiceException: " + 
+                    String msg = keepGoing + "AmazonServiceException: " + 
                         ase.getErrorType() + " ERROR, HTTP Code=" + ase.getStatusCode() + 
-                        ": " + ase.getMessage(), ase);
-                } catch (AmazonClientException ace) {
-                    throw new IOException(ace.getMessage(), ace);
+                        ": " + ase.getMessage();
+                    String2.log(MustBe.throwable(msg, ase));
+                    //Bob is testing: don't throw. Return what you have.
+                    //throw new IOException(, ase);
+                } catch (SdkClientException sce) {
+                    String2.log(MustBe.throwable(keepGoing + sce.getMessage(), sce));
+                    //Bob is testing: don't throw. Return what you have.
+                    //throw new IOException(keepGoing + sce.getMessage(), sce);
+                } catch (Exception e) {
+                    throw new IOException(e);
                 }
+
+                //add directories to the table
+                if (tDirectoriesToo) {
+                    Iterator<String> it = dirHashSet.iterator();
+                    while (it.hasNext()) {
+                        directoryPA.add(it.next());
+                        namePA.add("");
+                        lastModifiedPA.add(Long.MAX_VALUE); 
+                        sizePA.add(Long.MAX_VALUE);
+                    }
+                }
+
+                table.leftToRightSortIgnoreCase(2);
+                return table;
+
             }
 
             //HYRAX before THREDDS
@@ -731,10 +868,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 long originalTimeSafe = System.currentTimeMillis() - PRUNE_CACHE_SAFE_MILLIS; 
                 int nRows = table.nRows();
                 table.sort(new String[]{LASTMODIFIED}, new boolean[]{false}); //ascending=false
-                String dirAr[]   = ((StringArray)table.getColumn(DIRECTORY)).array;
-                String nameAr[]  = ((StringArray)table.getColumn(NAME)).array;
-                long lastModAr[] = ((LongArray)table.getColumn(LASTMODIFIED)).array;
-                long sizeAr[]    = ((LongArray)table.getColumn(SIZE)).array;
+                StringArray dirSA  = (StringArray)table.getColumn(DIRECTORY);
+                StringArray nameSA = (StringArray)table.getColumn(NAME);
+                long lastModAr[]   = ((LongArray)table.getColumn(LASTMODIFIED)).array;
+                long sizeAr[]      = ((LongArray)table.getColumn(SIZE)).array;
 
                 //calcuate correct currentCacheSizeB
                 currentCacheSizeB = 0;  
@@ -764,13 +901,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     if (debugMode) String2.log("& pruneCache look at row=" + row);
 
                     //be as thread-safe as reasonably possible
-                    String localFullName = String2.canonical(dirAr[row] + nameAr[row]);
+                    String localFullName = String2.canonical(dirSA.get(row) + nameSA.get(row));
                     synchronized (localFullName) {
                         long lastMod = File2.getLastModified(localFullName);  //in case changed very recently
                         long currentTimeSafe = System.currentTimeMillis() - PRUNE_CACHE_SAFE_MILLIS; //up-to-date
                         if (lastMod < currentTimeSafe) {  //file is old
-                            if (debugMode) String2.log("& pruneCache DELETING " + dirAr[row] + nameAr[row]);
-                            if (File2.simpleDelete(dirAr[row] + nameAr[row])) //simple because may be in use!
+                            if (debugMode) String2.log("& pruneCache DELETING " + localFullName);
+                            if (File2.simpleDelete(localFullName)) //simple because may be in use!
                                 currentCacheSizeB -= sizeAr[row];
                         }
                     }
@@ -2538,6 +2675,9 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      * Your S3 credentials must be in 
      * <br> ~/.aws/credentials on Linux, OS X, or Unix
      * <br> C:\Users\USERNAME\.aws\credentials on Windows
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
      * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
      * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
      */
@@ -2551,60 +2691,142 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         long time;
         int n;
         String results, expected;
-        String parent = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+        //this works in browser: http://nasanex.s3.us-west-2.amazonaws.com
+        //the full parent here doesn't work in a browser.
+        //But ERDDAP knows that "nasanex" is the bucket name and 
+        //  "NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/" is the prefix.
+        //See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
+        String parent = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
         String child = "CONUS/";
         String pathRegex = null;
 
+/* for releases, this line should have open/close comment */
+        {
+
+            //!recursive and dirToo
+            table = oneStep(
+                "https://nasanex.s3.us-west-2.amazonaws.com", 
+                ".*", false, ".*", true); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+            results = table.dataToString();
+            expected = 
+"directory,name,lastModified,size\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/AVHRR/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/CMIP5/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/Landsat/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/LOCA/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/MAIAC/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/MODIS/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NAIP/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-GDDP/,,,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //!recursive and dirToo
+            table = oneStep(
+                "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/", 
+                ".*", false, ".*", true); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+            results = table.dataToString();
+            expected = 
+"directory,name,lastModified,size\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,1380418295000,35\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/CONTRIB/,,,\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/NEX-quartile/,,,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //!recursive and !dirToo
+            table = oneStep(
+                "https://nasanex.s3.us-west-2.amazonaws.com", 
+                ".*", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+            results = table.dataToString();
+            expected = 
+"directory,name,lastModified,size\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //!recursive and !dirToo
+            table = oneStep(
+                "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/", 
+                ".*", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+            results = table.dataToString();
+            expected = 
+"directory,name,lastModified,size\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,1380418295000,35\n" +
+"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //recursive and dirToo
+            table = oneStep(parent, ".*\\.nc", true, pathRegex, true); 
+            results = table.dataToString();
+            expected = 
+    "directory,name,lastModified,size\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+            if (expected.length() > results.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //recursive and !dirToo
+            table = oneStep(parent, ".*\\.nc", true, pathRegex, false);
+            results = table.dataToString();
+            expected = 
+    "directory,name,lastModified,size\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+            if (expected.length() > results.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //!recursive and dirToo
+            table = oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
+            results = table.dataToString();
+            expected = 
+    "directory,name,lastModified,size\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+            if (expected.length() > results.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //!recursive and !dirToo
+            table = oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
+            results = table.dataToString();
+            expected = 
+    "directory,name,lastModified,size\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+            if (expected.length() > results.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        } /* */
+
         //recursive and dirToo
+        //reallyVerbose = true;
+        //debugMode = true;
+        parent = "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/";
+        pathRegex = ".*"; 
         table = oneStep(parent, ".*\\.nc", true, pathRegex, true); 
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/,,,\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,,,\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381637189_e20183381639562_c20183381639596.nc,1543941659000,9269699\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381642189_e20183381644502_c20183381644536.nc,1543942123000,9585452\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381647189_e20183381649562_c20183381649596.nc,1543942279000,9894495\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381652189_e20183381654562_c20183381654595.nc,1543942520000,10195765\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        //recursive and !dirToo
-        table = oneStep(parent, ".*\\.nc", true, pathRegex, false);
-        results = table.dataToString();
-        expected = 
-"directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
-        if (expected.length() > results.length()) 
-            String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-        //!recursive and dirToo
-        table = oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
-        results = table.dataToString();
-        expected = 
-"directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
-        if (expected.length() > results.length()) 
-            String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-        //!recursive and !dirToo
-        table = oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
-        results = table.dataToString();
-        expected = 
-"directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
-        if (expected.length() > results.length()) 
-            String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
 
@@ -2876,9 +3098,10 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
                     " nLinesMatched=" + nLinesMatched);
             try {
                 String fullName = dirs.get(filei) + names.get(filei);
-                String lines[] = SSR.getUrlResponseLines(fullName);
-                for (int linei = 0; linei < lines.length; linei++) {
-                    Matcher matcher = linePattern.matcher(lines[linei]);
+                ArrayList<String> lines = SSR.getUrlResponseArrayList(fullName);
+                int nLines = lines.size();
+                for (int linei = 0; linei < nLines; linei++) {
+                    Matcher matcher = linePattern.matcher(lines.get(linei));
                     if (matcher.matches()) {
                         nLinesMatched++;
                         if (lastFileiMatch != filei) {
@@ -2893,10 +3116,10 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
                             String msg = "\n***** Found match in fileName#" + filei + 
                                 "=" + fullName + " on line#" + linei;
                             String2.log(msg + ". File contents="); 
-                            String2.log(String2.toNewlineString(lines));
+                            String2.log(String2.toNewlineString(lines.toArray(new String[0])));
                             String2.log("\n" + msg + ":\n");
-                            for (int tl = linei; tl < Math.min(linei + interactiveNLines + 1, lines.length); tl++)
-                                String2.log(lines[tl]);
+                            for (int tl = linei; tl < Math.min(linei + interactiveNLines + 1, nLines); tl++)
+                                String2.log(lines.get(tl));
                             String2.pressEnterToContinue();
                         } else if (tallyWhich < 0) {
                             return firstFullName;
@@ -3193,6 +3416,90 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
     }
 
 
+    /** 
+     * A variant of reduceDnlsTableToOneDir that doesn't use subdirHash
+     * and returns the sorted subDir short names as a String[].
+     */
+    public static String[] reduceDnlsTableToOneDir(Table dnlsTable, String oneDir) {
+        HashSet<String> subdirHash = new HashSet();
+        reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
+
+        String subDirs[] = (String[])(subdirHash.toArray(new String[0]));
+        Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
+        return subDirs;
+    }
+
+    /** 
+     * This prunes a DNLS table so that it just includes file entries from one directory
+     * and returns subDirs (the short names, e.g., mySubDir) .
+     * This just looks at and works with col#0=directory and col#1=name.
+     * This doesn't look at or use lastModified or size, so they can be doubles or longs (or anything).
+     * 
+     * @param dnlsTable Before, it will have file entries (and optionally, dir entries).
+     *   Afterwards, the dnlsTable will have just 1 value in directory column (oneDir)
+     *   and will be sorted by the name column.
+     * @param oneDir the full path name (ending in slash) of the directory to be matched 
+     * @param subdirHash to collect (additional) subsir (short) names. 
+     */
+    public static void reduceDnlsTableToOneDir(Table dnlsTable, String oneDir, HashSet<String> subdirHash) {
+        int nRows = dnlsTable.nRows();
+        if (nRows == 0)
+            return;
+        char separator = oneDir.indexOf('\\') >= 0? '\\' : '/';
+        StringArray dirSA  = (StringArray)dnlsTable.getColumn(0);
+        StringArray nameSA = (StringArray)dnlsTable.getColumn(1);
+        int oneDirLength = oneDir.length();
+        BitSet keep = new BitSet(nRows);  //all false
+        for (int row = 0; row < nRows; row++) {
+            String tDir = dirSA.get(row);
+            if (tDir.startsWith(oneDir)) {
+                if (tDir.length() == oneDirLength) {
+                    if (nameSA.get(row).length() > 0) 
+                        keep.set(row);
+                } else { //tDir startsWith(oneDir) but is longer
+                    //add next-level directory name
+                    subdirHash.add(tDir.substring(oneDirLength, tDir.indexOf(separator, oneDirLength))); 
+                }
+            }
+        }
+        dnlsTable.justKeep(keep);
+        dnlsTable.sortIgnoreCase(new int[]{1}, new boolean[]{true});
+        //String2.log(">> reduceDnlsTabletoOneDir nRows=" + dnlsTable.nRows() + " nSubdir=" + subdirHash.size());
+    }
+   
+    /** 
+     * This tests reduceDnlsTableToOneDir(). 
+     */
+    public static void testReduceDnlsTableToOneDir() throws Exception {
+        String2.log("\n*** FileVisitorDNLS.testReduceDnlsTableToOneDir\n");
+        String tableString = 
+            "directory, name, lastModified, size\n" +
+            "/u00/, , , \n" +
+            "/u00/, nothing, 60, 1\n" +
+            "/u00/a/, , , \n" +
+            "/u00/a/, AA, 60, 2\n" +
+            "/u00/a/, A, 60, 3\n" +
+            "/u00/a/q/,  ,   , \n" +
+            "/u00/a/q/, D, 60, 4\n" +
+            "/u00/a/b/, B, 60, 5\n" +
+            "/u00/a/b/c/, C, 60, 6\n";
+        Table table = new Table();
+        table.readASCII("testReduceDnlsTableToOneDir", 
+            new BufferedReader(new StringReader(tableString)),
+            0, 1, ",", null, null, null, null, true);
+        String subDirs[] = reduceDnlsTableToOneDir(table, "/u00/a/");
+
+        String results = table.dataToString();
+        String expected = 
+"directory,name,lastModified,size\n" +
+"/u00/a/,A,60,3\n" +   //files are sorted, dirs are removed
+"/u00/a/,AA,60,2\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = String2.toCSSVString(subDirs);
+        expected = "b, q";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+    }
 
    /**
      * This is used for testing this class.
@@ -3234,6 +3541,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         testMakeTgz();
         testOneStepToString();
         testPathRegex();
+        testReduceDnlsTableToOneDir();
         /* */
 
         //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
