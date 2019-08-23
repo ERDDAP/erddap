@@ -1,18 +1,17 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
+ * Copyright (c) 2019 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
  * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
-package com.cohort.array;
+package com.cohort.util;
 
 import java.util.Comparator;
 
 /**
  * This is used by StringArray to do a case-insensitive sort 
  * (better than String.CASE_INSENSITIVE_ORDER).
- * 2013-12-30 Bob modified this to work with any type of object (via o.toString()), not just Strings.
  */
-public class StringComparatorIgnoreCase implements Comparator {
+public class StringHolderComparatorIgnoreCase implements Comparator {
 
 
     /**
@@ -28,15 +27,7 @@ public class StringComparatorIgnoreCase implements Comparator {
     public int compare(Object o1, Object o2) {
         if (o1 == null)
             return o2 == null? 0 : -1;
-        if (o2 == null) 
-            return 1;
-        String s1 = o1.toString(); //as opposed to (String)o1, this works with many object types
-        String s2 = o2.toString();
-//        int c = s1.toUpperCase().compareTo(s2.toUpperCase());
-        int c = s1.compareToIgnoreCase(s2);
-        if (c != 0) 
-            return c;
-        return s1.compareTo(s2); //be nice and sort case-sensitive
+        return ((StringHolder)o1).compareToIgnoreCase((StringHolder)o2);
     }
 
     /**
@@ -45,7 +36,7 @@ public class StringComparatorIgnoreCase implements Comparator {
      * @param obj usually another RowComparator
      */
     public boolean equals(Object obj) {
-        return obj == this;
+        return obj != null && obj instanceof StringHolderComparatorIgnoreCase;
     }
 
 }

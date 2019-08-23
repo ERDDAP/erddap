@@ -444,6 +444,7 @@ public class NcHelper  {
          if (dataType == DataType.DOUBLE)  return double.class;
          if (dataType == DataType.FLOAT)   return float.class;
          if (dataType == DataType.INT)     return int.class;
+         if (dataType == DataType.LONG)    return long.class;
          if (dataType == DataType.SHORT)   return short.class;
          if (dataType == DataType.STRING)  return String.class;
          //STRUCTURE not converted
@@ -454,7 +455,7 @@ public class NcHelper  {
 
     /** 
      * This converts an ElementType (e.g., int.class for integer primitives) 
-     * into an netcdf-3 DataType.
+     * into an netcdf-3 DataType (so long.class returns DataType.DOUBLE).
      * BEWARE: .nc files store strings as char arrays, so 
      * if variable.getRank()==1 it is a char variable, but
      * if variable.getRang()==2 it is a String variable. [It isn't that simple!]
@@ -465,7 +466,7 @@ public class NcHelper  {
      *   longs are converted to doubles.
      * @return the corresponding netcdf dataType 
      */
-     public static DataType getDataType(Class elementClass) {
+     public static DataType getNc3DataType(Class elementClass) {
          if (elementClass == boolean.class) return DataType.BOOLEAN; //?
          if (elementClass == byte.class)    return DataType.BYTE;
          if (elementClass == char.class)    return DataType.CHAR;
@@ -476,7 +477,7 @@ public class NcHelper  {
          if (elementClass == short.class)   return DataType.SHORT;
          if (elementClass == String.class)  return DataType.STRING;
          //STRUCTURE not converted
-         Test.error(String2.ERROR + " in NcHelper.getDataType:\n" +
+         Test.error(String2.ERROR + " in NcHelper.getNc3DataType:\n" +
              " unrecognized ElementType: " + elementClass.toString());
          return null;
      }
@@ -751,7 +752,7 @@ public class NcHelper  {
             List tDimensions = tVariable.getDimensions();
             int nDimensions = tDimensions.size();
             //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
-            //    " type=" + tVariable.getDataType());
+            //    " type=" + tVariable.getNc3DataType());
             if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
                 (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) && 
                      tVariable.getDataType() == DataType.CHAR)) {
@@ -1907,7 +1908,7 @@ public class NcHelper  {
                 List tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
                 //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
-                //    " type=" + tVariable.getDataType());
+                //    " type=" + tVariable.getNc3DataType());
                 if (nDimensions == 1 ||
                     (nDimensions == 2 && tVariable.getDataType() == DataType.CHAR)) {
                     varNames.add(tVariable.getFullName());

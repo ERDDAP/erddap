@@ -1836,12 +1836,18 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
     /** 
      * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-     * and size is LongArray of epochMillis)
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+     * and last_mod is LongArray of epochMillis)
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
      */
-    public Table accessibleViaFilesFileTable() {
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
         try {
             //get a copy of the source file information
             Table tDirTable  = getDirTableCopy(); 
@@ -1859,7 +1865,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             dnlsTable.removeColumn(0);
             dnlsTable.setColumnName(0, FileVisitorDNLS.DIRECTORY);
 
-            return dnlsTable;
+            //remove files other than fileDir+nextPath and generate array of immediate subDir names
+            String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(dnlsTable, fileDir + nextPath);
+            return new Object[]{dnlsTable, subDirs};
+
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             return null;

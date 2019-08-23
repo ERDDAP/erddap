@@ -10,7 +10,6 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -36,6 +35,7 @@ import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -55,14 +55,39 @@ public class EDDTableFromFileNames extends EDDTable{
     protected boolean recursive;
     protected String extractRegex[];        
     protected byte extractGroup[];        
-    protected boolean useCachedDNLSInfo = false; //DNLS info with directoriesToo=false
+
+
     /**
-     * filesAreLocal true if files are on a local hard drive or false if files are remote.
+     * from==fromLocalFiles if files are on a local hard drive.
      * 1) A failure when reading a local file, causes file to be marked as bad and dataset reloaded;
      *   but a remote failure doesn't.
      * 2) For remote files, the bad file list is rechecked every time dataset is reloaded.
      */
-    protected boolean filesAreLocal;
+    public final static int fromLocalFiles = 0;
+
+    /**
+     * from==fromRemoteFiles if files are on a remote URL.
+     * Info is cached (DNLS info with directoriesToo=false).
+     */
+    public final static int fromRemoteFiles = 1;
+
+    /** fromFiles indicates the data is coming ***fromFiles provided by admin. */
+    public final static int fromFiles = 2;
+
+    /** "files" system will work correctly with on-the-fly info from a remote URL.
+     * But stored/searchable "data" will be minimal: just first directory.
+     */
+    public final static int fromOnTheFly = 3;
+
+    protected int from = -1; //not yet set
+
+
+
+    /** This is the system for getting dir info from files. */
+    String            fromFilesFileType; //currently must be jsonlCSV  ***fromFiles spec[1]
+    String            fromFilesFileDir;  //remote dir                  ***fromFiles spec[2]
+    EDDTableFromFiles fromFilesEDDTable; //the child dataset holding all file dir info
+    Table             fromFilesCache3LevelFileTable; //the table with first 3 levels of file table items (usu. directories), may be null
 
     //standard variable names
     public final static String URL          = FileVisitorDNLS.URL;          //"url";
@@ -277,8 +302,64 @@ public class EDDTableFromFileNames extends EDDTable{
 
         if (!String2.isSomething(fileDir))
             throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
+
+        //set 'from': where's the info coming from?
+        from = fileDir.startsWith("***fromOnTheFly,")? fromOnTheFly :
+               fileDir.startsWith("***fromFiles,")?    fromFiles :
+               String2.isRemote(fileDir)?              fromRemoteFiles :
+                                                       fromLocalFiles;
+
+        //handle fileDir=***fromOnTheFly,fileDir(usually a URL)
+        if (from == fromOnTheFly) {
+            String parts[] = parseFromOnTheFly(fileDir);
+            fileDir = parts[1];
+        }
+
+        //handle fileDir=***fromFiles,fromFilesFileType,fromFilesFileDir,fromFilesFileNameRegex,fromFilesRealDir
+        //assumes filesRecursive=true, filesPathRegex=".*
+        if (from == fromFiles) {
+            String parts[] = parseFromFiles(fileDir); //it checks that fromFilesFileType is valid
+            fromFilesFileType = parts[1]; //currently, only jsonlCSV is valid
+            fromFilesFileDir  = parts[2]; //baseDir of local jsonlCSV files with fileNames
+            fileDir           = parts[4]; //dir of referenced files, AKA fromFilesRealDir
+            
+            if (fromFilesFileType.equals("jsonlCSV")) {
+                fromFilesEDDTable = new EDDTableFromJsonlCSVFiles(
+                    datasetID + "_child", null, null, //tDatasetID, tAccessibleTo, tGraphsAccessibleTo,
+                    new StringArray(), null, null, //tOnChange, tFgdcFile, tIso19115File, 
+                    null, //tSosOfferingPrefix,
+                    null, null, //String tDefaultDataQuery, String tDefaultGraphQuery, 
+                    (new Attributes()) //Attributes tAddGlobalAttributes,
+                        .add("cdm_data_type", "other")
+                        .add("infoUrl", "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFileNames")
+                        .add("institution", "NOAA")
+                        .add("license", "[standard]")
+                        .add("sourceUrl", "(local files)")
+                        .add("summary", "A child dataset.")
+                        .add("title", datasetID + "_child"), 
+                    new Object[][] {  // tDataVariables: Object[4] 0=sourceName, 1=destinationName, 2=addAttributes, 3=dataType.
+                        new Object[]{"directory",    null, (new Attributes()).add("ioos_category", "Other"),                                                        "String"},
+                        new Object[]{"name",         null, (new Attributes()).add("ioos_category", "Other"),                                                        "String"},
+                        new Object[]{"lastModified", null, (new Attributes()).add("ioos_category", "Time").add("units", "milliseconds since 1970-01-01T00:00:00Z"), "long"},
+                        new Object[]{"size",         null, (new Attributes()).add("ioos_category", "Other").add("units", "bytes"),                                  "long"}},
+                    1000000000,  //int tReloadEveryNMinutes, It will be reloaded when this dataset is reloaded (here!)
+                    -1, //int tUpdateEveryNMillis,
+                    parts[2], parts[3], true, ".*", //String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
+                    EDDTableFromFiles.MF_LAST, "UTF-8", //String tMetadataFrom, String tCharset, 
+                    1, 2, ",", //int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
+                    null, null, null, //String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
+                    null, //String tColumnNameForExtract,
+                    "", "directory,name", //String tSortedColumnSourceName, String tSortFilesBySourceNames,
+                    false, false, //boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+                    false, true, //boolean tAccessibleViaFiles (not directly), boolean tRemoveMVRows,
+                    0, 1, //int tStandardizeWhat, int tNThreads, 
+                    null, -1, null); //String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+            } else {
+                throw new SimpleException(String2.ERROR + ": Unexpected fromFilesFileType=" + fromFilesFileType);
+            }
+        }
+
         fileDir = File2.addSlash(String2.replaceAll(fileDir, '\\', '/')); //for consistency when generating urls for users
-        filesAreLocal = !String2.isRemote(fileDir);
         Test.ensureNotNull(fileNameRegex, "fileNameRegex");
 
         recursive = tRecursive;
@@ -302,8 +383,8 @@ public class EDDTableFromFileNames extends EDDTable{
 
         //useCachedInfo?
         Table tCachedDNLSTable = null;
-        useCachedDNLSInfo = !filesAreLocal;
-        if (useCachedDNLSInfo) {
+        if (from == fromOnTheFly || //just gets root dir
+            from == fromRemoteFiles) {
             String qrName = quickRestartFullFileName();
 
             if (EDStatic.quickRestart && 
@@ -326,7 +407,9 @@ public class EDDTableFromFileNames extends EDDTable{
 
                 //get the info to be cached
                 tCachedDNLSTable = FileVisitorDNLS.oneStep(fileDir, fileNameRegex,
-                    recursive, pathRegex, false); //tDirectoriesToo
+                    from == fromOnTheFly? false : recursive, 
+                    pathRegex, 
+                    from == fromOnTheFly? true : false); //tDirectoriesToo
                 tCachedDNLSTable.setColumn(2, new DoubleArray(tCachedDNLSTable.getColumn(2))); //long -> double
                 tCachedDNLSTable.setColumn(3, new DoubleArray(tCachedDNLSTable.getColumn(3))); //long -> double
                 if (tCachedDNLSTable.nRows() == 0)
@@ -343,20 +426,8 @@ public class EDDTableFromFileNames extends EDDTable{
             }
         }
 
-        //get a source table (this also ensures there are valid files in fileDir)
-        Table sourceBasicTable;
-        if (useCachedDNLSInfo) {
-            //use tCachedDNLSTable since I just got it (above) 
-            //and perhaps time consuming to get it
-            sourceBasicTable = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-                FileVisitorDNLS.oneStepDouble(tCachedDNLSTable), 
-                fileDir, 
-                EDStatic.erddapUrl(null) + "/files/" + datasetID + "/"); //loggedInAs=null doesn't matter here
-        } else {
-            sourceBasicTable = getBasicTable(fileDir, fileNameRegex, recursive,
-                pathRegex, 
-                null, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
-        }
+        //get a source sample table 
+        Table sourceSampleTable = FileVisitorDNLS.makeEmptyTableWithUrlsAndDoubles();
 
         //create dataVariables[]
         int ndv = tDataVariables.length;
@@ -368,8 +439,8 @@ public class EDDTableFromFileNames extends EDDTable{
             String destName = (String)tDataVariables[dv][1];
             if (destName == null || destName.trim().length() == 0)
                 destName = sourceName;
-            int scol = sourceBasicTable.findColumnNumber(sourceName);
-            Attributes sourceAtt = scol >= 0? sourceBasicTable.columnAttributes(scol) : 
+            int scol = sourceSampleTable.findColumnNumber(sourceName);
+            Attributes sourceAtt = scol >= 0? sourceSampleTable.columnAttributes(scol) : 
                 new Attributes();
             Attributes addAtt = (Attributes)tDataVariables[dv][2];
             String sourceType = (String)tDataVariables[dv][3];
@@ -443,29 +514,56 @@ public class EDDTableFromFileNames extends EDDTable{
 
         //get the data and set variable min and max
         //this also verifies that fileDir is accessible.
-        File2.makeDirectory(cacheDirectory()); 
-        TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
-            null, null, //metadata is irrelevant here
-            cacheDirectory(), "constructor");
-        getDataForDapQuery( //throws exception if 0 files
-            EDStatic.loggedInAsSuperuser, 
-            "/erddap/tabledap/" + datasetID + ".nc", "", //userDapQuery
-            twawm);
-        for (int dv = 0; dv < ndv; dv++) {
-            EDV edv = dataVariables[dv];
-            if (edv.destinationDataTypeClass() != String.class) {
-                //Min and max were gathered as the data was written.
-                //How cool is that?!
-                edv.setDestinationMinMax(twawm.columnMinValue(dv), twawm.columnMaxValue(dv));
+        if (from == fromOnTheFly) {
+//get the level0 directory info???
+
+        } else if (from == fromFiles) {
+            //the local lastMod col
+            int col = String2.indexOf(dataVariableSourceNames, "lastModified");
+            if (col >= 0) { 
+                EDV edvLocal = dataVariables[col];
+                EDV edvFromFilesEDDTable = fromFilesEDDTable.dataVariables[2]; //col #2=lastModified
+                edvLocal.setDestinationMinMax(
+                    edvFromFilesEDDTable.destinationMin(), edvFromFilesEDDTable.destinationMax()); 
             }
+
+            //the local size col
+            col = String2.indexOf(dataVariableSourceNames, "size");
+            if (col >= 0) { 
+                EDV edvLocal = dataVariables[col];
+                EDV edvFromFilesEDDTable = fromFilesEDDTable.dataVariables[3];  //col #3=size
+                edvLocal.setDestinationMinMax(
+                    edvFromFilesEDDTable.destinationMin(), edvFromFilesEDDTable.destinationMax());
+            }
+
+        } else {  //from==fromRemoteFiles or fromLocalFiles
+            File2.makeDirectory(cacheDirectory()); 
+            TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
+                null, null, //metadata is irrelevant here
+                cacheDirectory(), "constructor");
+            getDataForDapQuery( //throws exception if 0 files
+                EDStatic.loggedInAsSuperuser, 
+                "/erddap/tabledap/" + datasetID + ".nc", "", //userDapQuery
+                twawm);
+            for (int dv = 0; dv < ndv; dv++) {
+                EDV edv = dataVariables[dv];
+                if (edv.destinationDataTypeClass() != String.class) {
+                    //Min and max were gathered as the data was written.
+                    //How cool is that?!
+                    edv.setDestinationMinMax(twawm.columnMinValue(dv), twawm.columnMaxValue(dv));
+                }
+            }
+            twawm.releaseResources();        
         }
-        twawm.releaseResources();        
 
         //accessibleViaFiles
         if (EDStatic.filesActive) {
             accessibleViaFilesDir = fileDir;
             accessibleViaFilesRegex = fileNameRegex;
             accessibleViaFilesRecursive = recursive;
+
+            if (from == fromFiles) 
+                writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(3)); //may be null
         }
 
         //ensure the setup is valid
@@ -485,9 +583,59 @@ public class EDDTableFromFileNames extends EDDTable{
     public boolean recursive() {return recursive;}
     public String pathRegex() {return pathRegex;}
 
+
+    /** 
+     * This parses fileDir=***fromOnTheFly,fileDir(usually a URL). 
+     * 
+     * @param tFileDir the initial value of fileDir, starting with "***fromFiles,".
+     * @return Object[] {eddTableFromJsonlCSVFiles, realFileDir}
+     */    
+    public static String[] parseFromOnTheFly(String tFileDir) throws Exception {
+        String errorInMethod = String2.ERROR + " while parsing <fileDir>***fromOnTheFly: ";
+        String parts[] = StringArray.arrayFromCSV(tFileDir);
+        if (parts.length != 2) 
+            throw new IllegalArgumentException(errorInMethod + 
+                "There are " + parts.length + " CSV parts. There must be 2.");
+        return parts;
+    }
+
+    /** 
+     * This parses fileDir=***fromFiles,fromFilesFileType,fromFilesFileDir,fromFilesFileNameRegex,fromFilesRealDir. 
+     * 
+     * @param tFileDir the initial value of fileDir, starting with "***fromFiles,".
+     * @return Object[] {eddTableFromJsonlCSVFiles, realFileDir}
+     */    
+    public static String[] parseFromFiles(String tFileDir) throws Exception {
+        //handle fileDir=***fromFiles,fromFilesFileType,fromFilesFileDir,fromFilesFileNameRegex,fromFilesRealDir
+        //assumes filesRecursive=true, filesPathRegex=".*
+        String errorInMethod = String2.ERROR + " while parsing <fileDir>***fromFiles: ";
+        String parts[] = StringArray.arrayFromCSV(tFileDir);
+        if (parts.length != 5) 
+            throw new IllegalArgumentException(errorInMethod + 
+                "There are " + parts.length + " CSV parts. There must be 5.");
+
+        if (!parts[1].equals("jsonlCSV")) 
+            throw new IllegalArgumentException(errorInMethod + 
+                "part[1]=fromFilesFileType=" + parts[1] + " must be 'jsonlCSV'.");
+
+        parts[2] = File2.addSlash(String2.replaceAll(parts[2], '\\', '/')); //for consistency when generating urls for users
+        if (!File2.isDirectory(parts[2])) 
+            throw new IllegalArgumentException(errorInMethod + 
+                "part[2]=fromFilesFileDir=" + parts[2] + " must be an existing directory.");
+
+        if (!String2.isSomething(parts[3]))
+            parts[3] = ".*";
+
+        if (!String2.isSomething(parts[4])) 
+            throw new IllegalArgumentException(errorInMethod + 
+                "part[4]: the real fileDir must be something.");
+
+        return parts;
+    }
+
     /** 
      * This gets the cached DNLS file table (last_mod and size are longs). 
-     * Only call this if useCachedDNLSInfo==true.
+     * Only call this if from == fromRemoteFiles.
      *
      * @throws Exception
      */
@@ -499,21 +647,214 @@ public class EDDTableFromFileNames extends EDDTable{
         return table;
     }
 
+
+    /** 
+     * If fromFiles, for caching, this tries to get all the info for n levels
+     * of subdir of file information.
+     * This is slow (1 minute?) because it must go through all the cached file info.
+     *
+     * @return null if trouble.
+     *    The table will have rows for the subdirs, too. 
+     */
+    public Table getNLevelsOfInfo(int nLevels) {
+        try {
+            //The code for this is very similar to the accessibleViaFilesFileTable() below.
+            //MAKE SIMILAR CHANGES?
+            String tDir = cacheDirectory(); //tDir is created by EDD.ensureValid
+            String tFileName = suggestFileName(null, "tFileTable_NLevels_" + datasetID, ".twardt");
+            TableWriterAllReduceDnlsTableNLevels twardt = new TableWriterAllReduceDnlsTableNLevels(
+                fromFilesEDDTable, null, tDir, tFileName, fileDir, nLevels);  //nLevels
+
+            //query to twardt
+            Table dnlsTable = null;
+            try {
+                fromFilesEDDTable.getDataForDapQuery(null, 
+                    "/erddap/tabledap/" + datasetID, //for history        something/something/something
+                    "", twardt); //no constraints
+
+                //if too many results rows, don't cache
+                if (twardt.nRows() > 10000)
+                    return null;
+
+                //clean up twardt results
+                //The proper query above converts lastMod to double epochSeconds
+                //so convert back to long epochMillis.
+                dnlsTable = twardt.cumulativeTable();
+                dnlsTable.getColumn(2).scaleAddOffset(1000, 0);
+                dnlsTable.setColumn(2, new LongArray(dnlsTable.getColumn(2)));
+                dnlsTable.columnAttributes(2).set("units", "milliseconds since 1970-01-01T00:00:00Z");
+                dnlsTable.sortIgnoreCase(new int[]{1}, new boolean[]{true});
+
+            } catch (Throwable t2) {
+                if (t2.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
+                    throw t2;
+                dnlsTable = FileVisitorDNLS.makeEmptyTable();
+            }
+
+            //and add subdirs
+            String subdirs[] = (String[])(twardt.subdirHash().toArray(new String[0]));
+            Arrays.sort(subdirs, String2.STRING_COMPARATOR_IGNORE_CASE);
+            int nSubdirs = subdirs.length;
+            StringArray dirSA = (StringArray)dnlsTable.getColumn(0);
+            for (int i = 0; i < nSubdirs; i++) {
+                dirSA.add(fileDir + subdirs[i]);
+            }
+            dnlsTable.makeColumnsSameSize();
+            String2.log(datasetID + " getNLevelsOfInfo table:\n" + dnlsTable.dataToString(debugMode? 100 : 5));
+
+            return dnlsTable;
+        } catch (Throwable t) {
+            String2.log("Caught ERROR in getNLevelsOfInfo():\n" + MustBe.throwableToString(t));
+            return null;
+        }
+    }
+
+    /** 
+     * This returns the full file name of the fromFilesCache3LevelFileTable stored file.
+     */
+    public String fromFilesCache3LevelFileTable_FileName() {
+        return datasetDir() + "fromFilesCache3LevelFileTable.json";
+    }
+
+    /**
+     * This writes the fromFilesCache3LevelFileTable to the datasetDirectory as a .jsonlCSV file.
+     *
+     * @param tTable if null, nothing is done
+     */
+    public void writeFromFilesCache3LevelFileTable(Table tTable) {
+        try {
+            if (tTable == null) {
+                File2.delete(fromFilesCache3LevelFileTable_FileName());  //in case it exists
+            } else {
+                //constructor hasn't created dir, so ensure it exists
+                File2.makeDirectory(datasetDir());
+                tTable.writeJsonlCSV(fromFilesCache3LevelFileTable_FileName(), false); //append
+            }
+        } catch (Exception e) {
+            String2.log("Caught:\n" + MustBe.throwableToString(e)); 
+        }
+    }
+
+    /** 
+     * This reads the fromFilesCache3LevelFileTable (a .jsonlCSV file) from the datasetDirectory.
+     *
+     * @return the table (or null if trouble)
+     */
+    public Table readFromFilesCache3LevelFileTable() {
+        try {
+            Table table3 = new Table();
+            table3.readJsonlCSV(fromFilesCache3LevelFileTable_FileName(), 
+                new StringArray(FileVisitorDNLS.DNLS_COLUMN_NAMES),
+                FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL, 
+                false); //simplify
+            return table3;
+        } catch (Exception e) {
+            String2.log("Caught:\n" + MustBe.throwableToString(e)); 
+            return null;
+        }
+    }
+
     /** 
      * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-     * and size is LongArray of epochMillis)
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+     * and lastMod is LongArray of epochMillis)
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble (table.nRows + nSubdirs = 0 is not trouble)
+     *   or Object[2] where [0] is a sorted DNLS table (perhaps with 0 rows) which just has files in fileDir + nextPath and 
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
      */
-    public Table accessibleViaFilesFileTable() {
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
         try {
-            return useCachedDNLSInfo?
-                getCachedDNLSTable() :
-                FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
+
+            //fromOnTheFly
+            if (from == fromOnTheFly) {
+                //get it on-the-fly from source
+//check that nextPath matches pathRegex?
+                Table dnlsTable = FileVisitorDNLS.oneStep(fileDir + nextPath, 
+                    fileNameRegex, false, pathRegex, true); //tRecursive, pathRegex, tDirectoriesToo
+                if (dnlsTable == null) {
+                    return null;
+                } else {
+                    String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(
+                        dnlsTable, fileDir + nextPath);
+                    return new Object[]{dnlsTable, subDirs};
+                }
+            }
+
+            //fromFiles
+            if (from == fromFiles) {
+
+                //is info in cache?
+                if (String2.countAll(nextPath, '/') < 3) {  //because I got 3 for cache
+                    Table dnlsTable = readFromFilesCache3LevelFileTable(); //It's always a copy from disk. May be null.
+                    if (dnlsTable != null) {
+                        String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(
+                            dnlsTable, fileDir + nextPath);
+                        return new Object[]{dnlsTable, subDirs};
+                    }
+                }
+
+                //The code for this is very similar to the getTwoLevelsOfInfo() above.
+                //MAKE SIMILAR CHANGES?
+                String tDir = cacheDirectory(); //tDir is created by EDD.ensureValid
+                String tFileName = suggestFileName(null, 
+                    "tFileTable_" + 
+                    (nextPath.length() == 0? "" : nextPath.substring(0, nextPath.length() - 1)), //short name
+                    ".twardt");
+                TableWriterAllReduceDnlsTable twardt = new TableWriterAllReduceDnlsTable(
+                    this, null, tDir, tFileName, fileDir + nextPath);
+
+                //query to twardt
+                String shortened = fileDir + nextPath;
+                char lastCh = shortened.charAt(shortened.length() - 1);
+                shortened = shortened.substring(0, shortened.length() - 1);
+                Table dnlsTable = null;
+                try {
+                    fromFilesEDDTable.getDataForDapQuery(null, 
+                        "/erddap/tabledap/" + datasetID, //for history. Not relevant. 
+                        //this is effectively: startsWith(fileDir + nextPath)           //e.g. find: /foo/bar/[one thing]
+                        "&directory>=" + String2.toJson(fileDir + nextPath) +           //e.g. get:  /foo/bar/  //reject some files
+                        "&directory<"  + String2.toJson(shortened + (char)(lastCh+1)),  //e.g. &get: /foo/bar0  //reject some files
+                        //"&directory=~" + String2.toJson(fileDir + nextPath + "[^/]%2B"),  //2B = +
+                        twardt);
+
+                    //clean up twardt results
+                    //The proper query above converts lastMod to double epochSeconds
+                    //so convert back to long epochMillis.
+                    dnlsTable = twardt.cumulativeTable();
+                    dnlsTable.getColumn(2).scaleAddOffset(1000, 0);
+                    dnlsTable.setColumn(2, new LongArray(dnlsTable.getColumn(2)));
+                    dnlsTable.columnAttributes(2).set("units", "milliseconds since 1970-01-01T00:00:00Z");
+                    dnlsTable.sortIgnoreCase(new int[]{1}, new boolean[]{true});
+                } catch (Throwable t2) {
+                    if (t2.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
+                        throw t2;
+                    dnlsTable = FileVisitorDNLS.makeEmptyTable();
+                }
+    
+                String subDirs[] = (String[])twardt.subdirHash().toArray(new String[0]);
+                Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
+
+                return new Object[]{dnlsTable, subDirs};
+            }
+
+           
+            Table dnlsTable =  
+                from == fromRemoteFiles? getCachedDNLSTable() :
+                FileVisitorDNLS.oneStep(  //fromLocalFiles
+                    fileDir, fileNameRegex, recursive, pathRegex,
                     false); //dirToo=false
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
+
+            //remove files other than fileDir+nextPath and generate array of immediate subDir names
+            String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(dnlsTable, fileDir + nextPath);
+            return new Object[]{dnlsTable, subDirs};
+
+        } catch (Throwable t) {
+            String2.log("Caught ERROR in getTwoLevelsOfInfo():\n" + MustBe.throwableToString(t));
             return null;
         }
     }
@@ -521,13 +862,15 @@ public class EDDTableFromFileNames extends EDDTable{
     /**
      * Get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
      *
+     * @param recursive for file==fromOnTheFly, use false.
      * @throws Exception if trouble, e.g., 0 matching files
      */
     public static Table getBasicTable(String fileDir, String fileNameRegex, 
         boolean recursive, String pathRegex, String loggedInAs, 
         String datasetID) throws Exception {
         Table table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-            fileDir, fileNameRegex, recursive, pathRegex,
+            fileDir, fileNameRegex, recursive, 
+            pathRegex,
             EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
         int nRows = table.nRows();
         if (nRows == 0)
@@ -551,6 +894,7 @@ public class EDDTableFromFileNames extends EDDTable{
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
+        //String2.log("\n*** getDataForDapQuery: who's calling:\n" + MustBe.stackTrace());
         //get the sourceDapQuery (a query that the source can handle)
         StringArray resultsVariables    = new StringArray();
         StringArray constraintVariables = new StringArray();
@@ -559,53 +903,133 @@ public class EDDTableFromFileNames extends EDDTable{
         getSourceQueryFromDapQuery(userDapQuery, resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
-        //get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
-        Table table;
-        if (useCachedDNLSInfo) {
-            table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-                FileVisitorDNLS.oneStepDouble(getCachedDNLSTable()), 
-                fileDir, 
-                EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
-        } else {
-            table = getBasicTable(fileDir, fileNameRegex, recursive, pathRegex,
-                loggedInAs, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
+        int nSubTables = 1;  //usually just 1 table. fromFiles is the exception
+
+        //prep for fromFiles
+        StringArray fromFileFileNames = null;
+        StringArray fromFileColNames = null;
+        String[] fromFileColTypes = null;
+        if (from == fromFiles) {
+            //get a list of files
+            Table dnlsTable = fromFilesEDDTable.getDnlsTable();
+            StringArray  dirPA             = (StringArray)dnlsTable.getColumn(0);
+                         fromFileFileNames = (StringArray)dnlsTable.getColumn(1); //namesPA
+            nSubTables = fromFileFileNames.size();
+            //combine dir + name
+            for (int row = 0; row < nSubTables; row++) 
+                fromFileFileNames.set(row, dirPA.get(row) + fromFileFileNames.get(row));
+            //String2.log("\nfromFileFileNames=\n" + fromFileFileNames.toNewlineString());
+
+            fromFileColNames = StringArray.fromCSV("directory, name, lastModified, size");
+            fromFileColTypes = new String[]{       "String", "String", "double", "double"};
         }
-        int nRows = table.nRows();
 
-        //create other results variables as needed
-        int namei = table.findColumnNumber(NAME);
-        StringArray namePA = (StringArray)table.getColumn(namei);
-        Attributes atts = table.columnAttributes(namei);
-        int nrv = resultsVariables.size();
-        for (int rvi = 0; rvi < nrv; rvi++) {
-            //create this variable by extracting info from file name
-            String sourceName = resultsVariables.get(rvi);
-            if (sourceName.equals(URL) ||
-                sourceName.equals(NAME) ||
-                sourceName.equals(LASTMODIFIED) ||
-                sourceName.equals(SIZE))
-                continue;
-            int dvi = String2.indexOf(dataVariableSourceNames(), sourceName);
-            if (dvi < 0)
-                throw new SimpleException(String2.ERROR + 
-                    ": Unexpected resultsVariable sourceName=" + sourceName);
-            EDV edv = dataVariables[dvi];
+        boolean done = false;
+        for (int sti = 0; sti < nSubTables; sti++) {
 
-            //create this source variable
-            PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
-                nRows, false); 
-            table.addColumn(sourceName, pa);
-            String regex = extractRegex[dvi];
-            Pattern pat = Pattern.compile(regex);
-            for (int row = 0; row < nRows; row++) {
-                Matcher matcher = pat.matcher(namePA.get(row));
-                pa.addString(matcher.matches()? matcher.group(extractGroup[dvi]) : ""); 
+            //get a chunk of low level data: ERDDAP URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
+            Table table;
+            if (from == fromFiles) {
+                //The problem is: it's hard/impossible to convert the userDapQuery for url,name,lastMod,size
+                //  into a temporary query to remoteDir,name,lastMod,size.
+                //  Also, partial response might need too much memory.
+                //Easy solution (but slow) is: for each file, convert to url below, then constrain below.
+                //This isn't efficient, but doing it efficiently is hard and probably not worth the effort.
+                //FUTURE: a simple optimization would be to pre-constrain name,lastMod,size
+                if (fromFilesFileType.equals("jsonlCSV")) {
+                    table = new Table();
+                    table.readJsonlCSV(fromFileFileNames.get(sti), 
+                        fromFileColNames, fromFileColTypes, false); //simplify
+                
+                } else {
+                    throw new SimpleException(String2.ERROR + ": Unexpected fromFilesFileType=" + fromFilesFileType);
+                }
+
+                //ensure cols found
+                if (table.nColumns() != 4)
+                    throw new SimpleException( 
+                        String2.ERROR + " for fileName=" + fromFileFileNames.get(sti) + 
+                        ", unexpected columnNames=" + String2.toCSVString(table.getColumnNames()) + " .");
+
+                //convert last mod from millis to seconds
+                int lastModc = table.findColumnNumber("lastModified");                
+                PrimitiveArray lastModPA = table.getColumn(lastModc);
+                lastModPA.scaleAddOffset(0.001, 0);
+                table.columnAttributes(lastModc).set("units", Calendar2.SECONDS_SINCE_1970);
+
+                //if (sti == 0) String2.log("\nbefore convert to urls:\n" + table.dataToString(5));
+
+                //convert actual file url to ERDDAP URL, disregard others
+                int tnRows = table.nRows();
+                BitSet keep = new BitSet(tnRows);  //initially all false
+                StringArray dirSA = (StringArray)table.getColumn(0);
+                int ffrdLength = fileDir.length();
+                String tTo = EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/";
+                for (int row = 0; row < tnRows; row++) {
+                    String dir = dirSA.get(row);
+                    if (dir.startsWith(fileDir)) {
+                        dirSA.set(row, tTo + dir.substring(ffrdLength));
+                        keep.set(row);
+                    }                     
+                }
+                table.justKeep(keep);                
+                table.setColumnName(0, FileVisitorDNLS.URL);
+                //if (sti == 0) String2.log("\nafter convert to urls:\n" + table.dataToString(5));
+
+
+            } else if (from == fromOnTheFly ||
+                       from == fromRemoteFiles) {
+                table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
+                    FileVisitorDNLS.oneStepDouble(getCachedDNLSTable()), 
+                    fileDir, 
+                    EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
+
+            } else { //from == fromLocalFiles
+                table = getBasicTable(fileDir, fileNameRegex, 
+                    recursive, pathRegex,
+                    loggedInAs, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
+            }
+            int nRows = table.nRows();
+
+            //create other results variables as needed
+            int namei = table.findColumnNumber(NAME);
+            StringArray namePA = (StringArray)table.getColumn(namei);
+            Attributes atts = table.columnAttributes(namei);
+            int nrv = resultsVariables.size();
+            for (int rvi = 0; rvi < nrv; rvi++) {
+                //create this variable by extracting info from file name
+                String sourceName = resultsVariables.get(rvi);
+                if (sourceName.equals(URL) ||
+                    sourceName.equals(NAME) ||
+                    sourceName.equals(LASTMODIFIED) ||
+                    sourceName.equals(SIZE))
+                    continue;
+                int dvi = String2.indexOf(dataVariableSourceNames(), sourceName);
+                if (dvi < 0)
+                    throw new SimpleException(String2.ERROR + 
+                        ": Unexpected resultsVariable sourceName=" + sourceName);
+                EDV edv = dataVariables[dvi];
+
+                //create this source variable
+                PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
+                    nRows, false); 
+                table.addColumn(sourceName, pa);
+                String regex = extractRegex[dvi];
+                Pattern pat = Pattern.compile(regex);
+                for (int row = 0; row < nRows; row++) {
+                    Matcher matcher = pat.matcher(namePA.get(row));
+                    pa.addString(matcher.matches()? matcher.group(extractGroup[dvi]) : ""); 
+                }
+            }
+
+            //String2.log(table.toString());
+            if (table.nRows() > 0) { //should be
+                standardizeResultsTable(requestUrl, userDapQuery, table);
+                tableWriter.writeSome(table);
             }
         }
 
-        //String2.log(table.toString());
-        standardizeResultsTable(requestUrl, userDapQuery, table);
-        tableWriter.writeAllAndFinish(table);
+        tableWriter.finish();
     }
 
 
@@ -643,36 +1067,85 @@ public class EDDTableFromFileNames extends EDDTable{
 
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
-        tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/')); //important for consistency with urls for users
+
+        //deal with ***fromOnTheFly and ***fromFiles
+        boolean tFromOnTheFly = tFileDir.startsWith("***fromOnTheFly,");
+        boolean tFromFiles    = tFileDir.startsWith("***fromFiles,");
+        EDDTable tFromFilesEDDTable = null;
+        String tFromFilesActualSource = null; 
+        if (tFromOnTheFly) {
+            String parts[] = parseFromOnTheFly(tFileDir);
+            tFromFilesActualSource = parts[1];           
+        } else if (tFromFiles) {
+            String parts[] = parseFromFiles(tFileDir);
+            tFromFilesActualSource = parts[4];           
+        } else {
+            tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/')); //important for consistency with urls for users
+        }
+
         String tPathRegex = ".*";
         String tDatasetID = suggestDatasetID(
             //if awsS3, important that it start with tFileDir
             tFileDir + tFileNameRegex +
             //distinguish from e.g., EDDGridFromNcFiles for same files
             "(EDDTableFromFileNames)"); 
+
         boolean tFilesAreLocal = !String2.isRemote(tFileDir);
         if (tReloadEveryNMinutes < suggestReloadEveryNMinutesMin ||
             tReloadEveryNMinutes > suggestReloadEveryNMinutesMax) 
-            tReloadEveryNMinutes = tFilesAreLocal? DEFAULT_RELOAD_EVERY_N_MINUTES : 120;
+            tReloadEveryNMinutes = 
+                tFromOnTheFly?  DEFAULT_RELOAD_EVERY_N_MINUTES : 
+                tFromFiles?     120 : 
+                tFilesAreLocal? DEFAULT_RELOAD_EVERY_N_MINUTES : 120;
 
         //make the sourceTable and addTable
-        Table sourceTable = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-            tFileDir, tFileNameRegex, tRecursive, tPathRegex,
-            EDStatic.erddapUrl(null) + "/files/" + tDatasetID + "/");
+        Table sourceTable = null;
+        if (tFromOnTheFly || tFromFiles) {
+            sourceTable = FileVisitorDNLS.makeEmptyTableWithUrlsAndDoubles();
+        } else {
+            sourceTable = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex,
+                EDStatic.erddapUrl(null) + "/files/" + tDatasetID + "/");
+        }
+
+        if (tFromOnTheFly) {
+            Matcher matcher = String2.AWS_S3_PATTERN.matcher(tFromFilesActualSource); //force trailing slash
+            String tBucket = "";
+            String tOther  = "";
+            String tTitle2 = "";
+            if (matcher.matches()) {
+                //bucket names are globally unique
+                tBucket = "the AWS S3 " + matcher.group(1) + " bucket at ";
+                tTitle2 = "the AWS S3 " + matcher.group(1) + " Bucket";
+                tOther  = " AWS S3 doesn't offer a simple way to browser the files in buckets. " +
+                    "This dataset is a solution to that problem for this bucket.";
+            } else {
+                tTitle2 = tFromFilesActualSource;
+            }
+            if (!String2.isSomething(tSummary))
+                tSummary = "This dataset has file information from " + tBucket + tFromFilesActualSource + 
+                    " . Use ERDDAP's \"files\" system for this dataset to browse and download the files. " +
+                    "The \"files\" information for this dataset is always perfectly up-to-date because ERDDAP gets it on-the-fly." + 
+                    tOther;
+            if (!String2.isSomething(tTitle))
+                tTitle = "File Names from " + tTitle2;
+        }
 
         Table addTable = new Table();
         addTable.globalAttributes()
             .add("cdm_data_type", "Other")
-            .add("creator_name", "null")
+            .add("creator_name",  "null")
             .add("creator_email", "null")
-            .add("creator_url", "null")
-            .add("history", "null")
+            .add("creator_url",   "null")
+            .add("history",       "null")
             .add("infoUrl",     String2.isSomething(tInfoUrl    )? tInfoUrl     : "???")
             .add("institution", String2.isSomething(tInstitution)? tInstitution : "???")
-            .add("sourceUrl", "(" + (tFilesAreLocal? "local" : "remote") + " files)")
-            .add("subsetVariables", "fileType")
+            .add("sourceUrl", tFromOnTheFly || tFromFiles? tFromFilesActualSource :
+              "(" + (tFilesAreLocal? "local" : "remote") + " files)")
             .add("summary",     String2.isSomething(tSummary    )? tSummary     : "???")
             .add("title",       String2.isSomething(tTitle      )? tTitle       : "???");
+        if (!tFromOnTheFly)
+            addTable.globalAttributes().add("subsetVariables", "fileType");
         int nCols = sourceTable.nColumns();
         for (int col = 0; col < nCols; col++) {
             String sourceName = sourceTable.getColumnName(col);
@@ -684,9 +1157,8 @@ public class EDDTableFromFileNames extends EDDTable{
         HashSet<String> keywords = suggestKeywords(sourceTable, addTable);
         cleanSuggestedKeywords(keywords);
         String keywordSar[] = (String[])keywords.toArray(new String[0]); 
-        Arrays.sort(keywordSar, new StringComparatorIgnoreCase()); 
+        Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE); 
         addTable.globalAttributes().add("keywords", String2.toCSSVString(keywordSar));
-
 
         //write the information
         StringBuilder sb = new StringBuilder();
@@ -915,7 +1387,7 @@ String expected =
 
         testVerboseOn();
 
-        String tDir = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS";
+        String tDir = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS";
         //tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc
         String tRegex = ".*_CESM1-CAM5_.*\\.nc";
         boolean tRecursive = true;
@@ -923,7 +1395,7 @@ String expected =
         String tInstitution = "NASA Earth Exchange";
         String tSummary = "My great summary";
         String tTitle = "My Great Title";
-        String tDatasetID = "s3nasanex_803b_6c09_f004";
+        String tDatasetID = "s3nasanex_38fd_82f7_2ede";
 String expected = 
 "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <fileDir>" + tDir + "/</fileDir>\n" +
@@ -1062,6 +1534,166 @@ String expected =
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error.  (Did you create your AWS S3 credentials file?)"); 
+        }
+    }
+
+    /**
+     * testGenerateDatasetsXmlFromFiles
+     */
+    public static void testGenerateDatasetsXmlFromFiles() throws Throwable {
+        String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles()");
+        try {
+
+        testVerboseOn();
+
+        String tDir = //***fromFiles,fromFilesFileType,fromFilesFileDir,fromFilesFileNameRegex,fromFilesRealDir
+            "***fromFiles, jsonlCSV, /u00/data/points/awsS3NoaaGoes17partial/, awsS3NoaaGoes17_....\\.jsonlCSV(|.gz), " +
+            "https://noaa-goes17.s3.us-east-1.amazonaws.com/";
+        String tRegex = ".*\\.nc"; //for testing. would be .*
+        boolean tRecursive = true;
+        String tInfoUrl = "https://en.wikipedia.org/wiki/GOES-17";
+        String tInstitution = "NOAA";
+        String tSummary = "My great summary";
+        String tTitle = "My Great Title";
+        String tDatasetID = "noaa_goes17_s3_us_east_1_amazonaws_com_7e5f_ab43_c8e3";
+        String results = generateDatasetsXml(tDir, tRegex, tRecursive, -1, 
+            tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
+String expected = 
+"<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
+"    <fileDir>" + tDir + "</fileDir>\n" +
+"    <fileNameRegex>" + tRegex + "</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <reloadEveryNMinutes>120</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"creator_email\">null</att>\n" +
+"        <att name=\"creator_name\">null</att>\n" +
+"        <att name=\"creator_url\">null</att>\n" +
+"        <att name=\"history\">null</att>\n" +
+"        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
+"        <att name=\"institution\">" + tInstitution + "</att>\n" +
+"        <att name=\"keywords\">data, file, great, identifier, lastModified, modified, name, noaa, size, time, title</att>\n" +
+"        <att name=\"sourceUrl\">https://noaa-goes17.s3.us-east-1.amazonaws.com/</att>\n" +
+"        <att name=\"subsetVariables\">fileType</att>\n" +
+"        <att name=\"summary\">" + tSummary + "</att>\n" +
+"        <att name=\"title\">" + tTitle + "</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>url</sourceName>\n" +
+"        <destinationName>url</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">URL</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>name</sourceName>\n" +
+"        <destinationName>name</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Name</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>lastModified</sourceName>\n" +
+"        <destinationName>lastModified</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Last Modified</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>size</sourceName>\n" +
+"        <destinationName>size</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Other</att>\n" +
+"            <att name=\"long_name\">Size</att>\n" +
+"            <att name=\"units\">bytes</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Type</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <!-- You can create other variables which are derived from extracts\n" +
+"         from the file names.  Use an extractRegex attribute to specify a\n" +
+"         regular expression with a capturing group (in parentheses). The\n" +
+"         part of the file name which matches the specified capturing group\n" +
+"         (usually group #1) will be extracted to make the new data variable.\n" +
+"         fileType above shows how to extract a String. Below are examples\n" +
+"         showing how to extract a date, and how to extract an integer.\n" +
+"    <dataVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">jplMURSST(.*)\\.png</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"units\">yyyyMMddHHmmss</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>day</sourceName>\n" +
+"        <destinationName>day</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    -->\n" +
+"</dataset>\n\n\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromFileNames",
+            tDir, tRegex, "" + tRecursive, "-1", 
+            tInfoUrl, tInstitution, tSummary, tTitle,
+            "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, 
+            "Unexpected results from GenerateDatasetsXml.doIt.");
+
+        //ensure it is ready-to-use by making a dataset from it
+        String2.log("results=\n" + results);
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), tTitle, "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "url, name, lastModified, size, fileType",
+            "");
+
+        String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
     }
 
@@ -1308,7 +1940,7 @@ String expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(remote files\\)\";\n" +
 "    String subsetVariables \"fileType\";\n" +
-"    String summary \"File Names from http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
+"    String summary \"File Names from https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
 "    String title \"File Names from Amazon AWS S3 NASA NEX tasmin Files\";\n" +
 "  \\}\n" +
 "\\}\n";
@@ -1362,6 +1994,400 @@ String expected =
 
     }
 
+    /**
+     * Test accessibleViaFilesFileTable fromFiles
+     */
+    public static void testAccessibleViaFilesFileTable(boolean deleteCachedInfo, 
+            boolean bigTest) throws Throwable {
+
+        String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable(deleteCachedInfo=" + deleteCachedInfo + ")");
+        String id = "awsS3NoaaGoes17" + (bigTest? "all" : "partial");
+        if (deleteCachedInfo) {
+            String2.log("This test will be slow.");
+            EDD.deleteCachedDatasetInfo(id);
+            File2.simpleDelete(EDD.datasetDir(id)); //delete the dir. (complete test)
+            EDD.deleteCachedDatasetInfo(id + "_child");
+        }
+        long time = System.currentTimeMillis();
+        EDDTableFromFileNames edd = (EDDTableFromFileNames)oneFromDatasetsXml(null, id);
+        time = (System.currentTimeMillis() - time) / 1000; //s
+        long expTime = (bigTest? 20 : 1) * (deleteCachedInfo? 14 : 9);
+        String2.log("loadDataset time=" + time + "s (expected=" + expTime + "s)");
+        Test.ensureTrue(time < expTime * 1.5, "");
+        Object o2[];
+        Table fileTable;
+        StringArray subDirs;
+        int fileTableNRows; 
+        String results, expected;
+
+        if (true) {
+            //root dir  
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("");  //what's in root dir?
+            time = System.currentTimeMillis() - time;
+            String2.log("root time=" + time + "ms");
+            fileTable = (Table)o2[0];  
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected = bigTest?
+"ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, GLM-L2-LCFA" :
+"ABI-L1b-RadC, ABI-L1b-RadF";
+            Test.ensureEqual(results, expected, "");
+            expTime = 100; //ms
+            String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 1.5, "");
+        }
+
+        if (true) {
+            //subdir    was 6s
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/");
+            time = System.currentTimeMillis() - time;
+            String2.log("ABI-L1b-RadC/ subdir time=" + time + "ms");
+            fileTable = (Table)o2[0];
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected =
+"2018, 2019";  
+            Test.ensureEqual(results, expected, "");
+            expTime = 100; //ms
+            String2.log("get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 1.5, "");
+        }
+
+        if (true) {
+            //subdir    712ms
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/2018/360/10/");
+            time = System.currentTimeMillis() - time;
+            String2.log("ABI-L1b-RadC/2018/360/10/ dir with files time=" + time + "ms");
+            fileTable = (Table)o2[0];
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104\n" +
+"...\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected = "";
+            Test.ensureEqual(results, expected, "");
+            expTime = 1300; //ms
+            String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 1.5, "");
+        }
+
+    }
+
+    /**
+     * testGenerateDatasetsXmlFromOnTheFly
+     */
+    public static void testGenerateDatasetsXmlFromOnTheFly() throws Throwable {
+        String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
+        try {
+
+        testVerboseOn();
+
+        String tDir = //***fromOnTheFly,urlDir
+            "***fromOnTheFly, https://noaa-goes17.s3.us-east-1.amazonaws.com/";
+        String tRegex = ".*\\.nc"; //for testing. would be .*
+        boolean tRecursive = true;
+        String tInfoUrl = "https://en.wikipedia.org/wiki/GOES-17";
+        String tInstitution = "NOAA"; 
+        String tSummary = "";     //test the auto-generated summary
+        String tTitle = "";       //test the auto-generated title
+        String tDatasetID = "noaa_goes17_s3_us_east_1_amazonaws_com_b19f_eecd_cc72";
+        String results = generateDatasetsXml(tDir, tRegex, tRecursive, -1, 
+            tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
+String expected = 
+"<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
+"    <fileDir>" + tDir + "</fileDir>\n" +
+"    <fileNameRegex>" + tRegex + "</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"creator_email\">null</att>\n" +
+"        <att name=\"creator_name\">null</att>\n" +
+"        <att name=\"creator_url\">null</att>\n" +
+"        <att name=\"history\">null</att>\n" +
+"        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
+"        <att name=\"institution\">" + tInstitution + "</att>\n" +
+"        <att name=\"keywords\">aws, bucket, data, file, goes17, identifier, lastModified, modified, name, names, noaa, noaa-goes17, size, time</att>\n" +
+"        <att name=\"sourceUrl\">https://noaa-goes17.s3.us-east-1.amazonaws.com/</att>\n" +
+"        <att name=\"summary\">This dataset has file information from the AWS S3 noaa-goes17 bucket at " +
+    "https://noaa-goes17.s3.us-east-1.amazonaws.com/ . " +
+    "Use ERDDAP&#39;s &quot;files&quot; system for this dataset to browse and download the files. " +
+    "The &quot;files&quot; information for this dataset is always perfectly up-to-date because ERDDAP gets it on-the-fly. " +
+    "AWS S3 doesn&#39;t offer a simple way to browser the files in buckets. " +
+    "This dataset is a solution to that problem for this bucket.</att>\n" +
+"        <att name=\"title\">File Names from the AWS S3 noaa-goes17 Bucket</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>url</sourceName>\n" +
+"        <destinationName>url</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">URL</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>name</sourceName>\n" +
+"        <destinationName>name</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Name</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>lastModified</sourceName>\n" +
+"        <destinationName>lastModified</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Last Modified</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>size</sourceName>\n" +
+"        <destinationName>size</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Other</att>\n" +
+"            <att name=\"long_name\">Size</att>\n" +
+"            <att name=\"units\">bytes</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Type</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <!-- You can create other variables which are derived from extracts\n" +
+"         from the file names.  Use an extractRegex attribute to specify a\n" +
+"         regular expression with a capturing group (in parentheses). The\n" +
+"         part of the file name which matches the specified capturing group\n" +
+"         (usually group #1) will be extracted to make the new data variable.\n" +
+"         fileType above shows how to extract a String. Below are examples\n" +
+"         showing how to extract a date, and how to extract an integer.\n" +
+"    <dataVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">jplMURSST(.*)\\.png</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"units\">yyyyMMddHHmmss</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>day</sourceName>\n" +
+"        <destinationName>day</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    -->\n" +
+"</dataset>\n\n\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromFileNames",
+            tDir, tRegex, "" + tRecursive, "-1", 
+            tInfoUrl, tInstitution, tSummary, tTitle,
+            "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, 
+            "Unexpected results from GenerateDatasetsXml.doIt.");
+
+        //ensure it is ready-to-use by making a dataset from it
+        String2.log("results=\n" + results);
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), 
+            "File Names from the AWS S3 noaa-goes17 Bucket",
+            "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "url, name, lastModified, size, fileType",
+            "");
+
+        String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
+    }
+
+    /**
+     * Test a ***fromOnTheFile dataset
+     */
+    public static void testOnTheFly() throws Throwable {
+
+        String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
+        String id = "awsS3NoaaGoes17";
+        long time = System.currentTimeMillis();
+        EDDTableFromFileNames edd = (EDDTableFromFileNames)oneFromDatasetsXml(null, id);
+        time = System.currentTimeMillis() - time;
+        long expTime = 3563;
+        String2.log("loadDataset time=" + time + "ms (expected=" + expTime + "ms)");
+        Test.ensureTrue(time < expTime * 2, "");
+        Object o2[];
+        String dir = EDStatic.fullTestCacheDirectory;
+        Table fileTable;
+        StringArray subDirs;
+        int fileTableNRows; 
+        String results, expected, tName;
+
+        if (true) {
+            //root dir  
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("");  //what's in root dir?
+            time = System.currentTimeMillis() - time;
+            String2.log("root time=" + time + "ms");
+            fileTable = (Table)o2[0];  
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, GLM-L2-LCFA";
+            Test.ensureEqual(results, expected, "");
+            expTime = 459; //ms
+            String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 2, "");
+        }
+
+        if (true) {
+            //subdir    
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/");
+            time = System.currentTimeMillis() - time;
+            String2.log("ABI-L1b-RadC/ subdir time=" + time + "ms");
+            fileTable = (Table)o2[0];
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected =
+"2018, 2019";  
+            Test.ensureEqual(results, expected, "");
+            expTime = 549; //ms
+            String2.log("get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 2, "");
+        }
+
+        if (true) {
+            //subdir    
+            time = System.currentTimeMillis();
+            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/2018/360/10/");
+            time = System.currentTimeMillis() - time;
+            String2.log("ABI-L1b-RadC/2018/360/10/ dir with files time=" + time + "ms");
+            fileTable = (Table)o2[0];
+            subDirs = new StringArray((String[])o2[1]);
+            fileTableNRows = fileTable.nRows();
+            Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
+            results = fileTable.dataToString(5);
+            expected =
+"directory,name,lastModified,size\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321\n" +
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104\n" +
+"...\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            results = subDirs.toString();
+            expected = "";
+            Test.ensureEqual(results, expected, "");
+            expTime = 693; //ms
+            String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
+            Test.ensureTrue(time < expTime * 2, "");
+        }
+
+        
+        tName = edd.makeNewFileForDapQuery(null, null, "", //entire dataset
+            dir, edd.className() + "_all", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"url,name,lastModified,size,fileType\n" +
+",,UTC,bytes,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        tName = edd.makeNewFileForDapQuery(null, null, "&url=~\".*-L1b-.*\"", 
+            dir, edd.className() + "_all", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"url,name,lastModified,size,fileType\n" +
+",,UTC,bytes,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+    }
      
     /**
      * This tests the methods in this class.
@@ -1376,8 +2402,17 @@ String expected =
         //always done        
         testGenerateDatasetsXml();
         testLocal();
+
         testGenerateDatasetsXmlAwsS3();
         testAwsS3();
+
+        testGenerateDatasetsXmlFromFiles();
+        testAccessibleViaFilesFileTable(true,  false);  //deleteCachedInfo, bigTest
+        testAccessibleViaFilesFileTable(false, false);
+
+        testGenerateDatasetsXmlFromOnTheFly();
+        testOnTheFly();
+
         /* */
     }
 

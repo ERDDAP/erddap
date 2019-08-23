@@ -2725,40 +2725,58 @@ public abstract class EDDTableFromFiles extends EDDTable{
     }
 
     /** 
+     * This gets a table with the DNLS info all the files.
+     * lastMod is type=LongArray epochMillis. size is type=LongArray.
+     */
+    public Table getDnlsTable() {
+        //get a copy of the source file information
+        Table tDirTable; 
+        Table tFileTable;
+        if (fileTableInMemory) {
+            tDirTable  = (Table)dirTable.clone();
+            tFileTable = (Table)fileTable.clone(); 
+        } else {
+            tDirTable  = tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+            tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); //shouldn't be null
+            Test.ensureNotNull(tDirTable, "dirTable");
+            Test.ensureNotNull(tFileTable, "fileTable");
+        }
+
+        //make the results Table
+        Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
+        dnlsTable.setColumn(0, tFileTable.getColumn(FT_DIR_INDEX_COL));
+        dnlsTable.setColumn(1, tFileTable.getColumn(FT_FILE_LIST_COL));
+        dnlsTable.setColumn(2, tFileTable.getColumn(FT_LAST_MOD_COL));
+        dnlsTable.setColumn(3, tFileTable.getColumn(FT_SIZE_COL));    
+        //convert dir Index to dir names
+        tDirTable.addColumn(0, "dirIndex", new IntArray(0, tDirTable.nRows() - 1));
+        dnlsTable.join(1, 0, "", tDirTable);
+        dnlsTable.removeColumn(0);
+        dnlsTable.setColumnName(0, FileVisitorDNLS.DIRECTORY);
+        return dnlsTable;
+    }
+
+    /** 
      * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-     * and size is LongArray of epochMillis)
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+     * and last_mod is LongArray of epochMillis)
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
      */
-    public Table accessibleViaFilesFileTable() {
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
         try {
-            //get a copy of the source file information
-            Table tDirTable; 
-            Table tFileTable;
-            if (fileTableInMemory) {
-                tDirTable  = (Table)dirTable.clone();
-                tFileTable = (Table)fileTable.clone(); 
-            } else {
-                tDirTable  = tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
-                tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); //shouldn't be null
-                Test.ensureNotNull(tDirTable, "dirTable");
-                Test.ensureNotNull(tFileTable, "fileTable");
-            }
+            Table dnlsTable = getDnlsTable();
 
-            //make the results Table
-            Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
-            dnlsTable.setColumn(0, tFileTable.getColumn(FT_DIR_INDEX_COL));
-            dnlsTable.setColumn(1, tFileTable.getColumn(FT_FILE_LIST_COL));
-            dnlsTable.setColumn(2, tFileTable.getColumn(FT_LAST_MOD_COL));
-            dnlsTable.setColumn(3, tFileTable.getColumn(FT_SIZE_COL));    
-            //convert dir Index to dir names
-            tDirTable.addColumn(0, "dirIndex", new IntArray(0, tDirTable.nRows() - 1));
-            dnlsTable.join(1, 0, "", tDirTable);
-            dnlsTable.removeColumn(0);
-            dnlsTable.setColumnName(0, FileVisitorDNLS.DIRECTORY);
+            //remove files other than fileDir+nextPath and generate array of immediate subDir names
+            String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(dnlsTable, fileDir + nextPath);
+            return new Object[]{dnlsTable, subDirs};
 
-            return dnlsTable;
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             return null;
@@ -3151,7 +3169,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         StringArray conValues = new StringArray(); 
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariablesNEC,  //sourceNames
-            conVars, conOps, conValues); //timeStamp constraints other than regex are epochSeconds
+            conVars, conOps, conValues); //timeStamp constraints other than regex are epochSeconds        
         if (reallyVerbose) String2.log("getDataForDapQuery sourceQuery=" + 
             formatAsDapQuery(resultsVariablesNEC.toArray(), 
                 conVars.toArray(), conOps.toArray(), conValues.toArray()));
@@ -3332,7 +3350,36 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             //make true sourceCon  (even time constraint values are source values)
             boolean keepCon = false;
-            if (tOp.equals(PrimitiveArray.REGEX_OP)) {
+            boolean sourceIsNumeric = 
+                edv.sourceDataTypeClass() != String.class &&
+                edv.sourceDataTypeClass() != Character.class;
+
+            if (isTimeStamp && (standardizeWhat & (2 + 1024 + 2048)) != 0) { 
+                //Standardized times always appear as numeric.
+                //In general, use of standardizeWhat implies that the source is variable,
+                //  so there is no generally applicable "source constraint".
+                //So remove constraints for
+                //  2 standardizes numeric times
+                //  1024,2048 cause string times to appear as numeric times
+                keepCon = false;
+
+            } else if (sourceIsNumeric && (standardizeWhat & (1 + 256)) != 0) {
+                //In general, use of standardizeWhat implies that the source is variable.
+                //So the unpacked values or mv values will differ in defferent files.
+                //So remove constraints for
+                //  1 unpack numeric values
+                //  256 find numeric mv
+                keepCon = false;
+
+            } else if (!sourceIsNumeric && (standardizeWhat & (4 + 512)) != 0) {
+                //In general, use of standardizeWhat implies that the source is variable.
+                //So the unpacked values or mv values will differ in defferent files.
+                //So remove constraints for
+                //  4 applies string mv
+                //  512 allows a wide variety of string missing values
+                keepCon = false;
+
+            } else if (tOp.equals(PrimitiveArray.REGEX_OP)) {
                 keepCon = sourceCanConstrainStringRegex.length() > 0 &&
                           edv.destValuesEqualSourceValues();
 

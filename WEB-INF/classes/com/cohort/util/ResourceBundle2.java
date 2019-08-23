@@ -4,8 +4,6 @@
  */
 package com.cohort.util;
 
-import com.cohort.array.StringComparatorIgnoreCase;
-
 import java.io.StringReader;
 
 import java.util.ArrayList;
@@ -305,7 +303,7 @@ public class ResourceBundle2 {
         if (secondaryRB != null) 
             cumulative.addAll(String2.toArrayList(secondaryRB.getKeys()));
         String sar[] = String2.toStringArray(cumulative.toArray());
-        Arrays.sort(sar, new StringComparatorIgnoreCase());
+        Arrays.sort(sar, String2.STRING_COMPARATOR_IGNORE_CASE);
         return sar;
     }
 

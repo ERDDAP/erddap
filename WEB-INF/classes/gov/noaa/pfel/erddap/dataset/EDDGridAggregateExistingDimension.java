@@ -402,25 +402,25 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             pathRegex = ".*";
         int onSourceUrls = sourceUrls.size();
         String regexHtml = regex + "\\.html"; //link href will have .html at end
-        String lines[] = null;
+        ArrayList<String> lines = null;
         try {
-            lines = SSR.getUrlResponseLines(startUrl);
+            lines = SSR.getUrlResponseArrayList(startUrl);
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return;
         }
         int nextLine = 0;
-        int nLines = lines.length;
+        int nLines = lines.size();
         if (nLines == 0) {
             String2.log("WARNING: The document has 0 lines.");
             return;
         }
 
         //look for <pre>
-        String line = lines[nextLine++];
+        String line = lines.get(nextLine++);
         String lcLine = line.toLowerCase();
         while (lcLine.indexOf("<pre>") < 0 && nextLine < nLines) {
-            line = lines[nextLine++];
+            line = lines.get(nextLine++);
             lcLine = line.toLowerCase();
         }
         if (nextLine >= nLines) {
@@ -444,7 +444,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         //extract url from each subsequent line, until </pre> or </PRE>
         while (nextLine < nLines) {
-            line = lines[nextLine++];
+            line = lines.get(nextLine++);
             lcLine = line.toLowerCase();
             if (lcLine.indexOf("</pre>") >= 0)
                 break;

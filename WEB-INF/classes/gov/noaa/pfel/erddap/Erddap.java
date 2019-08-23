@@ -12,7 +12,6 @@ import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
@@ -499,22 +498,33 @@ public class Erddap extends HttpServlet {
                     EDStatic.questionQuery(userQuery)));
 
             //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
-            int periodPo = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below for IP v4 address
-            if (periodPo < 0)
-                periodPo = ipAddress.lastIndexOf(':'); //to make #:#:#:#:#:#:#:* test below for IP v6 address
-            if (EDStatic.requestBlacklist != null &&
-                (EDStatic.requestBlacklist.contains(ipAddress) ||
-                 (periodPo >= 0 && EDStatic.requestBlacklist.contains(ipAddress.substring(0, periodPo+1) + "*")))) {
-                //use full ipAddress, to help id user                //odd capitilization sorts better
-                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
-                String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
-                if (EDStatic.slowDownTroubleMillis > 0)
-                    Math2.sleep(EDStatic.slowDownTroubleMillis);
-                EDStatic.lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                    MessageFormat.format(EDStatic.blacklistMsg, EDStatic.adminEmail));
-                return;
+            {
+                //for testing:
+                //  int tr = Math2.random(3);
+                //  ipAddress=tr==0? "101.2.34.56" : tr==1? "1:2:3:4:56:78" : "(unknownIPAddress)";
+                int periodPo1 = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below for IP v4 address
+                boolean hasPeriod = periodPo1 > 0;
+                if (!hasPeriod)
+                    periodPo1 = ipAddress.lastIndexOf(':'); //to make #:#:#:#:#:#:#:* test below for IP v6 address
+                String ipAddress1 = periodPo1 <= 0? null : ipAddress.substring(0, periodPo1+1) + "*";
+                int periodPo2 = ipAddress1 == null? -1 :   ipAddress.substring(0, periodPo1).lastIndexOf(hasPeriod? '.' : ':');
+                String ipAddress2 = periodPo2 <= 0? null : ipAddress.substring(0, periodPo2+1) + (hasPeriod? "*.*" : "*:*");
+                //String2.log(">> ipAddress=" + ipAddress + " ipAddress1=" + ipAddress1 + " ipAddress2=" + ipAddress2);
+                if (EDStatic.requestBlacklist != null &&
+                    (EDStatic.requestBlacklist.contains(ipAddress) ||
+                     (ipAddress1 != null && EDStatic.requestBlacklist.contains(ipAddress1)) ||   //#.#.#.*
+                     (ipAddress2 != null && EDStatic.requestBlacklist.contains(ipAddress2)))) {  //#.#.*.*
+                    //use full ipAddress, to help id user                //odd capitilization sorts better
+                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", ipAddress);
+                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
+                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
+                    String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
+                    if (EDStatic.slowDownTroubleMillis > 0)
+                        Math2.sleep(EDStatic.slowDownTroubleMillis);
+                    EDStatic.lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
+                        MessageFormat.format(EDStatic.blacklistMsg, EDStatic.adminEmail));
+                    return;
+                }
             }
 
             //tally ipAddress                                    //odd capitilization sorts better
@@ -1648,6 +1658,7 @@ public class Erddap extends HttpServlet {
 
             //Google login.html
             //  https://developers.google.com/identity/sign-in/web/
+            //  https://developers.google.com/identity/protocols/OpenIDConnect
             //ORCID 
             //  https://members.orcid.org/api/oauth/presenting-oauth
             //  https://members.orcid.org/sites/default/files/connect-button.txt
@@ -3880,13 +3891,14 @@ writer.write(
             //don't include setDatasetFlag.txt, setup.html, setupDatasetsXml.html, status.html, 
             writer.write(pre); writer.write("categorize/index.html");             writer.write(postMed);
             if (EDStatic.convertersActive) {
-                writer.write(pre); writer.write("convert/index.html");                    writer.write(postMed);
+                writer.write(pre); writer.write("convert/index.html");                          writer.write(postMed);
                 writer.write(pre); writer.write("convert/oceanicAtmosphericAcronyms.html");     writer.write(postHigh);
                 writer.write(pre); writer.write("convert/oceanicAtmosphericVariableNames.html");writer.write(postHigh);
-                writer.write(pre); writer.write("convert/fipscounty.html");               writer.write(postHigh);
-                writer.write(pre); writer.write("convert/keywords.html");                 writer.write(postHigh);
-                writer.write(pre); writer.write("convert/time.html");                     writer.write(postHigh);
-                writer.write(pre); writer.write("convert/units.html");                    writer.write(postHigh);
+                writer.write(pre); writer.write("convert/fipscounty.html");                     writer.write(postHigh);
+                writer.write(pre); writer.write("convert/keywords.html");                       writer.write(postHigh);
+                writer.write(pre); writer.write("convert/time.html");                           writer.write(postHigh);
+                writer.write(pre); writer.write("convert/units.html");                          writer.write(postHigh);
+                writer.write(pre); writer.write("convert/urls.html");                           writer.write(postHigh);
             }
             //Don't include /files. We don't want search engines downloading all the files.
             writer.write(pre); writer.write("griddap/documentation.html");        writer.write(postHigh);
@@ -3940,9 +3952,13 @@ writer.write(
             //special links only for ERD's erddap
             if (EDStatic.baseUrl.equals("http://coastwatch.pfeg.noaa.gov") || 
                 EDStatic.baseUrl.equals("https://coastwatch.pfeg.noaa.gov")) {
-                writer.write(pre); writer.write("download/grids.html");                 writer.write(postHigh);
-                writer.write(pre); writer.write("download/setup.html");                 writer.write(postHigh);
-                writer.write(pre); writer.write("download/setupDatasetsXml.html");      writer.write(postHigh);
+                writer.write(pre); writer.write("download/AccessToPrivateDatasets.html"); writer.write(postHigh);
+                writer.write(pre); writer.write("download/changes.html");                 writer.write(postHigh);
+                writer.write(pre); writer.write("download/EDDTableFromEML.html");         writer.write(postHigh);
+                writer.write(pre); writer.write("download/grids.html");                   writer.write(postHigh);
+                writer.write(pre); writer.write("download/NCCSV.html");                   writer.write(postHigh);
+                writer.write(pre); writer.write("download/setup.html");                   writer.write(postHigh);
+                writer.write(pre); writer.write("download/setupDatasetsXml.html");        writer.write(postHigh);
             }
 
             //write the dataset .html, .subset, .graph, wms, wcs, sos, ... urls
@@ -3960,7 +3976,7 @@ writer.write(
                 //don't include index/datasetID, .das, .dds; better that people go to .html or .graph
                 String dsi = sa.get(i);
                 writer.write(gPre); writer.write(dsi); writer.write(".html");        writer.write(postMed);    
-                writer.write(iPre); writer.write(dsi); writer.write("/index.html");  writer.write(postLow);
+                writer.write(iPre); writer.write(dsi); writer.write("/index.html");  writer.write(postMed);
                 //EDDGrid doesn't do SOS
                 EDDGrid eddg = gridDatasetHashMap.get(dsi);
                 if (eddg != null) {
@@ -3982,7 +3998,7 @@ writer.write(
             for (int i = 0; i < n; i++) {
                 String dsi = sa.get(i);
                 writer.write(tPre); writer.write(dsi); writer.write(".html");        writer.write(postMed);
-                writer.write(iPre); writer.write(dsi); writer.write("/index.html");  writer.write(postLow);
+                writer.write(iPre); writer.write(dsi); writer.write("/index.html");  writer.write(postMed);
                 //EDDTable currently don't do wms or wcs
                 EDD edd = tableDatasetHashMap.get(dsi);
                 if (edd != null) {
@@ -4503,20 +4519,29 @@ writer.write(
 
         //get the datasetID          percentDecode because there can be spaces (%20) in dir and file names
         String endOfRequestUrl = SSR.percentDecode(requestUrl.substring(datasetIDStartsAt));
-        //remove nextPath, e.g., after first / in datasetID/someDir/someSubDir
-        String id = endOfRequestUrl;
-        String nextPath = ""; 
+        //beware malformed nextPath, e.g., internal /../
+        if (endOfRequestUrl.indexOf("/../") >= 0) 
+            throw new SimpleException(EDStatic.queryError + "/../ is not allowed!");
+        if (endOfRequestUrl.indexOf('\\') >= 0) 
+            throw new SimpleException(EDStatic.queryError + "\\ is not allowed!");
+
+        //remove nextPath, e.g., after first / in datasetID/someDir/someSubDir/[someFile]
+        String id = endOfRequestUrl; //eventually will be datasetID
+        String nextPath   = null;   //after datasetID, before nameAndExt no leading /
+        String nameAndExt = null;
         int slashPoNP = endOfRequestUrl.indexOf('/');
         if (slashPoNP >= 0) {
-            id = endOfRequestUrl.substring(0, slashPoNP);
-            nextPath = endOfRequestUrl.substring(slashPoNP + 1); //no leading /
+            id        = endOfRequestUrl.substring(0, slashPoNP);
+            String ts = endOfRequestUrl.substring(slashPoNP + 1);
+            int po2 = ts.lastIndexOf('/');
+            if (po2 >= 0) {
+                nextPath   = File2.getDirectory(ts);   //after datasetID, before nameAndExt no leading /
+                nameAndExt = File2.getNameAndExtension(ts);
+            } else {
+                nextPath = "";
+                nameAndExt = ts;
+            }
 
-            //nextPath should already have only forward / 
-            nextPath = String2.replaceAll(nextPath, '\\', '/');
-
-            //beware malformed nextPath, e.g., internal /../
-            if (File2.addSlash("/" + nextPath + "/").indexOf("/../") >= 0) 
-                throw new SimpleException(EDStatic.queryError + "/../ not allowed!");
         } else {
             //no slash
             //is it documentation.html?
@@ -4540,10 +4565,8 @@ writer.write(
 
             } else {
                 //presumably it is a datasetID without trailing slash, so add it and redirect
-                if (!fullRequestUrl.endsWith("/")) { //required for table.directoryListing below
-                    sendRedirect(response, fullRequestUrl + "/");  
-                    return;               
-                }
+                sendRedirect(response, fullRequestUrl + "/");  
+                return;               
             }
         }
         //String2.log(">>nextPath=" + nextPath + " endOfRequestUrl=" + endOfRequestUrl);
@@ -4582,15 +4605,18 @@ writer.write(
 
         //catch pseudo filename that is just an extension 
         //  (hence RESTful request for filenames)
-        String localFullName = fileDir + nextPath;
-        String justExtension = File2.getNameAndExtension(localFullName);
+
+        String localDir = fileDir + nextPath; //where I access source
+        String localFullName = localDir + nameAndExt;
+        String webDir = File2.getDirectory(fullRequestUrl);  //what user as apparent location
+        String ext = File2.getExtension(nameAndExt);
+
+        String justExtension = nameAndExt;
         int tWhich = String2.indexOf(plainFileTypes, justExtension);
         if (tWhich >= 0) {
             //The "fileName" is just one of the plainFileType extensions, e.g., .csv.
             //Remove justExtension from localFullName and nextPath.
-            localFullName = localFullName.substring(0, localFullName.length() - justExtension.length());
-            nextPath = nextPath.substring(0, nextPath.length() - justExtension.length());
-            //request will be handled below
+            localFullName = localDir;
 
         } else {
             justExtension = "";
@@ -4598,78 +4624,66 @@ writer.write(
 
         //get the accessibleViaFilesFileTable
         //Formatted like 
-        //FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
-        //and size is LongArray of epochMillis)
+        //FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
+        //and last_mod is LongArray of epochMillis)
         //with valid files (or null if unavailable or any trouble).
         //This is a copy of any internal data, so contents can be modified.
-        Table fileTable = edd.accessibleViaFilesFileTable();
-        if (fileTable == null) {
+        //It returns null if dataset if trouble,
+        //  or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
+        //  [1] is a sorted String[] with the short names of directories that are 1 level lower.
+        Object o2[] = edd.accessibleViaFilesFileTable(nextPath);
+        if (o2 == null) { //shouldn't happen
             sendResourceNotFoundError(request, response, 
                 "File info for this dataset is currently unavailable.");
             return;
         }
-        int fileTableRow;
+        Table fileTable = (Table)o2[0];
+        StringArray subDirs = new StringArray((String[])o2[1]);
         int fileTableNRows = fileTable.nRows();
+        if (fileTableNRows == 0 && subDirs.size() == 0) {
+            sendResourceNotFoundError(request, response, 
+                EDStatic.resourceNotFound + " directory=" + nextPath);
+            return;
+        }
         StringArray dirSA  = (StringArray)fileTable.getColumn(0);
         StringArray nameSA = (StringArray)fileTable.getColumn(1);
 
-        String localDir = File2.getDirectory(localFullName); //where I access source
-        String webDir = File2.getDirectory(fullRequestUrl);  //what user as apparent location
-        String nameAndExt = File2.getNameAndExtension(localFullName);
-        String ext = File2.getExtension(nameAndExt);
-
         //is it a file in the fileTable?
+        //System.out.println(nameSA.toNewlineString() + "\nnameAndExt=" + nameAndExt);
         if (nameAndExt.length() > 0) {
-            fileTableRow = 0;
-            while (fileTableRow < fileTableNRows && 
-                (!localDir.equals(   dirSA.get(fileTableRow)) || 
-                 !nameAndExt.equals(nameSA.get(fileTableRow))))
-                fileTableRow++;
-            if (fileTableRow < fileTableNRows) {
-                OutputStreamSource outSource = new OutputStreamFromHttpResponse(
-                    request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
-                OutputStream outputStream = 
-                    outSource.outputStream("", File2.length(localFullName));
-                doTransfer(request, response, localDir, webDir, nameAndExt, 
-                    outputStream, outSource.usingCompression());
+            int fileTableRow = nameSA.indexOf(nameAndExt);
+            if (fileTableRow >= 0) {
+                if (String2.isRemote(localDir)) {
+                    //remote
+                    sendRedirect(response, localDir + nameAndExt);  
+                } else {
+                    //local
+                    OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                        request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
+                    OutputStream outputStream = 
+                        outSource.outputStream("", File2.length(localFullName));
+                    doTransfer(request, response, localDir, webDir, nameAndExt, 
+                        outputStream, outSource.usingCompression());
+                }
 
                 //tally
                 EDStatic.tally.add("files download DatasetID (since startup)", id);
                 EDStatic.tally.add("files download DatasetID (since last daily report)", id);
                 return;
-            }
-        }
+            } else {
 
-        //reduce fileTable to just files in that dir
-        boolean addedSlash = false;
-        if (nameAndExt.length() > 0) {
-            //perhaps user forgot trailing slash
-            localDir += nameAndExt + "/";
-            webDir += nameAndExt + "/";
-            nameAndExt = "";
-            addedSlash = true;
-        }
-        int localDirLength = localDir.length();
-        HashSet subdirHash = new HashSet(); //catch all subdirectories
-        BitSet keep = new BitSet(fileTableNRows);  //all false
-        for (int row = 0; row < fileTableNRows; row++) {
-            String tDir = dirSA.get(row);
-            if (tDir.startsWith(localDir)) {
-                if (tDir.length() == localDirLength) {
-                    keep.set(row);
+                //not found! trouble! nameAndExt is something but isn't a file. 
+                if (subDirs.indexOf(nameAndExt) >= 0) { 
+                    //nameAndExt is a dir without trailing / 
+                    sendRedirect(response, fullRequestUrl + '/');   //always /
+                    return; 
                 } else {
-                    //add next-level directory name
-                    subdirHash.add(tDir.substring(localDirLength, tDir.indexOf('/', localDirLength))); 
+                    //nameAndExt is a non-existent file
+                    sendResourceNotFoundError(request, response, 
+                        MessageFormat.format(EDStatic.errorFileNotFound, webDir + nameAndExt));
+                    return;
                 }
             }
-        }
-        fileTable.removeColumn(0); //directory
-        fileTable.justKeep(keep);
-        fileTableNRows = fileTable.nRows();
-        //yes, there's a match
-        if (addedSlash) {
-            sendRedirect(response, fullRequestUrl + "/");  
-            return;               
         }
 
         //handle justExtension request  e.g., datasetID/.csv[?constraintExpression]
@@ -4694,10 +4708,13 @@ writer.write(
             return;
         }*/
 
+        //
+
         //show directory index
-        //make columns: "Name" (String), "Last modified" (long), 
+        //make column names: "Name" (String), "Last modified" (long), 
         //  "Size" (long), and "Description" (String)        
-        StringArray subDirs = new StringArray((String[])(subdirHash.toArray(new String[0])));
+        fileTable.removeColumn(0); //directory
+        dirSA = null; //gc
         fileTable.setColumnName(0, "Name");
         fileTable.setColumnName(1, "Last modified");
         fileTable.setColumnName(2, "Size");            
@@ -5023,7 +5040,7 @@ writer.write(
      * Process a SOS request.
      * This SOS service is intended to simulate the 
      * 52N SOS server (the OGC reference implementation) 
-     *   http://sensorweb.demo.52north.org/52nSOSv3.2.1/sos 
+     *   https://sensorweb.demo.52north.org/52nSOSv3.2.1/sos 
      * and the IOOS DIF SOS services (datasetID=ndbcSOS...).
      *   e.g., ndbcSosWind https://sdf.ndbc.noaa.gov/sos/ .
      * For IOOS DIF schemas, see https://ioos.github.io/sos-dif/dif/welcome.html .
@@ -14207,7 +14224,7 @@ writer.write(
                 answerFullName.length() > 0? answerFullName :
                 queryFullName.length()  > 0? queryFullName  : defaultFullName;
             String options[] = fullNameSA.toStringArray();
-            Arrays.sort(options, new StringComparatorIgnoreCase());
+            Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
             writer.write(
                 "<br>" +
                 widgets.beginForm("getAcronym", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "") +
@@ -14419,7 +14436,7 @@ writer.write(
                 answerFullName.length() > 0? answerFullName :
                 queryFullName.length()  > 0? queryFullName  : defaultFullName;
             String options[] = fullNameSA.toStringArray();
-            Arrays.sort(options, new StringComparatorIgnoreCase());
+            Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
             writer.write(
                 "<br>&nbsp;\n" +  //necessary for the blank line before start of form (not <p>)
                 widgets.beginForm("getVariableName", "GET", tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html", "") +

@@ -166,6 +166,7 @@ public class EDStatic {
      * <br>1.82 released on 2018-01-26
      * <br>2.00 released on 2019-06-26
      * <br>2.01 released on 2019-07-02
+     * <br>2.02 released on 2019-08-21
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -179,7 +180,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.01"; //see comment above
+    public static String erddapVersion = "2.02"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -617,6 +618,7 @@ public static boolean developmentMode = false;
         erddapHttpsUrl,  //without slash at end   (may be useless, but won't be null)
         preferredErddapUrl,  //without slash at end   (https if avail, else http)
         fullDatasetDirectory,  //all the Directory's have slash at end
+        fullFileVisitorDirectory,
         fullCacheDirectory,
         fullDecompressedDirectory,
         fullDecompressedGenerateDatasetsXmlDirectory,
@@ -1537,6 +1539,9 @@ public static boolean developmentMode = false;
         //*** set up directories  //all with slashes at end
         //before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
         fullDatasetDirectory      = bigParentDirectory + "dataset/";  
+        fullFileVisitorDirectory  = fullDatasetDirectory + "_FileVisitor/";
+        FileVisitorDNLS.FILE_VISITOR_DIRECTORY = fullFileVisitorDirectory;
+        File2.deleteAllFiles(fullFileVisitorDirectory); //no temp file list can be active at ERDDAP restart
         fullCacheDirectory        = bigParentDirectory + "cache/";
         fullDecompressedDirectory = bigParentDirectory + "decompressed/";
         fullDecompressedGenerateDatasetsXmlDirectory
@@ -3041,6 +3046,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         NcHelper.verbose = verbose;
         OutputStreamFromHttpResponse.verbose = verbose;
         PathCartesianRenderer.verbose = verbose;
+        PrimitiveArray.verbose = verbose;
         Projects.verbose = verbose;
         //ResourceBundle2.verbose = verbose;
         RunLoadDatasets.verbose = verbose;
@@ -3066,6 +3072,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         LoadDatasets.reallyVerbose = reallyVerbose;
         NcHelper.reallyVerbose = reallyVerbose;
         PathCartesianRenderer.reallyVerbose = reallyVerbose;
+        PrimitiveArray.reallyVerbose = reallyVerbose;
         SgtGraph.reallyVerbose = reallyVerbose;
         SgtMap.reallyVerbose = reallyVerbose;
         SgtUtil.reallyVerbose = reallyVerbose;
@@ -3643,7 +3650,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             HashSet hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
             for (int i = 0; i < rb.length; i++)
                 hs.add(rb[i]);
-            requestBlacklist = hs; //set in an instant
+            requestBlacklist = hs; //set atomically
             String2.log("requestBlacklist is now " + String2.toCSSVString(rb));
         }
     }
@@ -3753,6 +3760,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(SgtMap.stateBoundaries.statsString() + "\n");
         sb.append(SgtMap.rivers.statsString() + "\n");
         sb.append(SgtUtil.isBufferedImageAccelerated() + "\n");
+        sb.append(String2.canonicalStatistics() + "\n");
         sb.append('\n');
 
     }
@@ -4326,12 +4334,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         StringArray col2 = new StringArray();
         table.addColumn("acronym", col1);
         table.addColumn("fullName", col2);
-        String lines[] = String2.readLinesFromFile(
+        ArrayList<String> lines = String2.readLinesFromFile(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
             String2.ISO_8859_1, 1);
-        int nLines = lines.length;
+        int nLines = lines.size();
         for (int i = 1; i < nLines; i++) { //1 because skip colNames
-            String s = lines[i].trim();
+            String s = lines.get(i).trim();
             if (s.length() == 0 || s.startsWith("//"))
                 continue;
             int po = s.indexOf('\t');
@@ -4359,12 +4367,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         StringArray col2 = new StringArray();
         table.addColumn("variableName", col1);
         table.addColumn("fullName", col2);
-        String lines[] = String2.readLinesFromFile(
+        ArrayList<String> lines = String2.readLinesFromFile(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
             String2.ISO_8859_1, 1);
-        int nLines = lines.length;
+        int nLines = lines.size();
         for (int i = 1; i < nLines; i++) {
-            String s = lines[i].trim();
+            String s = lines.get(i).trim();
             if (s.length() == 0 || s.startsWith("//"))
                 continue;
             int po = s.indexOf('\t');

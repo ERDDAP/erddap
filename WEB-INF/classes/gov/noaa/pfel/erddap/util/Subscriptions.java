@@ -6,7 +6,6 @@ package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.IntArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -758,7 +757,7 @@ public class Subscriptions {
     public synchronized String listSubscriptions() throws Throwable {
 
         String emails[] = String2.toStringArray(emailSubscriptions.keySet().toArray());
-        Arrays.sort(emails, new StringComparatorIgnoreCase());
+        Arrays.sort(emails, String2.STRING_COMPARATOR_IGNORE_CASE);
         StringBuilder sb = new StringBuilder(
             "List of Valid and Pending Subscriptions:\n" +
             "(nEmailAddress=" + emails.length + 

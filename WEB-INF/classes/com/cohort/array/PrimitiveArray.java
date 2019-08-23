@@ -39,6 +39,15 @@ import java.util.regex.Pattern;
  */  
 public abstract class PrimitiveArray {
 
+
+    /**
+     * Set these to true (by calling verbose=true in your program, not by changing the code here)
+     * if you want lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean verbose = false;
+    public static boolean reallyVerbose = false; 
+    public static boolean debugMode = false;    
+
     /** The number of active values (which may be different from the array's capacity). */
     protected int size = 0;
 
@@ -319,9 +328,9 @@ public abstract class PrimitiveArray {
         }
         if (elementClass == String.class) {
             Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(String, " + size + ")"); //8L is crude estimate of size
-            String ar[] = new String[size];
-            Arrays.fill(ar, String2.canonical(constantValue)); 
-            return new StringArray(ar);
+            StringArray sa = new StringArray(size, false);
+            sa.addN(size, constantValue); 
+            return sa;
         }
         throw new IllegalArgumentException(String2.ERROR + 
             " in PrimitiveArray.factory: unexpected elementClass: " + elementClass);
@@ -2283,12 +2292,13 @@ public abstract class PrimitiveArray {
      *   And if a value in the column has an internal "." (e.g., 5.0), 
      *   the column will not be converted to an integer type.
      *
+     * @param colName is for diagnostics only
      * @return the simpliest possible PrimitiveArray (possibly this PrimitiveArray) 
      *     (although not a CharArray).
      *     A LongArray may return a LongArray, but a StringArray with longs will return a StringArray
      *     (because long ints are often used as String-like identifiers and .nc files don't support longs).
      */
-    public PrimitiveArray simplify() {
+    public PrimitiveArray simplify(String colName) {
         int type = 0; //the current, simplest possible type
         int n = size();
         boolean isStringArray = this instanceof StringArray;
@@ -2301,26 +2311,31 @@ public abstract class PrimitiveArray {
             if (isStringArray) {
                 String s = getString(i);
 
+                if (!String2.isSomething2(s)) //this catches a large number of string and numeric missing value stand-ins, but not NaN
+                    continue;
+                /* 2019-07-30 was
                 if (s == null || s.equals(".") || s.equals("")) 
                     //non-specific, skip this row
-                    continue;
+                    continue; */
 
-                if (s.equals("NaN")) {
+                if (s.toLowerCase().equals("nan")) { //signifies a numeric missing value
                     //non-specific, skip this row
                     hasNaN = true;
                     continue;
-                }
+                } 
 
                 //there's something in this column other than e.g., ""
                 hasSomething = true;
 
-                //if a String is found (not an acceptable "NaN" string above), return original array
-                //look for e.g., serial number (e.g., 0153) with leading 0 that must be kept as string
-                if (s.length() >= 2 && s.charAt(0) == '0' && s.charAt(1) >= '0' && s.charAt(1) <= '9') 
-                    return this; 
-
-                if (Double.isNaN(d)) 
+                //If a String is found (not an acceptable "NaN" string above), return original array
+                //Look for e.g., serial number (e.g., 0153) with leading 0+digit that must be kept as string.
+                //But if first 2 chars are "0.", this is a number, e.g., 0.14
+                if ((s.length() >= 2 && s.charAt(0) == '0' && s.charAt(1) >= '0' && s.charAt(1) <= '9') ||
+                     Double.isNaN(d)) {  //it evaluates to NaN (even though common missing value 
+                    if (reallyVerbose) String2.log("PrimitiveArray.simplify says column=" + 
+                        colName + " is type=String because of value=" + s);
                     return this; //it's already a StringArray
+                }
 
                 //if string source column with an internal '.', don't let it be an integer type;
                 //always treat as at least a float
@@ -3490,6 +3505,19 @@ public abstract class PrimitiveArray {
              "Unknown operator=\"" + op + "\".");
      }
 
+    /** 
+     * This is applies one constraint and just keeps the results.
+     */
+    public int applyConstraintAndKeep(boolean morePrecise, String op, String value2) {
+        BitSet keep = new BitSet();
+        keep.set(0, size());
+        int nGood = applyConstraint(morePrecise, keep, op, value2);
+        if (nGood == 0) 
+            clear();
+        else justKeep(keep);
+        return nGood;
+    }
+
     /**
      * This tests the keep=true elements to see if 'get(element) op value2' is true.
      *   If the test is false, the keep element is set to false.
@@ -4183,7 +4211,7 @@ public abstract class PrimitiveArray {
 
         //test simplify
         pa = new StringArray(new String[]{"-127", "126", ".", "NaN", null});
-        pa = pa.simplify();
+        pa = pa.simplify("test1");
         Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getDouble(0), -127, "");
         Test.ensureEqual(pa.getDouble(1), 126, "");
@@ -4199,89 +4227,89 @@ public abstract class PrimitiveArray {
         //Test.ensureEqual(pa.getDouble(2), Character.MAX_VALUE, "");
 
         pa = new StringArray(new String[]{"-32767", "32766", "."});
-        pa = pa.simplify();
+        pa = pa.simplify("test2");
         Test.ensureTrue(pa instanceof ShortArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getDouble(0), -32767, "");
         Test.ensureEqual(pa.getDouble(1), 32766, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-2000000000", "2000000000", "."});
-        pa = pa.simplify();
+        pa = pa.simplify("test3");
         Test.ensureTrue(pa instanceof IntArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getDouble(0), -2000000000, "");
         Test.ensureEqual(pa.getDouble(1), 2000000000, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", ""});
-        pa = pa.simplify();
+        pa = pa.simplify("test4");
         Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "", "");
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", "NaN"});
-        pa = pa.simplify();
+        pa = pa.simplify("test5");
         Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "NaN", "");
 
         pa = new StringArray(new String[]{"-1e33", "1e33", "."});
-        pa = pa.simplify();
+        pa = pa.simplify("test6");
         Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getDouble(0), -1e33f, ""); //'f' bruises it
         Test.ensureEqual(pa.getDouble(1), 1e33f, "");  //'f' bruises it
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-1e307", "1e307", "."});
-        pa = pa.simplify();
+        pa = pa.simplify("test7");
         Test.ensureTrue(pa instanceof DoubleArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getDouble(0), -1e307, "");
         Test.ensureEqual(pa.getDouble(1), 1e307, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{".", "123", "4b"});
-        pa = pa.simplify();
+        pa = pa.simplify("test8");
         Test.ensureTrue(pa instanceof StringArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getString(0), ".", "");
         Test.ensureEqual(pa.getString(1), "123", "");
         Test.ensureEqual(pa.getString(2), "4b", "");
 
         pa = new StringArray(new String[]{".", "33.0"}); //with internal "." -> float
-        pa = pa.simplify();
+        pa = pa.simplify("test9");
         Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getString(0), "", "");
         Test.ensureEqual(pa.getString(1), "33.0", "");
 
         pa = new StringArray(new String[]{".", "33"});  //no internal ".", can be integer type
-        pa = pa.simplify();
+        pa = pa.simplify("test10");
         Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getString(0), "", "");
         Test.ensureEqual(pa.getString(1), "33", "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 123.4, 12});
-        pa = pa.simplify();
+        pa = pa.simplify("test11");
         Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getFloat(0), Float.NaN, "");
         Test.ensureEqual(pa.getFloat(1), 123.4f, "");
         Test.ensureEqual(pa.getFloat(2), 12f, "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 100000, 12});
-        pa = pa.simplify();
+        pa = pa.simplify("test12");
         Test.ensureTrue(pa instanceof IntArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100000, "");
         Test.ensureEqual(pa.getInt(2), 12, "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 100, 12});
-        pa = pa.simplify();
+        pa = pa.simplify("test13");
         Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100, "");
         Test.ensureEqual(pa.getInt(2), 12, "");
 
         pa = new IntArray(new int[]{Integer.MAX_VALUE, 100, 12});
-        pa = pa.simplify();
+        pa = pa.simplify("test14");
         Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100, "");
@@ -4322,25 +4350,29 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(arByte.array,   new byte[]{  110,   0,   50,  100},   ""); //col0
         Test.ensureEqual(arFloat.array,  new float[]{ -5,    1,   3,   3},     ""); //col1
         Test.ensureEqual(arDouble.array, new double[]{0,     17,  3,   1e300}, ""); //col2
-        Test.ensureEqual(arString.array, new String[]{"ABE", "a", "A", "abe"}, ""); //col3
+        for (int i = 0; i < 4; i++)
+            Test.ensureEqual(arString.get(i), (new String[]{"ABE", "a", "A", "abe"})[i], "i=" + i); //col3
 
         //test sort  result = {3, 0, 1, 2});
         sort(table, new int[]{1, 0}, new boolean[]{true, false}); //tie, a/descending
         Test.ensureEqual(arByte.array,   new byte[]{  110,   0,   100,   50},  "");
         Test.ensureEqual(arFloat.array,  new float[]{ -5,    1,   3,     3},   "");
         Test.ensureEqual(arDouble.array, new double[]{0,     17,  1e300, 3},   "");
-        Test.ensureEqual(arString.array, new String[]{"ABE", "a", "abe", "A"}, "");
+        for (int i = 0; i < 4; i++)
+            Test.ensureEqual(arString.get(i), (new String[]{"ABE", "a", "abe", "A"})[i], "i=" + i);
 
         //test sortIgnoreCase  
         sortIgnoreCase(table, new int[]{3}, new boolean[]{true}); 
-        Test.ensureEqual(arString.array, new String[]{"A", "a", "ABE", "abe"}, "arString=" + arString);  //col3
+        for (int i = 0; i < 4; i++)
+            Test.ensureEqual(arString.get(i), (new String[]{"A", "a", "ABE", "abe"})[i], "i=" + i + " arString=" + arString);  //col3
         Test.ensureEqual(arByte.array,   new byte[]{  50,  0,   110,    100},   ""); //col0
         Test.ensureEqual(arFloat.array,  new float[]{  3,  1,   -5,     3},     ""); //col1
         Test.ensureEqual(arDouble.array, new double[]{ 3,  17,  0,    1e300}, "");   //col2
 
         //test sortIgnoreCase  
         sortIgnoreCase(table, new int[]{3}, new boolean[]{false}); 
-        Test.ensureEqual(arString.array, new String[]{"abe", "ABE", "a", "A"}, "");  //col3
+        for (int i = 0; i < 4; i++)
+            Test.ensureEqual(arString.get(i), (new String[]{"abe", "ABE", "a", "A"})[i], "i=" + i);  //col3
         Test.ensureEqual(arByte.array,   new byte[]{  100,    110,   0,  50},   ""); //col0
         Test.ensureEqual(arFloat.array,  new float[]{   3,    -5,    1,   3},   ""); //col1
         Test.ensureEqual(arDouble.array, new double[]{1e300,   0,   17,   3},   ""); //col2

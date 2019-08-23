@@ -476,7 +476,7 @@ public class GenerateThreddsXml {
                         "      <serviceName>all</serviceName>\n" +
                         //2006/10/11 I added netcdf tag:
                         //documentation: https://oceanwatch.pfeg.noaa.gov/thredds/docs/NcML.htm
-                        "      <netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\"> \n" +
+                        "      <netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\"> \n" +
                         "        <aggregation dimName=\"time\" type=\"joinExisting\" recheckEvery=\"" + recheckEvery + " min\"> \n" +
                         "          <variableAgg name=\"" + twoName + fourName + "\" /> \n" +
                         //Eeek! Is dateFormatMark correct?  it catches start date and treats composite end date as HHmmss

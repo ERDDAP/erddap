@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -523,7 +524,7 @@ public class Table  {
      * @param col the column to be simplified, 0...
      */
     public void simplify(int col) {
-        columns.set(col, getColumn(col).simplify());
+        columns.set(col, getColumn(col).simplify(getColumnName(col)));
     }
 
     /**
@@ -906,6 +907,20 @@ public class Table  {
         int nCols = nColumns();
         for (int col = 0; col < nCols; col++) 
             columns.get(col).atInsertString(index, "");
+    }
+
+    /**
+     * Moves rows 'first' through 'last' (inclusive)
+     *   to 'destination', shifting intermediate values to fill the gap.
+     *
+     * @param first  the first to be move
+     * @param last  (exclusive)
+     * @param destination the destination, can't be in the range 'first+1..last-1'.
+     */
+    public void moveRows(int first, int last, int destination) {
+        int nCols = nColumns();
+        for (int col = 0; col < nCols; col++) 
+            columns.get(col).move(first, last, destination);
     }
 
     /**
@@ -2122,7 +2137,8 @@ public class Table  {
         String testColumns[], double testMin[], double testMax[], 
         String loadColumns[], boolean simplify) throws Exception {
 
-        readASCII(fullFileName, String2.readLinesFromFile(fullFileName, charset, 2), 
+        readASCII(fullFileName, 
+            File2.getDecompressedBufferedFileReader(fullFileName, charset), 
             columnNamesLine, dataStartLine, tColSeparator,
             testColumns, testMin, testMax, loadColumns, simplify); 
     }
@@ -2177,11 +2193,12 @@ public class Table  {
      * </ul>
      *
      * @param fileName for diagnostic messages only
-     * @param lines the array of ASCII strings with the info from the file
+     * @param linesReader the array of ASCII strings with the info from the file.
+     *    This will always close the reader.
      * @param columnNamesLine (0.., or -1 if no names).
      *    If there are no columnNames, names in the form "Column#<col>" 
      *    (where col is 0 .. nColumns) will be created.
-     * @param dataStartLine (0..)
+     * @param dataStartLine (0..)  Usually 1 or 2.
      * @param tColSeparator the character that separates the columns. 
      *   Use "" or null to have this method guess. Otherwise,
      *   the first character of this string will be used.
@@ -2204,10 +2221,15 @@ public class Table  {
      * @throws Exception if trouble  
      *    (e.g., a specified testColumn or loadColumn not found)
      */
-    public void readASCII(String fileName, String lines[], int columnNamesLine, 
+    public void readASCII(String fileName, BufferedReader linesReader, int columnNamesLine, 
         int dataStartLine, String tColSeparator,
         String testColumns[], double testMin[], double testMax[], 
-        String loadColumns[], boolean simplify) {
+        String loadColumns[], boolean simplify) throws Exception {
+
+        try { 
+
+        //this method caches initial lines read to enable re-reading some lines near the start
+        ArrayList<String> linesCache = new ArrayList();
 
         //validate parameters
         if (reallyVerbose) String2.log("Table.readASCII " + fileName); 
@@ -2220,19 +2242,24 @@ public class Table  {
                 errorInMethod + "testColumns.length != testMin.length.");
             Test.ensureEqual(testColumns.length, testMax.length, 
                 errorInMethod + "testColumns.length != testMax.length.");
+            Test.ensureTrue(columnNamesLine < dataStartLine, 
+                errorInMethod + "columnNamesLine=" + columnNamesLine + 
+                " must be less than dataStartLine=" + dataStartLine + ".");
+            Test.ensureTrue(dataStartLine >= 0, 
+                errorInMethod + "dataStartLine=" + dataStartLine + " must be >=0.");
         }
 
         //clear everything
         clear();
 
-        //remove empty rows at end
-        int nRows = lines.length - dataStartLine;
-        while (nRows > 0) {
-            String ts = lines[dataStartLine + nRows - 1].trim();
-            if (ts.length() == 0 || ts.equals("\r"))
-                nRows--;
-            else break;
-        }        
+        //try to read up to 3rd row of data
+        for (int row = 0; row < dataStartLine + 3; row++) {
+            String s = linesReader.readLine(); //null if end. exception if trouble
+            if (s == null)
+                break;
+            linesCache.add(s);
+        }
+        int linesCacheSize = linesCache.size();
 
         //determine column separator
         //look for separator that appears the most and on in 3 test lines
@@ -2243,12 +2270,12 @@ public class Table  {
             int nComma = 1;
             int nSemi  = 1;
             int nSpace = 1;
-            for (int row = 0; row < Math.min(3, nRows); row++) {
-                oneLine = lines[dataStartLine + row];
-                nTab   *= String2.countAll(oneLine, "\t");
+            for (int row = dataStartLine; row < linesCacheSize; row++) {
+                oneLine = linesCache.get(row);
+                nTab   *= String2.countAll(oneLine, "\t"); //* (not +) puts emphasis on every line having several of the separator
                 nComma *= String2.countAll(oneLine, ",");
                 nSemi  *= String2.countAll(oneLine, ";");
-                nSpace *= String2.countAll(oneLine, " ");
+                nSpace *= String2.countAll(oneLine, " ");  //lines with lots of text can fool this
             }
             colSeparator = 
                 nTab   >= 1 && nTab   >= Math.max(nComma, nSemi)? '\t':
@@ -2266,9 +2293,7 @@ public class Table  {
         StringArray fileColumnNames = new StringArray();
         int expectedNItems = -1;
         if (columnNamesLine >= 0) {
-            oneLine = lines[columnNamesLine];
-            if (oneLine.endsWith("\r"))
-                oneLine = oneLine.substring(0, oneLine.length() - 1);
+            oneLine = linesCache.get(columnNamesLine);
             oneLine = oneLine.trim();
             //break the lines into items
             String items[];
@@ -2292,32 +2317,43 @@ public class Table  {
         int loadColumnNumbers[] = null;
         StringArray loadColumnSA[] = null;
         boolean missingItemNoted = false;
-        String canonicalEmptyString = String2.canonical("");
         StringBuilder warnings = new StringBuilder();
-        for (int row = 0; row < nRows; row++) {
-            oneLine = lines[dataStartLine + row];
-            if (oneLine.endsWith("\r"))
-                oneLine = oneLine.substring(0, oneLine.length() - 1);
+        int row = dataStartLine - 1; //row in file
+        while (true) {
+            row++;
+            oneLine = null;
+            if (row < linesCacheSize) {
+                oneLine = linesCache.get(row);
+                linesCache.set(row, null);
+            } else {
+                oneLine = linesReader.readLine();
+                if (oneLine == null)
+                    break;  //end of linesReader content
+            }
+            //if (debugMode && row % 1000000 == 0) {
+            //    Math2.gcAndWait(); 
+            //    String2.log(Math2.memoryString() + "\n" + String2.canonicalStatistics());
+            //}
 
             String items[];
             try {
                 //break the lines into items
-                if (colSeparator == '\u0000')
-                    items = new String[]{oneLine.trim()};
+                if (colSeparator == ',')
+                    items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases
                 else if (colSeparator == ' ')
                     items = StringArray.wordsAndQuotedPhrases(oneLine).toArray();
-                else if (colSeparator == ',')
-                    items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases
+                else if (colSeparator == '\u0000')
+                    items = new String[]{oneLine.trim()};
                 else items = String2.split(oneLine, colSeparator);
                 //if (reallyVerbose) String2.log("row=" + row + " nItems=" + items.length + 
                 //    "\nitems=" + String2.toCSSVString(items));
             } catch (Exception e) {
-                warnings.append(String2.WARNING + ": line #" + (dataStartLine + row) + ": " + e.getMessage() + "\n");
+                warnings.append(String2.WARNING + ": line #" + row + ": " + e.getMessage() + "\n");
                 continue;
             }
 
             //one time things 
-            if (row == 0) {
+            if (row == dataStartLine) {
                 if (expectedNItems < 0)
                     expectedNItems = items.length;
 
@@ -2343,7 +2379,7 @@ public class Table  {
                     loadColumnSA = new StringArray[fileColumnNames.size()];
                     for (int col = 0; col < fileColumnNames.size(); col++) {
                         loadColumnNumbers[col] = col;
-                        loadColumnSA[col] = new StringArray(nRows, false); 
+                        loadColumnSA[col] = new StringArray(); 
                         addColumn(fileColumnNames.get(col), loadColumnSA[col]);                         
                     }
                 } else {
@@ -2351,7 +2387,7 @@ public class Table  {
                     loadColumnSA = new StringArray[loadColumns.length];
                     for (int col = 0; col < loadColumns.length; col++) {
                         loadColumnNumbers[col] = fileColumnNames.indexOf(loadColumns[col], 0);
-                        loadColumnSA[col] = new StringArray(nRows, false); 
+                        loadColumnSA[col] = new StringArray(); 
                         addColumn(loadColumns[col], loadColumnSA[col]); 
                     }
                 }
@@ -2360,9 +2396,11 @@ public class Table  {
 
             //ensure nItems is correct
             int nItems = items.length;
+            if (nItems == 0)
+                continue; //silent error
             if (nItems > expectedNItems ||
                 (nItems < expectedNItems && !allowRaggedRightInReadASCII)) { // if allow..., it is noted below once
-                warnings.append(String2.WARNING + ": skipping line #" + (dataStartLine + row) + 
+                warnings.append(String2.WARNING + ": skipping line #" + row + 
                     ": unexpected number of items (observed=" + nItems + 
                        ", expected=" + expectedNItems + "). [a]\n");
                 continue;
@@ -2378,7 +2416,7 @@ public class Table  {
                 if (d >= testMin[test] && d <= testMax[test]) { //NaN will fail this test
                     continue;
                 } else {ok = false; 
-                    if (debugMode) String2.log(">> skipping row=" + (dataStartLine + row) + 
+                    if (debugMode) String2.log(">> skipping row=" + row + 
                         " because it failed test #" + test);
                     break; 
                 }
@@ -2391,23 +2429,20 @@ public class Table  {
                 int itemNumber = loadColumnNumbers[col];
                 if (itemNumber < 0) {
                     //request col is not in the file
-                    loadColumnSA[col].add(canonicalEmptyString); 
+                    loadColumnSA[col].add(""); 
                 } else if (itemNumber < nItems) {
-                    String s = String2.fromNccsvString(items[itemNumber]);
-                    if (simplify) 
-                         loadColumnSA[col].addNotCanonical(s);
-                    else loadColumnSA[col].add(s); //canonical
+                    loadColumnSA[col].add(String2.fromNccsvString(items[itemNumber]));
                 } else if (allowRaggedRightInReadASCII) {  
                     //it is a bad idea to allow this (who knows which value is missing?), 
                     //but some buoy files clearly lack the last value,
                     //see NdbcMeteorologicalStation.java
                     if (!missingItemNoted) {
-                        warnings.append(String2.WARNING + ": skipping line #" + (dataStartLine + row) + 
+                        warnings.append(String2.WARNING + ": skipping line #" + row + 
                             " (and others?): unexpected number of items (observed=" + nItems + 
                            ", expected=" + expectedNItems + ") starting on this line. [b]\n");
                         missingItemNoted = true;
                     }
-                    loadColumnSA[col].add(canonicalEmptyString); //missing value
+                    loadColumnSA[col].add(""); //missing value
                 } //else incorrect nItems added to warnings above
             }
         }
@@ -2421,21 +2456,17 @@ public class Table  {
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (loadColumns not found)");
 
         //simplify the columns
-        if (simplify) {
+        if (simplify) 
             simplify();
-
-            //canonicalize the string columns
-            for (int col = 0; col < loadColumnNumbers.length; col++) {
-                PrimitiveArray pa = getColumn(col);
-                if (pa instanceof StringArray)
-                    ((StringArray)pa).makeCanonical();
-            }
-        }
 
         if (reallyVerbose) String2.log("  Table.readASCII done. fileName=" + fileName + 
             " nColumns=" + nColumns() + " nRows=" + nRows() + 
             " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
+        //ensure the linesReader is closed
+        } finally {
+            try {linesReader.close();} catch (Exception e2) {}
+        }
     }
 
     /** 
@@ -2618,7 +2649,7 @@ public class Table  {
         boolean simplify) throws Exception {
 
         readStandardTabbedASCII(fullFileName, 
-            String2.readLinesFromFile(fullFileName, null, 2), 
+            File2.getDecompressedBufferedFileReader(fullFileName, null), 
             loadColumns, simplify); 
     }
 
@@ -2635,7 +2666,7 @@ public class Table  {
      * </ul>
      *
      * @param fileName for diagnostic messages only
-     * @param lines the array of ASCII strings with the info from the file
+     * @param linesReader to get the info from the data file.
      * @param loadColumns the names of the columns to be loaded 
      *     (perhaps in different order than in the file).
      *     If null, this will read all variables.
@@ -2648,15 +2679,15 @@ public class Table  {
      * @throws Exception if trouble  (e.g., a specified loadColumn wasn't found,
      *    or unexpected number of items on a row)
      */
-    public void readStandardTabbedASCII(String fileName, String lines[],
-        String loadColumns[], boolean simplify) {
-
+    public void readStandardTabbedASCII(String fileName, BufferedReader linesReader,
+        String loadColumns[], boolean simplify) throws Exception {
+        try {
         if (reallyVerbose) String2.log("Table.readStandardTabbedASCII " + fileName); 
         long time = System.currentTimeMillis();
         String errorInMethod = String2.ERROR + " in Table.readStandardTabbedASCII(" + fileName + "):\n";
 
         char colSeparator = '\t';
-        int columnNamesLine = 0;
+        int columnNamesLine = 0;  //must be >=0 or code needs to be changed
         int dataStartLine = 1;
 
         //clear the table
@@ -2664,9 +2695,16 @@ public class Table  {
 
         //read the file's column names (must be on one line)
         StringArray fileColumnNames = new StringArray();
-        String oneLine = lines[columnNamesLine];
-        if (oneLine.endsWith("\r"))
-            oneLine = oneLine.substring(0, oneLine.length() - 1);
+        int linei = 0; //line# of next line to be read
+        String oneLine = null;
+        while (linei <= columnNamesLine) {
+            oneLine = linesReader.readLine();
+            linei++;
+            if (oneLine == null)
+                throw new SimpleException(errorInMethod + 
+                    "unexpected end-of-file on line#" + (linei - 1)+ 
+                    ", before columnNamesLine=" + columnNamesLine + ".");
+        }
         oneLine = oneLine.trim();
         //break the lines into items
         String items[] = String2.split(oneLine, colSeparator);
@@ -2695,35 +2733,42 @@ public class Table  {
             //if (reallyVerbose) String2.log("loadColumnNumbers=" + String2.toCSSVString(loadColumnNumbers));
         }
 
-        //remove empty rows at end
-        int nRows = lines.length - dataStartLine;
-        while (nRows > 0) {
-            String ts = lines[dataStartLine + nRows - 1].trim();
-            if (ts.length() == 0 || ts.equals("\r"))
-                nRows--;
-            else break;
-        }        
-
         //generate the Table's columns which will be loaded
         //and create the primitiveArrays for loaded data
         StringArray loadColumnSA[] = new StringArray[loadColumnNumbers.length];
         for (int col = 0; col < loadColumnNumbers.length; col++) {
-            loadColumnSA[col] = new StringArray(nRows, false); 
+            loadColumnSA[col] = new StringArray(); 
             addColumn(fileColumnNames.get(loadColumnNumbers[col]), loadColumnSA[col]); 
+        }
+
+        //jump to dataStartLine  
+        while (linei < dataStartLine) {
+            oneLine = linesReader.readLine();
+            linei++;
+            if (oneLine == null)
+                throw new SimpleException(errorInMethod + 
+                    "unexpected end-of-file on line#" + (linei - 1)+ 
+                    ", before dataStartLine=" + dataStartLine + ".");
         }
 
         //get the data
         int row = 0;
         if (debugMode) String2.log("expectedNItems=" + expectedNItems);
-        String canonicalEmptyString = String2.canonical("");
-        while (row < nRows) {
         if (debugMode) String2.log("row=" + row);
+        READ_ROWS:
+        while (true) { //read rows of data
             items = null;
             nItems = 0;
             while (nItems < expectedNItems) {
-                oneLine = lines[dataStartLine + row++];  //row incremented
-                if (oneLine.endsWith("\r"))
-                    oneLine = oneLine.substring(0, oneLine.length() - 1);
+                oneLine = linesReader.readLine();
+                linei++; row++;
+                if (oneLine == null) { //end-of-file
+                    if (nItems == 0)
+                        break READ_ROWS; 
+                    else throw new SimpleException(errorInMethod + 
+                        "unexpected end-of-file on line#" + (linei - 1)+ 
+                      ". Perhaps last row (and others?) had incorrect number of items.");
+                }
 
                 //break the lines into items
                 String tItems[] = String2.split(oneLine, colSeparator);
@@ -2754,8 +2799,8 @@ public class Table  {
           
             //store the data items
             for (int col = 0; col < loadColumnNumbers.length; col++) 
-                loadColumnSA[col].addNotCanonical(
-                    loadColumnNumbers[col] < 0? canonicalEmptyString : 
+                loadColumnSA[col].add(
+                    loadColumnNumbers[col] < 0? "" : 
                       items[loadColumnNumbers[col]]);
         }
 
@@ -2763,19 +2808,12 @@ public class Table  {
         if (simplify) 
             simplify();
 
-        loadColumnSA = null; //get data PA's from getColumn from now on
-
-        //canonicalize the string columns
-        for (int col = 0; col < loadColumnNumbers.length; col++) {
-            PrimitiveArray pa = getColumn(col);
-            if (pa instanceof StringArray)
-                ((StringArray)pa).makeCanonical();
-        }
-
         if (reallyVerbose) String2.log("  Table.readStandardTabbedASCII done. fileName=" + fileName + 
             " nColumns=" + nColumns() + " nRows=" + nRows() + 
             " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
+        } finally {
+            linesReader.close();
+        }
     }
 
     /**
@@ -2790,8 +2828,8 @@ public class Table  {
         String loadColumns[], int startPo[], int endPo[], Class columnClass[]) 
         throws Exception {
 
-        String lines[] = String2.readLinesFromFile(fullFileName, charset, 2);
-        readColumnarASCII(fullFileName, lines, dataStartLine,
+        BufferedReader br = File2.getDecompressedBufferedFileReader(fullFileName, charset);
+        readColumnarASCII(fullFileName, br, dataStartLine,
             loadColumns, startPo, endPo, columnClass);
     }
 
@@ -2806,7 +2844,7 @@ public class Table  {
      * Any previous columns/conent in the table is thrown away.
      *
      * @param fileName for diagnostic messages only
-     * @param lines the lines with the info (from a file)
+     * @param reader 
      * @param dataStartLine (0..)
      * @param loadColumns the names of the columns to be loaded 
      *     (perhaps in different order than in the file).
@@ -2823,7 +2861,7 @@ public class Table  {
      *   If already specified, the values won't be changed.
      * @throws Exception if trouble  
      */
-    public void readColumnarASCII(String fileName, String[] lines, 
+    public void readColumnarASCII(String fileName, BufferedReader reader, 
         int dataStartLine,
         String loadColumns[], int startPo[], int endPo[], Class columnClass[]) 
         throws Exception {
@@ -2836,7 +2874,6 @@ public class Table  {
         try {
             dataStartLine = Math.max(0, dataStartLine);
             int nCols = loadColumns.length;
-            int nRows = lines.length;
             Test.ensureEqual(loadColumns.length, startPo.length, 
                 errorInMethod + "loadColumns.length != startPo.length.");
             Test.ensureEqual(loadColumns.length, endPo.length, 
@@ -2863,11 +2900,6 @@ public class Table  {
             //clear everything
             clear();
 
-            //remove rows at the end of the file that are length=0.
-            while (nRows > dataStartLine &&   //dataStartLine is at least 0
-                (lines[nRows-1].equals("")))
-                nRows--;
-
             //create the columns
             PrimitiveArray pa[] = new PrimitiveArray[nCols];
             ByteArray arBool[] = new ByteArray[nCols]; //ByteArray (from boolean) if boolean, else null
@@ -2875,42 +2907,65 @@ public class Table  {
             for (int col = 0; col < nCols; col++) {
                 pa[col] = PrimitiveArray.factory(
                     columnClass[col] == boolean.class? byte.class : columnClass[col], 
-                    Math.max(0, nRows - dataStartLine), false);
+                    128, false);
                 addColumn(loadColumns[col], pa[col]);
                 arBool[col] = columnClass[col] == boolean.class? (ByteArray)(pa[col]) : null;
                 arChar[col] = columnClass[col] == char.class?    (CharArray)(pa[col]) : null;
             }
 
+            //skip header lines
+            int row = 0;
+            while (row < dataStartLine) {
+                String tLine = reader.readLine();
+                if (tLine == null) //end of file
+                    return;
+                row++;
+            }
+
             //get the data
-            for (int row = dataStartLine; row < nRows; row++) {
-                String tLine = lines[row];
+            int firstEmptyRow = -1;
+            int lastDataRow = -1;
+            while (true) {
+                String tLine = reader.readLine();
+                if (tLine == null) //end of file
+                    break;
                 int tLength = tLine.length();
-                for (int col = 0; col < nCols; col++) {
-                    String s = tLength > startPo[col]? 
-                        tLine.substring(startPo[col], Math.min(tLength, endPo[col])).trim() : "";
-                    if (columnClass[col] == boolean.class)                     
-                        arBool[col].add(String2.parseBooleanToByte(s));
-                    else if (arChar[col] != null)
-                        arChar[col].add(s.length() > 0? s.charAt(0) : Character.MAX_VALUE);
-                    else pa[col].addString(s);
-                    //if (row < dataStartLine + 3) String2.log(">> row=" + row + " col=" + col + " s=" + s);
+                if (tLength > 0) {
+                    lastDataRow = row;
+                    for (int col = 0; col < nCols; col++) {
+                        String s = tLength > startPo[col]? 
+                            tLine.substring(startPo[col], Math.min(tLength, endPo[col])).trim() : "";
+                        if (columnClass[col] == boolean.class)                     
+                            arBool[col].add(String2.parseBooleanToByte(s));
+                        else if (arChar[col] != null)
+                            arChar[col].add(s.length() > 0? s.charAt(0) : Character.MAX_VALUE);
+                        else pa[col].addString(s);
+                        //if (row < dataStartLine + 3) String2.log(">> row=" + row + " col=" + col + " s=" + s);
+                    }
+                } else if (firstEmptyRow == -1) {
+                    firstEmptyRow = row;                        
                 }
+                row++;
             }
 
             //simplify
             if (simplify)
                 simplify();
 
-            if (reallyVerbose) msg += 
-                " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+            if (firstEmptyRow != -1 && firstEmptyRow < lastDataRow)
+                String2.log("\nWARNING: This method skipped a too-short row (row #" + firstEmptyRow + 
+                    "). There may have been other short rows which were also skipped.");
+            if (reallyVerbose) String2.log( 
+                msg + " finished. nColumns=" + nColumns() + " nRows=" + row + 
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
+            
 
         } catch (Exception e) {
-            if (!reallyVerbose) String2.log(msg);
+            if (!reallyVerbose) String2.log(msg + " failed.");
             throw e;
 
         } finally {
-            if (reallyVerbose) String2.log(msg);
+            try {reader.close();} catch (Exception e2) {}
         }
     }
 
@@ -3940,16 +3995,17 @@ public class Table  {
         if (reallyVerbose) String2.log("url2=" + url2);
 
         //get the .txt file
-        String dataLines[] = SSR.getUrlResponseLines(url2);
-        int nLines = dataLines.length;
-        for (int line = 0; line < nLines; line++) 
-            dataLines[line] = String2.replaceAll(dataLines[line], '|', '\t');
+        String dataLines = SSR.getUrlResponseStringUnchanged(url2);
+        dataLines = String2.replaceAll(dataLines, '|', '\t');
 
         //read the data into a temporary table
         Table tTable = new Table();
-        tTable.readASCII(url2, dataLines, 0, 1, "", //columnNamesLine, int dataStartLine, colSeparator
+        tTable.readASCII(url2, 
+            new BufferedReader(new StringReader(dataLines)), 
+            0, 1, "", //columnNamesLine, int dataStartLine, colSeparator
             null, null, null, //constraints
             null, false); //just load all the columns, and don't simplify
+        dataLines = null;
 
         //immediatly remove 'index'
         if (tTable.getColumnName(0).equals("index"))
@@ -5481,6 +5537,10 @@ Dataset {
     public void readHtml(String fullFileName, String html, int skipNTables, 
         boolean secondRowHasUnits, boolean simplify) 
         throws Exception {
+        //This reads data from String, not BufferedReader.
+        //But the nature of html means rows of data (and even individual items)
+        //may span multiple rows of the file. 
+        //So hard to handle via BufferedReader.
 
         if (reallyVerbose)
             String2.log("Table.readHtml " + fullFileName);
@@ -5559,7 +5619,7 @@ Dataset {
                         columnAttributes(tCol).add("units", datum);
                     } else {
                         //append the data
-                        ((StringArray)getColumn(tCol)).addNotCanonical(datum);
+                        ((StringArray)getColumn(tCol)).add(datum);  
                     }
                 } else {
                     //ignore this and subsequent columns on this row
@@ -5584,13 +5644,6 @@ Dataset {
         //simplify the columns
         if (simplify) 
             simplify();
-
-        //canonicalize the string columns
-        for (int col = 0; col < nCols; col++) {
-            PrimitiveArray pa = getColumn(col);
-            if (pa instanceof StringArray)
-                ((StringArray)pa).makeCanonical();
-        }
 
         //diagnostic
         if (reallyVerbose)
@@ -5941,9 +5994,7 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
-                int nCol = nColumns();
-                for (int col = 0; col < nCol; col++)
-                    standardizeColumn(standardizeWhat, col);
+                standardize(standardizeWhat);
             } else {
                 //convert to standard MissingValues
                 convertToStandardMissingValues();
@@ -6074,9 +6125,7 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
-                int nCol = nColumns();
-                for (int col = 0; col < nCol; col++)
-                    standardizeColumn(standardizeWhat, col);
+                standardize(standardizeWhat);
             } else {
                 //convert to standard MissingValues
                 convertToStandardMissingValues();
@@ -6243,9 +6292,7 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
-                int nCol = nColumns();
-                for (int col = 0; col < nCol; col++)
-                    standardizeColumn(standardizeWhat, col);
+                standardize(standardizeWhat);
             } else {
                 //convert to standard MissingValues
                 convertToStandardMissingValues();
@@ -7584,10 +7631,12 @@ Dataset {
 
 
     /**
-     * This unpacks every column. See Attributes.unpackVariable for details.
+     * This standardizes every column. See Attributes.unpackVariable for details.
      */
-    public void unpack(int standardizeWhat) throws Exception {
-
+    public void standardize(int standardizeWhat) throws Exception {
+        int nCols = nColumns();
+        for (int col = 0; col < nCols; col++)
+            standardizeColumn(standardizeWhat, col);
     }
 
     /**
@@ -24596,9 +24645,9 @@ String2.log(table.dataToString());
     /**
      * This is like tryToApplyConstraints, but just keeps the constraints=true rows (which may be 0).
      *
-     * @param conNames may be null or size 0
      * @param idCol  For reallyVerbose only: rejected rows will log the value 
      *    in this column (e.g., stationID) (or row= if idCol < 0). 
+     * @param conNames may be null or size 0
      * @return the number of rows remaining in the table (may be 0)
      */
     public int tryToApplyConstraintsAndKeep(int idCol,
@@ -27941,7 +27990,7 @@ String2.log(table.dataToString());
                     } else {
                         //create a non-string variable
                         colVars[col] = file.addVariable(rootGroup, colName, 
-                            NcHelper.getDataType(pa.elementClass()), dims);
+                            NcHelper.getNc3DataType(pa.elementClass()), dims);
                     }
 
                     if (pa.elementClass() == char.class)
@@ -28361,12 +28410,12 @@ String2.log(table.dataToString());
                                     yIndices.array[row], xIndices.array[row], par[row]);
                         ar = tar;
                     } else if (pa instanceof StringArray) {
-                        String par[] = ((StringArray)pa).array;
+                        StringArray sa = (StringArray)pa;
                         ArrayChar.D5 tar = new ArrayChar.D5(nT, nZ, nY, nX, stringLength[col]);
                         ucar.ma2.Index index = tar.getIndex();
                         for (int row = 0; row < nRows; row++) 
                             tar.setString(index.set(tIndices.array[row], zIndices.array[row],
-                                    yIndices.array[row], xIndices.array[row], 0), par[row]);
+                                    yIndices.array[row], xIndices.array[row], 0), sa.get(row));
                         /*
                         for (int row = 0; row < nRows; row++) {
                             String s = par[row];
@@ -29635,6 +29684,7 @@ String2.log(table.dataToString());
      * @throws Exception if trouble
      */
     public void readJson(String fileName) throws Exception {
+        //this can't use BufferedReader because json parsers need access to entire file's content
         String results[] = String2.readFromFile(fileName, String2.UTF_8, 2);
         if (results[0].length() > 0)
             throw new Exception(results[0]);
@@ -29815,13 +29865,13 @@ String2.log(table.dataToString());
     /**
      * This reads a table from a jsonLinesCsv file.
      *
-     * @throws Exception if trouble, including observed nItems != expected nItems.
+     * @throws Exception if serious trouble
      */
     public void readJsonlCSV(String fullFileName, 
         StringArray colNames, String[] colTypes, boolean simplify) throws Exception {
         clear();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-            File2.getDecompressedBufferedInputStream(fullFileName), String2.UTF_8));
+        BufferedReader reader = 
+            File2.getDecompressedBufferedFileReader(fullFileName, String2.UTF_8);
         try {
             readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
         } finally {
@@ -29852,7 +29902,7 @@ String2.log(table.dataToString());
      *  "boolean" says to interpret as boolean (true|false) but convert to byte (1|0).
      * @param simplify If colTypes=null and simplify=true, this tries to 
      *   simplify (determine the column data types).
-     * @throws Exception if trouble, including observed nItems != expected nItems.
+     * @throws Exception if serious trouble
      */
     public void readJsonlCSV(Reader reader, String fullFileName, StringArray colNames, 
           String[] colTypes, boolean simplify) throws Exception {
@@ -29993,14 +30043,22 @@ String2.log(table.dataToString());
             " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
+    /** This writes the table to a jsonlines CSV file. */
+    public void writeJsonlCSV(String fullFileName) throws Exception {
+        writeJsonlCSV(fullFileName, false);
+    }
+
     /**
-     * This writes a table to a jsonlCSV file.
+     * This writes a table to a jsonlCSV UTF-8 file.
      * http://jsonlines.org/examples/
      *
      * @param fullFileName This is just used for error messages.
+     * @param append  If false, any existing file is deleted and a new file is created.
+     *   If true, if the file exists, it will be appended to. If it doesn't exist, it
+     *   will be created and column names written.
      * @throws Exception if trouble, including observed nItems != expected nItems.
      */
-    public void writeJsonlCSV(String fullFileName) throws Exception {
+    public void writeJsonlCSV(String fullFileName, boolean append) throws Exception {
         String msg = "  Table.writeJsonlCSV " + fullFileName;
         long time = System.currentTimeMillis();
 
@@ -30010,18 +30068,22 @@ String2.log(table.dataToString());
         //    then write all in one blast to file, no bufferedWriter)
         BufferedWriter bw = null;
         int randomInt = Math2.random(Integer.MAX_VALUE);
+        boolean writeColumnNames = !append || !File2.isFile(fullFileName);
 
         try {
             bw = new BufferedWriter(new OutputStreamWriter(
-                 new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt)), String2.UTF_8));
+                 new BufferedOutputStream(new FileOutputStream(
+                fullFileName + (append? "" : randomInt), append)), String2.UTF_8));
 
             //write the col names
             int nc = nColumns();
-            for (int c = 0; c < nc; c++) {
-                bw.write(c == 0? '[' : ',');
-                bw.write(String2.toJson(columnNames.get(c)));
+            if (writeColumnNames) {
+                for (int c = 0; c < nc; c++) {
+                    bw.write(c == 0? '[' : ',');
+                    bw.write(String2.toJson(columnNames.get(c)));
+                }
+                bw.write("]\n");
             }
-            bw.write("]\n");
 
             //write the data
             int nr = nRows();
@@ -30035,7 +30097,8 @@ String2.log(table.dataToString());
 
             bw.close(); 
             bw = null;
-            File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
+            if (!append)  //replace the existing file
+              File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
             if (reallyVerbose) msg +=  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
@@ -30154,6 +30217,44 @@ String2.log(table.dataToString());
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
 ",,,,,,\n", 
             "results=\n" + results);
+
+        //*** write new file
+        table = makeToughTestTable();
+        fullName = File2.getSystemTempDirectory() + "testJsonlCSV.json";
+        table.writeJsonlCSV(fullName);
+        results = String2.directReadFromUtf8File(fullName);
+        Test.ensureEqual(results, 
+"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
+"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+            "results=\n" + results);        
+
+        //*** write/append new file
+        table = makeToughTestTable();
+        File2.delete(fullName);
+        table.writeJsonlCSV(fullName, true);
+        results = String2.directReadFromUtf8File(fullName);
+        Test.ensureEqual(results, 
+"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
+"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+            "results=\n" + results);        
+
+        //then append
+        table.writeJsonlCSV(fullName, true);
+        results = String2.directReadFromUtf8File(fullName);
+        Test.ensureEqual(results, 
+"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
+"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n" + 
+"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
+"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+            "results=\n" + results);        
+
     }
 
 
@@ -31459,9 +31560,10 @@ String2.log(table.dataToString());
 
         //generate some data    
         Table table = getTestTable(true, true);
+        table.removeRow(3);  //remove the empty row at the end, since readASCII will remove it
 
         Table table1 = getTestTable(true, true);
-        table1.removeRow(3);  //remove the empty row at the end
+        table1.removeRow(3);  //remove the empty row at the end, since readASCII will remove it
 
         //write it to a file
         String fileName = testDir + "tempTable.asc";
@@ -31542,17 +31644,18 @@ String2.log(table.dataToString());
         reallyVerbose = true;
        
         //generate some data    
-        String lines[] = {
-            "colA\tcolB\tcolC",
-            "1a\t1b\t1c",
-            "2",
-             "a\t2",
-                 "b\t2c",
-            "3a\t3b\t3c"};
+        String lines = 
+            "colA\tcolB\tcolC\n" +
+            "1a\t1b\t1c\n" +
+            "2\n" +
+              "a\t2\n" +
+              "b\t2c\n" +
+            "3a\t3b\t3c";  //no terminal \n
         Table table = new Table();
 
         //read it from lines
-        table.readStandardTabbedASCII("tFileName", lines, null, true);
+        table.readStandardTabbedASCII("tFileName", 
+            new BufferedReader(new StringReader(lines)), null, true);
         String2.log("nRows=" + table.nRows() + " nCols=" + table.nColumns());
         Test.ensureEqual(table.dataToString(), 
             "colA,colB,colC\n" +
@@ -31563,7 +31666,7 @@ String2.log(table.dataToString());
 
         //write it to a file
         String fileName = testDir + "tempTable.asc";
-        String2.writeToFile(fileName, String2.toNewlineString(lines));
+        String2.writeToFile(fileName, lines);
 
         //read all columns from the file
         Table table2 = new Table();
@@ -32825,9 +32928,10 @@ expected =
             String fileName = "/u00/data/points/ndbcMetHistoricalTxt/41009h1990.txt"; 
             long time = 0;
 
-            for (int attempt = 0; attempt < 3; attempt++) {
+            for (int attempt = 0; attempt < 4; attempt++) {
                 String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
                 Math2.gcAndWait(); //in a test
+                Math2.sleep(5000);
                 //time it
                 long fileLength = File2.length(fileName); //was 1335204
                 Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
@@ -32847,14 +32951,16 @@ expected =
                 Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
                 Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
 
-                String2.log("********** attempt #" + attempt + " Done. cells/ms=" + 
-                    (table.nColumns() * table.nRows()/time) + " (usual=2711 Java 1.7M4700, was 648)" +
-                    "\ntime=" + time + "ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
-                if (time <= 200)
+                String2.log("********** attempt #" + attempt + " Done.\n" +
+                    "cells/ms=" + (table.nColumns() * table.nRows()/time) + 
+                      " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)" +
+                    "\ntime=" + time + "ms (good=106ms, but slower when computer is busy.\n" +
+                    "  (was 101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
+                if (time <= 130)
                     break;
             }
-            if (time > 200)
-                throw new SimpleException("readASCII took too long.");
+            if (time > 130)
+                throw new SimpleException("readASCII took too long (but often does when computer is busy).");
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) +
                 "\nUnexpected " + String2.ERROR); 
@@ -32929,7 +33035,7 @@ expected =
                 table.readNDNc(fileName, null, 0, null, 0, 0, true); //standardizeWhat=0   getMetadata?
 
                 String results = table.dataToString(3);
-                String expected =  //before 2011-06-14 was 32.31, -75.35
+                String expected =  //before 2011-06-14 was 32.31, -75.35,
 "TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
 "2.678004E8,0.0,32.501,-79.099,255,1.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.5,27.2,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,1.3,0.3,41004\n" +
 "2.67804E8,0.0,32.501,-79.099,247,6.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.6,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.1,2.6,41004\n" +
@@ -33975,6 +34081,106 @@ readAsNcCF?
         }
     }
 
+    /** 
+     * This tests reading a very large TSV file: 764MB before .gz, 52MB after .gz,
+     * 33 columns, 3503266 rows.
+     * I switched to StringHolder in StringArray after complaints this file took ~10GB to load.
+     * I also made several other significant memory saving changes.
+     * Now, reading the file into StringArray ~1600MB is the high point.
+     * While parsing the lines, it shrinks to ~671MB (lots of small strings).
+     * After convert to binary data types: ~420MB.
+     * Total time to read and ingest=~33s from gz file  (was ~420s before). 
+     */
+    public static void testBigAscii() throws Exception {
+        PrimitiveArray.reallyVerbose = true;
+        Math2.gcAndWait(); Math2.gcAndWait(); 
+        String2.log("\n*** Table.testBigAscii: " + Math2.memoryString());
+
+        Table table = new Table();
+        long time = System.currentTimeMillis();
+        table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
+        time = System.currentTimeMillis() - time;
+        Math2.gcAndWait(); Math2.gcAndWait(); String2.log(" done. " + Math2.memoryString() + "\n" +
+            String2.canonicalStatistics());  //in a test
+        String results = table.dataToString(4);
+        String2.log(results);
+        String expected = 
+"cruise_name,station,cast,ISO_DateTime,Year,Month,Day,timeutc,lon,lat,depth_max,pres_max,Date,timecode,HOT_summary_file_name,parameters,num_bottles,section,nav_code,depth_hgt,EXPOCODE,Ship,comments,CTDPRS,CTDTMP,CTDSAL,CTDOXY,XMISS,CHLPIG,NUMBER,NITRATE,FLUOR,QUALT1\n" +
+"001,2,1,1988-10-30T21:34:00,1988,10,30,2134,-157.9967,22.7483,4750,238,103088,BE,cruise.summaries/hot1.sum,NaN,11,PRS2,GPS,4514,32MW001_1,32MW001/1,NaN,0.0,26.2412,35.2615,183.2,4.99,-0.0126,0,,,666666\n" +
+"001,2,1,1988-10-30T21:34:00,1988,10,30,2134,-157.9967,22.7483,4750,238,103088,BE,cruise.summaries/hot1.sum,NaN,11,PRS2,GPS,4514,32MW001_1,32MW001/1,NaN,2.0,26.2412,35.2615,183.2,4.99,-0.0126,36,,,222322\n" +
+"001,2,1,1988-10-30T21:34:00,1988,10,30,2134,-157.9967,22.7483,4750,238,103088,BE,cruise.summaries/hot1.sum,NaN,11,PRS2,GPS,4514,32MW001_1,32MW001/1,NaN,4.0,26.2554,35.2530,185.5,4.08,0.0026,72,,,223322\n" +
+"001,2,1,1988-10-30T21:34:00,1988,10,30,2134,-157.9967,22.7483,4750,238,103088,BE,cruise.summaries/hot1.sum,NaN,11,PRS2,GPS,4514,32MW001_1,32MW001/1,NaN,6.0,26.2377,35.2455,204.8,3.05,0.0167,108,,,222122\n" +
+"...\n";
+        try {
+        Test.ensureEqual(results, expected, "");        
+        } catch (Exception e) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e));
+        }
+
+        Test.ensureEqual(table.nRows(), 3503266, "");
+        Test.ensureEqual(table.nColumns(), 33, "");
+
+        table.removeRows(0, 3503261);
+        results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //catchScalars, writeMetadata, firstDataRow, lastDataRow
+
+        expected = //many vars are scalar because they're constant in last 6 rows
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"cruise_name,*DATA_TYPE*,String\n" +
+"station,*DATA_TYPE*,byte\n" +
+"cast,*DATA_TYPE*,byte\n" +
+"ISO_DateTime,*DATA_TYPE*,String\n" +
+"Year,*DATA_TYPE*,short\n" +
+"Month,*DATA_TYPE*,byte\n" +
+"Day,*DATA_TYPE*,String\n" +
+"timeutc,*DATA_TYPE*,String\n" +
+"lon,*DATA_TYPE*,float\n" +
+"lat,*DATA_TYPE*,float\n" +
+"depth_max,*DATA_TYPE*,short\n" +
+"pres_max,*DATA_TYPE*,short\n" +
+"Date,*DATA_TYPE*,String\n" +
+"timecode,*DATA_TYPE*,String\n" +
+"HOT_summary_file_name,*DATA_TYPE*,String\n" +
+"parameters,*DATA_TYPE*,String\n" +
+"num_bottles,*DATA_TYPE*,byte\n" +
+"section,*DATA_TYPE*,String\n" +
+"nav_code,*DATA_TYPE*,String\n" +
+"depth_hgt,*DATA_TYPE*,short\n" +
+"EXPOCODE,*DATA_TYPE*,String\n" +
+"Ship,*DATA_TYPE*,String\n" +
+"comments,*DATA_TYPE*,String\n" +
+"CTDPRS,*DATA_TYPE*,float\n" +
+"CTDTMP,*DATA_TYPE*,float\n" +
+"CTDSAL,*DATA_TYPE*,String\n" +
+"CTDOXY,*DATA_TYPE*,String\n" +
+"XMISS,*DATA_TYPE*,float\n" +
+"CHLPIG,*DATA_TYPE*,String\n" +
+"NUMBER,*DATA_TYPE*,String\n" +
+"NITRATE,*DATA_TYPE*,float\n" +
+"FLUOR,*DATA_TYPE*,double\n" +
+"QUALT1,*DATA_TYPE*,String\n" +
+"\n" +
+"*END_METADATA*\n" +
+"cruise_name,station,cast,ISO_DateTime,Year,Month,Day,timeutc,lon,lat,depth_max,pres_max,Date,timecode,HOT_summary_file_name,parameters,num_bottles,section,nav_code,depth_hgt,EXPOCODE,Ship,comments,CTDPRS,CTDTMP,CTDSAL,CTDOXY,XMISS,CHLPIG,NUMBER,NITRATE,FLUOR,QUALT1\n" +
+"288,50,1,2016-11-28T17:51:00,2016,11,28,1751,-157.9373,22.7703,4705,202,112816,BE,cruise.summaries/hot288.sum,NaN,22,PRS2,GPS,4504,33KB288_1,33KB288/1,Dual T; C sensors,194.0,18.2746,34.9098,203.9,,0.0254,144,,,222192\n" +
+"288,50,1,2016-11-28T17:51:00,2016,11,28,1751,-157.9373,22.7703,4705,202,112816,BE,cruise.summaries/hot288.sum,NaN,22,PRS2,GPS,4504,33KB288_1,33KB288/1,Dual T; C sensors,196.0,18.159,34.9027,203.8,,0.0257,108,,,222192\n" +
+"288,50,1,2016-11-28T17:51:00,2016,11,28,1751,-157.9373,22.7703,4705,202,112816,BE,cruise.summaries/hot288.sum,NaN,22,PRS2,GPS,4504,33KB288_1,33KB288/1,Dual T; C sensors,198.0,17.9686,34.8727,203.8,,0.0257,156,,,222192\n" +
+"288,50,1,2016-11-28T17:51:00,2016,11,28,1751,-157.9373,22.7703,4705,202,112816,BE,cruise.summaries/hot288.sum,NaN,22,PRS2,GPS,4504,33KB288_1,33KB288/1,Dual T; C sensors,200.0,17.8751,34.8506,201.8,,0.0248,108,,,222192\n" +
+"288,50,1,2016-11-28T17:51:00,2016,11,28,1751,-157.9373,22.7703,4705,202,112816,BE,cruise.summaries/hot288.sum,NaN,22,PRS2,GPS,4504,33KB288_1,33KB288/1,Dual T; C sensors,202.0,17.7435,34.8246,202.1,,0.0248,60,,,222192\n" +
+"*END_DATA*\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        Math2.gcAndWait(); 
+        String2.log(Math2.memoryString() + "\n" + 
+            String2.canonicalStatistics() + "\n" +
+            "testBigAscii time=" + time + 
+            "ms. file read time should be ~36s (but longer when computer is busy)");
+
+        if (time > 41000) 
+             String2.pressEnterToContinue();
+        else Math2.sleep(5000);
+
+    }
+
     /**
      * This tests the methods in this class.
      *
@@ -34044,6 +34250,7 @@ readAsNcCF?
         }
 
         testReadASCIISpeed();
+        testBigAscii();
         testReadJsonSpeed();
         testReadNDNcSpeed();
         testReadOpendapSequenceSpeed();

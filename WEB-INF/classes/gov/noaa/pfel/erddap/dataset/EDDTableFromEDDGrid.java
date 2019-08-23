@@ -32,8 +32,10 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 
@@ -1880,16 +1882,17 @@ expected2 =
             (String2.isSomething(datasetIDRegex)? 
                 "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetIDRegex + "\""): "") +
             "&orderBy(%22datasetID%22)";
-        String lines[] = null;
+        BufferedReader lines = null;
         try {
-            lines = SSR.getUrlResponseLines(query);
+            lines = SSR.getBufferedUrlReader(query);
         } catch (Throwable t) {
             if (t.toString().indexOf("no data") >= 0)
                 return "<!-- No griddap datasets at that ERDDAP match that regex. -->\n";
             throw t;
         }
         Table table = new Table();
-        table.readASCII(query, lines, 0, 2, "", null, null, null, null, false); //simplify
+        table.readASCII(query, lines, 
+            0, 2, "", null, null, null, null, false); //simplify
         //String2.log(table.dataToString());
         PrimitiveArray datasetIDPA = table.findColumn("datasetID");
         PrimitiveArray titlePA     = table.findColumn("title");
