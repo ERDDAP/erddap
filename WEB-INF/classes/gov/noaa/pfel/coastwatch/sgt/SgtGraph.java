@@ -1358,7 +1358,7 @@ public class SgtGraph  {
      */
     public static void drawMarker(Graphics2D g2d, int markerType, int markerSize, 
         int x, int y, Color interiorColor, Color lineColor) {
-
+      
         if (markerType <= GraphDataLayer.MARKER_TYPE_NONE) 
             return;
 
@@ -1385,6 +1385,17 @@ public class SgtGraph  {
             g2d.drawPolygon(xa, ya, 4);
             return;
         }
+        if (markerType == GraphDataLayer.MARKER_TYPE_FILLED_SQUARE_NOBORDER) {
+            int xa[] = {ulx, ulx, ulx + markerSize, ulx + markerSize};
+            int ya[] = {uly, uly + markerSize, uly + markerSize, uly};
+            if (interiorColor != null) {
+                g2d.setColor(interiorColor);
+                g2d.fillPolygon(xa, ya, 4);
+            }
+            g2d.setColor(new Color(0,0,0,0));
+            g2d.drawPolygon(xa, ya, 4);
+            return;
+        }
         if (markerType == GraphDataLayer.MARKER_TYPE_CIRCLE) {
             g2d.setColor(interiorColor == null? lineColor : interiorColor);
             g2d.drawOval(ulx, uly, markerSize, markerSize);
@@ -1396,6 +1407,15 @@ public class SgtGraph  {
                 g2d.fillOval(ulx, uly, markerSize, markerSize); 
             }
             g2d.setColor(lineColor);
+            g2d.drawOval(ulx, uly, markerSize, markerSize); 
+            return;
+        }
+        if (markerType == GraphDataLayer.MARKER_TYPE_FILLED_CIRCLE_NOBORDER) {
+            if (interiorColor != null) {
+                g2d.setColor(interiorColor);
+                g2d.fillOval(ulx, uly, markerSize, markerSize); 
+            }
+            g2d.setColor(new Color(0,0,0,0));
             g2d.drawOval(ulx, uly, markerSize, markerSize); 
             return;
         }
@@ -1416,6 +1436,18 @@ public class SgtGraph  {
                 g2d.fillPolygon(xa, ya, 3);
             }
             g2d.setColor(lineColor);
+            g2d.drawPolygon(xa, ya, 3);
+            return;
+        }
+        if (markerType == GraphDataLayer.MARKER_TYPE_FILLED_UP_TRIANGLE_NOBORDER) {
+            int m21 = m2 + 1; //to make the size look same as others
+            int xa[] = {x - m21, x,       x + m21}; //ensure symmetrical
+            int ya[] = {y + m21, y - m21, y + m21};
+            if (interiorColor != null) {
+                g2d.setColor(interiorColor);
+                g2d.fillPolygon(xa, ya, 3);
+            }
+            g2d.setColor(new Color(0,0,0,0));
             g2d.drawPolygon(xa, ya, 3);
             return;
         }
