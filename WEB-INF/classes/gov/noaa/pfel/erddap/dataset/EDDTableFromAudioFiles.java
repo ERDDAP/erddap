@@ -337,8 +337,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(Table.ELAPSED_TIME) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
@@ -408,7 +407,6 @@ String expected =
 "    <sortedColumnSourceName>elapsedTime</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"audioBigEndian\">false</att>\n" +
 "        <att name=\"audioChannels\" type=\"int\">1</att>\n" +

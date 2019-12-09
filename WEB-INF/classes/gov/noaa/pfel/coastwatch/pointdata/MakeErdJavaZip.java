@@ -59,6 +59,7 @@ public class MakeErdJavaZip  {
             coastWatchDir + "pointdata/DigirHelper.java " +
             coastWatchDir + "pointdata/DigirIobisTDSP.java " +
             coastWatchDir + "pointdata/DigirObisTDSP.java " +
+            coastWatchDir + "pointdata/ScriptRow.java " +
             coastWatchDir + "pointdata/Table.java " +
             coastWatchDir + "TimePeriods.java " +
             coastWatchDir + "ValidateDataSetProperties.java " +

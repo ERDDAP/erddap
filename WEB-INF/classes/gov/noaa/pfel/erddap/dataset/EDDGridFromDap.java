@@ -726,7 +726,7 @@ public class EDDGridFromDap extends EDDGrid {
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
      * @param shareInfo if true, this ensures that the sibling's 
      *    axis and data variables are basically the same as this datasets,
-     *    and then makes the new dataset point to the this instance's data structures
+     *    and then makes the new dataset point to this instance's data structures
      *    to save memory. (AxisVariable #0 isn't duplicated.)
      *    Saving memory is important if there are 1000's of siblings in ERDDAP.
      * @return EDDGrid
@@ -1022,11 +1022,23 @@ public class EDDGridFromDap extends EDDGrid {
         boolean otherComboFound = false; 
         String sourceDimensionNamesInBrackets = null;
         String destDimensionNamesInBrackets = null;
+        Attributes gridMappingAtts = null;
         NEXT_VAR:
         while (vars.hasMoreElements()) {
             BaseType bt = (BaseType)vars.nextElement();
             String dName = bt.getName();
             varNames.add(dName);
+
+            Attributes sourceAtts = new Attributes();
+            try {
+                OpendapHelper.getAttributes(das, dName, sourceAtts);
+            } catch (Throwable t) {
+                //e.g., ignore exception for dimension without corresponding coordinate variable
+            }
+
+            //Is this the pseudo-data var with CF grid_mapping (projection) information?
+            if (gridMappingAtts == null) 
+                gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
 
             //ensure it is a DGrid or DArray
             DArray mainDArray;
@@ -1050,8 +1062,9 @@ public class EDDGridFromDap extends EDDGrid {
                 numDimensions--;
 
             //skip if numDimensions == 0
-            if (numDimensions == 0)
+            if (numDimensions == 0) 
                 continue;
+
             //skip if combo is 1D bnds=bounds info
             if (numDimensions == 1) {
                 String tName = mainDArray.getDimension(0).getName();
@@ -1126,19 +1139,19 @@ public class EDDGridFromDap extends EDDGrid {
                 for (int av = 0; av < numDimensions; av++) {
                     DArrayDimension dad = mainDArray.getDimension(av);
                     String aName = dad.getName();
-                    Attributes sourceAtts = new Attributes();
+                    Attributes aSourceAtts = new Attributes();
                     try {
-                        OpendapHelper.getAttributes(das, aName, sourceAtts);
+                        OpendapHelper.getAttributes(das, aName, aSourceAtts);
                     } catch (Throwable t) {
                         //e.g., ignore exception for dimension without corresponding coordinate variable
                     }
                     Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
-                        sourceAtts, null, aName, 
+                        aSourceAtts, null, aName, 
                         true, //tryToAddStandardName
                         false, true); //addColorBarMinMax, tryToFindLLAT
                     axisSourceTable.addColumn(axisSourceTable.nColumns(), aName, 
-                        new DoubleArray(), sourceAtts); //type doesn't matter here
+                        new DoubleArray(), aSourceAtts); //type doesn't matter here
                     axisAddTable.addColumn(   axisAddTable.nColumns(),    aName, 
                         new DoubleArray(), addAtts);    //type doesn't matter here
 
@@ -1149,8 +1162,6 @@ public class EDDGridFromDap extends EDDGrid {
             }
 
             //add the data variable to dataAddTable
-            Attributes sourceAtts = new Attributes();
-            OpendapHelper.getAttributes(das, dName, sourceAtts);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 axisSourceTable.globalAttributes(),
                 sourceAtts, null, dName, 
@@ -1211,6 +1222,8 @@ public class EDDGridFromDap extends EDDGrid {
                 tLocalSourceUrl, externalAddGlobalAttributes, 
                 EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
                     suggestKeywords(dataSourceTable, dataAddTable))));
+        if (gridMappingAtts != null) 
+            axisAddTable.globalAttributes().add(gridMappingAtts);
 
         //if otherComboFound, add dimensionNameInBrackets to title and use to make datasetID
         String tDatasetID = suggestDatasetID(tPublicSourceUrl); 
@@ -4816,7 +4829,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Fri Jul 19 13:30:40 HST 2019 : imported by GrADS Data Server 2.0</att>\n" + //changes
+"        <att name=\"history\">Tue Nov 19 10:09:04 HST 2019 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
 "        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -9749,9 +9762,12 @@ String2.log(String2.annotatedString(results));
 "    }\n";  //...
         try {
             int po = results.indexOf(expected.substring(0, 5));
+            if (po < 0) String2.log("results=\n" +results);
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+            String2.pressEnterToContinue(
+                MustBe.throwableToString(t) +
+                "2019-11-21 Fix this: thredds responds with \"\"."); 
         }
 
 
@@ -11096,86 +11112,86 @@ String expected =
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "Dataset {\n" +
-"  Float64 time[time = 1251];\n" +   //time=# changes here and below
+"  Float64 time[time = 1347];\n" +   //time=# changes here and below
 "  Float64 latitude[latitude = 62];\n" +
 "  Float64 longitude[longitude = 122];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SST[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 SST[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SST;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSS[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 SSS[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSS;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pCO2sw[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 pCO2sw[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pCO2sw;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TA[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 TA[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TC[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 TC[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TC;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pH[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 pH[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pH;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSA[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 SSA[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 HCO3[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 HCO3[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } HCO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 CO3[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 CO3[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } CO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 surface_flag[time = 1251][latitude = 62][longitude = 122];\n" +
+"      Float32 surface_flag[time = 1347][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1251];\n" +
+"      Float64 time[time = 1347];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } surface_flag;\n" +

@@ -82,6 +82,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
   <li><a rel="help" href="#include">No &lt;include&gt; Option</a> 
   <li><a rel="help" href="#limits">Limits to the Size of a Dataset</a>
   <li><a rel="help" href="#switchToACDD13">Switch to ACDD-1.3</a> 
+  <li><a rel="help" href="#Zarr">Zarr</a>
     <br>&nbsp;
   </ul>
 <li><a rel="help" href="#datasetTypes"><strong>List of Dataset Types</strong></a> (Read as needed)
@@ -836,7 +837,10 @@ href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recomm
           <br>If you use "DasDds -verbose", DasDds will print more diagnostic messages than usual.
         <li>For safety, DasDds always deletes all of the cached dataset information (files) 
           for the dataset before trying
-          to create the dataset.  So for aggregated datasets, you might want to adjust the 
+          to create the dataset.  
+          This is the equivalent of setting a 
+          <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#hardFlag">hard flag</a>
+          So for aggregated datasets, you might want to adjust the 
           fileNameRegex temporarily to limit the number of files the data constructor finds.
         <li>If the dataset fails to load (for whatever reason), 
           DasDds will stop and show you the error message for the first error it finds.
@@ -1420,49 +1424,175 @@ but S3 only offers
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
 access to files (which only permits reading the entire file).
-AWS offers a different system which supports block level access to files
-(<a rel="help" href="https://aws.amazon.com/ebs/"
+AWS offers an alternative to S3,
+<a rel="help" href="https://aws.amazon.com/ebs/"
   >Elastic Block Store (EBS)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>),
+which supports block level access to files 
 but it is more expensive than S3, so it is rarely used for bulk storage of large
 quantities of data files.
-(So when people say storing data in the cloud (S3) is cheap, it is often an 
+(So when people say storing data in the cloud (S3) is cheap, it is usually an 
 apples to oranges comparison.)
 
-<p>Fortunately, ERDDAP has a number of features which allow it to get around the 
-inherent problems of working with S3's block level access to files:
+<p><a class="selfLink" id="AwsS3Buckets" href="#AwsS3Buckets" rel="bookmark"
+  ><strong>The Contents of a Bucket. Keys. Objects. Delimiters.</strong></a>
+<br>Technically, S3 buckets aren't hierarchical file structures like disk drives on a computer.
+Instead, buckets only contain "objects" (files), each of which has a "key" (a name).
+An example of a key in that noaa-goes17 bucket is 
+<pre>ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc</pre>
+The corresponding object (at bucket URL + key, e.g.,
+<pre><a rel="help" 
+  href="https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc"
+       >https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a></pre>
+) is the actual .nc file. 
+It is common practice to make key names, as with this example, look like a hierarchical path 
+plus a file name, but technically they aren't.
+Since it is common and useful, ERDDAP treats keys with /'s as if they are a hierarchical path plus file name,
+and this documentation will refer to them as such.
+If a bucket's keys don't use /'s (e.g., a key like 
+<br>ABI-Lib.2018.052.22.OR_ABI-L1b-RadM2-M3C10_G16_s20180522247575), then 
+ERDDAP will just treat the whole key as a long file name.
+
+<p><a class="selfLink" id="ErddapAndS3Buckets" href="#ErddapAndS3Buckets" rel="bookmark"
+  ><strong>ERDDAP and S3 Buckets</strong></a>
+<br>Fortunately, after much effort, 
+ERDDAP has a number of features which allow it to deal with the 
+inherent problems of working with S3's block level access to files
+in a reasonably efficient way:
 <ul>
-<li><a rel="help" href="#cacheFromUrl">&lt;cacheFromUrl&gt;</a> tells 
-  ERDDAP to make a local cache of the files in the remote directory 
-  (including an AWS S3 bucket) specified by the URL.
-  Although you could just specify the AWS S3 bucket URL as the 
-  dataset's &lt;fileDir&gt;, in practice that is super slow and inefficient
-  (even while running ERDDAP on an AWS compute instance).
-<li>The related <a rel="help" href="#cacheFromUrl">&lt;cacheSizeGB&gt;</a>
-  tells ERDDAP to limit the size of the local cache (i.e., don't try to 
-  cache all of the remote files).
+<li>[Disclaimer: Working with AWS S3 buckets is a lot of extra work.
+  AWS is a huge ecosystem of services and features. 
+  There's a lot to learn. 
+  It takes time and effort, but it is do-able.
+  Be patient and you'll get things working.
+  Look/ask for help
+  <br>(<a rel="help" href="https://aws.amazon.com/documentation/gettingstarted/"
+    >AWS documentation<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>,
+  web sites like 
+  <a rel="help" href="https://stackoverflow.com/"
+    >Stack Overflow<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>,
+  and the regular 
+  <br><a rel="bookmark" href="#contact">ERDDAP support options</a>)
+  if/when you get stuck.]
+  <br>&nbsp;
+
+<li>It can be hard to even find out the directory structure and file names of 
+  the files in an S3 bucket. ERDDAP has a solution for this problem:
+  EDDTableFromFileNames has a special 
+  <a href="#fromOnTheFly" rel="help">***fromOnTheFly</a> option which 
+  lets you make an EDDTableFromFileNames dataset which allows users to 
+  browse the contents of an S3 bucket (and download files)
+  via the dataset's "files" option.
+  There is an 
+  <a href="#AwsS3ViewBucketContents" rel="help">example of this below</a>.
+  <br>&nbsp;
+
 <li>ERDDAP can read data from 
   <a rel="help" href="#ExternallyCompressedFiles">externally compressed data files</a>,
   so it is fine if the files on S3 are stored as 
   .gz, .gzip, .bz2, .Z, or other types of externally compressed data files,
   which can dramatically (2 - 20X) cut down on file storage costs. 
-<li><a href="#nThreads" rel="bookmark">nThreads</a> tells ERDDAP
-  to use more than 1 thread when reading a group of files from the data source
-  (e.g., AWS S3).
-  This minimizes the effects of the delay that occurs when ERDDAP 
-  reads data files from (remote) AWS S3 buckets into the local cache
-  and (perhaps) decompressing them.
-<li>Normally, ERDDAP has to read every file in a collection in order to make
-  a dataset from the files. If the files are in an S3 bucket, this may take
-  a very long time and be impractical. In some cases, for gridded data files, 
-  ERDDAP can extract the needed information
-  (e.g., the time point for the data in a gridded data file) from the file name.
-  See <a rel="help" href="#EDDGridFromFiles_AggregationViaFileNames">Aggregation via File Names</a>.
+  There is often no time penalty for using externally compressed files,
+  since the time saved by transferring a smaller file from S3 to ERDDAP
+  roughly balances the extra time needed for ERDDAP to decompress the file.
+  To use this feature, you just have to make sure that the dataset's
+  <kbd>&lt;fileNameRegex&gt;</kbd> allows for the compressed file type (e.g.,
+  by adding <kbd>(|.gz)</kbd> to the end of the regex).
+  <br>&nbsp;
+
+<li>For the most common case, where you have an ERDDAP installed on your PC
+for test/development and where the dataset has data files which are stored
+as objects in an S3 bucket, one approach to getting the dataset in ERDDAP is:
+  <ol>
+  <li>Create a directory on your PC to hold a few test data files.
+  <li>Download two data files from the source to the directory you just created.
+  <li>Use 
+    <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>
+    to generate the chunk of datasets.xml for the dataset
+    based on the two local data files.
+  <li>Check that that dataset works as desired with 
+    <a rel="help" href="#DasDds">DasDds</a> and/or your local ERDDAP.
+    <p><strong>The following steps make a copy of that dataset
+    (which will get data from the S3 bucket) on a public ERDDAP.</strong>
+  <li>Copy the chunk of datasets.xml for the dataset to the datasets.xml for the 
+    public ERDDAP that will serve the data.
+  <li>Create a directory on the public ERDDAP's local hard drive 
+    to hold a cache of temporary files. 
+    The directory won't use a lot of disk space
+    (see cacheSizeGB below). 
+  <li>Change the value of the dataset's <kbd>&lt;fileDir&gt;</kbd> tag so that 
+    it points to the directory you just created (even though the directory is empty).
+  <li>Add a <a rel="help" href="#cacheFromUrl"><kbd>cacheFromUrl</kbd></a> tag
+    which specifies the dataset's bucket name and optional prefix (i.e., directory) 
+    in the specific
+    <a rel="help" href="#AwsS3URLFormat">Aws S3 URL Format that ERDDAP requires</a>.    
+  <li>Add a <a rel="help" href="#cacheFromUrl">&lt;cacheSizeGB&gt;</a> tag
+    to the dataset's xml (e.g., 10 is a good value for most datasets)
+    to tell ERDDAP to limit the size of the local cache 
+    (i.e., don't try to cache all of the remote files).
+  <li>See if that works in the public ERDDAP.
+    Note that the first time ERDDAP loads the dataset, it will take a
+    long time to load, because ERDDAP needs to download and read
+    all of the data files. 
+    <p>If the dataset is a huge collection of huge gridded data files, 
+    this will take a very long time and be impractical. 
+    In some cases, for gridded data files, 
+    ERDDAP can extract the needed information
+    (e.g., the time point for the data in a gridded data file) from the file name
+    and avoid this problem.
+    See <a rel="help" href="#EDDGridFromFiles_AggregationViaFileNames">Aggregation via File Names</a>.
+  <li>Optionally (but especially for EDDTableFromFiles datasets), you can add an
+    <a href="#nThreads" rel="bookmark">nThreads</a> tag to the dataset to tell ERDDAP
+    to use more than 1 thread when responding to a user's request for data.
+    This minimizes the effects of the delay that occurs when ERDDAP 
+    reads data files from (remote) AWS S3 buckets into the local cache
+    and (perhaps) decompressing them.
+  </ol>
+
 </ul>
 
-<p>ERDDAP can only read files from AWS S3 buckets if you specify the &lt;cacheFromUrl&gt;
-(or &lt;fileDir&gt;) in a special format: 
+<p><a class="selfLink" id="AwsS3OpenData" href="#AwsS3OpenData" rel="bookmark"
+  ><strong>AWS S3 Open Data</strong></a>
+<br>As part of NOAA's
+<a rel="help" href="https://www.noaa.gov/big-data-project"
+  >Big Data Project<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>,
+NOAA has partnerships with five organizations, including AWS, 
+"to explore the potential benefits of storing copies of key observations and 
+model outputs in the Cloud to allow computing directly on the data without 
+requiring further distribution". 
+AWS includes the datasets it gets from NOAA as part of its program to offer 
+public access to a large collection of 
+<a rel="help" href="https://registry.opendata.aws/"
+  >Open Data on AWS S3<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+from any computer, whether it is 
+an Amazon compute instance (a rented computer) on the AWS network or your own PC on any network.
+The example below assumes you are working with a publicly accessible dataset. 
+
+<p><a class="selfLink" id="AwsS3URLFormat" href="#AwsS3URLFormat" rel="bookmark"
+><strong>Accessing Files in an AWS S3 Bucket</strong></a>
+<br>For a private S3 data bucket, the bucket's owner must give you access to the bucket.
+If you want to access the private bucket from a computer not on the AWS network,
+the bucket's owner must take steps to make that bucket accessible via the internet.
+(See the AWS documentation.)
+
+<p>In all cases, you will need an AWS account because the AWS SDK for Java 
+(which ERDDAP uses to retrieve information about the contents of a bucket)
+requires AWS account credentials. (more on this below)
+
+<p>ERDDAP can only access AWS S3 buckets
+if you specify the <a rel="help" href="#cacheFromUrl">&lt;cacheFromUrl&gt;</a>
+(or &lt;fileDir&gt;) in a specific format: 
 <br><kbd>https://<i>bucketName</i>.s3.<i>aws-region</i>.amazonaws.com/<i>prefix/</i></kbd>
 <br>where
 <ul>
@@ -1481,7 +1611,7 @@ For example, <kbd>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/</
 <br>This URL format is one of the AWS S3 recommendations: see
 <a rel="help" 
   href="https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html"
-  >Accessing a Bucket on this page<img 
+  >Accessing a Bucket<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
  and 
@@ -1490,60 +1620,27 @@ For example, <kbd>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/</
   >this description of prefixes<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
-What ERDDAP adds is the ability to combine the baseURL and the prefix into one URL
+ERDDAP requires that you combine the bucket URL and the optional prefix into one URL
 in order to specify the &lt;cacheFromUrl&gt; (or &lt;fileDir&gt;) where the files are located.
 
-<p>Anyone can access the publicly accessible
-<a rel="help" href="https://registry.opendata.aws/"
-  >Open Data on AWS S3<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>
-from any computer, whether it is 
-an Amazon compute instance on the AWS network or your own PC on any network.
-You don't need an AWS account.
-The examples below assume you are working with a publicly accessible dataset. 
-
-<p>However, for a private S3 data bucket, you need to 
-create an AWS account and create a
-<a rel="help" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html"
-  >Credential File<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>
-on the computer (or AWS compute instance) that ERDDAP is running on. 
-The bucket's owner must give you access to the bucket.
-If you want to access the private bucket from a computer not on the AWS network,
-the bucket's owner must take steps to make that bucket accessible via the internet.
-(See the AWS documentation.)
-
-<p><a class="selfLink" id="AwsS3Test" href="#AwsS3Test" rel="bookmark">You can and should test the base URL</a>
+<p><a class="selfLink" id="AwsS3Test" href="#AwsS3Test" rel="bookmark">You can and should test the bucket URL</a>
 of the AWS S3 directory in your browser, e.g., 
 <br><a rel="help" 
   href="https://noaa-goes17.s3.us-east-1.amazonaws.com"
        >https://noaa-goes17.s3.us-east-1.amazonaws.com<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>  
-It must return an XML document which has (partial) listing the contents of that bucket.
-Unfortunately, the full URL (i.e., with a prefix) that ERDDAP wants doesn't work in a browser,
-so you can't browse the hierarchy of a bucket easily in your browser.
-(Amazon, please add support for this!)
+If the bucket URL is correct and appropriate for ERDDAP,
+it will return an XML document which has (partial) listing the contents of that bucket.
+Unfortunately, the full URL (i.e., bucket URL plus prefix) 
+that ERDDAP wants for a given dataset doesn't work in a browser.
+AWS doesn't offer a system to browse the hierarchy of a bucket easily in your browser.
+(If that is incorrect, please email bob.simons @ noaa.gov. 
+Otherwise, Amazon, please add support for this!)
 
-<p><a class="selfLink" id="AwsS3Buckets" href="#AwsS3Buckets" rel="bookmark"
-  ><strong>The Contents of a Bucket. Keys. Objects. Delimiters.</strong></a>
-<br>Technically, S3 buckets aren't hierarchical file structures like disk drives on a computer.
-Instead, buckets only contain "objects" (files), each of which has a "key" (a name).
-An example of a key is 
-ABI-L1b-RadM/2018/052/22/ABI-L1b-RadM/2018/052/22/OR_ABI-L1b-RadM2-M3C10_G16_s20180522247575_e20180522248044_c20180522248074.nc .
-The corresponding object is the actual .nc file.
-It is common practice to make key names, like that, that look like a hierarchical path 
-plus a file name, but technically they aren't.
-Since it is common, ERDDAP treats keys with /'s as if they are a hierarchical path plus file name,
-and this documentation will refer to them as such.
-If a bucket's keys don't use /'s (e.g., a key like ABI-Lib.2018.052.22.OR_ABI-L1b-RadM2-M3C10_G16_s20180522247575), then 
-ERDDAP will just treat the whole key as a long file name.
-
-<p><strong>Viewing the Contents of a Bucket</strong>
-S3 buckets often contain a couple of categories of files, in a couple of pseudo subdirectories,
-which could become a couple of ERDDAP datasets.
+<p><a class="selfLink" id="AwsS3ViewBucketContents" href="#AwsS3ViewBucketContents" rel="bookmark"><strong>Viewing the Contents of a Bucket</strong></a>
+<br>S3 buckets often contain a couple of categories of files,
+in a couple of pseudo subdirectories, which could become a couple of ERDDAP datasets.
 To make the ERDDAP datasets, you need to know the starting directory for &lt;cacheFromUrl&gt; 
 (or &lt;fileDir&gt;) and the format of the file names which identify that subset of files.
 If you try to view the entire contents of a bucket in a browser, 
@@ -1556,96 +1653,151 @@ dataset (on your PC's ERDDAP and/or on your public ERDDAP), which also gives you
 easy way to browse the directory structure and download files. 
 The &lt;fileDir&gt; for that will be the URL you made above, e.g., 
 <kbd>https://noaa-goes17.s3.us-east-1.amazonaws.com</kbd> .
-[Why doesn't AWS S3 offer an easy and quick way to do this?]
+[Why doesn't AWS S3 offer a quick and easy way for anyone to do this without an AWS account?]
 Note that when I do this on my PC on a non-Amazon network, 
-it appears that Amazon slows down the response to a trickle (about 50 files per chunk)
+it appears that Amazon slows down the response to a trickle (about 100(?) files per chunk)
 after the first few chunks (of 1000 of files per chunk) are downloaded. 
-Since buckets may have a huge number of files, 
-getting all of the contents of a bucket make take EDDTableFromFileNames 12 hours to finish. 
-[Amazon, is that right?! Is this in keeping with your obligation in the Big Data Project CRADA to 
-make the files publicly accessible?]
+Since buckets may have a huge number of files (noaa-goes17 has 26 million), 
+getting all of the contents of a bucket may take EDDTableFromFileNames several hours
+(e.g., 12!) to finish. 
+[Amazon, is that right?!]
 
-Because of this, you can't/shouldn't use generateDatasetsXml to generated the 
-chunk of datasets.xml for the dataset. Instead, use the xml below 
-(but use the real bucket-name, region, and prefix, and a more information to the
-global &lt;addAttributes&gt;):
-<pre>
-&lt;dataset type="EDDTableFromFileNames" datasetID="awsS3<strong>BucketNameInCamelCaseWithoutSpecialCharacters</strong>" active="true"&gt;
-    &lt;fileDir&gt;https://<strong>bucket-name</strong>.s3.<strong>region</strong>.amazonaws.com/<strong>prefix/</strong>&lt;/fileDir&gt;
-    &lt;fileNameRegex&gt;.*&lt;/fileNameRegex&gt;
-    &lt;recursive&gt;true&lt;/recursive&gt;
-    &lt;reloadEveryNMinutes&gt;1000000&lt;/reloadEveryNMinutes&gt;
-    &lt;!-- sourceAttributes&gt;
-    &lt;/sourceAttributes --&gt;
-    &lt;addAttributes&gt;
-        &lt;att name="cdm_data_type"&gt;Other&lt;/att&gt;
-        &lt;att name="infoUrl"&gt;&lt;/att&gt;
-        &lt;att name="institution"&gt;<strong>The Institution</strong>&lt;/att&gt;
-        &lt;att name="license"&gt;[standard]&lt;/att&gt;
-        &lt;att name="sourceUrl"&gt;(local files)&lt;/att&gt;
-        &lt;att name="subsetVariables"&gt;fileType&lt;/att&gt;
-        &lt;att name="summary"&gt;This dataset lets you view the files in the AWS S3 <strong>bucket-name</strong> bucket.&lt;/att&gt;
-        &lt;att name="title"&gt;Files in the AWS S3 <strong>bucket-name</strong> Bucket&lt;/att&gt;
-    &lt;/addAttributes&gt;
-    &lt;dataVariable&gt;
-        &lt;sourceName&gt;url&lt;/sourceName&gt;
-        &lt;destinationName&gt;url&lt;/destinationName&gt;
-        &lt;dataType&gt;String&lt;/dataType&gt;
-        &lt;!-- sourceAttributes&gt;
-            &lt;att name="ioos_category"&gt;Identifier&lt;/att&gt;
-            &lt;att name="long_name"&gt;URL&lt;/att&gt;
-        &lt;/sourceAttributes --&gt;
-        &lt;addAttributes&gt;
-        &lt;/addAttributes&gt;
-    &lt;/dataVariable&gt;
-    &lt;dataVariable&gt;
-        &lt;sourceName&gt;name&lt;/sourceName&gt;
-        &lt;destinationName&gt;name&lt;/destinationName&gt;
-        &lt;dataType&gt;String&lt;/dataType&gt;
-        &lt;!-- sourceAttributes&gt;
-            &lt;att name="ioos_category"&gt;Identifier&lt;/att&gt;
-            &lt;att name="long_name"&gt;File Name&lt;/att&gt;
-        &lt;/sourceAttributes --&gt;
-        &lt;addAttributes&gt;
-        &lt;/addAttributes&gt;
-    &lt;/dataVariable&gt;
-    &lt;dataVariable&gt;
-        &lt;sourceName&gt;lastModified&lt;/sourceName&gt;
-        &lt;destinationName&gt;lastModified&lt;/destinationName&gt;
-        &lt;dataType&gt;double&lt;/dataType&gt;
-        &lt;!-- sourceAttributes&gt;
-            &lt;att name="ioos_category"&gt;Time&lt;/att&gt;
-            &lt;att name="long_name"&gt;Last Modified&lt;/att&gt;
-            &lt;att name="units"&gt;seconds since 1970-01-01T00:00:00Z&lt;/att&gt;
-        &lt;/sourceAttributes --&gt;
-        &lt;addAttributes&gt;
-        &lt;/addAttributes&gt;
-    &lt;/dataVariable&gt;
-    &lt;dataVariable&gt;
-        &lt;sourceName&gt;size&lt;/sourceName&gt;
-        &lt;destinationName&gt;size&lt;/destinationName&gt;
-        &lt;dataType&gt;double&lt;/dataType&gt;
-        &lt;!-- sourceAttributes&gt;
-            &lt;att name="ioos_category"&gt;Other&lt;/att&gt;
-            &lt;att name="long_name"&gt;Size&lt;/att&gt;
-            &lt;att name="units"&gt;bytes&lt;/att&gt;
-        &lt;/sourceAttributes --&gt;
-        &lt;addAttributes&gt;
-        &lt;/addAttributes&gt;
-    &lt;/dataVariable&gt;
-    &lt;dataVariable&gt;
-        &lt;sourceName&gt;fileType&lt;/sourceName&gt;
-        &lt;destinationName&gt;fileType&lt;/destinationName&gt;
-        &lt;dataType&gt;String&lt;/dataType&gt;
-        &lt;addAttributes&gt;
-            &lt;att name="extractRegex"&gt;.*(\\..+?)&lt;/att&gt;
-            &lt;att name="extractGroup" type="int"&gt;1&lt;/att&gt;
-            &lt;att name="ioos_category"&gt;Identifier&lt;/att&gt;
-            &lt;att name="long_name"&gt;File Type&lt;/att&gt;
-        &lt;/addAttributes&gt;
-    &lt;/dataVariable&gt;
-&lt;/dataset&gt;
-</pre>
+<p><a class="selfLink" id="AwsS3MakeAnEDDTableFromFileNamesDataset" href="#AwsS3MakeAnEDDTableFromFileNamesDataset" rel="bookmark"
+  ><strong>Making an EDDTableFromFileNames Dataset with the Contents of an AWS S3 Bucket</strong></a>
+<br>If you have a bucket name, but don't already have a list of files in the S3 bucket
+or the prefix that identifies location of the relevant files in the bucket,
+use the instructions below to make an EDDTableFromFileNames dataset so you can
+browse the directory hierarchy of the S3 bucket via ERDDAP's "files" system. 
+<ol>
+<li>Open an AWS Account
+<br>ERDDAP uses the 
+<a rel="help" 
+  href="https://docs.aws.amazon.com/sdk-for-java/index.html"
+       >AWS SDK for Java<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a> 
+to get bucket information from AWS,
+so you need to 
+<a rel="help" 
+  href="https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/"
+       >create and activate an AWS account<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>.
+That's a pretty big job, with lots of things to learn.
+<br>&nbsp;
+
+<li>Put your AWS Credentials where ERDDAP can find them.
+<br>Follow the instructions at 
+<a rel="help" 
+  href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html"
+       >Set up AWS Credentials and Region for Development<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+so ERDDAP (specifically, the AWS SDK for Java) will be able to find and use your AWS credentials.
+If ERDDAP can't find the credentials, you will see a
+<br><kbd>java.lang.IllegalArgumentException: profile file cannot be null</kbd>
+error in ERDDAP's log.txt file.
+
+<p>Hint for Linux and Mac OS: the credentials file must be in the home directory of 
+the user that is running Tomcat (and ERDDAP) (for this paragraph, we'll assume user=tomcat)
+in a file called ~/.aws/credentials .
+Don't assume that ~ is /home/tomcat -- actually use <kbd>cd ~</kbd> to find out 
+where the operating system thinks ~ for user=tomcat is. Create the directory if it doesn't exist.
+Also, after you put the credentials file in place, make sure the user and group for 
+the file are <kbd>tomcat</kbd> and then use <kbd>chmod 400 credentials</kbd> 
+to make sure the file is read-only for user=tomcat. 
+
+<!-- also:?
+  https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair -->
+
+<li>Create the bucket URL in the 
+<a rel="help" href="#AwsS3URLFormat">format that ERDDAP requires</a>, e.g., 
+<br><a rel="help" 
+  href="https://noaa-goes17.s3.us-east-1.amazonaws.com"
+       >https://noaa-goes17.s3.us-east-1.amazonaws.com<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a> ,
+and test it in a browser to make sure it returns an XML document which has a partial 
+listing the contents of that bucket.
+<br>&nbsp;
+
+<li>Use <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>
+to create an
+<a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a> dataset:
+  <ul>
+  <li>&nbsp;&nbsp;For the <kbd>Starting directory</kbd>, use this syntax:
+    <br><kbd>***fromOnTheFly,<i>yourBucketUrl</i></kbd>
+    <br>for example,
+    <br><kbd>***fromOnTheFly,https://noaa-goes17.s3.us-east-1.amazonaws.com/</kbd>
+  <li><kbd>File name regex? .*</kbd>
+  <li><kbd>Recursive? true</kbd>
+  <li><kbd>reloadEveryNMinutes? 10080</kbd>
+  <li><kbd>infoUrl? https://registry.opendata.aws/noaa-goes/</kbd>
+  <li><kbd>institution? NOAA</kbd>
+  <li><kbd>summary? nothing</kbd> (ERDDAP will create a decent summary automatically.)
+  <li><kbd>title? nothing</kbd> &nbsp; &nbsp; (ERDDAP will create a decent title automatically.)
+  </ul>
+  As usual, you should edit the resulting XML 
+  to verify correctness and make improvements before 
+  the chunk of datasets using it in datasets.xml.
+
+<li><p><a class="selfLink" id="AwsS3Example"
+                        href="#AwsS3Example" rel="bookmark"
+  >If you follow the instructions above and load the dataset in ERDDAP,</a>
+you have created an EDDTableFromFiles dataset.
+  As an example, and to make it easier for anyone to browse and download
+  files from the AWS Open Data buckets, we have created EDDTableFromFileNames
+  datasets (see the list at
+  <br><a rel="help" 
+  href="https://upwell.pfeg.noaa.gov/erddap/search/index.html?searchFor=awsS3Files_"
+       >https://upwell.pfeg.noaa.gov/erddap/search/index.html?searchFor=awsS3Files_</a>)
+  for almost all of the 
+  <a rel="help" href="https://registry.opendata.aws/"
+  >AWS S3 Open Data buckets<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>.
+<br>[The few buckets that we didn't include 
+  either have a large number of files in the root directory (more than can be downloaded in a reasonable amount of time),
+  or don't allow public access (aren't they all supposed to be public?),
+  or are Requester Pays buckets (e.g., Sentinel).]
+  <br>If you click on the "files" link for one of these datasets, 
+  you can browse the directory tree and files in that S3 bucket.
+  Because of the way ***fromOnTheFly EDDTableFromFiles works, these
+  directory listings are always perfectly up-to-date because ERDDAP gets them on-the-fly.
+  If you click down the directory tree to an actual file name and click on the file name,
+  ERDDAP will redirect your request to AWS S3 so that you can download the file 
+  directly from AWS. You can then use inspect that file.
+
+<p>Trouble? 
+<br>If your EDDTableFromFiles won't load in ERDDAP (or DasDds), look in the 
+log.txt file for an error message.
+If you see a 
+<br><kbd>java.lang.IllegalArgumentException: profile file cannot be null</kbd>
+error, the problem is that the AWS SDK for Java (used by ERDDAP) isn't
+finding the credentials file. See the credentials instructions above.
+<br>&nbsp;
+</ol>
+
+It is unfortunate that AWS doesn't simply allow people to use a browser
+to view the contents of a public bucket.
+
+<p><strong>Then you can make ERDDAP datasets that give users access to the data in the files.</strong>
+<br>See the instructions in 
+<a href="#ErddapAndS3Buckets" rel="bookmark">ERDDAP and S3 Buckets</a> (above).
+<br>For the sample EDDTableFromFileNames dataset that you made above, 
+  if you do a little poking around with the directory and file names in the directory tree,
+  it becomes clear that the top level directory names (e.g., ABI-L1b-RadC)
+  correspond to what ERDDAP would call separate datasets.
+  The bucket you are working with may be similar.
+  You could then pursue creating separate datasets in ERDDAP for each of those datasets, using, e.g., 
+  <br>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/
+  <br>as the <kbd>&lt;cacheFromUrl&gt;</kbd>. Unfortunately, for this particular
+  example, the datasets in the bucket all seem to be level 1 or level 2 datasets,
+  which ERDDAP 
+  <a href="#differentDimensions" rel="bookmark">isn't particularly good at</a>,
+  because the dataset is a more complicated collection of variables which use different dimensions.
+<br>&nbsp;
+
 
 <li><a class="selfLink" id="NcML" href="#NcML" rel="bookmark"><strong>NcML .ncml Files</strong></a>
 <br>NcML files let you specify on-the-fly changes to one or more
@@ -1966,6 +2118,58 @@ currently recommend
     <br>&nbsp;
   </ol>     
   That's it. I hope that wasn't too hard.
+  <br>&nbsp;
+
+<li><strong><a class="selfLink" id="Zarr" href="#Zarr" rel="bookmark">Zarr</a></strong>
+<br>(As of August 2019)
+    We could easily be wrong, but we are not yet convinced that 
+    <a rel="help" href="https://github.com/zarr-developers/zarr-python">Zarr<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>,
+    or similar systems which break data files up into smaller chunks, are great
+    solutions to the problem of ERDDAP reading data stored in cloud services like Amazon AWS S3. 
+    Zarr is great technology that has shown it's usefulness in a variety of situations,
+    we're just not sure that ERDDAP+S3 will be one of those situations.
+    Currently, ERDDAP can't read data stored by Zarr, so it is impossible to do tests
+    to know for sure. That will change if/when Unidata adds support for Zarr data sources
+    to netcdf-java.
+    Mostly we're saying: before we rush to make the effort to store all our data in Zarr, 
+    let's do some tests to see if it is actually a better solution.
+
+    <p>The problems with accessing data in the cloud are latency (the lag to first get data)
+    and file-level access (rather than block-level access).
+    Zarr solves the file-level access problem, but does nothing about latency. 
+    Compared to just downloading the file (so it can be read as a local file with block-level access), 
+    Zarr may even exacerbate the latency problem because, with Zarr, 
+    reading a file now involves a series of several calls to read different parts of the file 
+    (each with its own lag).
+    The latency problem can be solved by parallelizing the requests, but that is
+    a higher-level solution, not dependent on Zarr.
+
+    <p>And with Zarr (as with relational databases), 
+    we lose the convenience of having a data file be a simple, single file 
+    that you can easily verify the integrity of, or make/download a copy of.
+
+    <p>ERDDAP (as of v2) has a system for maintaining a local cache of files from a 
+    URL source (e.g., S3)  
+    (see <a rel="help" href="#cacheFromUrl">&lt;cacheFromUrl&gt; and &lt;cacheMaxGB&gt;</a>).
+    And the new 
+    <a rel="help" href="#nThreads">&lt;nThreads&gt;</a>
+    should minimize the latency problem by parallelizing data retrieval at a high level. 
+    &lt;cacheFromUrl&gt; seems to work very well for many scenarios. 
+    (We're not sure how beneficial &lt;nThreads&gt; is without further tests.) 
+    We admit we haven't done timing tests on an AWS instance with a good network connection, 
+    but we have successfully tested with various remote URL sources of files.
+    And ERDDAP's &lt;cacheFromUrl&gt; works with any type of data file (e.g., .nc, .hdf,
+    .csv, .jsonlCSV), even if externally compressed (e.g., .gz), without any changes
+    to the files (e.g., rewriting them as Zarr collections). 
+
+    <p>It is likely that different scenarios will favor different solutions, e.g.,
+    only need to read part of a file once (Zarr will win), vs. need to read all of a file once, 
+    vs. need to read part or all of a file repeatedly (&lt;cacheFromUrl&gt; will win). 
+
+    <p>Mostly we're saying: before we rush to make the effort to store all our data in Zarr, 
+    let's do some tests to see if it is actually a better solution.
 
 </ul>
 
@@ -2687,16 +2891,23 @@ allowing those would lead to inconsistencies:
   </ol>
 
 <li>For security reasons, EDDGridFromErddap and EDDTableFromErddap don't support the 
-  <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a> tag.
+  <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a> tag
+  and can't be used with remote datasets that
+  require logging in
+  (because they use <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>)..
   See ERDDAP's 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"
     >security system</a>
     for restricting access to some datasets to some users.
   <br>&nbsp;
-<li>EDDGridFromErddap and EDDTableFromErddap can't be used with remote datasets that
-  require logging in
-  (because they use <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>).
+
+<li>Starting with ERDDAP v2.03, EDDGridFromErddap and EDDTableFromErddap support the 
+  <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a> tag. 
+  Unlike other types of datasets, the default is true, 
+  but the dataset's files will be accessibleViaFiles only if the source dataset 
+  also has &lt;accessibleViaFiles&gt; set to true.
   <br>&nbsp;
+
 <li>You can use the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make the datasets.xml chunk for this type of dataset.
@@ -2710,6 +2921,7 @@ allowing those would lead to inconsistencies:
 &lt;dataset type="EDDGridFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a>...&lt;/accessibleViaFiles&gt; &lt;!-- 0 or 1, default=true. --&gt;
   <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1.  
@@ -2928,6 +3140,11 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
         erroneously called the Julian date).
         You may need a shortened version of this, e.g., yyyyDDD .
       </ul>
+      If you use this pseudo dataType, add this to the new variable's &lt;addAttributes&gt;:
+      <br><kbd>&lt;att name="units"&gt;seconds since 1970-01-01T00:00:00Z&lt;/att&gt;</kbd>
+      <br>If you want to shift all of the time values, shift the time value in <kbd>units</kbd>, e.g.,
+      <br><kbd>1970-01-01T12:00:00Z</kbd>.
+
 
     <li><i>extractRegex</i> -- This is the 
       <a rel="help"
@@ -4265,6 +4482,7 @@ check the source dataset to see if there is additional data available.
     <br>&nbsp;
   </ol>
 
+
 <li><a class="selfLink" id="EDDGridCopySkeletonXML" href="#EDDGridCopySkeletonXML" rel="bookmark">The skeleton XML for an EDDGridCopy dataset is:</a>
 <pre>
 &lt;dataset type="EDDGridCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -4543,7 +4761,7 @@ handles data from one Cassandra table.
   <li>Single Value Partition Keys -- If you want an ERDDAP dataset to work with only 
     one value of one partition key, specify <kbd><i>partitionKeySourceName=value</i></kbd>. 
     <br>Don't use quotes for a numeric column, for example, <kbd>deviceid=1007</kbd> 
-    <br>Do use quotes for a string column, for example, <kbd>stationid="Point Pinos"</kbd>
+    <br>Do use quotes for a String column, for example, <kbd>stationid="Point Pinos"</kbd>
 
   <li>Dataset Default Sort Order -- The order of the partition key &lt;dataVariable&gt;'s
     in datasets.xml determines the default sort order of the results from Cassandra.
@@ -5410,7 +5628,7 @@ handles data from one relational database table or
   <li>double (float(?), double precision, decimal (with possible loss of precision), 
      numeric(?), date, timestamp)
   <li>char (character, if it never has more than 1 character)
-  <li>string (character, varchar, character varying, binary, varbinary, interval, 
+  <li>String (character, varchar, character varying, binary, varbinary, interval, 
     array, multiset, xml, and any other database data type that doesn't fit cleanly
     with any other ERDDAP data type)
   </ul>
@@ -5837,6 +6055,7 @@ subclasses, this dataset type does not serve data from within the files.
     For example, a project-specific, custom, binary format.
     <br>&nbsp;
   </ul>
+
 <li><a class="selfLink" id="EDDTableFromFileNamesData" href="#EDDTableFromFileNamesData" rel="bookmark">The data
   in an EDDTableFromFileNames dataset</a> is a table that ERDDAP creates
   on-the-fly with information about a group of local files.
@@ -5856,6 +6075,53 @@ subclasses, this dataset type does not serve data from within the files.
       <br>and that directory has a file named jplMURSST20150103000000.png, 
       <br>then the URL that will be shown to users for that file will be
       <br>http://<i>serverUrl</i>/erddap/jplMURSST/jplMURSST20150103000000.png .
+
+      <p>In addition to using a local directory for the &lt;fileDir&gt;,
+      you can also specify the URL of a remote, directory-like web page.
+      This works with: 
+      <ul>
+      <li>Unaggregated datasets in THREDDS, e.g., 
+      <br><a rel="help" href="https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"
+                             >https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      <li>Unaggregated datasets in Hyrax, e.g., 
+      <br><a rel="help" href="https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"
+                             >https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      <li>Most Apache-like directory listings, e.g., 
+      <br><a rel="help" href="https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/"
+                             >https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      </ul>
+
+      <p><a class="selfLink" id="fromOnTheFly" href="#fromOnTheFly" rel="bookmark"
+        >***fromOnTheFly</a> -- For some huge S3 buckets 
+      (like noaa-goes17, which has 26 million files), it may take ERDDAP 
+      up to 12 hours to download all the information about the contents of the bucket
+      (and then there are other problems). To get around this, 
+      there is a special way to use &lt;fileDir&gt;
+      in EDDTableFromFileNames to make a dataset with the directory and file names 
+      from an AWS S3 bucket.  The dataset won't have the list of 
+      all of the S3 bucket's directories and file names that a user can 
+      search via requests to the dataset. But the dataset will get the names of 
+      directories and files on-the-fly if the user traverses the directory hierarchy with 
+      the dataset's "files" option. Thus, this allows users to browse the 
+      S3 bucket's file hierarchy and files via the dataset's "files" system.
+      To do this, instead of specifying the URL for the S3 bucket as the 
+      "Starting directory" (in GenerateDatasetsXml)
+      or &lt;fileDir&gt; (in datasets.xml), use:
+      <br><kbd>***fromOnTheFly,<i>theS3BucketUrl</i></kbd>
+      <br>for example:
+      <br><kbd>***fromOnTheFly,https://noaa-goes17.s3.us-east-1.amazonaws.com/</kbd>
+      <br>See the documentation for <a rel="help" href="#AwsS3Files">working with S3 Buckets in ERDDAP</a>,
+      notably the description of the specific format that must be used for S3 bucket URL.      
+      And see 
+      <br><a rel="help" href="#AwsS3MakeAnEDDTableFromFileNamesDataset">these details and an example</a>
+        of using ***fromOnTheFly.
+
     <li>&lt;recursive&gt; -- Files in subdirectories of &lt;fileDir&gt;
       with names which match &lt;fileRegex&gt; will appear in the same subdirectories
       in the "files" URL if &lt;recursive&gt; is set to <kbd>true</kbd>.  
@@ -5888,6 +6154,7 @@ subclasses, this dataset type does not serve data from within the files.
           >regex tutorial<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>.)
+      <br>&nbsp;
     </ul>  
   In the table, there will be columns with:
   <ul>
@@ -5978,12 +6245,124 @@ subclasses, this dataset type does not serve data from within the files.
   But for several minutes after that, the operating system keeps the information in a cache,
   so responses should be very fast.
   <br>&nbsp;
+
 <li>You can use the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make the datasets.xml chunk for this type of dataset.
   You can add/define additional columns with information extracted from the filename,
   as shown above.
   <br>&nbsp;
+
+<!--  clean up documentation for ***fromFiles (file info stored in jsonlCSV files).
+<li>
+    <ol>
+    <li>Obtain the bucket URL in the 
+    <a rel="help" href="#AwsS3URLFormat">format that ERDDAP requires</a>, e.g., 
+    <a rel="help" 
+      href="https://noaa-goes17.s3.us-east-1.amazonaws.com"
+           >https://noaa-goes17.s3.us-east-1.amazonaws.com<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a> ,
+    and test it in a browser to make sure it returns an XML document which has a partial 
+    listing the contents of that bucket.
+    <br>&nbsp;
+
+    <li>Use <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>
+    to try to create an
+    <a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a> dataset.
+    <br>&nbsp;&nbsp;For the <kbd>Starting directory</kbd>, specify the bucket URL, e.g., 
+      <a rel="help" 
+      href="https://noaa-goes17.s3.us-east-1.amazonaws.com"
+           >https://noaa-goes17.s3.us-east-1.amazonaws.com/</a> 
+    <br>&nbsp;&nbsp;For the <kbd>File name regex</kbd>, specify .*
+    <br>&nbsp;&nbsp;For <kbd>Recursive</kbd>, specify <kbd>true</kbd>
+    <br>For this example, that AWS bucket has 26 million files, 
+    so GenerateDatasets will run for a long time (several hours),
+    create a huge temporary file (4TB?) with the 
+    S3 file names in <i>bigParentDirectory</i>/dataset/_FileVisitor/,
+    then fail at the last step because the file is too big for GenerateDatasetsXml.
+    The file's name will be a file-name-safe version of the URL plus the start time plus ".jsonlCsv",
+    e.g., 
+    <br>https_noaa-goes17.s3.us-east-1.amazonaws.com_20190730135148_596.jsonlCsv
+    <br>That's okay. We'll get around this problem below.
+    <br>&nbsp;
+
+    <li>Make a directory to hold the data for the EDDTable from
+    In this example, we'll use the name /data/awsS3NoaaGoes17/ .
+    <br>&nbsp;
+
+    <li>Copy the huge temporary file with the 
+    S3 file names from <i>bigParentDirectory</i>/dataset/_FileVisitor/ 
+    into the new directory for the dataset (e.g., /data/awsS3NoaaGoes17/ ).
+    <br>&nbsp;
+
+    <li>Split the huge temporary file with S3 file names into multiple files 
+    with 100000 lines each so that ERDDAP can work with the information.
+    An easy way to do this with Linux (or GitBash) is:
+    <br><kbd>split -a 4 -d -l 100000 input_file output_file</kbd>
+    <br>Or, in this example:
+    <pre>split -a 4 -d -l 100000 https_noaa-goes17.s3.us-east-1.amazonaws.com_20190730135148_596.jsonlCsv awsS3NoaaGoes17_</pre>
+    That says: split the file into chunks with 100000 'l'ines each, and make file names with 4 character, 'd'ecimal suffixes.
+    <br>That makes files named: awsS3NoaaGoes17_0001, awsS3NoaaGoes17_0002, awsS3NoaaGoes17_0003, etc.
+    which will sort nicely.
+    For details, see the <a rel="help" 
+      href="https://www.computerhope.com/unix/usplit.htm"
+           ><kbd>split</kbd> documentation<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>.
+    <br>&nbsp;
+       
+    <li>Make a file with the column names.
+    <br>First, use a text editor to make a small file with the column names on one, jsonlCSV-style line:
+    <br><kbd>["directory","name","lastModified","size"]</kbd>
+    <br>Make sure there is a newline at the end of that line, but no other blank lines in the file.
+    <br>&nbsp;
+
+    <li>Add column names to the files.
+    And easy way to do this with Linux (or GitBash) is:
+    <pre>cd /data/awsS3NoaaGoes17/
+    for f in awsS3* ; do cat columnNames.csv "$f" > ../awsS3NoaaGoes17/"$f".jsonlCSV ; done</pre>
+
+    <li>Now you can use GenerateDatasetsXml to create an EDDTableFromFileNames
+    to display all the names of the 26 million files in the noaa-goes17 bucket.
+    Specify:
+    <pre>Which EDDType? EDDTableFromFileNames
+    fileDir? ***fromFiles, jsonlCSV, /u00/data/points/awsS3NoaaGoes17/, awsS3NoaaGoes17_....\.jsonlCSV(|.gz), https://noaa-goes17.s3.us-east-1.amazonaws.com/
+    File name regex? .*
+    Recursive? true
+    reloadEveryNMinutes? 10080
+    infoUrl? https://registry.opendata.aws/noaa-goes/
+    institution? NOAA
+    summary? This is a test of displaying file names from the AWS S3 noaa-goes17 Bucket. Use ERDDAP's "files" system to download the files.
+    title? AWS S3 File Names from the noaa-goes17 Bucket
+    </pre>
+
+    <li>If you follow the instructions above, you have created a dataset like 
+    <br><a rel="help" 
+      href="https://coastwatch.pfeg.noaa.gov/erddap/info/awsS3NoaaGoes17/index.html"
+           >https://coastwatch.pfeg.noaa.gov/erddap/info/awsS3NoaaGoes17/index.html</a>
+    <br>which has the files names from the noaa-goes17 bucket.
+      If you click on the "files" link there, 
+      and click down the directory tree to an actual file name and click on the file name,
+      ERDDAP will redirect your request to AWS S3 so that you can download the file 
+      from AWS.
+    <br>&nbsp;
+
+    <li>Make ERDDAP datasets.
+    <br>If you do a little poking around with the directory and file names in the directory tree for that dataset, 
+      it becomes clear that the top level directory names (e.g., ABI-L1b-RadC)
+      correspond to what ERDDAP would call separate datasets.
+      You could then pursue creating separate datasets in ERDDAP for each of those datasets, using, e.g., 
+      <br>https://coastwatch.pfeg.noaa.gov/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/
+      <br>as the <kdb>&lt;cacheFromUrl&gt;</kbd>. Unfortunately, for this particular
+      example, the datasets all seem to be level 1 or level 2 datasets,
+      which ERDDAP isn't particularly good at.
+    <br>&nbsp;
+     
+    </ol>
+
+-->
+
 <li><a class="selfLink" id="EDDTableFromFileNamesSkeletonXML" href="#EDDTableFromFileNamesSkeletonXML" rel="bookmark">The 
   skeleton XML for an EDDTableFromFileNames dataset is:</a>
 <pre>
@@ -6307,10 +6686,33 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     <strong>This is an incredibly useful feature.</strong>
     <ul>
     <li>The &lt;cacheFromUrl&gt; tag lets you specify a URL with a list 
-      of a remote dataset's files from a remote file list
-      (e.g., THREDDS, Hyrax, S3 bucket, ERDDAP /files/ directory, 
-      or standard Web Accessible Folder (WAF)).
-      ERDDAP will copy or cache these files in the dataset's &lt;fileDir&gt; directory. 
+      of a remote dataset's files from a remote file list.
+      <ul>
+      <li>Unaggregated datasets in THREDDS, e.g., 
+      <br><a rel="help" href="https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"
+                             >https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      <li>Unaggregated datasets in Hyrax, e.g., 
+      <br><a rel="help" href="https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"
+                             >https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      <li>Most Apache-like directory listings, e.g., 
+      <br><a rel="help" href="https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/"
+                             >https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+      <li>S3 buckets, e.g, 
+      <br><a rel="help" href="https://noaa-goes17.s3.us-east-1.amazonaws.com/"
+                             >https://noaa-goes17.s3.us-east-1.amazonaws.com/<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a> 
+      <br>However, this requires an AWS account and more setup. 
+        <br>See <a rel="help" href="#AwsS3Files">working with S3 Buckets in ERDDAP</a>.
+      </ul>
+
+      <p>ERDDAP will copy or cache these files in the dataset's &lt;fileDir&gt; directory. 
       If you need support for another type of remote file list (e.g., FTP),
       please email your request to bob.simons at noaa.gov .
       <ul>
@@ -6514,6 +6916,56 @@ href="https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/"
       </ul>
     </ul>
 
+<li><a class="selfLink" id="EDDTableFromFiles_ThousandsOfFiles" href="#EDDTableFromFiles_ThousandsOfFiles" rel="bookmark"><strong>Thousands of Files</strong></a> 
+  <br>If your dataset has many thousands of files, ERDDAP may be slow to respond to requests for data from that dataset. 
+  There are two issues here:
+    <br>&nbsp;
+
+  <ol>
+  <li>The number of files per directory. 
+    <br>Internally, ERDDAP operates at the same speed regardless of whether n files 
+    are in one directory or dispersed in several directories.
+    <br>&nbsp;
+
+    <p>But there is a problem: The more files in a given directory, 
+      the slower the operating system is at returning the list of files in the directory (per file) to ERDDAP. 
+      The response time might be O(n log n). 
+      It is hard to say how many files in one directory is too many, but 10,000 is probably too many.
+      So if your setup is generating lots of files, a recommendation here might be: 
+      put the files in logically organized subdirectories (e.g., station or station/year).
+
+    <p>Another reason to use subdirectories: 
+    if a user wants to use ERDDAP's "files" system to find the name of the oldest file for station X, 
+    it is faster and more efficient if the files are in station/year subdirectories, 
+    because much less information needs to be transferred.
+
+  <li>The total number of files.
+    <br>For tabular datasets, ERDDAP keeps track of the range of values for each variable in each file. 
+    When a user makes a request, ERDDAP has to read all the data from all of the files 
+    that might have data matching the user's request.
+    If the user asks for data from a limited time (e.g., one day or one month), 
+    then ERDDAP won't have to open too many files in your dataset.
+    But there are extreme cases where almost every file might have matching data 
+    (e.g., when waterTemperature=13.2C).
+    Since it takes ERDDAP a little bit of time (partly the seek time on the HDD, 
+    partly the time to read the file's header) just to open a given file 
+    (and more if there are lots of files in the directory),
+    there is a significant time penalty if the total number of files 
+    that ERDDAP has to open is very large. Even opening 1000 files takes significant time.
+    So there are benefits to periodically consolidating the daily files into larger chunks (e.g., 1 station for 1 year).
+    I understand that you might not want to do this for various reasons, but it does lead to much faster responses.
+    In extreme cases (e.g., I deal with a GTSPP dataset that has ~35 million source files), serving data from a huge number of source files is unpractical because ERDDAP's response to simple queries can take hours and use tons of memory. By consolidating source files into a smaller number (for GTSPP, I have 720 now, 2 per month), ERDDAP can respond reasonably quickly. See 
+    <a rel="help" href="#EDDTableFromFiles_MillionsOfFiles">Millions of Files</a>
+    <br>&nbsp;
+
+  </ol>
+  N.B. Solid State Drives are great!
+  The fastest, easiest, cheapest way to help ERDDAP deal with a huge number of (small) 
+  files is to use a solid state drive. See
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#SSD">Solid State Drives are great!</a>
+  <br>&nbsp;
+
+
 <li><a class="selfLink" id="EDDTableFromFiles_MillionsOfFiles" href="#EDDTableFromFiles_MillionsOfFiles" rel="bookmark"><strong>Millions of Files</strong></a> -
   Some datasets have millions of source files. 
   ERDDAP can handle this, but with mixed results.
@@ -6566,6 +7018,11 @@ href="https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/"
   and showed that it works well.  Now, Bob uses this for the GTSPP dataset 
   which has about 18 million source files and which ERDDAP now serves 
   via about 500 .nc(CF) files.]
+
+  <p>N.B. Solid State Drives are great!
+  The fastest, easiest, cheapest way to help ERDDAP deal with a huge number of (small) 
+  files is to use a solid state drive. See
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#SSD">Solid State Drives are great!</a>
   <br>&nbsp;
 
 <li><a class="selfLink" id="EDDTableFromFiles_HugeFiles" href="#EDDTableFromFiles_HugeFiles" rel="bookmark"><strong>Huge Files</strong></a> -- 
@@ -6943,7 +7400,9 @@ try to apply. The changes are the sum of some combination of:
      This works well for valid UDUNITS
      units strings, but can have problems with invalid or complex strings.
      You can deal with problems by specifying specific from-to pairs
-     in &lt;standardizeUdunits&gt; in messages.xml. Please email any changes
+     in &lt;standardizeUdunits&gt; in ERDDAP's
+     <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml file. 
+     Please email any changes
      you make to bob.simons at noaa.gov so they can be incorporated
      into the default messages.xml. 
      <br><strong>This option has a risk:</strong> This may mangle some 
@@ -9507,7 +9966,8 @@ Here are detailed descriptions of common tags and attributes.
   <br><kbd>&lt;commonStandardNames&gt;air_pressure, ..., wind_to_direction&lt;/commonStandardNames&gt;</kbd>
   <br>This list is used in DataProviderForm3.html as a convenience to users.
   <br>If you want to provide this information in datasets.xml, start by copying the current 
-    default list in &lt;DEFAULT_commonStandardNames&gt; in messages.xml.
+    default list in &lt;DEFAULT_commonStandardNames&gt; in ERDDAP's
+    <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml file.
   <br>&nbsp;
 
 <li><a class="selfLink" id="cacheMinutes" href="#cacheMinutes" rel="bookmark"
@@ -9561,19 +10021,54 @@ Here are detailed descriptions of common tags and attributes.
   <br>&nbsp;
 
 <li><a class="selfLink" id="drawLandMask" href="#drawLandMask" rel="bookmark"
-  ><kbd><strong>&lt;drawLandMask&gt;</strong></kbd></a>
-  is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml to specify
-  the default Make A Graph setting for whether the 
-  landmask should be drawn "over" or "under" surface data on maps. 
-  "over" is recommended for primarily oceanographic data 
-  (so that grid data over land is obscured by the landmask).
-  "under" is the default and is suitable for all data. For example.
-  <br><kbd>&lt;drawLandMask&gt;under&lt;/drawLandMask&gt;</kbd>
-  <br>Any changes to this tag's value will take effect the next time ERDDAP reads datasets.xml,
-  including in response to a dataset
-  <a rel="help" 
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a>. 
-  <br>&nbsp;
+  ><strong>drawLandMask</strong></a>
+  specifies the default setting which controls when and how the 
+  landmask should be drawn when ERDDAP draws a map.
+  It can be specified in three different places in datasets.xml (listed
+  from lowest to highest priority):
+  <ol>
+  <li>If drawLandMask is specified within <kbd>&lt;erddapDatasets&gt;</kbd> 
+    (not connected with any specific dataset), then it specifies the 
+    default value of drawLandMask for all variables in all datasets.
+    For example, 
+    <br><kbd>&lt;drawLandMask&gt;under&lt;/drawLandMask&gt;</kbd>
+    <br>Any changes to this tag's value will take effect the next time ERDDAP
+      reads datasets.xml.
+    <br>If this tag isn't present, the underlying default value is <kbd>under</kbd>.
+    <br>&nbsp;
+  <li>If drawLandMask is specified as a global attribute of a given dataset, 
+    then it specifies the default value of drawLandMask for all variables
+    in that dataset, overriding any lower priority setting. 
+    For example, 
+    <br><kbd>&lt;att name="drawLandMask"&gt;under&lt;/att&gt;</kbd>
+    <br>Any changes to this tag's value will take effect the next time ERDDAP 
+    reloads that dataset. 
+    <br>&nbsp;
+  <li>If drawLandMask is specified as a variable's attribute in a given dataset,
+    then it specifies the default value of drawLandMask for that variable
+    in that dataset, overriding any lower priority setting. 
+    For example, 
+    <br><kbd>&lt;att name="drawLandMask"&gt;under&lt;/att&gt;</kbd>
+    <br>Any changes to this tag's value will take effect the next time ERDDAP 
+    reloads that dataset. 
+  </ol>
+  <p>A user can override the default (wherever it is specified) 
+  by selecting a value for "Draw land mask" 
+  from a dropdown list on the dataset's Make A Graph web page, or by including
+  <kbd>&amp;.land=<i>value</i></kbd> in URL that requests a map from ERDDAP.
+
+  <p>In all situations, there are 4 possible values for the attribute: 
+  <ul>
+  <li>"under" draws the landmask before it draws data on the map.
+    <br>For gridded datasets, land appears as a constant light gray color.
+    <br>For tabular datasets, "under" shows topography data over land and oceans.
+  <li>"over" -- 
+    For gridded datasets, "over" draws the landmask after it draws data on maps so that it will mask any data over land.
+    For tabular datasets, "over" shows bathymetry of the ocean and a constant light gray where there is land, both drawn under the data.
+  <li>"outline" just draws the outline of the landmask, political boundaries, lakes and rivers.
+  <li>"off" doesn't draw anything.
+    <br>&nbsp;
+  </ul>
 
 <li><a class="selfLink" id="graphBackgroundColor" href="#graphBackgroundColor" rel="bookmark"
   ><kbd><strong>&lt;graphBackgroundColor&gt;</strong></kbd></a>
@@ -10196,11 +10691,19 @@ for details.
 
 <li><a class="selfLink" id="accessibleViaFiles" href="#accessibleViaFiles" rel="bookmark"><kbd><strong>&lt;accessibleViaFiles&gt;</strong></kbd></a>
     is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag for 
-    <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>,
-    <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>,
-    <a rel="help" href="#EDDGridCopy">EDDGridCopy</a>, and
-    <a rel="help" href="#EDDTableCopy">EDDTableCopy</a> datasets.
-    It can have a value of <kbd>true</kbd> or <kbd>false</kbd> (the default).
+    <a rel="help" href="#EDDGridAggregateExistingDimension">EDDGridAggregateExistingDimension</a>,
+    <a rel="help" href="#EDDGridCopy">EDDGridCopy</a>, 
+    <a rel="help" href="#EDDGridFromEDDTable">EDDGridFromEDDTable</a>,
+    <a rel="help" href="#EDDGridFromErddap">EDDGridFromErddap</a>,
+    <a rel="help" href="#EDDGridFromEtopo">EDDGridFromEtopo</a>,
+    <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a> (including all subclasses),
+    <a rel="help" href="#EDDGridSideBySide">EDDGridSideBySide</a>,
+    <a rel="help" href="#EDDTableCopy">EDDTableCopy</a> 
+    <a rel="help" href="#EDDTableFromErddap">EDDTableFromErddap</a>,
+    <a rel="help" href="#EDDTableFromEDDGrid">EDDTableFromEDDGrid</a>, and
+    <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> (including all subclasses) datasets.
+
+    It can have a value of <kbd>true</kbd> or <kbd>false</kbd>.
     For example,
     <br><kbd>&lt;accessibleViaFiles&gt;true&lt;/accessibleViaFiles&gt;</kbd>
     <br>If the value is <kbd>true</kbd>, ERDDAP will make it so that users can 
@@ -10208,6 +10711,27 @@ for details.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/">"files" system</a>. See the "files" system's 
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">documentation</a>
 for more information. 
+
+    <p>The default value of <kbd>&lt;accessibleViaFiles&gt;</kbd> 
+    comes from <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd>
+    in <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
+    (which has a default value of <kbd>false</kbd>, but a recommended value of <kbd>true</kbd>). 
+
+    <p>Recommendation --
+    We recommend making all relevant datasets accessible via the files system
+    by setting <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd> to <kbd>true</kbd> in setup.xml
+    because there is a group of users for whom this is the preferred way to get the data.
+    Among other reasons, the "files" system makes it easy for users to see which files
+    are available and when they last changed, thus making it easy for a user
+    to maintain their own copy of the entire dataset.
+    If you generally don't want to make datasets accessible via the files system, set
+    <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd> to <kbd>false</kbd>.
+    In either case, just use <kbd>&lt;accessibleViaFiles&gt;</kbd> for the 
+    few datasets which are exceptions to the general policy set by 
+    <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd>
+    (for example, when the dataset uses <a rel="help" href="#NcML">.ncml</a> files,
+    which aren't really useful to users).
+
   <br>&nbsp;
 
 <li><a class="selfLink" id="accessibleViaWMS" href="#accessibleViaWMS" rel="bookmark"><kbd><strong>&lt;accessibleViaWMS&gt;</strong></kbd></a>
@@ -10411,6 +10935,7 @@ for more information.
   This allows datasets made from data in S3 buckets to load very quickly
   (as opposed to absurdly slowly if EDDGrid has to download and read all of the files).
 
+
 <li><a class="selfLink" id="nThreads" href="#nThreads" rel="bookmark"
 ><kbd><strong>&lt;nThreads&gt;</strong></kbd></a> -- 
 <a class="selfLink" id="nGridThreads"  href="#nGridThreads"  rel="bookmark">Starting</a>
@@ -10426,40 +10951,47 @@ while processing each request.
     <li>Rule of Thumb:
         <br>For most datasets on most systems, use nThreads=1, the default.
         If you have a powerful computer (lots of CPU cores, lots of memory), 
-        then consider setting nThreads to 2, 3, or 4 for datasets that might benefit,
-        notably datasets where something causes a lag before a chunk of data can actually 
-        be processed. For example:
+        then consider setting nThreads to 2, 3, 4, or higher 
+        (but never more than the number of CPU cores in the computer)
+        for datasets that might benefit:
         <ul>
-        <li>Datasets with 
-            <a rel="help" href="#ExternallyCompressedFiles">externally-compressed (e.g., .gz)</a>     
-            binary (e.g., .nc) files, because ERDDAP has to decompress the whole file
-            before it can start to read the file.
-        <li>Datasets that use 
-            <a href="#cacheFromUrl" rel="bookmark">cacheFromUrl and cacheSizeGB</a>,
-            because ERDDAP often has to download the file before it can read it.
-        <li>Datasets with data files stored on a high-bandwidth parallel file system,
-            because it can deliver more data, faster, when requested. Examples of
-            parallel file systems include 
-            <a rel="help" href="https://en.wikipedia.org/wiki/Non-RAID_drive_architectures">JBOD<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>,
+        <li>Most EDDTableFromFiles datasets will benefit.
+        <li>Datasets where something causes a lag before a chunk of data can actually 
+          be processed will benefit, for example:
+            <ul>
+            <li>Datasets with 
+                <a rel="help" href="#ExternallyCompressedFiles">externally-compressed (e.g., .gz)</a>     
+                binary (e.g., .nc) files, because ERDDAP has to decompress the whole file
+                before it can start to read the file.
+            <li>Datasets that use 
+                <a href="#cacheFromUrl" rel="bookmark">cacheSizeGB</a>,
+                because ERDDAP often has to download the file before it can read it.
+            <li>Datasets with data files stored on a high-bandwidth parallel file system,
+                because it can deliver more data, faster, when requested. Examples of
+                parallel file systems include 
+                <a rel="help" href="https://en.wikipedia.org/wiki/Non-RAID_drive_architectures">JBOD<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>,
 
-         <a rel="help" href="https://www.ibm.com/developerworks/library/l-pnfs/index.html">pNFS<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>, 
+             <a rel="help" href="https://www.ibm.com/developerworks/library/l-pnfs/index.html">pNFS<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>, 
 
-         <a rel="help" href="https://en.wikipedia.org/wiki/Gluster">GlusterFS<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>,
+             <a rel="help" href="https://en.wikipedia.org/wiki/Gluster">GlusterFS<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>,
 
-          Amazon S3, and Google Cloud Storage.
-        </ul>
-        Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-        (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-        >ERDDAP's status page</a>).
+              Amazon S3, and Google Cloud Storage.
+            <br>&nbsp;      
+            </ul>
+      </ul>
+      Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
+      (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
+      >ERDDAP's status page</a>). See comments about these issues below.
       <br>&nbsp;      
 
-    <li>For a given dataset, this <kbd>nThreads</kbd> setting can come from different places:
+    <li><a class="selfLink" id="nThreadsWhere" href="#nThreadsWhere" rel="bookmark">For a given dataset,</a>
+      this <kbd>nThreads</kbd> setting can come from different places:
         <ul>
         <li>If the datasets.xml chunk for a dataset has an <kbd>&lt;nThreads&gt;</kbd> tag
           (within the <kbd>&lt;dataset&gt;</kbd> tag, not as a global attribute)
@@ -10475,72 +11007,152 @@ while processing each request.
           smallest amount of memory.
           <br>&nbsp;      
         </ul>
-
-    <li>There are diminishing returns to increasing the nThreads setting. 
-      <br>For most requests to most datasets on most systems, there is almost no benefit to 
-      setting nThreads &gt; 1.
-      Even in ideal circumstances, you will probably only get a 75% speed up because
-      there's no getting around
-      <a rel="help" href="https://en.wikipedia.org/wiki/Amdahl%27s_law">Amdahl's Law<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>. 
-      And there are diminishing returns: 2 threads will be way better than 1. 
-      But 3 will be only a chunk better than 2. 
-      And 4 will be only marginally better than 3.  
-      It will be rare that you see much benefit to &gt;4 threads.
+     For the <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
+      >original ERDDAP installation</a>, we use 
+      <br><kbd>&lt;nTableThreads&gt;6&lt;/nTableThreads&gt;</kbd> (It's a powerful server.)
+      Difficult requests now take 30% of the previous time.       
       <br>&nbsp;      
 
-    <li>WARNING: Decreased Responsiveness -
+    <li><a class="selfLink" id="nThreadsMonitor" href="#nThreadsMonitor" rel="bookmark">Monitor Resource Usage</a>
+      <br>When you are experimenting with different nThreads settings (and perhaps
+      making difficult sample requests to your ERDDAP),
+      you can monitor your computer's resource usage:
+      <ul>
+      <li>On Macs, use <kbd>Finder : Applications : Utilities : Activity Monitor</kbd>
+      <li>On Linux, use <kbd>top</kbd>
+      <li>On Windows 10, use <kbd><i>Ctrl + Shift + Esc</i> to open Task Manager</kbd> 
+      <br>&nbsp;      
+      </ul>
+
+    <li><a class="selfLink" id="nThreadsResponsiveness" href="#nThreadsResponsiveness" rel="bookmark"
+      >WARNING: Decreased Responsiveness</a>
       <br>In isolation, ERDDAP will fulfill a request to a dataset with a higher 
       nThreads setting faster than if nThreads=1.  But while that request is being processed,
-      other requests from other users will be crowded out and get a slower response.
-      The overall system responsiveness will be worse when there are datasets with 
-      higher nThreads settings -- this can be very annoying to users!
+      other requests from other users will be somewhat crowded out and get a slower response.
+      Also, when ERDDAP responds to a given request, other computing resources 
+      (e.g., disk drive access, network bandwidth) may be limiting, especially 
+      with higher nThreads settings. 
+      Thus with higher nThreads settings, the overall system responsiveness 
+      will be worse when there are multiple requests being processed -- 
+      this can be very annoying to users!
+      Because of this: never set nThreads to more than the number of CPU cores in the computer.
       nThreads=1 is the fairest setting since each request (among several simultaneous requests)
       will get an equal share of computing resources.
       But the more powerful the computer, the less this will be a problem.
       <br>&nbsp;      
 
-    <li>WARNING: Higher Memory Use -
-      <br>Memory use is directly proportional to the nThreads setting.
+    <li><a class="selfLink" id="nThreadsMemoryUse" href="#nThreadsMemoryUse" rel="bookmark"
+      >WARNING: Higher Memory Use for EDDGrid Datasets</a>
+      <br>Memory use while processing requests is directly proportional to the nThreads setting.
       A reasonably safe rule of thumb is: 
       you need to set 
       <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#memory"
       >ERDDAP's memory settings</a> to at least 2GB + (2GB * nThreads).
-      For example, setting nThreads=3 for any dataset
+      Some requests to some datasets will need more memory than that.
+      For example, setting nThreads=3 for any EDDGrid dataset
       means that the -Xmx setting should be at least -Xmx8000M.
-      Some requests to some datasets will need more memory than that, 
-      so keep a close eye on the memory usage statistics on your 
+      If that memory setting is greater than 3/4 the physical memory of the computer,
+      decrease the nThreads setting so that you can decrease the memory setting.
+
+      <p>The memory use of threads processing requests to EDDTable datasets
+      is almost always lower because the files are usually much smaller. 
+      However, if a given EDDTable dataset has huge (e.g., &gt;=1 GB) data files,
+      then the comments above will apply to those datasets as well.
+
+      <p>Whatever the nThreads setting, keep a close eye on the memory usage statistics on your 
       <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
       >ERDDAP's status page</a>. You shouldn't ever come close to maxing out the memory usage
       in ERDDAP; otherwise there will be serious errors and failures.
-      <br>&nbsp;      
 
-    <li>Processor Threads -
-      <br>You shouldn't ever set nThreads to a number larger than half the number
-      of threads that the server's processor supports. 
-      Most processors these days
-      support 2 threads per core, so a 4 core processor can support up to 8 threads.
-      On such a system, you should never exceed nThreads=4.
-      Computers / operating systems are set up to handle far more threads than
-      the processor can actually handle, but remember that
+    <li>Diminishing Returns
+      <br>There are diminishing returns to increasing the nThreads setting: 
+      2 threads will be way better than 1 (if we ignore dynamic overclocking). 
+      But 3 will be only a chunk better than 2. 
+      And 4 will be only marginally better than 3.  
+
+      <p>In one test of a difficult query to a large EDDTable dataset, 
+      the response time using 1, 2, 3, 4, 5, 6 threads was 
+      38, 36, 20, 18, 13, 11 seconds.  (We now use nTableThreads=6 on that server.)
+
+      <p>nThreads=2:
+      Although, there is often a significant benefit to specifying nThreads=2 
+      instead of nThreads=1, it often won't make much difference in the clock
+      time needed to respond to a given user's request.
+      The reason is: with nThreads=1, most modern CPU's will often
+      <a rel="help" href="https://en.wikipedia.org/wiki/Intel_Turbo_Boost">dynamically overclock<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+      (turbo boost) to temporarily increase the clock speed of the CPU. 
+      Thus with nThreads=1, the one core will often be working at a higher clock speed than
+      each of the two cores if you used nThreads=2.
+      Regardless, we still think it is better to use nThreads=2 rather than nThreads=1,
+      since that setting will yield better results in a wider variety of situations.
+      And of course, if your computer has sufficient CPU cores, 
+      an even higher nThreads setting should yield better results.
+      
+      <p>As discussed above, very high nThreads settings may lead to faster responses 
+      to some requests,
+      but the risk of overall descreased ERDDAP responsiveness and high memory
+      use (as noted above) while those requests are being processed 
+      means it generally isn't a good idea.
+
+    <li><a class="selfLink" id="nThreadsCPUCores" href="#nThreadsCPUCores" rel="bookmark">CPU Cores</a>
+      <br>You shouldn't ever set nThreads to a number larger than the number
+      of CPU cores in the computer's CPU. 
+      Essentially all modern CPUs have multple cores (e.g., 2, 4, or 8).
+      Some computers even have multiple CPUs (e.g., 2 CPUs * 4 cores/CPU = 8 CPU cores).
+      To find out how many CPUs and cores a computer has:
       <ul>
-      <li>The nThreads setting is per request.
-      <li>ERDDAP often handles multiple requests simultaneously.
-      <li>ERDDAP does things other than process requests, e.g., reload datasets.
-      <li>The operating system does things other than run ERDDAP.
-        <br>&nbsp;      
+      <li>On Macs, use <kbd><i>Option key</i> : Apple Menu : System Information</kbd>
+      <li>On Linux, use <kbd>cat /proc/cpuinfo</kbd>
+      <li>On Windows 10, use <kbd><i>Ctrl + Shift + Esc</i> to open Task Manager : Performance</kbd> 
+        (<kbd>Logical processors</kbd> shows the total number of CPU cores)
       </ul>
 
-    <li>YMMV - 
+      <p>Yes, most processors these days say that they support 2 threads per core (via
+      <a rel="help" href="https://en.wikipedia.org/wiki/Hyper-threading">hyper-threading<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>), 
+      but the 2 threads share computing resources, so you won't see twice the
+      throughput on a CPU under heavy load. 
+
+      For example, a computer with one CPU with 4 cores may claim to support up to 8 threads,
+      but you should never exceed nThreads=4 in that ERDDAP.
+      Remember that:
+      <ul>
+      <li>The nThreads setting in ERDDAP is per request. ERDDAP often handles multiple requests simultaneously.
+      <li>ERDDAP does things other than process requests, e.g., reload datasets.
+      <li>When ERDDAP responds to a given request, other computing resources 
+        (e.g., disk drive access, network bandwidth) may be limiting.
+        The higher you set nThreads, the more likely that these other resources
+        will be maxxed out and will slow down ERDDAP's general responsiveness.
+      <li>The operating system does things other than run ERDDAP.
+      </ul>
+      So it is best not to set the nThreads setting to more than the number
+      of cores in the computer's CPU.
+      <br>&nbsp;      
+
+    <li>Your Mileage May Vary (YMMV)
     <br>The results of different nThreads settings will vary greatly for different
     requests to different datasets on different systems.
     If you really want to know the effect of different nThreads settings, 
     run realistic tests. 
     <br>&nbsp;
 
-    <li><a class="selfLink" id="nThreadsUnfortunately" href="#nThreadsUnfortunately" rel="bookmark">Unfortunately,</a>
-    ERDDAP's nThreads system will never be as effective
+    <li>Pfft! Why is nThreads per request?
+    <br>I can hear some of you thinking "Why is nThreads per request? If I were coding this,
+    I would use one permanent worker thread pool and a messaging queue for better performance."
+    The problem with using one worker thread pool and a messaging queue is that 
+    one difficult request would flood the queue with numerous slow tasks. 
+    That would effectively block ERDDAP from even starting work on tasks
+    related to other requests until the initial request was (essentially) finished.
+    Thus, even simple subsequent requests would respond super slowly. 
+    ERDDAP's use of nThreads per request leads to a much fairer use of computing resources.
+    <br>&nbsp;
+
+    <li><a class="selfLink" id="nThreadsUnfortunately" href="#nThreadsUnfortunately" rel="bookmark"
+    >nThreads vs. Multiple Worker Computers</a>
+    <br>Unfortunately, ERDDAP's nThreads system will never be as effective
     as true parallelizing via multiple worker computers, 
     with each working on a chunk of data,
     in the way that Hadoop or Apache Spark are usually used. When the task is
@@ -10552,7 +11164,7 @@ while processing each request.
     Also, unlike a relational database which is allowed to return the result rows in any order,
     ERDDAP makes a promise to return the result rows in a consistent order. This constraint
     makes ERDDAP's nThreads implementation less efficient.
-    But ERDDAP's nThreads is useful in some cases.
+    But ERDDAP's nThreads is useful in many cases.
     <p>However, there are ways to make ERDDAP scale to handle a huge number of requests
     quickly by setting up a 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
@@ -11046,7 +11658,7 @@ while processing each request.
       from the combined  attributes.
     <li><a class="selfLink" id="attributeType" href="#attributeType" rel="bookmark">The OPTIONAL <kbd>type</kbd> value for <kbd>&lt;att&gt;</kbd> 
       subtags</a> indicates the data type for the values.
-      The default type is <kbd>string</kbd>. An example of a string attribute is:
+      The default type is <kbd>String</kbd>. An example of a String attribute is:
       <br><kbd>&lt;att name="creator_name"&gt;NASA/GSFC OBPG&lt;/att&gt;</kbd>
       <ul>
       <li>Valid types for single values are
@@ -11054,7 +11666,7 @@ while processing each request.
         int (32-bit signed integer), long (64-bit signed integer), 
         float (32-bit floating point), double (64-bit floating point),
         char</kbd>, 
-        and <kbd>string</kbd>. For example,
+        and <kbd>String</kbd>. For example,
         <br><kbd>&lt;att name="scale_factor" type="float"&gt;0.1&lt;/att&gt;</kbd>
 
         <p>See these notes about the <a rel="help" href="#charData">char data type</a>.
@@ -11238,14 +11850,21 @@ while processing each request.
             Discrete Sampling Geometry (DSG) conventions.
 
           <p>For EDDTable datasets, the cdm_data_type options (and related requirements) are 
+
           <ul>
-          <li><a class="selfLink" id="cdmPoint" href="#cdmPoint" rel="bookmark">Point</a> -- for a dataset with unrelated points.
+          <li><a class="selfLink" id="cdmPoint" href="#cdmPoint" rel="bookmark">Point</a> -- 
+          is for a set of measurements taken at unrelated times and locations.
             <ul>
             <li>As with all cdm_data_types other than Other, Point datasets MUST have longitude,
               latitude, and time variables. 
             </ul>
-          <li><a class="selfLink" id="cdmProfile" href="#cdmProfile" rel="bookmark">Profile</a> -- for data from multiple depths 
-            at one or more longitude,latitude locations.
+
+          <li><a class="selfLink" id="cdmProfile" href="#cdmProfile" rel="bookmark">Profile</a> -- 
+          is a set of measurements all taken at one time, at one latitude longitude location,
+          but at more than one depth (or altitude). 
+          The dataset may be a collection of these Profiles, 
+          i.e., 7 profiles from different locations. 
+          This cdm_data_type doesn't imply any logical connection between any of the profiles.
             <ul>
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_profile_variables" href="#cdm_profile_variables" rel="bookmark">cdm_profile_variables</a>, 
@@ -11257,8 +11876,12 @@ while processing each request.
               to identify the variable that uniquely identifies the profiles.
               If no other variable is suitable, consider using the time variable.
             </ul>
-          <li><a class="selfLink" id="cdmTimeSeries" href="#cdmTimeSeries" rel="bookmark">TimeSeries</a> -- for data from a set of 
-            stations with fixed longitude,latitude(,altitude).
+
+          <li><a class="selfLink" id="cdmTimeSeries" href="#cdmTimeSeries" rel="bookmark">TimeSeries</a> -- 
+          is a sequence of measurements (e.g., sea water temperature) taken at
+          one latitude, longitude, depth (or altitude) location. 
+          (Think of it as "station".) The dataset may be a collection of these TimeSeries,
+          i.e., a  sequence from each of 3 different locations.
             <ul>
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_timeseries_variables" href="#cdm_timeseries_variables" rel="bookmark">cdm_timeseries_variables</a>, 
@@ -11272,8 +11895,11 @@ while processing each request.
               If the longitude and latitude don't vary, include them in the cdm_timeseries_variables.
               If they do vary, don't include them in the cdm_timeseries_variables.
             </ul>
-          <li><a class="selfLink" id="cdmTimeSeriesProfile" href="#cdmTimeSeriesProfile" rel="bookmark">TimeSeriesProfile</a> -- for profiles
-            from a set of stations.
+
+          <li><a class="selfLink" id="cdmTimeSeriesProfile" href="#cdmTimeSeriesProfile" rel="bookmark">TimeSeriesProfile</a> --
+             is for a sequence of profiles taken at one latitude longitude location. 
+             The dataset may be a collection of these TimeSeriesProfiles, 
+             i.e., a sequence of profiles taken at each of 12 different locations.
             <ul>
             <li>The dataset MUST include the globalAttribute cdm_timeseries_variables,
               where the
@@ -11291,8 +11917,12 @@ while processing each request.
               (A given profile_id only has to be unique for a given timeseries_id.)
               If no other variable is suitable, consider using the time variable.
             </ul>
-          <li><a class="selfLink" id="cdmTrajectory" href="#cdmTrajectory" rel="bookmark">Trajectory</a> -- for data from a set of 
-            longitude,latitude(,altitude) paths called trajectories.
+
+          <li><a class="selfLink" id="cdmTrajectory" href="#cdmTrajectory" rel="bookmark">Trajectory</a> -- 
+             is a sequence of measurements taken along a trajectory (a path through space and time)
+             (e.g., sea_water_temperature taken by a ship as it moves through the water). 
+             The dataset may be a collection of these Trajectories, 
+             i.e., a sequence from each of 4 different ships.
             <ul>
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_trajectory_variables" href="#cdm_trajectory_variables" rel="bookmark">cdm_trajectory_variables</a>, 
@@ -11303,8 +11933,11 @@ while processing each request.
             <li>One of the variables MUST have the attribute cf_role=trajectory_id
               to identify the variable that uniquely identifies the trajectories.
             </ul>
+
           <li><a class="selfLink" id="cdmTrajectoryProfile" href="#cdmTrajectoryProfile" rel="bookmark">TrajectoryProfile</a> -- 
-            for profiles taken along trajectories. 
+            is a sequence of profiles taken along a trajectory. 
+            The dataset may be a collection of these TrajectoryProfiles, 
+            i.e., a sequence of profiles taken by 14 different ships.           
             <ul>
             <li>The dataset MUST include the globalAttribute cdm_trajectory_variables, where the
               value is a comma-separated list of the variables which have the information
@@ -11321,8 +11954,11 @@ while processing each request.
               (A given profile_id only has to be unique for a given trajectory_id.)
               If no other variable is suitable, consider using the time variable.
             </ul>
-          <li><a class="selfLink" id="cdmOther" href="#cdmOther" rel="bookmark">Other</a> -- has no requirements. Use it if the dataset doesn't 
-            fit one of the other options.
+
+          <li><a class="selfLink" id="cdmOther" href="#cdmOther" rel="bookmark">Other</a> -- 
+            has no requirements. Use it if the dataset doesn't 
+            fit one of the other options, notably, if the dataset doesn't include 
+            latitude, longitude and time variables.
           </ul>
           <a class="selfLink" id="cdmRelatedNotes" href="#cdmRelatedNotes" rel="bookmark">Related notes:</a>
           <ul>
@@ -11544,35 +12180,13 @@ while processing each request.
         <br>&nbsp;
 
       <li><a class="selfLink" id="globalDrawLandMask" href="#globalDrawLandMask" rel="bookmark"><strong>drawLandMask</strong></a> -- 
-        This is a RECOMMENDED global attribute used by ERDDAP (and no metadata 
+        This is an OPTIONAL global attribute used by ERDDAP (and no metadata 
         standards) which specifies the default value for the "Draw Land Mask" 
         option on the dataset's Make A Graph form (<i>datasetID</i>.graph) 
         and for the <kbd>&amp;.land</kbd> parameter in a URL requesting 
-        a graph/map of the data.   For example,
+        a map of the data. For example,
         <br><kbd>&lt;att name="drawLandMask"&gt;over&lt;/att&gt;</kbd>
-        <br>
-        (However, if drawLandMask is specified in a 
-            <a rel="help" href="#variableAttributes">variable's attributes</a>, 
-            that value has precedence.)
-        <ul>
-        <li>For EDDGrid datasets, this specifies whether the land mask on a map
-          is drawn <kbd>over</kbd> or 
-          <kbd>under</kbd> the grid data.
-          <kbd>over</kbd> is recommended for oceanographic data 
-          (so that grid data over land is obscured
-          by the landmask). <kbd>under</kbd> is recommended for all other data.
-        <li>For EDDTable datasets: <kbd>over</kbd> makes the land mask on a map 
-          visible (land appears as a uniform gray area).  <kbd>over</kbd> 
-          is commonly used for purely oceanographic datasets. 
-          <kbd>under</kbd> makes the land mask invisible 
-          (topography information is displayed for ocean and land areas).
-          <kbd>under</kbd> is commonly used for all other data.
-        <li>If any other value (or no value) is specified, the drawLandMask value from 
-            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml"
-            >setup.xml</a>
-          is used.  If none is specified there, <kbd>over</kbd> is the default.
-          <br>&nbsp;
-        </ul>
+        <br>See the <a rel="help" href="#drawLandMask">drawLandMask overview</a>.
 
       <li><a class="selfLink" id="featureType" href="#featureType" rel="bookmark"><strong>featureType</strong></a> 
         (from the
@@ -11609,7 +12223,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         metadata standards) 
-        is a RECOMMENDED multi-line string global attribute with a line for
+        is a RECOMMENDED multi-line String global attribute with a line for
         every processing step that the data has undergone.  For example,
         <br><kbd>&lt;att name="history"&gt;2011-08-05T08:55:02Z CMOR: Rewrote data 
           to comply with CF standards. 
@@ -11784,10 +12398,8 @@ while processing each request.
         <ul>
         <li>If "<kbd>[standard]</kbd>" occurs in the attribute value, it will be 
           replaced by the
-          standard ERDDAP license from the <kbd>&lt;standardLicense&gt;</kbd> tag in 
-           <a rel="help" 
-           href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#messages.xml"
-           >messages.xml</a>.
+          standard ERDDAP license from the <kbd>&lt;standardLicense&gt;</kbd> tag in ERDDAP's
+          <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml file.
           <br>&nbsp;
         </ul>
 
@@ -12278,11 +12890,19 @@ while processing each request.
         This is the name that ERDDAP will look for when data is returned from the data source.
         This is case sensitive. 
         This is REQUIRED.
-        <p><a class="selfLink" id="fixedValue" href="#fixedValue" rel="bookmark">In an EDDTable dataset,</a> 
-        if you want to create a variable (with a fixed value)
+
+        <p><a class="selfLink" id="fixedValue" href="#fixedValue" rel="bookmark"><strong>Fixed Value SourceNames</strong> --</a> 
+        <br>In an EDDTable dataset, if you want to create a variable (with a single, fixed value)
         that isn't in the source dataset, use:
         <br><kbd>&lt;sourceName&gt;=<i>fixedValue</i>&lt;/sourceName&gt;</kbd>
         <br>The initial equals sign tells ERDDAP that a fixedValue will follow.
+        <ul>
+          <li>For numeric variables, the fixed value must be single finite value or <kbd>NaN</kbd> 
+            (case insensitive, e.g., <kbd>=NaN</kbd> ).
+          <li>For String variables, the fixed value must be single JSON-encoded string, e.g., <kbd>="My \"Special\" String"</kbd> .
+          <li>For a timestamp variable, specify the fixed value as a number in "seconds since 1970-01-01T00:00:00Z" and use 
+            <br>units=<kbd>seconds since 1970-01-01T00:00:00Z</kbd> .  
+        </ul>
         <br>The other tags for the <kbd>&lt;dataVariable&gt;</kbd> work as if this
           were a regular variable.
         <br>For example, to create a variable called <kbd>altitude</kbd> with a 
@@ -12290,6 +12910,304 @@ while processing each request.
         <br><kbd>&lt;sourceName&gt;=0&lt;/sourceName&gt;</kbd>
         <br><kbd>&lt;<a rel="help" href="#destinationName">destinationName</a>&gt;altitude&lt;/destinationName&gt;</kbd>
         <br><a rel="help" href="#dataType"><kbd>&lt;dataType&gt;float&lt;/dataType&gt;</kbd></a>
+        <br>For unusual situations, you can even specify an <kbd>actual_range</kbd> addAttribute, which will
+          override the expected values of destinationMin and destinationMax 
+          (which would otherwise equal the fixedValue).
+        <br>&nbsp;
+
+        <p><a class="selfLink" id="scriptSourceNames" href="#scriptSourceNames" rel="bookmark"><strong>Script SourceNames</strong> --</a> 
+        <br>In an <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> dataset,
+        the &lt;sourceName&gt can be 
+        <br>an expression (an equation that evaluates to
+        a single value), using the format
+        <br><kbd>&lt;sourceName&gt;=<i>expression</i>&lt;/sourceName&gt;</kbd>
+        <br>or a script (a series of statements that returns a single value), using the format
+        <br><kbd>&lt;sourceName&gt;=<i>script</i>&lt;/sourceName&gt;</kbd>
+        <br>ERDDAP relies on the
+          <a rel="help" href="https://www.apache.org/">Apache project's<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>
+          <a rel="help" href="https://commons.apache.org/proper/commons-jexl/">Java Expression Language (JEXL)<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>
+          (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>)
+          to evaluate the expressions and run the scripts.
+        <br>The expressions and scripts use a Java- and JavaScript-like syntax and can use any of the 
+        <br><a rel="bookmark" href="https://commons.apache.org/proper/commons-jexl/reference/syntax.html"
+              >operators and methods which are built into JEXL<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>.          
+        <br>The scripts can also use methods (functions) from these classes:
+          <ul>
+          <li><a rel="help" href="ScriptCalendar2.html">Calendar2</a>, 
+            which is a wrapper for some of the static, time- and calendar-related methods in 
+            com.cohort.util.Calendar2 
+            (<a rel="help" href="setup.html#licenseCoHortSoftware">license</a>).
+            For example, 
+            <br><kbd>Calendar2.parseToEpochSeconds(<i>sourceTime, dateTimeFormat</i>)</kbd>
+            will parse the sourceTime string via the dateTimeFormat string and 
+            return a "seconds since 1970-01-01T00:00:00Z" (epochSeconds) double value.
+          <li><a rel="help" href="ScriptMath.html">Math</a>, 
+            which is a wrapper for almost all of the static, math-related methods in 
+            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.htmljava.lang.Math"
+              >java.lang.Math<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>.
+            For example, 
+            <kbd>Math.atan2(<i>y, x</i>)</kbd>
+            takes in rectangular coordinates (y, x) and returns polar coordinates 
+            (an array of doubles with [r, theta]).
+          <li><a rel="help" href="ScriptMath2.html">Math2</a>, 
+            which is a wrapper for almost all of the static, math-related methods in 
+            com.cohort.util.Math2 
+            (<a rel="help" href="setup.html#licenseCoHortSoftware">license</a>).
+            For example,
+            <br><kbd>Math2.roundTo(<i>d, nPlaces</i>)</kbd>
+            will round d to the specified number of digits to the right of the 
+            decimal point.
+          <li>String, which gives you access to all of the static, String-related methods in 
+            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.htmljava.lang.String"
+              >java.lang.String<img 
+              src="../images/external.png" alt=" (external link)" 
+              title="This link to an external website does not constitute an endorsement."></a>.
+            String objects in ERDDAP expressions and scripts can use any of their
+            associated Java methods, as described in the java.lang.String documenation.
+            For example,
+            <kbd>String.valueOf(d)</kbd>
+            will convert the double value d into a String
+            (although you can also use <kbd>""+d</kbd>).
+          <li><a rel="help" href="ScriptString2.html">String2</a>,
+            which is a wrapper for most of the static, String- and array-related methods in
+            com.cohort.util.String2 
+            (<a rel="help" href="setup.html#licenseCoHortSoftware">license</a>).
+            For example,
+            <kbd>String2.zeroPad(<i>number, nDigits</i>)</kbd>
+            will add 0's to the left of the number String so that the 
+            total number of digits is nDigits (e.g., <kbd>String2.zeroPad("6", 2</i>)</kbd>
+            will return "06").
+          <li><a rel="help" href="ScriptRow.html">row</a>,
+            which has non-static methods for accessing the data from the 
+            various columns in the current row of the source data table.
+            For example, <kbd>row.columnString("year")</kbd> reads the value from the "year" column as a String, 
+            whereas, <kbd>row.columnInt("year")</kbd> reads the value from the "year" column as an integer.  
+          </ul>
+
+        <p>For security reasons, expressions and scripts can't use
+        other classes other than those 6. 
+        ERDDAP enforces this limitation by creating a default
+        blacklist (which blacklists all classes) and then a whitelist
+        (which specifically allows the 6 classes described above).
+        If you need other methods and/or other classes to do your work,
+        please email your requests to bob.simons at noaa.gov. 
+
+        <p>Overview Of How An Expression (Or Script) Is Used:
+        <br>In response to a user's request for tabular data,
+        ERDDAP gets data from a series of source files. Each source file
+        will generate a table of raw (straight from the source) data.
+        ERDDAP will then go through the table of raw data, row by row, 
+        and evaluate the expression or script once for every row, in order
+        to create a new column which has that expression or script as a sourceName.
+
+        <p>GenerateDatasetsXml
+        <br>Note that GenerateDatasetsXml is completely unaware when there is a 
+        need to create a variable with <kbd>&lt;sourceName&gt;=<i>expression</i>&lt;/sourceName&gt;</kbd>.
+        You have to create the variable in datasets.xml by hand.
+
+        <p>Expression Examples:
+        <br>Here are some complete examples of data variables which use an expression
+        to create a new column of data. We expect that these examples (and variants of them) 
+        will cover about 95% of the usage of all expression-derived sourceNames.
+
+        <ul>
+        <li><a class="selfLink" id="scriptSourceNameTime" href="#scriptSourceNameTime" rel="bookmark"
+          >Combining separate date and time columns into a unified time column:</a>
+          <pre>
+&lt;dataVariable&gt;
+    &lt;sourceName&gt;=Calendar2.parseToEpochSeconds(row.columnString("date") + "T" + 
+        row.columnString("time") + "Z", "yyyy-MM-dd'T'HH:mm:ss'Z'")&lt;/sourceName&gt; 
+    &lt;destinationName&gt;time&lt;/destinationName&gt;
+    &lt;dataType&gt;double&lt;/dataType&gt;
+    &lt;addAttributes&gt;
+        &lt;att name="units"&gt;seconds since 1970-01-01&lt;/att&gt;
+    &lt;/addAttributes&gt;
+&lt;/dataVariable&gt;</pre>
+          That sourceName expression makes a new "time" column 
+          by concatenating the String values from the "date" (yyyy-MM-dd) and "time" (HH:mm:ss) 
+          columns on each row of the source file, 
+          and by converting that string into a "seconds since 1970-01-01" (epochSeconds) double value.
+
+          <p>Or course, you'll have to customize the time format string to deal
+          with the specific format in each dataset's source date and time columns, see the 
+          <br><a rel="help" href="#stringTimeUnits">time units documentation</a>. 
+
+          <p>Technically, you don't have to use Calendar2.parseToEpochSeconds()
+          to convert the combined date+time into epochSeconds. You could just 
+          pass the date+time String to ERDDAP and specify the format (e.g., 
+          <br>yyyy-MM-dd'T'HH:mm:ss'Z')
+          via the units attribute. But there are significant advantages
+          to converting to epochSeconds -- notably, EDDTableFromFiles can then 
+          easily keep track of the range of time values in each file and so
+          quickly decide whether to look in a given file when responding to a 
+          request which has time constraints.
+
+          <p>A related problem is the need to create a unified date+time column
+          from a source with separate year, month, date, hour, minute, second.
+          The solution is very similar, but you will often need to zero-pad many
+          of the fields, so that, for example, month (1 - 12) and date (1 - 31) 
+          always have 2 digits. Here's an example with year, month, date: 
+          <pre>&lt;sourceName&gt;=Calendar2.parseToEpochSeconds(row.columnString("year") + 
+  String2.zeroPad(row.columnString("month"), 2) + 
+  String2.zeroPad(row.columnString("date"), 2), "yyyyMMdd")&lt;/sourceName&gt;</pre>
+
+          <p>A related problem is the need to create
+          a unified latitude or longitude column by combining the data 
+          is the source table's separate degrees, minutes, and seconds columns,
+          each stored as integers.
+          For example,
+          <pre>&lt;sourceName&gt;=row.columnInt("deg") + row.columnInt("min")/60.0 + 
+    row.columnInt("sec")/3660.0&lt;/sourceName&gt;</pre>
+
+        <li><a class="selfLink" id="scriptSourceNameLongitude" href="#scriptSourceNameLongitude" rel="bookmark"
+          >Converting a column with longitude values from 0 - 360&deg; into longitude from -180 - 180&deg; 
+          <pre>
+&lt;dataVariable&gt;
+    &lt;sourceName&gt;=Math2.anglePM180(row.columnDouble("lon"))&lt;/sourceName&gt; 
+    &lt;destinationName&gt;longitude&lt;/destinationName&gt;
+    &lt;dataType&gt;double&lt;/dataType&gt;
+    &lt;addAttributes&gt;
+        &lt;att name="units"&gt;degrees_east&lt;/att&gt;
+    &lt;/addAttributes&gt;
+&lt;/dataVariable&gt;</pre>
+          That sourceName expression makes a new "longitude" column 
+          by converting the double value from the "lon" column on each row of the source file
+          (presumably with 0 - 360 values), 
+          and by converting that into a -180 to 180 double value.
+          
+          <p>If you instead want to convert source longitude values of -180 - 180&deg; 
+            into 0 - 360&deg;, use 
+          <pre>&lt;sourceName&gt;=Math2.angle0360(row.columnDouble("lon"))&lt;/sourceName&gt;</pre>
+
+          <p>Naming the Two Longitude Variables:
+          <br>If the dataset will have 2 longitude variables, we recommend using 
+            destinationName=longitude for the -180 - 180&deg; variable and 
+            destinationName=longitude0360 (and longName=\"Longitude 0-360&deg;") for the 0 - 360&deg; variable.            
+            This is important because users sometimes use Advanced Search to search for 
+            data within a specific longitude range. That search will work better
+            if longitude consistently has -180 - 180&deg; values for all datasets. 
+            Also, the dataset's geospatial_lon_min, geospatial_lon_max,
+            Westernmost_Easting and Easternmost_Eastings global attributes will 
+            then be set in a consistent way (with longitude values -180 to 180&deg;);
+          <br>&nbsp;
+
+        <li><a class="selfLink" id="scriptSourceNameDegrees" href="#scriptSourceNameDegrees" rel="bookmark"
+          >Converting a column with temperature values in degree_F into  
+          a column with temperatures in degree_C:</a>
+          <pre>
+&lt;dataVariable&gt;
+    &lt;sourceName&gt;=(row.columnFloat("tempF")-32)*5/9&lt;/sourceName&gt; 
+    &lt;destinationName&gt;tempC&lt;/destinationName&gt;
+    &lt;dataType&gt;float&lt;/dataType&gt;
+    &lt;addAttributes&gt;
+        &lt;att name="units"&gt;degrees_C&lt;/att&gt;
+    &lt;/addAttributes&gt;
+&lt;/dataVariable&gt;</pre>
+          That sourceName expression makes a new "tempC" column 
+          by converting the float degree_F value from the "tempF" column on each row of the source file 
+          into a float degree_C value.
+          
+          <p>Note that your dataset can have both the original tempF variable
+            and the new tempC variable by having another variable with 
+            <br><kbd>&lt;sourceName&gt;tempF&lt;/sourceName&gt;</kbd>
+
+        <li><a class="selfLink" id="scriptSourceNameVectors" href="#scriptSourceNameVectors" rel="bookmark"
+          >Converting wind speed and direction into u,v components</a>
+          <ul>
+          <li>To make a u variable, use
+            <pre>&lt;sourceName&gt;=row.columnFloat("speed") * Math.cos(row.columnFloat("direction"))&lt;/sourceName&gt;</pre>
+          <li>To make a v variable, use
+            <pre>&lt;sourceName&gt;=row.columnFloat("speed") * Math.sin(row.columnFloat("direction"))&lt;/sourceName&gt;</pre>
+          </ul>
+          Or, given u,v:
+          <ul>
+          <li>To make a speed variable, use
+            <pre>&lt;sourceName&gt;=Math.atan2(row.columnDouble("v"), row.columnDouble("u"))[0]&lt;/sourceName&gt;</pre>
+          <li>To make a direction variable, use
+            <pre>&lt;sourceName&gt;=Math.toDegrees(Math.atan2(row.columnDouble("v"), row.columnDouble("u"))[1])&lt;/sourceName&gt;</pre>
+          </ul>
+        </ul>
+
+        <p><a class="selfLink" id="scriptSourceNameScript" href="#scriptSourceNameScript" rel="bookmark"
+          >Script Example:</a>
+        <br>Here is an example of using a script, not just an expression,
+        as a sourceName. We expect that scripts, as opposed to expressions,
+        won't be needed often.
+        In this case the goal is to return a non-NaN missing value (-99) 
+        for temperature values outside a specific range.
+        Note that the script is the part after the "=".
+        <pre>
+&lt;dataVariable&gt;
+    &lt;sourceName&gt;=var tc=row.columnFloat("tempC"); return tc&amp;gt;35 || tc&amp;lt;-5? -99.0f : tc*9/5+32;&lt;/sourceName&gt; 
+    &lt;destinationName&gt;tempF&lt;/destinationName&gt;
+    &lt;dataType&gt;float&lt;/dataType&gt;
+    &lt;addAttributes&gt;
+        &lt;att name="units"&gt;degrees_F&lt;/att&gt;
+    &lt;/addAttributes&gt;
+&lt;/dataVariable&gt;</pre>               
+
+        <p>Hard Flag
+        <br>If you change the expression or script defined in a sourceName, 
+        you must set a 
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#hardFlag">hard flag</a>
+        for the dataset so the ERDDAP deletes all of the cached information for the dataset
+        and re-reads every data file (using the new expression or script) the next time it loads the dataset.
+        Alternatively, you can use <a rel="help" href="#DasDds">DasDds</a>
+        which does the equivalent of setting a hard flag.
+        
+        <p><a class="selfLink" id="scriptSourceNamePercentEncode" href="#scriptSourceNamePercentEncode" rel="bookmark"
+          >Percent Encode</a>
+          <br>This is only rarely relevant: 
+          Because the expressions and scripts are written in datasets.xml, which is an XML document,
+          you must percent encode any <kbd>&lt;</kbd>, <kbd>&gt;</kbd>, and <kbd>&amp;</kbd> 
+          characters in the expressions and scripts
+          as <kbd>&amp;lt;</kbd>, <kbd>&amp;gt;</kbd>, and <kbd>&amp;amp;</kbd> .
+
+        <p><a class="selfLink" id="scriptSourceNameProblems" href="#scriptSourceNameProblems" rel="bookmark"
+          >Common Problems</a>
+        <br>A common problem is that you create a variable with sourceName=<i>expression</i>
+        but the resulting column of data just has missing values. 
+        Alternatively, some rows of the new column have missing values and you think they shouldn't.
+        The underlying problem is that something is wrong with the expression and ERDDAP
+        is converting that error into a missing value. 
+        To solve the problem, 
+        <ul>
+        <li>Look at the expression to see what the problem might me. 
+        <li>Look in 
+          <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>, 
+          which will show the first error message generated 
+          during the creation of each new column.
+        </ul>
+        Common causes are: 
+        <ul>
+        <li>You used the wrong case. Expressions and scripts are case sensitive.
+        <li>You omitted the name of the class. For example, you must use <kbd>Math.abs()</kbd>,
+          not just <kbd>abs()</kbd>.
+        <li>You didn't do type conversions. For example, if a parameter value's data type is String
+          and you have a double value,
+          you need convert a double into a String via <kbd>""+d</kbd>.
+        <li>The column name in the expression doesn't exactly match the column
+          name in the file (or the name might be different in some files).
+        <li>There is a syntax error in the expression (e.g., a missing or extra ')').
+        </ul>
+        
+        <p>If you get stuck or need help,
+        <br>please send an email with the details to <kbd>bob dot simons at noaa dot gov</kbd>.
+        <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
+
+
 
       <li><a class="selfLink" id="destinationName" href="#destinationName" rel="bookmark"><kbd>&lt;destinationName&gt;</kbd></a> -- 
         the name for the variable that will be shown to 
@@ -12786,7 +13704,7 @@ while processing each request.
             </ul>
           <li><kbd><strong>colorBarNSections</strong></kbd> specifies the default number
             of sections on the colorBar.  For example,
-            <br><kbd>&lt;att name="colorBarNSections"&gt;6&lt;/att&gt;</kbd>
+            <br><kbd>&lt;att name="colorBarNSections" type="int"&gt;6&lt;/att&gt;</kbd>
             <ul>
             <li>Valid values are positive integers.
             <li>If this attribute isn't present, the default is <kbd>-1</kbd>,
@@ -12828,28 +13746,9 @@ while processing each request.
         which specifies the default value for the "Draw Land Mask" option on the dataset's
         Make A Graph form (<i>datasetID</i>.graph)
         and for the <kbd>&amp;.land</kbd> parameter in a URL requesting a 
-        graph/map of the data.  For example,
+        map of the data.  For example,
         <br><kbd>&lt;att name="drawLandMask"&gt;under&lt;/att&gt;</kbd>
-        <br>
-        <ul>
-        <li>For variables in EDDGrid datasets, this specifies whether the 
-          land mask on a map 
-          is drawn <kbd>over</kbd> or <kbd>under</kbd> the grid data.
-          <kbd>over</kbd> is recommended for oceanographic data 
-          (so that grid data over land is obscured
-          by the landmask). <kbd>under</kbd> is recommended for all other data.
-        <li>For variables in EDDTable datasets: <kbd>over</kbd> 
-          makes the land mask on a map visible (land appears 
-          as a uniform gray area).  <kbd>over</kbd> is commonly used for purely 
-          oceanographic datasets. 
-          <kbd>under</kbd> makes the land mask invisible 
-          (topography information is displayed for ocean and land areas).
-          <kbd>under</kbd> is commonly used for all other data.
-        <li>If any other value (or no value) is specified, the drawLandMask value 
-          from the dataset's
-          <a rel="help" href="#globalAttributes">global attributes</a> is used.
-          <br>&nbsp;
-        </ul>
+        <br>See the <a rel="help" href="#drawLandMask">drawLandMask overview</a>.
 
       <li><a class="selfLink" id="Encoding" href="#Encoding" rel="bookmark"><strong>_Encoding</strong></a>
         <ul>

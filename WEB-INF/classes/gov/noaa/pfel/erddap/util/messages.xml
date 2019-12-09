@@ -219,6 +219,13 @@ then click <kbd>{0}</kbd>.
 <br>Or, <a rel="contents" href="{1}/search/advanced.html?page=1&amp;itemsPerPage={2}&amp;searchFor=all">view all of the datasets</a>.
 ]]></advancedSearchNoCriteria>
 
+<advancedSearchErrorHandling><![CDATA[
+Error Handling:
+<br>For .html Advanced Search reqests, Advanced Search will fix or ignore invalid parts of the request.
+<br>For other file types, Advanced Search will throw an exception if any part of the request in invalid.
+<br>However, only expected parameters are checked; unexpected parameters are simply ignored.
+]]></advancedSearchErrorHandling>
+
 <!-- These are injected into PrimitiveArray. 
      These use MessageFormat. -->
 <ArrayAddN>ERROR in {0}.addN: n ({1}) &lt; 0.</ArrayAddN>
@@ -726,7 +733,7 @@ These converters are imperfect. Always check the results from these converters.
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Invalid Input</a> -
   ERDDAP tries to deal with improperly formatted input.
   If ERDDAP can''t deal with the input, ERDDAP will generate an error message.
-  It the "invalid input" is a string time that you think should be supported, 
+  If the "invalid input" is a string time that you think should be supported, 
   please email it to bob.simons at noaa.gov 
   <br>&nbsp;
 </ul>
@@ -2285,6 +2292,7 @@ so it is easy to see if a file has been changed.
 <h3>Table of Contents</h3>
 <ul>
 <li><a rel="help" href="#Click">Click</a>
+<li><a rel="help" href="#OtherFileTypes">Other File Types</a>
 <li><a rel="help" href="#warning"><span class="warningColor">WARNING!</span> Different Metadata and Variable Names</a>
 <li><a rel="help" href="#notAllDatasets">Not All Datasets</a>
 <li><a rel="help" href="#notFtp">Not FTP</a>
@@ -2293,6 +2301,7 @@ so it is easy to see if a file has been changed.
 <li><a rel="help" href="#HowCanIWorkWithTheseFiles">"How can I work with these files?"</a>
 <li><a rel="help" href="#byteRanges">Byte Range Requests</a>
 </ul>
+
 
 <h3><a class="selfLink" id="Click" href="#Click" rel="bookmark">Click</a></h3>
 To use the "files" system, just click. On any "files" web page, you can:
@@ -2304,6 +2313,23 @@ To use the "files" system, just click. On any "files" web page, you can:
 <li>Click on a filename to download that file.
   <br>&nbsp;
 </ul>
+
+
+<h3><a class="selfLink" id="OtherFileTypes" href="#OtherFileTypes" rel="bookmark">Other File Types</a></h3>
+By default, a directory listing is returned as an HTML table on a web page. 
+A user can request that a directory listing be returned in a different 
+file format by appending any of these file extensions:
+  .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP,
+  .mat, .nc, .nccsv, .tsv, or .xhtml. For example, instead of this web page:
+<br><a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/"
+         >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/</a> 
+<br>you can request the directory listing as a .csv file:
+<br><a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv"
+         >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv</a> 
+  <br>&nbsp;
+
 
 <h3><a class="selfLink" id="warning" href="#warning" rel="help"><span class="warningColor">WARNING!</span> Different Metadata and Variable Names</a></h3>
 For datasets available via ERDDAP's tabledap or griddap, ERDDAP administrators
@@ -2320,6 +2346,7 @@ one file type. If you aren't happy with the source file's file type, you might p
 using the dataset's Data Access Forms instead.
 <br>&nbsp;
 
+
 <h3><a class="selfLink" id="notAllDatasets" href="#notAllDatasets" rel="help">Not All Datasets</a></h3>
 Some datasets in this ERDDAP aren't available via the "files" system. Common reasons
 include:
@@ -2335,6 +2362,7 @@ the administrator of this ERDDAP, &adminEmail;,
 to request that they be made available, but there is usually a reason why they aren't
 already available.
 <br>&nbsp;
+
 
 <h3><a class="selfLink" id="notFtp" href="#notFtp" rel="help">Not FTP</a></h3>
 We understand that some users might prefer that ERDDAP offer files via FTP instead
@@ -3349,14 +3377,14 @@ Specify the number of sections for the color bar
 
 <magGSLandMask>Draw land mask</magGSLandMask>
 <magGSLandMaskTooltipGrid><![CDATA[
-Specify whether the land mask should be drawn under or over the data.
+Specify whether the land mask should be drawn 'under' or 'over' the data, or not drawn ('off').
 <br>(Some data has already had a land mask applied, making this irrelevant.)
 <br>(Or leave this blank to use the default value.)
 ]]></magGSLandMaskTooltipGrid>
 <magGSLandMaskTooltipTable><![CDATA[
-Specify whether the land mask should be drawn
-<br>under (show topography) or over (just show bathymetry) 
-<br>the topography data (or leave blank for the default).
+Specify whether the land mask should be drawn 'under'
+<br>(show topography) or 'over' (just show bathymetry) the data, 
+<br>or not drawn ('off'). Or leave blank for the default.
 ]]></magGSLandMaskTooltipTable>
 
 <magGSVectorStandard>Vector Standard</magGSVectorStandard>
@@ -3636,7 +3664,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorEqualSpacing>For {0} requests, the longitude spacing ({1}) must equal the latitude spacing ({2}).</queryErrorEqualSpacing>
 <queryErrorExpectedAt>"{0}" was expected at or after position={1}, not {2}.</queryErrorExpectedAt>
 <queryErrorFileType>fileType={0} isn''t supported by this dataset.</queryErrorFileType>
-<queryErrorInvalid>Invalid {0}.</queryErrorInvalid>
+<queryErrorInvalid>{0} is invalid.</queryErrorInvalid>
 <queryErrorLL>For {0} requests, the requested variables must include latitude and longitude.</queryErrorLL>
 <queryErrorLLGt1>For {0} requests, the requested subset of the latitude and longitude axes must be greater than 1.</queryErrorLLGt1>
 <queryErrorLLT>For {0} requests, the requested variables must include latitude, longitude and time.</queryErrorLLT>

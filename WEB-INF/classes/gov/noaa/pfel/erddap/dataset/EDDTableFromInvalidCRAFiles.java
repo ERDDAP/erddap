@@ -354,8 +354,7 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
               "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "")+
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
@@ -426,7 +425,6 @@ String expected =
 "    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">Profile</att>\n" +
 "        <att name=\"cdm_profile_variables\">country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, latitude, longitude, time, date, GMT_time, Access_no, Platform, Institute, Orig_Stat_Num, dataset, real_time, Ocean_Vehicle, Temperature_WODprofileflag, Temperature_Instrument, Salinity_WODprofileflag, Salinity_Instrument, Oxygen_WODprofileflag, Oxygen_Original_units, Primary_Investigator, Primary_Investigator_VAR</att>\n" +
@@ -452,6 +450,11 @@ String expected =
 "        <att name=\"geospatial_vertical_min\" type=\"float\">5.0467224</att>\n" +
 "        <att name=\"geospatial_vertical_positive\">down</att>\n" +
 "        <att name=\"geospatial_vertical_units\">meters</att>\n" +
+"        <att name=\"grid_mapping_epsg_code\">EPSG:4326</att>\n" +
+"        <att name=\"grid_mapping_inverse_flattening\" type=\"float\">298.25723</att>\n" +
+"        <att name=\"grid_mapping_longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" +
+"        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
+"        <att name=\"grid_mapping_semi_major_axis\" type=\"float\">6378137.0</att>\n" +
 "        <att name=\"id\">/nodc/data/oc5.clim.0/wod_update_nc/2006/wod_drb_2006.nc</att>\n" +
 "        <att name=\"institution\">National Centers for Environmental Information (NCEI), NOAA</att>\n" +
 "        <att name=\"naming_authority\">gov.noaa.nodc</att>\n" +
@@ -862,6 +865,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Sea Water Temperature</att>\n" +
 "        </addAttributes>\n" +
@@ -911,6 +915,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Salinity</att>\n" +
 "            <att name=\"long_name\">Sea Water Salinity</att>\n" +
 "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +
@@ -967,6 +972,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Pressure</att>\n" +
 "            <att name=\"long_name\">Sea Water Pressure</att>\n" +
 "        </addAttributes>\n" +
@@ -1002,6 +1008,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Dissolved O2</att>\n" +
 "            <att name=\"long_name\">Volume Fraction Of Oxygen In Sea Water</att>\n" +
 "        </addAttributes>\n" +
@@ -1461,6 +1468,11 @@ String expected =
 "    Float64 geospatial_vertical_min 5.046722;\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
+"    String grid_mapping_epsg_code \"EPSG:4326\";\n" +
+"    Float32 grid_mapping_inverse_flattening 298.25723;\n" +
+"    Float32 grid_mapping_longitude_of_prime_meridian 0.0;\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    Float32 grid_mapping_semi_major_axis 6378137.0;\n" +
 "    String history \"World Ocean Database";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "results=\n" + results);

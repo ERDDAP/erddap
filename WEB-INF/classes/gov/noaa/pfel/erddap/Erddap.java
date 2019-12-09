@@ -4443,13 +4443,95 @@ writer.write(
         String roles[] = EDStatic.getRoles(loggedInAs);
         //String2.log(">>fullRequestUrl=" + fullRequestUrl);
 
-        if (datasetIDStartsAt >= requestUrl.length()) {
-            //dir of accessibleViaFiles datasets
-            if (!fullRequestUrl.endsWith("/")) { //required for table.directoryListing below
-                sendRedirect(response, fullRequestUrl + "/");  
+        //get the datasetID          percentDecode because there can be spaces (%20) in dir and file names
+        String endOfRequestUrl = SSR.percentDecode(requestUrl.substring(datasetIDStartsAt));
+
+        //beware malicious url, e.g., internal /../
+        if (endOfRequestUrl.indexOf("/../") >= 0) 
+            throw new SimpleException(EDStatic.queryError + "/../ is not allowed!");
+        if (endOfRequestUrl.startsWith("/") || endOfRequestUrl.indexOf("//") >= 0) 
+            throw new SimpleException(EDStatic.queryError + "// is not allowed!");
+        if (endOfRequestUrl.indexOf('\\') >= 0) 
+            throw new SimpleException(EDStatic.queryError + "\\ is not allowed!");
+
+        //is request for documentation.html? 
+        if (endOfRequestUrl.equals("documentation.html")) {
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, "ERDDAP \"files\" Documentation", out);
+            try {
+                writer.write("<div class=\"standard_width\">\n");
+                writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
+                writer.write(EDStatic.filesDocumentation(tErddapUrl));
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
+                writer.write("\n" +
+                    "</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
+            return;
+        }
+
+        //break into id/nextPath/nameAndExt  
+        String id = endOfRequestUrl; //eventually will be datasetID (if any)
+        String nextPath   = null;    //optional, after datasetID, before nameAndExt, trailing but no leading /; could be called "relativePath"
+        String nameAndExt = null;
+        int slashPoNP = endOfRequestUrl.indexOf('/');
+        if (slashPoNP == 0) {  //e.g. files//something  
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.unknownDatasetID, "\"\""));
+            return;
+            
+        } else if (slashPoNP > 0) {
+            id        = endOfRequestUrl.substring(0, slashPoNP);
+            String ts = endOfRequestUrl.substring(slashPoNP + 1);
+            int po2 = ts.lastIndexOf('/');
+            if (po2 >= 0) {
+                nextPath   = File2.getDirectory(ts);   //after datasetID, before nameAndExt no leading /
+                nameAndExt = File2.getNameAndExtension(ts);
+            } else {
+                nextPath = "";
+                nameAndExt = ts;
+            }
+        }
+
+        //catch pseudo filename that is just an extension 
+        String justExtension = "";
+        if (nextPath == null && nameAndExt == null) {
+            int tWhich = String2.indexOf(plainFileTypes, id);
+            if (tWhich >= 0) {
+                justExtension = id;
+                id = "";
+            } else if (id.length() > 0) {
+                //id is something, but didn't end in slash
+                //presumably it is datasetID without slash
+                sendRedirect(response, id + "/");  
                 return;               
             }
+        } else {
+            int tWhich = String2.indexOf(plainFileTypes, nameAndExt);
+            if (tWhich >= 0) {
+                //The "fileName" is just one of the plainFileType extensions, e.g., .csv.
+                //Remove justExtension from localFullName and nextPath.
+                justExtension = nameAndExt;
+                nameAndExt = "";
+            }
+        }
+        //String2.log(">>id=" + id + " nextPath=" + nextPath + " nameAndExt=" + nameAndExt + " justExt=" + justExtension);
 
+        //show list of datasetID's? 
+        if (id.length() == 0) {
+
+            //tally
+            EDStatic.tally.add("files browse DatasetID (since startup)", "");
+            EDStatic.tally.add("files browse DatasetID (since last daily report)", "");
+
+//tally justExtension
+
+
+            //collect subDir names (datasetIDs) and descriptions (titles)
             StringArray subDirNames = new StringArray();
             StringArray subDirDes = new StringArray();
             StringArray ids = gridDatasetIDs();
@@ -4457,7 +4539,7 @@ writer.write(
             for (int ti = 0; ti < nids; ti++) {
                 EDD edd = gridDatasetHashMap.get(ids.get(ti));
                 if (edd != null && //in case just deleted
-                    edd.accessibleViaFilesDir().length() > 0 &&
+                    edd.accessibleViaFiles() &&
                     edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
                     subDirNames.add(edd.datasetID());
                     subDirDes.add(edd.title());
@@ -4468,22 +4550,45 @@ writer.write(
             for (int ti = 0; ti < nids; ti++) {
                 EDD edd = tableDatasetHashMap.get(ids.get(ti));
                 if (edd != null && //in case just deleted
-                    edd.accessibleViaFilesDir().length() > 0 &&
+                    edd.accessibleViaFiles() &&
                     edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
                     subDirNames.add(edd.datasetID());
                     subDirDes.add(edd.title());
                 }
             }
+
             //make columns: "Name" (String), "Last modified" (long), 
             //  "Size" (long), and "Description" (String)
             Table table = new Table();
             table.addColumn("Name",          new StringArray(new String[]{"documentation.html"}));
             table.addColumn("Last modified", new LongArray(new long[]{EDStatic.startupMillis}));
-            table.addColumn("Size",          new LongArray(new long[]{Long.MAX_VALUE}));            
+            table.addColumn("Size",          new LongArray(new long[]{Long.MAX_VALUE})); //it is made on-the-fly, so size not known           
             table.addColumn("Description",   new StringArray(new String[]{"Documentation for ERDDAP's \"files\" system."}));
+
+            if (justExtension.length() > 0) {
+
+                //add subdirs to table
+                int oNRows = table.nRows();
+                StringArray namesSA = (StringArray)table.getColumn(0);
+                StringArray desSA   = (StringArray)table.getColumn(3);
+                for (int i = 0; i < subDirNames.size(); i++) {
+                    namesSA.add(subDirNames.get(i) + "/");
+                    desSA.add(subDirDes.get(i));
+                }
+                table.makeColumnsSameSize();
+                //move subdirs to top of table
+                table.moveRows(oNRows, table.nRows(), 0);
+
+                //return results as justExtension fileType
+                sendPlainTable(loggedInAs, request, response, table, "files", justExtension);
+
+                return;
+            }
+            
             OutputStream out = getHtmlOutputStream(request, response);
             Writer writer = getHtmlWriter(loggedInAs, "Browse Source Files", out);
             try {
+
                 writer.write(
                     "<div class=\"standard_width\">\n" +
                     EDStatic.youAreHere(loggedInAs, "files") + 
@@ -4511,65 +4616,8 @@ writer.write(
                 endHtmlWriter(out, writer, tErddapUrl, false);
             }
 
-            //tally
-            EDStatic.tally.add("files browse DatasetID (since startup)", "");
-            EDStatic.tally.add("files browse DatasetID (since last daily report)", "");
             return;
         }
-
-        //get the datasetID          percentDecode because there can be spaces (%20) in dir and file names
-        String endOfRequestUrl = SSR.percentDecode(requestUrl.substring(datasetIDStartsAt));
-        //beware malformed nextPath, e.g., internal /../
-        if (endOfRequestUrl.indexOf("/../") >= 0) 
-            throw new SimpleException(EDStatic.queryError + "/../ is not allowed!");
-        if (endOfRequestUrl.indexOf('\\') >= 0) 
-            throw new SimpleException(EDStatic.queryError + "\\ is not allowed!");
-
-        //remove nextPath, e.g., after first / in datasetID/someDir/someSubDir/[someFile]
-        String id = endOfRequestUrl; //eventually will be datasetID
-        String nextPath   = null;   //after datasetID, before nameAndExt no leading /
-        String nameAndExt = null;
-        int slashPoNP = endOfRequestUrl.indexOf('/');
-        if (slashPoNP >= 0) {
-            id        = endOfRequestUrl.substring(0, slashPoNP);
-            String ts = endOfRequestUrl.substring(slashPoNP + 1);
-            int po2 = ts.lastIndexOf('/');
-            if (po2 >= 0) {
-                nextPath   = File2.getDirectory(ts);   //after datasetID, before nameAndExt no leading /
-                nameAndExt = File2.getNameAndExtension(ts);
-            } else {
-                nextPath = "";
-                nameAndExt = ts;
-            }
-
-        } else {
-            //no slash
-            //is it documentation.html?
-            if (id.equals("documentation.html")) {
-                OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(loggedInAs, "ERDDAP \"files\" Documentation", out);
-                try {
-                    writer.write("<div class=\"standard_width\">\n");
-                    writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
-                    writer.write(EDStatic.filesDocumentation(tErddapUrl));
-                } catch (Exception e) {
-                    EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
-                    writer.write(EDStatic.htmlForException(e));
-                    throw e; 
-                } finally {
-                    writer.write("\n" +
-                        "</div>\n");
-                    endHtmlWriter(out, writer, tErddapUrl, false);
-                }
-                return;
-
-            } else {
-                //presumably it is a datasetID without trailing slash, so add it and redirect
-                sendRedirect(response, fullRequestUrl + "/");  
-                return;               
-            }
-        }
-        //String2.log(">>nextPath=" + nextPath + " endOfRequestUrl=" + endOfRequestUrl);
 
         //get the dataset
         EDD edd = gridDatasetHashMap.get(id);
@@ -4580,193 +4628,152 @@ writer.write(
                 MessageFormat.format(EDStatic.unknownDatasetID, id));
             return;
         }
-        String fileDir    = edd.accessibleViaFilesDir();
-        String fileRegex  = edd.accessibleViaFilesRegex();
-        boolean recursive = edd.accessibleViaFilesRecursive();
 
-        if (fileDir.length() == 0) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " accessibleViaFilesDir=\"\"");
-            sendResourceNotFoundError(request, response, "This dataset is not accessible via /files/ .");
-            return;
-        }
-        if (!edd.isAccessibleTo(roles)) { 
+        //tally (only valid id's)
+        EDStatic.tally.add("files browse DatasetID (since startup)", id);
+        EDStatic.tally.add("files browse DatasetID (since last daily report)", id);
+        
+        if (!edd.isAccessibleTo(roles)) { //check this first
             // /files/ access: all requests are data requests
             //listPrivateDatasets and graphsAccessibleToPublic don't apply
             EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, 
                 edd.graphsAccessibleToPublic());
             return;
         }
-
-        //if nextPath has a subdir, ensure dataset is recursive
-        if (nextPath.indexOf('/') >= 0 && !recursive) {
-            sendResourceNotFoundError(request, response, "The subdirectory doesn't exist.");
+        if (!edd.accessibleViaFiles()) {
+            if (verbose) String2.log(EDStatic.resourceNotFound + " accessibleViaFilesDir=\"\"");
+            sendResourceNotFoundError(request, response, "This dataset is not accessible via /files/ .");
             return;
         }
 
-        //catch pseudo filename that is just an extension 
-        //  (hence RESTful request for filenames)
+        //deal with directory request
+        if (nameAndExt.length() == 0) {
 
-        String localDir = fileDir + nextPath; //where I access source
-        String localFullName = localDir + nameAndExt;
-        String webDir = File2.getDirectory(fullRequestUrl);  //what user as apparent location
+//tally justExtension
+
+            //Get the accessibleViaFilesFileTable
+            //  with valid files (or null if unavailable or any trouble).
+            //This is a copy of any internal data, so contents can be modified.
+            //It returns null (if unrecognized nextPath, or if trouble),
+            //  or Object[3]: 
+            //  [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+            //      "Size" (long), and "Description" (String, but usually no content).
+            //  [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+            //  [2] is the local directory corresponding to this (or null, if not a local dir)
+            Object o2[] = edd.accessibleViaFilesFileTable(nextPath);
+            if (o2 == null || o2.length != 3 || o2[0] == null || o2[1] == null) { //shouldn't happen.  o2[2] may be null
+                sendResourceNotFoundError(request, response, 
+                    EDStatic.resourceNotFound + " directory=" + nextPath);
+                return;
+            }
+            Table fileTable = (Table)o2[0];
+            StringArray subDirs = new StringArray((String[])o2[1]);
+            String localDir = (String)o2[2];
+            int fileTableNRows = fileTable.nRows();
+            if (fileTableNRows == 0 && subDirs.size() == 0) {
+                sendResourceNotFoundError(request, response, 
+                    EDStatic.resourceNotFound + " directory=" + nextPath);
+                return;
+            }
+
+            //handle justExtension request  e.g., datasetID/.csv
+            //FUTURE: handle ?constraintExpression
+            if (justExtension.length() > 0) {
+
+                //add subdirs to table
+                int oNRows = fileTable.nRows();
+                StringArray namesSA = (StringArray)fileTable.getColumn(0);
+                for (int i = 0; i < subDirs.size(); i++) 
+                    namesSA.add(subDirs.get(i) + "/");
+                fileTable.makeColumnsSameSize();
+                //move subdirs to top of table
+                fileTable.moveRows(oNRows, fileTable.nRows(), 0);
+
+                //return results as justExtension fileType
+                sendPlainTable(loggedInAs, request, response, fileTable, id + " Files", justExtension);
+
+                return;
+            }
+
+            //show web page
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, "files/" + id + "/" + nextPath, out);
+            try {
+                writer.write("<div class=\"standard_width\">\n");
+                writer.write(
+                    nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
+                    "\n<h1>" + EDStatic.erddapHref(tErddapUrl) +
+                    "\n &gt; <a rel=\"contents\" href=\"" + 
+                        XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files")) +
+                        "\">files</a>" +
+                    "\n &gt; <a rel=\"contents\" href=\"" + 
+                        XML.encodeAsHTMLAttribute(
+                            EDStatic.erddapUrl(loggedInAs) + "/files/" + id + "/") + 
+                        "\">" + id + "</a>" +  
+                    "\n &gt; " + XML.encodeAsXML(nextPath) + 
+                    "</h1>\n");
+                writer.write(EDStatic.filesDescription + "\n");
+                if (!(edd instanceof EDDTableFromFileNames))
+                    writer.write(
+                        "<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " + 
+                        EDStatic.filesWarning + "\n");
+                writer.write(" (<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
+                    MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
+                    ", including <a rel=\"help\" href=\"" + tErddapUrl + 
+                      "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
+                    "<br>&nbsp;\n");
+                edd.writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, true, "", "");
+                writer.write("<br>");  //causes nice spacing between datasetInfo and file table
+                writer.flush();
+                writer.write(
+                    fileTable.directoryListing(
+                        localDir, //display viewers for local files
+                        fullRequestUrl, userDapQuery, //may have sort instructions
+                        EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
+                        EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
+                        true, subDirs, null));  //addParentDir                
+            } catch (Exception e) {
+                EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(e));
+                throw e; 
+            } finally {
+                writer.write("</div>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+            }
+            return;
+        }
+
+        //It is apparently a file in the dataset
+        //System.out.println(nameSA.toNewlineString() + "\nnameAndExt=" + nameAndExt);
+                //  (hence RESTful request for filenames)
+        String localFullName = edd.accessibleViaFilesGetLocal(nextPath + nameAndExt);
+        if (localFullName == null) {//for any reason
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.errorFileNotFound, nameAndExt)); 
+            return;
+        }
+
+        String localDir = File2.getDirectory(localFullName);
+        String webDir = File2.getDirectory(fullRequestUrl);  //what user sees as apparent location
         String ext = File2.getExtension(nameAndExt);
 
-        String justExtension = nameAndExt;
-        int tWhich = String2.indexOf(plainFileTypes, justExtension);
-        if (tWhich >= 0) {
-            //The "fileName" is just one of the plainFileType extensions, e.g., .csv.
-            //Remove justExtension from localFullName and nextPath.
-            localFullName = localDir;
-
+        if (String2.isRemote(localDir)) {
+            //remote
+            sendRedirect(response, localDir + nameAndExt);  
         } else {
-            justExtension = "";
-        }
-
-        //get the accessibleViaFilesFileTable
-        //Formatted like 
-        //FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
-        //and last_mod is LongArray of epochMillis)
-        //with valid files (or null if unavailable or any trouble).
-        //This is a copy of any internal data, so contents can be modified.
-        //It returns null if dataset if trouble,
-        //  or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
-        //  [1] is a sorted String[] with the short names of directories that are 1 level lower.
-        Object o2[] = edd.accessibleViaFilesFileTable(nextPath);
-        if (o2 == null) { //shouldn't happen
-            sendResourceNotFoundError(request, response, 
-                "File info for this dataset is currently unavailable.");
-            return;
-        }
-        Table fileTable = (Table)o2[0];
-        StringArray subDirs = new StringArray((String[])o2[1]);
-        int fileTableNRows = fileTable.nRows();
-        if (fileTableNRows == 0 && subDirs.size() == 0) {
-            sendResourceNotFoundError(request, response, 
-                EDStatic.resourceNotFound + " directory=" + nextPath);
-            return;
-        }
-        StringArray dirSA  = (StringArray)fileTable.getColumn(0);
-        StringArray nameSA = (StringArray)fileTable.getColumn(1);
-
-        //is it a file in the fileTable?
-        //System.out.println(nameSA.toNewlineString() + "\nnameAndExt=" + nameAndExt);
-        if (nameAndExt.length() > 0) {
-            int fileTableRow = nameSA.indexOf(nameAndExt);
-            if (fileTableRow >= 0) {
-                if (String2.isRemote(localDir)) {
-                    //remote
-                    sendRedirect(response, localDir + nameAndExt);  
-                } else {
-                    //local
-                    OutputStreamSource outSource = new OutputStreamFromHttpResponse(
-                        request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
-                    OutputStream outputStream = 
-                        outSource.outputStream("", File2.length(localFullName));
-                    doTransfer(request, response, localDir, webDir, nameAndExt, 
-                        outputStream, outSource.usingCompression());
-                }
-
-                //tally
-                EDStatic.tally.add("files download DatasetID (since startup)", id);
-                EDStatic.tally.add("files download DatasetID (since last daily report)", id);
-                return;
-            } else {
-
-                //not found! trouble! nameAndExt is something but isn't a file. 
-                if (subDirs.indexOf(nameAndExt) >= 0) { 
-                    //nameAndExt is a dir without trailing / 
-                    sendRedirect(response, fullRequestUrl + '/');   //always /
-                    return; 
-                } else {
-                    //nameAndExt is a non-existent file
-                    sendResourceNotFoundError(request, response, 
-                        MessageFormat.format(EDStatic.errorFileNotFound, webDir + nameAndExt));
-                    return;
-                }
-            }
-        }
-
-        //handle justExtension request  e.g., datasetID/.csv[?constraintExpression]
-        /*if (justExtension.length() > 0) {
-            //tally it
-
-            //make a EDDTableFromAccessibleViaFiles
-
-            //tell it to handle the request
-
-            //make the list of file info
-            Table table = FileVisitorDNLS.oneStep(localFullName, fileRegex, 
-                edd.accessibleViaFilesRecursive(), true); //dirsToo
-            Test.ensureEqual(table.getColumnNamesCSVString(), 
-                "directory,name,lastModified,size", 
-                "Unexpected columnNames");
-            //apply constraints
-
-            //return results as justExtension fileType
-
-
-            return;
-        }*/
-
-        //
-
-        //show directory index
-        //make column names: "Name" (String), "Last modified" (long), 
-        //  "Size" (long), and "Description" (String)        
-        fileTable.removeColumn(0); //directory
-        dirSA = null; //gc
-        fileTable.setColumnName(0, "Name");
-        fileTable.setColumnName(1, "Last modified");
-        fileTable.setColumnName(2, "Size");            
-        fileTable.addColumn("Description", new StringArray(fileTableNRows, true));
-        OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "files/" + id + "/" + nextPath, out);
-        try {
-            writer.write("<div class=\"standard_width\">\n");
-            writer.write(
-                nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
-                "\n<h1>" + EDStatic.erddapHref(tErddapUrl) +
-                "\n &gt; <a rel=\"contents\" href=\"" + 
-                    XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files")) +
-                    "\">files</a>" +
-                "\n &gt; <a rel=\"contents\" href=\"" + 
-                    XML.encodeAsHTMLAttribute(
-                        EDStatic.erddapUrl(loggedInAs) + "/files/" + id + "/") + 
-                    "\">" + id + "</a>" +  
-                "\n &gt; " + XML.encodeAsXML(nextPath) + 
-                "</h1>\n");
-            writer.write(EDStatic.filesDescription + "\n");
-            if (!(edd instanceof EDDTableFromFileNames))
-                writer.write(
-                    "<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " + 
-                    EDStatic.filesWarning + "\n");
-            writer.write(" (<a rel=\"help\" href=\"" + tErddapUrl + "/files/documentation.html\">" + 
-                MessageFormat.format(EDStatic.indexDocumentation, "\"files\"") + "</a>" +
-                ", including <a rel=\"help\" href=\"" + tErddapUrl + 
-                  "/files/documentation.html#HowCanIWorkWithTheseFiles\">\"How can I work with these files?\"</a>)\n" +
-                "<br>&nbsp;\n");
-            edd.writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, true, "", "");
-            writer.write("<br>");  //causes nice spacing between datasetInfo and file table
-            writer.flush();
-            writer.write(
-                fileTable.directoryListing(
-                    localDir, fullRequestUrl, userDapQuery, //may have sort instructions
-                    EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
-                    EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile,
-                    true, subDirs, null));  //addParentDir                
-        } catch (Exception e) {
-            EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(e));
-            throw e; 
-        } finally {
-            writer.write("</div>\n");
-            endHtmlWriter(out, writer, tErddapUrl, false);
+            //local
+            OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
+            OutputStream outputStream = 
+                outSource.outputStream("", File2.length(localFullName));
+            doTransfer(request, response, localDir, webDir, nameAndExt, 
+                outputStream, outSource.usingCompression());
         }
 
         //tally
-        EDStatic.tally.add("files browse DatasetID (since startup)", id);
-        EDStatic.tally.add("files browse DatasetID (since last daily report)", id);
-
+        EDStatic.tally.add("files download DatasetID (since startup)", id);
+        EDStatic.tally.add("files download DatasetID (since last daily report)", id);
+        return;
     }
 
 
@@ -10886,6 +10893,10 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             return;
         }
 
+        //Requests to .html are lax and fixErrors silently.  Other requests are strict.
+        //If !fixErrors, throw the exception as soon as problem is known.
+        boolean fixErrors = endOfRequestUrl.equals("advanced.html");
+
         //get the parameters, e.g., the 'searchFor' value
         //parameters are "" if unused (not null)
         searchFor = request.getParameter("searchFor");
@@ -10916,9 +10927,21 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         double minLat = String2.parseDouble(request.getParameter("minLat"));
         double maxLat = String2.parseDouble(request.getParameter("maxLat"));
         if (!Double.isNaN(minLon) && !Double.isNaN(maxLon) && minLon > maxLon) {
-            double td = minLon; minLon = maxLon; maxLon = td; }
+            if (fixErrors) {
+                double td = minLon; minLon = maxLon; maxLon = td; 
+            } else {
+                throw new SimpleException(EDStatic.queryError +  
+                    "minLon=" + minLon + " > maxLon=" + maxLon);
+            }
+        }
         if (!Double.isNaN(minLat) && !Double.isNaN(maxLat) && minLat > maxLat) {
-            double td = minLat; minLat = maxLat; maxLat = td; }
+            if (fixErrors) {
+                double td = minLat; minLat = maxLat; maxLat = td; 
+            } else {
+                throw new SimpleException(EDStatic.queryError +   
+                    "minLat=" + minLat + " > maxLat=" + maxLat);
+            }
+        }
         boolean llc = Double.isFinite(minLon) || Double.isFinite(maxLon) ||
                       Double.isFinite(minLat) || Double.isFinite(maxLat);
         EDStatic.tally.add("Advanced Search with Lat Lon Constraints (since startup)", "" + llc);
@@ -10929,26 +10952,43 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (minTimeParam == null) minTimeParam = "";
         if (maxTimeParam == null) maxTimeParam = "";
         double minTimeD = 
+            minTimeParam.length() == 0?
+                Double.NaN :
             minTimeParam.toLowerCase().startsWith("now")?
-                Calendar2.safeNowStringToEpochSeconds(minTimeParam, Double.NaN) :
+                (fixErrors? 
+                    Calendar2.safeNowStringToEpochSeconds(minTimeParam, Double.NaN) :
+                    Calendar2.nowStringToEpochSeconds(minTimeParam)):  //throws Exception
             String2.isNumber(minTimeParam)?
                 String2.parseDouble(minTimeParam) : 
-                Calendar2.safeIsoStringToEpochSeconds(minTimeParam);
+                (fixErrors?
+                    Calendar2.safeIsoStringToEpochSeconds(minTimeParam) :
+                    Calendar2.isoStringToEpochSeconds(minTimeParam));  //throws Exception
         double maxTimeD = 
+            maxTimeParam.length() == 0?
+                Double.NaN :
             maxTimeParam.toLowerCase().startsWith("now")?
-                Calendar2.safeNowStringToEpochSeconds(maxTimeParam, Double.NaN) :
+                (fixErrors?
+                    Calendar2.safeNowStringToEpochSeconds(maxTimeParam, Double.NaN) :
+                    Calendar2.nowStringToEpochSeconds(maxTimeParam)) :  //throws Exception
             String2.isNumber(maxTimeParam)?
                 String2.parseDouble(maxTimeParam) :
-                Calendar2.safeIsoStringToEpochSeconds(maxTimeParam);
+                (fixErrors?
+                    Calendar2.safeIsoStringToEpochSeconds(maxTimeParam) :
+                    Calendar2.isoStringToEpochSeconds(maxTimeParam));  //throws Exception
         if (!Double.isNaN(minTimeD) && !Double.isNaN(maxTimeD) && minTimeD > maxTimeD) {
-            String ts = minTimeParam; minTimeParam = maxTimeParam; maxTimeParam = ts;
-            double td = minTimeD;     minTimeD = maxTimeD;         maxTimeD = td; 
+            if (fixErrors) {
+                String ts = minTimeParam; minTimeParam = maxTimeParam; maxTimeParam = ts;
+                double td = minTimeD;     minTimeD = maxTimeD;         maxTimeD = td; 
+            } else {
+                throw new SimpleException(EDStatic.queryError +   
+                    "minTime=" + minTimeParam + " > maxTime=" + maxTimeParam);
+            }
         }
         String minTime  = Calendar2.safeEpochSecondsToIsoStringTZ(minTimeD, "");
         String maxTime  = Calendar2.safeEpochSecondsToIsoStringTZ(maxTimeD, "");
-        if (minTime.length() == 0)
+        if (fixErrors && minTime.length() == 0)
             minTimeParam = ""; //show some error msg if user supplied a constraint?
-        if (maxTime.length() == 0)
+        if (fixErrors && maxTime.length() == 0)
             maxTimeParam = ""; //show some error msg if user supplied a constraint?
         boolean tc = Double.isFinite(minTimeD) || Double.isFinite(maxTimeD);
         EDStatic.tally.add("Advanced Search with Time Constraints (since startup)", "" + tc);
@@ -10965,7 +11005,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             String tParam = request.getParameter(catAttsInURLs[ca]);
             whichCatSAIndex[ca] = 
                 (tParam == null || tParam.equals(""))? 0 :
-                    Math.max(0, String2.indexOf(catSAs[ca], tParam));
+                    String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
+            if (whichCatSAIndex[ca] < 0) {
+                if (fixErrors) 
+                    whichCatSAIndex[ca] = 0; //(ANY)
+                else throw new SimpleException(MustBe.THERE_IS_NO_DATA +   
+                    " (" + catAttsInURLs[ca] + "=" + tParam + ")");
+            }
             if (whichCatSAIndex[ca] > 0) {
                 EDStatic.tally.add("Advanced Search with Category Constraints (since startup)", 
                     catAttsInURLs[ca] + " = " + tParam);
@@ -10996,7 +11042,15 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             protocolTooltip.append("\n<p><strong>SOS</strong> - " + EDStatic.sosDescriptionHtml);
         }
         String tProt = request.getParameter("protocol");
-        int whichProtocol = Math.max(0, protocols.indexOf(tProt)); 
+        int whichProtocol = protocols.indexOfIgnoreCase(tProt); 
+        if (whichProtocol < 0) {
+            if (fixErrors)
+                whichProtocol = 0;
+            else if (tProt == null || tProt.length() == 0)
+                whichProtocol = 0;
+            else throw new SimpleException(MustBe.THERE_IS_NO_DATA +   
+                " (protocol=" + tProt + ")");
+        }
         if (whichProtocol > 0) {
             EDStatic.tally.add("Advanced Search with Category Constraints (since startup)", 
                 "protocol = " + tProt);
@@ -11006,7 +11060,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
 
         //get fileTypeName
-        fileTypeName = File2.getExtension(endOfRequestUrl); //eg ".html"
+        fileTypeName = File2.getExtension(endOfRequestUrl); //eg ".html", others were validated above
         boolean toHtml = fileTypeName.equals(".html");
         if (reallyVerbose) String2.log("Advanced Search   fileTypeName=" + fileTypeName +
             "\n  searchFor=" + searchFor + 
@@ -11164,7 +11218,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                      
                     //world map 
                     "<tr>\n" +
-                    "  <td colspan=\"2\" class=\"N\">&nbsp;&nbsp;&nbsp;&nbsp;" + twoClickMap[0] + 
+                    "  <td colspan=\"2\" class=\"N\">" + twoClickMap[0] + 
                         EDStatic.htmlTooltipImage(loggedInAs, lonTooltip) + 
                         twoClickMap[1] + 
                         "</td>\n" +
@@ -11445,13 +11499,14 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         if (lastPage > 1)
                             writer.write("\n<p>" + nMatchingHtml);
 
-                        //list plain file types
+                        //list plain file types and error handling
                         writer.write(
                             "\n" +
                             "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                             plainFileTypesString + //not links, which would be indexed by search engines
                             ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
-                                EDStatic.restfulViaService + "</a>.\n");
+                                EDStatic.restfulViaService + "</a>.\n" +
+                            "<p>" + EDStatic.advancedSearchErrorHandling + "\n");
                     }
                 } else {
                     writer.write(
@@ -11858,9 +11913,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
-        String fileTypeName = "";
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(datasetIDStartsAt);  
+        String fileTypeName = File2.getExtension(endOfRequestUrl);
+        int whichPlainFileType = String2.indexOf(plainFileTypes, fileTypeName);
+        boolean fixErrors = whichPlainFileType < 0; //if not explicitly a plainFileType, errors will be fixed
         String gap = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
         //ensure query has simplistically valid page= itemsPerPage=
@@ -11924,7 +11981,6 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         //    "\n" + HtmlWidgets.ifJavaScriptDisabled + "\n";
 
         //*** attribute string should be e.g., ioos_category
-        fileTypeName = File2.getExtension(endOfRequestUrl);
         if (whichAttribute < 0) {
             //*** deal with invalid attribute string
 
@@ -11937,7 +11993,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             }   
             
             //return table of categoryAttributes
-            if (String2.indexOf(plainFileTypes, fileTypeName) >= 0) {
+            if (whichPlainFileType >= 0) {
                 //plainFileType
                 if (attributeInURL.equals("index" + fileTypeName)) {
                     //respond to categorize/index.xxx
@@ -12012,7 +12068,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             //Always return all.  page= and itemsPerPage don't apply to this.
             //!!! That's trouble for UAF, because there could be 10^6 options and 
             //   browsers (and Mac users) will freak out.
-            if (String2.indexOf(plainFileTypes, fileTypeName) >= 0) {
+            if (whichPlainFileType >= 0) {
                 //plainFileType
                 if (categoryName.equals("index" + fileTypeName)) {
                     //respond to categorize/attribute/index.xxx
@@ -12020,7 +12076,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     sendCategoryPftOptionsTable(request, response, loggedInAs, 
                         attribute, attributeInURL, fileTypeName);
                 } else {
-                    if (verbose) String2.log(EDStatic.resourceNotFound + " category not index" + fileTypeName);
+                    if (verbose) String2.log(EDStatic.resourceNotFound + " unknown categoryName=" + categoryName);
                     sendResourceNotFoundError(request, response, "");
                     return;
                 }
@@ -15875,7 +15931,7 @@ writer.write(
                 tErddapUrl + "/wcs/" + tId + "/" + EDDGrid.wcsServer : "");
             wmsCol.add(graphsAccessible && edd.accessibleViaWMS().length() == 0? //graphs
                 tErddapUrl + "/wms/" + tId + "/" + EDD.WMS_SERVER : "");
-            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFiles()? 
                 tErddapUrl + "/files/" + tId + "/" : "");
             accessCol.add(edd.getAccessibleTo() == null? "public" :
                 isAccessible? "yes" : 
@@ -16029,7 +16085,7 @@ writer.write(
                     "title=\"" + EDStatic.dtWMS + "\" >" +
                     "M</a>&nbsp;" : 
                 "&nbsp;");
-            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFiles()?
                 "&nbsp;&nbsp;<a rel=\"chapter\" " +
                     "href=\"" + tErddapUrl + "/files/" + tId + "/\" " +
                     "title=\"" + EDStatic.dtFiles + "\" >" +
@@ -16432,7 +16488,7 @@ writer.write(
 "    \"rows\": [\n" +
 "      [\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n" +
 "      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"],\n" +
-"      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" +
+"      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n";
@@ -16449,7 +16505,7 @@ writer.write(
 "    \"rows\": [\n" +
 "      [\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n" +
 "      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"],\n" +
-"      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" +
+"      [\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n" +
@@ -16481,7 +16537,7 @@ writer.write(
 "[\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Accessible\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"]\n" +
-"[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
+"[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //.jsonlCSV
@@ -16490,7 +16546,7 @@ writer.write(
             expected = 
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"]\n" +
-"[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
+"[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //.jsonlKVP
@@ -16499,7 +16555,7 @@ writer.write(
             expected = 
 "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySst\"}\n" +
 "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rPmelTaoDySst\"}\n" +
-"{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rlPmelTaoDySst\"}\n";
+"{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rlPmelTaoDySst\"}\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.tsv?" +
@@ -17762,7 +17818,7 @@ expected =
 "    \"@type\": \"Organization\",\n" +
 "    \"name\": \"JPL MUR SST project\",\n" +
 "    \"email\": \"ghrsst@podaac.jpl.nasa.gov\",\n" +
-"    \"sameAs\": \"https://mur.jpl.nasa.gov\"\n" +
+"    \"sameAs\": \"https://climatesciences.jpl.nasa.gov/projects/measures/\"\n" +
 "  },\n" +
 "  \"publisher\": {\n" +
 "    \"@type\": \"Organization\",\n" +
@@ -17831,6 +17887,155 @@ expected =
     }
 
     /**
+     * This is used by Bob to do simple tests of Advanced Search.
+     * @throws exception if trouble.
+     */
+    public static void testAdvancedSearch() throws Throwable {
+        Erddap.verbose = true;
+        Erddap.reallyVerbose = true;
+        EDD.testVerboseOn();
+        String htmlUrl = EDStatic.erddapUrl + "/search/advanced.html?page=1&itemsPerPage=1000";
+        String csvUrl  = EDStatic.erddapUrl + "/search/advanced.csv?page=1&itemsPerPage=1000";
+        String expected = "cwwcNDBCMet";
+        String expected2, query, results;
+        String2.log("\n*** Erddap.testAdvancedSearch\n" +
+            "This assumes localhost ERDDAP is running with at least cwwcNDBCMet.");
+        int po;
+
+        //test valid search string, values are case-insensitive
+        query = "";
+        String goodQueries[] = {
+            "&searchFor=CWWCndbc",
+            "&protocol=TAbleDAp",
+            "&standard_name=sea_surface_WAVE_significant_height",
+            "&minLat=0&maxLat=45",
+            "&minLon=-135&maxLon=-120",
+            "&minTime=now-20years&maxTime=now-19years"};
+        for (int i = 0; i < goodQueries.length; i++) {
+            query += goodQueries[i];
+            results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+            Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+            Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
+        }
+
+        //valid for .html but error for .csv: protocol
+        query = "&searchFor=CWWCndbc&protocol=gibberish";
+        results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);        
+        try {
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected2 = 
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Your query produced no matching results. (protocol=gibberish)\";\n" +
+"})";
+        Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+
+        //valid for .html but error for .csv: standard_name
+        query = "&searchFor=CWWCndbc&standard_name=gibberish";
+        results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);        
+        try {
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected2 = 
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Your query produced no matching results. (standard_name=gibberish)\";\n" +
+"})";
+        Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+
+        //valid for .html but error for .csv: &minLat > &maxLat
+        query = "&searchFor=CWWCndbc&minLat=45&maxLat=0";
+        results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);        
+        try {
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected2 = 
+"(Error {\n" +
+"    code=400;\n" +
+"    message=\"Bad Request: Query error: minLat=45.0 > maxLat=0.0\";\n" +
+"})";
+        Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+
+        //valid for .html but error for .csv: &minTime > &maxTime
+        query = "&searchFor=CWWCndbc&minTime=now-10years&maxTime=now-11years";
+        results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);        
+        try {
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected2 = 
+"(Error {\n" +
+"    code=400;\n" +
+"    message=\"Bad Request: Query error: minTime=now-10years > maxTime=now-11years\";\n" +
+"})";
+        Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+
+    }
+
+    /**
+     * This is used by Bob to do simple tests of Categorize.
+     * @throws exception if trouble.
+     */
+    public static void testCategorize() throws Throwable {
+/* THIS IS NOT YET IMPLEMENTED
+        Erddap.verbose = true;
+        Erddap.reallyVerbose = true;
+        EDD.testVerboseOn();
+        String baseUrl = EDStatic.erddapUrl + "/categorize/";
+        String expected = "cwwcNDBCMet";
+        String expected2, query, results;
+        String2.log("\n*** Erddap.testCategorize\n" +
+            "This assumes localhost ERDDAP is running with at least cwwcNDBCMet.");
+        int po;
+
+        //test valid search string, values are case-insensitive
+        query = "";
+        String goodQueries[] = {
+            "&searchFor=CWWCndbc",
+            "&protocol=TAbleDAp",
+            "&standard_name=sea_surface_WAVE_significant_height",
+            "&minLat=0&maxLat=45",
+            "&minLon=-135&maxLon=-120",
+            "&minTime=now-20years&maxTime=now-19years"};
+        for (int i = 0; i < goodQueries.length; i++) {
+            query += goodQueries[i];
+            results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+            Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+            Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
+        }
+
+        //valid for .html but error for .csv: protocol
+        query = "&searchFor=CWWCndbc&protocol=gibberish";
+        results = SSR.getUrlResponseStringUnchanged(htmlUrl + query); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);        
+        try {
+            results = SSR.getUrlResponseStringUnchanged(csvUrl + query); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected2 = 
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Your query produced no matching results. (protocol=gibberish)\";\n" +
+"})";
+        Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+ */   }
+
+    /**
      * This is used by Bob to do simple tests of the basic Erddap services 
      * from the ERDDAP at EDStatic.erddapUrl. It assumes Bob's test datasets are available.
      *
@@ -17839,6 +18044,8 @@ expected =
 /* for releases, this line should have open/close comment */
         testBasic();
         testJsonld();
+        testAdvancedSearch();
+        testCategorize();
     }
 
 }

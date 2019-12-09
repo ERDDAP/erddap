@@ -416,7 +416,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                             } catch (Exception ev2) {
                                 //try again
                                 String2.log((debugMode? "" : msg + "\n") +
-                                    "caught error (will try again):\n" + MustBe.throwableToString(ev2));
+                                    "Caught error for AWS S3 bucket=" + bucketName + " prefix=" + prefix + 
+                                    " region=" + region + " (will try again):\n" + 
+                                    MustBe.throwableToString(ev2));
                                 Math2.sleep(5000);
                             }
                         }
@@ -1791,6 +1793,8 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                 url = File2.getDirectory(url);
             else url = File2.addSlash(url); //otherwise, assume url is missing final slash
             response = SSR.getUrlResponseStringUnchanged(url + "contents.html");
+            //String2.log(String2.annotatedString(response.substring(0, 1000)));
+            response = String2.replaceAll(response, '\n', ' '); //to simplify getting data from "row" that is on multiple lines
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return false;
@@ -1894,11 +1898,11 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                         " match " + fileNameRegex);
                 if (fileName.matches(fileNameRegex)) {
 
-                    //get lastModified time   >2011-06-30T04:43:09<
-                    String stime = String2.extractRegex(thisRow,
-                        ">\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}<", 0);
+                    //get lastModified time   >2011-06-30T04:43:09< or >2011-06-30T04:43:09GMT<
+                    String stime = String2.extractCaptureGroup(thisRow,
+                        ".*>(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(|GMT)<.*", 1);
                     double dtime = Calendar2.safeIsoStringToEpochSeconds(
-                        stime == null? "" : stime.substring(1, stime.length() - 1));
+                        stime == null? "" : stime);
 
                     //get size   e.g., 119K
                     String sSize = String2.extractRegex(thisRow,
@@ -3037,7 +3041,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
             //test the sync 
             Table table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
             String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
-                "\"found nAlready=3 nToDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
+                "\"found nAlready=3 nAvailDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
             String results = table.dataToString();
             String expected = //the lastModified values change periodically
 //these are the files which were downloaded

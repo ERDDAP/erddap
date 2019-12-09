@@ -449,6 +449,16 @@ public class StringArray extends PrimitiveArray {
                         String2.canonicalStringHolder(new StringHolder(value));
     }
 
+    /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    This uses value.toString() (or "" if null).
+     */
+    public void addObject(Object value) {
+        add(value == null? "" : value.toString());
+    }
+
     /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is currently implemented.
      * This adds an item to the array (increasing 'size' by 1).
      *
@@ -692,8 +702,8 @@ public class StringArray extends PrimitiveArray {
      * This sets an element from another PrimitiveArray.
      *
      * @param index the index to be set
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the other PrimitiveArray
+     * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
         set(index, otherPA.getString(otherIndex));
@@ -835,7 +845,7 @@ public class StringArray extends PrimitiveArray {
      * Rows that aren't kept are removed.
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
      *
-     * @param bitset
+     * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
     public void justKeep(BitSet bitset) {
         int newSize = 0;
@@ -917,6 +927,7 @@ public class StringArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
+     * @return the specified element
      */
     public String get(int index) {
         if (index >= size)
@@ -1205,7 +1216,7 @@ public class StringArray extends PrimitiveArray {
     /**
      * Test if o is an StringArray with the same size and values.
      *
-     * @param o
+     * @param o the object that will be compared to this StringArray
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
@@ -2370,7 +2381,8 @@ public class StringArray extends PrimitiveArray {
      * This adds the values in hs to this StringArray and returns this StringArray for convenience.
      * The order of the elements in this StringArray is not specified.
      */
-    public StringArray addHashSet(HashSet hs) {
+    public StringArray addSet(Set hs) {
+        ensureCapacity(size + (long)hs.size());
         for (Object o : hs)
             add(o.toString());
         return this;
@@ -3028,7 +3040,7 @@ public class StringArray extends PrimitiveArray {
         //toHashSet   addHashSet
         anArray = fromCSV("a, e, i, o, uu");
         HashSet hs = anArray.toHashSet();
-        anArray2 = (new StringArray()).addHashSet(hs);
+        anArray2 = (new StringArray()).addSet(hs);
         anArray2.sort();
         Test.ensureEqual(anArray.toArray(), anArray2.toArray(), "");
 

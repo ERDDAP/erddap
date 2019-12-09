@@ -752,6 +752,16 @@ public abstract class PrimitiveArray {
     abstract public void addString(String value);
 
     /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    This uses an appropriate simple method to do the conversion.
+     *    If you need a specific method, create a DoubleArray or StringArray first,
+     *    then convert that to the desired PrimitiveArray type.
+     */
+    abstract public void addObject(Object value);
+
+    /**
      * This adds n Strings to the array.
      *
      * @param n the number of times 'value' should be added.
@@ -824,8 +834,8 @@ public abstract class PrimitiveArray {
      * This sets an element from another PrimitiveArray.
      *
      * @param index the index to be set
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the other PrimitiveArray
+     * @param otherIndex the index of the item in otherPA
      */
     abstract public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex);
 
@@ -861,7 +871,7 @@ public abstract class PrimitiveArray {
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
      * This doesn't alter the values in bitset.
      *
-     * @param bitset
+     * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
     abstract public void justKeep(BitSet bitset);
 

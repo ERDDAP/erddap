@@ -12,8 +12,10 @@ import dods.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.*;
 import gov.noaa.pfel.coastwatch.hdf.*;
+import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -39,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.*;
 import java.util.TimeZone;
+
+import org.apache.commons.jexl3.introspection.JexlSandbox;
+import org.apache.commons.jexl3.*;
 
 import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
 //import org.codehaus.janino.ExpressionEvaluator;
@@ -9797,6 +9802,328 @@ towTypesDescription);
         }
     }
 
+
+    /** 
+     * If the String is surrounded by ', this removes them,
+     *  else if the String is surrounded by ", this returns fromJson(s), else it returns s.
+     */
+    public static String unquoteYaml(String s) {
+        if (s == null || s.length() < 2) 
+            return s;
+        if (s.charAt(0) == '\"' && s.charAt(s.length() - 1) == '\"')
+            return String2.fromJson(s);
+        if (s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\'')
+            return s.substring(1, s.length() - 1);
+        return s;
+    } 
+
+    /** This generates ERDDAP datasets from all the dataset descriptions in 
+     * /c/git/open-data-registry/datasets/ .
+     * Cloned from https://github.com/awslabs/open-data-registry/
+     * Last cloned on 2019-08-27
+     *
+     * @throws Exception if trouble
+     */
+    public static String makeAwsS3FilesDatasets(String fileNameRegex) throws Exception {
+
+        String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
+
+        Table table = FileVisitorDNLS.oneStep("/git/open-data-registry/datasets/", 
+            ".*.yaml", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, dirToo
+        StringArray dirs  = (StringArray)table.getColumn(0);
+        StringArray names = (StringArray)table.getColumn(1);
+        StringBuilder sb     = new StringBuilder();
+        StringBuilder errors = new StringBuilder();
+        HashSet ignoredTags = new HashSet();
+        int nFiles = dirs.size();
+        HashSet bucketsAlreadyDone = new HashSet();
+        String skipBuckets[] = new String[]{
+            //skip because too many files in initial directory
+            "aws-earth-mo-atmospheric-ukv-prd",
+            "aws-earth-mo-atmospheric-global-prd", 
+            "aws-earth-mo-atmospheric-mogreps-uk-prd",
+            "goesingest",
+            "irs-form-990", 
+            "mogreps-g", 
+            "mogreps-uk", 
+            "ngi-igenomes",
+            "nrel-pds-hsds", 
+            //not reported: I'm not sure where to report  (owner?)
+            "data.geo.admin.ch",   //2019-08-28  access denied  403
+            "gcgrid",              //2019-08-28  access denied  403
+            "hcp-openaccess",      //2019-08-28  access denied  403
+            "icgc",                //2019-08-28  access denied  403
+            "mimic-iii-physionet", //2019-08-28  access denied  403
+            "tcga",                //2019-08-28  access denied  403
+            "physionet-pds",       //2019-08-28  no content
+
+            "zinc3d"};             //RequesterPays (not noted in names)
+        for (int f = 0; f < nFiles; f++) {
+            if (!names.get(f).matches(fileNameRegex))
+                continue;
+            String2.log(dirs.get(f) + "   " + names.get(f));
+            ArrayList<String> lines = String2.readLinesFromFile(dirs.get(f) + names.get(f), String2.UTF_8, 1);
+            int nLines = lines.size();
+            String name = null, deprecated = null, description = null, documentation = null, contact = null,
+                managedBy = null, updateFrequency = null, license = null,
+                name2 = null, bucket = null, region = null;
+            HashSet keywords = new HashSet();
+            EDD.chopUpCsvAndAdd("AWS, bucket, data, file, lastModified, names, S3", 
+                keywords);
+            int line = 0; //next line to be read
+            while (line < nLines) {
+                String tl = lines.get(line++);
+                //get rid of bom marker #65279 in some utf files.
+                if (line == 1 && tl.length() > 0 && tl.charAt(0) == '\uFEFF')
+                    tl = tl.substring(1);
+                //String2.log(">> tl =" + String2.annotatedString(tl));
+                if      (tl.startsWith("#"))
+                    continue;
+                else if (tl.startsWith("Name: ")) {          name            = unquoteYaml(tl.substring( 6).trim());
+                    EDD.chopUpAndAdd(name, keywords);
+                }
+                else if (tl.startsWith("Description: ")) {   description     = tl.substring(13).trim();
+                    if (description.length() == 1 && (description.equals("|") || description.equals(">"))) {
+                        String spacer = " "; 
+                        description = "";
+                        tl = line >= nLines? "" : lines.get(line++);
+                        while (tl.startsWith("  ")) {
+                            description += (description.length() == 0? "" : spacer) + tl.trim();
+                            tl = line >= nLines? "" : lines.get(line++);
+                        }
+                        if (line < nLines) line--; //back up a line
+                    }
+                    description = unquoteYaml(description);
+                }
+                else if (tl.startsWith("Deprecated: "))      deprecated      = tl.substring(12).trim();
+                else if (tl.startsWith("Documentation: "))   documentation   = unquoteYaml(tl.substring(15).trim());
+                else if (tl.startsWith("Contact: "))         contact         = unquoteYaml(tl.substring( 9).trim());
+                else if (tl.startsWith("ManagedBy: "))       managedBy       = unquoteYaml(tl.substring(11).trim());
+                else if (tl.startsWith("UpdateFrequency: ")) updateFrequency = unquoteYaml(tl.substring(17).trim());
+                else if (tl.startsWith("Tags:")) {
+                    tl = line >= nLines? "" : lines.get(line++);
+                    while (tl.startsWith("  - ")) {
+                        EDD.addAllAndParts(tl.substring(4), keywords);
+                        tl = line >= nLines? "" : lines.get(line++);
+                    }
+                    if (line < nLines) line--; //back up a line
+                }
+                else if (tl.startsWith("License: ")) {       license         = tl.substring( 9).trim();
+                    if (license.length() == 1 && (license.equals("|") || license.equals(">"))) {
+                        String spacer = " "; 
+                        license = "";
+                        tl = line >= nLines? "" : lines.get(line++);
+                        while (tl.startsWith("  ")) {
+                            license += (license.length() == 0? "" : spacer) + tl.trim();
+                            tl = line >= nLines? "" : lines.get(line++);
+                        }
+                        if (line < nLines) line--; //back up a line
+                    }
+                    license = unquoteYaml(license);
+                }
+                else if (tl.startsWith("DataAtWork:")) { //skip all content
+                    tl = line >= nLines? "" : lines.get(line++);
+                    while (tl.startsWith("  ")) {
+                        tl = line >= nLines? "" : lines.get(line++);
+                    }
+                    if (line < nLines) line--; //back up a line
+                }
+                else if (tl.startsWith("Resources:")) {
+                    EDD.cleanSuggestedKeywords(keywords);
+                    tl = line >= nLines? "" : lines.get(line++);
+                    while (tl.startsWith("  ")) {
+                        //String2.log(">> tl2=" + tl);
+                        if      (tl.startsWith("  - Description: ")) {name2  = tl.substring(17).trim();
+                            if (name2.length() == 1 && (name2.equals("|") || name2.equals(">"))) {
+                                String spacer = " "; 
+                                name2 = "";
+                                tl = line >= nLines? "" : lines.get(line++);
+                                while (tl.startsWith("  ")) {
+                                    name2 += (name2.length() == 0? "" : spacer) + tl.trim();
+                                    tl = line >= nLines? "" : lines.get(line++);
+                                }
+                                if (line < nLines) line--; //back up a line
+                            }
+                            name2 = unquoteYaml(name2);
+                        }
+                        else if (tl.startsWith("    ARN: "))          bucket = tl.substring( 9).trim();
+                        else if (tl.startsWith("    Region: "))       region = tl.substring(12).trim();
+                        else if (tl.startsWith("    RequesterPays: ")) {} //occurs after Type line. [Requester Pays] is caught via name2 below.
+                        else if (tl.startsWith("    Type: S3 Bucket")) {
+try {
+                            int po = bucket.lastIndexOf(':');
+                            if (po > 0)
+                                bucket = bucket.substring(po + 1);
+
+                            //skipBucket?             (bucket+prefix)
+                            if (String2.indexOf(skipBuckets, bucket) >= 0) {
+                                sb.append("<!-- skipping bucket+prefix because on skip list: " + bucket + " -->\n\n"); 
+                                tl = line >= nLines? "" : lines.get(line++);
+                                continue;
+                            }
+
+                            //bucketsAlreadyDone        (bucket+prefix)
+                            if (!bucketsAlreadyDone.add(bucket)) {
+                                sb.append("<!-- skipping bucket+prefix because already done: " + bucket + " -->\n\n"); 
+                                tl = line >= nLines? "" : lines.get(line++);
+                                continue;
+                            }
+
+                            //prefix?
+                            String prefix = "";
+                            po = bucket.indexOf('/');
+                            if (po > 0) {
+                                prefix = File2.addSlash(bucket).substring(po + 1); //ensure it ends in /
+                                bucket = bucket.substring(0, po);
+                            }
+
+                            //I asked owner to fix error in yaml, which has us-east-1
+                            if (bucket.equals("giab") ||
+                                bucket.equals("human-pangenomics"))
+                                region = "us-west-2";
+
+String2.log(">> name=" + name + " name2=" + name2);
+if ( name.indexOf("Requester Pays") >= 0 ||
+    name2.indexOf("Requester Pays") >= 0)
+    sb.append("<!-- " + XML.encodeAsXML("No dataset for " + names.get(f) + 
+        " bucket=" + bucket + " prefix=" + prefix + 
+        "\nname2=" + String2.toJson(name2) + " because [Requester Pays].") + " -->\n\n");
+
+else sb.append(
+"<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + 
+    String2.modifyToBeVariableNameSafe("awsS3Files_" + bucket + (prefix.length() == 0? "" : "_" + prefix)) + 
+    "\" active=\"true\">\n" +
+"    <fileDir>***fromOnTheFly, https://" + bucket + ".s3." + region + ".amazonaws.com/" + prefix + "</fileDir>\n" +
+"    <fileNameRegex>.*</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <reloadEveryNMinutes>" + (10080 + Math2.random(1000)) + "</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+(contact == null? "" : 
+"        <att name=\"contact\">" + XML.encodeAsXML(contact) + "</att>\n") +
+"        <att name=\"creator_email\">" +
+    (String2.isEmailAddress(contact)? XML.encodeAsXML(contact) : "null") +
+    "</att>\n" +
+"        <att name=\"creator_name\">null</att>\n" +
+"        <att name=\"creator_url\">null</att>\n" +
+"        <att name=\"history\">" + today + " erd.data@noaa.gov created ERDDAP metadata from " + names.get(f) + "</att>\n" +
+"        <att name=\"infoUrl\">https://registry.opendata.aws/" + File2.getNameNoExtension(names.get(f)) + "/</att>\n" +
+"        <att name=\"institution\">Amazon Web Services</att>\n" +
+"        <att name=\"keywords\">" + XML.encodeAsXML(String2.toCSSVString(keywords)) + "</att>\n" +
+"        <att name=\"license\">" +
+    (license == null? "[standard]" : XML.encodeAsXML(license)) +
+    "</att>\n" +
+"        <att name=\"sourceUrl\">https://" + bucket + ".s3." + region + ".amazonaws.com/</att>\n" + //no prefix
+"        <att name=\"summary\">This dataset has file information from the AWS S3 " + 
+XML.encodeAsXML(
+bucket + " bucket at https://" + bucket + ".s3." + region + ".amazonaws.com/" + 
+(prefix.length() > 0? " with prefix=" + prefix : "") + 
+" . " +
+"Use ERDDAP's \"files\" system for this dataset to browse and download the files. " +
+"The \"files\" information for this dataset is always perfectly up-to-date because ERDDAP gets it on-the-fly. " +
+"AWS S3 doesn't offer a simple way to browse the files in their public, Open Data buckets. This dataset is a solution to that problem for this bucket.\n" +
+"\n" +
+(name            == null? "" : "Name: "            + name            + "\n") +
+(name2           == null? "" : "Name2: "           + name2           + "\n") + 
+(deprecated      == null? "" : "Deprecated: "      + deprecated      + "\n") + 
+(description     == null? "" : "Description: "     + description     + "\n\n") +
+(documentation   == null? "" : "Documentation: "   + documentation   + "\n") +
+(contact         == null? "" : "Contact: "         + contact         + "\n") +
+(managedBy       == null? "" : "ManagedBy: "       + managedBy       + "\n") +
+(updateFrequency == null? "" : "UpdateFrequency: " + updateFrequency + "\n")) + // ) is end of XML.encodeAsXML(
+"</att>\n" +
+"        <att name=\"title\">File Names from the AWS S3 " + bucket + " Bucket" +
+XML.encodeAsXML(
+    (prefix.length() > 0? " with prefix=" + prefix : "") +
+    (name  == null? "" : ": " + name) +
+    (name2 == null || String2.isRemote(name2)? "" : ": " + name2)) +
+    "</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>url</sourceName>\n" +
+"        <destinationName>url</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">URL</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>name</sourceName>\n" +
+"        <destinationName>name</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Name</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>lastModified</sourceName>\n" +
+"        <destinationName>lastModified</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Last Modified</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>size</sourceName>\n" +
+"        <destinationName>size</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"ioos_category\">Other</att>\n" +
+"            <att name=\"long_name\">Size</att>\n" +
+"            <att name=\"units\">bytes</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">File Type</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n");
+} catch (Exception e) {
+    errors.append("ERROR for " + names.get(f) + ":\n" + MustBe.throwableToString(e) + "\n");
+}
+                        } //end of S3 bucket chunk
+                        tl = line >= nLines? "" : lines.get(line++);
+                        } //end of "  " lines loop
+                    if (line < nLines) line--; //back up a line
+                    }  //end of resource lines loop
+                else { 
+                  int po = tl.indexOf(':');
+                  if (po > 0 && tl.charAt(0) != ' ')
+                      ignoredTags.add(tl.substring(0, po+1));
+                  }
+                } //end of for line loop
+            } //end of for file loop
+            String2.log(sb.toString());
+            String2.log("\nmakeAwsS3FilesDatasets finished nFiles=" + nFiles + ".\n" +
+                "ERRORS: " + errors.toString() + "\n" +
+                "IgnoredTags: " + String2.toCSSVString(ignoredTags) + "\n");
+
+            return sb.toString();
+
+        }
 
 
 }

@@ -2282,7 +2282,7 @@ expected =
         String2.log(results);
         expected = 
 "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
-"0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,,,,,,,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n";
+"0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n";
         Test.repeatedlyTestLinesMatch(results, expected, "");
 
         //push a bunch of data into the dataset: 2 stations, 2 time periods
@@ -2329,11 +2329,11 @@ expected =
         String2.log(results);
         expected = 
 "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
-"0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,,,,,,,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n" +
-"1,station1_2016-03.jsonl,15\\d+,37.,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"2,station2_2016-03.jsonl,15\\d+,37.,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"1,station1_2016-05.jsonl,15\\d+,37.,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"2,station2_2016-05.jsonl,15\\d+,37.,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+"0,testFromHttpGet.jsonl,15\\d+,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n" +
+"1,station1_2016-03.jsonl,15\\d+,37\\d,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-03.jsonl,15\\d+,37\\d,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"1,station1_2016-05.jsonl,15\\d+,37\\d,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-05.jsonl,15\\d+,37\\d,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
         Test.repeatedlyTestLinesMatch(results, expected, "");
 
 
@@ -2475,6 +2475,7 @@ expected =
 
 //FUTURE: command=2=addIfNew: adds a row if it is a new combination of
 //  requiredVariables (after processing the jsonl file)
+// and/or addIfDifferent if will result in a change to the data
 //  E.g., Use addIfNew to "add" all of the data from NdbcMet last5days file.
 
         testStatic(); 

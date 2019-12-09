@@ -1867,6 +1867,8 @@ public abstract class EDDGrid extends EDD {
         return new int[]{startI, strideI, stopI, po};
     }
 
+
+
     /**
      * This converts an OPeNDAP Start or Stop value of "last[-n]" or "(last-x)"
      * into "index" or "(value)".
@@ -2019,7 +2021,7 @@ public abstract class EDDGrid extends EDD {
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
      * @param shareInfo if true, this ensures that the sibling's 
      *    axis and data variables are basically the same as this datasets,
-     *    and then makes the new dataset point to the this instance's data structures
+     *    and then makes the new dataset point to this instance's data structures
      *    to save memory. (AxisVariable #0 isn't duplicated.)
      * @return EDDGrid
      * @throws Throwable if trouble
@@ -3660,19 +3662,17 @@ public abstract class EDDGrid extends EDD {
             if (drawSurface && isMap) {
                 //Draw Land
                 int tLand = 0;
-                String landOptions[] = {"", "under the data", "over the data"};  //order also affects javascript below
                 partValue = String2.stringStartsWith(queryParts, partName = ".land=");
                 if (partValue != null) {
                     partValue = partValue.substring(6);
-                    if      (partValue.equals("under")) tLand = 1;
-                    else if (partValue.equals("over"))  tLand = 2;
+                    tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
                 }
                 writer.write(
                     "  <tr>\n" +
                     "    <td>" + EDStatic.magGSLandMask + ":&nbsp;</td>\n" +
                     "    <td>");
                 writer.write(widgets.select("land", EDStatic.magGSLandMaskTooltipGrid,
-                    1, landOptions, tLand, ""));
+                    1, SgtMap.drawLandMask_OPTIONS, tLand, ""));
                 writer.write("</td>\n" +
                     "    <td></td>\n" +   
                     "    <td></td>\n" +   
@@ -3682,7 +3682,7 @@ public abstract class EDDGrid extends EDD {
 
                 //add to graphQuery
                 if (tLand > 0)
-                    graphQuery.append("&.land=" + (tLand == 1? "under" : "over"));
+                    graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS[tLand]);
             }
 
             //bgColor
@@ -3830,7 +3830,7 @@ public abstract class EDDGrid extends EDD {
                 "    if (d.f1.vec.value.length > 0) q += \"&.vec=\" + d.f1.vec.value; \n");
             if (drawSurface && isMap) writer.write(
                 "    if (d.f1.land.selectedIndex > 0) " +
-                    "q += \"&.land=\" + (d.f1.land.selectedIndex==1? \"under\" : \"over\"); \n");
+                    "q += \"&.land=\" + d.f1.land.options[d.f1.land.selectedIndex].text; \n");
             if (true) writer.write(
                 "    var yRMin=d.f1.yRangeMin.value; \n" +
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
@@ -5612,7 +5612,7 @@ Attributes {
             int markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
             int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
             double fontScale = 1, vectorStandard = Double.NaN;
-            int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
+            String currentDrawLandMask = null;  //null = not yet set
             Color bgColor = EDStatic.graphBackgroundColor;
             for (int ap = 0; ap < ampParts.length; ap++) {
                 String ampPart = ampParts[ap];
@@ -5673,10 +5673,11 @@ Attributes {
                 //.land 
                 } else if (ampPart.startsWith(".land=")) {
                     String gt = ampPart.substring(6);
-                    if      (gt.equals("under")) drawLandAsMask = 1;
-                    else if (gt.equals("over"))  drawLandAsMask = 2;
+                    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
+                    if (which >= 1)
+                        currentDrawLandMask = gt; 
                     if (reallyVerbose)
-                        String2.log(".land= drawLandAsMask=" + drawLandAsMask);
+                        String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
 
                 //.legend 
                 } else if (ampPart.startsWith(".legend=")) {
@@ -6614,15 +6615,15 @@ Attributes {
                         g2, imageWidth, imageHeight,
                         0, 0, imageWidth, imageHeight); 
                 } else {
-                    if (drawLandAsMask == 0) 
-                        drawLandAsMask = vars[2].drawLandMask(defaultDrawLandMask())? 2 : 1;
+                    if (currentDrawLandMask == null) 
+                        currentDrawLandMask = vars[2].drawLandMask(defaultDrawLandMask());
 
                     ArrayList mmal = SgtMap.makeMap(false, 
                         SgtUtil.LEGEND_BELOW,
                         EDStatic.legendTitle1, EDStatic.legendTitle2,
                         EDStatic.imageDir, logoImageFile,
                         minX, maxX, minY, maxY, 
-                        drawLandAsMask == 2, 
+                        currentDrawLandMask, 
                         true, //plotGridData 
                         grid, 1, 1, 0, //double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
                         cptFullName,
@@ -6630,8 +6631,10 @@ Attributes {
                         title(),
                         otherInfo.toString(),
                         MessageFormat.format(EDStatic.imageDataCourtesyOf, institution()),
-                        palette.equals("Ocean") || palette.equals("Topography") ? 
-                            SgtMap.FILL_LAKES_AND_RIVERS : SgtMap.STROKE_LAKES_AND_RIVERS, 
+                        "off".equals(currentDrawLandMask)? 
+                            SgtMap.NO_LAKES_AND_RIVERS :
+                            palette.equals("Ocean") || palette.equals("Topography") ? 
+                                SgtMap.FILL_LAKES_AND_RIVERS : SgtMap.STROKE_LAKES_AND_RIVERS, 
                         false, null, 1, 1, 1, "", null, "", "", "", "", "", //plot contour 
                         new ArrayList(),
                         g2, 0, 0, imageWidth, imageHeight,
@@ -6643,9 +6646,9 @@ Attributes {
 
             } else if (drawVectors || drawLines || drawLinesAndMarkers || 
                 drawMarkers || drawSticks || (drawSurface && !isMap)) {
-                if (drawLandAsMask == 0) {
+                if (currentDrawLandMask == null) {
                     EDV edv = vars[2] == null? vars[1] : vars[2];
-                    drawLandAsMask = edv.drawLandMask(defaultDrawLandMask())? 2 : 1;
+                    currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
                 }
 
                 ArrayList mmal = isMap?
@@ -6654,10 +6657,12 @@ Attributes {
                         EDStatic.legendTitle1, EDStatic.legendTitle2,
                         EDStatic.imageDir, logoImageFile,
                         minX, maxX, minY, maxY, 
-                        drawLandAsMask == 2,
+                        currentDrawLandMask,
                         false, //plotGridData 
                         null, 1, 1, 0, "", "", "", "", "",
-                        SgtMap.FILL_LAKES_AND_RIVERS, 
+                        "off".equals(currentDrawLandMask)? 
+                            SgtMap.NO_LAKES_AND_RIVERS :
+                            SgtMap.FILL_LAKES_AND_RIVERS, 
                         false, null, 1, 1, 1, "", null, "", "", "", "", "", //plot contour 
                         graphDataLayers,
                         g2, 0, 0, imageWidth, imageHeight,
@@ -10139,8 +10144,12 @@ Attributes {
             "          <br>This specifies a scale factor for the font (e.g., 1.5 would make the font\n" + 
             "          1.5 times as big as normal).\n" +
             "      <li><kbd>&amp;.land=<i>value</i></kbd>\n" +
-            "        <br>This specifies whether the landmask should be drawn <kbd>under</kbd> or <kbd>over</kbd> the data.\n" +
-            "        The default is different for different variables (under the ERDDAP administrator's\n" + 
+            "        <br>This specifies how the landmask should be drawn:\n" +
+            "        <br><kbd>under</kbd> (best for most variables) draws the landmask under the data.\n" +
+            "        <br><kbd>over</kbd> draws the landmask over the data.\n" +
+            "        <br><kbd>outline</kbd> just draws the landmask outline, political boundaries, lakes, and rivers.\n" +
+            "        <br><kbd>off</kbd> doesn't draw anything.\n" +
+            "        <br>The default is different for different variables (under the ERDDAP administrator's\n" + 
             "        control via a drawLandMask setting in datasets.xml, or via the fallback <kbd>drawLandMask</kbd>\n" +
             "        setting in setup.xml).\n" +
             "        <kbd>under</kbd> is the best choice for most variables.\n" + 

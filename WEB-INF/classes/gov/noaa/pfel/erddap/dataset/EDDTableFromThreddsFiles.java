@@ -817,8 +817,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -885,7 +884,6 @@ String expected =
 "    <sortedColumnSourceName>Time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID Time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +                      //dates below change
 //      !2017-12-15 older date!  was 2012/31/11 20:31 CST, now 2010/00/10 03:00 CST         
@@ -1415,7 +1413,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         boolean with = true; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeard, 2019-05-20 returned
-        expected =      
+        expected =           //2019-11-22 ~2 dozen small changes to centerline, precision, instrument, qcindex, ...
 "Attributes \\{\n" +
 " s \\{\n" +
 "  cruise_id \\{\n" +
@@ -1462,7 +1460,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    String axis \"Y\";\n" +
-"    Float32 data_precision 1.0e-5;\n" +
+"    Float32 data_precision 0.01;\n" +
 "    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -1480,7 +1478,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    String axis \"X\";\n" +
-"    Float32 data_precision 1.0e-5;\n" +
+"    Float32 data_precision 0.01;\n" +
 "    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -1497,19 +1495,19 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset 3.6;\n" +
 "    Float64 colorBarMaximum 1050.0;\n" +
 "    Float64 colorBarMinimum 950.0;\n" +
-"    Float32 data_precision 0.1;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"Vaisala PTB220\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 35.9;\n" +
+"    Float32 height 15.8;\n" +
+"    String instrument \"RM Young BPA13658\";\n" +
 "    String ioos_category \"Pressure\";\n" +
 "    String long_name \"Atmospheric Pressure\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String mslp_indicator \"at sensor height\";\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"hectopascal\";\n" +
+"    String original_units \"millibar\";\n" +
 "    Int32 qcindex 19;\n" + //2018-09-15 was 18
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
@@ -1522,18 +1520,18 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset -0.6;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
-"    Float32 data_precision 0.1;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"RM Young 41342\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 25.6;\n" +
+"    Float32 height 17.2;\n" +
+"    String instrument \"RM Young 41382VC\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Air Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    Int32 qcindex 20;\n" +  //2018-09-15 was 12
+"    Int32 qcindex 21;\n" +  //2018-09-15 was 12
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_temperature\";\n" +
@@ -1546,14 +1544,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    String average_center \"time at end of period\";\n" + 
     "    Int16 average_length 60;\n" +            
     "    String average_method \"average\";\n" + 
-    "    Float32 centerline_offset -9999.0;\n": "") +
+    "    Float32 centerline_offset 0.0;\n": "") +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 (with?
-    "    Float32 data_precision 1.0e-5;\n" +
-    "    Float32 distance_from_bow -9999.0;\n" +
-    "    Float32 height -9999.0;\n" +
-    "    String instrument \"SeaBird 45\";\n": "") +
+    "    Float32 data_precision 0.01;\n" +
+    "    Float32 distance_from_bow 32.3;\n" +
+    "    Float32 height 3.7;\n" +
+    "    String instrument \"SBE 45\";\n": "") +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1573,19 +1571,19 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset -0.6;\n" +
 "    Float64 colorBarMaximum 100.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision 1.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 25.6;\n" +
+"    Float32 height 17.2;\n" +
 "    String instrument \"RM Young 41382VC\";\n" +
 "    String ioos_category \"Meteorology\";\n" +
 "    String long_name \"Relative Humidity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"percent\";\n" +
-"    Int32 qcindex 21;\n" + //2018-09-15 was 13
+"    Int32 qcindex 22;\n" + //2018-09-15 was 13
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"relative_humidity\";\n" +
@@ -1598,15 +1596,15 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    String average_center \"time at end of period\";\n" +
     "    Int16 average_length 60;\n" +       
     "    String average_method \"average\";\n" +
-    "    Float32 centerline_offset -9999.0;\n": "") +
+    "    Float32 centerline_offset 0.0;\n": "") +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 (with?
 //    "    Int32 data_interval 60;\n" +
-    "    Float32 data_precision 1.0e-4;\n" +  
-    "    Float32 distance_from_bow -9999.0;\n" +
-    "    Float32 height -9999.0;\n" +
-    "    String instrument \"SeaBird 45\";\n": "") +
+    "    Float32 data_precision 0.01;\n" +  
+    "    Float32 distance_from_bow 32.3;\n" +
+    "    Float32 height 3.7;\n" +
+    "    String instrument \"SBE 45\";\n": "") +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Sea Water Practical Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1628,14 +1626,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     "    String average_center \"time at end of period\";\n" + 
     "    Int16 average_length 60;\n" +                        
     "    String average_method \"average\";\n" +
-    "    Float32 centerline_offset -9999.0;\n": "") +
+    "    Float32 centerline_offset 0.0;\n": "") +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
 (with?
-    "    Float32 data_precision 1.0e-4;\n" +
-    "    Float32 distance_from_bow -9999.0;\n" +
-    "    Float32 height -9999.0;\n" +
-    "    String instrument \"SeaBird 45\";\n": "") +
+    "    Float32 data_precision 0.01;\n" +
+    "    Float32 distance_from_bow 32.3;\n" +
+    "    Float32 height 3.7;\n" +
+    "    String instrument \"SBE 45\";\n": "") +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1655,14 +1653,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset 0.0;\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"RM Young 05106, Applanix POSMV V4, gyro\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 2.1;\n" +
+"    Float32 height 15.6;\n" +
+"    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Earth Relative Wind Direction\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1680,14 +1678,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset 0.0;\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"RM Young 05106, Applanix POSMV V4, gyro\";\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 2.1;\n" +
+"    Float32 height 15.6;\n" +
+"    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Earth Relative Wind Speed\";\n" +
 "    Float32 missing_value -9999.0;\n" +
@@ -1707,7 +1705,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_method \"average\";\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision 1.0e-5;\n" +
+"    Float32 data_precision 0.01;\n" +
 "    String instrument \"Applanix POSMV V4\";\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Platform Course\";\n" +
@@ -1765,13 +1763,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset 0.0;\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision 1.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 2.1;\n" +
+"    Float32 height 15.6;\n" +
 "    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Platform Relative Wind Direction\";\n" +
@@ -1791,13 +1789,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+"    Float32 centerline_offset 0.0;\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 //"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
-"    Float32 data_precision 0.1;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
+"    Float32 data_precision 0.01;\n" +
+"    Float32 distance_from_bow 2.1;\n" +
+"    Float32 height 15.6;\n" +
 "    String instrument \"RM Young 05106\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Platform Relative Wind Speed\";\n" +
@@ -1852,7 +1850,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_type \"group\";\n" +
 "    String creator_url \"https://samos.coaps.fsu.edu/html/\";\n" +
 "    String Data_modification_date \".{19} E.T\";\n" + //changes
-"    String data_provider \"unknown at this time\";\n" +
+"    String data_provider \"Andrea Stoneman\";\n" +
 "    String defaultDataQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"\";\n" +
 "    String defaultGraphQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"&\\.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +

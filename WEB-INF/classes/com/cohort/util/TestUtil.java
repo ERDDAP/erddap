@@ -1179,7 +1179,7 @@ public class TestUtil {
         StringBuilder sb;
         double dar[];
         int iar[];
-        String s;
+        String s, results, expected;
 
         //clipboard
         String2.log("Clipboard was: " + String2.getClipboardString());
@@ -1322,6 +1322,18 @@ public class TestUtil {
 "  asdlkj(b) f aflkja(b) \n" +
 "  fasl faslfkj(b) flkajf \n" +
 "  sflkj(b) adfsl;kj", s);
+
+        //extractAllCaptureGroupAsHashSet
+        results = String2.toCSSVString(
+            String2.extractAllCaptureGroupsAsHashSet(" a1 ;  a456 a23 bca23 ", "a(\\d+)", 1));
+        expected = "1, 23, 456";
+        Test.ensureEqual(results, expected, "");
+
+        //extractAllCaptureGroupAsStringArray
+        results = String2.toCSSVString(
+            String2.extractAllCaptureGroupsAsStringArray(" a1 ;  a456 a23 bca23 ", "a(\\d+)", 1));
+        expected = "1, 456, 23, 23";
+        Test.ensureEqual(results, expected, "");
 
         //findWholeWord
         s = "aa)z (b) /cc/ d_z=ee";
@@ -1754,20 +1766,20 @@ public class TestUtil {
         Test.ensureEqual(String2.indexOf(dar, 6,   -1),  0, "f");
         Test.ensureEqual(String2.indexOf(dar, 4,    3), -1, "g");
 
-        //indexOf(s, char[])
-        String2.log("test indexOf(s, char[])");
+        //indexOfChar(s, char[])
+        String2.log("test indexOfChar(s, char[])");
         car = new char[]{'c', 'b', 'a'};
-        Test.ensureEqual(String2.indexOf("czz", car,  0),  0, "a");
-        Test.ensureEqual(String2.indexOf("zcz", car,  0),  1, "b");
-        Test.ensureEqual(String2.indexOf("zzc", car,  0),  2, "c");
-        Test.ensureEqual(String2.indexOf("azz", car,  0),  0, "a");
-        Test.ensureEqual(String2.indexOf("zaz", car,  0),  1, "b");
-        Test.ensureEqual(String2.indexOf("zza", car,  0),  2, "c");
+        Test.ensureEqual(String2.indexOfChar("czz", car,  0),  0, "a");
+        Test.ensureEqual(String2.indexOfChar("zcz", car,  0),  1, "b");
+        Test.ensureEqual(String2.indexOfChar("zzc", car,  0),  2, "c");
+        Test.ensureEqual(String2.indexOfChar("azz", car,  0),  0, "a");
+        Test.ensureEqual(String2.indexOfChar("zaz", car,  0),  1, "b");
+        Test.ensureEqual(String2.indexOfChar("zza", car,  0),  2, "c");
 
-        Test.ensureEqual(String2.indexOf("czz", car,  1), -1, "d");
-        Test.ensureEqual(String2.indexOf("aaz", car,  1),  1, "e");
-        Test.ensureEqual(String2.indexOf("abc", car, -1),  0, "f");
-        Test.ensureEqual(String2.indexOf("abc", car,  3), -1, "g");
+        Test.ensureEqual(String2.indexOfChar("czz", car,  1), -1, "d");
+        Test.ensureEqual(String2.indexOfChar("aaz", car,  1),  1, "e");
+        Test.ensureEqual(String2.indexOfChar("abc", car, -1),  0, "f");
+        Test.ensureEqual(String2.indexOfChar("abc", car,  3), -1, "g");
 
         //whichWord
         tsar = new String[] {"abc", "bcd", "bcj"};
@@ -1898,7 +1910,7 @@ public class TestUtil {
         //modifyToBeFileNameSafe
         String2.log("test modifyToBeFileNameSafe");
         String hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?ÀÉÐÝ¡ÿ";
-        String expected = "_a_A_1-_._AEDY_y";
+        expected = "_a_A_1-_._AEDY_y";
         Test.ensureTrue(!String2.isFileNameSafe(hard), "a");
         Test.ensureTrue(String2.isFileNameSafe(                expected),  "b");
         Test.ensureEqual(String2.modifyToBeFileNameSafe(hard), expected,   "c");
@@ -3184,6 +3196,17 @@ public class TestUtil {
             "yyyy XX")), "1970 Z", "");  
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
             "yyyy X")), "1970 Z", "");  
+
+        Test.ensureEqual(
+            Calendar2.format(62.003, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null),
+            "1970-01-01T00:01:02.003Z", "");
+        Test.ensureEqual(
+            Calendar2.format(62.003, null, null),
+            "1970-01-01T00:01:02Z", "");
+        Test.ensureEqual(
+            Calendar2.format(Long.MAX_VALUE / 1000.0, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null), "", "");
+        Test.ensureEqual(
+            Calendar2.format(Double.NaN, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null), "", "");
 
 
         //tryToIsoStringZ(someDateTimeString) 

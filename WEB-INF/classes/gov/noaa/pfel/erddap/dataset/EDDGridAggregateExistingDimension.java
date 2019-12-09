@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -74,6 +75,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String tAccessibleTo = null;
         String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -158,6 +160,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -179,6 +183,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         //make the main dataset based on the information gathered
         return new EDDGridAggregateExistingDimension(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
+            tAccessibleViaFiles, 
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery,
             firstChild, tLocalSourceUrls.toArray(),
@@ -213,6 +218,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      */
     public EDDGridAggregateExistingDimension(String tDatasetID, 
         String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS, 
+        boolean tAccessibleViaFiles, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         EDDGrid firstChild, String tLocalSourceUrls[], 
@@ -283,6 +289,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         childStopsAt[0] = cumSV.size() - 1;
 
         //create the siblings
+        boolean childAccessibleViaFiles = childDatasets[0].accessibleViaFiles; //is at least one 'true'?
         for (int sib = 0; sib < nChildren - 1; sib++) {
             if (reallyVerbose) String2.log("\n+++ Creating childDatasets[" + (sib+1) + "]\n");
             EDDGrid sibling = firstChild.sibling(tLocalSourceUrls[sib], 
@@ -295,8 +302,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 "] #0=" + sourceValues0.getString(0) +
                 " #" + sourceValues0.size() + "=" + sourceValues0.getString(sourceValues0.size() - 1));
                 //sourceValues0=" + sourceValues0 + "\n");
+            if (childDatasets[sib + 1].accessibleViaFiles) 
+                childAccessibleViaFiles = true;
         }
-
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && childAccessibleViaFiles;
 
         //create the aggregate dataset
         if (reallyVerbose) String2.log("\n+++ Creating the aggregate dataset\n");
@@ -565,6 +574,109 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         }
 
         return cumResults;
+    }
+
+    /** 
+     * This returns a fileTable 
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
+     */
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
+        try {
+            int nChild = childDatasets.length;
+
+            //if nextPath is nothing, return list of child id's as directories
+            if (nextPath.length() == 0) {
+                Table table = new Table();
+                table.addColumn("Name",          new StringArray());
+                table.addColumn("Last modified", new LongArray());
+                table.addColumn("Size",          new LongArray());            
+                table.addColumn("Description",   new StringArray());
+                StringArray subDirs = new StringArray();
+                for (int child = 0; child < nChild; child++) {
+                    if (childDatasets[child].accessibleViaFiles)
+                        subDirs.add(childDatasets[child].datasetID());
+                }
+                subDirs.sortIgnoreCase();
+                return new Object[]{table, subDirs.toStringArray(), null};
+            }
+
+            //ensure start of nextPath is a child datasetID
+            int po = nextPath.indexOf('/');
+            if (po < 0) {
+                String2.log("ERROR: no slash in nextPath.");
+                return null;
+            }
+
+            //start of nextPath is a child datasetID
+            String tID = nextPath.substring(0, po);
+            nextPath = nextPath.substring(po + 1);
+            for (int child = 0; child < nChild; child++) {
+                EDD edd = childDatasets[child];
+                if (tID.equals(edd.datasetID())) 
+                    return edd.accessibleViaFilesFileTable(nextPath);
+            }
+            //or it isn't
+            String2.log("ERROR: " + tID + " isn't a child's datasetID.");
+            return null;
+
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            return null;
+        }
+    }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+    public String accessibleViaFilesGetLocal(String relativeFileName) {
+        if (!accessibleViaFiles)
+            return null;
+        String msg = datasetID() + " accessibleViaFilesGetLocal(" + relativeFileName + "): ";
+
+        try {
+
+            //first dir -> childDatasetName
+            int po = relativeFileName.indexOf('/');
+            if (po <= 0) {
+                String2.log(msg + "no '/' in relatveFileName, so no child datasetID.");
+                return null;
+            }
+            String childID           = relativeFileName.substring(0, po);
+            String relativeFileName2 = relativeFileName.substring(po + 1);
+ 
+            //which child?
+            int nChild = childDatasets.length;
+            for (int c = 0; c < nChild; c++) {
+                if (childID.equals(childDatasets[c].datasetID())) {
+                    //then redirect request to that child
+                    return childDatasets[c].accessibleViaFilesGetLocal(relativeFileName2);
+                }
+            }
+            String2.log(msg + "childID=" + childID + " not found.");
+            return null;
+
+        } catch (Exception e) {
+            String2.log(msg + ":\n" +
+                MustBe.throwableToString(e));
+            return null;
+        }
+         
     }
 
 
@@ -1439,6 +1551,120 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         }        
     }
 
+    /**
+     * This tests the /files/ "files" system.
+     * This requires nceiOisst2Agg in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDGridSideBySide.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"nceiOisst2Agg_nc3/,NaN,NaN,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/");
+            Test.ensureTrue(results.indexOf("nceiOisst2Agg&#x5f;nc3&#x2f;") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("nceiOisst2Agg_nc3/")      > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/nceiOisst2Agg_nc3/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"avhrr-only-v2.20170330.nc,1493422520000,8305496,\n" +
+"avhrr-only-v2.20170331.nc,1493422536000,8305496,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //download a file in root
+ 
+            //download a file in subdir
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/nceiOisst2Agg_nc3/avhrr-only-v2.20170331.nc").substring(0, 50));
+            expected = 
+"CDF[1][0][0][0][0][0][0][0][10]\n" +
+"[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][4]zlev[0][0][0][1][0][0][0][3]lat[0][0][0][end]"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiOisst2Agg/subdir/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/subdir/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires nceiOisst2Agg in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
 
     /**
      * This tests the methods in this class.
@@ -1451,6 +1677,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 /* for releases, this line should have open/close comment */       
         testGenerateDatasetsXml();
         testBasic();
+        testFiles();
 
         //not usually run
         //testRtofs();  //worked but needs to be updated; datasets are removed after ~1 month

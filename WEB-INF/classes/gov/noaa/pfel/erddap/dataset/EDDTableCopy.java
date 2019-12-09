@@ -91,7 +91,7 @@ public class EDDTableCopy extends EDDTable{
         boolean tFileTableInMemory = false;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
-        boolean tAccessibleViaFiles = false;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         int tStandardizeWhat = Integer.MAX_VALUE; //not specified by user
         int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nTableThreads
 
@@ -257,6 +257,7 @@ public class EDDTableCopy extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         standardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             defaultStandardizeWhat() : tStandardizeWhat;
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nTableThreads
 
         //check some things
@@ -465,7 +466,8 @@ public class EDDTableCopy extends EDDTable{
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, standardizeWhat, nThreads); 
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
+            tAccessibleViaFiles, standardizeWhat, nThreads); 
 
         //copy things from localEdd 
         sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
@@ -495,13 +497,6 @@ public class EDDTableCopy extends EDDTable{
         sosMaxLat        = localEdd.sosMaxLat; 
         sosMinLon        = localEdd.sosMinLon; 
         sosMaxLon        = localEdd.sosMaxLon;
-
-        //accessibleViaFiles
-        if (EDStatic.filesActive && tAccessibleViaFiles) {
-            accessibleViaFilesDir = copyDatasetDir;
-            accessibleViaFilesRegex = fileNameRegex;
-            accessibleViaFilesRecursive = recursive;
-        }
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
@@ -539,7 +534,7 @@ public class EDDTableCopy extends EDDTable{
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames, 
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        int tStandardizeWhat, int tnThreads) 
+        boolean tAccessibleViaFiles, int tStandardizeWhat, int tnThreads) 
         throws Throwable {
 
         return new EDDTableFromNcFiles(tDatasetID, 
@@ -554,7 +549,7 @@ public class EDDTableCopy extends EDDTable{
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
-            false, //accessibleViaFiles is always false. parent may or may not be.  
+            tAccessibleViaFiles,
             false, //removeMVrows is irrelevant for EDDTableFromNcFiles
             tStandardizeWhat, tnThreads, 
             "", -1, ""); //cacheFromUrl, cacheSizeGB, cachePartialPathRegex
@@ -584,21 +579,37 @@ public class EDDTableCopy extends EDDTable{
     }
 
     /** 
-     * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
-     * and lastMod is LongArray of epochMillis)
+     * This returns a fileTable 
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
-     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
-     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
     public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
         return localEdd.accessibleViaFilesFileTable(nextPath);
     }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+         if (!accessibleViaFiles)
+             return null;
+         return localEdd.accessibleViaFilesGetLocal(relativeFileName);
+     }
 
     /**
      * The basic tests of this class (erdGlobecBottle).
@@ -1316,6 +1327,125 @@ reallyVerbose=false;
     } //end of testRepPostDet
         
 
+   /**
+     * This tests the /files/ "files" system.
+     * This requires testTableCopy in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDTableCopy.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableCopy/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"nh0207/,NaN,NaN,\n" +
+"w0205/,NaN,NaN,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableCopy/");
+            Test.ensureTrue(results.indexOf("nh0207&#x2f;")                > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("nh0207/")                     > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("w0205&#x2f;")                 > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("w0205/")                      > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableCopy/nh0207/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"1.nc,1429890814000,14112,\n" +
+"10.nc,1429890818000,14768,\n" +
+"100.nc,1429890854000,14440,\n";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //download a file in root
+
+            //download a file in subdir
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableCopy/nh0207/100.nc").substring(0, 50));
+            expected = 
+"CDF[1][0][0][0][0][0][0][0][10]\n" +
+"[0][0][0][3][0][0][0][3]row[0][0][0][0][6][0][0][0][16]cruise_id_strlen[0][0][end]"; 
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableCopy/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableCopy/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableCopy/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableCopy/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableCopy/nh0207/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableCopy/nh0207/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires testTableCopy in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+
     /**
      * This tests the methods in this class.
      *
@@ -1328,6 +1458,7 @@ reallyVerbose=false;
 /* for releases, this line should have open/close comment */
         //always done
         testBasic();    //tests testTableCopy dataset on local erddap
+        testFiles();    
 
         //no longer active?
         //testRepPostDet(true);  //checkSourceData 
