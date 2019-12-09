@@ -24,6 +24,7 @@ import com.cohort.util.XML;
 /** The Java DAP classes.  */
 import dods.dap.*;
 
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -426,11 +427,17 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         //variables
         Enumeration en = dds.getVariables();
         double maxTimeES = Double.NaN;
+        Attributes gridMappingAtts = null;
         while (en.hasMoreElements()) {
             BaseType baseType = (BaseType)en.nextElement();
             String varName = baseType.getName();
             Attributes sourceAtts = new Attributes();
             OpendapHelper.getAttributes(das, varName, sourceAtts);
+
+            //Is this the pseudo-data var with CF grid_mapping (projection) information?
+            if (gridMappingAtts == null) 
+                gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
+
             PrimitiveVector pv = null; //for determining data type
             if (baseType instanceof DGrid) {   //for multidim vars
                 DGrid dGrid = (DGrid)baseType;
@@ -510,6 +517,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
+        if (gridMappingAtts != null)
+            dataAddTable.globalAttributes().add(gridMappingAtts);
+        
 
         //subsetVariables
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
@@ -558,8 +568,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -608,7 +617,6 @@ String expected =
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1987 7 5</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +

@@ -433,8 +433,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
               "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -509,7 +508,6 @@ String expected =
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -756,7 +754,6 @@ String expected =
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -895,7 +892,6 @@ String expected =
 "    <sortedColumnSourceName></sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -1201,7 +1197,7 @@ expected =
 "    String summary \"The summary.\";\n" +
 "    String time_coverage_end \"2006-12-31T23:00:00Z\";\n" +
 "    String time_coverage_start \"2005-01-01T00:00:00Z\";\n" +
-"    String title \"The Title\";\n" +
+"    String title \"The Title for testTableAscii\";\n" +
 "    Float64 Westernmost_Easting -122.88;\n" +
 "  }\n" +
 "}\n";
@@ -1315,20 +1311,24 @@ expected =
     }
 
     /** 
-     * This tests some aspects of fixedValue variables 
+     * This tests some aspects of fixedValue variables and script variables
      * (with and without subsetVariables). */
-    public static void testFixedValue() throws Throwable {
+    public static void testFixedValueAndScripts() throws Throwable {
 
-        String2.log("\n****************** EDDTableFromAsciiFiles.testFixedValue() *****************\n");
+        String2.log("\n****************** EDDTableFromAsciiFiles.testFixedValueAndScripts() *****************\n");
         testVerboseOn();
-        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String name, tName, results, tResults, expected, dapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        boolean oDebugMode = EDD.debugMode;
+        EDD.debugMode = true;
 
         for (int test = 0; test < 2; test++) {
             //!fixedValue variable is the only subsetVariable
             String id = test == 0? "testWTDLwSV" : "testWTDLwoSV"; //with and without subsetVariables
+            deleteCachedDatasetInfo(id);
             EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
             //test getting das for entire dataset
@@ -1336,107 +1336,198 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fv" + test, ".das"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
-    "Attributes {\n" +
-    " s {\n" +
-    "  ship_call_sign {\n" +
-    "    String cf_role \"trajectory_id\";\n" +
-    "    String ioos_category \"Other\";\n" +
-    "  }\n" +
-    "  time {\n" +
-    "    String _CoordinateAxisType \"Time\";\n" +
-    "    Float64 actual_range 1.365167919e+9, 1.36933224e+9;\n" +
-    "    String axis \"T\";\n" +
-    "    String ioos_category \"Time\";\n" +
-    "    String long_name \"Time\";\n" +
-    "    String standard_name \"time\";\n" +
-    "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-    "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-    "  }\n" +
-    "  latitude {\n" +
-    "    String _CoordinateAxisType \"Lat\";\n" +
-    "    Float32 actual_range 26.6255, 30.368;\n" +
-    "    String axis \"Y\";\n" +
-    "    String ioos_category \"Location\";\n" +
-    "    String long_name \"Latitude\";\n" +
-    "    String standard_name \"latitude\";\n" +
-    "    String units \"degrees_north\";\n" +
-    "  }\n" +
-    "  longitude {\n" +
-    "    String _CoordinateAxisType \"Lon\";\n" +
-    "    Float32 actual_range 263.2194, 274.2898;\n" +
-    "    String axis \"X\";\n" +
-    "    String ioos_category \"Location\";\n" +
-    "    String long_name \"Longitude\";\n" +
-    "    String standard_name \"longitude\";\n" +
-    "    String units \"degrees_east\";\n" +
-    "  }\n" +
-    "  seaTemperature {\n" +
-    "    Float32 _FillValue -8888.0;\n" +
-    "    Float32 actual_range 16.9, 25.9;\n" +
-    "    Float64 colorBarMaximum 40.0;\n" +
-    "    Float64 colorBarMinimum -10.0;\n" +
-    "    String ioos_category \"Temperature\";\n" +
-    "    String long_name \"Sea Water Temperature\";\n" +
-    "    String standard_name \"sea_water_temperature\";\n" +
-    "    String units \"degree_C\";\n" +
-    "  }\n" +
-    " }\n" +
-    "  NC_GLOBAL {\n" +
-    "    String cdm_data_type \"Trajectory\";\n" +
-    "    String cdm_trajectory_variables \"ship_call_sign\";\n" +
-    "    String Conventions \"COARDS, CF-1.4, ACDD-1.3\";\n" +
-    "    String creator_email \"eed.shiptracker@noaa.gov\";\n" +
-    "    String creator_name \"NOAA OMAO,Ship Tracker\";\n" +
-    "    Float64 Easternmost_Easting 274.2898;\n" +
-    "    String featureType \"Trajectory\";\n" +
-    "    Float64 geospatial_lat_max 30.368;\n" +
-    "    Float64 geospatial_lat_min 26.6255;\n" +
-    "    String geospatial_lat_units \"degrees_north\";\n" +
-    "    Float64 geospatial_lon_max 274.2898;\n" +
-    "    Float64 geospatial_lon_min 263.2194;\n" +
-    "    String geospatial_lon_units \"degrees_east\";\n" +
-    "    String history \"Data downloaded hourly from http://shiptracker.noaa.gov/shiptracker.html to ERD\n" +
+"Attributes {\n" +
+" s {\n" +
+"  ship_call_sign {\n" +
+"    String cf_role \"trajectory_id\";\n" +
+"    String ioos_category \"Other\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.365167919e+9, 1.36933224e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 26.6255, 30.368;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude0360 {\n" +
+"    Float32 actual_range 263.2194, 274.2898;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude 0-360°\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range -96.78061, -85.71021;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  seaTemperature {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 16.9, 25.9;\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum -10.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Water Temperature\";\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+"  seaTemperatureF {\n" +
+"    Float32 _FillValue -99.0;\n" +
+"    Float32 actual_range 62.42, 78.62;\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 20.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Water Temperature\";\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    String units \"degree_F\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Trajectory\";\n" +
+"    String cdm_trajectory_variables \"ship_call_sign\";\n" +
+"    String Conventions \"COARDS, CF-1.4, ACDD-1.3\";\n" +
+"    String creator_email \"eed.shiptracker@noaa.gov\";\n" +
+"    String creator_name \"NOAA OMAO,Ship Tracker\";\n" +
+"    Float64 Easternmost_Easting -85.71021;\n" +
+"    String featureType \"Trajectory\";\n" +
+"    Float64 geospatial_lat_max 30.368;\n" +
+"    Float64 geospatial_lat_min 26.6255;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -85.71021;\n" +
+"    Float64 geospatial_lon_min -96.78061;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"Data downloaded hourly from http://shiptracker.noaa.gov/shiptracker.html to ERD\n" +
     today;
     //        "2013-05-24T17:24:54Z (local files)\n" +
     //"2013-05-24T17:24:54Z http://localhost:8080/cwexperimental/tabledap/testWTDL.das\";\n" +
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "test=" + test + " results=\n" + results);
 
-    expected=
-        "String infoUrl \"http://shiptracker.noaa.gov/\";\n" +
-    "    String institution \"NOAA OMAO\";\n" +
-    "    String license \"The data may be used and redistributed for free but is not intended\n" +
-    "for legal use, since it may contain inaccuracies. Neither the data\n" +
-    "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
-    "of their employees or contractors, makes any warranty, express or\n" +
-    "implied, including warranties of merchantability and fitness for a\n" +
-    "particular purpose, or assumes any legal liability for the accuracy,\n" +
-    "completeness, or usefulness, of this information.\";\n" +
-    "    Float64 Northernmost_Northing 30.368;\n" +
-    "    String sourceUrl \"(local files)\";\n" +
-    "    Float64 Southernmost_Northing 26.6255;\n" +
-    "    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
-    (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
-    "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
-    "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
-    "    String time_coverage_start \"2013-04-05T13:18:39Z\";\n" +
-    "    String title \"NOAA Ship Pisces Underway Meteorological Data, Realtime\";\n" +
-    "    Float64 Westernmost_Easting 263.2194;\n" +
-    "  }\n" +
-    "}\n";
+expected=
+    "String infoUrl \"http://shiptracker.noaa.gov/\";\n" +
+"    String institution \"NOAA OMAO\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    Float64 Northernmost_Northing 30.368;\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing 26.6255;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+(test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
+"    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
+"    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
+"    String time_coverage_start \"2013-04-05T13:18:39Z\";\n" +
+"    String title \"NOAA Ship Pisces Underway Meteorological Data, Realtime\";\n" +
+"    Float64 Westernmost_Easting -96.78061;\n" +
+"  }\n" +
+"}\n";
             int po = results.indexOf("String infoUrl");
-            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+            Test.ensureEqual(results.substring(po), expected, "test=" + test + " results=\n" + results);
+
+            //test getting some data
+            tName = eddTable.makeNewFileForDapQuery(null, null, "&time<2013-04-05T17", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+"ship_call_sign,time,latitude,longitude0360,longitude,seaTemperature,seaTemperatureF\n" +
+",UTC,degrees_north,degrees_east,degrees_east,degree_C,degree_F\n" +
+"WTDL,2013-04-05T13:18:39Z,30.3679,271.4368,-88.5632,17.1,62.78\n" +
+"WTDL,2013-04-05T14:18:40Z,30.3679,271.4368,-88.5632,17.0,62.6\n" +
+"WTDL,2013-04-05T15:18:40Z,30.368,271.4368,-88.5632,16.9,62.42\n" +
+"WTDL,2013-04-05T16:18:40Z,30.2648,271.4898,-88.51019,17.9,64.22\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test getting just the fixed value variable
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "ship_call_sign&ship_call_sign!=\"zztop\"", 
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fv" + test, ".csv"); 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fvb" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
-    "ship_call_sign\n" +
-    "\n" +
-    "WTDL\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+"ship_call_sign\n" +
+"\n" +
+"WTDL\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
+
+            //test getting longitude0360 (referenced variable) and longitude
+            tName = eddTable.makeNewFileForDapQuery(null, null, "longitude0360,longitude&time<2013-04-05T17", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+"longitude0360,longitude\n" +
+"degrees_east,degrees_east\n" +
+"271.4368,-88.5632\n" +
+"271.4368,-88.5632\n" +
+"271.4368,-88.5632\n" +
+"271.4898,-88.51019\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
+
+            //test getting time (different variable) and longitude
+            tName = eddTable.makeNewFileForDapQuery(null, null, "time,longitude&time<2013-04-05T17", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+"time,longitude\n" +
+"UTC,degrees_east\n" +
+"2013-04-05T13:18:39Z,-88.5632\n" +
+"2013-04-05T14:18:40Z,-88.5632\n" +
+"2013-04-05T15:18:40Z,-88.5632\n" +
+"2013-04-05T16:18:40Z,-88.51019\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
+
+            //test just getting longitude
+            tName = eddTable.makeNewFileForDapQuery(null, null, "longitude&time<2013-04-05T17", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+"longitude\n" +
+"degrees_east\n" +
+"-88.5632\n" +
+"-88.5632\n" +
+"-88.5632\n" +
+"-88.51019\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
+
+            //test just getting seaTemperatureF
+            tName = eddTable.makeNewFileForDapQuery(null, null, "seaTemperatureF&time<2013-04-05T17", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+"seaTemperatureF\n" +
+"degree_F\n" +
+"62.78\n" +
+"62.6\n" +
+"62.42\n" +
+"64.22\n";
+            Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results); 
+
+            //test that using longitude0360 as the x axis still draws a map (not a graph)
+            dapQuery = 
+"longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
+            tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
+                dir, eddTable.className() + "_expressionMap" + test,  ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
         }
+
+        EDD.debugMode = oDebugMode;
     }
 
     /**
@@ -3448,7 +3539,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -3621,7 +3712,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -4029,7 +4120,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -4164,7 +4255,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.02 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
@@ -6142,7 +6233,6 @@ String expected =
 "    <sortedColumnSourceName>date</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>date</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -6244,6 +6334,137 @@ String expected =
     }
 
     /**
+     * This tests the /files/ "files" system.
+     * This requires testTableAscii in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDTableFromAsciiFiles.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableAscii/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"subdir/,NaN,NaN,\n" +
+"31201_2009.csv,1249487112000,201141,\n" +
+"46026_2005.csv,1249487438000,621518,\n" +
+"46028_2005.csv,1249487458000,623124,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableAscii/");
+            Test.ensureTrue(results.indexOf("subdir&#x2f;")             > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("subdir/")                  > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">201141<")                 > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"46012_2005.csv,1249487348000,622054,\n" +
+"46012_2006.csv,1249487374000,621686,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //download a file in root
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableAscii/31201_2009.csv");
+            expected = 
+"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //download a file in subdir
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/46012_2005.csv");
+            expected = 
+"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires testTableAscii in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+
+
+    /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
@@ -6258,7 +6479,7 @@ String expected =
         testGenerateDatasetsXmlFromInPort2();
         testGenerateDatasetsXmlFromBCODMO();
         testGenerateDatasetsXmlWithMV();
-        testFixedValue();
+        testFixedValueAndScripts();
         testBasic2();
         testTimeZone();
         testTimeZone2();
@@ -6266,6 +6487,7 @@ String expected =
         testTimeRange();
         testTimeRange2();
         testStandardizeWhat();
+        testFiles();
 
         /* */
 

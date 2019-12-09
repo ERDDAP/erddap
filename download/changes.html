@@ -68,9 +68,188 @@ those great suggestions coming!
 
 -->
 
+
+<!-- ****************************************************************************** 
+<h2><a class="selfLink" id="changes2.03" href="#changes2.03" rel="bookmark">Changes</a> 
+in ERDDAP version 2.03 (released 2019-??-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>CHANGED: Advanced Search is now strict for non-.html requests. 
+    It will now throw exceptions for requests that have permanent errors
+    (e.g., requests where minLat &gt; maxLat) or temporary errors
+    (e.g., requests for a standard_name that doesn't exist).
+    For .html requests, Advanced Search is unchanged: 
+    as with Google searches, it does its best and silently fixes or ignores errors.
+    Thanks to ???
+    <br>&nbsp;
+
+  <li>IMPROVED: The map on the Advanced Search page is now larger 
+    (you still have to squint, but less)
+    and significantly more accurate (but still not perfect).
+    Thanks to John Maurer.
+    <br>&nbsp;
+
+  <li>IMPROVED: The "Draw land mask" setting on Make A Graph web pages and the
+    <kbd>&amp;.land=...</kbd> setting in URLs that request a map now supports two more options:
+    <br>"outline" just draws the landmask outline, political boundaries, lakes and rivers. 
+    <br>"off" doesn't draw anything.
+    <br>See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
+        ><kbd>&amp;.land=...</kbd> documentation</a>.
+    <br>Thanks to John Maurer.
+    <br>&nbsp;
+
+  <li>NEW: accessibleViaFiles now supports plainFile type responses,
+    e.g., 
+    https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv
+    <br>&nbsp;
+
+  </ul>
+
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>THINGS YOU MUST TO DO: 
+      <ul>
+      <li>In datasets.xml, search for <kbd>&lt;sourceName&gt;=</kbd>.
+        If any of the values after '=' are strings, you MUST now enclose the
+        string in double quotes. For example,
+        <br>Before: <kbd>&lt;sourceName&gt;=KZ401&lt;/sourceName&gt;</kbd>
+        <br>After: <kbd>&lt;sourceName&gt;="KZ401"&lt;/sourceName&gt;</kbd>
+      </ul>
+      <br>&nbsp;
+
+  <li>NEW: EDDTableFromFiles datasets may now include expressions and scripts 
+    in the sourceName. This lets you make new variables based on existing
+    variables in the source files. For example, to make a longitude variable
+    with values in the range -180 - 180&deg; from a variable with 
+    values in the range 0 - 360&deg;:
+    <br>&lt;sourceName&gt;=Math2.anglePM180(row.columnDouble("lon"))&lt;/sourceName&gt; 
+    <br>For details, see 
+      <a rel="help"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#scriptSourceNames"
+      >Script SourceNames</a>
+    <br>Thanks to Bob Simons (who planned this before ERDDAP v1.0 and finally implemented it),
+      Kevin O'Brien, and Roland Schweitzer.
+    <br>&nbsp;
+
+  <li>IMPROVED: There is now 
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ErddapAndS3Buckets"
+        >better documentation/advice</a>
+    for how to create a dataset from files in AWS S3 buckets.
+    Thanks to Micah Wengren.
+    <br>&nbsp;
+
+  <li>IMPROVED: Now, if a source dataset has CF grid_mapping information, 
+    generateDatasetsXml for gridded datasets will add the information to global <addAtts>,
+    and the information will be added to global <sourceAtts> everytime data is read from the file.
+    The information will appear in the dataset's global attributes as a set of attributes
+    with the prefix grid_mapping_ .
+    <br>&nbsp;
+
+  <li>There are several changes related to the "files" system.
+    <ul>
+    <li>The code to handle this was rewritten. 
+      <br>&nbsp;
+
+    <li>NEW: User requests for directory listings can now request that the
+      response be one of the standard plain table types by appending 
+      the desired file extension:
+      .csv, .htmlTable, .itx, .json, .jsonlCSV1, .jsonlCSV, .jsonlKVP,
+      .mat, .nc, .nccsv, .tsv, or .xhtml). For example,  
+      <br><a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv"
+             >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv</a> 
+      <br>Thanks to Kyle Wilcox and Shane St Savage.
+      <br>&nbsp;
+
+    <li>NEW: There is a new optional setting in setup.xml, &lt;defaultAccessibleViaFiles&gt;, 
+      which sets the default <accessibleViaFiles> for each of the datasets.
+      The default for this new tag is false, which mimics the previous ERDDAP behavior.
+      
+      <p>If you want to make all EDD...FromFiles datasets accessible via the files 
+      system (which is now recommended, because there are users who want this),
+      then 
+      <ol>
+      <li>Add this tag to your setup.xml file: 
+        <br>&lt;defaultAccessibleViaFiles&gt;true&lt;/defaultAccessibleViaFiles&gt;
+      <li>(Optionally) Remove all the 
+        <br>&lt;accessibleViaFiles&gt;true&lt;/accessibleViaFiles&gt;
+        since the default is now true.
+      </ol>
+
+    <li>CHANGED: Now, GenerateDatasetsXml won't include a 
+      &lt;accessibleViaFiles&gt; tag in the output, 
+
+    <li>IMPROVED: Additional dataset types now support accessibleViaFiles:
+      EDDGridSideBySide, EDDGridAggregateExistingDimension, 
+      EDDGridFromErddap, EDDTableFromErddap, 
+      EDDGridFromEDDTable, EDDTableFromEDDGrid,
+      and EDDGridFromEtopo.
+      For these, the files from a given remote/child dataset will only be accessible
+      if both the parent and the the remote/child dataset have accessibleViaFiles 
+      set to <kbd>true</kbd> (perhaps via &lt;defaultAccessibleViaFiles&gt;).
+      <br>&nbsp;
+
+    <li>TO DO / RECOMMENDATION: 
+    We recommend making all relevant datasets accessible via the files system
+    by setting <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd> to <kbd>true</kbd> in setup.xml
+    because there is a group of users for whom this is the preferred way to get the data.
+    Among other reasons, the "files" system makes it easy for users to see which files
+    are available and when they last changed, thus making it easy for a user
+    to maintain their own copy of the entire dataset.
+    If you generally don't want to make datasets accessible via the files system, set
+    <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd> to <kbd>false</kbd>.
+    In either case, just use <kbd>&lt;accessibleViaFiles&gt;</kbd> for the 
+    few datasets which are exceptions to the general policy set by 
+    <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd>
+    (for example, when the dataset uses .ncml files,
+    which aren't really useful to users).
+
+    </ul>
+
+  <li>IMPROVED: The drawLandMask setting now supports two more options:
+    <br>"outline" just draws the landmask outline, political boundaries, lakes and rivers. 
+    <br>"off" doesn't draw anything.
+    <br>See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#drawLandMask"
+        >drawLandMask documentation</a>.
+    <br>Thanks to John Maurer.
+    <br>&nbsp;
+
+  <li>IMPROVED: Now, a variable's &lt;sourceName&gt; can specify a fixed value of =NaN
+      and the variable can have an actual_range attribute which specifies a finite range.
+      This is sometimes useful so that a dataset 
+      (notably an EDDTableFromFileNames dataset) can have dummy variable(s) 
+      (e.g., latitude, longitude, time) with fixed values of NaN, 
+      but with a valid actual_range (as set by the attribute). 
+      Then, in Advanced Search a user can search for datasets
+      which have data in a specific latitude, longitude, time range and this dataset
+      will be able to say it does have relevant data (although all the actual rows of data
+      will show NaN).
+      See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fixedValue"
+        >fixed value documentation</a>.
+      Thanks to Mathew Biddle.
+
+  <li>FIX: The new version of Hyrax displays directory listings differently than before.
+    ERDDAP can now read the old and new directory listings. 
+    <br>&nbsp;
+
+  <li>BUG FIX: GenerateDatasetsXml no longer thinks a source variable name 
+    starting with "latin" might be latitude.
+    Thanks to Vincent Luzzo.
+    <br>&nbsp;
+
+
+  </ul>
+</ul>
+-->
+
 <!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.02" href="#changes2.02" rel="bookmark">Changes</a> 
-in ERDDAP version 2.02 (released 2019-08-16)</h2>
+in ERDDAP version 2.02 (released 2019-08-21)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -86,11 +265,35 @@ in ERDDAP version 2.02 (released 2019-08-16)</h2>
     Thanks to Tylar Murray for the original request.
     <br>&nbsp;
 
-  <li>CHANGE: a request to the "files" to download a file that is actually at a
-   remote site (e.g., AWS S3) now leads to a redirect, 
-   so the user will actually download the data from the source,
-   instead of using ERDDAP as an intermediary.
+  <li>CHANGE: a request to the "files" system to download a file that is actually at a
+    remote site (e.g., AWS S3) now leads to a redirect, 
+    so the user will actually download the data from the source,
+    instead of using ERDDAP as an intermediary.
+    Thanks to Andy Ziegler and NOAA.
     <br>&nbsp;
+
+  <li>NEW: As an example of the new AWS S3-related features, 
+    and to make it easier for anyone to browse and download
+    files from public AWS S3 buckets, we have created 
+    <br><a rel="bookmark" href="https://registry.opendata.aws/">~110 sample datasets</a>
+    that allow anyone to browse the contents of almost all of the 
+    <br><a rel="bookmark" href="https://registry.opendata.aws/">AWS S3 Open Data buckets<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>.
+    If you click on the "files" link for any of those sample datasets,
+    you can browse the directory tree and files in that S3 bucket.
+    Because of the way these datasets work, these
+    directory listings are always perfectly up-to-date because ERDDAP gets them on-the-fly.
+    If you click down the directory tree to an actual file name and click on the file name,
+    ERDDAP will redirect your request to AWS S3 so that you can download the file 
+    directly from AWS. 
+    ERDDAP administrators can 
+    <br><a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#AwsS3Buckets"
+        >read directions for how to do this for other S3 buckets</a>. 
+    Thanks to Andy Ziegler and NOAA.
+    <br>&nbsp;
+
   </ul>
 
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
@@ -98,9 +301,9 @@ in ERDDAP version 2.02 (released 2019-08-16)</h2>
   <li>THINGS YOU NEED TO DO: none
       <br>&nbsp;
 
-  <li>IMPROVEMENT: ERDDAP's method of storing arrays of strings (StringArray) 
+  <li>IMPROVED: ERDDAP's method of storing arrays of strings (StringArray) 
     is now much more memory efficient. 
-    These are used throughout ERDDAP, notably when reading tabular ASCII data files.
+    StringArrays are used throughout ERDDAP, notably when reading tabular ASCII data files.
     Also, other changes make reading CSV/TSV/SSV ASCII, columnar ASCII, and jsonlCSV 
     tabular data files faster and much more memory efficient.
     The result is: for a 764 MB ASCII data test file (but compressed to a 52MB .gz file)
@@ -123,6 +326,20 @@ in ERDDAP version 2.02 (released 2019-08-16)</h2>
     ERDDAP will often only have to open one of the small files
     in response to a user's request, and thus be able to respond much faster.
 
+  <li>IMPROVED: There is now 
+      <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#AwsS3Files"
+        >ERDDAP AWS S3 documentation</a>, 
+        which describes how to get ERDDAP to work with data files in AWS S3 buckets.
+    <br>Also, ERDDAP now uses new features in the AWS S3 Java API. 
+    <br>Also, ERDDAP now allows AWS S3 URLs to include additional
+      characters (period, hyphen, underscore) in bucket names.
+    <br>Also, ERDDAP now requires that AWS S3 bucket URLs be identified in a specific way:
+    <br>&nbsp;&nbsp;https://<i>bucketName</i>.s3.<i>aws-region.</i>amazonaws.com/<i>prefix</i>/ 
+    <br>&nbsp;&nbsp;where prefix are optional.
+    <br>Thanks to Andy Ziegler and NOAA.
+    <br>&nbsp;
+
   <li>CHANGE: GenerateDatasetsXml now treats additional common missing_values
     stand-ins as missing values
     and so is more likely to convert a column to a numeric data type.
@@ -140,36 +357,25 @@ in ERDDAP version 2.02 (released 2019-08-16)</h2>
     Thanks to China Unicom and China Telecom.
       <br>&nbsp;
 
-  <li>CHANGE: If the source doesn't specify "institution", GenerateDatasetsXml and loadDataset now
-    get it from "creator_institution" (if available).
+  <li>CHANGE: If a dataset's source doesn't specify an "institution" attribute,
+    GenerateDatasetsXml and loadDataset now
+    get it from a "creator_institution" attribute (if available).
     Thanks to Micah Wengren.
       <br>&nbsp;
-
-  <li>IMPROVEMENT: There is now 
-      <a rel="help"
-        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#AwsS3Files"
-        >ERDDAP AWS S3 documentation</a>, 
-        which describes how to get ERDDAP to work with data files in AWS S3 buckets.
-    <br>Also, ERDDAP now uses new features in the AWS S3 Java API. 
-    <br>Also, ERDDAP now allows AWS S3 URLs to include additional
-      characters (period, hyphen, underscore) in bucket names
-    <br>Also, ERDDAP now requires that AWS S3 bucket URLs be identified in a specific way:
-    <br>&nbsp;&nbsp;https://<i>bucketName</i>.s3.<i>aws-region.</i>amazonaws.com/<i>prefix</i>/ 
-    <br>&nbsp;&nbsp;where prefix are optional.
-    <br>Thanks to Andy Ziegler and NOAA.
-    <br>&nbsp;
 
   <li>BUG FIX: standardizeWhat wasn't always applied to ASCII data files.
     <br>Also, EDDTable didn't properly handle constraints on time values 
       when the source had String time values and standardizeWhat was being used.
+    <br>Thanks to Paloma de la Vallee.
 
-    <p>NOTE: just use standardizeWhat features when you actually need them, 
-    because requests to datasets that use standardizeWhat will be processed more slowly.
-
-    <p>Thanks to Paloma de la Vallee.
+    <p>I didn't clearly state before: 
+    you should just use standardizeWhat features when you actually need them
+    (e.g., when different source files store time values in different ways), 
+    because some requests to datasets that use standardizeWhat will be processed 
+    a little slower.
 
   <li>BUG FIX: A bug in code used by EDDGridFromNcFiles caused it to fail with
-    .nc4 and .hdf files that have "long" (int64) variables. This is now fixed.
+    .nc4 and .hdf5 files that have "long" (int64) variables. This is now fixed.
     Thanks to Friedemann Wobus.
       <br>&nbsp;
 
@@ -577,33 +783,9 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
 
   <li>NEW: All EDDGrid and all EDDTableFromFiles datasets support an <kbd>&lt;nThreads&gt;</kbd> setting,
     which tells ERDDAP how many threads to use when responding to a request.
-    <p>Rule of Thumb: 
-    For most datasets on most systems, use nThreads=1, the default.
-    If you have a powerful computer (lots of CPU cores, lots of memory), 
-    then consider setting nThreads to 2, 3, or 4 for datasets that will benefit the most,
-    notably datasets where something causes a lag before a chunk of data can actually 
-    be processed. For example:
-        <ul>
-        <li>Datasets with 
-            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ExternallyCompressedFiles"
-            >externally-compressed (e.g., .gz)</a>     
-            binary (e.g., .nc) files, because ERDDAP has to decompress the whole file
-            before it can start to read the file.
-        <li>Datasets that use 
-            <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl" rel="bookmark"
-            >cacheFromUrl and cacheSizeGB</a>,
-            because ERDDAP often has to download the file before it can read it.
-        <li>Datasets with data files stored on a high-bandwidth parallel file system,
-            because it can deliver more data, faster, when requested. Examples of
-            parallel file systems include JBOD, pNFS, GlusterFS, 
-            Amazon S3, and Google Cloud Storage.
-        </ul>
-    Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-    (see <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage"
-    >ERDDAP's status page</a>).
     See the 
-    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#nThreads" rel="bookmark">nThreads</a> 
-    documentation for details.
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#nThreads"
+        >nThreads documentation</a> for details.
     Thanks to Rob Bochenek of Axiom Data Science, Eugene Burger, 
     Conor Delaney (when he was at Amazon Web Services), and Google Cloud Platform.
     <br>&nbsp;

@@ -8,8 +8,10 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
-import com.cohort.array.ShortArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
+import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -79,6 +81,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (verbose) String2.log("\n*** constructing EDDGridFromEtopo(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         boolean tAccessibleViaWMS = true;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nGridThreads
         boolean tDimensionValuesInMemory = true;
 
@@ -101,6 +104,8 @@ public class EDDGridFromEtopo extends EDDGrid {
             //no support for onChange since dataset never changes
             if      (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals( "<nThreads>")) {}
             else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content); 
             else if (localTags.equals( "<dimensionValuesInMemory>")) {}
@@ -108,7 +113,7 @@ public class EDDGridFromEtopo extends EDDGrid {
             else xmlReader.unexpectedTagException();
         }
 
-        return new EDDGridFromEtopo(tDatasetID, tAccessibleViaWMS, 
+        return new EDDGridFromEtopo(tDatasetID, tAccessibleViaWMS, tAccessibleViaFiles,
             tnThreads, tDimensionValuesInMemory);
     }
 
@@ -117,7 +122,8 @@ public class EDDGridFromEtopo extends EDDGrid {
      *
      * @throws Throwable if trouble
      */
-    public EDDGridFromEtopo(String tDatasetID, boolean tAccessibleViaWMS, 
+    public EDDGridFromEtopo(String tDatasetID, 
+        boolean tAccessibleViaWMS, boolean tAccessibleViaFiles,
         int tnThreads, boolean tDimensionValuesInMemory) throws Throwable {
 
         if (verbose) String2.log(
@@ -134,6 +140,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
         dimensionValuesInMemory = tDimensionValuesInMemory; 
 
@@ -446,13 +453,67 @@ public class EDDGridFromEtopo extends EDDGrid {
                 ", nReadFromCache=" + nReadFromCache + ", nFailed=" + nFailed;
     }
 
+    /** 
+     * This returns a fileTable 
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
+     */
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
+        try {
+            //if nextPath is something, there is no such dir
+            if (nextPath.length() != 0) 
+                return null;
+            
+            //return the one file
+            Table table = new Table();
+            table.addColumn("Name",          new StringArray(new String[]{File2.getNameAndExtension(fileName)}));
+            table.addColumn("Last modified", new LongArray(  new long[]  {File2.getLastModified(    fileName)}));
+            table.addColumn("Size",          new LongArray(  new long[]  {File2.length(             fileName)}));            
+            table.addColumn("Description",   new StringArray(new String[]{""}));
+            StringArray subDirs = new StringArray();
+            return new Object[]{table, subDirs.toStringArray(), null};
+
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            return null;
+        }
+    }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+    public String accessibleViaFilesGetLocal(String relativeFileName) {
+        if (!accessibleViaFiles)
+            return null;
+
+        if (relativeFileName.equals(File2.getNameAndExtension(fileName)))
+            return fileName;
+        return null;
+         
+    }
+
 
     /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
      */
-    public static void test(boolean doGraphicsTests) throws Throwable {
+    public static void testBasic(boolean doGraphicsTests) throws Throwable {
 
         String2.log("\n****************** EDDGridFromEtopo.test() *****************\n");
 /* for releases, this line should have open/close comment */
@@ -462,8 +523,8 @@ public class EDDGridFromEtopo extends EDDGrid {
         GridDataAccessor.reallyVerbose = true;
         String name, tName, axisDapQuery, userDapQuery, results, expected, error;
         int tPo;
-        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true, -1, true);
-        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true, -1, true);
+        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true, true, -1, true);
+        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true, true, -1, true);
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
 
@@ -713,6 +774,117 @@ expected =
         String2.log("\n*** EDDGridFromEtopo.test finished.");
 
     }
+
+
+    /**
+     * This tests the /files/ "files" system.
+     * This requires etopo180 or etopo360 in the localhost ERDDAP.
+     *
+     * @param tDatasetID etopo180 or etopo360
+     */
+    public static void testFiles(String tDatasetID) throws Throwable {
+
+        String2.log("\n*** EDDTableFromAsciiFiles.testFiles(" + tDatasetID + ")\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"etopo1_ice_g_i2.bin,1304621650000,466624802,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/");
+            Test.ensureTrue(results.indexOf("etopo1&#x5f;ice&#x5f;g&#x5f;i2&#x2e;bin") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">466624802<")                             > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+
+            //download a file in root
+            String2.log("This test takes ~30 seconds.");
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/etopo1_ice_g_i2.bin").substring(0, 50));
+            expected = 
+"|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239][end]"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //download a file in subdir
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires etopo in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void test(boolean testGraphics) throws Throwable {
+
+        String2.log("\n****************** EDDGridFromErddap.test() *****************\n");
+/* for releases, this line should have open/close comment */       
+        testBasic(testGraphics);
+        testFiles("etopo180");
+        testFiles("etopo360");
+
+    }
+
 
 
 }

@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -32,10 +33,13 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Enumeration;
 
 /**
@@ -87,6 +91,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         String tGraphsAccessibleTo = null;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         StringArray tOnChange = new StringArray();
         boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
         boolean tRedirect = true;
@@ -122,6 +127,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<graphsAccessibleTo>")) {}
             else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
             else if (localTags.equals( "<onChange>")) {}
@@ -147,7 +154,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         }
 
         return new EDDTableFromErddap(tDatasetID, 
-            tAccessibleTo, tGraphsAccessibleTo, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaFiles, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
@@ -176,7 +183,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * @throws Throwable if trouble
      */
     public EDDTableFromErddap(String tDatasetID, 
-        String tAccessibleTo, String tGraphsAccessibleTo, 
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -211,6 +218,22 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
         subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
         redirect = tRedirect;
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+        if (accessibleViaFiles) {
+            try {
+                //this will only work if remote ERDDAP is v2.03+
+                int po = localSourceUrl.indexOf("/tabledap/");
+                Test.ensureTrue(po > 0, "localSourceUrl doesn't have /tabledap/.");
+                InputStream is = SSR.getUrlBufferedInputStream(
+                    String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + 
+                    "/.csv");
+                try {is.close();} catch (Exception e2) {}
+            } catch (Exception e) {
+                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.03 (no support for /files/.csv):\n" +
+                    MustBe.throwableToString(e));
+                accessibleViaFiles = false;
+            }
+        }
 
         //erddap support all constraints:
         sourceNeedsExpandedFP_EQ = false;
@@ -482,6 +505,74 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         standardizeResultsTable(requestUrl, userDapQuery, table); //not necessary?
         tableWriter.writeAllAndFinish(table);
     }
+
+    /** 
+     * This returns a fileTable
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
+     */
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
+        //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
+        if (!accessibleViaFiles)
+            return null;
+        try {
+
+            //get the .csv table from remote fromErddap dataset
+            String url = String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + "/" + nextPath + ".csv";
+            BufferedReader reader = SSR.getBufferedUrlReader(url);
+            Table table = new Table();
+            table.readASCII(url, reader, 0, 1, ",", 
+                null, null, null, null, false); //testColumns[], testMin[], testMax[], loadColumns[], simplify)
+            String colNames = table.getColumnNamesCSVString();
+            Test.ensureEqual(colNames, "Name,Last modified,Size,Description", "");
+            table.setColumn(1, new LongArray(table.getColumn(1)));
+            table.setColumn(2, new LongArray(table.getColumn(2)));
+
+            //separate out the subdirs
+            StringArray subdirs = new StringArray();
+            BitSet keep = new BitSet();  //all false
+            int nRows = table.nRows();
+            StringArray names = (StringArray)table.getColumn(0);
+            for (int row = 0; row < nRows; row++) {
+                String name = names.get(row);
+                if (name.endsWith("/")) {
+                    subdirs.add(name.substring(0, name.length() - 1));
+                } else {
+                    keep.set(row);
+                }
+            }
+            table.justKeep(keep);
+            return new Object[]{table, subdirs.toStringArray(), null}; //not a local dir
+
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            return null;
+        }
+    }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+    public String accessibleViaFilesGetLocal(String relativeFileName) {
+        //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
+        if (!accessibleViaFiles)
+             return null;
+        return String2.replaceAll(publicSourceErddapUrl, "/tabledap/", "/files/") + "/" + relativeFileName;
+    }
+
 
     /** 
      * This generates datasets.xml entries for all EDDTable from a remote ERDDAP.
@@ -1152,6 +1243,141 @@ expected =
 
     }
     
+    /**
+     * This tests the /files/ "files" system.
+     * This requires testTableAscii and testTableFromErddap in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDTableFromErddap.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableFromErddap/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"subdir/,NaN,NaN,\n" +
+"31201_2009.csv,1249487112000,201141,\n" +
+"46026_2005.csv,1249487438000,621518,\n" +
+"46028_2005.csv,1249487458000,623124,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableFromErddap/");
+            Test.ensureTrue(results.indexOf("subdir&#x2f;")             > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("subdir/")                  > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">201141<")                 > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"46012_2005.csv,1249487348000,622054,\n" +
+"46012_2006.csv,1249487374000,621686,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //download a file in root
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableFromErddap/31201_2009.csv");
+            expected = 
+"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //download a file in subdir
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/46012_2005.csv");
+            expected = 
+"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: ERROR from url=http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish.csv : " +
+    "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+    "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: ERROR from url=http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/gibberish.csv : " +
+    "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+    "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires testTableAscii and testTableFromErddap in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+
+
     
     /**
      * This tests the methods in this class.
@@ -1170,6 +1396,7 @@ expected =
         testTableNoIoosCat();
         testQuotes();
         testChukchiSea();
+        testFiles();
 
         /* */
 

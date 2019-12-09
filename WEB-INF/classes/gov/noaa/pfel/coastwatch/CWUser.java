@@ -1673,7 +1673,7 @@ public class CWUser extends User  {
             oneOf.fullContextDirectory() + "images/", 
             logoFileName,
             minX, maxX, minY, maxY,
-            Browser.drawLandAsMask,
+            Browser.drawLandAsMask? "over" : "under",
 
             gridGrid != null, 
             gridGrid, 

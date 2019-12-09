@@ -215,6 +215,23 @@ public class IntArray extends PrimitiveArray {
     }
 
     /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    If value instanceof Number, this uses Number.intValue().
+     *    (If you want a more sophisticated conversion, save to DoubleArray,
+     *    then convert DoubleArray to IntArray.)
+     *    If null or not a Number, this adds Integer.MAX_VALUE.
+     */
+    public void addObject(Object value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);        
+        array[size++] = value != null && value instanceof Number?
+            ((Number)value).intValue() :
+            Integer.MAX_VALUE;
+    }
+
+    /**
      * This adds all the values from ar.
      *
      * @param ar an array
@@ -383,8 +400,8 @@ public class IntArray extends PrimitiveArray {
      * This sets an element from another PrimitiveArray.
      *
      * @param index the index to be set
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the other PrimitiveArray
+     * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
         set(index, otherPA.getInt(otherIndex));
@@ -487,7 +504,7 @@ public class IntArray extends PrimitiveArray {
      * Rows that aren't kept are removed.
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
      *
-     * @param bitset
+     * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
     public void justKeep(BitSet bitset) {
         int newSize = 0;
@@ -600,6 +617,7 @@ public class IntArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
+     * @return the specified element
      */
     public int get(int index) {
         if (index >= size)
@@ -872,7 +890,7 @@ public class IntArray extends PrimitiveArray {
     /**
      * Test if o is an IntArray with the same size and values.
      *
-     * @param o
+     * @param o the object that will be compared to this IntArray
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {

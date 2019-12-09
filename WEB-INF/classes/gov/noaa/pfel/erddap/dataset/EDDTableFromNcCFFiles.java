@@ -325,8 +325,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
               "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
@@ -397,7 +396,6 @@ String expected =
 "    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortFilesBySourceNames>line_station time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">line_station</att>\n" +
@@ -664,7 +662,6 @@ String expected =
 "    <standardizeWhat>0</standardizeWhat>\n" +
 "    <sortFilesBySourceNames>WOD_cruise_identifier, time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">Profile</att>\n" +
 "        <att name=\"cdm_profile_variables\">country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, Pressure_row_size, Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd</att>\n" +
@@ -685,6 +682,11 @@ String expected =
 "        <att name=\"geospatial_vertical_min\" type=\"float\">0.99160606</att>\n" +
 "        <att name=\"geospatial_vertical_positive\">down</att>\n" +
 "        <att name=\"geospatial_vertical_units\">meters</att>\n" +
+"        <att name=\"grid_mapping_epsg_code\">EPSG:4326</att>\n" +
+"        <att name=\"grid_mapping_inverse_flattening\" type=\"float\">298.25723</att>\n" +
+"        <att name=\"grid_mapping_longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" +
+"        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
+"        <att name=\"grid_mapping_semi_major_axis\" type=\"float\">6378137.0</att>\n" +
 "        <att name=\"id\">ind199105_ctd.nc</att>\n" +
 "        <att name=\"institution\">National Oceanographic Data Center(NODC), NOAA</att>\n" +
 "        <att name=\"naming_authority\">gov.noaa.nodc</att>\n" +
@@ -2165,6 +2167,11 @@ String expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
 "    String geospatial_vertical_units \"meters\";\n" +
+"    String grid_mapping_epsg_code \"EPSG:4326\";\n" +
+"    Float32 grid_mapping_inverse_flattening 298.25723;\n" +
+"    Float32 grid_mapping_longitude_of_prime_meridian 0.0;\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    Float32 grid_mapping_semi_major_axis 6378137.0;\n" +
 "    String history";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "results=\n" + results);

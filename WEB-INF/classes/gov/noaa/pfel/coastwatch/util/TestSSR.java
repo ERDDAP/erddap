@@ -257,9 +257,9 @@ public class TestSSR {
         //future: test various compressed url's
         String2.log("test getURLResponse");
         try {
-            sar = SSR.getUrlResponseLines("https://www.pfeg.noaa.gov/"); //"http://www.cohort.com");
+            sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/erddap/index.html");
             Test.ensureEqual(
-                String2.lineContaining(sar, "Disclaimer and Privacy Policy") == -1, //"A free RPN scientific calculator applet") == -1,
+                String2.lineContaining(sar, "ERDDAP is a data server that gives you a simple, consistent way") == -1, 
                 false, "Response=" + String2.toNewlineString(sar));
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));

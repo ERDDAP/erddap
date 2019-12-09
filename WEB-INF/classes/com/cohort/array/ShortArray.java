@@ -253,6 +253,23 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    If value instanceof Number, this uses Number.shortValue().
+     *    (If you want a more sophisticated conversion, save to DoubleArray,
+     *    then convert DoubleArray to ShortArray.)
+     *    If null or not a Number, this adds Short.MAX_VALUE.
+     */
+    public void addObject(Object value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);        
+        array[size++] = value != null && value instanceof Number?
+            ((Number)value).shortValue() :
+            Short.MAX_VALUE;
+    }
+
+    /**
      * This adds all the values from ar.
      *
      * @param ar an array
@@ -420,8 +437,8 @@ public class ShortArray extends PrimitiveArray {
      * This sets an element from another PrimitiveArray.
      *
      * @param index the index to be set
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the other PrimitiveArray
+     * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
         setInt(index, otherPA.getInt(otherIndex));
@@ -524,7 +541,7 @@ public class ShortArray extends PrimitiveArray {
      * Rows that aren't kept are removed.
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
      *
-     * @param bitset
+     * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
     public void justKeep(BitSet bitset) {
         int newSize = 0;
@@ -616,6 +633,7 @@ public class ShortArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
+     * @return the specified element
      */
     public short get(int index) {
         if (index >= size)
@@ -904,7 +922,7 @@ public class ShortArray extends PrimitiveArray {
     /**
      * Test if o is an ShortArray with the same size and values.
      *
-     * @param o
+     * @param o the object that will be compared to this ShortArray
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {

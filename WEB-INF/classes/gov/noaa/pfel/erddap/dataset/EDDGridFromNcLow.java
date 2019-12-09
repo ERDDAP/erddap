@@ -413,6 +413,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
         StringBuilder sb = new StringBuilder();
         NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
+        Attributes gridMappingAtts = null;
         try {
 
             //make table to hold info
@@ -438,6 +439,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 List dimensions = var.getDimensions();
                 if (dimensions == null || dimensions.size() < 1) 
                     continue;
+
                 nGridsAtSource++;
                 Class tClass = NcHelper.getElementClass(var.getDataType());
                 if      (tClass == char.class)    tClass = String.class;
@@ -463,7 +465,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         //work-around bug in netcdf-java: for anonymous dim,
                         //  getName() returns null, but getFullName() throws Exception.
                         String axisName = tDim.getName();
-                        if (axisName != null) 
+                        if (axisName == null) 
                             axisName = tDim.getFullName();  
                         Attributes sourceAtts = new Attributes();
                         if (axisName != null) {
@@ -488,6 +490,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                                 }
                             }
                         }
+                        if (axisName == null)
+                            axisName = "axis" + avi;
                         axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
                             sourceAtts); 
                         axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
@@ -508,7 +512,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         if (axisName == null || !axisName.equals(expectedName)) {
                             if (verbose) String2.log("variable=" + varName + 
                                 " has the right nDimensions=" + nDim + 
-                                ", but axis#=" + avi + "=" + axisName + 
+                                ", but axis#" + avi + "=" + axisName + 
                                 " != " + expectedName);
                             ok = false;
                             break;
@@ -519,6 +523,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 //add the dataVariable
                 Attributes sourceAtts = new Attributes();
                 NcHelper.getVariableAttributes(var, sourceAtts);
+
+                //does this var point to a pseudo-data grid_mapping variable?
+                if (gridMappingAtts == null) 
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, sourceAtts.getString("grid_mapping"));
+
                 if (tUnpack) {
                     sourcePA = sourceAtts.unpackPA(var.getFullName(), sourcePA, 
                         true, true); //lookForStringTime, lookForUnsigned
@@ -552,14 +561,14 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     tFileDir, externalAddGlobalAttributes, 
                     EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
                         suggestKeywords(dataSourceTable, dataAddTable))));
+            if (gridMappingAtts != null)
+                globalAddAtts.add(gridMappingAtts);
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
-            boolean accViaFiles = false;
             int tMatchNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
             if (generateDatasetsXmlCoastwatchErdMode) {
-                accViaFiles = true;
                 tMatchNDigits = 15;
                 //  /u00/satellite/AT/ssta/1day/
                 Pattern pattern = Pattern.compile("/u00/satellite/([^/]+)/([^/]+)/([^/]+)day/");
@@ -651,8 +660,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 "    <pathRegex>.*</pathRegex>\n" +
                 "    <metadataFrom>last</metadataFrom>\n" +
                 "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
-                "    <fileTableInMemory>false</fileTableInMemory>\n" +
-                "    <accessibleViaFiles>" + accViaFiles + "</accessibleViaFiles>\n");
+                "    <fileTableInMemory>false</fileTableInMemory>\n");
 
             sb.append(writeAttsForDatasetsXml(false, globalSourceAtts, "    "));
             sb.append(writeAttsForDatasetsXml(true,  globalAddAtts,    "    "));

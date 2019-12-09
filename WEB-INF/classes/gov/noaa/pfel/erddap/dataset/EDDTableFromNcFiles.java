@@ -470,8 +470,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
               "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" : "") +
             "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -544,18 +543,17 @@ String expected =
 "    <sortedColumnSourceName>TIME</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID TIME</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
 "        <att name=\"cdm_data_type\">Station</att>\n" +
 "        <att name=\"contributor_name\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
 "        <att name=\"contributor_role\">Source of data.</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //varies: dave.foley (coastwatch) or erd.data (my laptop)
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
-"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2019-06-25</att>\n" + //changes
-"        <att name=\"date_issued\">2019-06-25</att>\n" +  //changes
+"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" + //varies: http:// or https://
+"        <att name=\"date_created\">2019-11-26</att>\n" + //changes
+"        <att name=\"date_issued\">2019-11-26</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -581,9 +579,9 @@ String expected =
 "        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
-"\n" + //changes sometimes (why only sometimes?)...  date is old, but this is what's in the file
-"This dataset has both historical data (quality controlled, before 2019-06-01T00:00:00) and near real time data (less quality controlled, from 2019-06-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2019-06-25T18:00:00Z</att>\n" + //changes
+"\n" + //changes sometimes (why only sometimes?)...  old date (from coastwatch), new date (my laptop)
+"This dataset has both historical data (quality controlled, before 2019-11-01T00:00:00) and near real time data (less quality controlled, from 2019-11-01T00:00:00 on).</att>\n" +
+"        <att name=\"time_coverage_end\">2019-11-26T12:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -593,7 +591,9 @@ cdmSuggestion() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
+//"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //present or not, depending on dave.foley or erd.data in source
 "        <att name=\"creator_type\">institution</att>\n" +
+//"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" + //present or not, depending on http:// or https:// in source
 "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
 "        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere, atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, earth, Earth Science &gt; Atmosphere &gt; Air Quality &gt; Visibility, Earth Science &gt; Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Significant Wave Height, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Swells, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Period, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Speed/Direction, eastward, eastward_wind, GST, gust, height, identifier, latitude, layer, level, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans, participators, period, planetary, point, pressure, PTDY, quality, real, science, sea, sea level, sea_surface_swell_wave_period, sea_surface_temperature, sea_surface_wave_significant_height, sea_surface_wave_to_direction, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
@@ -619,7 +619,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5614856E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5747696E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -719,7 +719,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 26.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.0 31.4</att>\n" +  //changes sometimes
 "            <att name=\"comment\">Wind speed (m/s) averaged over an eight-minute period for buoys and a two-minute period for land stations. Reported Hourly. See Wind Averaging Methods.</att>\n" +
 "            <att name=\"long_name\">Wind Speed</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -738,7 +738,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 33.9</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.0 42.3</att>\n" + //changes sometimes
 "            <att name=\"comment\">Peak 5 or 8 second gust speed (m/s) measured during the eight-minute or two-minute period. The 5 or 8 second period can be determined by payload, See the Sensor Reporting, Sampling, and Accuracy section.</att>\n" +
 "            <att name=\"long_name\">Wind Gust Speed</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -833,7 +833,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">976.5 1041.5</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">959.9 1041.5</att>\n" + //changes sometimes
 "            <att name=\"comment\">Air pressure (hPa). (&#39;PRES&#39; on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>\n" +
 "            <att name=\"long_name\">Air Pressure</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -928,7 +928,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-2.7 3.4</att>\n" +  //changes
+"            <att name=\"actual_range\" type=\"floatList\">-3.9 5.1</att>\n" +  //changes
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
 "            <att name=\"long_name\">Pressure Tendency</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -965,7 +965,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-19.9 21.2</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-28.4 28.7</att>\n" + //changes sometimes
 "            <att name=\"comment\">The zonal wind speed (m/s) indicates the u component of where the wind is going, derived from Wind Direction and Wind Speed.</att>\n" +
 "            <att name=\"long_name\">Wind Speed, Zonal</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -6587,7 +6587,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 35765154;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 37049663;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6632,7 +6632,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.56193914e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.5723474e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6694,7 +6694,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2019-11-08 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6722,9 +6722,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2019-07-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2019-11-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2019-07-20 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2019-11-08 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -6741,7 +6741,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2019-11-08 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6766,7 +6766,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the June 2019 data\\) but is a subset of the " + //month changes
+    "up to and including the October 2019 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -6779,7 +6779,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2019-06-30T23:59:00Z\";\n" + //changes
+"    String time_coverage_end \"2019-10-29T11:10:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -14142,7 +14142,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2019-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2019-11-06 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14328,7 +14328,7 @@ So the changes seem good. */
 "3.5n95w\n" +
 "4n23w\n" +
 "4n38w\n" +
-//"4n67e\n" + //removed 2018-09-15, added 2018-08-09 
+"4n67e\n" + //added 2019-11-22, removed 2018-09-15, added 2018-08-09 
 "4n90e\n" +
 "4n95w\n" +
 "4s57e\n" + //2015-12-28 added
@@ -17196,6 +17196,8 @@ nThreads=1 time=67 47 69
         StringBuilder bigResults = new StringBuilder("\nbigResults:\n");
         
         //this dataset and this request are a good test that the results are always in the same order
+        //For testing by hand:
+        //  https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.htmlTable?station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10
         String id = tDatasetID; 
         userDapQuery = "station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10";
 
@@ -17214,7 +17216,7 @@ nThreads=1 time=67 47 69
             String2.log(msg);
             bigResults.append(msg);
 
-             results = String2.directReadFrom88591File(dir + tName);
+            results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);            
             expected =  //ensure that order is correct
 "station,latitude,longitude,time,wd,wspd,wtmp\n" +   //2019-07-27 results change once in awhile
@@ -17232,8 +17234,9 @@ nThreads=1 time=67 47 69
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         }
-        String2.pressEnterToContinue(bigResults.toString());
-/* 2018-08-14 bigResults (truncated to s):    
+        String2.pressEnterToContinue(bigResults.toString() +
+"(2019-10-21 2 core Lenovo, HDD dataset, -5,5 after warmup: 9,8,10,14,14,14,13,9,7,7 truncated s)");
+/* 2018-08-14 lenovo bigResults (truncated to s):    
                 ssd     hdd        
 nThreads=5 time=13      80
 nThreads=4 time=10     111
@@ -17395,7 +17398,6 @@ String expected =
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>region year</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"id\">1977</att>\n" +
 "        <att name=\"observationDimension\">row</att>\n" +
@@ -18058,7 +18060,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 35765154;\n" + //changes
+"    Int32 actual_range 1, 37049663;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18103,7 +18105,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.56193914e+9;\n" + //changes
+"    Float64 actual_range 4.811229e+8, 1.5723474e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18165,7 +18167,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2019-07-20 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2019-11-08 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18679,7 +18681,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     }
 
     /**
-     * This makes a tests a problem with precision.
+     * This tests a problem with precision.
      */
     public static void testPrecision() throws Exception {
 
@@ -18744,8 +18746,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
         testGenerateDatasetsXmlNcdump();
-        testGtspp15FilesExist(1990, 2018);
-        testGtsppabFilesExist(1990, 2018);
+        testGtspp15FilesExist(1990, 2019);
+        testGtsppabFilesExist(1990, 2019);
         testErdGtsppBest("erdGtsppBestNc");
         testErdGtsppBest("erdGtsppBest");
         testTransparentPng();

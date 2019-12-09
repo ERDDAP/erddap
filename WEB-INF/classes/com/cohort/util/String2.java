@@ -623,15 +623,78 @@ public class String2 {
      * @throws RuntimeException if trouble
      */
     public static String[] extractAllRegexes(String s, String regex) {
+        return extractAllRegexes(s, Pattern.compile(regex));
+    }
+    public static String[] extractAllRegexes(String s, Pattern pattern) {
         ArrayList<String> al = new ArrayList();
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(s);
+        Matcher m = pattern.matcher(s);
         int fromIndex = 0;
         while (m.find(fromIndex)) {
             al.add(s.substring(m.start(), m.end()));
             fromIndex = m.end();
         }
         return al.toArray(new String[0]);
+    }
+
+    /** 
+     * This repeatedly finds the pattern and extracts the specified captureGroup.
+     *
+     * @param s the source String
+     * @param regex the regular expression, see java.util.regex.Pattern.
+     *    Note that you often want to use the "reluctant" qualifiers
+     *    which match as few chars as possible (e.g., ??, *?, +?)
+     *    not the "greedy"  qualifiers
+     *    which match as many chars as possible (e.g., ?, *, +).
+     * @return a HashSet with the found strings.
+     */
+    public static HashSet<String> extractAllCaptureGroupsAsHashSet(String s, String regex, int captureGroupNumber) {
+        return extractAllCaptureGroupsAsHashSet(s, Pattern.compile(regex), captureGroupNumber);
+    }
+    public static HashSet<String> extractAllCaptureGroupsAsHashSet(String s, Pattern pattern, int captureGroupNumber) {
+        HashSet<String> hs = new HashSet();
+        Matcher m = pattern.matcher(s);
+        int fromIndex = 0;
+        while (m.find(fromIndex)) {
+            hs.add(m.group(captureGroupNumber));
+            fromIndex = m.end();
+        }
+        return hs;
+    }
+    /** 
+     * This repeatedly finds the regex and extracts the specified captureGroup
+     * and returns them in their original order in a String[].
+     *
+     * @param s the source String
+     * @param regex the regular expression, see java.util.regex.Pattern.
+     *    Note that you often want to use the "reluctant" qualifiers
+     *    which match as few chars as possible (e.g., ??, *?, +?)
+     *    not the "greedy"  qualifiers
+     *    which match as many chars as possible (e.g., ?, *, +).
+     * @return a String[] with the found strings in their original order.
+     */
+    public static String[] extractAllCaptureGroupsAsStringArray(String s, String regex, int captureGroupNumber) {
+        ArrayList<String> al = new ArrayList();
+        Matcher m = Pattern.compile(regex).matcher(s);
+        int fromIndex = 0;
+        while (m.find(fromIndex)) {
+            al.add(m.group(captureGroupNumber));
+            fromIndex = m.end();
+        }
+        return (String[])(al.toArray(new String[0]));
+    }
+
+    /** 
+     * This converts a hashset to a String[] via o.toString().
+     *
+     */
+    public static String[] setToStringArray(Set set) {
+        int n = set.size();
+        String sar[] = new String[n];
+        int i = 0;
+        for (Object o : set)
+            sar[i++] = o.toString();
+        Arrays.sort(sar, STRING_COMPARATOR_IGNORE_CASE);
+        return sar; 
     }
 
     /**
@@ -666,6 +729,8 @@ public class String2 {
             return m.group(captureGroupNumber);
         else return null; 
     }
+
+
 
     /**
      * Finds the first instance of i at or after fromIndex (0.. ) in iArray.
@@ -731,7 +796,7 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance in s of any char in car. If not found, it returns -1.
      */
-    public static int indexOf(String s, char[] car, int fromIndex) {
+    public static int indexOfChar(String s, char[] car, int fromIndex) {
         int sLength = s.length();
         for (int index = Math.max(fromIndex, 0); index < sLength; index++) {
             if (indexOf(car, s.charAt(index)) >= 0)
@@ -2298,6 +2363,17 @@ public class String2 {
         return s == null? "" : s;
     }
 
+    /** 
+     * If the String is surrounded by ", this returns fromJson(s), else it returns s.
+     */
+    public static String ifJsonFromJson(String s) {
+        if (s == null || s.length() < 2) 
+            return s;
+        if (s.charAt(0) == '\"' && s.charAt(s.length() - 1) == '\"')
+            return fromJson(s);
+        return s;
+    } 
+
     /**
      * This returns the unJSON version of a JSON string 
      * (surrounding "'s (if any) are removed and \\, \f, \n, \r, \t, \/, and \" are unescaped).
@@ -3449,6 +3525,7 @@ public class String2 {
     /**
      * This finds the first element in Object[] 
      * where ar[i].toString().toLowerCase() equals to s.toLowerCase().
+     * This could have been called indexOfIgnoreCase().
      *
      * @param ar the array of Objects
      * @param s the String to be found
@@ -6623,6 +6700,7 @@ and zoom and pan with controls in
             String2.log("public method #" + i + ": " + methods[i]);
         }
      }
+
 
 
 } //End of String2 class.

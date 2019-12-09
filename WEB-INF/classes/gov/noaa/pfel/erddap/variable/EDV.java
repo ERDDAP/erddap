@@ -14,6 +14,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EDUnits;
 
@@ -190,13 +191,15 @@ public class EDV {
     protected Attributes addAttributes = new Attributes();
     /** Attributes made from sourceAtt and addAtt, then revised (e.g., remove "null" values) */
     protected Attributes combinedAttributes;
-    /** The constructor sets this to length>0 string if the
+    /** The constructor sets this to a non-null string if the
      * variable isn't in the data source and so is represented by 
      * a fixed value.
      * Define this so sourceValue=destinationValue (if time: epoch seconds; 
      *   no altUnits=-1 or odd time format or scale addOffset).
+     * 2019-11-20 Now, it can only be a fixed Value if the value is 
+     *   a single number or a single, JSON-encoded String.
      */ 
-    protected String fixedValue = "";
+    protected String fixedValue = null;
     /** The destination minimum and maximum values (in standardized destination units) 
      * of this variable. 
      * These are set if the information is available; else they remain NaN. */
@@ -303,18 +306,12 @@ public class EDV {
                 Integer.parseInt(fixedValue); 
                 sourceDataType = "int";  //if no error, it's an int
             } catch (Exception e1) {
-                //2011-02-09 Bob Simons added to avoid Java hang bug.
-                //But now, latest version of Java is fixed.
-                //if (String2.isDoubleTrouble(fixedValue)) {
-                //    sourceDataType = "double";
-                //} else {
-                    try {
-                        Double.parseDouble(fixedValue); 
-                        sourceDataType = "double";  //if no error, it's a double
-                    } catch (Exception e2) {
-                        sourceDataType = "String";
-                    }
-                //}
+                try {
+                    Double.parseDouble(fixedValue); 
+                    sourceDataType = "double";  //if no error, it's a double
+                } catch (Exception e2) {
+                    sourceDataType = "String";
+                }
             }
         }
         sourceDataType = String2.canonical(sourceDataType);
@@ -355,6 +352,8 @@ public class EDV {
                 destinationMax = Math2.floatToDouble(destinationMax);
             }            
         }
+        //String2.log(">> EDV destinationMin=" + destinationMin + " max=" + destinationMax);
+
 
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
@@ -641,7 +640,17 @@ public class EDV {
      * <p>EDVGridAxis overwrites this to use firstDestinationValue and lastDestinationValue.
      */
     public void setActualRangeFromDestinationMinMax() {
-
+/* 
+actual_range and =NaN fixedValue variables:
+Technically, if a variable has a fixedValue, then the actual_range should be determined
+from that fixedValue. However, it is sometimes useful (notably with EDDTableFromFileNames)
+to have dummy variable(s) (e.g., latitude, longitude, time) with fixed values of NaN, 
+but a valid actual_range (as set by the attribute). 
+Then, in Advanced Search a user can search for datasets
+which have data in a specific latitude, longitude, time range and this dataset
+will be able to say it does have the data (although all the actual rows of data
+will show NaN).
+*/
         //actual_range is useful information for .das and will be replaced by actual_range of data subset.
         combinedAttributes.remove("actual_min");
         combinedAttributes.remove("actual_max");
@@ -873,36 +882,52 @@ public class EDV {
 
     /**
      * This is used by constructors to set the sourceName and fixedValue
-     * (if souceName starts with "=".
+     * (if souceName starts with "=" and contains a single number or a single
+     * Json-like string).
      *
      * @param tSourceName
      * @throws Throwable if trouble (e.g., if fixed value parses to NaN).
      */
     protected void setSourceName(String tSourceName) throws Throwable {
         sourceName = tSourceName;
-        if (sourceName != null && sourceName.length() >= 2 &&
-            sourceName.charAt(0) == '=') {
-
-            fixedValue = extractFixedValue(sourceName);
-        }
+        fixedValue = extractFixedValue(tSourceName);
     }
 
     /**
-     * This extracts the fixedValue from a sourceName that starts with "=".
+     * This tries to extract a fixedValue from a sourceName that starts with "=" and just has a single number or string.
+     * A fixedValue is a single number or a single String (which must be Json-encoded
+     * in the sourceName).
      *
-     * @param sourceName
-     * @return the numeric source fixed value after "="
-     * @throws Throwable if name isn't of correct format or fixed value parses to NaN.
+     * @param sourceName  
+     * @return the fixed value (or null if not a fixed value)
      */
     public static String extractFixedValue(String sourceName) throws Throwable {
-        if (sourceName != null && sourceName.length() >= 2 &&
-            sourceName.charAt(0) == '=') {
-            
-            return sourceName.substring(1);
+        if (sourceName == null || sourceName.length() < 2 ||
+            sourceName.charAt(0) != '=') 
+            return null;
+
+        String tfv = sourceName.substring(1);
+        if (String2.isNumber(tfv)) {
+            //a single number
+            if (reallyVerbose) String2.log("  " + sourceName + " is a fixedValue=" + tfv);
+            return tfv;
         }
-        throw new IllegalArgumentException( 
-            "datasets.xml error in EDV.extractFixedValue:\n" +
-            "Invalid sourceName=" + sourceName);
+
+        if (tfv.length() >= 2 && tfv.startsWith("\"") && tfv.endsWith("\"")) {
+            //is it a single, double-quoted string?
+            //try removing firt and last quotes
+            String test = tfv.substring(1, tfv.length() - 1);
+            //then changing internal quotes to nothing
+            test = String2.replaceAll(test, "\\\"", "");
+            //if there are no remaining quotes, then it is fixed value
+            if (test.indexOf('\"') < 0) {
+                if (reallyVerbose) String2.log("  " + sourceName + " is a fixedValue=" + String2.fromJson(tfv));
+                //String2.pressEnterToContinue(">>test=" + test + "\n" + MustBe.stackTrace());
+                return String2.fromJson(tfv);
+            }
+        }
+
+        return null; //not a fixedValue
     }
 
     /**
@@ -1045,16 +1070,16 @@ public class EDV {
      * 
      * @return true if this is a fixedValue variable.
      */
-    public boolean isFixedValue() {return fixedValue.length() > 0;}
+    public boolean isFixedValue() {return fixedValue != null;}
 
     /** 
-     * This returns a non "" value if the
+     * This returns a non-null value if the
      * axis isn't in the data source and so is represented by 
      * a fixed value. 
      * This is always defined so source = destination
      * (if time, this is epochSeconds).
      * 
-     * @return the fixedValue for this axis (or "" if not fixed).
+     * @return the fixedValue for this axis (or null if not fixed).
      */
     public String fixedValue() {return fixedValue;}
 
@@ -1194,17 +1219,14 @@ public class EDV {
      */
     public double addOffset() {return addOffset;}
 
-    /** This returns the value of drawLandMask (false=under, true=over)
+    /** This returns the value of drawLandMask ("over", "under", "outline", or "off")
      * for this variable 
      * (or eddDefaultDrawLandMask if drawLandMask not specified in combinedAttributes).
      */
-    public boolean drawLandMask(boolean eddDefaultDrawLandMask) {
+    public String drawLandMask(String eddDefaultDrawLandMask) {
         String dlm = combinedAttributes().getString("drawLandMask"); 
-        if (dlm != null) {
-            if (dlm.equals("under")) return false;
-            if (dlm.equals("over"))  return true;
-        }
-        return eddDefaultDrawLandMask;
+        int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
+        return which < 1? eddDefaultDrawLandMask : dlm; 
     }
 
     /**
@@ -1571,6 +1593,8 @@ public class EDV {
             tName.indexOf("longitude") >= 0 ||
             tName.equals("x") ||
             tName.equals("xax")) &&  
+           !tName.startsWith("lone") &&
+           !tName.startsWith("longl") &&
            couldBeLonUnits(tUnits);
     }
 
@@ -1587,6 +1611,12 @@ public class EDV {
             tName.indexOf("latitude") >= 0 ||
             tName.equals("y") ||
             tName.equals("yax")) &&  
+           !tName.startsWith("latin") && //e.g., latin_name_species
+           !tName.startsWith("lata") &&
+           !tName.startsWith("late") &&
+           !tName.startsWith("lath") &&
+           !tName.startsWith("lato") &&
+           !tName.startsWith("latt") &&
            couldBeLatUnits(tUnits);
     }
 

@@ -43,8 +43,6 @@ public class EDDTableFromFilesCallable implements Callable {
     String loggedInAs;
     String requestUrl;
     String userDapQuery;
-    int extractIndex;
-    String extractValue;
     int fileDirIndex;
     String fileDir, fileName;
     long fileLastMod;
@@ -59,8 +57,6 @@ public class EDDTableFromFilesCallable implements Callable {
         String tLoggedInAs,
         String tRequestUrl, 
         String tUserDapQuery,
-        int tExtractIndex, 
-        String tExtractValue,
         int tFileDirIndex,
         String tFileDir, String tFileName, 
         long tFileLastMod,
@@ -74,8 +70,6 @@ public class EDDTableFromFilesCallable implements Callable {
         loggedInAs        = tLoggedInAs;
         requestUrl        = tRequestUrl;
         userDapQuery      = tUserDapQuery;
-        extractIndex      = tExtractIndex;
-        extractValue      = tExtractValue;
         fileDirIndex      = tFileDirIndex;
         fileDir           = tFileDir;
         fileName          = tFileName;
@@ -98,7 +92,7 @@ public class EDDTableFromFilesCallable implements Callable {
      */
     public Table call() throws Exception {
         try {
-            if (debugMode) String2.log(identifier + ": start call()");
+            //if (debugMode) String2.log(identifier + ": start call()");
             if (Thread.currentThread().interrupted()) //consume the interrupted status
                 throw new InterruptedException();
 
@@ -150,7 +144,7 @@ public class EDDTableFromFilesCallable implements Callable {
                             MustBe.throwableToShortString(t2));
                     }
                     //an exception here will cause data request to fail (as it should)
-                    if (debugMode) String2.log(identifier + ": exit#2 WaitThenTryAgain because of badFile.");
+                    if (debugMode) String2.log(identifier + ": exit#2 WaitThenTryAgain: badFile.");
                     throw t2 instanceof WaitThenTryAgainException? t2 :
                         new WaitThenTryAgainException(t2); //refer to the original exception
                 }
@@ -159,17 +153,9 @@ public class EDDTableFromFilesCallable implements Callable {
             if (Thread.currentThread().interrupted()) //consume the interrupted status
                 throw new InterruptedException();
             if (table.nRows() == 0) {
-                if (debugMode) String2.log(identifier + ": exit#3 because of nRows=0 after read file. time=" + 
+                if (debugMode) String2.log(identifier + ": exit#3: nRows=0 after read file. time=" + 
                     (System.currentTimeMillis() - startTime) + "ms");
                 return null;
-            }
-
-            //add extractColumn
-            if (extractIndex >= 0) {
-                PrimitiveArray pa = PrimitiveArray.factory(
-                    eddTableFromFiles.dataVariables[eddTableFromFiles.extractedColNameIndex].sourceDataTypeClass(), //always String(?)
-                    table.nRows(), extractValue);
-                table.addColumn(eddTableFromFiles.dataVariables[eddTableFromFiles.extractedColNameIndex].destinationName(), pa);
             }
 
             //prestandardizeResultsTable 
@@ -179,7 +165,7 @@ public class EDDTableFromFilesCallable implements Callable {
             if (table.nRows() > 0)
                 eddTableFromFiles.standardizeResultsTable(requestUrl, userDapQuery, table);
             if (table.nRows() == 0) {
-                if (debugMode) String2.log(identifier + ": exit#4 because of nRows=0 after standardize. time=" + 
+                if (debugMode) String2.log(identifier + ": exit#4: nRows=0 after standardize. time=" + 
                     (System.currentTimeMillis() - startTime) + "ms");
                 return null;
             }

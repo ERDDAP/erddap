@@ -1127,6 +1127,76 @@ public class NcHelper  {
             addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
     }
 
+
+    /** 
+     * Given a ncFile and the name of the pseudo-data Variable with the projection information,
+     * this tries to get the attributes and then gatherGridMappingAtts.
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     *
+     * @param gridMappingVarName  eg from attributes.getString("grid_mapping")  
+     * @return gridMappingAttributes in a form suitable for addition to the 
+     *   global addAttributes (or null if trouble, e.g., varName is null).
+     */
+    public static Attributes getGridMappingAtts(NetcdfFile ncFile, String gridMappingVarName) {
+        if (gridMappingVarName == null)
+            return null;
+        return getGridMappingAtts(ncFile.findVariable(gridMappingVarName));
+    }
+
+    /** 
+     * Given what might be the netcdf pseudo-data Variable with the projection information,
+     * this tries to get the attributes and then gatherGridMappingAtts.
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     *
+     * @param pseudoDataVariable  
+     * @return gridMappingAttributes in a form suitable for addition to the 
+     *   global addAttributes (or null if trouble, e.g., variable is null).
+     */
+    public static Attributes getGridMappingAtts(Variable pseudoDataVariable) {
+        if (pseudoDataVariable == null)
+            return null;
+        Attributes sourceAtts = new Attributes();
+        getVariableAttributes(pseudoDataVariable, sourceAtts);
+        return getGridMappingAtts(sourceAtts);
+    }
+
+    /** 
+     * Call this with the sourceAtts that might be from the pseudo-variable with  
+     * a grid_mapping_name attribute in order to collect the grid_mapping attributes. 
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
+     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     *
+     * @param sourceAtts 
+     * @return gridMappingAttributes in a form suitable for addition to the 
+     *   global addAttributes (or null if trouble, e.g., sourceAtts is null)
+     */
+    public static Attributes getGridMappingAtts(Attributes sourceAtts) {
+        if (sourceAtts == null || 
+            sourceAtts.getString("grid_mapping_name") == null) //it's the one required att 
+            return null;
+        Attributes gridMappingAtts = new Attributes();
+        String[] attNames = sourceAtts.getNames();
+        if (attNames.length == 0)
+            return null;
+        for (int an = 0; an < attNames.length; an++) {
+            String attName = attNames[an];
+            boolean keep = true;
+            if ("comment".equals(attName) &&
+                sourceAtts.getString(attName).startsWith("This is a container variable"))
+                keep = false;
+            if (!"DODS_strlen".equals(attName) && keep)
+                gridMappingAtts.add(                            
+                    "grid_mapping_name".equals(attName)? 
+                        attNames[an] :
+                        "grid_mapping_" + attName,
+                    sourceAtts.get(attName)); //some PA type
+        }
+        return gridMappingAtts;
+    }
+
+
     /**
      * If the var has time units, or scale_factor and add_offset, the values in the dataPa
      * will be unpacked (numeric times will be epochSeconds).
