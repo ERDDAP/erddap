@@ -350,9 +350,7 @@ public abstract class EDD {
         accessibleViaMAG, accessibleViaSubset, accessibleViaGeoServicesRest, 
         accessibleViaSOS, accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF, 
         accessibleViaFGDC, accessibleViaISO19115; 
-    protected String  accessibleViaFilesDir = ""; //default=inactive   EDStatic.filesActive must be true
-    protected String  accessibleViaFilesRegex = ""; 
-    protected boolean accessibleViaFilesRecursive = false;
+    protected boolean accessibleViaFiles = false; //it's up to the constructor to set this to true
     protected String fgdcFile, iso19115File;  //the names of pre-made, external files; or null
     protected byte[] searchBytes;
     /** These are created as needed (in the constructor) from dataVariables[]. */
@@ -1678,44 +1676,60 @@ public abstract class EDD {
     public abstract String accessibleViaWMS();
 
     /** 
-     * This indicates the base directory if the dataset is accessible via the 
-     * /files/ service (or "" if it isn't available).
+     * This indicates if the dataset is accessible via the 
+     * /files/ service.
      */
-    public String accessibleViaFilesDir() {
-        return accessibleViaFilesDir;
-    }
+     public boolean accessibleViaFiles() {
+         return accessibleViaFiles;
+     }
+
+    /**
+     * This converts a dnlsTable into a table ready for /files/ response.
+     * 
+     * @param fileTable Input columns: directory (String), name (String), lastModified (long), size (long).
+     *   Output columns: "Name" (String), "Last modified" (long), 
+     *   "Size" (long), and "Description" (String, but no content)
+     * @throws RuntimeException if trouble
+     */
+    public static void accessibleViaFilesMakeReadyForUser(Table table) {
+        String colNames = table.getColumnNamesCSVString();
+        Test.ensureEqual(colNames, "directory,name,lastModified,size", "");
+        table.removeColumn(0); //directory
+        table.setColumnName(0, "Name");
+        table.setColumnName(1, "Last modified");
+        table.setColumnName(2, "Size");            
+        table.addColumn("Description", new StringArray(table.nRows(), true));
+    }  
+
 
     /** 
-     * This indicates the file name regex if accessibleViaFilesDir != "".
-     */
-    public String accessibleViaFilesRegex() {
-        return accessibleViaFilesRegex;
-    }
-
-    /** 
-     * If accessibleViaFiles isn't "", this indicates if subdirectories
-     * are available via the /files/ service.
-     */
-    public boolean accessibleViaFilesRecursive() {
-        return accessibleViaFilesRecursive;
-    }
-
-    /** 
-     * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
-     * and lastMod is LongArray of epochMillis)
+     * This returns a fileTable
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
-     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
-     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
     public Object[] accessibleViaFilesFileTable(String nextPath) {
         return null;
     }
+
+    /**
+     * This converts a relativeFileName into a full localFileName.
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+         return null;
+     }
 
     /** 
      * This indicates why the dataset isn't accessible via the FGDC service
@@ -2211,15 +2225,14 @@ public abstract class EDD {
         return sub == null? EDStatic.sosUrnBase : sub;
     }
 
-    /** This returns the default value of drawLandMask (false=under, true=over)
-     * for this dataset (or this ERDDAP installation as specified in setup.xml).
+    /** This returns the default value of drawLandMask ("under", "over", "outline", or "off")
+     * for variables in this dataset.
      * The combinedAttributes setting (if any) has priority over the setup.xml setting.
      */
-    public boolean defaultDrawLandMask() {
+    public String defaultDrawLandMask() {
         String dlm = combinedGlobalAttributes().getString("drawLandMask"); 
-        if (dlm == null) 
-            return EDStatic.drawLandMask.equals("over");
-        return !dlm.equals("under"); //'over' is preferred
+        int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
+        return which < 1? EDStatic.drawLandMask : dlm; 
     }
 
     /** 
@@ -3177,7 +3190,7 @@ public abstract class EDD {
      * @param showSubsetLink if true, a link is shown to this dataset's .subset form
      *    (if accessibleViaSubset() is "").
      * @param showFilesLink if true, a link is shown to this dataset's /files/ page
-     *    (if accessibleViaFiles() is "").
+     *    (if accessibleViaFiles() is true).
      * @param showGraphLink if true, a link is shown to this dataset's Make A Graph form
      *    (if accessibleViaMAG() is "").
      * @param userDapQuery  the part of the user's request after the '?', still percentEncoded, may be null.
@@ -3218,7 +3231,7 @@ public abstract class EDD {
                     tQuery + 
                     (tQuery.length() == 0? "" : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
                     "\">" + EDStatic.subset + "</a>\n";
-        if (isAccessible && showFilesLink && accessibleViaFilesDir().length() > 0) //> because it has sourceDir
+        if (isAccessible && showFilesLink && accessibleViaFiles) //> because it has sourceDir
             filesLink = 
                 "     | <a rel=\"alternate\" " +
                     "title=\"" + 
@@ -5803,6 +5816,8 @@ public abstract class EDD {
             newValue.append(tInstitution); //the remainder
             tInstitution = newValue.toString().trim();
         }
+        if (tInstitution.equals("STAR"))
+            tInstitution = "NOAA NESDIS STAR";
         if (debugMode) String2.log(">> 4 tInstitution=" + tInstitution);
 
         //creator_name again
@@ -7059,7 +7074,7 @@ public abstract class EDD {
             "FLAG_MASKS",   "FlagMasks",    "flagMasks",   
             "FLAG_MEANINGS","FlagMeanings", "flagMeanings",
             "FLAG_VALUES",  "FlagValues",   "flagValues", 
-            "GRID_MAPPING", "GridMapping",  "gridMapping", 
+            //"GRID_MAPPING", "GridMapping",  "gridMapping", //now grid_mapping and variants are removed below
             "LONGNAME",     "LONG_NAME",    "LongName",   "longName",   "longname", "long_nime",
             "MISSING_VALUE","MissingValue", "missingValue", 
             "POSITIVE",     "Positive", 
@@ -7082,7 +7097,7 @@ public abstract class EDD {
             "flag_masks",   "flag_masks",   "flag_masks",
             "flag_meanings","flag_meanings","flag_meanings", 
             "flag_values",  "flag_values",  "flag_values", 
-            "grid_mapping", "grid_mapping", "grid_mapping",  
+            //"grid_mapping", "grid_mapping", "grid_mapping",        
             "long_name",    "long_name",    "long_name",  "long_name",  "long_name", "long_name",  
             "missing_value","missing_value","missing_value", 
             "positive",     "positive", 
@@ -7147,6 +7162,7 @@ public abstract class EDD {
             "ferret_datatype", 
             "grads_dim",   //these were changed above
             "grads_mapping", "grads_min", "grads_size", "grads_step", 
+            "grid_mapping", "gridmapping", //now grid_mapping and variants are removed because var they point to is removed
             "gridtype", 
             "infile_datatype", 
             "input_files", "input_parameters", "institution", 

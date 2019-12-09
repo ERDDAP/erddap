@@ -131,7 +131,7 @@ public class Calendar2 {
     public final static String ISO8601T_FORMAT     = "yyyy-MM-dd'T'HH:mm:ss"; 
     public final static String ISO8601T3_FORMAT    = "yyyy-MM-dd'T'HH:mm:ss.SSS"; 
 
-    /** special case format supports suffix 'Z' or +/-HH:MM */
+    /** special case format supports suffix 'Z' or +/-HH:MM.  For format() use 'Z' to get 'Z'. */
     public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
     public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
     public final static DateTimeFormatter ISO_OFFSET_LOCAL_FORMATTER = 
@@ -2216,6 +2216,10 @@ public class Calendar2 {
      * @param tsUnits e.g., "minutes since 1985-01-01".
      *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      *   This is lenient.
+     * @param timeZone Is a TimeZone from TimeZone.gettimeZone(id). 
+     *   For valid ID's, see the "TZ database names" column in the table at 
+     *   https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+     *   If this is null, Zulu will be used.
      * @return double[]{baseSeconds, factorToGetSeconds} 
      * @throws RuntimeException if trouble (tsUnits is null or invalid)
      */
@@ -2856,6 +2860,9 @@ public class Calendar2 {
      *    If time_precision ends in Z, the result will too.
      *    If time_precision doesn't end in Z, the result won't end in Z.
      *    Note that ERDDAP requires/forces/ensures any format with hours(min(sec)) to have Z.
+     * @param seconds the epochSeconds value
+     * @param NaNString the value to return if seconds is not finite or is too big.
+     * @return the formatted time string (or NaNString if trouble)
      */
     public static String epochSecondsToLimitedIsoStringT(String time_precision,
         double seconds, String NaNString) {
@@ -4936,7 +4943,7 @@ public class Calendar2 {
     /**
      * This clears the fields smaller than 'field' 
      * (e.g., HOUR_OF_DAY clears MINUTE, SECOND, and MILLISECOND,
-     * but not HOUR_OF_DAY, MONTH, or YEAR).
+     * but doesn't change HOUR_OF_DAY, MONTH, or YEAR).
      *
      * @param gc
      * @param field e.g., HOUR_OF_DAY
@@ -4965,6 +4972,27 @@ public class Calendar2 {
         gc.set(MONTH, 0);         //DAY_OF_YEAR works like YEAR
         return gc;
     }
+
+    /**
+     * This clears the fields smaller than 'field' 
+     * (e.g., HOUR_OF_DAY clears MINUTE, SECOND, and MILLISECOND,
+     * but doesn't change HOUR_OF_DAY, MONTH, or YEAR).
+     *
+     * @param epochSeconds  (use NaN for missing value)
+     * @param field e.g., HOUR_OF_DAY
+     * @return the new epochSeconds value (or NaN if trouble). 
+     */
+    public static double clearSmallerFields(double epochSeconds, int field) {
+        if (!Double.isFinite(epochSeconds))
+            return Double.NaN;
+        try {
+            return gcToEpochSeconds(clearSmallerFields(epochSecondsToGc(epochSeconds), field));
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+
+    }
+
 
     /** 
      * This returns the start of a day, n days back from max (or from now if max=NaN).
@@ -5330,7 +5358,7 @@ public class Calendar2 {
 
     /**
      * This tries to figure out the format of someDateTimeString
-     * then parse the value and convert to epochSeconds.
+     * then parse the value and convert it to epochSeconds.
      *
      * @param someDateTimeString
      * @return epochSeconds (or Double.NaN if trouble);
@@ -5338,7 +5366,7 @@ public class Calendar2 {
     public static double tryToEpochSeconds(String someDateTimeString) {
 
         //going through tryToIsoString is more round about,
-        //  but catch some additional weird options
+        //  but catches some additional weird options
         String isoString = tryToIsoString(someDateTimeString);
         if (isoString.length() == 0)
             return Double.NaN;
@@ -5417,7 +5445,7 @@ public class Calendar2 {
     /**
      * This tries to figure out the format of someDateTimeString
      * then parse the value and convert to an ISO 8601 string with 'Z' at end.
-     * This is the most flexibly approach to parsing a weird date time string.
+     * This is the most flexible approach to parsing a weird date time string.
      *
      * @param someDateTimeString
      * @return an iso8601String as a date, a dateTime with T and Z, or "" if trouble;
@@ -5562,6 +5590,31 @@ public class Calendar2 {
     }
 
     /**
+     * This formats the epochSeconds time value using the pattern.
+     *
+     * @param epochSeconds
+     * @param pattern see
+     *   https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     * @param zone if "" or null, Zulu is used
+     * @return the formatted time string (or "" if trouble)
+     */
+    public static String format(double epochSeconds, String pattern, String zone) {
+        if (!Double.isFinite(epochSeconds) || 
+            Math.abs(epochSeconds * 1000) >= Long.MAX_VALUE)
+            return "";
+        if (!String2.isSomething(pattern))
+            pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"; //with 'Z'
+        try {
+            DateTimeFormatter dtf = makeDateTimeFormatter(pattern, zone);
+            return format(epochSeconds, dtf); 
+        } catch (Exception e) {
+            if (reallyVerbose)
+                String2.log("Caught: " + MustBe.throwableToString(e));
+            return "";
+        }
+    }
+
+    /**
      * This formats the epochSeconds time value using the DateTimeFormatter.
      */
     public static String format(double epochSeconds, DateTimeFormatter dtf) {
@@ -5575,7 +5628,8 @@ public class Calendar2 {
      * with -01-01T00:00:00.000 defaults.
      *
      * @param pattern see
-     * https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     *   https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     * @param zone if not specified, Zulu is used
      */
     public static DateTimeFormatter makeDateTimeFormatter(String pattern, String zone) {
         //always deal with proleptic YEAR (-1=2 BCE, 0=1 BCE, 1=1 CE), not YEAR_OF_ERA
@@ -5680,7 +5734,7 @@ public class Calendar2 {
      *   If it starts with "uuuu-M", "yyyy-M", or "YYYY-M" (Y is discouraged/incorrect),
      *   sourceTime will be parsed with 
      *   Calendar2.parseISODateTimeZulu();
-     *   else parse with java.time.format.DateTimeFormatter (was Joda). 
+     *   else parse with Calendar2 methods (was java.time.format.DateTimeFormatter, was Joda). 
      * @param timeZone  if null, default is Zulu
      * @return the epochSeconds value or NaN if trouble
      */
@@ -5709,13 +5763,15 @@ public class Calendar2 {
         }
     }
 
-    /** A variant of toEpochSeconds that takes a String time zone (null or "" is treated as Zulu). */
+    /** A variant of parseToEpochSeconds that takes a String time zone (null or "" is treated as Zulu). 
+     * 
+     */
     public static double parseToEpochSeconds(String sourceTime, String dateTimeFormat, String timeZoneString) {
         return parseToEpochSeconds(sourceTime, dateTimeFormat, 
             String2.isSomething(timeZoneString)? TimeZone.getTimeZone(timeZoneString) : zuluTimeZone);
     }
 
-    /** A variant of toEpochSeconds that uses the Zulu time zone. */
+    /** A variant of parseToEpochSeconds that uses the Zulu time zone. */
     public static double parseToEpochSeconds(String sourceTime, String dateTimeFormat) {
         return parseToEpochSeconds(sourceTime, dateTimeFormat, zuluTimeZone);
     }

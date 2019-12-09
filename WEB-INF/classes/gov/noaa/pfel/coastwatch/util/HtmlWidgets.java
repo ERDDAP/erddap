@@ -1493,9 +1493,9 @@ sb.append(
         String debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
-            imageUrl, 412, 155,  //image w, h
-            17, 12, 380, 127,  //map left, top, graph width, height  (via subtraction)
-            540, -180, 180, 90,
+            imageUrl, 785, 278, //2019-10-18 was 412, 155,  //image w, h
+            21, 9, 748, 251, //2019-10-18 was 17, 12, 381, 128,  //map left, top, width, height  (via subtraction+1)
+            540, -180, 180, 90, //lonRange, lonMin, latRange, latMax
             null, debugInBrowser);
     }
 
@@ -1505,7 +1505,7 @@ sb.append(
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 285, 155,
-            17, 12, 253, 127,
+            17, 12, 254, 128, //map left, top, width, height  (via subtraction+1)
             360, -180, 180, 90,
             null, debugInBrowser);
     }
@@ -1516,7 +1516,7 @@ sb.append(
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 284, 155,
-            16, 12, 253, 127,
+            16, 12, 254, 128, //map left, top, width, height  (via subtraction+1)
             360, 0, 180, 90,
             null, debugInBrowser);
     }
@@ -1527,7 +1527,7 @@ sb.append(
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 293, 113,
-            18, 10, 260, 86,
+            18, 10, 261, 87, //map left, top, width, height  (via subtraction+1)
             540, -180, 180, 90,
             null, debugInBrowser);
     }
@@ -1538,7 +1538,7 @@ sb.append(
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
-            18, 10, 173, 86,
+            18, 10, 174, 87, //map left, top, width, height  (via subtraction+1)
             360, -180, 180, 90,
             null, debugInBrowser);
     }
@@ -1549,8 +1549,8 @@ sb.append(
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
-            18, 10, 173, 86,
-            360, 0, 180, 90,
+            18, 10, 174, 87, //map left, top, width, height  (via subtraction+1)
+            360, 0, 180, 90, //lonRange, lonMin, latRange, latMax
             null, debugInBrowser);
     }
 
@@ -1651,33 +1651,25 @@ if (debugInBrowser != null)
 "\n");
 
 sb2.append(
-"//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n" +
-"function findPosX(obj) {\n" +
+//basically, this finds the offsetXY of an element by adding up the offsets of all parent elements
+//was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n" +  but that's gone
+//https://www.chestysoft.com/imagefile/javascript/get-coordinates.asp
+"function findPosXY(obj) {\n" +
 "  var curleft = 0;\n" +
-"  if(obj.offsetParent)\n" +
-"    for (var i = 0; i < 20; i++) {\n" +
-"      curleft += obj.offsetLeft;\n" +
-"      if(!obj.offsetParent)\n" +
-"        break;\n" +
-"      obj = obj.offsetParent;\n" +
-"    }\n" +
-"  else if(obj.x)\n" +
-"    curleft += obj.x;\n" +
-"  return curleft;\n" +
-"}\n" +
-"\n" +
-"function findPosY(obj) {\n" +
 "  var curtop = 0;\n" +
-"  if(obj.offsetParent)\n" +
-"    for (var i = 0; i < 20; i++) {\n" +
-"      curtop += obj.offsetTop;\n" +
+"  if(obj.offsetParent) {\n" +
+"    for (var i = 0; i < 20; i++) {\n" + //a 'while' loop is technically better but risks an infinite loop
+"      curleft += obj.offsetLeft;\n" +
+"      curtop  += obj.offsetTop;\n" +
 "      if(!obj.offsetParent)\n" +
 "        break;\n" +
 "      obj = obj.offsetParent;\n" +
 "    }\n" +
-"  else if(obj.y)\n" +
-"    curtop += obj.y;\n" +
-"  return curtop;\n" +
+"  } else {\n" +
+"    if(obj.x) curleft = obj.x;\n" +
+"    if(obj.y) curtop  = obj.y;\n" +
+"  }" +
+"  return [curleft, curtop];\n" +
 "}\n" +
 "\n" +
 "function rubber(clicked, evt) {\n" +
@@ -1697,9 +1689,10 @@ sb2.append(
 "    tx = evt.pageX;\n" +
 "    ty = evt.pageY;\n" +
 "  } else return true;\n" +
-"  var imx = findPosX(im);\n" +
-"  var imy = findPosY(im);\n" +
-"  tx = Math.max(tx, imx + " + mapX + ");\n" +
+"  var posxy = findPosXY(im);\n" + //upper left of image
+"  var imx = posxy[0];\n" +
+"  var imy = posxy[1];\n" +
+"  tx = Math.max(tx, imx + " + mapX + ");\n" +  //constrain tx,ty to be in map (in image)
 "  tx = Math.min(tx, imx + " + mapX + " + " + (mapWidth - 1) + ");\n" +  
 "  ty = Math.max(ty, imy + " + mapY + ");\n" +
 "  ty = Math.min(ty, imy + " + mapY + " + " + (mapHeight - 1) + ")\n" +
@@ -1716,24 +1709,22 @@ sb2.append(
 "  }\n" +
 "\n" +
 "  updateRubber();\n" +    
-"  document." + formName + "." + minLonTF + ".value = Math.round(((Math.min(cx[0], cx[1]) - " + mapX + " - imx) / " + (mapWidth - 1)  + ") * " + lonRange  + " + " + lonMin + ");\n" + 
-"  document." + formName + "." + maxLonTF + ".value = Math.round(((Math.max(cx[0], cx[1]) - " + mapX + " - imx) / " + (mapWidth - 1)  + ") * " + lonRange  + " + " + lonMin + ");\n" +
-"  document." + formName + "." + minLatTF + ".value = Math.round(((Math.max(cy[0], cy[1]) - " + mapY + " - imy) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
-"  document." + formName + "." + maxLatTF + ".value = Math.round(((Math.min(cy[0], cy[1]) - " + mapY + " - imy) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
+"  document." + formName + "." + minLonTF + ".value = Math.round(((Math.min(cx[0], cx[1]) - (imx + " + mapX + ")) / " + (mapWidth - 1)  + ") * " + lonRange  + " + " + lonMin + ");\n" + 
+"  document." + formName + "." + maxLonTF + ".value = Math.round(((Math.max(cx[0], cx[1]) - (imx + " + mapX + ")) / " + (mapWidth - 1)  + ") * " + lonRange  + " + " + lonMin + ");\n" +
+"  document." + formName + "." + minLatTF + ".value = Math.round(((Math.max(cy[0], cy[1]) - (imy + " + mapY + ")) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
+"  document." + formName + "." + maxLatTF + ".value = Math.round(((Math.min(cy[0], cy[1]) - (imy + " + mapY + ")) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
 (debugInBrowser == null? "" : 
 "  log(\"  done\");\n") +
 "  return true;\n" +
 "}\n" +
 "\n" +
 "function updateRubber() {\n" +
-"  var cx = tcCx;\n" + //local cx should now point to global tcCx array
-"  var cy = tcCy;\n" +
 "  var rb = (document.all)? document.all.rubberBand : document.getElementById('rubberBand');\n" +
 "  var rbs = rb.style;\n" +
-"  rbs.left = Math.min(cx[0], cx[1]) + 'px';\n" +
-"  rbs.top  = Math.min(cy[0], cy[1]) + 'px';\n" +
-"  rbs.width  = Math.abs(cx[1] - cx[0]) + 'px';\n" +
-"  rbs.height = Math.abs(cy[1] - cy[0]) + 'px';\n" +
+"  rbs.left = Math.min(tcCx[0], tcCx[1]) + 'px';\n" +
+"  rbs.top  = Math.min(tcCy[0], tcCy[1]) + 'px';\n" +
+"  rbs.width  = Math.max(0, Math.abs(tcCx[1] - tcCx[0]) - 1) + 'px';\n" +
+"  rbs.height = Math.max(0, Math.abs(tcCy[1] - tcCy[0]) - 1) + 'px';\n" +
 "  rbs.visibility = 'visible';\n" +
 "}\n" +
 "\n" +

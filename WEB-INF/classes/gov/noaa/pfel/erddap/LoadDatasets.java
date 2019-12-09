@@ -536,7 +536,8 @@ public class LoadDatasets extends Thread {
                 } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
                 } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
                     String ts = xmlReader.content();
-                    EDStatic.drawLandMask = "over".equals(ts)? "over" : EDStatic.DEFAULT_drawLandMask; //under
+                    int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
+                    EDStatic.drawLandMask = tnt < 1? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt]; 
                     String2.log("drawLandMask=" + EDStatic.drawLandMask);
 
                 } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {

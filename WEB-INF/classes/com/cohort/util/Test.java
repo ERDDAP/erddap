@@ -409,7 +409,7 @@ public class Test {
                     message + "\n" + 
                     MustBe.getStackTrace() +
                     "\n" + String2.ERROR + " in Test.repeatedlyEnsureLinesMatch():\n" + 
-                    "Differentce #" + (++nDifferences) + " is:\n" +
+                    "Difference #" + (++nDifferences) + " is:\n" +
                     "  text [" + line + "]=" + String2.annotatedString(text[line]) + "\n" +
                     "  regex[" + line + "]=" + String2.annotatedString(regex[line]) + "\n" +
                     "Press Enter to see the next error. "); 

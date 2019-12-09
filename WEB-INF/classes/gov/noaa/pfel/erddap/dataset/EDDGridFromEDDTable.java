@@ -23,6 +23,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -72,6 +73,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         String tAccessibleTo = null;
         String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -141,6 +143,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<updateEveryNMillis>")) {}
@@ -175,7 +179,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDGridFromEDDTable(tDatasetID, 
-            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
+            tAccessibleTo, tGraphsAccessibleTo, 
+            tAccessibleViaWMS, tAccessibleViaFiles,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
@@ -265,7 +270,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridFromEDDTable(String tDatasetID, 
-        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
+        boolean tAccessibleViaWMS, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -289,6 +295,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -752,6 +759,43 @@ public class EDDGridFromEDDTable extends EDDGrid {
             " out of TableWriterAll nRows=" + nRows);
         return results;
     }
+
+    /** 
+     * This returns a fileTable 
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[3]
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
+     */
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
+        //Get childDataset or localChildDataset. Work with stable local reference.
+        EDDTable tChildDataset = eddTable; //getChildDataset();
+        return tChildDataset.accessibleViaFilesFileTable(nextPath);
+    }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+         if (!accessibleViaFiles)
+             return null;
+        //Get childDataset or localChildDataset. Work with stable local reference.
+        EDDTable tChildDataset = eddTable; //getChildDataset();
+        return tChildDataset.accessibleViaFilesGetLocal(relativeFileName);
+     }
 
     /** 
      * This creates a rough draft of a datasets.xml entry for an EDDGridFromEDDTable.
@@ -1537,6 +1581,124 @@ expected=
         String2.log("\n*** EDDGridFromEDDTable.testBasic finished successfully\n");
     }
 
+    /**
+     * This tests the /files/ "files" system.
+     * This requires testGridFromTable in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDGridFromEDDTable.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testGridFromTable/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"2004/,NaN,NaN,\n" +
+"2005/,NaN,NaN,\n" +
+"2006/,NaN,NaN,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testGridFromTable/");
+            Test.ensureTrue(results.indexOf("2004&#x2f;")             > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("2004/")                  > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testGridFromTable/2005/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"BAYXXX_015ADCP015R00_20050302.nc,1337283378000,55283216,\n" +
+"BAYXXX_015ADCP015R00_20050613.nc,1337477650000,65127016,\n" +
+"BAYXXX_015ADCP015R00_20050929.nc,1337416274000,49365084,\n" +
+"BAYXXX_015ADCP015R00_20051215.nc,1337422794000,64554832,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //download a file in root
+
+            //download a file in subdir
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/testGridFromTable/2005/BAYXXX_015ADCP015R00_20050613.nc").substring(0, 50));
+            expected = 
+"CDF[1][0][0][0][0][0][0][0][10]\n" +
+"[0][0][0][4][0][0][0][4]Time[0][1][22]N[0][0][0][5]Depth[0][0][0][0][0][0][19][0][0][0][8]La[end]"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testGridFromTable/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testGridFromTable/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testGridFromTable/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testGridFromTable/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/testGridFromTable/2005/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testGridFromTable/2005/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires testGridFromTable in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
 
     /**
      * This tests the methods in this class.
@@ -1550,6 +1712,7 @@ expected=
 /* for releases, this line should have open/close comment */
         testGenerateDatasetsXml(); 
         testBasic();
+        testFiles();
         /* */
 
         String2.log("\n*** EDDGridFromEDDTable.test finished.");

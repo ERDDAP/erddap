@@ -2457,7 +2457,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 //"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 2.02</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.03</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -2662,7 +2662,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2019-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2019-11-06 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -2677,7 +2677,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2019-08-01T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2019-11-05T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2717,7 +2717,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2019-08-01T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2019-11-05T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -2815,7 +2815,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2019-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2019-11-06 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -2834,7 +2834,7 @@ expected2 =
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2019-08-01T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2019-11-05T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2970,6 +2970,7 @@ expected2 =
         } */
     }
 
+
     /**
      * This tests the methods in this class.
      *
@@ -3007,6 +3008,7 @@ expected2 =
         testChar();
         testDap();
         testActualRange();
+
         /* */
     }
 }

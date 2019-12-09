@@ -350,8 +350,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             //"    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
             "    <removeMVRows>" + ("" + tRemoveMVRows).toLowerCase() + "</removeMVRows>\n" +
             "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -408,7 +407,6 @@ String expected =
 "    <removeMVRows>true</removeMVRows>\n" +
 "    <sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" +
 "        <att name=\"featureType\">trajectoryProfile</att>\n" +
@@ -1853,7 +1851,6 @@ String expected =
 "    <removeMVRows>true</removeMVRows>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">SeaDataNet_1.0 CF 1.6</att>\n" +
 "        <att name=\"date_update\">2015-05-13T18:28+0200</att>\n" +
@@ -1978,6 +1975,7 @@ String expected =
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"sdn_P02_urn\">SDN:P02::ALAT</att>\n" +
 "        </addAttributes>\n" +
@@ -2002,6 +2000,7 @@ String expected =
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"sdn_P02_urn\">SDN:P02::ALAT</att>\n" +
 "        </addAttributes>\n" +
@@ -2301,7 +2300,6 @@ String expected =
 "    <removeMVRows>false</removeMVRows>\n" +
 "    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"area\">Global Ocean</att>\n" +
 "        <att name=\"author\">Coriolis and MyOcean data provider</att>\n" +
@@ -2976,7 +2974,7 @@ expected =
 "    String summary \"Unknown institution data from a local source.\";\n" +
 "    String time_coverage_end \"2012-07-31T23:00:00Z\";\n" +
 "    String time_coverage_start \"2011-11-01T00:00:00Z\";\n" +
-"    String title \"Unknown institution data from a local source.\";\n" +
+"    String title \"The Title for testTreatDimensionsAs\";\n" +
 "    String update_interval \"daily\";\n" +
 "    Float64 Westernmost_Easting -44.112;\n" +
 "    String wmo_platform_code \"44761\";\n" +

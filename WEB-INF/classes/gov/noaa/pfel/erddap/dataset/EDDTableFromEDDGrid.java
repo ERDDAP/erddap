@@ -76,6 +76,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         Attributes tAddGlobalAttributes = null;
         String tAccessibleTo = null;
         String tGraphsAccessibleTo = null;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -129,6 +130,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<graphsAccessibleTo>")) {}
             else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
 //updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
@@ -154,7 +157,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         }
 
         return new EDDTableFromEDDGrid(tErddap, tDatasetID, 
-            tAccessibleTo, tGraphsAccessibleTo,
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaFiles, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
             tReloadEveryNMinutes, //tUpdateEveryNMillis, 
@@ -167,7 +170,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromEDDGrid(Erddap tErddap, String tDatasetID, 
-        String tAccessibleTo, String tGraphsAccessibleTo, 
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery,
@@ -231,6 +234,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
             tChildDataset = oChildDataset;        
         }
         //for rest of constructor, use temporary, stable tChildDataset reference.
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
         //global attributes
         localSourceUrl           = tChildDataset.localSourceUrl;
@@ -670,6 +674,43 @@ public class EDDTableFromEDDGrid extends EDDTable{
         }
     }
 
+
+    /** 
+     * This returns a fileTable 
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     *
+     * @param nextPath is the partial path (with trailing slash) to be appended 
+     *   onto the local fileDir (or wherever files are, even url).
+     * @return null if trouble,
+     *   or Object[3] 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
+     */
+    public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
+        //Get childDataset or localChildDataset. Work with stable local reference.
+        EDDGrid tChildDataset = getChildDataset();
+        return tChildDataset.accessibleViaFilesFileTable(nextPath);
+    }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+         if (!accessibleViaFiles)
+             return null;
+        //Get childDataset or localChildDataset. Work with stable local reference.
+        EDDGrid tChildDataset = getChildDataset();
+        return tChildDataset.accessibleViaFilesGetLocal(relativeFileName);
+     }
 
 
     /**
@@ -2001,6 +2042,102 @@ sb.append(
     }
 
     /**
+     * This tests the /files/ "files" system.
+     * This requires erdMBsstdmday and erdMBsstdmday_AsATable in the localhost ERDDAP.
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDTableFromEDDGrid.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"MB2008032_2008060_sstd.nc,1204467796000,140954640,\n" +
+"MB2008061_2008091_sstd.nc,1207339104000,140954664,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/");
+            Test.ensureTrue(results.indexOf("MB2008032&#x5f;2008060&#x5f;sstd&#x2e;nc") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">140954640<")                              > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+
+            //download a file in root
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/MB2008032_2008060_sstd.nc").substring(0, 50));
+            expected = 
+"CDF[1][0][0][0][0][0][0][0][10]\n" +
+"[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][8]altitude[0][0][0][1][0][0][0][3]la[end]"; 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //download a file in subdir
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existant subdir
+
+ 
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires erdMBsstdmday_AsATable in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+
+    /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
@@ -2013,6 +2150,7 @@ sb.append(
         testGenerateDatasetsXml();
         testInErddap();
         testBasic();
+        testFiles();
     }
 
 }

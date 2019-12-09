@@ -415,8 +415,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
             "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
 
         sb.append(writeAttsForDatasetsXml(false, globalSourceAtts, "    "));
         sb.append(writeAttsForDatasetsXml(true,  globalAddAtts,    "    "));
@@ -437,7 +436,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     /** 
      * This tests generateDatasetsXml. 
      * The test files are from Jim Potemra 
-     * http://oos.soest.hawaii.edu/erddap/files/aco_acoustic/
+     * https://pae-paha.pacioos.hawaii.edu/erddap/files/aco_acoustic/
      * Note that the first 3 files (for :00, :05, :10 minutes) have float data,
      *   seem to be have almost all ~0,
      *   whereas the :15 and :20 files have audible short data. 
@@ -472,7 +471,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"audioBigEndian\">false</att>\n" +
 "        <att name=\"audioChannels\" type=\"int\">1</att>\n" +
@@ -560,7 +558,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     /** 
      * This tests generateDatasetsXml. 
      * The test files are from Jim Potemra 
-     * http://oos.soest.hawaii.edu/erddap/files/aco_acoustic/
+     * https://pae-paha.pacioos.hawaii.edu/erddap/files/aco_acoustic/
      * Note that the first 3 files (for :00, :05, :10 minutes) have float data,
      *   seem to be have almost all ~0,
      *   whereas the :15 and :20 files have audible short data. 
@@ -571,7 +569,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         String2.log("\n*** EDDGridFromAudioFiles.testGenerateDatasetsXml2");
 
         //test files are from Jim Potemra 
-        //http://oos.soest.hawaii.edu/erddap/files/aco_acoustic/
+        //https://pae-paha.pacioos.hawaii.edu/erddap/files/aco_acoustic/
         //Note that the first 3 files (for :00, :05, :10 minutes) have float data,
         //  seem to be have almost all ~0,
         //  whereas the :15 and :20 files have audible short data. 
@@ -602,7 +600,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"audioBigEndian\">false</att>\n" +
 "        <att name=\"audioChannels\" type=\"int\">1</att>\n" +

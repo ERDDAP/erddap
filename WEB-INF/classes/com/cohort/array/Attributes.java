@@ -577,6 +577,20 @@ public class Attributes {
         return set(name, new ShortArray(new short[]{value}));
     }
 
+    /** A convenience method which changes the name of an attribute.
+     *
+     * @param oldName the current name of the attribute to be changed
+     * @param newName the new name for the attribute
+     * @return the PrimitiveArray with the attribute's value (will be null if oldName doesn't exist)
+     */
+    public PrimitiveArray changeName(String oldName, String newName) {
+        PrimitiveArray pa = remove(oldName);
+        if (pa != null)
+            return null;
+        add(newName, pa);
+        return pa;
+    }
+
     /**
      * This is like the similar set() method, but returns 'this'.
      * add() lets you string several set commands together,

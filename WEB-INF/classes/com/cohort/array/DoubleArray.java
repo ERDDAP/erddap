@@ -197,6 +197,21 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    If value instanceof Number, this uses Number.doubleValue().
+     *    If null or not a Number, this adds Double.NaN.
+     */
+    public void addObject(Object value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);        
+        array[size++] = value != null && value instanceof Number?
+            ((Number)value).doubleValue() :
+            Double.NaN;
+    }
+
+    /**
      * This adds all the values from ar.
      *
      * @param ar an array
@@ -364,8 +379,8 @@ public class DoubleArray extends PrimitiveArray {
      * This sets an element from another PrimitiveArray.
      *
      * @param index the index to be set
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the other PrimitiveArray
+     * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
         set(index, otherPA.getDouble(otherIndex));
@@ -466,7 +481,7 @@ public class DoubleArray extends PrimitiveArray {
      * Rows that aren't kept are removed.
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
      *
-     * @param bitset
+     * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
     public void justKeep(BitSet bitset) {
         int newSize = 0;
@@ -551,6 +566,7 @@ public class DoubleArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
+     * @return the specified element
      */
     public double get(int index) {
         if (index >= size)
@@ -784,7 +800,7 @@ public class DoubleArray extends PrimitiveArray {
     /**
      * Test if o is an DoubleArray with the same size and values.
      *
-     * @param o
+     * @param o the object that will be compared to this DoubleArray
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
@@ -1345,10 +1361,11 @@ public class DoubleArray extends PrimitiveArray {
         for (int i = 1; i < size; i++)  //1 because looking back
             gaps.add(array[i] - array[i-1]);
         gaps.sort();
-        int size1o2 = (size - 1) / 2;
-        double median = (size-1) % 2 == 0?  //even number of gaps?
-            (gaps.get(size1o2) + gaps.get(size1o2 + 1)) / 2.0 : //average of 2 values
-            gaps.get(size1o2);
+        int size1o2 = (size / 2) - 1;
+        double median = 
+            (size-1) % 2 == 0?  //even number of gaps?
+                (gaps.get(size1o2) + gaps.get(size1o2 + 1)) / 2.0 : //average of 2 values
+                gaps.get(size1o2);
         gaps = null; //allow gc
 
         //look for gaps that are NaN or > median

@@ -19,6 +19,10 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.ScriptCalendar2;
+import com.cohort.util.ScriptMath;
+import com.cohort.util.ScriptMath2;
+import com.cohort.util.ScriptString2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -29,6 +33,7 @@ import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
@@ -65,6 +70,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -3909,7 +3915,7 @@ public abstract class EDDTable extends EDD {
             boolean xAscending = true, yAscending = true; //this is what controls flipping of the axes
             String xScale = "", yScale = ""; //(default) or Linear or Log
             double fontScale = 1, vectorStandard = Double.NaN;
-            int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
+            String currentDrawLandMask = null;  //not yet set
             StringBuilder title2 = new StringBuilder();
             Color bgColor = EDStatic.graphBackgroundColor;
             String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
@@ -3980,10 +3986,11 @@ public abstract class EDDTable extends EDD {
                 //.land 
                 } else if (ampPart.startsWith(".land=")) {
                     String gt = ampPart.substring(6);
-                    if      (gt.equals("under")) drawLandAsMask = 1;
-                    else if (gt.equals("over"))  drawLandAsMask = 2;
+                    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
+                    if (which >= 1)
+                        currentDrawLandMask = gt;
                     if (reallyVerbose)
-                        String2.log(".land= drawLandAsMask=" + drawLandAsMask);
+                        String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
 
                 //.legend 
                 } else if (ampPart.startsWith(".legend=")) {
@@ -4410,15 +4417,19 @@ public abstract class EDDTable extends EDD {
 
                 int predicted[] = SgtMap.predictGraphSize(1, imageWidth, imageHeight, 
                     xMin, xMax, yMin, yMax);
-                Grid bath = transparentPng || table.nRows() == 0? null :
+                Grid bath = transparentPng || 
+                    "outline".equals(currentDrawLandMask) || 
+                        "off".equals(currentDrawLandMask) || 
+                    table.nRows() == 0? 
+                    null :
                     SgtMap.createTopographyGrid(
                         EDStatic.fullSgtMapTopographyCacheDirectory, 
                         xMin, xMax, yMin, yMax, 
                         predicted[0], predicted[1]);
 
-                if (drawLandAsMask == 0) {
+                if (currentDrawLandMask == null) {
                     EDV edv = zVar == null? yVar : zVar;
-                    drawLandAsMask = edv.drawLandMask(defaultDrawLandMask())? 2 : 1;
+                    currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
                 }
 
                 if (transparentPng) {
@@ -4434,17 +4445,19 @@ public abstract class EDDTable extends EDD {
                     EDStatic.legendTitle1, EDStatic.legendTitle2,
                     EDStatic.imageDir, logoImageFile,
                     xMin, xMax, yMin, yMax, //predefined min/maxX/Y
-                    drawLandAsMask == 2, //2=over
+                    currentDrawLandMask,
                     bath != null, //plotGridData (bathymetry)
                     bath,
                     1, 1, 0, //double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-                    drawLandAsMask == 1? SgtMap.topographyCptFullName : //1=under
-                                         SgtMap.bathymetryCptFullName,  //2=over: deals better with elevation ~= 0
+                    "under".equals(currentDrawLandMask)? SgtMap.topographyCptFullName : 
+                                                         SgtMap.bathymetryCptFullName,  //"over": deals better with elevation ~= 0
                     null, //SgtMap.TOPOGRAPHY_BOLD_TITLE + " (" + SgtMap.TOPOGRAPHY_UNITS + ")",
                     "",
                     "",  
                     "", //MessageFormat.format(EDStatic.imageDataCourtesyOf, SgtMap.TOPOGRAPHY_COURTESY)
-                    SgtMap.FILL_LAKES_AND_RIVERS, 
+                    "off".equals(currentDrawLandMask)? 
+                        SgtMap.NO_LAKES_AND_RIVERS :
+                        SgtMap.FILL_LAKES_AND_RIVERS, 
                     false, null, 1, 1, 1, "", null, "", "", "", "", "", //plot contour 
                     graphDataLayers,
                     g2, 0, 0, imageWidth, imageHeight,
@@ -8359,9 +8372,10 @@ public abstract class EDDTable extends EDD {
             "      control via a drawLandMask in datasets.xml, or via the fallback <kbd>drawLandMask</kbd>\n" +
             "      setting in setup.xml).\n" +
             "      <br><kbd>over</kbd> makes the land mask on a map visible (land appears as a uniform gray area).\n" +
-            "      <kbd>over</kbd> is commonly used for purely oceanographic datasets.\n" +
             "      <br><kbd>under</kbd> makes the land mask invisible (topography information is displayed\n" +
-            "      for ocean and land areas).  <kbd>under</kbd> is commonly used for all other data.\n" +
+            "      for ocean and land areas).\n" +
+            "      <br><kbd>outline</kbd> just draws the landmask outline, political boundaries, lakes, and rivers.\n" +
+            "      <br><kbd>off</kbd> doesn't draw anything.\n" +
             "    <li><kbd>&amp;.legend=<i>value</i></kbd>\n" +
             "      <br>This specifies whether the legend on .png images (not .pdf's) should be at the\n" +
             "      <kbd>Bottom</kbd> (default), <kbd>Off</kbd>, or <kbd>Only</kbd> (which returns only the legend).\n" +
@@ -9911,7 +9925,7 @@ public abstract class EDDTable extends EDD {
                 graphQueryNoTime.append(  tq);
             }
 
-            //drawLandAsMask/drawLandMask?
+            //currentDrawLandMask/drawLandMask?
             boolean showLandOption = 
                 resultsVariables.size() >= 2 &&
                 resultsVariables.get(0).equals(EDV.LON_NAME) &&
@@ -9919,19 +9933,17 @@ public abstract class EDDTable extends EDD {
             if (showLandOption) {
                 //Draw Land
                 int tLand = 0;          //don't translate
-                String landOptions[] = {"", "under", "over"};  //under/over order also affects javascript below
                 partValue = String2.stringStartsWith(queryParts, partName = ".land=");
                 if (partValue != null) {
                     partValue = partValue.substring(6);
-                    if      (partValue.equals("under")) tLand = 1;
-                    else if (partValue.equals("over"))  tLand = 2;
+                    tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
                 }
                 writer.write(
                     "  <tr>\n" +
                     "    <td>" + EDStatic.magGSLandMask + ":&nbsp;</td>\n" +
                     "    <td>" +
                     widgets.select("land", EDStatic.magGSLandMaskTooltipTable, 
-                        1, landOptions, tLand, "") + "</td>\n" +
+                        1, SgtMap.drawLandMask_OPTIONS, tLand, "") + "</td>\n" +
                     "    <td></td>\n" +
                     "    <td></td>\n" +
                     "    <td></td>\n" +
@@ -9940,7 +9952,7 @@ public abstract class EDDTable extends EDD {
 
                 //add to graphQuery
                 if (tLand > 0) {
-                    String tq = "&.land=" + (tLand == 1? "under" : "over");
+                    String tq = "&.land=" + SgtMap.drawLandMask_OPTIONS[tLand];
                     graphQuery.append(        tq);
                     graphQueryNoLatLon.append(tq);
                     graphQueryNoTime.append(  tq);
@@ -10127,7 +10139,7 @@ public abstract class EDDTable extends EDD {
                 "    if (d.f1.vec.value.length > 0) q2 += \"\\x26.vec=\" + d.f1.vec.value; \n");
             if (showLandOption) writer.write(
                 "    if (d.f1.land.selectedIndex > 0)\n" +
-                "      q2 += \"\\x26.land=\" + (d.f1.land.selectedIndex<=1? \"under\" : \"over\"); \n");
+                "      q2 += \"\\x26.land=\" + d.f1.land.options[d.f1.land.selectedIndex].text; \n");
             if (true) writer.write(
                 "    var yRMin=d.f1.yRangeMin.value; \n" +
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
@@ -12447,12 +12459,14 @@ public abstract class EDDTable extends EDD {
         //If so, the response is just one row with fixed values 
         //  (if constraints don't make it 0 rows).
         boolean justFixed = true;
-        Table table = new Table();
+        Table table = null;
         for (int rv = 0; rv < resultsVariables.size(); rv++) {
             EDV edv = findDataVariableByDestinationName(resultsVariables.get(rv));
             if (edv.isFixedValue()) {
+                if (table == null)
+                    table = new Table();
                 table.addColumn(table.nColumns(), edv.destinationName(), 
-                    PrimitiveArray.factory(edv.destinationDataTypeClass(), 1, edv.sourceName().substring(1)), 
+                    PrimitiveArray.factory(edv.destinationDataTypeClass(), 1, edv.fixedValue()), 
                     new Attributes(edv.combinedAttributes()));
             } else {
                 justFixed = false;

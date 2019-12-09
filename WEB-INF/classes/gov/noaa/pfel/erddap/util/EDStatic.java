@@ -180,14 +180,14 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.02"; //see comment above
+    public static String erddapVersion = "2.03"; //see comment above
 
     /** 
      * This is almost always false.  
      * During development, Bob sets this to true. No one else needs to. 
      * If true, ERDDAP uses setup2.xml and datasets2.xml (and messages2.xml if it exists). 
      */
-public static boolean developmentMode = false;
+public static boolean developmentMode = true;
 
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   
@@ -270,7 +270,7 @@ public static boolean developmentMode = false;
 
     //things that were in setup.xml (discouraged) and are now in datasets.xml (v2.00+)
     public final static int    DEFAULT_cacheMinutes            = 60;
-    public final static String DEFAULT_drawLandMask            = "under";  //or "over"
+    public final static String DEFAULT_drawLandMask            = "under";  
     public final static int    DEFAULT_graphBackgroundColorInt = 0xffccccff; 
     public final static int    DEFAULT_loadDatasetsMinMinutes  = 15;
     public final static int    DEFAULT_loadDatasetsMaxMinutes  = 60;
@@ -591,7 +591,7 @@ public static boolean developmentMode = false;
         reallyVerbose,
         subscriptionSystemActive,  convertersActive, slideSorterActive,
         fgdcActive, iso19115Active, jsonldActive, geoServicesRestActive, 
-        filesActive, dataProviderFormActive, 
+        filesActive, defaultAccessibleViaFiles, dataProviderFormActive, 
         outOfDateDatasetsActive, politicalBoundariesActive, 
         wmsClientActive, 
         sosActive, wcsActive, wmsActive,
@@ -727,6 +727,7 @@ public static boolean developmentMode = false;
         advancedSearchWithCriteria,
         advancedSearchFewerCriteria,
         advancedSearchNoCriteria,
+        advancedSearchErrorHandling,
         autoRefresh,
         blacklistMsg,
         categoryTitleHtml,
@@ -1714,6 +1715,7 @@ public static boolean developmentMode = false;
 //until geoServicesRest is finished, it is always inactive
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
         filesActive                = setup.getBoolean(         "filesActive",                true); 
+        defaultAccessibleViaFiles  = setup.getBoolean(         "defaultAccessibleViaFiles",  false); //false matches historical behavior 
         dataProviderFormActive     = setup.getBoolean(         "dataProviderFormActive",     true); 
         outOfDateDatasetsActive    = setup.getBoolean(         "outOfDateDatasetsActive",    true); 
         politicalBoundariesActive  = setup.getBoolean(         "politicalBoundariesActive",  true); 
@@ -1748,10 +1750,10 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         datasetsRegex              = setup.getString(          "datasetsRegex",              ".*");
         drawLandMask               = setup.getString(          "drawLandMask",               null);    //new name
         if (drawLandMask == null) //2014-08-28 changed defaults below to "under". It will be in v1.48
-            drawLandMask           = setup.getString(          "drawLand",                   "under"); //old name
-        if (!drawLandMask.equals("under") && 
-            !drawLandMask.equals("over"))
-             drawLandMask = DEFAULT_drawLandMask; //default="under"
+            drawLandMask           = setup.getString(          "drawLand",                   DEFAULT_drawLandMask); //old name. DEFAULT...="under"
+        int tdlm = String2.indexOf(SgtMap.drawLandMask_OPTIONS, drawLandMask);
+        if (tdlm < 1)
+            drawLandMask = DEFAULT_drawLandMask; //"under"
         flagKeyKey                 = setup.getNotNothingString("flagKeyKey",                 errorInMethod);
         if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
               //really old default: "A stitch in time saves nine. CHANGE THIS!!!"  
@@ -1973,6 +1975,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
         advancedSearchFewerCriteria= messages.getNotNothingString("advancedSearchFewerCriteria",errorInMethod);
         advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
+        advancedSearchErrorHandling= messages.getNotNothingString("advancedSearchErrorHandling",errorInMethod);
         autoRefresh                = messages.getNotNothingString("autoRefresh",                errorInMethod);
         blacklistMsg               = messages.getNotNothingString("blacklistMsg",               errorInMethod);
         PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          errorInMethod);

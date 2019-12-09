@@ -5981,6 +5981,7 @@ Dataset {
         String msg = "  Table.readFlatNc " + fullName; 
         long time = System.currentTimeMillis();
         NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
         try {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
@@ -5988,8 +5989,17 @@ Dataset {
             clear();
             appendNcRows(loadVariables, 0, lastRow);
             NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
-            for (int col = 0; col < loadVariables.length; col++) 
+            for (int col = 0; col < loadVariables.length; col++) {
                 NcHelper.getVariableAttributes(loadVariables[col], columnAttributes(col));
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(netcdfFile, 
+                        columnAttributes(col).getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
+            }
 
             //unpack 
             decodeCharsAndStrings();
@@ -6096,6 +6106,7 @@ Dataset {
 
         //read the scalar variables
         NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        //getGridMappingAtts() handled by lowReadFlatNc above
         int insertAt = 0;
         try {
             Group rootGroup = netcdfFile.getRootGroup();
@@ -6181,6 +6192,7 @@ Dataset {
         String errorInMethod = String2.ERROR + " in" + msg;
         //get information
         NetcdfFile ncFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
         try {
             Variable loadVariables[] = NcHelper.find4DVariables(ncFile, loadColumns);
 
@@ -6267,6 +6279,11 @@ Dataset {
                 //store data
                 addColumn(variable.getName(), pa);
                 NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) 
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                        columnAttributes(nColumns() - 1).getString("grid_mapping"));
             }
 
             //load the stringVariable
@@ -6288,6 +6305,8 @@ Dataset {
 
             //load the global metadata
             NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            if (gridMappingAtts != null)
+                globalAttributes.add(gridMappingAtts);
 
             //unpack 
             decodeCharsAndStrings();
@@ -6362,6 +6381,7 @@ Dataset {
         String errorInMethod = String2.ERROR + " in Table.readNDNc " + fullName + ":\n";
         //get information
         NetcdfFile ncFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
         try {
             //load the global metadata
             if (getMetadata)
@@ -6555,8 +6575,18 @@ Dataset {
 
                 //store data
                 addColumn(variable.getName(), pa);
-                if (getMetadata)
+                if (getMetadata) {
                     NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
+
+                    //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                    if (gridMappingAtts == null) {
+                        gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                            columnAttributes(nColumns() - 1).getString("grid_mapping"));
+                        if (gridMappingAtts != null)
+                            globalAttributes.add(gridMappingAtts);
+                    }
+                }
+
             }
 
             //if the request is only for axis variables, set up axis columns
@@ -6806,6 +6836,7 @@ Dataset {
 
         //read the file
         NetcdfFile ncFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
         try {
 
             //load the global metadata
@@ -7137,6 +7168,15 @@ Dataset {
                 }
                 loaded.set(v);
                 addColumn(nColumns(), tVar.getFullName(), pa, atts);
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (getMetadata &&
+                    gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                        atts.getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
             }
             if (debugMode) String2.log(Math2.memoryString() + "\n" +
                 ">> this table after load varsWithAllDims:\n" + 
@@ -7536,7 +7576,7 @@ Dataset {
      * Test readMultidimNc with treatDimensionsAs specified. 
      */
     public static void testHardReadMultidimNc() throws Exception {
-        String fileName = "/erddapTest/nc/GL_201207_TS_DB_44761.nc";
+        String fileName = "/erddapTest/nc/GLsubdir/GL_201207_TS_DB_44761.nc";
         String2.log("\n*** Table.testHardReadMultidimNc(" + fileName + ")");
         Table.debugMode = true;
         Table table = new Table();
@@ -9187,6 +9227,11 @@ Dataset {
 "\t\t:cf_role = \"profile_id\" ;\n" +
 "\t\t:Conventions = \"CF-1.5\" ;\n" +
 "\t\t:featureType = \"profile\" ;\n" +
+"\t\t:grid_mapping_epsg_code = \"EPSG:4326\" ;\n" +
+"\t\t:grid_mapping_inverse_flattening = 298.25723f ;\n" +
+"\t\t:grid_mapping_longitude_of_prime_meridian = 0.0f ;\n" +
+"\t\t:grid_mapping_name = \"latitude_longitude\" ;\n" +
+"\t\t:grid_mapping_semi_major_axis = 6378137.0f ;\n" +
 "\t\t:Metadata_Conventions = \"Unidata Dataset Discovery v1.0\" ;\n" +
 "\t\t:standard_name_vocabulary = \"CF-1.5\" ;\n" +
 "}\n" +
@@ -9385,6 +9430,7 @@ Dataset {
         }
 
         NetcdfFile ncFile = NcHelper.openFile(fullName); 
+        Attributes gridMappingAtts = null;
         String readAs = null;
         try {
             /* 
@@ -9530,6 +9576,14 @@ Dataset {
                 NcHelper.getVariableAttributes(vars[v], varAtts[v]);
                 //String2.log("Debug: loadVarNames.see v[" + v + "]=" + varNames[v] + "  nNonCharDims=" + varNDims[v]);
                 //2016-06-07 scalar continue was here
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                        varAtts[v].getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
 
                 //add to nLoadOrConVariablesInFile
                 //!!!Note that I don't detect vars with unexpected dimensions
@@ -12531,6 +12585,12 @@ String2.log(table.toString());
 "    String geospatial_vertical_units \"meters\";\n" +
 "    String gocd_format_version \"GOCD-3.0\";\n" +
 "    String gocd_id \"gocd_a0067774_01192v3.nc\";\n" +
+"    String grid_mapping_epsg_code \"EPSG:4326\";\n" +
+"    String grid_mapping_inverse_flattening \"298.257223563\";\n" +
+"    String grid_mapping_long_name \"Coordinate Reference System\";\n" +
+"    String grid_mapping_longitude_of_prime_meridian \"0.0f\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String grid_mapping_semi_major_axis \"6378137.0\";\n" +
 "    String history \"Wed Feb 10 18:31:43 2016: ncrename -d depth,z test.nc\n" +
 "2016-01-18T04:39:10Z csun updateOCD.R Version 2.0\n" +
 "Thu Jan  7 15:59:35 2016: ncatted -a valid_max,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
@@ -19695,6 +19755,7 @@ String2.log(table.dataToString());
         if (colNames == null) 
             colNames = new StringArray(1, false);
         NetcdfFile ncFile = NcHelper.openFile(fullName); 
+        Attributes gridMappingAtts = null;
         try {
 
             NcHelper.getGlobalAttributes(ncFile, globalAttributes());
@@ -19728,6 +19789,15 @@ String2.log(table.dataToString());
                 vNames[v] = var.getFullName();
                 vatts[v] = new Attributes();
                 NcHelper.getVariableAttributes(var, vatts[v]);
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                        vatts[v].getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
+
                 varClasses[v] = NcHelper.getElementClass(var.getDataType()); //exception if trouble
                 nDims[v] = var.getRank();
                 if (varClasses[v] == char.class)
@@ -24166,6 +24236,7 @@ String2.log(table.dataToString());
         String msg = "  Table.readOpendap " + fullName;
         long time = System.currentTimeMillis();
         NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
         try {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
@@ -24173,8 +24244,17 @@ String2.log(table.dataToString());
             clear();
             appendNcRows(loadVariables, 0, -1);
             NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
-            for (int col = 0; col < loadVariables.length; col++)
+            for (int col = 0; col < loadVariables.length; col++) {
                 NcHelper.getVariableAttributes(loadVariables[col], columnAttributes(col));
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(netcdfFile, 
+                        columnAttributes(col).getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
+            }
 
             if (reallyVerbose) msg +=  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
@@ -30696,6 +30776,8 @@ String2.log(table.dataToString());
         for (int row = 0; row < nDir; row++) {
             try {
                 String dirName = dirNames.get(row); 
+                if (!dirName.equals(".."))
+                    dirName += "/";
                 String dirDes = dirDescriptions == null? "" : dirDescriptions.get(row);
                 String showDirName = dirName;
                 String iconFile = "dir.gif"; //default
@@ -30709,7 +30791,7 @@ String2.log(table.dataToString());
                     "<td><img class=\"B\" src=\"" + iconUrlDir + iconFile + 
                         "\" alt=\"[" + iconAlt + "]\"" + iconStyle + "></td>" +  
                     "<td><a href=\"" + 
-                      XML.encodeAsHTMLAttribute(dirName + (dirName.equals("..")? "" : "/")) + 
+                      XML.encodeAsHTMLAttribute(dirName) + 
                       "\">" + XML.encodeAsXML(showDirName) + "</a></td>" +
                     "<td class=\"R\">-</td>" +  //lastMod
                     "<td class=\"R\">-</td>" +  //size
@@ -30776,9 +30858,9 @@ String2.log(table.dataToString());
                 String sizePAs = sizePA.getString(row);
                 sb.append(
                     "<tr>" +
-                    "<td><img class=\"T\" src=\"" + iconUrlDir + iconFile + 
-                        "\" alt=\"[" + iconAlt + "]\"" + iconStyle + ">&nbsp;" + 
-                        (viewer.length() > 0? viewer : "&nbsp;") +
+                    "<td><img class=\"B\" src=\"" + iconUrlDir + iconFile + 
+                        "\" alt=\"[" + iconAlt + "]\"" + iconStyle + ">" + 
+                        (viewer.length() > 0? "&nbsp;" + viewer : "") +
                         "</td>" +  
                     "<td><a rel=\"bookmark\" href=\"" + encodedFileName + "\">" + encodedFileName + "</a></td>" +
                     "<td class=\"R\">" + newMod + "</td>" +
@@ -31186,6 +31268,7 @@ String2.log(table.dataToString());
         String msg = "  Table.readArgoProfile " + fileName;
         long tTime = System.currentTimeMillis();
         NetcdfFile nc = NcHelper.openFile(fileName);
+        //Attributes gridMappingAtts = null; //method is unfinished
         try {
 //   DATE_TIME = 14;
 //   N_PROF = 632;
@@ -34180,6 +34263,7 @@ readAsNcCF?
         else Math2.sleep(5000);
 
     }
+
 
     /**
      * This tests the methods in this class.

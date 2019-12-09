@@ -4717,7 +4717,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.lowResLogoImageFile(),
             grid.lon[0], grid.lon[grid.lon.length - 1],
             grid.lat[0], grid.lat[grid.lat.length - 1],
-            drawLandAsMask,
+            drawLandAsMask? "over" : "under",
 
             true, //grid
             grid, 
@@ -4772,7 +4772,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.lowResLogoImageFile(),
             grid.lon[0], grid.lon[grid.lon.length - 1],
             grid.lat[0], grid.lat[grid.lat.length - 1],
-            drawLandAsMask,
+            drawLandAsMask? "over" : "under",
 
             true, //grid
             grid, 
@@ -4852,7 +4852,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.lowResLogoImageFile(),
             xGrid.lon[0], xGrid.lon[xGrid.lon.length - 1],
             xGrid.lat[0], xGrid.lat[xGrid.lat.length - 1],
-            drawLandAsMask,
+            drawLandAsMask? "over" : "under",
             //grid 
             false, null, -1, -1, -1, null, null, null, null, null,
             SgtMap.NO_LAKES_AND_RIVERS,
@@ -5007,7 +5007,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
                 minLon, maxLon, minLat, maxLat,
-                drawLandAsMask,
+                drawLandAsMask? "over" : "under",
 
                 //grid data
                 false, null, 1, 1, 0,
@@ -5151,7 +5151,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
                 minLon, maxLon, minLat, maxLat,
-                drawLandAsMask,
+                drawLandAsMask? "over" : "under",
 
                 //grid data
                 false, null, 1, 1, 0,
@@ -5320,7 +5320,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.fullContextDirectory() + "images/", 
             oneOf.lowResLogoImageFile(),
             lonRange[0], lonRange[1], latRange[0], latRange[1],
-            drawLandAsMask,
+            drawLandAsMask? "over" : "under",
 
             //grid data
             false, null, 1, 1, 0,

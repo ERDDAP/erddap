@@ -767,8 +767,17 @@ public class EDDTableFromDapSequence extends EDDTable{
         String innerSequenceName = null;
         Enumeration datasetVars = dds.getVariables();
         int nOuterVars = 0; //so outerVars are first in dataAddTable
+        Attributes gridMappingAtts = null;
         while (datasetVars.hasMoreElements()) {
             BaseType datasetVar = (BaseType)datasetVars.nextElement();
+
+            //is this the pseudo-data grid_mapping variable?
+            if (gridMappingAtts == null) {
+                Attributes tSourceAtts = new Attributes();
+                OpendapHelper.getAttributes(das, datasetVar.getName(), tSourceAtts);
+                gridMappingAtts = NcHelper.getGridMappingAtts(tSourceAtts);
+            }
+
             if (outerSequenceName == null && datasetVar instanceof DSequence) {
                 DSequence outerSequence = (DSequence)datasetVar;
                 outerSequenceName = outerSequence.getName();
@@ -797,6 +806,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                                         OpendapHelper.getAttributes(das, 
                                             outerSequenceName + "." + innerSequenceName + "." + varName, 
                                             sourceAtts);
+
                                     //just need to know String vs numeric for tryToFindLLAT
                                     PrimitiveArray sourcePA = innerVar instanceof DString? new StringArray() : new DoubleArray();
                                     PrimitiveArray destPA   = innerVar instanceof DString? new StringArray() : new DoubleArray();
@@ -825,6 +835,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                         if (sourceAtts.size() == 0)
                             OpendapHelper.getAttributes(das, 
                                 outerSequenceName + "." + varName, sourceAtts);
+
                         //just need to know String vs numeric for tryToFindLLAT
                         PrimitiveArray sourcePA = outerVar instanceof DString? new StringArray() : new DoubleArray(); 
                         PrimitiveArray destPA   = outerVar instanceof DString? new StringArray() : new DoubleArray(); 
@@ -866,6 +877,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                 suggestKeywords(dataSourceTable, dataAddTable)));
         if (outerSequenceName == null)
             throw new SimpleException("No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
+        if (gridMappingAtts != null)
+            dataAddTable.globalAttributes().add(gridMappingAtts);
 
         //write the information
         boolean isDapper = tLocalSourceUrl.indexOf("dapper") > 0;

@@ -26,8 +26,8 @@ public class Math2 {
      */
     public static final float fEps = 1e-5f; //epsilon suitable for floats
     public static final double dEps = 1e-13; //epsilon suitable for doubles
-    public static final double OneRadian = 180.0 / Math.PI; //are these double precision?
-    public static final double TwoPi = 2 * Math.PI; //are these double precision?
+    public static final double OneRadian = 180.0 / Math.PI;
+    public static final double TwoPi = 2 * Math.PI; 
     public static final double ln10 = Math.log(10.0); //2.302585092994046;
     public static final double ln2 = Math.log(2.0);
     public static final double kelvinToC = -273.15;
@@ -565,7 +565,7 @@ public class Math2 {
      *     NaN and Infinity correctly return false.
      */
     public static final boolean almost0(double d) {
-        return (Math.abs(d) < dEps);
+        return Math.abs(d) < dEps;
     }
 
     /**
@@ -1301,9 +1301,8 @@ public class Math2 {
      */
     public static void setSeed(long seed) {
 
-        //this is probably thread-safe
-        //http://www.velocityreviews.com/forums/t367261-java-util-random-nextint-thread-safety.html
-        //but synchronize it to be extra careful
+        //Random is threadsafe, but has issues in a multi threaded situation.
+        //So synchronize it to be extra careful
         synchronized (random) {
             random.setSeed(seed);
         }
@@ -1319,9 +1318,8 @@ public class Math2 {
      */
     public static int random(int max) {
 
-        //this is probably thread-safe
-        //http://www.velocityreviews.com/forums/t367261-java-util-random-nextint-thread-safety.html
-        //but synchronize it to be extra careful
+        //Random is threadsafe, but has issues in a multi threaded situation.
+        //So synchronize it to be extra careful
         synchronized (random) {
             return random.nextInt(max);
         }

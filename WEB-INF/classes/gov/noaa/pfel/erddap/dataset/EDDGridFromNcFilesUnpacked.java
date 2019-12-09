@@ -265,7 +265,6 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"comment\">Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = &quot;Multi-scale Ultra-high Reolution&quot;; produced under NASA MEaSUREs program.</att>\n" +
 "        <att name=\"contact\">ghrsst@podaac.jpl.nasa.gov</att>\n" +

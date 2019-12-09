@@ -23,6 +23,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -155,7 +156,6 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -405,7 +405,6 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre\">Global Multi-Grid Wave Model (Static Grids)</att>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
@@ -423,6 +422,8 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <att name=\"creator_name\">NCEP</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.ncep.noaa.gov/</att>\n" + 
+"        <att name=\"grid_mapping_earth_radius\" type=\"double\">6371229.0</att>\n" +
+"        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
 "        <att name=\"infoUrl\">https://www.ncep.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NCEP</att>\n" +
 "        <att name=\"keywords\">centers, data, direction, Direction_of_swell_waves_ordered_sequence_of_data, earth, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Significant Wave Height, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Swells, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Period, environmental, height, local, mean, Mean_period_of_swell_waves_ordered_sequence_of_data, national, ncep, ocean, oceans, ordered, ordered_sequence_of_data, period, prediction, science, sea, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sequence, significant, Significant_height_of_swell_waves_ordered_sequence_of_data, source, surface, surface waves, swell, swells, time, wave, waves</att>\n" +
@@ -507,6 +508,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"grid_mapping\">null</att>\n" + 
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "            <att name=\"standard_name\">sea_surface_swell_wave_to_direction</att>\n" +
 "        </addAttributes>\n" +
@@ -535,6 +537,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"grid_mapping\">null</att>\n" + 
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "            <att name=\"standard_name\">sea_surface_swell_wave_period</att>\n" +
 "        </addAttributes>\n" +
@@ -563,6 +566,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"grid_mapping\">null</att>\n" + 
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "            <att name=\"standard_name\">sea_surface_swell_wave_significant_height</att>\n" +
 "        </addAttributes>\n" +
@@ -618,7 +622,6 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgment\">Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the US National Oceanographic Data Center. This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.</att>\n" +
 "        <att name=\"cdm_data_type\">grid</att>\n" +
@@ -743,6 +746,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "        </addAttributes>\n" +
@@ -760,6 +764,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "        </addAttributes>\n" +
@@ -786,6 +791,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
@@ -811,6 +817,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"add_offset\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"scale_factor\">null</att>\n" +
 "        </addAttributes>\n" +
@@ -836,6 +843,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Bias estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_bias is empty. PFV6 will contain the correct sses_bias values.</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
@@ -861,6 +869,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Standard deviation estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_standard_deviation is empty. PFV6 will contain the correct sses_standard_deviation values.</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
@@ -886,6 +895,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-5.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"reference\">null</att>\n" +
 "            <att name=\"references\">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.</att>\n" +
@@ -916,6 +926,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"add_offset\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
 "            <att name=\"scale_factor\">null</att>\n" +
 "        </addAttributes>\n" +
@@ -944,6 +955,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.2 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.2 grid.</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Ice Distribution</att>\n" +
 "            <att name=\"reference\">null</att>\n" +
 "            <att name=\"references\">Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at https://journals.ametsoc.org/doi/full/10.1175/2007JCLI1824.1</att>\n" +
@@ -971,6 +983,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Optical Properties</att>\n" +
 "            <att name=\"reference\">null</att>\n" +
 "            <att name=\"references\">https://www.class.ncdc.noaa.gov/saa/products/search?sub_id=0&amp;datatype_family=AERO100&amp;submit.x=25&amp;submit.y=12</att>\n" +
@@ -1002,6 +1015,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">6.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1024,6 +1038,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1043,6 +1058,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1097,7 +1113,6 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgment\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n" +
 "        <att name=\"cdm_data_type\">grid</att>\n" +
@@ -1442,7 +1457,6 @@ expected =
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"CMIPtable\">Amon</att>\n" +
 "        <att name=\"contact\">Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org</att>\n" +
@@ -1671,7 +1685,7 @@ expected =
 "  }\n" +
 "  tasmin {\n" +
 "    Float32 _FillValue 1.0e+20;\n" +
-"    String associated_files \"baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc\";\n" +
+"    String associated_files \"baseURL: baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_bcc-csm1-1_rcp26_r0i0p0.nc areacella: areacella_fx_bcc-csm1-1_rcp26_r0i0p0.nc\";\n" +
 "    String cell_measures \"area: areacella\";\n" +
 "    String cell_methods \"time: minimum (interval: 30 days) within days time: mean over days\";\n" +
 "    Float64 colorBarMaximum 313.0;\n" +
@@ -6291,7 +6305,6 @@ String2.setClipboardString(results);
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
 "        <att name=\"creator_email\">Yongsheng.Zhang@noaa.gov</att>\n" +
@@ -6404,6 +6417,7 @@ String2.setClipboardString(results);
 "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Salinity</att>\n" +
 "            <att name=\"long_name\">Monthly mean Sea Surface Salinity from level-2 swath data</att>\n" +
 "            <att name=\"scale_factor\">null</att>\n" +
@@ -6431,6 +6445,7 @@ String2.setClipboardString(results);
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"scale_factor\">null</att>\n" +
 "            <att name=\"standard_name\">sea_surface_salinity_number_of_observations</att>\n" +
@@ -8045,7 +8060,6 @@ expected =
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"_lastModified\">2015155145346000</att>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
@@ -8903,7 +8917,6 @@ expected =
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -11107,7 +11120,6 @@ expected =
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
 "        <att name=\"forcing_data_source\">Met Office; Global UM</att>\n";
@@ -11118,6 +11130,10 @@ expected =
     "<addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"grid_mapping_inverse_flattening\" type=\"float\">298.25723</att>\n" +
+"        <att name=\"grid_mapping_longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" +
+"        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
+"        <att name=\"grid_mapping_semi_major_axis\" type=\"float\">6378137.0</att>\n" +
 "        <att name=\"history_of_appended_files\">Wed Jul  3 07:35:02 2019: Appended file maxwvht.tmp.nc had no &quot;history&quot; attribute</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
@@ -11208,6 +11224,7 @@ expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"grid_mapping\">null</att>\n" +
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -11248,6 +11265,305 @@ expected =
     }
 
     /**
+     * This tests nThreads with making requests for 1 datum from numerous files.
+     * This also ensures the .gz caching works (although nothing in cache is reused). 
+     *
+     * @param maxNThreads E.g. 3 will test nThreads=3,2,1,1,2,3.
+     * @throws Throwable if trouble
+     */
+    public static void testNThreads(int maxNThreads) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
+        testVerboseOn();
+        String tName, results,  expected, userDapQuery, tQuery;
+        String error = "";
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String id = "testGridNThreads";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        StringBuilder bigResults = new StringBuilder("\nEDDGridFromNcFiles.testNThreads finished.\n");
+
+        for (int nt = -maxNThreads; nt <= maxNThreads; nt++) {
+            if (nt == 0)
+                continue;
+            //delete all files in .gz cache dir
+            File2.deleteAllFiles(eddGrid.decompressedDirectory());
+            Math2.gc(30000); //let system settle
+
+            long tTime = System.currentTimeMillis();
+            eddGrid.nThreads = Math.abs(nt);
+            tName = eddGrid.makeNewFileForDapQuery(null, null, 
+                "taux[0:150][][(30)][(330)]", //around time=[210], it slows way down for awhile (something in Windows: virus check?)
+                tDir, "EDDGridFromNcFiles.testNThreads" + nt, ".csv"); 
+            results = String2.directReadFrom88591File(tDir + tName);
+            //String2.log(results);            
+            expected = 
+"time,altitude,latitude,longitude,taux\n" +
+"UTC,m,degrees_north,degrees_east,Pa\n" +
+"2009-10-03T12:00:00Z,0.0,30.0,330.0,NaN\n" +
+"2009-10-04T12:00:00Z,0.0,30.0,330.0,NaN\n" +
+"2009-10-05T12:00:00Z,0.0,30.0,330.0,0.0740024\n" +
+"2009-10-06T12:00:00Z,0.0,30.0,330.0,NaN\n" +
+"2009-10-07T12:00:00Z,0.0,30.0,330.0,-0.00820897\n" +
+"2009-10-08T12:00:00Z,0.0,30.0,330.0,NaN\n" +
+"2009-10-09T12:00:00Z,0.0,30.0,330.0,-0.025654\n" +
+"2009-10-10T12:00:00Z,0.0,30.0,330.0,-0.0355719\n";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+            String msg = "nThreads=" + Math.abs(nt) + " time=" + (System.currentTimeMillis() - tTime) + "\n";
+            String2.log(msg);
+            bigResults.append(msg);
+        }
+        String2.log(bigResults.toString());
+        String2.log("  (Lenovo: 2 cores: nThreads/s 3/4,2/3,1/3,1/4,2/3,3/3");
+        Math2.gc(10000);
+    }
+
+    /**
+     * This tests the /files/ "files" system.
+     * This requires nceiPH53sstn1day in the local ERDDAP.
+     *
+     * EDDGridFromNcFiles.testFiles() has more tests than any other testFiles().
+     */
+    public static void testFiles() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        int po;
+
+        try {
+            //get /files/.csv
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/.csv"));
+            Test.ensureTrue(results.indexOf("Name,Last modified,Size,Description[10]") 
+                == 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("nceiPH53sstn1day/,NaN,NaN,\"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417\\u00b0, 1981-present, Nighttime (1 Day Composite)\"[10]") 
+                > 0,  "results=\n" + results);
+            Test.ensureTrue(results.indexOf("testTableAscii/,NaN,NaN,The Title for testTableAscii[10]")               
+                > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("documentation.html,") 
+                > 0, "results=\n" + results);
+
+            //get /files/datasetID/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"1981/,NaN,NaN,\n" +
+"1994/,NaN,NaN,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/");
+            Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("1981/")      > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
+
+            //get /files/datasetID  //missing trailing slash will be redirected
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day");
+            Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("1981/")      > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
+
+            //get /files/datasetID/subdir/.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"data/,NaN,NaN,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //get /files/datasetID/subdir/subdir.csv
+            results = SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/data/.csv");
+            expected = 
+"Name,Last modified,Size,Description\n" +
+"19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,1471330800000,12484412,\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //download a file in root -- none available
+
+            //download a file in subdir
+            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+                "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/data/" +
+                "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc").substring(0, 50));
+            expected = 
+"[137]HDF[10]\n" +
+"[26][10]\n" +
+"[2][8][8][0][0][0][0][0][0][0][0][0][255][255][255][255][255][255][255][255]<[127][190][0][0][0][0][0]0[0][0][0][0][0][0][0][199](*yOHD[end]";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //query with // at start fails
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files//.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files//.csv\n" +
+"(Error {\n" +
+"    code=400;\n" +
+"    message=\"Bad Request: Query error: // is not allowed!\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //query with // later fails
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day//.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day//.csv\n" +
+"(Error {\n" +
+"    code=400;\n" +
+"    message=\"Bad Request: Query error: // is not allowed!\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //query with /../ fails
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/../");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/../\n" +
+"(Error {\n" +
+"    code=400;\n" +
+"    message=\"Bad Request: Query error: /../ is not allowed!\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent dataset
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent datasetID
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a existent subdirectory but without trailing slash
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: GLsubdir .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent directory
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish/");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish/\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in root
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //try to download a non-existent file in existent subdir
+            try {
+                results = SSR.getUrlResponseStringNewline(
+                    "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir/gibberish.csv");
+            } catch (Exception e) { 
+                results = e.toString();
+            }
+            expected = 
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir/gibberish.csv\n" +
+"(Error {\n" +
+"    code=404;\n" +
+"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+"})";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+                "This test requires nceiPH53sstn1day in the localhost ERDDAP.\n" +
+                "Unexpected error."); 
+        } 
+    }
+
+
+    /**
+     * This tests the bathymetry shift for an island.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testIslandShift() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testIslandShift() *****************\n");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testIslandShift";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String tDir = EDStatic.fullTestCacheDirectory;
+
+        for (int i = 1; i <= 4; i++) {
+            tName = eddGrid.makeNewFileForDapQuery(null, null, 
+                "&.land=" + SgtMap.drawLandMask_OPTIONS[i],
+                tDir, "testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i], ".png"); 
+            SSR.displayInBrowser("file://" + tDir + tName);
+        }
+    }
+
+
+    /**
      * This tests this class.
      *
      * @throws Throwable if trouble
@@ -11285,11 +11601,14 @@ expected =
         testReplaceFromFileName(false);
         testMinimalReadSource();
         testDapErrors();
+        testFiles();  
+        testIslandShift();
 
 //unfinished:    testRTechHdf();
         testUpdate();
         testQuickRestart();
         testBigRequestSpeed(3, ".dods", 895847390, 20000); //expected bytes, ms. Also testNThreads.
+        testNThreads(3);
 
         testMakeCopyFileTasks(true); 
         testMakeCopyFileTasks(false);

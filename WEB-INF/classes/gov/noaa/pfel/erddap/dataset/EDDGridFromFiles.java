@@ -182,7 +182,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tFileNameRegex = ".*";
         boolean tRecursive = false;
         String tPathRegex = ".*";
-        boolean tAccessibleViaFiles = false;
+        boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         String tMetadataFrom = MF_LAST;       
         int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         String tDefaultDataQuery = null;
@@ -477,6 +477,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         matchAxisNDigits = tMatchAxisNDigits;
         int nav = tAxisVariables.length;
         int ndv = tDataVariables.length;
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
         dimensionValuesInMemory = tDimensionValuesInMemory; 
 
@@ -1195,13 +1196,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             dataVariables[dv].setActualRangeFromDestinationMinMax();
         }
 
-        //accessibleViaFiles
-        if (EDStatic.filesActive && tAccessibleViaFiles) {
-            accessibleViaFilesDir = fileDir;
-            accessibleViaFilesRegex = fileNameRegex;
-            accessibleViaFilesRecursive = recursive;
-        }
-
         //ensure the setup is valid
         ensureValid();
 
@@ -1729,6 +1723,33 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         return nChanges > 0;
     }
 
+    /**
+     * This is the default implementation of getFileInfo, which
+     * gets file info from a locally accessible directory.
+     * This is called in the middle of the constructor.
+     * Some subclasses overwrite this.
+     *
+     * @param recursive true if the file search should also search subdirectories
+     * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;
+     * @throws Throwable if trouble
+     */
+    public Table getFileInfo(String fileDir, String fileNameRegex, boolean recursive, 
+        String pathRegex) throws Throwable {
+        //String2.log("EDDTableFromFiles getFileInfo");
+
+        //if temporary cache system active, make it look like all remote files are in local dir
+        if (cacheFromUrl != null && cacheMaxSizeB > 0) {
+            Table table = FileVisitorDNLS.oneStepCache(cacheFromUrl, //throws IOException
+                fileDir, fileNameRegex, recursive, pathRegex, false); //dirsToo
+            if (table.nRows() == 0) 
+                throw new Exception("No matching files at " + cacheFromUrl);
+            return table;
+        }
+         
+        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
+            false); //dirsToo
+    }
+
     /** 
      * This gets the dirTable (perhaps the private copy) for read-only use. 
      *
@@ -1777,33 +1798,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         return tFileTable;
     }
 
-    /**
-     * This is the default implementation of getFileInfo, which
-     * gets file info from a locally accessible directory.
-     * This is called in the middle of the constructor.
-     * Some subclasses overwrite this.
-     *
-     * @param recursive true if the file search should also search subdirectories
-     * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;
-     * @throws Throwable if trouble
-     */
-    public Table getFileInfo(String fileDir, String fileNameRegex, boolean recursive, 
-        String pathRegex) throws Throwable {
-        //String2.log("EDDTableFromFiles getFileInfo");
-
-        //if temporary cache system active, make it look like all remote files are in local dir
-        if (cacheFromUrl != null && cacheMaxSizeB > 0) {
-            Table table = FileVisitorDNLS.oneStepCache(cacheFromUrl, //throws IOException
-                fileDir, fileNameRegex, recursive, pathRegex, false); //dirsToo
-            if (table.nRows() == 0) 
-                throw new Exception("No matching files at " + cacheFromUrl);
-            return table;
-        }
-         
-        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
-            false); //dirsToo
-    }
-
     /** 
      * Try to load the dirTable or fileTable.
      *
@@ -1835,19 +1829,22 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     }
 
     /** 
-     * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
-     * and last_mod is LongArray of epochMillis)
+     * This returns a fileTable
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
-     *   or Object[2] where [0] is a sorted DNLS table which just has files in fileDir + nextPath and 
-     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
     public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
         try {
             //get a copy of the source file information
             Table tDirTable  = getDirTableCopy(); 
@@ -1867,7 +1864,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
             //remove files other than fileDir+nextPath and generate array of immediate subDir names
             String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(dnlsTable, fileDir + nextPath);
-            return new Object[]{dnlsTable, subDirs};
+            accessibleViaFilesMakeReadyForUser(dnlsTable);
+            return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
@@ -1875,6 +1873,53 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }
     }
 
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+        //identical code in EDDGridFromFiles and EDDTableFromFiles
+        if (!accessibleViaFiles)
+             return null;
+        String msg = datasetID() + " accessibleViaFilesGetLocal(" + relativeFileName + "): ";
+
+        try {
+            String fullName = fileDir + relativeFileName;
+            String localDir   = File2.getDirectory(fullName);
+            String nameAndExt = File2.getNameAndExtension(fullName);
+
+            //ensure that fullName is in file list
+
+            //get dir index
+            Table dirTable  = getDirTable();  //no need to get copy since not changing it
+            Table fileTable = getFileTable(); //no need to get copy since not changing it 
+            PrimitiveArray dirNames = dirTable.getColumn(0); //the only column
+            int dirIndex = dirNames.indexOf(localDir);
+            if (dirIndex < 0) {
+                String2.log(msg + "localDir=" + localDir + " not in dirTable.");
+                return null;
+            }
+
+            //get file index
+            ShortArray  dirIndexCol = (ShortArray)fileTable.getColumn(FT_DIR_INDEX_COL);
+            StringArray fileNameCol = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL);
+            int n = dirIndexCol.size();
+            for (int i = 0; i < n; i++) {
+                if (dirIndexCol.get(i) == dirIndex &&
+                    fileNameCol.get(i).equals(nameAndExt))
+                    return fullName; //it's a valid file in the fileTable
+            }                   
+            String2.log(msg + "fullName=" + localDir + " not in dirTable+fileTable.");
+            return null;
+        } catch (Exception e) {
+            String2.log(msg + "\n" +
+                MustBe.throwableToString(e));
+            return null;
+        }
+     }
 
     /**
      * If using temporary cache system, this ensure file is in cache or throws Exception.

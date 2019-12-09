@@ -546,7 +546,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
                 tErddapUrl + "/wcs/" + tId + "/" + EDDGrid.wcsServer : "");
             wmsCol.add(graphsAccessible && edd.accessibleViaWMS().length() == 0? //graphs
                 tErddapUrl + "/wms/" + tId + "/" + EDD.WMS_SERVER : "");
-            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFiles? 
                 tErddapUrl + "/files/" + tId + "/" : "");
             fgdcCol.add(graphsAccessible && edd.accessibleViaFGDC().length() == 0? 
                 tErddapUrl + "/" + EDStatic.fgdcXmlDirectory     + 

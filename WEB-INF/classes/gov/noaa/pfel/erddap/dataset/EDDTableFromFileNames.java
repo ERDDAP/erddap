@@ -299,6 +299,7 @@ public class EDDTableFromFileNames extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         fileDir = tFileDir;
         fileNameRegex = tFileNameRegex;
+        accessibleViaFiles = EDStatic.filesActive; //default for this dataset is 'true' and not changeable
 
         if (!String2.isSomething(fileDir))
             throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
@@ -351,7 +352,7 @@ public class EDDTableFromFileNames extends EDDTable{
                     null, //String tColumnNameForExtract,
                     "", "directory,name", //String tSortedColumnSourceName, String tSortFilesBySourceNames,
                     false, false, //boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-                    false, true, //boolean tAccessibleViaFiles (not directly), boolean tRemoveMVRows,
+                    true, true, //boolean tAccessibleViaFiles, boolean tRemoveMVRows,
                     0, 1, //int tStandardizeWhat, int tNThreads, 
                     null, -1, null); //String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
             } else {
@@ -557,11 +558,7 @@ public class EDDTableFromFileNames extends EDDTable{
         }
 
         //accessibleViaFiles
-        if (EDStatic.filesActive) {
-            accessibleViaFilesDir = fileDir;
-            accessibleViaFilesRegex = fileNameRegex;
-            accessibleViaFilesRecursive = recursive;
-
+        if (accessibleViaFiles) {
             if (from == fromFiles) 
                 writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(3)); //may be null
         }
@@ -755,19 +752,22 @@ public class EDDTableFromFileNames extends EDDTable{
     }
 
     /** 
-     * This returns a fileTable (formatted like 
-     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, size is LongArray,
-     * and lastMod is LongArray of epochMillis)
+     * This returns a fileTable 
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble (table.nRows + nSubdirs = 0 is not trouble)
-     *   or Object[2] where [0] is a sorted DNLS table (perhaps with 0 rows) which just has files in fileDir + nextPath and 
-     *   [1] is a sorted String[] with the short names of directories that are 1 level lower.
+     *   or Object[3] where 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *     "Size" (long), and "Description" (String, but usually no content),
+     *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
+     *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
     public Object[] accessibleViaFilesFileTable(String nextPath) {
+        if (!accessibleViaFiles)
+            return null;
         try {
 
             //fromOnTheFly
@@ -781,7 +781,8 @@ public class EDDTableFromFileNames extends EDDTable{
                 } else {
                     String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(
                         dnlsTable, fileDir + nextPath);
-                    return new Object[]{dnlsTable, subDirs};
+                    accessibleViaFilesMakeReadyForUser(dnlsTable);
+                    return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
                 }
             }
 
@@ -794,7 +795,8 @@ public class EDDTableFromFileNames extends EDDTable{
                     if (dnlsTable != null) {
                         String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(
                             dnlsTable, fileDir + nextPath);
-                        return new Object[]{dnlsTable, subDirs};
+                        accessibleViaFilesMakeReadyForUser(dnlsTable);
+                        return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
                     }
                 }
 
@@ -838,8 +840,8 @@ public class EDDTableFromFileNames extends EDDTable{
     
                 String subDirs[] = (String[])twardt.subdirHash().toArray(new String[0]);
                 Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
-
-                return new Object[]{dnlsTable, subDirs};
+                accessibleViaFilesMakeReadyForUser(dnlsTable);
+                return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
             }
 
            
@@ -851,13 +853,53 @@ public class EDDTableFromFileNames extends EDDTable{
 
             //remove files other than fileDir+nextPath and generate array of immediate subDir names
             String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(dnlsTable, fileDir + nextPath);
-            return new Object[]{dnlsTable, subDirs};
+            accessibleViaFilesMakeReadyForUser(dnlsTable);
+            return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
 
         } catch (Throwable t) {
             String2.log("Caught ERROR in getTwoLevelsOfInfo():\n" + MustBe.throwableToString(t));
             return null;
         }
     }
+
+    /**
+     * This converts a relativeFileName into a full localFileName (which may be a url).
+     * 
+     * @param relativeFileName (for most EDDTypes, just offset by fileDir)
+     * @return full localFileName or null if any error (including, file isn't in
+     *    list of valid files for this dataset)
+     */
+     public String accessibleViaFilesGetLocal(String relativeFileName) {
+        if (!accessibleViaFiles)
+             return null;
+        String msg = datasetID() + " accessibleViaFilesGetLocal(" + relativeFileName + "): ";
+        try {
+            //regardless of 'from' setting, get list of files for this nextPath, 
+            //and see if the relativeFileName is present
+            String nextPath   = File2.getDirectory(relativeFileName);
+            String nameAndExt = File2.getNameAndExtension(relativeFileName);
+            Object oar[] = accessibleViaFilesFileTable(nextPath);
+            if (oar == null) {
+                String2.log(msg + "accessibleViaFilesFileTable is null");
+                return null;
+            }
+            Table dnlsTable = (Table)oar[0];
+            StringArray dirSA  = (StringArray)dnlsTable.getColumn(0);
+            StringArray nameSA = (StringArray)dnlsTable.getColumn(1);
+            int which = nameSA.indexOf(nameAndExt);
+            if (which < 0) {
+                String2.log(msg + "That file isn't in the fileTable.");
+                return null;
+            }
+            return dirSA.get(which) + nameAndExt;
+
+        } catch (Exception e) {
+            String2.log(msg + ":\n" +
+                MustBe.throwableToString(e));
+            return null;
+        }
+     }
+
 
     /**
      * Get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
@@ -997,7 +1039,7 @@ public class EDDTableFromFileNames extends EDDTable{
             Attributes atts = table.columnAttributes(namei);
             int nrv = resultsVariables.size();
             for (int rvi = 0; rvi < nrv; rvi++) {
-                //create this variable by extracting info from file name
+
                 String sourceName = resultsVariables.get(rvi);
                 if (sourceName.equals(URL) ||
                     sourceName.equals(NAME) ||
@@ -1010,7 +1052,15 @@ public class EDDTableFromFileNames extends EDDTable{
                         ": Unexpected resultsVariable sourceName=" + sourceName);
                 EDV edv = dataVariables[dvi];
 
-                //create this source variable
+                //create this column from a fixed value EDV
+                if (edv.isFixedValue()) {
+                    PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
+                        nRows, edv.fixedValue()); 
+                    table.addColumn(sourceName, pa);
+                    continue;
+                }
+
+                //create this variable by extracting info from file name
                 PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
                     nRows, false); 
                 table.addColumn(sourceName, pa);
@@ -1022,7 +1072,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 }
             }
 
-            //String2.log(table.toString());
+if (debugMode) String2.log(">> getDataForDapQuery:\n" + table.toString());
             if (table.nRows() > 0) { //should be
                 standardizeResultsTable(requestUrl, userDapQuery, table);
                 tableWriter.writeSome(table);
@@ -1702,6 +1752,8 @@ String expected =
      */
     public static void testLocal() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testLocal\n");
+        boolean oDebugMode = debugMode;
+        debugMode = true;
         testVerboseOn();
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected, query, tName;
@@ -1713,6 +1765,7 @@ String expected =
             tedd.className() + "_all", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
+//fvEmptyString wasn't allowed before v2.03
 "Dataset {\n" +
 "  Sequence {\n" +
 "    Float32 five;\n" +
@@ -1723,6 +1776,11 @@ String expected =
 "    Float64 lastModified;\n" +
 "    Float64 size;\n" +
 "    String fileType;\n" +         
+"    Float64 fixedTime;\n" +
+"    Float64 latitude;\n" +
+"    Float64 longitude;\n" +
+"    String mySpecialString;\n" +
+"    String fvEmptyString;\n" +
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1774,9 +1832,47 @@ String expected =
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File Type\";\n" +
 "  \\}\n" +
+"  fixedTime \\{\n" +
+"    Float64 actual_range 9.466848e\\+8, 9.783072e\\+8;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Fixed Time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  \\}\n" +
+"  latitude \\{\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 20.0, 40.0;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  \\}\n" +
+"  longitude \\{\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.0, 45.0;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  \\}\n" +
+"  mySpecialString \\{\n" +
+"    String ioos_category \"Other\";\n" +
+"  \\}\n" +
+"  fvEmptyString \\{\n" +
+"    String ioos_category \"Other\";\n" +
+"  \\}\n" +
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Other\";\n" +
+"    Float64 Easternmost_Easting 45.0;\n" +
+"    Float64 geospatial_lat_max 40.0;\n" +
+"    Float64 geospatial_lat_min 20.0;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 45.0;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \".{19}Z \\(local files\\)\n" +
 ".{19}Z http://localhost:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov/\";\n" +
@@ -1789,10 +1885,13 @@ String expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"    Float64 Northernmost_Northing 40.0;\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
+"    Float64 Southernmost_Northing 20.0;\n" +
 "    String subsetVariables \"fileType\";\n" +
 "    String summary \"Images from JPL MUR SST Daily.\";\n" +
 "    String title \"JPL MUR SST Images\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
 "  \\}\n" +
 "\\}\n";
         Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
@@ -1802,12 +1901,12 @@ String expected =
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
-"five,url,name,time,day,lastModified,size,fileType\n" +
-"m,,,UTC,,UTC,bytes,\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+"five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString\n" +
+"m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n";
+        Test.ensureEqual(results, expected, "results=\n" + String2.annotatedString(results));
 
         //test that min and max are being set by the constructor
         EDV edv = tedd.findVariableByDestinationName("time");
@@ -1826,6 +1925,29 @@ String expected =
         Test.ensureEqual(edv.destinationMin(), 46482, "min");
         Test.ensureEqual(edv.destinationMax(), 46586, "max");
 
+        /*
+        actual_range and =NaN fixedValue variables:
+        Technically, if a variable has a fixedValue, then the actual_range should be determined
+        from that fixedValue. However, it is sometimes useful (notably with EDDTableFromFileNames)
+        to have dummy variable(s) (e.g., latitude, longitude, time) with fixed values of NaN, 
+        but a valid actual_range (as set by the attribute). 
+        Then, in Advanced Search a user can search for datasets
+        which have data in a specific latitude, longitude, time range and this dataset
+        will be able to say it does have the data (although all the actual rows of data
+        will show NaN).
+        */
+        edv = tedd.findVariableByDestinationName("fixedTime");
+//        Test.ensureEqual(edv.destinationMin(), 946684800, "min");
+//        Test.ensureEqual(edv.destinationMax(), 978307200, "max");
+
+        edv = tedd.findVariableByDestinationName("latitude");
+        Test.ensureEqual(edv.destinationMin(), 20, "min");
+        Test.ensureEqual(edv.destinationMax(), 40, "max");
+
+        edv = tedd.findVariableByDestinationName("longitude");
+        Test.ensureEqual(edv.destinationMin(), 0, "min");
+        Test.ensureEqual(edv.destinationMax(), 45, "max");
+
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(null, null, "name,day,size&day=4", dir, 
             tedd.className() + "_all", ".csv"); 
@@ -1836,7 +1958,21 @@ String expected =
 "jplMURSST20150104090000.png,4,46586.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
+        //just request fixed values
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "five,fixedTime,latitude,longitude,mySpecialString,fvEmptyString", 
+            dir, tedd.className() + "_fixed", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log("dir+tName=" + dir+tName);
+        expected = 
+"five,fixedTime,latitude,longitude,mySpecialString,fvEmptyString\n" +
+"m,UTC,degrees_north,degrees_east,,\n" +
+"5.0,,NaN,NaN,\"My \"\"Special\"\" String\",\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
         String2.log("\n EDDTableFromFileNames.testLocal finished successfully");
+        debugMode = oDebugMode;
     }
 
     /**
@@ -2032,7 +2168,7 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n";
+"Name,Last modified,Size,Description\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected = bigTest?
@@ -2056,7 +2192,7 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n";
+"Name,Last modified,Size,Description\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
@@ -2079,12 +2215,12 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104\n" +
+"Name,Last modified,Size,Description\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104,\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
@@ -2294,10 +2430,10 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n";
+"Name,Last modified,Size,Description\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, GLM-L2-LCFA";
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, GLM-L2-LCFA";
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
@@ -2316,7 +2452,7 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n";
+"Name,Last modified,Size,Description\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
@@ -2339,12 +2475,12 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"directory,name,lastModified,size\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321\n" +
-"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/360/10/,OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104\n" +
+"Name,Last modified,Size,Description\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601002189_e20183601004562_c20183601004596.nc,1545818719000,456238,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601007189_e20183601009562_c20183601009596.nc,1545819029000,544207,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601012189_e20183601014502_c20183601014536.nc,1545819316000,485764,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601017189_e20183601019562_c20183601019596.nc,1545819621000,489321,\n" +
+"OR_ABI-L1b-RadC-M3C01_G17_s20183601022189_e20183601024562_c20183601024597.nc,1545819917000,539104,\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
@@ -2365,9 +2501,23 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n" +

@@ -1092,7 +1092,9 @@ public class OpendapHelper  {
         } catch (Throwable t) {
             String2.pressEnterToContinue(
                 MustBe.throwableToString(t) +
-                "Known problem with https://tds.coaps.fsu.edu: \"unable to find valid certification path\"."); 
+                "Fix this someday:\n" +
+                "Known problem with https://tds.coaps.fsu.edu: \"unable to find valid certification path\"\n" +
+                "then 2019-11-25 'Connection cannot be opened'."); 
         }
 
 
@@ -1191,8 +1193,8 @@ public class OpendapHelper  {
             Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t)); 
+                MustBe.throwableToString(t) +
+                "Fix this someday: Expected error (server timed out 2013-10-24, then connection cannot be opened 2019-11-25)");
         }
 
 
@@ -2176,8 +2178,8 @@ public class OpendapHelper  {
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t)); 
+                MustBe.throwableToString(t) +
+                "Fix this someday: Expected error (server timed out 2013-10-24, then connection cannot be opened 2019-11-25)");
         }
     }
 
@@ -2320,8 +2322,9 @@ public class OpendapHelper  {
             File2.delete(fileName);
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t)); 
+                MustBe.throwableToString(t) +
+                "Fix this someday:\n" +
+                "Expected error (server timed out 2013-10-24, then 2019-11-25 'Connection cannot be opened'."); 
         }
 
         //test subset
@@ -2471,6 +2474,10 @@ expected =
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                     "\nurl=" + dArrayUrl +
                     "\n(The server timed out 2013-10-24.)"); 
+            else if (results.startsWith("dods.dap.DODSException: Connection cannot be opened"))
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nurl=" + dArrayUrl +
+                    "\n(The connection can't be opened 2019-11-25.)"); 
             else Test.ensureEqual(results, expected, "results=" + results);
         }
 

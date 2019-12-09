@@ -312,8 +312,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //"    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <standardizeWhat>" + tStandardizeWhat + "</standardizeWhat>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n" +
-            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
             //"    <charset>UTF-8</charset>\n" +
             //"    <columnNamesRow>1</columnNamesRow>\n" +
             //"    <firstDataRow>3</firstDataRow>\n" +
@@ -372,7 +371,6 @@ String expected =
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <standardizeWhat>0</standardizeWhat>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +

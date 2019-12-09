@@ -146,12 +146,11 @@ public class EDVTimeStamp extends EDV {
         if (!String2.isSomething(time_zone) || time_zone.equals("UTC"))
             time_zone = "Zulu";
 
-        if (sourceName != null && sourceName.length() >= 2 &&
-            sourceName.charAt(0) == '=') {
-            //extract fixedValue (must be epochSeconds)
-            //*** I think this has never been used so never tested !!!
 
-            fixedValue = extractFixedValue(sourceName);
+        fixedValue = extractFixedValue(sourceName);
+        if (isFixedValue()) {
+            //extract fixedValue (must be epochSeconds)
+
             sourceTimeIsNumeric = true;
             sourceTimeBase = 0;
             sourceTimeFactor = 1;
@@ -252,11 +251,7 @@ public class EDVTimeStamp extends EDV {
         if (pa != null) 
             combinedAttributes.set("_FillValue", new DoubleArray(new double[]{destinationFillValue}));
 
-        //actual_range may be strings(???), so can't use extractActualRange();
-        if (isFixedValue()) {
-            destinationMin = String2.parseDouble(fixedValue);  //epochSeconds
-            destinationMax = destinationMin;
-        } else {
+        {
             //String2.log(">> combinedAtts=\n" + combinedAttributes.toString());
 
             //1st priority: actual_range
