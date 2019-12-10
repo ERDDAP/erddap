@@ -107,23 +107,25 @@ public class GraphDataLayer {
     public final static int MARKER_TYPE_DOT = 3;
     public final static int MARKER_TYPE_SQUARE = 4;
     public final static int MARKER_TYPE_FILLED_SQUARE = 5;    
-    public final static int MARKER_TYPE_FILLED_SQUARE_NOBORDER = 6;
-    public final static int MARKER_TYPE_CIRCLE = 7;
-    public final static int MARKER_TYPE_FILLED_CIRCLE = 8;
-    public final static int MARKER_TYPE_FILLED_CIRCLE_NOBORDER = 9;
-    public final static int MARKER_TYPE_UP_TRIANGLE = 10;
-    public final static int MARKER_TYPE_FILLED_UP_TRIANGLE = 11;
-    public final static int MARKER_TYPE_FILLED_UP_TRIANGLE_NOBORDER = 12;
+    public final static int MARKER_TYPE_CIRCLE = 6;
+    public final static int MARKER_TYPE_FILLED_CIRCLE = 7;
+    public final static int MARKER_TYPE_UP_TRIANGLE = 8;
+    public final static int MARKER_TYPE_FILLED_UP_TRIANGLE = 9;
+    public final static int MARKER_TYPE_BORDERLESS_FILLED_SQUARE = 10;
+    public final static int MARKER_TYPE_BORDERLESS_FILLED_CIRCLE = 11;
+    public final static int MARKER_TYPE_BORDERLESS_FILLED_UP_TRIANGLE = 12;
     /** These exactly parallel the MARKER_TYPEs. 
       * Some code elsewhere relies on filled options having s.toLowerCase().indexOf("filled") >= 0.
       */
     public final static String MARKER_TYPES[] = {
-        "None", "Plus", "X", "Dot", "Square", "Filled Square", "Borderless Filled Square",
-            "Circle", "Filled Circle","Borderless Filled Circle", "Up Triangle", "Filled Up Triangle","Borderless Filled Up Triangle"};
+        "None", "Plus", "X", "Dot", "Square", "Filled Square", 
+            "Circle", "Filled Circle", "Up Triangle", "Filled Up Triangle",
+            "Borderless Filled Square", "Borderless Filled Circle", "Borderless Filled Up Triangle"};
     /** These don't parallel the MARKER_TYPEs, but the names
       are the same as in MARKER_TYPES, so you can look them up. */
     public final static String FILLED_MARKER_TYPES[] = {
-        "Filled Square", "Borderless Filled Square","Filled Circle", "Borderless Filled Circle", "Filled Up Triangle","Borderless Filled Up Triangle"};
+        "Filled Square", "Filled Circle", "Filled Up Triangle",
+        "Borderless Filled Square", "Borderless Filled Circle",  "Borderless Filled Up Triangle"};
 
     public final static int REGRESS_NONE = -1;
     public final static int REGRESS_MEAN = 0;
