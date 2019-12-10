@@ -8382,7 +8382,8 @@ public abstract class EDDTable extends EDD {
             "    <li><kbd>&amp;.marker=<i>markerType</i>|<i>markerSize</i></kbd>\n" +
             "      <br>markerType is an integer: 0=None, 1=Plus, 2=X, 3=Dot, 4=Square,\n" +
             "      5=Filled Square (default), 6=Circle, 7=Filled Circle, 8=Up Triangle,\n" +
-            "      9=Filled Up Triangle.\n" +
+            "      9=Filled Up Triangle, 10=Borderless Filled Square, 11=Borderless Filled Circle,\n" +
+            "      12=Borderless Filled Up Triangle.\n" +
             "      markerSize is an integer from 3 to 50 (default=5)\n" +
             "    <li><kbd>&amp;.size=<i>width</i>|<i>height</i></kbd>\n" +
             "      <br>For .png images (not .pdf's), this specifies the desired size of the image, in pixels.\n" +
