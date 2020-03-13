@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.pointdata;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -245,7 +246,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         Attributes xAttributes = new Attributes();
         Attributes idAttributes = new Attributes();
         Attributes dataAttributes[] = new Attributes[nVars];
-        Class elementClasses[] = new Class[nVars];
+        PAType elementPATypes[] = new PAType[nVars];
         for (int station = 0; station < nStations; station++) {
             long stationTime = System.currentTimeMillis();
             String tErrorInMethod = 
@@ -280,7 +281,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                         //just for first station
                         dataAttributes[0] = new Attributes();
                         NcHelper.getVariableAttributes(dataVariable, dataAttributes[0]); //other var atts read below
-                        elementClasses[0] = NcHelper.getElementClass(dataVariable.getDataType());
+                        elementPATypes[0] = NcHelper.getElementPAType(dataVariable.getDataType());
                     }
 
                     //get the sourceMissingValue for var0
@@ -506,7 +507,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                             dataAttributes[var] = new Attributes();
                             NcHelper.getVariableAttributes(dataVariable2, 
                                 dataAttributes[var]); 
-                            elementClasses[var] = NcHelper.getElementClass(dataVariable2.getDataType());
+                            elementPATypes[var] = NcHelper.getElementPAType(dataVariable2.getDataType());
                         }
 
                         //get the sourceMissingValue for this var
@@ -587,7 +588,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         //*** for each, variable
         for (int var = 0; var < nVars; var++) {
             //if trouble, dataAttributes[var] wasn't created
-            if (dataAttributes[var] == null || elementClasses[var] == null)
+            if (dataAttributes[var] == null || elementPATypes[var] == null)
                 continue;
             dataAttributes[var].set("long_name", userVariableNames[var]);
 
@@ -647,7 +648,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                             globalAttributes, xAttributes, yAttributes,
                             zAttributes, tAttributes, idAttributes,
                             dataAttributes[var],
-                            elementClasses[var]); 
+                            elementPATypes[var]); 
                     pointDataSet.ensureValid(); //throws Exception if trouble
                     activePointDataSets.add(pointDataSet);
                 } catch (Exception e) {
@@ -681,7 +682,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
      * @param tAttributes
      * @param idAttributes
      * @param dataAttributes
-     * @param elementClass e.g., double.class
+     * @param elementPAType e.g., PAType.DOUBLE
      */
     public PointDataSetFromStationVariables(String tInternalName, 
         String tInFileVarName,
@@ -690,7 +691,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         String tUdUnits,
         Attributes globalAttributes, Attributes xAttributes, Attributes yAttributes, 
         Attributes zAttributes, Attributes tAttributes, Attributes idAttributes, 
-        Attributes dataAttributes, Class elementClass) throws Exception {
+        Attributes dataAttributes, PAType elementType) throws Exception {
 
         String errorInMethod = String2.ERROR + " in PointDataSetGroupVariables.constructor:\n";
         groupVariables = tGroupVariables;
@@ -701,7 +702,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         this.tAttributes = tAttributes;
         this.idAttributes = idAttributes;
         this.dataAttributes = dataAttributes;
-        this.elementClass = elementClass;
+        this.elementType = elementType;
 
         //change the mv attributes
         //make subset currently stores all data as floats
@@ -876,7 +877,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         table.addColumn(3, "TIME",  new DoubleArray(), (Attributes)tAttributes.clone());
         table.addColumn(4, "ID",    new StringArray(), (Attributes)idAttributes.clone());
         table.addColumn(5, inFileVarName, 
-            PrimitiveArray.factory(elementClass, 8, false), (Attributes)dataAttributes.clone());
+            PrimitiveArray.factory(elementType, 8, false), (Attributes)dataAttributes.clone());
 
         //add the data
         //String2.log("PointDataSetFromStationVariables.makeSubset nGroupVariables=" + groupVariables.length);

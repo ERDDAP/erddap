@@ -373,7 +373,7 @@ public class TestSSR {
 
         emailPassword = String2.getPasswordFromSystemIn(
             "gmail email password\n" +
-            "(e.g., password (or \"\" to skip this test)? ");
+            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
         
         if (emailPassword.length() > 0) {
             emailReplyToAddress = String2.getStringFromSystemIn( 

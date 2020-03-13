@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -371,7 +372,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                         "Invalid " + avsss + ": start=" + tStart + ", stride=" + tStride + 
                             ", stop=" + tStop);
                 int n = Math2.roundToInt((tStop - tStart)/(double)tStride) + 3; //2 extra
-                tSourceValues = PrimitiveArray.factory(sss.elementClass(), n, false);
+                tSourceValues = PrimitiveArray.factory(sss.elementType(), n, false);
                 for (int i = 0; i < n; i++) {
                     double d = tStart + i * tStride; //more accurate than repeatedly add
                     if (d > tStop)
@@ -568,7 +569,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
             EDV edv = tDataVariables[dv];
             double smv = edv.safeDestinationMissingValue();
             results[nav + dv] = PrimitiveArray.factory(
-                edv.sourceDataTypeClass(), willKeepNRows, 
+                edv.sourceDataPAType(), willKeepNRows, 
                 Double.isNaN(smv)? "" : "" + smv); //filled with missing values
         }
 
@@ -769,7 +770,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3]
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -840,7 +841,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         for (int dv = 0; dv < ndv; dv++) {
             EDV sourceEdv = eddTable.dataVariables()[dv];
             String destName = sourceEdv.destinationName();
-            Class tClass = sourceEdv.destinationDataTypeClass();
+            PAType tPAType = sourceEdv.destinationDataPAType();
             Attributes sourceAtts = sourceEdv.combinedAttributes();
             Attributes destAtts = new Attributes();
             if (destName.equals(EDV.TIME_NAME) ||
@@ -850,9 +851,9 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 sourceAtts.get("sample_dimension") != null) {
                 //make it an axisVariable
                 sourceAxisTable.addColumn(sourceAxisTable.nColumns(), destName,
-                    PrimitiveArray.factory(tClass, 1, false), sourceAtts);
+                    PrimitiveArray.factory(tPAType, 1, false), sourceAtts);
                 addAxisTable.addColumn(addAxisTable.nColumns(), destName,
-                    PrimitiveArray.factory(tClass, 1, false), destAtts);
+                    PrimitiveArray.factory(tPAType, 1, false), destAtts);
                 if (sourceAtts.get("cf_role") != null)
                     destAtts.set("cf_role", "null");
                 if (sourceAtts.get("instance_dimension") != null)
@@ -862,9 +863,9 @@ public class EDDGridFromEDDTable extends EDDGrid {
             } else {
                 //leave it as a dataVariable
                 sourceDataTable.addColumn(sourceDataTable.nColumns(), destName,
-                    PrimitiveArray.factory(tClass, 1, false), sourceAtts);
+                    PrimitiveArray.factory(tPAType, 1, false), sourceAtts);
                 addDataTable.addColumn(addDataTable.nColumns(), destName,
-                    makeDestPAForGDX(PrimitiveArray.factory(tClass, 1, false), sourceAtts), 
+                    makeDestPAForGDX(PrimitiveArray.factory(tPAType, 1, false), sourceAtts), 
                     destAtts);
 
                 //Don't call because presumably already good:
@@ -955,7 +956,7 @@ String expected =
 "        <att name=\"references\">Schroeder, Isaac D., Bryan A. Black, William J. Sydeman, Steven J. Bograd, Elliott L. Hazen, Jarrod A. Santora, and Brian K. Wells. &quot;The North Pacific High and wintertime pre-conditioning of California current productivity&quot;, Geophys. Res. Letters, VOL. 40, 541-546, doi:10.1002/grl.50100, 2013</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">23.3</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">time, year, month</att>\n" +
 "        <att name=\"summary\">Variations in large-scale atmospheric forcing influence upwelling dynamics and ecosystem productivity in the California Current System (CCS). In this paper, we characterize interannual variability of the North Pacific High over 40 years and investigate how variation in its amplitude and position affect upwelling and biology. We develop a winter upwelling &quot;pre-conditioning&quot; index and demonstrate its utility to understanding biological processes. Variation in the winter NPH can be well described by its areal extent and maximum pressure, which in turn is predictive of winter upwelling. Our winter pre-conditioning index explained 64&#37; of the variation in biological responses (fish and seabirds). Understanding characteristics of the NPH in winter is therefore critical to predicting biological responses in the CCS.</att>\n" +
 "        <att name=\"time_coverage_end\">2014-01-16</att>\n" +
@@ -1415,7 +1416,7 @@ expected=
 "    Float64 Northernmost_Northing 34.04017;\n" +
 "    String sourceUrl \"https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 34.04017;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"longitude, latitude\";\n" +
 "    String summary \"The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n" +
 "\n" +

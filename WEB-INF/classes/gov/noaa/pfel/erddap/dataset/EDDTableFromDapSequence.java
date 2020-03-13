@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -100,6 +101,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         boolean tSkipDapperSpacerRows = false;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -155,6 +157,8 @@ public class EDDTableFromDapSequence extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -166,8 +170,8 @@ public class EDDTableFromDapSequence extends EDDTable{
         return new EDDTableFromDapSequence(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
-            ttDataVariables,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tGlobalAttributes, ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, 
             tOuterSequenceName, tInnerSequenceName, 
             tSourceNeedsExpandedFP_EQ,
@@ -270,7 +274,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -410,8 +414,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                     }
 
                     //get the sourceType
-                    tDataSourceTypes[dv] = PrimitiveArray.elementClassToString( 
-                        OpendapHelper.getElementClass(ibt.newPrimitiveVector()));
+                    tDataSourceTypes[dv] = PrimitiveArray.elementTypeToString( 
+                        OpendapHelper.getElementPAType(ibt.newPrimitiveVector()));
 
                     //get the ibt attributes  
                     //(some servers return innerAttributeTable, some don't -- see test cases)
@@ -456,8 +460,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                 isOuterVar[dv] = true;
 
                 //get the sourceDataType
-                tDataSourceTypes[dv] = PrimitiveArray.elementClassToString( 
-                    OpendapHelper.getElementClass(obt.newPrimitiveVector()));
+                tDataSourceTypes[dv] = PrimitiveArray.elementTypeToString( 
+                    OpendapHelper.getElementPAType(obt.newPrimitiveVector()));
 
                 //get the attributes
                 Attributes tAtt = new Attributes();
@@ -547,6 +551,9 @@ public class EDDTableFromDapSequence extends EDDTable{
         }
 
 
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
         //ensure the setup is valid
         ensureValid();
 
@@ -616,7 +623,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             //for string constraints
             EDV edv = dataVariables[dv];
             String op = constraintOps.get(c);
-            if (edv.sourceDataTypeClass() == String.class) {
+            if (edv.sourceDataPAType() == PAType.STRING) {
 
                 //remove EQNE constraints
                 if (!sourceCanConstrainStringEQNE && 
@@ -817,8 +824,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                                         makeReadyToUseAddVariableAttributesForDatasetsXml(
                                             dataSourceTable.globalAttributes(),
                                             sourceAtts, null, varName, 
-                                            destPA.elementClass() != String.class, //tryToAddStandardName
-                                            destPA.elementClass() != String.class, //addColorBarMinMax
+                                            destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                                            destPA.elementType() != PAType.STRING, //addColorBarMinMax
                                             true)); //tryToFindLLAT
                                 }
                             }
@@ -842,8 +849,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                         Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                             dataSourceTable.globalAttributes(),
                             sourceAtts, null, varName, 
-                            destPA.elementClass() != String.class, //tryToAddStandardName
-                            destPA.elementClass() != String.class, //addColorBarMinMax
+                            destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                            destPA.elementType() != PAType.STRING, //addColorBarMinMax
                             true); //tryToFindLLAT
                         dataSourceTable.addColumn(nOuterVars, varName, sourcePA, sourceAtts);
                         dataAddTable.addColumn(   nOuterVars, varName, destPA,   addAtts);
@@ -951,7 +958,7 @@ String expected =
 "        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans, optical, optical properties, practical, properties, salinity, science, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, time2, vctd, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">time2, latitude, longitude, station, depth, temperature, salinity, fluorescence, avg_sound_velocity, sigma_t, acceleration, geopotential_anomaly</att>\n" +
 "        <att name=\"summary\">vCTD. DYNDNS Center for Integrated Marine Technology (CIMT) data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
 "        <att name=\"title\">vCTD. DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
@@ -1728,7 +1735,9 @@ try {
     }
 
 
-    /** This tests sourceNeedsExpandedFP_EQ. */
+    /** This tests sourceNeedsExpandedFP_EQ. 
+     * 2016-01-16 SOURCE IS GONE.
+     */
     public static void testSourceNeedsExpandedFP_EQ() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testSourceNeedsExpandedFP_EQ\n");
         testVerboseOn();
@@ -1767,7 +1776,7 @@ try {
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "Unexpected error.");
+                "2016-01-16 SOURCE IS GONE.");
         }
     }
 
@@ -1833,7 +1842,7 @@ try {
 
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
+                "\n2016-01-16 THE DATA SOURCE IS GONE."); 
                 //"\nUnexpected error for testSubsetVariablesGraph.");
         }
     }
@@ -2033,7 +2042,7 @@ expected =
         } catch (Throwable t) {
             String2.pressEnterToContinue(
                 MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
+                "\n2016-01-16 THE DATA SOURCE IS GONE."); 
                 //"\nUnexpected error:");
         }
     }
@@ -2051,12 +2060,12 @@ expected =
 /* for releases, this line should have open/close comment */
         //always done        
         testGenerateDatasetsXml();
-        testGenerateDatasetsXml2();
+        testGenerateDatasetsXml2();  //unsigned: needs work
         testPsdac();
-        testSourceNeedsExpandedFP_EQ();
+        //testSourceNeedsExpandedFP_EQ(); 2016-01-16 source is gone
         testReadDas();
-        testSubsetVariablesGraph();
-        testSubsetVariablesRange();
+        //testSubsetVariablesGraph(); 2016-01-16 source is gone
+        //testSubsetVariablesRange();  2016-01-16 source is gone
 
    //     testErdlasNewportCtd();   //not yet working
    //     testErdlasCalCatch();     //not yet working

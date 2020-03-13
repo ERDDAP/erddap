@@ -136,7 +136,7 @@ public class AxisDataAccessor {
             if (dMin > dMax) {
                 double d = dMin; dMin = dMax; dMax = d;
             }
-            PrimitiveArray minMax = PrimitiveArray.factory(rAxisValues[av].elementClass(), 2, false);
+            PrimitiveArray minMax = PrimitiveArray.factory(rAxisValues[av].elementType(), 2, false);
             minMax.addDouble(dMin);
             minMax.addDouble(dMax);
 

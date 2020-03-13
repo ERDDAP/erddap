@@ -35,11 +35,22 @@ public class IntArray extends PrimitiveArray {
      */
     public int[] array;
 
-    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
+    }
+
+    /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 4;
     }
 
     /** 
@@ -186,12 +197,12 @@ public class IntArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (int.class) of the element type.
+     * This returns the PAType (PAType.INT) of the element type.
      *
-     * @return the class (int.class) of the element type.
+     * @return the PAType (PAType.INT) of the element type.
      */
-    public Class elementClass() {
-        return int.class;
+    public PAType elementType() {
+        return PAType.INT;
     }
 
     /**
@@ -199,7 +210,7 @@ public class IntArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_INT) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_INT;
     }
 
@@ -378,7 +389,7 @@ public class IntArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in IntArray.addFromPA: otherIndex=" + otherIndex + 
@@ -671,7 +682,8 @@ public class IntArray extends PrimitiveArray {
      */
     public long getLong(int index) {
         int i = get(index);
-        return i == Integer.MAX_VALUE? Long.MAX_VALUE : i;
+        return i == Integer.MAX_VALUE? Long.MAX_VALUE : 
+                                       i;
     }
 
     /**
@@ -690,13 +702,15 @@ public class IntArray extends PrimitiveArray {
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a float. String values are parsed
+     * @return the value as a float. 
+     *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      *   Int.MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         int i = get(index);
-        return i == Integer.MAX_VALUE? Float.NaN : i;
+        return i == Integer.MAX_VALUE? Float.NaN : 
+                                       i;
     }
 
     /**
@@ -714,13 +728,15 @@ public class IntArray extends PrimitiveArray {
      * Return a value from the array as a double.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a double. String values are parsed
+     * @return the value as a double. 
+     *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      *   Int.MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         int i = get(index);
-        return i == Integer.MAX_VALUE? Double.NaN : i;
+        return i == Integer.MAX_VALUE? Double.NaN : 
+                                       i;
     }
 
     /**
@@ -769,8 +785,9 @@ public class IntArray extends PrimitiveArray {
      * @return For numeric types, this returns (String.valueOf(ar[index])), or "" for NaN or infinity.
      */
     public String getString(int index) {
-        int b = get(index);
-        return b == Integer.MAX_VALUE? "" : String.valueOf(b);
+        int i = get(index);
+        return i == Integer.MAX_VALUE? "" : 
+                                       String.valueOf(i);
     }
 
     /**
@@ -779,11 +796,13 @@ public class IntArray extends PrimitiveArray {
      * String returns a json String with chars above 127 encoded as \\udddd.
      * 
      * @param index the index number 0 ... size-1 
-     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
-        int b = get(index);
-        return b == Integer.MAX_VALUE? "null" : String.valueOf(b);
+        int i = get(index);
+        return i == Integer.MAX_VALUE? "null" : 
+                                       String.valueOf(i);
     }
 
     /**
@@ -1109,6 +1128,28 @@ public class IntArray extends PrimitiveArray {
         ensureCapacity(size + (long)nValues);
         for (int i = 0; i < nValues; i++) 
             array[size++] = dis.readInt();
+    }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeInt(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readInt());
     }
 
     /**
@@ -1462,22 +1503,22 @@ public class IntArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (IntArray)unsignedFactory(int.class, 
+        anArray = (IntArray)unsignedFactory(PAType.INT, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 2147483647, 2147483647, 2147483647", ""); // -> mv
         anArray.clear();        
 
-        anArray = (IntArray)unsignedFactory(int.class, 
+        anArray = (IntArray)unsignedFactory(PAType.INT, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
         anArray.clear();        
 
-        anArray = (IntArray)unsignedFactory(int.class, 
+        anArray = (IntArray)unsignedFactory(PAType.INT, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
         anArray.clear();        
 
-        anArray = (IntArray)unsignedFactory(int.class, 
+        anArray = (IntArray)unsignedFactory(PAType.INT, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
         anArray.clear();        
@@ -1491,7 +1532,7 @@ public class IntArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 2000000000, "");
         Test.ensureEqual(anArray.getDouble(0), 2000000000, "");
         Test.ensureEqual(anArray.getString(0), "2000000000", "");
-        Test.ensureEqual(anArray.elementClass(), int.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.INT, "");
         int tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new int[]{2000000000}, "");
 

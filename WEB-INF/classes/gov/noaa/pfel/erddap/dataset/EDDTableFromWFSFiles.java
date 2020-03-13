@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.FloatArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -77,6 +78,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -84,7 +86,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
         int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromWFSFiles", tDatasetID, 
@@ -94,12 +97,16 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, null, -1, null); //tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, 
+            //don't allow caching from remote site because this dataset already does caching from remote site
+            null, -1, null, //tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex, 
+            tAddVariablesWhere);
     }
 
     /**
@@ -253,8 +260,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //make addAtts
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
 
             //put time units
@@ -388,7 +395,7 @@ String expected =
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"rowElementXPath\">/wfs:FeatureCollection/wfs:member</att>\n" +
 "        <att name=\"sourceUrl\">https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;service=WFS&amp;typename=aasg:BoreholeTemperature&amp;format=&quot;text/xml;&#37;20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">State, UTM_E, UTM_N, SRS, LocationUncertaintyRadius, LengthUnits, ElevationKB, ElevationDF, BitDiameterTD, MaximumRecordedTemperature, CorrectedTemperature, TemperatureUnits, CirculationDuration, MeasurementSource, CasingBottomDepthDriller, CasingTopDepth, CasingPipeDiameter, CasingWeight, CasingThickness, pH</att>\n" +
 "        <att name=\"summary\">The summary. Kentucky Geological Survey data from a local source.</att>\n" +
 "        <att name=\"title\">The Title</att>\n" +
@@ -1539,7 +1546,7 @@ expected =
 "    String rowElementXPath \"/wfs:FeatureCollection/wfs:member\";\n" +
 "    String sourceUrl \"https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\\\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\\\"\";\n" +
 "    Float64 Southernmost_Northing 37.246728999;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"State, UTM_E, UTM_N, SRS, LocationUncertaintyRadius, LengthUnits, ElevationKB, ElevationDF, BitDiameterTD, MaximumRecordedTemperature, CorrectedTemperature, TemperatureUnits, CirculationDuration, MeasurementSource, CasingBottomDepthDriller, CasingTopDepth, CasingPipeDiameter, CasingWeight, CasingThickness, pH\";\n" +
 "    String summary \"The summary. Kentucky Geological Survey data from a local source.\";\n" +
 "    String time_coverage_end \"2012-08-05T00:00:00Z\";\n" +

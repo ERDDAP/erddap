@@ -133,7 +133,7 @@ public class TableWriterJson extends TableWriter {
             //write the types   
             writer.write("    \"columnTypes\": [");
             for (int col = 0; col < nColumns; col++) {
-                String s = pas[col].elementClassString();
+                String s = pas[col].elementTypeString();
                 if (isTimeStamp[col])
                     s = "String"; //not "double"
                 writer.write(String2.toJson(s));  //nulls written as: null

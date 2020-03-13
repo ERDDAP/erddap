@@ -10,6 +10,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -95,6 +96,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -102,7 +104,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
         int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromHyraxFiles", tDatasetID, 
@@ -113,12 +116,14 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
 
     }
 
@@ -451,7 +456,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             }
             if (pv != null) {
                 PrimitiveArray sourcePA = 
-                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false);
+                    PrimitiveArray.factory(OpendapHelper.getElementPAType(pv), 2, false);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, 
                     sourcePA, sourceAtts);
                 PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
@@ -459,8 +464,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         dataSourceTable.globalAttributes(),
                         sourceAtts, null, varName,
-                        destPA.elementClass() != String.class, //tryToAddStandardName
-                        destPA.elementClass() != String.class, //addColorBarMinMax
+                        destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                        destPA.elementType() != PAType.STRING, //addColorBarMinMax
                         true)); //tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
@@ -641,7 +646,7 @@ String expected =
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +

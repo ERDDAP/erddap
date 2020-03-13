@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -91,6 +92,7 @@ public class EDDTableCopy extends EDDTable{
         boolean tFileTableInMemory = false;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
         boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
         int tStandardizeWhat = Integer.MAX_VALUE; //not specified by user
         int tnThreads = -1; //interpret invalid values (like -1) as EDStatic.nTableThreads
@@ -137,6 +139,8 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
             else if (localTags.equals( "<accessibleViaFiles>")) {}
             else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals( "<standardizeWhat>")) {}
@@ -179,7 +183,8 @@ public class EDDTableCopy extends EDDTable{
         return new EDDTableCopy(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tStandardizeWhat,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
+            tReloadEveryNMinutes, tStandardizeWhat,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd, tFileTableInMemory, tAccessibleViaFiles, tnThreads);
     }
@@ -229,7 +234,7 @@ public class EDDTableCopy extends EDDTable{
     public EDDTableCopy(String tDatasetID, 
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         int tReloadEveryNMinutes, int tStandardizeWhat,
         String tExtractDestinationNames, String tOrderExtractBy,
         Boolean tSourceNeedsExpandedFP_EQ,
@@ -326,7 +331,7 @@ public class EDDTableCopy extends EDDTable{
                     int nCols = table.nColumns();
                     boolean isString[] = new boolean[nCols];
                     for (int col = 0; col < nCols; col++) 
-                        isString[col] = table.getColumn(col).elementClass() == String.class;
+                        isString[col] = table.getColumn(col).elementType() == PAType.STRING;
 
                     //make a task for each row (if the file doesn't already exist)
                     for (int row = 0; row < nRows; row++) {
@@ -421,7 +426,7 @@ public class EDDTableCopy extends EDDTable{
             tDataVariables = new Object[nDataVariables][];
             for (int dv = 0; dv < nDataVariables; dv++) {
                 tDataVariables[dv] = new Object[]{table.getColumnName(dv), table.getColumnName(dv), 
-                    new Attributes(), table.getColumn(dv).elementClassString()};
+                    new Attributes(), table.getColumn(dv).elementTypeString()};
             }
         } else {
             //get info from sourceEdd, which is a standard EDDTable
@@ -462,7 +467,7 @@ public class EDDTableCopy extends EDDTable{
             tReloadEveryNMinutes, 
             copyDatasetDir, fileNameRegex, recursive, ".*", //pathRegex is for original source files 
             EDDTableFromFiles.MF_LAST,
-            "", 1, 2, "", //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
+            "", "", "", 1, 2, "", //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
@@ -498,6 +503,9 @@ public class EDDTableCopy extends EDDTable{
         sosMinLon        = localEdd.sosMinLon; 
         sosMaxLon        = localEdd.sosMaxLon;
 
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
 
@@ -528,7 +536,7 @@ public class EDDTableCopy extends EDDTable{
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, 
+        String tMetadataFrom, String tCharset, String skipHeaderToRegex, String skipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -544,7 +552,8 @@ public class EDDTableCopy extends EDDTable{
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 0, //tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator, 
+            tCharset, skipHeaderToRegex, skipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator, 
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -552,7 +561,8 @@ public class EDDTableCopy extends EDDTable{
             tAccessibleViaFiles,
             false, //removeMVrows is irrelevant for EDDTableFromNcFiles
             tStandardizeWhat, tnThreads, 
-            "", -1, ""); //cacheFromUrl, cacheSizeGB, cachePartialPathRegex
+            "", -1, "", //cacheFromUrl, cacheSizeGB, cachePartialPathRegex
+            null); //addVariablesWhere
     }
 
 
@@ -587,7 +597,7 @@ public class EDDTableCopy extends EDDTable{
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).

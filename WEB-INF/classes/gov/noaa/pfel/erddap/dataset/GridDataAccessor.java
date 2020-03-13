@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -22,6 +23,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -190,7 +192,7 @@ public class GridDataAccessor {
             if (dMin > dMax) {
                 double d = dMin; dMin = dMax; dMax = d;
             }
-            PrimitiveArray minMax = PrimitiveArray.factory(axisValues[av].elementClass(), 2, false);
+            PrimitiveArray minMax = PrimitiveArray.factory(axisValues[av].elementType(), 2, false);
             minMax.addDouble(dMin);
             minMax.addDouble(dMax);
 
@@ -713,7 +715,7 @@ class GetChunkCallable implements Callable {
             for (int dv = 0; dv < gda.dataVariables.length; dv++) {
                 if (gda.dataEncodingLC[dv] == null ||
                     partialResults[dv] == null ||
-                    partialResults[dv].elementClass() != String.class)
+                    partialResults[dv].elementType() != PAType.STRING)
                     continue;
 
                 //decode UTF-8
@@ -919,6 +921,32 @@ class GetChunkCallable implements Callable {
     }
 
     /**
+     * Call this after increment() to get a data value (as a double) 
+     * from the specified dataVariable and add it to the specified PrimitiveArray.
+     *
+     * @param current  from gridDataAccessor.totalIndex().getCurrent() (or compatible),
+     *   but with values changed to what you want.
+     * @param dv a dataVariable number (within the request, not the EDD dataVariable number).
+     * @param pa the PrimitiveArray to which the value will be added
+     * @param throws Throwable if trouble
+     */
+/*    public void getDataValue(int current[], int dv, PrimitiveArray pa) {
+        ...
+        return partialDataValues[dv].getDouble((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
+    }
+*/
+    /**
+     * This writes the dv to the randomAccessFile.
+     * This is getDataValueAsDouble() turned inside out so it works perfectly and efficiently will all PATypes.
+     * 
+     * @param dv a dataVariable number in the query 
+     * @param raf a randomAccessFile
+     */
+    public void writeToRAF(int dv, RandomAccessFile raf) throws Exception {
+        partialDataValues[dv].writeToRAF(raf, (int)partialIndex.getIndex());
+    }
+
+    /**
      * Call this after increment() to get the current data value (as a String) 
      * from the specified dataVariable.
      *
@@ -929,6 +957,18 @@ class GetChunkCallable implements Callable {
         return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
     }
 
+    /**
+     * Call this after increment() to write the current data value 
+     * to a Random Access File.
+     *
+     * @param dv a dataVariable number in the query
+     * @return the data value
+     */
+/* 2020-03-12 not finished    
+    public String writeDataValueToRAF(RandomAccessFile raf, int dv) {
+        return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
+    }
+*/
     /** 
      * The garbage collector calls this.  Users should call releaseGetResources instead().
      */

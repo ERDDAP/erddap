@@ -310,9 +310,9 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @return a PrimitiveArray[] with an element for each tDataVariable with
      *   the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
-     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass, but
+     *   <br>The primitiveArray dataTypes are usually the sourceDataPAType, but
      *   can be any type. EDDGridFromFiles will convert to the
-     *   sourceDataTypeClass.
+     *   sourceDataPAType.
      *   <br>Note the lack of axisVariable values!
      * @throws Throwable if trouble (notably, WaitThenTryAgainException). If
      *   there is trouble, this doesn't call addBadFile or requestReloadASAP().
@@ -747,7 +747,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 
         String2.log("\n*** EDDGridFromMergeIRFiles.testMergeIRgz\n");
         testVerboseOn();
-        //String2.log(NcHelper.ncdump("/erddapTest/mergeIR/merg_20150101_4km-pixel", "-h"));
+        //String2.log(NcHelper.ncdump(String2.unitTestDataDir + "mergeIR/merg_20150101_4km-pixel", "-h"));
         deleteCachedDatasetInfo("mergeIR");
         deleteCachedDatasetInfo("mergeIRZ");
         deleteCachedDatasetInfo("mergeIRgz");

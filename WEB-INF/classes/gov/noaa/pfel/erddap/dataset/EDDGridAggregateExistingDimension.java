@@ -585,7 +585,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -871,7 +871,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" +
 "        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: https://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1day), 2003-2013</att>\n" +
 "    </addAttributes>\n" +
@@ -1017,7 +1017,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"keywords\">atlas, atmosphere, atmospheric, center, component, data, derived, downward, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, science, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
 "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk), 0.25&#xb0;</att>\n" +
 "    </addAttributes>\n" +

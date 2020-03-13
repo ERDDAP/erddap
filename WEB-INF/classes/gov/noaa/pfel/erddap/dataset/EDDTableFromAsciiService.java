@@ -78,6 +78,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String tNoData = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
+
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -144,6 +146,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -157,8 +161,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             return new EDDTableFromAsciiServiceNOS(tDatasetID, 
                 tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-                tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
-                ttDataVariables,
+                tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+                tGlobalAttributes, ttDataVariables,
                 tReloadEveryNMinutes, tLocalSourceUrl,
                 tBeforeData, tAfterData, tNoData);
         } else {
@@ -240,7 +244,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -382,6 +386,9 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             "responseSubstringStart=" + String2.toCSSVString(responseSubstringStart) + "\n" +
             "responseSubstringEnd  =" + String2.toCSSVString(responseSubstringEnd));
 
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         //It will read the /subset/ table or fail trying to get the data if the file isn't present.

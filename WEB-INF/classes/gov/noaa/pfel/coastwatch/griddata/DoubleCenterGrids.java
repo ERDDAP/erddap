@@ -236,13 +236,13 @@ public class DoubleCenterGrids {
         //delete old files
         String newDir = "c:/u00/centeredSatellite/AG";
         RegexFilenameFilter.recursiveDelete(newDir);
+        String fullName = "c:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc";
 
         //copy a dir and subdirs and files
-        main(new String[]{"c:/u00/satellite/AG", newDir});
+        main(new String[]{"c:/u00/centeredSatellite/AGsource", newDir});
 
         //do tests
-        String ncdump = NcHelper.ncdump(
-            "c:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc", "-h");
+        String ncdump = NcHelper.ncdump(fullName, "-h");
         //ensure time is centered correctly
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1079504E9), //# from time actual_range
             "2005-02-09T12:00:00Z", "");
@@ -368,7 +368,7 @@ String reference3=
 "  :sensor = \"AVHRR GAC\";\n" +
 "  :source = \"satellite observation: POES, AVHRR GAC\";\n" +
 "  :Southernmost_Northing = 33.5; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
 "  :start_time = 0.0; // double\n" +
 "  :summary = \"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data provides global area coverage at 0.1 degrees resolution.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.\";\n" +
 "  :time_coverage_end = \"2005-02-10T00:00:00Z\";\n" +

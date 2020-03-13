@@ -89,14 +89,15 @@ public class HtmlWidgets {
         "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"};
 
     /** This will display a message to the user if JavaScript is not supported
-     * or disabled. Last updated 2016-03-28. */
+     * or disabled. Last updated 2019-12-19. 
+     * FUTURE: refer to https://enable-javascript.com/ ???
+     */
     public static String ifJavaScriptDisabled =
         "<noscript><div style=\"color:red\"><strong>To work correctly, this web page requires that JavaScript be enabled in your browser.</strong> Please:\n" +
         "<br>1) Enable JavaScript in your browser:\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Advanced : Privacy and security : Site Settings : JavaScript\"\n" +
+//        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Edge: \n" +  ??? 2019-12-19 search yielded: it should be supported but administrator may have disabled it. 
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: (it should be always on!)\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer: \"Tools : Internet Options : Security : Internet : Custom level :\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sripting/ Active Scripting : Enable : OK : OK\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: \"Settings : Websites : JavaScript\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Safari: \"Safari : Preferences : Security : Enable JavaScript\"\n" + 
         "<br>2) Reload this web page.\n" +

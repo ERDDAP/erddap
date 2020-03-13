@@ -223,6 +223,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -357,6 +358,7 @@ public class EDDTableFromCassandra extends EDDTable{
         boolean tSourceNeedsExpandedFP_EQ = true;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
         String tPartitionKeyCSV = null;
 
         //process the tags
@@ -417,6 +419,8 @@ public class EDDTableFromCassandra extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -428,7 +432,7 @@ public class EDDTableFromCassandra extends EDDTable{
         return new EDDTableFromCassandra(tDatasetID, 
                 tAccessibleTo, tGraphsAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-                tDefaultDataQuery, tDefaultGraphQuery, 
+                tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
                 tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
@@ -454,7 +458,7 @@ public class EDDTableFromCassandra extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -727,6 +731,9 @@ public class EDDTableFromCassandra extends EDDTable{
         //gather ERDDAP sos information?
         //assume time column is indexed? so C* can return min/max efficiently
 
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
         //ensure the setup is valid
         ensureValid();
 
@@ -760,7 +767,7 @@ public class EDDTableFromCassandra extends EDDTable{
         Table table = new Table();
         table.readASCII("<partitionKeyCSV>", 
             new BufferedReader(new StringReader(partitionKeyCSV)),
-            0, 1, ",", null, null, null, null, false); //simplify
+            "", "", 0, 1, ",", null, null, null, null, false); //simplify
         if (debugMode) { String2.log(">> <partitionKeyCSV> as initially parsed:");
             String2.log(table.dataToString());
         }
@@ -1098,7 +1105,7 @@ public class EDDTableFromCassandra extends EDDTable{
             String cVal = constraintValues.get(cv);
             double cValD = String2.parseDouble(cVal);
             int dv = String2.indexOf(dataVariableSourceNames, cVar);
-            boolean isNumericEDV = dataVariables[dv].sourceDataTypeClass() != String.class;             
+            boolean isNumericEDV = dataVariables[dv].sourceDataPAType() != PAType.STRING;             
 
             //for WHERE below, just keep constraints applicable to:
             //  clusterColumnSourceNames (ops: = > >= < <= ) or
@@ -1320,7 +1327,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
                 EDV edv = usePK? partitionKeyEDV[i] : conEDV[coni];
                 PrimitiveArray pa = usePK? pkdPA[i] : null;
-                Class tClass = edv.sourceDataTypeClass();
+                PAType tPAType = edv.sourceDataPAType();
                 String conVal = usePK? null : constraintValues.get(coni);
                 if (requestSB != null)
                     requestSB.append(edv.sourceName() + " is " + 
@@ -1336,24 +1343,24 @@ public class EDDTableFromCassandra extends EDDTable{
                 } else if (edv.isBoolean()) {
                     boundStatement.setBool(i, 
                         (usePK? pa.getInt(pkdRow) == 1 : String2.parseBoolean(conVal)));
-                } else if (tClass == double.class) {
+                } else if (tPAType == PAType.DOUBLE) {
                     boundStatement.setDouble(i, 
                         (usePK? pa.getDouble(pkdRow) : String2.parseDouble(conVal)));
-                } else if (tClass == float.class) {
+                } else if (tPAType == PAType.FLOAT) {
                     boundStatement.setFloat(i, 
                         (usePK? pa.getFloat(pkdRow) : String2.parseFloat(conVal)));
-                } else if (tClass == int.class ||    
-                         tClass == short.class || 
-                         tClass == byte.class) {
+                } else if (tPAType == PAType.INT ||    
+                         tPAType == PAType.SHORT || 
+                         tPAType == PAType.BYTE) {
                     boundStatement.setInt(i, 
                         (usePK? pa.getInt(pkdRow) : String2.parseInt(conVal))); 
                 } else {
                     String val = usePK? pa.getString(pkdRow) : conVal;
-                    if (tClass == String.class)   
+                    if (tPAType == PAType.STRING)   
                         boundStatement.setString(i, val);
-                    else if (tClass == long.class)
+                    else if (tPAType == PAType.LONG)
                         boundStatement.setLong(  i, String2.parseLong(val));
-                    else if (tClass == char.class)
+                    else if (tPAType == PAType.CHAR)
                         boundStatement.setString(i, 
                             val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
                     else throw new RuntimeException(
@@ -1440,7 +1447,7 @@ public class EDDTableFromCassandra extends EDDTable{
             }
             rvToCassDataType[rv] = columnDef.getType(rvToRsCol[rv]);
 
-            if (rvToResultsEDV[rv].sourceDataTypeClass() == String.class)
+            if (rvToResultsEDV[rv].sourceDataPAType() == PAType.STRING)
                 rvToTypeCodec[rv] = CodecRegistry.DEFAULT_INSTANCE.codecFor(rvToCassDataType[rv]);
         }
         int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
@@ -1473,7 +1480,7 @@ public class EDDTableFromCassandra extends EDDTable{
                     maxNRows = Math.max(maxNRows, pa.size());
                     continue;
                 }
-                Class tClass = edv.sourceDataTypeClass();
+                PAType tPAType = edv.sourceDataPAType();
                 if (isListDV[resultsDVI[rv]]) {            
                     int tListSize = -1;
                     if (edv.isBoolean()) { //special case
@@ -1486,23 +1493,23 @@ public class EDDTableFromCassandra extends EDDTable{
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addDouble(list.get(i).getTime() / 1000.0); 
-                    } else if (tClass == String.class) {
+                    } else if (tPAType == PAType.STRING) {
                         //This doesn't support lists of maps/sets/lists. 
                         List<String> list = row.getList(rsCol, String.class);
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addString(list.get(i)); 
-                    } else if (tClass == double.class) {
+                    } else if (tPAType == PAType.DOUBLE) {
                         List<Double> list = row.getList(rsCol, Double.class);
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addDouble(list.get(i)); 
-                    } else if (tClass == float.class) {
+                    } else if (tPAType == PAType.FLOAT) {
                         List<Float> list = row.getList(rsCol, Float.class);
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addFloat(list.get(i)); 
-                    } else if (tClass == long.class) {
+                    } else if (tPAType == PAType.LONG) {
                         List<Long> list = row.getList(rsCol, Long.class);
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
@@ -1531,7 +1538,7 @@ public class EDDTableFromCassandra extends EDDTable{
                         pa.addInt(row.getBool(rsCol)? 1 : 0);
                     } else if (edv instanceof EDVTimeStamp) { //zulu millis -> epoch seconds
                         pa.addDouble(row.getTimestamp(rsCol).getTime() / 1000.0); 
-                    } else if (tClass == String.class) {
+                    } else if (tPAType == PAType.STRING) {
                         //v2: getString doesn't return the String form of any type
                         //https://datastax-oss.atlassian.net/browse/JAVA-135
                         //Object value = rvToCassDataType[rv].
@@ -1556,11 +1563,11 @@ public class EDDTableFromCassandra extends EDDTable{
                             }
                         }
                         pa.addString(s); 
-                    } else if (tClass == double.class) {
+                    } else if (tPAType == PAType.DOUBLE) {
                         pa.addDouble(row.getDouble(rsCol)); 
-                    } else if (tClass == float.class) {
+                    } else if (tPAType == PAType.FLOAT) {
                         pa.addFloat(row.getFloat(rsCol)); 
-                    } else if (tClass == long.class) {
+                    } else if (tPAType == PAType.LONG) {
                         pa.addLong(row.getLong(rsCol)); 
                     } else { //erddap byte, short, int
                         pa.addInt(row.getInt(rsCol)); 
@@ -1575,12 +1582,12 @@ public class EDDTableFromCassandra extends EDDTable{
                 PrimitiveArray pa = paArray[rv];
                 int n = maxNRows - pa.size();
                 if (n > 0) {
-                    Class tClass = pa.elementClass();
-                    if (tClass == String.class ||
-                        tClass == long.class) {
+                    PAType tPAType = pa.elementType();
+                    if (tPAType == PAType.STRING ||
+                        tPAType == PAType.LONG) {
                         pa.addNStrings(n, pa.getString(pa.size() - 1)); 
-                    } else if (tClass == double.class || 
-                               tClass == float.class) {
+                    } else if (tPAType == PAType.DOUBLE || 
+                               tPAType == PAType.FLOAT) {
                         pa.addNDoubles(n, pa.getDouble(pa.size() - 1)); 
                     } else {
                         pa.addNInts(n, pa.getInt(pa.size() - 1)); 
@@ -1791,8 +1798,8 @@ public class EDDTableFromCassandra extends EDDTable{
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
                 sourceAtts, addAtts, sourceName,
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
 
             //but make it real here, and undo the lie

@@ -43,6 +43,18 @@ public class ScriptMath2  {
     /** -273.15 */
     public static final double kelvinToC = Math2.kelvinToC;
 
+    /** 255 */
+    public static final short  UBYTE_MAX_VALUE  = Math2.UBYTE_MAX_VALUE;
+
+    /** 65535 */
+    public static final int    USHORT_MAX_VALUE = Math2.USHORT_MAX_VALUE;
+
+    /** 0xffffffff */
+    public static final long   UINT_MAX_VALUE   = Math2.UINT_MAX_VALUE;
+
+    /** 18446744073709551615.0 */
+    public static final double ULONG_MAX_VALUE  = Math2.ULONG_MAX_VALUE;  
+
     /** -2000 */
     public static final int Binary0 = Math2.Binary0; 
 
@@ -473,6 +485,18 @@ public class ScriptMath2  {
     }
 
     /**
+     * Safely rounds a double to a ubyte.
+     * 
+     * @param d any double
+     * @return 255 if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest byte.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final short roundToUByte(double d) {
+        return Math2.roundToUByte(d);
+    }
+
+    /**
      * Safely rounds a double to a char (treated as unsigned short).
      * 
      * @param d any double
@@ -497,6 +521,19 @@ public class ScriptMath2  {
     }
 
     /**
+     * Safely rounds a double to a ushort.
+     * 
+     * @param d any double
+     * @return 0xffff if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest short.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final int roundToUShort(double d) {
+        return Math2.roundToUShort(d);
+    }
+
+
+    /**
      * Safely rounds a double to an int.
      * (Math.round but rounds to a long and not safely.)
      * 
@@ -510,6 +547,18 @@ public class ScriptMath2  {
     }
 
     /**
+     * Safely rounds a double to a uint.
+     * 
+     * @param d any double
+     * @return 0xffffffff if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest short.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final long roundToUInt(double d) {
+        return Math2.roundToUInt(d);
+    }
+
+    /**
      * Safely rounds a double to a long.
      * 
      * @param d any double
@@ -519,6 +568,18 @@ public class ScriptMath2  {
      */
     public static final long roundToLong(double d) {
         return Math2.roundToLong(d);
+    }
+
+    /**
+     * Safely rounds a double to a ulong.
+     * 
+     * @param d any double
+     * @return ULONG_MAX_VALUE if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest short.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final double roundToULong(double d) {
+        return Math2.roundToULong(d);
     }
 
     /**
@@ -770,10 +831,21 @@ public class ScriptMath2  {
      *
      * @param tl
      * @return a double.
-     *    If f is NaN or +-INFINITY, this returns Double.NaN.
+     *    If tl is Long.MAX_VALUE, this returns Double.NaN.
      */
     public static final double longToDoubleNaN(long tl) {
         return Math2.longToDoubleNaN(tl);
+    }
+
+    /**
+     * This converts an unsigned long to a double.
+     * !!! possible loss of precision!
+     *
+     * @param tl
+     * @return a double.
+     */
+    public static final double unsignedLongToDouble(long tl) {
+        return Math2.unsignedLongToDouble(tl); // !!! possible loss of precision
     }
 
     /**

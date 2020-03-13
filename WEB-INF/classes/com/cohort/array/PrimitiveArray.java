@@ -146,8 +146,8 @@ public abstract class PrimitiveArray {
             Object oar[] = (Object[])o;
             int n = oar.length;
             StringArray sa = new StringArray(n, false);
-            for (int i = 0; i < n; i++)
-                sa.add(oar[i].toString());
+            for (int i = 0; i < n; i++) 
+                sa.add(oar[i] == null? "" : oar[i].toString());
             return sa;
         }
 
@@ -193,46 +193,54 @@ public abstract class PrimitiveArray {
     /**
      * This returns a PrimitiveArray of a specified type and capacity.
      *
-     * @param elementClass e.g., float.class
+     * @param elementType e.g., PAType.FLOAT
      * @param capacity
      * @param active if true, size will be set to capacity (filled with 0's), else size = 0.
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray factory(Class elementClass, int capacity, boolean active) {
-        if (elementClass == double.class) return new DoubleArray(capacity, active);
-        if (elementClass == float.class)  return new FloatArray(capacity, active);
-        if (elementClass == long.class)   return new LongArray(capacity, active);
-        if (elementClass == int.class)    return new IntArray(capacity, active);
-        if (elementClass == short.class)  return new ShortArray(capacity, active);
-        if (elementClass == byte.class)   return new ByteArray(capacity, active);
-        if (elementClass == char.class)   return new CharArray(capacity, active);
-        if (elementClass == String.class) return new StringArray(capacity, active);
+    public static PrimitiveArray factory(PAType elementType, int capacity, boolean active) {
+        if (elementType == PAType.DOUBLE) return new DoubleArray(capacity, active);
+        if (elementType == PAType.FLOAT)  return new FloatArray(capacity, active);
+        if (elementType == PAType.LONG)   return new LongArray(capacity, active);
+        if (elementType == PAType.ULONG)  return new ULongArray(capacity, active);
+        if (elementType == PAType.INT)    return new IntArray(capacity, active);
+        if (elementType == PAType.UINT)   return new UIntArray(capacity, active);
+        if (elementType == PAType.SHORT)  return new ShortArray(capacity, active);
+        if (elementType == PAType.USHORT) return new UShortArray(capacity, active);
+        if (elementType == PAType.BYTE)   return new ByteArray(capacity, active);
+        if (elementType == PAType.UBYTE)  return new UByteArray(capacity, active);
+        if (elementType == PAType.CHAR)   return new CharArray(capacity, active);
+        if (elementType == PAType.STRING) return new StringArray(capacity, active);
 
         throw new IllegalArgumentException(String2.ERROR + 
-            " in PrimitiveArray.factory: unexpected elementClass: " + elementClass);
+            " in PrimitiveArray.factory: unexpected elementType: " + elementType);
     }
 
     /**
      * This returns the current pa (if already correct type) 
      * or a new pa of a specified type.
      *
-     * @param elementClass desired class e.g., float.class
+     * @param elementType desired class e.g., PAType.FLOAT
      * @return a PrimitiveArray 
      */
-    public static PrimitiveArray factory(Class elementClass, PrimitiveArray pa) {
-        if (pa.elementClass() == elementClass)
+    public static PrimitiveArray factory(PAType elementType, PrimitiveArray pa) {
+        if (pa.elementType() == elementType)
             return pa;
-        if (elementClass == double.class) return new DoubleArray(pa);
-        if (elementClass == float.class)  return new FloatArray(pa);
-        if (elementClass == long.class)   return new LongArray(pa);
-        if (elementClass == int.class)    return new IntArray(pa);
-        if (elementClass == short.class)  return new ShortArray(pa);
-        if (elementClass == byte.class)   return new ByteArray(pa);
-        if (elementClass == char.class)   return new CharArray(pa);
-        if (elementClass == String.class) return new StringArray(pa);
+        if (elementType == PAType.DOUBLE) return new DoubleArray(pa);
+        if (elementType == PAType.FLOAT)  return new FloatArray(pa);
+        if (elementType == PAType.LONG)   return new LongArray(pa);
+        if (elementType == PAType.ULONG)  return new ULongArray(pa);
+        if (elementType == PAType.INT)    return new IntArray(pa);
+        if (elementType == PAType.UINT)   return new UIntArray(pa);
+        if (elementType == PAType.SHORT)  return new ShortArray(pa);
+        if (elementType == PAType.USHORT) return new UShortArray(pa);
+        if (elementType == PAType.BYTE)   return new ByteArray(pa);
+        if (elementType == PAType.UBYTE)  return new UByteArray(pa);
+        if (elementType == PAType.CHAR)   return new CharArray(pa);
+        if (elementType == PAType.STRING) return new StringArray(pa);
 
         throw new IllegalArgumentException(String2.ERROR + 
-            " in PrimitiveArray.factory: unexpected elementClass: " + elementClass);
+            " in PrimitiveArray.factory: unexpected elementType: " + elementType);
     }
 
     /**
@@ -242,13 +250,13 @@ public abstract class PrimitiveArray {
      * (e.g., ByteArray missingValue=127) is left intact 
      * and NOT converted to new pa's missingValue (e.g., Double.NaN).
      *
-     * @param elementClass e.g., float.class
+     * @param elementType e.g., PAType.FLOAT
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray rawFactory(Class elementClass, PrimitiveArray pa) {
-        if (pa.elementClass() == elementClass)
+    public static PrimitiveArray rawFactory(PAType elementType, PrimitiveArray pa) {
+        if (pa.elementType() == elementType)
             return pa;
-        PrimitiveArray newPa = factory(elementClass, pa.size(), false); //not active            
+        PrimitiveArray newPa = factory(elementType, pa.size(), false); //not active            
         newPa.rawAppend(pa);
         return newPa;
     }
@@ -261,11 +269,11 @@ public abstract class PrimitiveArray {
      * Int type to same int type causes negative values to become missingValues
      * (so don't do it).
      *
-     * @param elementClass e.g., float.class
+     * @param elementType e.g., PAType.FLOAT
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray unsignedFactory(Class elementClass, PrimitiveArray pa) {
-        PrimitiveArray newPa = factory(elementClass, pa.size(), false); //not active            
+    public static PrimitiveArray unsignedFactory(PAType elementType, PrimitiveArray pa) {
+        PrimitiveArray newPa = factory(elementType, pa.size(), false); //not active            
         newPa.unsignedAppend(pa);
         return newPa;
     }
@@ -273,87 +281,39 @@ public abstract class PrimitiveArray {
     /** 
      * This returns a PrimitiveArray with size constantValues.
      *
-     * @param elementClass e.g., float.class
+     * @param elementType e.g., PAType.FLOAT
      * @param size the desired number of elements
      * @param constantValue the value for all of the elements (e.g., "1.6").
-     *    For numeric elementClasses, constantValue is parsed.
+     *    For numeric elementTypees, constantValue is parsed.
      *    For char, the first character is used (e.g., "ab" -&gt; 'a' -&gt; 97).
      * @return a PrimitiveArray with size constantValues.
      */
-    public static PrimitiveArray factory(Class elementClass, int size, String constantValue) {
+    public static PrimitiveArray factory(PAType elementType, int size, String constantValue) {
         if (constantValue == null)
             constantValue = "";
-
-        if (elementClass == double.class) {
-            Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(double, " + size + ")");
-            double ar[] = new double[size];
-            Arrays.fill(ar, String2.parseDouble(constantValue)); //does to/from String bruise it?
-            return new DoubleArray(ar);
-        }
-        if (elementClass == float.class) {
-            Math2.ensureMemoryAvailable(size * 4L, "PrimitiveArray.factory(float, " + size + ")");
-            float ar[] = new float[size];
-            Arrays.fill(ar, String2.parseFloat(constantValue)); //does to/from String bruise it?
-            return new FloatArray(ar);
-        }
-        if (elementClass == long.class) {
-            Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(long, " + size + ")");
-            long ar[] = new long[size];
-            Arrays.fill(ar, String2.parseLong(constantValue)); 
-            return new LongArray(ar);
-        }  
-        if (elementClass == int.class) {
-            Math2.ensureMemoryAvailable(size * 4L, "PrimitiveArray.factory(int, " + size + ")");
-            int ar[] = new int[size];
-            Arrays.fill(ar, String2.parseInt(constantValue)); 
-            return new IntArray(ar);
-        }
-        if (elementClass == short.class) {
-            Math2.ensureMemoryAvailable(size * 2L, "PrimitiveArray.factory(short, " + size + ")");
-            short ar[] = new short[size];
-            Arrays.fill(ar, Math2.roundToShort(String2.parseInt(constantValue)));
-            return new ShortArray(ar);
-        }
-        if (elementClass == byte.class) {
-            Math2.ensureMemoryAvailable(size, "PrimitiveArray.factory(byte, " + size + ")");
-            byte ar[] = new byte[size];
-            Arrays.fill(ar, Math2.roundToByte(String2.parseInt(constantValue))); 
-            return new ByteArray(ar);
-        }
-        if (elementClass == char.class) {
-            Math2.ensureMemoryAvailable(size * 2L, "PrimitiveArray.factory(char, " + size + ")");
-            char ar[] = new char[size];            
-            Arrays.fill(ar, CharArray.firstChar(constantValue)); 
-            return new CharArray(ar);
-        }
-        if (elementClass == String.class) {
-            Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(String, " + size + ")"); //8L is crude estimate of size
-            StringArray sa = new StringArray(size, false);
-            sa.addN(size, constantValue); 
-            return sa;
-        }
-        throw new IllegalArgumentException(String2.ERROR + 
-            " in PrimitiveArray.factory: unexpected elementClass: " + elementClass);
+        PrimitiveArray pa = factory(elementType, 1, false);
+        pa.addNStrings(size, constantValue); //this doesn't waste space
+        return pa;
     }
 
     /**
      * This returns a PrimitiveArray of the specified type from the comma-separated values.
      *
-     * @param elementClass e.g., float.class or String.class
-     * @param csv For elementClass=String.class, individual values with interior commas
+     * @param elementType e.g., PAType.FLOAT or PAType.STRING
+     * @param csv For elementType=PAType.STRING, individual values with interior commas
      *    must be completely enclosed in double quotes with interior double
      *    quotes converted to 2 double quotes or backslash quote. For String values without interior commas,
      *    you don't have to double quote the whole value.    
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray csvFactory(Class elementClass, String csv) {
+    public static PrimitiveArray csvFactory(PAType elementType, String csv) {
 
         String[] sa = StringArray.arrayFromCSV(csv);
         //String2.log(">> csvFactory " + (new StringArray(sa)));
-        if (elementClass == String.class) 
+        if (elementType == PAType.STRING) 
             return new StringArray(sa);
         int n = sa.length;
-        PrimitiveArray pa = factory(elementClass, n, false);
+        PrimitiveArray pa = factory(elementType, n, false);
         for (int i = 0; i < n; i++)
             pa.addString(sa[i]);
         return pa;
@@ -362,17 +322,17 @@ public abstract class PrimitiveArray {
     /**
      * This returns a PrimitiveArray of the specified type from the space or comma-separated values.
      *
-     * @param elementClass e.g., float.class or String.class
-     * @param ssv For elementClass=char.class, encode and special characters (e.g., space, 
+     * @param elementType e.g., PAType.FLOAT or PAType.STRING
+     * @param ssv For elementType=PAType.CHAR, encode and special characters (e.g., space, 
           double quotes, backslash, &lt;#32, or &gt;#127) via their 
           JSON or NCCSV encodings (e.g., " ", "\"", "\\" or """", "\n", "\u20ac").
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray ssvFactory(Class elementClass, String ssv) {
+    public static PrimitiveArray ssvFactory(PAType elementType, String ssv) {
         StringArray sa = StringArray.wordsAndQuotedPhrases(ssv);
         int n = sa.size();
-        PrimitiveArray pa = factory(elementClass, n, false);
-        if (elementClass == char.class) {
+        PrimitiveArray pa = factory(elementType, n, false);
+        if (elementType == PAType.CHAR) {
             CharArray ca = (CharArray)pa;
             for (int i = 0; i < n; i++)
                 ca.add(String2.fromNccsvChar(sa.get(i)));
@@ -403,12 +363,12 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This returns the class (e.g., float.class or String.class) 
+     * This returns the PAType (e.g., PAType.FLOAT or PAType.STRING) 
      * of the element type.
      *
-     * @return the class (e.g., float.class) of the element type.
+     * @return the PAType (e.g., PAType.FLOAT) of the element type.
      */
-    abstract public Class elementClass();
+    abstract public PAType elementType();
 
     /**
      * This returns the string form (e.g., "float", "int", "char" or "String") 
@@ -417,110 +377,127 @@ public abstract class PrimitiveArray {
      * @return the string form (e.g., "float", "int", "char" or "String") 
      * of the element type.
      */
-    public String elementClassString() {
-        return elementClassToString(elementClass());
+    public String elementTypeString() {
+        return elementTypeToString(elementType());
     }
 
     /**
-     * This converts an element type (e.g., float.class) to a String (e.g., float).
+     * This converts an element type (e.g., PAType.FLOAT) to a String (e.g., float).
      *
-     * @param type an element type (e.g., float.class)
+     * @param type an element type (e.g., PAType.FLOAT)
      * @return the string representation of the element type (e.g., float)
      */
-    public static String elementClassToString(Class type) {
-        if (type == double.class) return "double";
-        if (type == float.class)  return "float";
-        if (type == long.class)   return "long";
-        if (type == int.class)    return "int";
-        if (type == short.class)  return "short";
-        if (type == byte.class)   return "byte";
-        if (type == char.class)   return "char";
-        if (type == String.class) return "String";
+    public static String elementTypeToString(PAType type) {
+        if (type == PAType.DOUBLE) return "double";
+        if (type == PAType.FLOAT)  return "float";
+        if (type == PAType.LONG)   return "long";
+        if (type == PAType.INT)    return "int";
+        if (type == PAType.SHORT)  return "short";
+        if (type == PAType.BYTE)   return "byte";
+        if (type == PAType.CHAR)   return "char";
+        if (type == PAType.STRING) return "String";
+        if (type == PAType.ULONG)  return "ulong";
+        if (type == PAType.UINT)   return "uint";
+        if (type == PAType.USHORT) return "ushort";
+        if (type == PAType.UBYTE)  return "ubyte";
         throw new IllegalArgumentException(
-            "PrimitiveArray.elementClassToString unsupported type: "  + type.toString());
+            "PrimitiveArray.elementTypeToString unsupported type: "  + type.toString());
     }
 
     /**
-     * This converts an element type String (e.g., "float") to an element type (e.g., float.class).
+     * This converts an element type String (e.g., "float") to an element type (e.g., PAType.FLOAT).
      *
      * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., float.class) or null if no match
+     * @return the corresponding element type (e.g., PAType.FLOAT) or null if no match
      */
-    public static Class safeElementStringToClass(String type) {
-        if (type.equals("double")) return double.class;
-        if (type.equals("float"))  return float.class;
-        if (type.equals("long"))   return long.class;
-        if (type.equals("int"))    return int.class;
-        if (type.equals("short"))  return short.class;
+    public static PAType safeElementStringToPAType(String type) {
+        if (type.equals("double")) return PAType.DOUBLE;
+        if (type.equals("float"))  return PAType.FLOAT;
+        if (type.equals("long"))   return PAType.LONG;
+        if (type.equals("int"))    return PAType.INT;
+        if (type.equals("short"))  return PAType.SHORT;
         if (type.equals("byte") ||
-            type.equals("boolean"))return byte.class; //erddap stores booleans as bytes
-        if (type.equals("char"))   return char.class;
-        if (type.equals("String")) return String.class;
+            type.equals("boolean"))return PAType.BYTE; //erddap stores booleans as bytes
+        if (type.equals("char"))   return PAType.CHAR;
+        if (type.equals("String")) return PAType.STRING;
+        if (type.equals("ulong"))  return PAType.ULONG;
+        if (type.equals("uint"))   return PAType.UINT;
+        if (type.equals("ushort")) return PAType.USHORT;
+        if (type.equals("ubyte"))  return PAType.UBYTE; //erddap stores booleans as bytes
         return null;
     }
 
     /**
-     * This converts an element type String (e.g., "float") to an element type (e.g., float.class).
+     * This converts an element type String (e.g., "float") to an element PAType (e.g., PAType.FLOAT).
      *
      * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., float.class)
+     * @return the corresponding element type (e.g., PAType.FLOAT)
      */
-    public static Class elementStringToClass(String type) {
-        Class tClass = safeElementStringToClass(type);
-        if (tClass == null) 
-            throw new IllegalArgumentException("PrimitiveArray.elementStringToClass unsupported type: " + type);
-        return tClass;
+    public static PAType elementStringToPAType(String type) {
+        PAType tType = safeElementStringToPAType(type);
+        if (tType == null) 
+            throw new IllegalArgumentException("PrimitiveArray.elementStringToPAType unsupported type: " + type);
+        return tType;
     }
 
     /**
-     * This converts an element type String (e.g., "float") to an element type (e.g., float.class).
+     * This converts an element type String (e.g., "float") to an element PAType (e.g., PAType.FLOAT).
      *
      * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., float.class)
+     * @return the corresponding element type (e.g., PAType.FLOAT)
      */
-    public static Class caseInsensitiveElementStringToClass(String type) {
+    public static PAType caseInsensitiveElementStringToPAType(String type) {
         type = type.toLowerCase();
-        if (type.equals("double")) return double.class;
-        if (type.equals("float"))  return float.class;
-        if (type.equals("long"))   return long.class;
-        if (type.equals("int"))    return int.class;
-        if (type.equals("short"))  return short.class;
+        if (type.equals("double")) return PAType.DOUBLE;
+        if (type.equals("float"))  return PAType.FLOAT;
+        if (type.equals("long"))   return PAType.LONG;
+        if (type.equals("ulong"))  return PAType.ULONG;
+        if (type.equals("int"))    return PAType.INT;
+        if (type.equals("uint"))   return PAType.UINT;
+        if (type.equals("short"))  return PAType.SHORT;
+        if (type.equals("ushort")) return PAType.USHORT;
         if (type.equals("byte") ||
-            type.equals("boolean"))return byte.class; //erddap stores booleans as bytes
-        if (type.equals("char"))   return char.class;
-        if (type.equals("string")) return String.class;
-        throw new IllegalArgumentException("PrimitiveArray.caseInsensitiveElementStringToClass unsupported type: " + type);
+            type.equals("boolean"))return PAType.BYTE; //erddap stores booleans as bytes
+        if (type.equals("ubyte"))  return PAType.UBYTE;
+        if (type.equals("char"))   return PAType.CHAR;
+        if (type.equals("string")) return PAType.STRING;
+        throw new IllegalArgumentException("PrimitiveArray.caseInsensitiveElementStringToPAType unsupported type: " + type);
     }
 
     /**
      * This indicates the number of bytes per element of the given type.
-     * The value for "String" isn't a constant, so this returns 20.
+     * The value for PAType.STRING isn't a constant, so this returns 20.
      *
-     * @param type an element type string (e.g., "float")
+     * @param type an element PAType (e.g., PAType.FLOAT)
      * @return the corresponding number of bytes
      */
-    public static int elementSize(String type) {
-        if (type.equals("double")) return 8;
-        if (type.equals("float"))  return 4;
-        if (type.equals("long"))   return 8;
-        if (type.equals("int"))    return 4;
-        if (type.equals("short"))  return 2;
-        if (type.equals("byte") ||
-            type.equals("boolean"))return 1; //erddap stores booleans as bytes
-        if (type.equals("char"))   return 2;
-        if (type.equals("String")) return 20;
+    public static int elementSize(PAType type) {
+        if (type == PAType.DOUBLE) return 8;
+        if (type == PAType.FLOAT)  return 4;
+        if (type == PAType.LONG ||
+            type == PAType.ULONG)  return 8;
+        if (type == PAType.INT ||
+            type == PAType.UINT)   return 4;
+        if (type == PAType.SHORT ||
+            type == PAType.USHORT) return 2;
+        if (type == PAType.BYTE ||
+            type == PAType.UBYTE ||
+            type == PAType.BOOLEAN)return 1; //erddap stores booleans as bytes
+        if (type == PAType.CHAR)   return 2;
+        if (type == PAType.STRING) return 20;
         throw new IllegalArgumentException("PrimitiveArray.sizeOf unsupported type: " + type);
     }
 
+
     /**
      * This indicates the number of bytes per element of the given type.
-     * The value for String.class isn't a constant, so this returns 20.
+     * The value for PAType.STRING isn't a constant, so this returns 20.
      *
-     * @param type an element type (e.g., float.class)
+     * @param type an element type (e.g., "String" or "float")
      * @return the corresponding number of bytes
      */
-    public static int elementSize(Class type) {
-        return elementSize(elementClassToString(type));
+    public static int elementSize(String type) {
+        return elementSize(elementStringToPAType(type));
     }
 
     /**
@@ -530,9 +507,7 @@ public abstract class PrimitiveArray {
      * @return the number of bytes per element for this PrimitiveArray.
      * The value for "String" isn't a constant, so this returns 20.
      */
-    public int elementSize() {
-        return elementSize(elementClassString());
-    }
+    abstract public int elementSize();
 
     /**
      * This returns the number of the specified value in this PrimitiveArray.
@@ -558,24 +533,28 @@ public abstract class PrimitiveArray {
     /** 
      * This converts a data class into an ESRI Pixel Type.
      * http://help.arcgis.com/en/arcgismobile/10.0/apis/android/api/com/esri/core/map/ImageServiceParameters.PIXEL_TYPE.html
-     * Currently, long.class returns F64
-     * Currently, byte.class returns a Java-like S8, not an OPenDAP-like U8.
-     * Currently, char.class returns a numeric U16.
-     * Currently, String.class and others return UNKNOWN.
+     * Currently, PAType.LONG returns F64
+     * Currently, PAType.BYTE returns a Java-like S8, not an OPenDAP-like U8.
+     * Currently, PAType.CHAR returns a numeric U16.
+     * Currently, PAType.STRING and others return UNKNOWN.
      *
-     * @param tClass e.g., double.class or String.class
+     * @param tPAType e.g., PAType.DOUBLE or PAType.STRING
      * @return the corresponding ESRI pixel type
      */
-    public static String classToEsriPixelType(Class tClass) {
+    public static String paTypeToEsriPixelType(PAType tPAType) {
         //I can't find definitions of C64 and C128
-        if (tClass == double.class) return "F64";
-        if (tClass == float.class)  return "F32"; 
-        if (tClass == long.class)   return "F64"; //not ideal, but no S64
-        if (tClass == int.class)    return "S32";
-        if (tClass == short.class)  return "S16";
-        if (tClass == byte.class)   return "S8"; //Java-like S8 or OPeNDAP-like U8 ?!
-        if (tClass == char.class)   return "U16"; //
-        //if (tClass == String.class) return ...
+        if (tPAType == PAType.DOUBLE) return "F64";
+        if (tPAType == PAType.FLOAT)  return "F32"; 
+        if (tPAType == PAType.LONG)   return "F64"; //not ideal, but no S64
+        if (tPAType == PAType.ULONG)  return "F64"; //not ideal, but no U64
+        if (tPAType == PAType.INT)    return "S32";
+        if (tPAType == PAType.UINT)   return "U32";
+        if (tPAType == PAType.SHORT)  return "S16";
+        if (tPAType == PAType.USHORT) return "U16";
+        if (tPAType == PAType.BYTE)   return "S8"; 
+        if (tPAType == PAType.UBYTE)  return "U8"; 
+        if (tPAType == PAType.CHAR)   return "U16"; //
+        //if (tPAType == PAType.STRING) return ...
         return "UNKNOWN";
     }
 
@@ -602,15 +581,19 @@ public abstract class PrimitiveArray {
      * @return the recommended sql type as a string e.g., varchar(40)
      */
     public String getSqlTypeString(double stringLengthFactor) {
-        Class type = elementClass();
-        if (type == double.class) return "double precision";
-        if (type == float.class)  return "real";  //postgres treats "float" as double precision
-        if (type == long.class)   return "bigint"; //not universally supported (pgsql does support it)
-        if (type == int.class)    return "integer";
-        if (type == short.class)  return "smallint";
-        if (type == byte.class)   return "smallint"; //not TINYINT, not universally supported (even pgsql)
-        if (type == char.class)   return "char(1)";
-        if (type == String.class) {
+        PAType type = elementType();
+        if (type == PAType.DOUBLE) return "double precision";
+        if (type == PAType.FLOAT)  return "real";  //postgres treats "float" as double precision
+        if (type == PAType.LONG ||
+            type == PAType.ULONG)  return "bigint"; //not universally supported (pgsql does support it)
+        if (type == PAType.INT)    return "integer";
+        if (type == PAType.UINT)   return "integer"; //???
+        if (type == PAType.SHORT)  return "smallint";
+        if (type == PAType.USHORT) return "smallint"; //???
+        if (type == PAType.BYTE)   return "smallint"; //not TINYINT, not universally supported (even pgsql)
+        if (type == PAType.UBYTE)  return "smallint"; //not TINYINT, not universally supported (even pgsql)
+        if (type == PAType.CHAR)   return "char(1)";
+        if (type == PAType.STRING) {
             StringArray sa = (StringArray)this;
             int max = Math.max(1, sa.maxStringLength());
             if (stringLengthFactor > 1) {
@@ -625,7 +608,7 @@ public abstract class PrimitiveArray {
     }
 
     /** 
-     * This returns the suggested elementClass for the given java.sql.Types.
+     * This returns the suggested elementType for the given java.sql.Types.
      * This conversion is not standardized across databases (see 
      * http://www.onlamp.com/pub/a/onlamp/2001/09/13/aboutSQL.html?page=last).
      * But choices below are fairly safe.
@@ -670,7 +653,14 @@ public abstract class PrimitiveArray {
              return new StringArray(); 
     }
 
-    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an unsigned integer type. 
+     * The unsigned integer type classes overwrite this.
+     */
+    public boolean isUnsigned() {
+        return false;
+    }
+
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
@@ -678,20 +668,20 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This indicates if a given type (e.g., short.class) can be contained in a long.
+     * This indicates if a given type (e.g., PAType.SHORT) is an integer (in the math sense) type.
      *
-     * @param type an element type (e.g., short.class)
-     * @return true if the given type (e.g., short.class) can be contained in a long.
+     * @param type an element type (e.g., PAType.SHORT)
+     * @return true if the given type (e.g., PAType.SHORT) is an integer (in the math sense) type.
      */
-    public static boolean isIntegerType(Class type) {
+    public static boolean isIntegerType(PAType type) {
         return 
-            type == long.class ||
-            type == int.class ||
-            type == short.class ||
-            type == byte.class;
+            type == PAType.LONG  || type == PAType.ULONG  ||
+            type == PAType.INT   || type == PAType.UINT   ||
+            type == PAType.SHORT || type == PAType.USHORT ||
+            type == PAType.BYTE  || type == PAType.UBYTE;
     }
 
-    /** This indicates if this class' type is float.class or double.class. 
+    /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
      */
     public boolean isFloatingPointType() {
         return false;
@@ -706,25 +696,29 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This returns for missing value for a given element type (e.g., byte.class),
+     * This returns for missing value for a given element type (e.g., PAType.BYTE),
      * expressed as a double.
      *
-     * @param type an element type (e.g., byte.class)
+     * @param type an element type (e.g., PAType.BYTE)
      * @return the string representation of the element type (e.g., Byte.MAX_VALUE).
      *   Note that the mv for float is Float.NaN, but it gets converted
      *   to Double.NaN when returned by this method.
      *   StringArray supports several incoming missing values, but
      *   "" is used as the outgoing missing value.
      */
-    public static double missingValue(Class type) {
-        if (type == double.class) return Double.NaN;
-        if (type == float.class)  return Double.NaN;
-        if (type == long.class)   return Long.MAX_VALUE;
-        if (type == int.class)    return Integer.MAX_VALUE;
-        if (type == short.class)  return Short.MAX_VALUE;
-        if (type == byte.class)   return Byte.MAX_VALUE;
-        if (type == char.class)   return Character.MAX_VALUE;
-        if (type == String.class) return Double.NaN;
+    public static double missingValue(PAType type) {
+        if (type == PAType.DOUBLE) return Double.NaN;
+        if (type == PAType.FLOAT)  return Double.NaN;
+        if (type == PAType.LONG)   return Long.MAX_VALUE;
+        if (type == PAType.ULONG)  return Math2.ULONG_MAX_VALUE_AS_DOUBLE;
+        if (type == PAType.INT)    return Integer.MAX_VALUE;
+        if (type == PAType.UINT)   return UIntArray.MAX_VALUE;
+        if (type == PAType.SHORT)  return Short.MAX_VALUE;
+        if (type == PAType.USHORT) return UShortArray.MAX_VALUE;
+        if (type == PAType.BYTE)   return Byte.MAX_VALUE;
+        if (type == PAType.UBYTE)  return UByteArray.MAX_VALUE;
+        if (type == PAType.CHAR)   return Character.MAX_VALUE;
+        if (type == PAType.STRING) return Double.NaN;
         return Double.NaN;
     }
 
@@ -733,7 +727,7 @@ public abstract class PrimitiveArray {
      *
      * @return the class index (e.g., CLASS_INDEX_INT) of the element type.
      */
-    abstract public int elementClassIndex();
+    abstract public int elementTypeIndex();
 
     /**
      * This inserts an item into the array at the specified index, 
@@ -965,7 +959,8 @@ public abstract class PrimitiveArray {
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a float. String values are parsed
+     * @return the value as a float. 
+     *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      */
     abstract public float getFloat(int index);
@@ -984,7 +979,8 @@ public abstract class PrimitiveArray {
      * FloatArray converts float to double in a simplistic way.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a double. String values are parsed
+     * @return the value as a double. 
+     *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
     abstract public double getDouble(int index);
@@ -1272,7 +1268,7 @@ public abstract class PrimitiveArray {
         double max = -Double.MAX_VALUE; //not Double.MIN_VALUE
         double sum = 0;
 
-        if (isIntegerType() || elementClass() == char.class) { //includes LongArray
+        if (isIntegerType() || elementType() == PAType.CHAR) { //includes LongArray
             long mv = Long.MAX_VALUE;
             long fv = Long.MAX_VALUE;
             if (atts != null) {
@@ -1292,7 +1288,7 @@ public abstract class PrimitiveArray {
             }
         } else { 
             //is float, double or String                   
-            boolean isFloat = elementClass() == float.class;
+            boolean isFloat = elementType() == PAType.FLOAT;
             double mv = Double.NaN;
             double fv = Double.NaN;
             if (atts != null) {
@@ -1455,7 +1451,7 @@ public abstract class PrimitiveArray {
      */
 /* project not finished or tested
     public void writeNccsvDos(DataOutputStream dos) throws Exception {
-        dos.writeShort(elementClassIndex()); 
+        dos.writeShort(elementTypeIndex()); 
         dos.writeInt(size);
         writeDos(dos);
     }
@@ -1514,128 +1510,164 @@ public abstract class PrimitiveArray {
 
     /** 
      * This makes a PrimitiveArray by reading contiguous values from a RandomAccessFile.
-     * This doesn't work for String.class.
+     * This doesn't work for PAType.STRING.
      * endIndex-startIndex must be less than Integer.MAX_VALUE.
      *
      * @param raf the RandomAccessFile
-     * @param type the element type of the original PrimitiveArray
+     * @param type the elementType of the original PrimitiveArray
      * @param start the raf offset of the start of the array (nBytes)
      * @param startIndex the index of the desired value (0..)
      * @param endIndex the index after the last desired value (0..)
      * @return a PrimitiveArray
      * @throws Exception if trouble
      */
-    public static PrimitiveArray rafFactory(RandomAccessFile raf, Class type, 
+    public static PrimitiveArray rafFactory(RandomAccessFile raf, PAType type, 
         long start, long startIndex, long endIndex) throws Exception {
 
         long longN = endIndex - startIndex;
         String cause = "PrimitiveArray.rafFactory";
         Math2.ensureArraySizeOkay(longN, cause);
         int n = (int)longN;
+        PrimitiveArray pa = factory(type, n, true); //active?
+        raf.seek(start + pa.elementSize() * startIndex);
         
         //byte
-        if (type == byte.class) {
-            int nBytesPer = 1;
-            byte tar[] = new byte[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
+        if (type == PAType.BYTE) {
+            byte tar[] = ((ByteArray)pa).array;
             for (int i = 0; i < n; i++) 
                 tar[i] = raf.readByte();
-            return factory(tar);
+            return pa;
         }
 
-        //char
-        if (type == char.class) {
-            int nBytesPer = 2;
-            char tar[] = new char[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
+        //ubyte
+        if (type == PAType.UBYTE) {
+            byte tar[] = ((UByteArray)pa).array;
             for (int i = 0; i < n; i++) 
-                tar[i] = raf.readChar();
-            return factory(tar);
-        }
-
-        //double
-        if (type == double.class) {
-            int nBytesPer = 8;
-            double tar[] = new double[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
-            for (int i = 0; i < n; i++) 
-                tar[i] = raf.readDouble();
-            return factory(tar);
-        }
-
-        //float
-        if (type == float.class) {
-            int nBytesPer = 4;
-            float tar[] = new float[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
-            for (int i = 0; i < n; i++) 
-                tar[i] = raf.readFloat();
-            return factory(tar);
-        }
-
-        //int
-        if (type == int.class) {
-            int nBytesPer = 4;
-            int tar[] = new int[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
-            for (int i = 0; i < n; i++) 
-                tar[i] = raf.readInt();
-            return factory(tar);
-        }
-
-        //long
-        if (type == byte.class) {
-            int nBytesPer = 8;
-            long tar[] = new long[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
-            for (int i = 0; i < n; i++) 
-                tar[i] = raf.readLong();
-            return factory(tar);
+                tar[i] = raf.readByte();
+            return pa;
         }
 
         //short
-        if (type == byte.class) {
-            int nBytesPer = 2;
-            short tar[] = new short[n];
-            Math2.ensureMemoryAvailable(nBytesPer * longN, cause);
-            raf.seek(start + nBytesPer * startIndex);  
+        if (type == PAType.SHORT) {
+            short tar[] = ((ShortArray)pa).array;
             for (int i = 0; i < n; i++) 
                 tar[i] = raf.readShort();
-            return factory(tar);
+            return pa;
+        }
+
+        //ushort
+        if (type == PAType.USHORT) {
+            short tar[] = ((UShortArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readShort();
+            return pa;
+        }
+
+        //int
+        if (type == PAType.INT) {
+            int tar[] = ((IntArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readInt();
+            return pa;
+        }
+
+        //uint
+        if (type == PAType.UINT) {
+            int tar[] = ((UIntArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readInt();
+            return pa;
+        }
+
+        //long
+        if (type == PAType.LONG) {
+            long tar[] = ((LongArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readLong();
+            return pa;
+        }
+
+        //ulong
+        if (type == PAType.ULONG) {
+            long tar[] = ((ULongArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readLong();
+            return pa;
+        }
+
+        //char
+        if (type == PAType.CHAR) {
+            char tar[] = ((CharArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readChar();
+            return pa;
+        }
+
+        //double
+        if (type == PAType.DOUBLE) {
+            double tar[] = ((DoubleArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readDouble();
+            return pa;
+        }
+
+        //float
+        if (type == PAType.FLOAT) {
+            float tar[] = ((FloatArray)pa).array;
+            for (int i = 0; i < n; i++) 
+                tar[i] = raf.readFloat();
+            return pa;
         }
 
         //no support for String 
         throw new Exception("PrimitiveArray.rafFactory type '" + type + "' not supported.");
     }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    abstract public void writeToRAF(RandomAccessFile raf, int index) throws Exception;
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    abstract public void readFromRAF(RandomAccessFile raf) throws Exception;
+
     /**
      * This reads one number from a randomAccessFile.
      * This doesn't support StringArray (for which you need nBytesPer)
      * and in which you generally wouldn't be storing numbers.
      *
      * @param raf the RandomAccessFile
-     * @param type the element type of the original PrimitiveArray
+     * @param type the elementType of the original PrimitiveArray
      * @param start the raf offset of the start of the array (nBytes)
      * @param index the index of the desired value (0..)
      * @return the requested value as a double
      * @throws Exception if trouble
      */
-    public static double rafReadDouble(RandomAccessFile raf, Class type, 
+    public static double rafReadDouble(RandomAccessFile raf, PAType type, 
         long start, long index) throws Exception {
 
-        if (type == byte.class)   return ByteArray.rafReadDouble(  raf, start, index);
-        if (type == char.class)   return CharArray.rafReadDouble(  raf, start, index);
-        if (type == double.class) return DoubleArray.rafReadDouble(raf, start, index);
-        if (type == float.class)  return FloatArray.rafReadDouble( raf, start, index);
-        if (type == int.class)    return IntArray.rafReadDouble(   raf, start, index);
-        if (type == long.class)   return LongArray.rafReadDouble(  raf, start, index);
-        if (type == short.class)  return ShortArray.rafReadDouble( raf, start, index);
-        //if (type == String.class) return ByteArray.rafReadDouble(raf, start, index, nBytesPer);
+        if (type == PAType.BYTE)   return ByteArray.rafReadDouble(  raf, start, index);
+        if (type == PAType.CHAR)   return CharArray.rafReadDouble(  raf, start, index);
+        if (type == PAType.DOUBLE) return DoubleArray.rafReadDouble(raf, start, index);
+        if (type == PAType.FLOAT)  return FloatArray.rafReadDouble( raf, start, index);
+        if (type == PAType.INT)    return IntArray.rafReadDouble(   raf, start, index);
+        if (type == PAType.LONG)   return LongArray.rafReadDouble(  raf, start, index);
+        if (type == PAType.SHORT)  return ShortArray.rafReadDouble( raf, start, index);
+        if (type == PAType.UBYTE)  return UByteArray.rafReadDouble( raf, start, index);
+        if (type == PAType.UINT)   return UIntArray.rafReadDouble(  raf, start, index);
+        if (type == PAType.ULONG)  return ULongArray.rafReadDouble( raf, start, index);
+        if (type == PAType.USHORT) return UShortArray.rafReadDouble(raf, start, index);
+        //if (type == PAType.STRING) return ByteArray.rafReadDouble(raf, start, index, nBytesPer);
         throw new Exception("PrimitiveArray.rafReadDouble type '" + type + "' not supported.");
     }
 
@@ -1649,17 +1681,21 @@ public abstract class PrimitiveArray {
      * @param value the value which will be converted to 'type' and then stored
      * @throws Exception if trouble
      */
-    public static void rafWriteDouble(RandomAccessFile raf, Class type, 
+    public static void rafWriteDouble(RandomAccessFile raf, PAType type, 
         double value) throws Exception {
 
-        if (type == byte.class)   {raf.writeByte(Math2.roundToByte(value));       return;}
-        if (type == char.class)   {raf.writeChar(Math2.roundToChar(value));       return;}     
-        if (type == double.class) {raf.writeDouble(value);                        return;}
-        if (type == float.class)  {raf.writeFloat(Math2.doubleToFloatNaN(value)); return;}
-        if (type == int.class)    {raf.writeInt(Math2.roundToInt(value));         return;}
-        if (type == long.class)   {raf.writeLong(Math2.roundToLong(value));       return;}
-        if (type == short.class)  {raf.writeShort(Math2.roundToShort(value));     return;}
-        //if (type == String.class) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
+        if (type == PAType.BYTE)   {raf.writeByte(Math2.roundToByte(value));       return;}
+        if (type == PAType.CHAR)   {raf.writeChar(Math2.roundToChar(value));       return;}     
+        if (type == PAType.DOUBLE) {raf.writeDouble(value);                        return;}
+        if (type == PAType.FLOAT)  {raf.writeFloat(Math2.doubleToFloatNaN(value)); return;}
+        if (type == PAType.INT)    {raf.writeInt(Math2.roundToInt(value));         return;}
+        if (type == PAType.LONG)   {raf.writeLong(Math2.roundToLong(value));       return;}
+        if (type == PAType.SHORT)  {raf.writeShort(Math2.roundToShort(value));     return;}
+        if (type == PAType.UBYTE)  {raf.writeByte( UByteArray.pack( Math2.roundToUByte(value)));  return;} //trouble?
+        if (type == PAType.USHORT) {raf.writeShort(UShortArray.pack(Math2.roundToUShort(value))); return;} //trouble?
+        if (type == PAType.UINT)   {raf.writeInt(  UIntArray.pack(  Math2.roundToUInt(value)));   return;} //trouble?
+        if (type == PAType.ULONG)  {raf.writeLong( ULongArray.pack( Math2.roundToULong(value)));  return;} //trouble?
+        //if (type == PAType.STRING) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
         throw new Exception("PrimitiveArray.rafWriteDouble type '" + type + "' not supported.");
     }
 
@@ -1669,23 +1705,27 @@ public abstract class PrimitiveArray {
      * and in which you generally wouldn't be storing numbers.
      *
      * @param raf the RandomAccessFile
-     * @param type the element type of the original PrimitiveArray
+     * @param type the elementType of the original PrimitiveArray
      * @param start the raf offset of the start of the array (nBytes)
      * @param index the index of the value (0..)
      * @param value the value which will be converted to 'type' and then stored
      * @throws Exception if trouble
      */
-    public static void rafWriteDouble(RandomAccessFile raf, Class type, 
+    public static void rafWriteDouble(RandomAccessFile raf, PAType type, 
         long start, long index, double value) throws Exception {
 
-        if (type == byte.class)   {ByteArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == char.class)   {CharArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == double.class) {DoubleArray.rafWriteDouble(raf, start, index, value); return;}
-        if (type == float.class)  {FloatArray.rafWriteDouble( raf, start, index, value); return;}
-        if (type == int.class)    {IntArray.rafWriteDouble(   raf, start, index, value); return;}
-        if (type == long.class)   {LongArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == short.class)  {ShortArray.rafWriteDouble( raf, start, index, value); return;}
-        //if (type == String.class) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
+        if (type == PAType.BYTE)   {ByteArray.rafWriteDouble(  raf, start, index, value); return;}
+        if (type == PAType.CHAR)   {CharArray.rafWriteDouble(  raf, start, index, value); return;}
+        if (type == PAType.DOUBLE) {DoubleArray.rafWriteDouble(raf, start, index, value); return;}
+        if (type == PAType.FLOAT)  {FloatArray.rafWriteDouble( raf, start, index, value); return;}
+        if (type == PAType.INT)    {IntArray.rafWriteDouble(   raf, start, index, value); return;}
+        if (type == PAType.LONG)   {LongArray.rafWriteDouble(  raf, start, index, value); return;}
+        if (type == PAType.SHORT)  {ShortArray.rafWriteDouble( raf, start, index, value); return;}
+        if (type == PAType.UBYTE)  {UByteArray.rafWriteDouble( raf, start, index, value); return;}
+        if (type == PAType.UINT)   {UIntArray.rafWriteDouble(  raf, start, index, value); return;}
+        if (type == PAType.ULONG)  {ULongArray.rafWriteDouble( raf, start, index, value); return;}
+        if (type == PAType.USHORT) {UShortArray.rafWriteDouble(raf, start, index, value); return;}
+        //if (type == PAType.STRING) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
         throw new Exception("PrimitiveArray.rafWriteDouble type '" + type + "' not supported.");
     }
 
@@ -1844,7 +1884,7 @@ public abstract class PrimitiveArray {
      *     -lowPo-1 and -(highPo+1)-1).
      * @throws Exception if trouble
      */
-    public static long rafBinarySearch(RandomAccessFile raf, Class type,
+    public static long rafBinarySearch(RandomAccessFile raf, PAType type,
         long start, long lowPo, long highPo, double value) throws Exception {
         
         //ensure lowPo <= highPo
@@ -1905,7 +1945,7 @@ public abstract class PrimitiveArray {
      *     (or highPo + 1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafFirstGE(RandomAccessFile raf, Class type,
+    public static long rafFirstGE(RandomAccessFile raf, PAType type,
         long start, long lowPo, long highPo, double value) throws Exception {
 
         if (lowPo > highPo)
@@ -1945,7 +1985,7 @@ public abstract class PrimitiveArray {
      *     (or highPo + 1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafFirstGAE(RandomAccessFile raf, Class type,
+    public static long rafFirstGAE(RandomAccessFile raf, PAType type,
         long start, long lowPo, long highPo, double value, int precision) throws Exception {
 
         if (lowPo > highPo)
@@ -1985,7 +2025,7 @@ public abstract class PrimitiveArray {
      *     (or -1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafLastLE(RandomAccessFile raf, Class type,
+    public static long rafLastLE(RandomAccessFile raf, PAType type,
         long start, long lowPo, long highPo, double value) throws Exception {
 
         if (lowPo > highPo)
@@ -2025,7 +2065,7 @@ public abstract class PrimitiveArray {
      *     (or -1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafLastLAE(RandomAccessFile raf, Class type,
+    public static long rafLastLAE(RandomAccessFile raf, PAType type,
         long start, long lowPo, long highPo, double value, int precision) throws Exception {
 
         if (lowPo > highPo)
@@ -2403,7 +2443,7 @@ public abstract class PrimitiveArray {
         //nothing in a StringArray? 
         if (isStringArray && !hasSomething) {
             //hasNaN -> Double  else leave as StringArray
-            return hasNaN? PrimitiveArray.factory(double.class, n, "") : this;
+            return hasNaN? PrimitiveArray.factory(PAType.DOUBLE, n, "") : this;
         }
 
         //make array of simplified type
@@ -2477,10 +2517,10 @@ public abstract class PrimitiveArray {
     public void unsignedAppend(PrimitiveArray pa) {
         //this code is used by all subclasses; it isn't over-ridden
 
-        if (pa.isIntegerType() || pa.elementClass() == char.class) {
+        if (pa.isIntegerType() || pa.elementType() == PAType.CHAR) {
             int otherSize = pa.size(); 
             ensureCapacity(size + (long)otherSize);
-            if (pa.elementClass() == elementClass()) { //both are the same integer type
+            if (pa.elementType() == elementType()) { //both are the same integer type
                 for (int i = 0; i < otherSize; i++) {
                     long tl = pa.getLong(i);
                     addLong(tl >= 0? tl : Long.MAX_VALUE);
@@ -2595,14 +2635,14 @@ public abstract class PrimitiveArray {
 
     /**
      * Given a List of PrimitiveArrays, which represents a table of data,
-     * this copies the values from one row to another (without affecting
-     * any other rows).
+     * this copies the values from one row to another already extant row
+     * (without affecting any other rows).
      *
      * @param table a List of PrimitiveArray
      * @param from the 'from' row
      * @param to the 'to' row
      */
-    public static void copyRow(List table, int from, int to) {
+    public static void copyRow(List<PrimitiveArray> table, int from, int to) {
         int nColumns = table.size();
         for (int col = 0; col < nColumns; col++) 
             ((PrimitiveArray)table.get(col)).copy(from, to);
@@ -2649,7 +2689,7 @@ public abstract class PrimitiveArray {
             boolean equal = compare(row - 1, row) == 0;
             if (equal) {
                 if (logActive) {
-                    String msg = "Duplicates at [" + (row - 1) + "] and [" + row + 
+                    String msg = "  Removing duplicates at [" + (row - 1) + "] and [" + row + 
                         "] = " + getString(row);
                     if (logDuplicates) 
                         String2.log(msg);
@@ -2670,6 +2710,7 @@ public abstract class PrimitiveArray {
 
         return nRows - nUnique;
     }
+
 
     /**
      * Given a (presumably) PrimitiveArray List, which represents a sorted table of data,
@@ -2709,6 +2750,37 @@ public abstract class PrimitiveArray {
 
         return nRows - nUnique;
     }
+
+    /**
+     * Given a sorted (plain or sortIgnoreCase) PrimitiveArray List,
+     * this counts adjacent identical rows.
+     *
+     * @param logDuplicates if true, this prints duplicates to String2.log
+     * @return the number of duplicates. Specifically, this is the number
+     *   that would be removed by removeDuplicates.
+     */
+    public int countDuplicates(boolean logDuplicates, boolean isEpochSeconds) {
+
+        int nRows = size;
+        if (nRows <= 1) 
+            return 0;
+        int nDuplicates = 0; 
+        for (int row = 1; row < nRows; row++) { //start at 1; compare to previous row
+            //does it equal row above?
+            if (compare(row - 1, row) == 0) {
+                ++nDuplicates;
+                if (logDuplicates) {
+                    String s = isEpochSeconds? 
+                        Calendar2.safeEpochSecondsToIsoStringTZ(getDouble(row), "NaN") :
+                        getString(row);
+                    String2.log("  duplicate #" + nDuplicates + ": [" + (row - 1) + "] and [" + row + 
+                        "] = " + s);
+                }
+            } 
+        }
+        return nDuplicates;
+    }
+
 
     /**
      * Given another PrimitiveArray List sorted (this and other must be sort(), 
@@ -2836,10 +2908,10 @@ public abstract class PrimitiveArray {
         //append table2 to the end of table1
         for (int col = 0; col < table1.size(); col++) {
             //if needed, make a new wider PrimitiveArray in table1
-            if (((PrimitiveArray)table2.get(col)).elementClassIndex() > 
-                ((PrimitiveArray)table1.get(col)).elementClassIndex()) {
+            if (((PrimitiveArray)table2.get(col)).elementTypeIndex() > 
+                ((PrimitiveArray)table1.get(col)).elementTypeIndex()) {
                 PrimitiveArray oldTable1Col = ((PrimitiveArray)table1.get(col));
-                PrimitiveArray newTable1Col = factory(((PrimitiveArray)table2.get(col)).elementClass(), 
+                PrimitiveArray newTable1Col = factory(((PrimitiveArray)table2.get(col)).elementType(), 
                     oldTable1Col.size() + ((PrimitiveArray)table2.get(col)).size(), false);
                 newTable1Col.append(oldTable1Col);
                 table1.set(col, newTable1Col);
@@ -2919,17 +2991,17 @@ public abstract class PrimitiveArray {
     /**
      * This variant assumes sourceIsUnsigned=false.
      */
-    public PrimitiveArray scaleAddOffset(Class destElementClass, 
+    public PrimitiveArray scaleAddOffset(PAType destElementPAType, 
         double scale, double addOffset) {
-        return scaleAddOffset(false, destElementClass, scale, addOffset);
+        return scaleAddOffset(false, destElementPAType, scale, addOffset);
     }
 
     /**
-     * This returns a new (always) PrimitiveArray of type elementClass
+     * This returns a new (always) PrimitiveArray of type elementType
      * which has unpacked values (scale then addOffset values applied).
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
-     * @param destElementClass 
+     * @param destElementPAType
      * @param sourceIsUnsigned if true, integer-type source values will be 
      *    interpreted as unsigned values.
      * @param scale
@@ -2937,8 +3009,8 @@ public abstract class PrimitiveArray {
      * @return a new (always) PrimitiveArray
      */
     public PrimitiveArray scaleAddOffset(boolean sourceIsUnsigned, 
-        Class destElementClass, double scale, double addOffset) {
-        PrimitiveArray pa = factory(destElementClass, size, true);
+        PAType destElementPAType, double scale, double addOffset) {
+        PrimitiveArray pa = factory(destElementPAType, size, true);
         if (sourceIsUnsigned) {
             for (int i = 0; i < size; i++)
                 pa.setDouble(i, getUnsignedDouble(i) * scale + addOffset); //NaNs remain NaNs
@@ -2950,17 +3022,17 @@ public abstract class PrimitiveArray {
     }
      
     /**
-     * This returns a new (always) PrimitiveArray of type destElementClass
+     * This returns a new (always) PrimitiveArray of type destElementPAType
      * which has had the packed values (addOffset then scale values applied).
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
-     * @param destElementClass 
+     * @param destElementPAType 
      * @param addOffset
      * @param scale
      * @return a new (always) PrimitiveArray
      */
-    public PrimitiveArray addOffsetScale(Class destElementClass, double addOffset, double scale) {
-        PrimitiveArray pa = factory(destElementClass, size, true);
+    public PrimitiveArray addOffsetScale(PAType destElementPAType, double addOffset, double scale) {
+        PrimitiveArray pa = factory(destElementPAType, size, true);
         for (int i = 0; i < size; i++)
             pa.setDouble(i, (getDouble(i) + addOffset) * scale); //NaNs remain NaNs
         return pa;
@@ -2999,8 +3071,8 @@ public abstract class PrimitiveArray {
      */
     public int convertToStandardMissingValues(double fakeFillValue, double fakeMissingValue) {
         //do nothing to String or char columns
-        if (elementClass() == String.class ||
-            elementClass() == char.class)
+        if (elementType() == PAType.STRING ||
+            elementType() == PAType.CHAR)
             return 0;
 
         //is _FillValue used?    switch data to standard mv
@@ -3026,8 +3098,8 @@ public abstract class PrimitiveArray {
      */
     public int switchNaNToFakeMissingValue(double fakeMissingValue) {
         if (Double.isFinite(fakeMissingValue) && 
-            elementClass() != String.class ||
-            elementClass() != char.class)
+            elementType() != PAType.STRING ||
+            elementType() != PAType.CHAR)
             return switchFromTo("", "" + fakeMissingValue);
         return 0;
     }
@@ -3566,8 +3638,8 @@ public abstract class PrimitiveArray {
         }
 
         //string
-        if (elementClass() == String.class ||
-            elementClass() == char.class) {
+        if (elementType() == PAType.STRING ||
+            elementType() == PAType.CHAR) {
             //String2.log("applyConstraint(String)");
             int nStillGood = 0;
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
@@ -3580,7 +3652,7 @@ public abstract class PrimitiveArray {
         }
 
         //long 
-        if (elementClass() == long.class) {
+        if (elementType() == PAType.LONG) {
             long value2l = String2.parseLong(value2);  //error if has decimal part
             int nStillGood = 0;
             if (value2l != Long.MAX_VALUE) {  //value2 parsed cleanly as a long
@@ -3626,7 +3698,7 @@ public abstract class PrimitiveArray {
         }
 
         //float
-        if (elementClass() == float.class) {
+        if (elementType() == PAType.FLOAT) {
             //String2.log("applyConstraint(float)");
             int nStillGood = 0;
             float value2f = String2.parseFloat(value2);
@@ -3854,14 +3926,14 @@ public abstract class PrimitiveArray {
         double min = getDouble(mmi[1]);
         double max = getDouble(mmi[2]);
         //String2.log("> min=" + min);
-        if (elementClass() == char.class) {
+        if (elementType() == PAType.CHAR) {
             //just look for 0
             if (min == 0)
                 return 0;
             return Double.NaN;
         }
 
-        if (elementClass() != String.class) {
+        if (elementType() != PAType.STRING) {
             int whichMv9 = DoubleArray.MV9.indexOf(min);
             if (whichMv9 >= 0)
                 return DoubleArray.MV9.get(whichMv9);
@@ -3870,17 +3942,17 @@ public abstract class PrimitiveArray {
                 return DoubleArray.MV9.get(whichMv9);
         }
 
-        if (elementClass() == double.class) {
+        if (elementType() == PAType.DOUBLE) {
             if (min <= -1e300)
                 return min;
             if (max >= 1e300)
                 return max;
-        } else if (elementClass() == float.class) {
+        } else if (elementType() == PAType.FLOAT) {
             if (min < -5e36)
                 return min;
             if (max > 5e36)
                 return max;
-        } else if (elementClass() == String.class) {
+        } else if (elementType() == PAType.STRING) {
 
         } else {
             //integer types
@@ -3947,12 +4019,12 @@ public abstract class PrimitiveArray {
         //ByteArray
         s = "1b";
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(s));
-        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        Test.ensureEqual(pa.elementTypeString(), "byte", "");
         Test.ensureEqual(pa.toString(), "1", "");
         Test.ensureEqual(pa.toNccsvAttString(), s, "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-128b,-0b,0b,127b"));
-        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        Test.ensureEqual(pa.elementTypeString(), "byte", "");
         Test.ensureEqual(pa.toString(), "-128, 0, 0, 127", "");
         Test.ensureEqual(pa.toNccsvAttString(), "-128b,0b,0b,127b", "");
     
@@ -3965,21 +4037,21 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid byte value: 128b", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1b,3")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1b, 3", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1b,1234b")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1b, 1234b", "");
         
         //ShortArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s"));
-        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.elementTypeString(), "short", "");
         Test.ensureEqual(pa.toString(), "1", "");
         Test.ensureEqual(pa.toNccsvAttString(), "1s", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-32768s,-0s,0s,32767s"));
-        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.elementTypeString(), "short", "");
         Test.ensureEqual(pa.toString(), "-32768, 0, 0, 32767", "");
         Test.ensureEqual(pa.toNccsvAttString(), "-32768s,0s,0s,32767s", "");
         
@@ -3992,21 +4064,21 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid short value: 32768s", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s,3")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1s, 3", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s,123456s")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1s, 123456s", "");
         
         //IntArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i"));
-        Test.ensureEqual(pa.elementClassString(), "int", "");
+        Test.ensureEqual(pa.elementTypeString(), "int", "");
         Test.ensureEqual(pa.toString(), "1", "");
         Test.ensureEqual(pa.toNccsvAttString(), "1i", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-2147483648i,-0i,0i,2147483647i"));
-        Test.ensureEqual(pa.elementClassString(), "int", "");
+        Test.ensureEqual(pa.elementTypeString(), "int", "");
         Test.ensureEqual(pa.toString(), "-2147483648, 0, 0, 2147483647", "");
         Test.ensureEqual(pa.toNccsvAttString(), "-2147483648i,0i,0i,2147483647i", "");
         
@@ -4019,21 +4091,21 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid int value: 2147483648i", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i,123456789091i")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1i, 123456789091i", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i,3.00i")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1i, 3.00i", "");
         
         //LongArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L"));
-        Test.ensureEqual(pa.elementClassString(), "long", "");
+        Test.ensureEqual(pa.elementTypeString(), "long", "");
         Test.ensureEqual(pa.toString(), "1", "");
         Test.ensureEqual(pa.toNccsvAttString(), "1L", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-9223372036854775808L,-0L,0L,9223372036854775807L"));
-        Test.ensureEqual(pa.elementClassString(), "long", "");
+        Test.ensureEqual(pa.elementTypeString(), "long", "");
         Test.ensureEqual(pa.toString(), "-9223372036854775808, 0, 0, 9223372036854775807", "");
         Test.ensureEqual(pa.toNccsvAttString(), "-9223372036854775808L,0L,0L,9223372036854775807L", "");
         
@@ -4046,22 +4118,22 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid long value: 9223372036854775808L", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L,12345678901234567890L")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1L, 12345678901234567890L", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L,123456")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1L, 123456", "");
         
         //FloatArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1f"));
-        Test.ensureEqual(pa.elementClassString(), "float", "");
+        Test.ensureEqual(pa.elementTypeString(), "float", "");
         Test.ensureEqual(pa.toString(), "1.0", "");
         Test.ensureEqual(pa.toNccsvAttString(), "1.0f", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
             "-3e-38f,-.12e3f,0f,3e0f,3.e4f,.12e+3f,1.2E38f,NaNf"));
-        Test.ensureEqual(pa.elementClassString(), "float", "");
+        Test.ensureEqual(pa.elementTypeString(), "float", "");
         Test.ensureEqual(pa.toString(), 
             "-3.0E-38, -120.0, 0.0, 3.0, 30000.0, 120.0, 1.2E38, NaN", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
@@ -4076,18 +4148,18 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid float value: 1.2E39f", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1f,3..0e23f")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1f, 3..0e23f", "");
         
         //DoubleArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1d"));
-        Test.ensureEqual(pa.elementClassString(), "double", "");
+        Test.ensureEqual(pa.elementTypeString(), "double", "");
         Test.ensureEqual(pa.toString(), "1.0", "");
         Test.ensureEqual(pa.toNccsvAttString(), "1.0d", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
             "-3.0e-300d,-.12e3d,1.d,.1d,3.e4d,.12e3d,1.2E+300d,NaNd"));
-        Test.ensureEqual(pa.elementClassString(), "double", "");
+        Test.ensureEqual(pa.elementTypeString(), "double", "");
         Test.ensureEqual(pa.toString(), 
             "-3.0E-300, -120.0, 1.0, 0.1, 30000.0, 120.0, 1.2E300, NaN", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
@@ -4102,18 +4174,18 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid double value: 1.e310d", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("3.0d,3..0d")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "3.0d, 3..0d", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1.0d,3")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "1.0d, 3", "");
         
         //StringArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
             //in the nccsv file, it's a string with characters like \
             "\"a~ \\f \\n \\r \\t \\\\ \\/ \\u00C0 \\u0000 \\uffFf\""));
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         //now it's a string with control chars and unicode chars
         Test.ensureEqual(String2.annotatedString(pa.getString(0)), 
             "a~ [12] [10]\n" +
@@ -4124,13 +4196,13 @@ public abstract class PrimitiveArray {
         
         //CharArray
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("\"'a'\""));
-        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.elementTypeString(), "char", "");
         Test.ensureEqual(pa.toString(), "a", "");
         Test.ensureEqual(pa.toNccsvAttString(), "\"'a'\"", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv( //   \\b is not supported
             "\"'\\f'\", \"'\\n'\", \"'\\r'\", \"'\\t'\", \"'\\\\'\""));
-        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.elementTypeString(), "char", "");
         Test.ensureEqual(pa.toString(), 
             "\\f, \\n, \\r, \\t, \\\\", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
@@ -4138,7 +4210,7 @@ public abstract class PrimitiveArray {
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
             "\"'\\/'\", \"'/'\", \"'\"\"'\", \"' '\", \"'''\", \"'a'\""));
-        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.elementTypeString(), "char", "");
         Test.ensureEqual(pa.toString(), 
             "/, /, \"\"\"\", \" \", ', a", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
@@ -4146,7 +4218,7 @@ public abstract class PrimitiveArray {
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
             "\"'~'\", '\\u00C0', \"'\\u0000'\", \"'\\uffFf'\""));
-        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.elementTypeString(), "char", "");
         Test.ensureEqual(pa.toString(), 
             "~, \\u00c0, \\u0000, \\uffff", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
@@ -4161,7 +4233,7 @@ public abstract class PrimitiveArray {
         //Test.ensureEqual(msg, "zztop", "");
         
         pa = parseNccsvAttributes(StringArray.simpleFromNccsv("'a', ''")); //doesn't match regex
-        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.elementTypeString(), "String", "");
         Test.ensureEqual(pa.toString(), "'a', ''", "");       
 
     }
@@ -4179,50 +4251,50 @@ public abstract class PrimitiveArray {
 
         //test factory 
         PrimitiveArray pa;
-        Test.ensureEqual(factory(new byte[]{1}).elementClass(), byte.class, "");
-        Test.ensureEqual(factory(new char[]{1}).elementClass(), char.class, "");
-        Test.ensureEqual(factory(new short[]{1}).elementClass(), short.class, "");
-        Test.ensureEqual(factory(new int[]{1}).elementClass(), int.class, "");
-        Test.ensureEqual(factory(new long[]{1}).elementClass(), long.class, "");
-        Test.ensureEqual(factory(new float[]{1}).elementClass(), float.class, "");
-        Test.ensureEqual(factory(new double[]{1}).elementClass(), double.class, "");
-        Test.ensureEqual(factory(new String[]{"1"}).elementClass(), String.class, "");
+        Test.ensureEqual(factory(new byte[]{1}).elementType(), PAType.BYTE, "");
+        Test.ensureEqual(factory(new char[]{1}).elementType(), PAType.CHAR, "");
+        Test.ensureEqual(factory(new short[]{1}).elementType(), PAType.SHORT, "");
+        Test.ensureEqual(factory(new int[]{1}).elementType(), PAType.INT, "");
+        Test.ensureEqual(factory(new long[]{1}).elementType(), PAType.LONG, "");
+        Test.ensureEqual(factory(new float[]{1}).elementType(), PAType.FLOAT, "");
+        Test.ensureEqual(factory(new double[]{1}).elementType(), PAType.DOUBLE, "");
+        Test.ensureEqual(factory(new String[]{"1"}).elementType(), PAType.STRING, "");
 
-        Test.ensureEqual(factory(new Byte((byte)1)).elementClass(), byte.class, "");
-        Test.ensureEqual(factory(new Character((char)1)).elementClass(), char.class, "");
-        Test.ensureEqual(factory(new Short((short)1)).elementClass(), short.class, "");
-        Test.ensureEqual(factory(new Integer(1)).elementClass(), int.class, "");
-        Test.ensureEqual(factory(new Long(1)).elementClass(), long.class, "");
-        Test.ensureEqual(factory(new Float(1)).elementClass(), float.class, "");
-        Test.ensureEqual(factory(new Double(1)).elementClass(), double.class, "");
-        Test.ensureEqual(factory(new String("1")).elementClass(), String.class, "");
+        Test.ensureEqual(factory(new Byte((byte)1)).elementType(), PAType.BYTE, "");
+        Test.ensureEqual(factory(new Character((char)1)).elementType(), PAType.CHAR, "");
+        Test.ensureEqual(factory(new Short((short)1)).elementType(), PAType.SHORT, "");
+        Test.ensureEqual(factory(new Integer(1)).elementType(), PAType.INT, "");
+        Test.ensureEqual(factory(new Long(1)).elementType(), PAType.LONG, "");
+        Test.ensureEqual(factory(new Float(1)).elementType(), PAType.FLOAT, "");
+        Test.ensureEqual(factory(new Double(1)).elementType(), PAType.DOUBLE, "");
+        Test.ensureEqual(factory(new String("1")).elementType(), PAType.STRING, "");
 
-        Test.ensureEqual(factory(byte.class, 1, true).elementClass(), byte.class, "");
-        Test.ensureEqual(factory(char.class, 1, true).elementClass(), char.class, "");
-        Test.ensureEqual(factory(short.class, 1, true).elementClass(), short.class, "");
-        Test.ensureEqual(factory(int.class, 1, true).elementClass(), int.class, "");
-        Test.ensureEqual(factory(long.class, 1, true).elementClass(), long.class, "");
-        Test.ensureEqual(factory(float.class, 1, true).elementClass(), float.class, "");
-        pa = factory(double.class, 1, true);
-        Test.ensureEqual(pa.elementClass(), double.class, "");
+        Test.ensureEqual(factory(PAType.BYTE, 1, true).elementType(), PAType.BYTE, "");
+        Test.ensureEqual(factory(PAType.CHAR, 1, true).elementType(), PAType.CHAR, "");
+        Test.ensureEqual(factory(PAType.SHORT, 1, true).elementType(), PAType.SHORT, "");
+        Test.ensureEqual(factory(PAType.INT, 1, true).elementType(), PAType.INT, "");
+        Test.ensureEqual(factory(PAType.LONG, 1, true).elementType(), PAType.LONG, "");
+        Test.ensureEqual(factory(PAType.FLOAT, 1, true).elementType(), PAType.FLOAT, "");
+        pa = factory(PAType.DOUBLE, 1, true);
+        Test.ensureEqual(pa.elementType(), PAType.DOUBLE, "");
         Test.ensureEqual(pa.getDouble(0), 0, "");
-        pa = factory(String.class, 1, true);
-        Test.ensureEqual(pa.elementClass(), String.class, "");
+        pa = factory(PAType.STRING, 1, true);
+        Test.ensureEqual(pa.elementType(), PAType.STRING, "");
         Test.ensureEqual(pa.getString(0), "", "");
 
-        Test.ensureEqual(factory(byte.class,   1, "10").toString(), "10", "");
-        Test.ensureEqual(factory(char.class,   2, "abc").toString(),"a, a", "");
-        Test.ensureEqual(factory(short.class,  3, "30").toString(), "30, 30, 30", "");
-        Test.ensureEqual(factory(int.class,    4, "40").toString(), "40, 40, 40, 40", "");
-        Test.ensureEqual(factory(long.class,   5, "50").toString(), "50, 50, 50, 50, 50", "");
-        Test.ensureEqual(factory(float.class,  6, "60").toString(), "60.0, 60.0, 60.0, 60.0, 60.0, 60.0", "");
-        Test.ensureEqual(factory(double.class, 7, "70").toString(), "70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0", "");
-        Test.ensureEqual(factory(String.class, 8, "ab").toString(), "ab, ab, ab, ab, ab, ab, ab, ab", "");
+        Test.ensureEqual(factory(PAType.BYTE,   1, "10").toString(), "10", "");
+        Test.ensureEqual(factory(PAType.CHAR,   2, "abc").toString(),"a, a", "");
+        Test.ensureEqual(factory(PAType.SHORT,  3, "30").toString(), "30, 30, 30", "");
+        Test.ensureEqual(factory(PAType.INT,    4, "40").toString(), "40, 40, 40, 40", "");
+        Test.ensureEqual(factory(PAType.LONG,   5, "50").toString(), "50, 50, 50, 50, 50", "");
+        Test.ensureEqual(factory(PAType.FLOAT,  6, "60").toString(), "60.0, 60.0, 60.0, 60.0, 60.0, 60.0", "");
+        Test.ensureEqual(factory(PAType.DOUBLE, 7, "70").toString(), "70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0", "");
+        Test.ensureEqual(factory(PAType.STRING, 8, "ab").toString(), "ab, ab, ab, ab, ab, ab, ab, ab", "");
 
         //test simplify
         pa = new StringArray(new String[]{"-127", "126", ".", "NaN", null});
         pa = pa.simplify("test1");
-        Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof ByteArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getDouble(0), -127, "");
         Test.ensureEqual(pa.getDouble(1), 126, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
@@ -4231,96 +4303,96 @@ public abstract class PrimitiveArray {
 
         //pa = new StringArray(new String[]{"0", "65534", "."});
         //pa = pa.simplify();
-        //Test.ensureTrue(pa instanceof CharArray, "elementClass=" + pa.elementClass());
+        //Test.ensureTrue(pa instanceof CharArray, "elementType=" + pa.elementType());
         //Test.ensureEqual(pa.getDouble(0), 0, "");
         //Test.ensureEqual(pa.getDouble(1), 65534, "");
         //Test.ensureEqual(pa.getDouble(2), Character.MAX_VALUE, "");
 
         pa = new StringArray(new String[]{"-32767", "32766", "."});
         pa = pa.simplify("test2");
-        Test.ensureTrue(pa instanceof ShortArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof ShortArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getDouble(0), -32767, "");
         Test.ensureEqual(pa.getDouble(1), 32766, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-2000000000", "2000000000", "."});
         pa = pa.simplify("test3");
-        Test.ensureTrue(pa instanceof IntArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof IntArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getDouble(0), -2000000000, "");
         Test.ensureEqual(pa.getDouble(1), 2000000000, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", ""});
         pa = pa.simplify("test4");
-        Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
+        Test.ensureEqual(pa.elementTypeString(), "String", "elementType");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "", "");
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", "NaN"});
         pa = pa.simplify("test5");
-        Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
+        Test.ensureEqual(pa.elementTypeString(), "String", "elementType");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "NaN", "");
 
         pa = new StringArray(new String[]{"-1e33", "1e33", "."});
         pa = pa.simplify("test6");
-        Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof FloatArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getDouble(0), -1e33f, ""); //'f' bruises it
         Test.ensureEqual(pa.getDouble(1), 1e33f, "");  //'f' bruises it
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{"-1e307", "1e307", "."});
         pa = pa.simplify("test7");
-        Test.ensureTrue(pa instanceof DoubleArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof DoubleArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getDouble(0), -1e307, "");
         Test.ensureEqual(pa.getDouble(1), 1e307, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
         pa = new StringArray(new String[]{".", "123", "4b"});
         pa = pa.simplify("test8");
-        Test.ensureTrue(pa instanceof StringArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof StringArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getString(0), ".", "");
         Test.ensureEqual(pa.getString(1), "123", "");
         Test.ensureEqual(pa.getString(2), "4b", "");
 
         pa = new StringArray(new String[]{".", "33.0"}); //with internal "." -> float
         pa = pa.simplify("test9");
-        Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof FloatArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getString(0), "", "");
         Test.ensureEqual(pa.getString(1), "33.0", "");
 
         pa = new StringArray(new String[]{".", "33"});  //no internal ".", can be integer type
         pa = pa.simplify("test10");
-        Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof ByteArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getString(0), "", "");
         Test.ensureEqual(pa.getString(1), "33", "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 123.4, 12});
         pa = pa.simplify("test11");
-        Test.ensureTrue(pa instanceof FloatArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof FloatArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getFloat(0), Float.NaN, "");
         Test.ensureEqual(pa.getFloat(1), 123.4f, "");
         Test.ensureEqual(pa.getFloat(2), 12f, "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 100000, 12});
         pa = pa.simplify("test12");
-        Test.ensureTrue(pa instanceof IntArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof IntArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100000, "");
         Test.ensureEqual(pa.getInt(2), 12, "");
 
         pa = new DoubleArray(new double[]{Double.NaN, 100, 12});
         pa = pa.simplify("test13");
-        Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof ByteArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100, "");
         Test.ensureEqual(pa.getInt(2), 12, "");
 
         pa = new IntArray(new int[]{Integer.MAX_VALUE, 100, 12});
         pa = pa.simplify("test14");
-        Test.ensureTrue(pa instanceof ByteArray, "elementClass=" + pa.elementClass());
+        Test.ensureTrue(pa instanceof ByteArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
         Test.ensureEqual(pa.getInt(1), 100, "");
         Test.ensureEqual(pa.getInt(2), 12, "");
@@ -4345,15 +4417,15 @@ public abstract class PrimitiveArray {
             new int[]{3, 0, 2, 1}, "");
         Test.ensureEqual(rank(table, new int[]{1, 0}, new boolean[]{true, false}), //tie, a/descending
             new int[]{3, 0, 1, 2}, "");
-        Test.ensureEqual(arByte.elementClass(), byte.class, "");
-        Test.ensureEqual(arFloat.elementClass(), float.class, "");
-        Test.ensureEqual(arDouble.elementClass(), double.class, "");
-        Test.ensureEqual(arString.elementClass(), String.class, "");
+        Test.ensureEqual(arByte.elementType(), PAType.BYTE, "");
+        Test.ensureEqual(arFloat.elementType(), PAType.FLOAT, "");
+        Test.ensureEqual(arDouble.elementType(), PAType.DOUBLE, "");
+        Test.ensureEqual(arString.elementType(), PAType.STRING, "");
 
-        Test.ensureEqual(arByte.elementClassString(), "byte", "");
-        Test.ensureEqual(arFloat.elementClassString(), "float", "");
-        Test.ensureEqual(arDouble.elementClassString(), "double", "");
-        Test.ensureEqual(arString.elementClassString(), "String", "");
+        Test.ensureEqual(arByte.elementTypeString(), "byte", "");
+        Test.ensureEqual(arFloat.elementTypeString(), "float", "");
+        Test.ensureEqual(arDouble.elementTypeString(), "double", "");
+        Test.ensureEqual(arString.elementTypeString(), "String", "");
 
         //test sort  result = {3, 0, 2, 1});
         sort(table, new int[]{1, 0}, new boolean[]{true, true}); //tie, a/ascending
@@ -4506,47 +4578,47 @@ public abstract class PrimitiveArray {
 
         RandomAccessFile raf2 = new RandomAccessFile(raf2Name, "rw");
         long bStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, byte.class, 1.0);
-        rafWriteDouble(raf2, byte.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.BYTE, 1.0);
+        rafWriteDouble(raf2, PAType.BYTE, Double.NaN);
         long cStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, char.class, 2.0);
-        rafWriteDouble(raf2, char.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.CHAR, 2.0);
+        rafWriteDouble(raf2, PAType.CHAR, Double.NaN);
         long dStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, double.class, 3.0);
-        rafWriteDouble(raf2, double.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.DOUBLE, 3.0);
+        rafWriteDouble(raf2, PAType.DOUBLE, Double.NaN);
         long fStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, float.class, 4.0);
-        rafWriteDouble(raf2, float.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.FLOAT, 4.0);
+        rafWriteDouble(raf2, PAType.FLOAT, Double.NaN);
         long iStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, int.class, 5.0);
-        rafWriteDouble(raf2, int.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.INT, 5.0);
+        rafWriteDouble(raf2, PAType.INT, Double.NaN);
         long lStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, long.class, 6.0);
-        rafWriteDouble(raf2, long.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.LONG, 6.0);
+        rafWriteDouble(raf2, PAType.LONG, Double.NaN);
         long sStart = raf2.getFilePointer();
-        rafWriteDouble(raf2, short.class, 7.0);
-        rafWriteDouble(raf2, short.class, Double.NaN);
+        rafWriteDouble(raf2, PAType.SHORT, 7.0);
+        rafWriteDouble(raf2, PAType.SHORT, Double.NaN);
         //read in reverse order
-        Test.ensureEqual(rafReadDouble(raf2, short.class,  sStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, short.class,  sStart, 0), 7.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.SHORT,  sStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.SHORT,  sStart, 0), 7.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, long.class,   lStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, long.class,   lStart, 0), 6.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.LONG,   lStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.LONG,   lStart, 0), 6.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, int.class,    iStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, int.class,    iStart, 0), 5.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.INT,    iStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.INT,    iStart, 0), 5.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, float.class,  fStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, float.class,  fStart, 0), 4.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.FLOAT,  fStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.FLOAT,  fStart, 0), 4.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, double.class, dStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, double.class, dStart, 0), 3.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.DOUBLE, dStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.DOUBLE, dStart, 0), 3.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, char.class,   cStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, char.class,   cStart, 0), 2.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.CHAR,   cStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.CHAR,   cStart, 0), 2.0, "");
 
-        Test.ensureEqual(rafReadDouble(raf2, byte.class,   bStart, 1), Double.NaN, "");
-        Test.ensureEqual(rafReadDouble(raf2, byte.class,   bStart, 0), 1.0, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.BYTE,   bStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.BYTE,   bStart, 0), 1.0, "");
 
         raf2.close();
 
@@ -4574,97 +4646,97 @@ public abstract class PrimitiveArray {
 
         //test rafReadDouble 
         RandomAccessFile raf = new RandomAccessFile(rafName, "rw");
-        Test.ensureEqual(rafReadDouble(raf, byte.class,   barStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, byte.class,   barStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, char.class,   carStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, char.class,   carStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, double.class, darStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, double.class, darStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, float.class,  farStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, float.class,  farStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, int.class,    IarStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, int.class,    IarStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, long.class,   larStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, long.class,   larStart, 5), 8, "");
-        Test.ensureEqual(rafReadDouble(raf, short.class,  sarStart, 0), 2, "");
-        Test.ensureEqual(rafReadDouble(raf, short.class,  sarStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.BYTE,   barStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.BYTE,   barStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.CHAR,   carStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.CHAR,   carStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.DOUBLE, darStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.DOUBLE, darStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.FLOAT,  farStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.FLOAT,  farStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.INT,    IarStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.INT,    IarStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.LONG,   larStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.LONG,   larStart, 5), 8, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.SHORT,  sarStart, 0), 2, "");
+        Test.ensureEqual(rafReadDouble(raf, PAType.SHORT,  sarStart, 5), 8, "");
         //Test.ensureEqual(StringArray.rafReadString(raf,   SarStart, 0, nBytesPerS), "22", "");
         //Test.ensureEqual(StringArray.rafReadString(raf,   SarStart, 5, nBytesPerS), "88888888", "");
 
         //test rafBinarySearch
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 6), 2, ""); //2,3,4
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 1), -1, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 3), -2, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 5), -3, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 7), -6, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 5, 9), -7, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 6), 2, ""); //2,3,4
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 1), -1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 3), -2, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 5), -3, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 7), -6, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 9), -7, "");
 
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 2), 0, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 4), 1, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 6), 4, ""); //any of 2,3,4
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 1), -1, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 3), -2, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 5), -3, "");
-        Test.ensureEqual(rafBinarySearch(raf, float.class, farStart, 0, 4, 7), -6, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 2), 0, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 4), 1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 6), 4, ""); //any of 2,3,4
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 1), -1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 3), -2, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 5), -3, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 7), -6, "");
 
         //test rafFirstGE
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 6), 2, ""); //first
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 1), 0, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 3), 1, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 5), 2, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 7), 5, "");
-        Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 9), 6, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 6), 2, ""); //first
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 1), 0, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 3), 1, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 5), 2, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 7), 5, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 9), 6, "");
 
         //test rafFirstGAE         lastParam: precision = 5
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2        , 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 4        , 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 6        , 5), 2, ""); //first
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 6.0000001, 5), 2, ""); 
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 5.9999999, 5), 2, ""); 
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 8        , 5), 5, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 1        , 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 3        , 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 3.0000001, 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2.9999999, 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 5        , 5), 2, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 7        , 5), 5, "");
-        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 9        , 5), 6, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2        , 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 4        , 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 6        , 5), 2, ""); //first
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 6.0000001, 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 5.9999999, 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 8        , 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 1        , 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 3        , 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 3.0000001, 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2.9999999, 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 5        , 5), 2, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 7        , 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 9        , 5), 6, "");
 
         //test rafLastLE
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 6), 4, ""); //last
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 1), -1, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 3), 0, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 5), 1, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 7), 4, "");
-        Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 9), 5, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 6), 4, ""); //last
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 1), -1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 3), 0, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 5), 1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 7), 4, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 9), 5, "");
 
         //test rafLastLAE   lastParam: precision = 5
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2        , 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 4        , 5), 1, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 6        , 5), 4, ""); //last
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 6.0000001, 5), 4, ""); 
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 5.9999999, 5), 4, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 8        , 5), 5, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 1        , 5), -1, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 3        , 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 3.0000001, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2.9999999, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 5        , 5), 1, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 7        , 5), 4, "");
-        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 9        , 5), 5, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2        , 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 4        , 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 6        , 5), 4, ""); //last
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 6.0000001, 5), 4, ""); 
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 5.9999999, 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 8        , 5), 5, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 1        , 5), -1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 3        , 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 3.0000001, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2.9999999, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 5        , 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 7        , 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 9        , 5), 5, "");
         raf.close();
 
         //test binarySearch
@@ -4791,26 +4863,26 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(ia.toString(), "10, 12, 13, 15, 2147483647", "");
 
         //addFromPA(
-        DoubleArray other = (DoubleArray)csvFactory(double.class, "11.1, 22.2, 33.3");
-        Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, \\u0016, !", "");
-        Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
-        Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
-        Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(long.class,   "1, 2"    ).addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(short.class,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
-        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        DoubleArray other = (DoubleArray)csvFactory(PAType.DOUBLE, "11.1, 22.2, 33.3");
+        Test.ensureEqual(csvFactory(PAType.BYTE,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.CHAR,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, \\u0016, !", "");
+        Test.ensureEqual(csvFactory(PAType.DOUBLE, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.FLOAT,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.INT,    "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.LONG,   "1, 2"    ).addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.SHORT,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.STRING, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.STRING, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(ia.addFromPA(other, 2).toString(), "10, 12, 13, 15, 2147483647, 33", "");
 
-        Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(csvFactory(byte.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(csvFactory(char.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 2, 3", "");
-        Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(csvFactory(double.class, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
-        Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(csvFactory(float.class,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
-        Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(csvFactory(int.class,    "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(long.class,   "1, 2"    ).addFromPA(csvFactory(long.class,   "11, 22, 33"      ), 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(short.class,  "1.1, 2.2").addFromPA(csvFactory(short.class,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(csvFactory(String.class, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.BYTE,   "1.1, 2.2").addFromPA(csvFactory(PAType.BYTE,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.CHAR,   "1.1, 2.2").addFromPA(csvFactory(PAType.CHAR,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 2, 3", "");
+        Test.ensureEqual(csvFactory(PAType.DOUBLE, "1.1, 2.2").addFromPA(csvFactory(PAType.DOUBLE, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.FLOAT,  "1.1, 2.2").addFromPA(csvFactory(PAType.FLOAT,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.INT,    "1.1, 2.2").addFromPA(csvFactory(PAType.INT,    "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.LONG,   "1, 2"    ).addFromPA(csvFactory(PAType.LONG,   "11, 22, 33"      ), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.SHORT,  "1.1, 2.2").addFromPA(csvFactory(PAType.SHORT,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(PAType.STRING, "1.1, 2.2").addFromPA(csvFactory(PAType.STRING, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
 
         String2.log("PrimitiveArray.testBasic finished successfully.");
     }
@@ -5071,7 +5143,7 @@ public abstract class PrimitiveArray {
         BitSet keep;
 
         //regex
-        pa = factory(int.class, n, "5");
+        pa = factory(PAType.INT, n, "5");
         pa.addInt(10);
         pa.addString("");
         keep = new BitSet();
@@ -5085,7 +5157,7 @@ public abstract class PrimitiveArray {
             (System.currentTimeMillis() - tTime) + " (Java 1.8 188ms, 1.7M4700 278ms, 2012-06-29: 1000 ms)");
 
         //string
-        pa = factory(String.class, n, "Apple");
+        pa = factory(PAType.STRING, n, "Apple");
         pa.addString("Nate");
         pa.addString("");
         keep = new BitSet();
@@ -5099,7 +5171,7 @@ public abstract class PrimitiveArray {
             (System.currentTimeMillis() - tTime) + " (Java 1.8 176ms, 1.7M4700 186ms, 2012-06-29: 812 ms)");
 
         //float
-        pa = factory(float.class, n, "5");
+        pa = factory(PAType.FLOAT, n, "5");
         pa.addInt(10);
         pa.addString("");
         keep = new BitSet();
@@ -5113,7 +5185,7 @@ public abstract class PrimitiveArray {
             (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 186ms, 2012-06-29: 280 ms)");
 
         //double
-        pa = factory(double.class, n, "5");
+        pa = factory(PAType.DOUBLE, n, "5");
         pa.addInt(10);
         pa.addString("");
         keep = new BitSet();
@@ -5127,7 +5199,7 @@ public abstract class PrimitiveArray {
             (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 62ms, 2012-06-29: 250 ms)");
 
         //long
-        pa = factory(long.class, n, "5");
+        pa = factory(PAType.LONG, n, "5");
         pa.addInt(10);
         pa.addString("");
         keep = new BitSet();
@@ -5141,7 +5213,7 @@ public abstract class PrimitiveArray {
             (System.currentTimeMillis() - tTime) + " (Java 1.8 46ms)");
 
         //int
-        pa = factory(int.class, n, "5");
+        pa = factory(PAType.INT, n, "5");
         pa.addInt(10);
         pa.addString("");
         keep = new BitSet();

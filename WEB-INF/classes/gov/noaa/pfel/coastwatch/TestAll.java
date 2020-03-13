@@ -142,6 +142,10 @@ public class TestAll  {
 //    String2.log("1904: " + String2.toCSSVString(Calendar2.getTimeBaseAndFactor("seconds since 1904-01-01")));
 
 //    
+//    Table.test4DNc();
+//    Table.testFlatNc();
+//    Table.testReadNDNc();
+//    Table.testReadNDNc2();
 //    Table.testAddIndexColumns();
 //    Table.testEnhancedFlatNcFile();
 //    Table.testHardReadMultidimNc();
@@ -149,6 +153,7 @@ public class TestAll  {
 //    Table.testNccsv();
 //    Table.testOrderByCount();
 //    Table.testReadAsciiCsvFile();
+//    Table.testReadColumnarASCIIFile();
 //    Table.testReadShortAudioFile("/erddapTest/audio/M1F1-int16-AFsp.wav");
 //    Table.testReadFloatAudioFile("/erddapTest/audio/M1F1-float32-AFsp.wav");
 //    Table.testReadAudioWriteWaveFiles(6, 6);  //start, stop
@@ -156,8 +161,9 @@ public class TestAll  {
 //    Table.testReadStandardTabbedASCII();
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {                
-//      String tFileName = "/erddapTest/nc/testLong2.nc"; 
-//      String2.log(NcHelper.ncdump(tFileName, "-h"));
+      // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
+//      String tFileName = "/u00/data/points/AORC_ABRFC_4km/AORC_TMPR_4KM_ABRFC_197901/AORC_TMP_ABRFC_1979010500.nc4"; 
+//      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-v latitude"));  
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
 //      String2.log(table.toString());
@@ -177,7 +183,7 @@ public class TestAll  {
 //    Table.testReadGocdNcCF();
 //    Table.testOpendapSequence();
 
-//    Table.debugMode = false; DasDds.main(new String[]{"scrippsGliders", "-verbose"});
+//    Table.debugMode = false; DasDds.main(new String[]{"swfscTrinidadCTD", "-verbose"});
 
       /*
       String c9 = //SSR.getUrlResponseStringNewline(
@@ -207,7 +213,7 @@ public class TestAll  {
         }
     } /* */
 
-//    String tFileName = "/erddapTestBig/nccf/wod/wod_xbt_2005.nc";
+//    String tFileName = String2.unitTestBigDataDir + "nccf/wod/wod_xbt_2005.nc";
 //    String2.writeToFile(tFileName + ".ncdump.txt", NcHelper.ncdump(tFileName, "-h"));
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-h"));
 //    String2.log(NcHelper.ncdump("/u00/data/points/scrippsGlidersUpload2/sp022-20170209T1616/sp022-20170420T055200_rt.nc", "-h"));
@@ -369,11 +375,11 @@ m Pathfinder Version 5.2 grid.";
 //        "-v sea_surface_temperature(0,0:10,0:10)")); //2nd param, e.g., "LAT;LON"));
 //   EDD.debugMode=true;
 //    s = EDDGridFromDap.generateDatasetsXml(
-//      "https://coastwatch.noaa.gov/thredds/dodsC/CoastWatch/VIIRS/npp-n20/chloci/DailyGlobal/WW00",
+//      "https://coastwatch.noaa.gov/thredds/dodsC/CoastWatch/VIIRS/npp-n20/chloci/DailyGlobalDINEOF/WW00.html",
 //      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
 //      -1, null);
 //      String2.setClipboardString(s); String2.log(s); 
-//    DasDds.main(new String[]{"testTableFiles", "-verbose"});
+//    DasDds.main(new String[]{"ucsdHfrA6", "-verbose"});
 
 /*String regex = 
 //must match entire document, so begin and end with .*
@@ -489,10 +495,11 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    EDDGridFromDap.testBasic2();
 //    EDDGridFromDap.testGenerateDatasetsXml5();
+//    EDDGridFromDap.testKml();
 //    EDDGridFromDap.testUInt16Dap();
 //    EDDGridFromErddap.testDataVarOrder(); 
 //    String gx = "";
-//    String2.setClipboardString(gx = EDDGridFromErddap.generateDatasetsXml("https://coastwatch.pfeg.noaa.gov/erddap", 
+//    String2.setClipboardString(gx = EDDGridFromErddap.generateDatasetsXml("https://pae-paha.pacioos.hawaii.edu/erddap", 
 //        true)); //keepOriginalID   (true for generating UAF datasets)    
 //    String2.log(gx);
 
@@ -531,9 +538,13 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testSpecialAxis0GlobalDouble();
 //    EDDGridFromNcFiles.testNThreads(3); 
 //    EDDGridFromNcFiles.testTimePrecisionMillis();
-//      EDDGridFromNcFiles.testUInt16File();
-//      EDDGridFromNcFilesUnpacked.testUInt16File();
-//      EDDGridFromNcFilesUnpacked.testMissingValue();
+//    EDDGridFromNcFiles.testUInt16File();
+//    EDDGridFromNcFiles.testGenerateDatasetsXml5();
+//    EDDGridFromNcFiles.testUnsignedGrid();
+
+//    EDDGridFromNcFilesUnpacked.testUInt16File();
+//    EDDGridFromNcFilesUnpacked.testMissingValue();
+
 //        String opt[] = {
 //            "_BNU-ESM_","_CCSM4_","_CESM1-CAM5_","_CSIRO-Mk3-6-0_","_CanESM2_","_FGOALS-g2_",
 //            "_FIO-ESM_","_GFDL-CM3_","_GFDL-ESM2G_","_GFDL-ESM2M_","_GISS-E2-R_","_HadGEM2-AO_","_IPSL-CM5A-LR_",
@@ -585,10 +596,10 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.csv",
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.nc");
 //    s = EDDGridFromNcFiles.generateDatasetsXml(
-//        "/erddapTest/", "testIslandShift\\.nc", "", -1, "", null);
+//        "/u00/data/points/AORC_ABRFC_4km/", ".*\\.nc4", "", "", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
-//    DasDds.main(new String[]{"noaaPassiveAcoustic", "-verbose"});
+//    DasDds.main(new String[]{"NWS_HH_AORC_ABRFC_4km", "-verbose"});
 
 /*
     EDDGridFromNcFiles.testFiles();         //requires nceiPH53sstn1day in localhost ERDDAP
@@ -872,8 +883,8 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //EDDTableCopyPost.run(-1); //-1=allTests, 0..6
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
-//        "/erddapTest/ascii/", "standardizeWhat.*\\.csv", "",
-//        "", 1, 2, ",", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
+//        "/data/biddle/", "feb3\\.tsv", "",
+//        "", 1, 2, "\t", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
 //        "", "", "", "", "",  //regex
 //        "", // tSortFilesBySourceNames, 
 //        "", "", "", "", Integer.MAX_VALUE, "", null));  //info, institution, summary, title, standardizeWhat=0, cacheFromUrl, atts
@@ -883,6 +894,19 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        "https://www.ngdc.noaa.gov/thredds/catalog/dart_bpr/processed",  //omit /catalog.html
 //        "/u00/data/points/nceiDartBpr/",
 //        ".*\\.nc", true, ".*", false).dataToString(); //recursive, doAll (or just 1)
+    //for Ryan
+    //curl -k -O "https://hydrology.nws.noaa.gov/aorc-historic/AORC_ABRFC_4km/AORC_TMPR_4KM_ABRFC_[1979-2017][01-12].zip"
+    /* for (int year = 1979; year <= 1979; year++) {  //2017
+        for (int month = 1; month <= 12; month++) {
+            String tName = "AORC_TMPR_4KM_ABRFC_" + year + String2.zeroPad("" + month, 2);
+            SSR.unzip(
+                "/u00/data/points/AORC_ABRFC_4km_zip/" + tName + ".zip", 
+                "/u00/data/points/AORC_ABRFC_4km/" + tName + "/", 
+                true, 120, null);
+        }
+    } /* */
+
+
 //    String2.log(NcHelper.ncdump("/u00/data/points/nceiDartBpr/ed/21413/21413_20061126to20080422_qc.nc", "-h"));
 //    FileVisitorDNLS.testAWSS3(); 
 
@@ -958,6 +982,8 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       "https://www.bco-dmo.org/erddap/datasets", "/u00/data/points/bcodmo/", "(644080)")); 
 //    Table.debugMode = true; DasDds.main(new String[]{"bcodmo549122_20150217", "-verbose"});
 
+//testTableAscii
+//    EDDTableFromAsciiFiles.testBasic(true);
 //    EDDTableFromAsciiFiles.testBasic2();
 //    EDDTableFromAsciiFiles.testFixedValueAndScripts();
 //    EDDTableFromAsciiFiles.testTimeZone();
@@ -1049,7 +1075,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("https://coastwatch.pfeg.noaa.gov/erddap", true)); //keep original datasetID?
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("https://oceanview.pfeg.noaa.gov/erddap", true)); 
-//    String2.setClipboardString(EDDTableFromErddap.generateDatasetsXml("https://pae-paha.pacioos.hawaii.edu/erddap", false)); //keep original datasetID?
+//    String2.setClipboardString(EDDTableFromErddap.generateDatasetsXml("https://pae-paha.pacioos.hawaii.edu/erddap", true)); //keep original datasetID?
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("https://osmc.noaa.gov/erddap", true)); //keep original datasetID?
 //    EDDTableFromErddap.testApostrophe();
 //    EDDTableFromErddap.testChukchiSea();
@@ -1066,6 +1092,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromFileNames.testAccessibleViaFilesFileTable(false, true);
 //    EDDTableFromFileNames.test();
 //      Table.debugMode = true; DasDds.main(new String[]{"awsS3NoaaGoes17", "-verbose"});
+//    EDDTableFromFileNames.testLocal(); 
 
 //    EDDTableFromHttpGet.testStatic();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
@@ -1079,6 +1106,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        null)); //externalAddAttributes) 
 //    EDDTableFromHyraxFiles.testJpl(true); //deleteCachedInfoAndOneFile
 
+//    EDDTableFromNcFiles.testAddVariablesWhere();
 //    EDDTableFromNcFiles.testGlobec(); 
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -5, 5);  //nThreads=-3, 3
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMetSSD", 1, 1); 
@@ -1148,18 +1176,18 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
-/* 
+/*  
       s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        "/u00/data/points/nceiDartBpr/", ".*\\.nc", "",
+        "/u00/data/points/AORC_ABRFC_4km/", ".*\\.nc4", "",
         "", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
-        true, //removeMVRows
-        "", //sort files by    profile_time
+        false, //removeMVRows  //often true
+        "time", //sort files by    profile_time
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
         "", //treatDimensionsAs
-        "https://www.ngdc.noaa.gov/thredds/catalog/dart_bpr/processed", //cacheFromUrl  /catalog.html
+        "", //cacheFromUrl  /catalog.html
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
     // */
@@ -1189,19 +1217,14 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //           was 2 days 14 hours on old Dell Opti).
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
-//       Great speed up, but no longer under my control:
-//         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
-//           On Access Scanner : All Processes
-//             Scan Items: check: specified file types only (instead of usual All Files) 
 //      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2019, 6, 2019, 10, false);  //first/last year(1985..)/month(1..), testMode
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2019, 8, 2020, 2, false);  //first/last year(1985..)/month(1..), testMode
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
 //       [was Charles Sun, retired 2018-12]
 //       [was Melanie Hamilton, now retired]
 //       [start in 2011? but not longer valid 2012-10-19 Meilin.Chen@noaa.gov]
-//      2c) Undo changes to McAfee scanner
 //    3) In datasets2.xml, for erdGtsppBestNc, update the dates to the END processing date:
 //         (2 in history, 1 in summary)
 //       and in datasets2.xml and datasetsFEDCW.xml
@@ -1209,7 +1232,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       to the date I started processing in step 2 above. 
 //       (If processed in chunks, use date of start of last chunk.)
 //    4) Run:  (should fail at current calendar month)
-//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2019);
+//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2020);
 //    5) * In [tomcat]/content/erddap/subset/
 //          delete erdGtsppBestNc.json and erdGtsppBest.json
 //       * Load erdGtsppBestNc in localHost ERDDAP.     (~40 minutes)
@@ -1225,13 +1248,13 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       //one time: EDDTableFromNcFiles.bobFindGtsppDuplicateCruises();
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");  //~5 minutes
 //    7) Create ncCF files with the same date range as 2a) above: 
-//       It takes 2 minutes per month processed
+//       It takes ~20 seconds per month processed
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2019, 6, 2019, 10); //e.g., first/last year(1990..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2019, 8, 2020, 2); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
-//        EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2019);
-//    9) * Load erdGtsppBest in localHost ERDDAP.  (2-10 minutes)
+//       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
+//    9) * Load erdGtsppBest in localHost ERDDAP.  (1-10 minutes)
 //       * Generate .json file from
 //         http://localhost:8080/cwexperimental/tabledap/erdGtsppBest.json?trajectory,org,type,platform,cruise&distinct()
 //         and save it as [tomcat]/content/erddap/subset/erdGtsppBest.json
@@ -1314,12 +1337,14 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
          EDDGridFromNcFiles.testGenerateDatasetsXml3();
          EDDGridFromNcFiles.testGenerateDatasetsXml4();
          EDDGridFromNcFiles.testGenerateDatasetsXmlLong2();
+
          EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3();  //slow!
          EDDGridFromNcFiles.testGenerateDatasetsXmlCopy();
          EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles();  
+         EDDGridFromNcFiles.testGenerateDatasetsXml5();
          EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml();
          EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog(); 
-  
+ 
          EDDTableFromAsciiFiles.testGenerateDatasetsXml();
          EDDTableFromAsciiFiles.testGenerateDatasetsXml2();           
          EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromBCODMO();
@@ -1400,9 +1425,9 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    FileVisitorDNLS.reallyVerbose = true;
 //    FileVisitorDNLS.debugMode = true;
 //    FileVisitorDNLS.sync(
-//        "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/", 
-//        "/u00/data/points/gpcp/", 
-//        ".*", false, ".*", false);
+//        "http://hydrology.nws.noaa.gov/aorc-historic/AORC_ABRFC_4km/", 
+//        "/u00/data/points/AORC_ABRFC_4km/", 
+//        ".*", false, ".*", true);  //recursive?  fullSync?
 //    FileVisitorDNLS.findFileWith("/Temp/access_logs/", ".*", //dir, fileNameRegex
 //        true, ".*",   //recursive, pathRegex
         //lines below:  //lineRegex, tallyWhich, interactiveNLines, showTopN
@@ -1445,6 +1470,16 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    NDBC MONTHLY UPDATES.   NEXT TIME: be stricter and remove 99.9 and 98.7 data values.  
 //      !!!check pxoc1. make historic file if needed.
 //    NdbcMetStation.main(null); 
+//    NdbcMetStation.testHistorical46088Nc("/u00/data/points/ndbcMet2/historical/");
+//    NdbcMetStation.testHistoricalRCPT2Nc("/u00/data/points/ndbcMet2/historical/");
+//    NdbcMetStation.testNrt46088Nc(       "/u00/data/points/ndbcMet2/nrt/");
+//    NdbcMetStation.testNrtRCPT2Nc(       "/u00/data/points/ndbcMet2/nrt/");
+//    NdbcMetStation.addLatestObsData("/u00/data/points/ndbcMet2/nrt/", true); //testMode
+//    NdbcMetStation.test46088AddLastNDaysNc("/u00/data/points/ndbcMet2/nrt/"); 
+
+//      String tFileName = "/u00/data/points/ndbcMetOldStyle/NDBC_46088_met.nc"; 
+//      String tFileName = "/u00/data/points/ndbcMet2/historical/NDBC_46088_met.nc"; 
+//      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
 
     /* 
     String sn[] = {"31201", "41009", "41015", "46012", "46013", "46014", "46015", "46088", "TAML1"};
@@ -1979,7 +2014,7 @@ WaitThenTryAgainException wttae;
 
 /* for releases, this line should have open/close comment */
         //*** All of the unit tests for CWBrowsers and ERDDAP.
-        String2.pressEnterToContinue("In TestAll, nThreads=" + Thread.activeCount());
+        //String2.pressEnterToContinue("In TestAll, nThreads=" + Thread.activeCount());
 
         //low level utilities
         TestUtil.main(null);
@@ -1994,6 +2029,10 @@ WaitThenTryAgainException wttae;
         FloatArray.test();
         DoubleArray.test();
         StringArray.test();
+//        UByteArray.test();
+//        UShortArray.test();
+//        UIntArray.test();
+//        ULongArray.test();
         PrimitiveArray.test();
         Attributes.test();
         ResourceBundle2.test();
@@ -2205,12 +2244,12 @@ WaitThenTryAgainException wttae;
         EDDTable.test(); //mostly SOS server tests
         String2.pressEnterToContinue("In TestAll, nThreads=" + Thread.activeCount());
 
-        ArchiveADataset.test();
         Erddap.test(); 
+        ArchiveADataset.test();
 
         //NetCheckTests
         //NetCheck.unitTest(); which does 3 tests:
-//HttpTest.unitTest(); 2016-02-23 needs work
+        //HttpTest.unitTest(); 2016-02-23 needs work
         OpendapTest.unitTest(); 
         //SftpTest.unitTest(); //orpheus Shell authentication started failing ~2010-06
 

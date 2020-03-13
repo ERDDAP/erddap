@@ -85,6 +85,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         int tUpdateEveryNMillis = 0;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -149,6 +150,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
             else if (localTags.equals("<addAttributes>")) {
                 tAddGlobalAttributes = getAttributesFromXml(xmlReader);
             } else {
@@ -159,7 +162,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
         return new EDDTableFromEDDGrid(tErddap, tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaFiles, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tAddGlobalAttributes,
             tReloadEveryNMinutes, //tUpdateEveryNMillis, 
             tChildDataset);
     }
@@ -173,7 +177,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery,
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere,
         Attributes tAddGlobalAttributes,
         int tReloadEveryNMinutes, //int tUpdateEveryNMillis, 
         EDDGrid oChildDataset) throws Throwable {
@@ -299,6 +303,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             dataVariables[dv] = newVar;
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();
@@ -630,7 +637,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
             PrimitiveArray paAr[] = new PrimitiveArray[nActiveEdvga];
             for (int aav = 0; aav < nActiveEdvga; aav++) {
                 //this class only sees tChildDataset dest type and destName
-                paAr[aav] = PrimitiveArray.factory(activeEdvga[aav].destinationDataTypeClass(), 
+                paAr[aav] = PrimitiveArray.factory(activeEdvga[aav].destinationDataPAType(), 
                     chunkNRows, false);
                 tTable.addColumn(activeEdvga[aav].destinationName(), paAr[aav]); 
             }
@@ -684,7 +691,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -852,7 +859,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -45.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"NOTE: This dataset is the tabular version of a gridded dataset which is also\n" +
 "available in this ERDDAP (see datasetID=erdMBsstdmday). Most people, most\n" +
 "of the time, will prefer to use the original gridded version of this dataset.\n" +
@@ -1408,7 +1415,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -45.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"NOTE: This dataset is the tabular version of a gridded dataset which is also\n" +
 "available in this ERDDAP (see datasetID=erdMBsstdmday). Most people, most\n" +
 "of the time, will prefer to use the original gridded version of this dataset.\n" +
@@ -1933,7 +1940,7 @@ expected2 =
         }
         Table table = new Table();
         table.readASCII(query, lines, 
-            0, 2, "", null, null, null, null, false); //simplify
+            "", "", 0, 2, "", null, null, null, null, false); //simplify
         //String2.log(table.dataToString());
         PrimitiveArray datasetIDPA = table.findColumn("datasetID");
         PrimitiveArray titlePA     = table.findColumn("title");

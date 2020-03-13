@@ -156,7 +156,7 @@ Joint Research Centre of the European Commission)
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA ERD</a>  
   (Environmental Research Division of SWFSC of NMFS)
   <!-- 2015-03-17 Bob Simons (since this is a public IOOS server) -->
-<li><a rel="bookmark" href="http://erddap.sensors.ioos.us/erddap/index.html">NOAA IOOS Sensors</a> 
+<li><a rel="bookmark" href="https://erddap.sensors.ioos.us/erddap/index.html">NOAA IOOS Sensors</a> 
   (Integrated Ocean Observing System) 
   <!-- 2017-11-13 Tiffany Vance email announcement. -->
 <li><a rel="bookmark" href="http://erddap.axiomdatascience.com/erddap/index.html">NOAA IOOS CeNCOOS</a> 
@@ -178,7 +178,7 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="http://sccoos.org/erddap/index.html">NOAA IOOS SCCOOS</a> 
 (Southern California Coastal Ocean Observing System) 
   <!-- 2015-05-26 Sarah Heim -->
-<li><a rel="bookmark" href="http://erddap.secoora.org/erddap/index.html">NOAA IOOS SECOORA</a> 
+<li><a rel="bookmark" href="https://erddap.secoora.org/erddap/index.html">NOAA IOOS SECOORA</a> 
   (Southeast Coastal Ocean Observing Regional Association) 
   <!-- 2015-03-27 Jeremy Cothran -->
 <li><a rel="bookmark" href="https://www.ncei.noaa.gov/erddap/index.html">NOAA NCEI</a> 
@@ -225,8 +225,8 @@ Joint Research Centre of the European Commission)
  <a rel="bookmark" href="http://tds.marine.rutgers.edu/erddap/index.html"
  >a second ERDDAP</a>
   <!-- 2017-05-16 John Wilkin -->
-<li><a rel="bookmark" href="http://sfbaynutrients.sfei.org/erddap/index.html"
- >San Francisco Estuary Institute</a>
+<li><!-- was http://sfbaynutrients.sfei.org/erddap/index.html -->
+San Francisco Estuary Institute
   <!-- 2016-10-26 Rusty Holleman -->
 <li><a rel="bookmark" href="https://spraydata.ucsd.edu/erddap/index.html"
  >Scripps Institution of Oceanography, Spray Underwater Gliders</a>
@@ -248,6 +248,9 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="http://bmlsc.ucdavis.edu:8080/erddap/index.html"
  >University of California at Davis, Bodega Marine Laboratory</a>
   <!-- 2015-03-17 Marcel Losekoot -->
+<li><a rel="bookmark" href="http://basin.ceoe.udel.edu/erddap/index.html"
+ >University of Delaware, Satellite Receiving Station</a>
+  <!-- 2020-02-20  Matthew Shatley -->
 <li>University of Washington, Applied Physics Laboratory
   <!-- 2015-04-02 Mike Harrington -->
 </ul>
@@ -286,7 +289,8 @@ first.
 <a rel="bookmark" href="https://hub.docker.com/u/axiom/">ERDDAP in a Docker container<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-    <br>If you don't already use Docker, we don't recommend this. 
+    <br>If you already use Docker, you might prefer the Docker version. 
+    <br>If you don't already use Docker, we generally don't recommend this. 
     <br>If you chose to install ERDDAP via Docker, we don't offer any support
       for the installation process.
     <br>We haven't worked with Docker yet. If you work with this, please send us your comments.
@@ -313,7 +317,7 @@ or Mac server instead.
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
-    <br><kbd>/usr/local/jdk8u202-b08/jre/bin/java -version</kbd> <!-- javaVersion -->
+    <br><kbd>/usr/local/jdk8u242-b08/jre/bin/java -version</kbd> <!-- javaVersion -->
 
     <p>ERDDAP works with Java from other sources, but we recommend AdoptOpenJDK because it is the 
     main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
@@ -342,44 +346,69 @@ or Mac server instead.
 
     <br>&nbsp;
 
-<li><a class="selfLink" id="tomcat" href="#tomcat" rel="bookmark">Set up</a> <!-- tomcatVersion below -->
-    <a rel="help" href="https://tomcat.apache.org/download-80.cgi">Tomcat 8<img 
+<li><a class="selfLink" id="tomcat" href="#tomcat" rel="bookmark">Set up</a> 
+    <a rel="help" href="https://tomcat.apache.org">Tomcat<img 
       src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>.    
-    <br>For security reasons, it is almost always best to use the latest version of Tomcat 8, <!-- tomcatVersion -->
-    which is designed to work with Java 8 (1.8). <!-- javaVersion -->
-    Below, the Tomcat directory will be referred to as <i>tomcat</i>.
-    Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
-    we recommend that you install ERDDAP in 
-      <a rel="help" href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
-      because ERDDAP needs different Tomcat settings 
-    and shouldn't have to contend with other applications for memory.
+      title="This link to an external website does not constitute an endorsement."></a>.
+    <br>Tomcat is the most widely used Java Application Server, 
+      which is Java software that stands between the operating system's network services 
+      and Java server software like ERDDAP.  It is Free and Open Source Software (FOSS).
+    <p>You can use another Java Application Server, but we only test with and support
+    Tomcat.
     <br>&nbsp;
     <ul>
 
-    <li>Follow the instructions at    <!-- tomcatVersion below -->
-      <a rel="help" href="https://tomcat.apache.org/download-80.cgi">https://tomcat.apache.org/<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a> 
-      to set up Tomcat 8 on your server.
-      <br>On Linux, we recommend installing it in /usr/local.
-      <br>On a Mac, it is probably already installed in /Library/Tomcat,
+    <li>Download Tomcat and unpack it on your server or PC.
+      <br>For security reasons, it is almost always best to use the latest version of Tomcat 8 <!-- tomcatVersion -->
+      which is designed to work with Java 8 (1.8). <!-- javaVersion -->
+      Below, the Tomcat directory will be referred to as <i>tomcat</i>.
+      <p>Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
+      we recommend that you install ERDDAP in 
+        <a rel="help" href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
+        because ERDDAP needs different Tomcat settings 
+      and shouldn't have to contend with other applications for memory.
+      <ul>
+      <li>On Linux,                                     <!-- tomcatVersion below -->
+        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a> 
+        and unpack it. We recommend unpacking it in /usr/local.
+      <li>On a Mac, Tomcat is probably already installed in /Library/Tomcat,
         but you may want to update it to the latest version of Tomcat 8. <!-- tomcatVersion -->
-      <br>On Windows, select the "32-bit/64-bit Windows Service Installer".
-        It will be installed in c:/Program Files.
-      <br>&nbsp;
+        <br>If you download it,     <!-- tomcatVersion below -->
+        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>         
+        and unpack it in /Library/Tomcat. 
+      <li>On Windows, you can                     <!-- tomcatVersion below -->
+        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "zip" Tomcat distribution<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>
+        (which doesn't mess with the Windows registry and which you control from a DOS command line)
+        and unpack it in an appropriate directory.
+        (For development, we use the "Core" "zip" distribution. 
+        We make a <kbd>/programs</kbd> directory and unpack it there.)
+        Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features.
+        If the distribution is a Windows installer, it will probably put Tomcat 
+        in, for example, <kbd>/Program Files/apache-tomcat-8.5.51</kbd> . <!-- tomcatVersion -->
+        <br>&nbsp;
+      </ul>
 
     <li><a class="selfLink" id="server.xml" href="#server.xml" rel="bookmark"
       >server.xml</a> -
       In <i>tomcat</i>/conf/server.xml file, 
       there are two changes that you should make to each of the two 
-      &lt;Connector&gt; tags (one for port="8080" and one for port="8443"):
+      &lt;Connector&gt; tags (one for '&lt;Connector port="8080" ' 
+      and one for '&lt;Connector port="8443" '):
       <ol>
       <li>Increase the <kbd>connectionTimeout</kbd> parameter value, perhaps to 
         300000 (milliseconds) (which is 5 minutes).
-      <li>Add a new parameter: <kbd>relaxedQueryChars='[]|'</kbd> 
-        This removes the need for users to percent-encode these characters when 
-        they occur in the parameters of a user's request URL.
+      <li><!-- Until v2.03 release: Consider adding --> Add 
+        a new parameter: <kbd>relaxedQueryChars="[]|"</kbd> 
+        <!-- br>
+        This is optional and slightly less secure, but removes the need for users to 
+        percent-encode these characters when 
+        they occur in the parameters of a user's request URL. -->
         <br>&nbsp;
       </ol>
      
@@ -388,18 +417,17 @@ or Mac server instead.
           "org.apache.catalina.webresources.Cache.getResource Unable to add the resource 
           at <i>someFile</i> to the cache because there was insufficient free space 
           available after evicting expired cache entries -- consider increasing the 
-          maximum size of the cache",
-          do this:
+          maximum size of the cache:
       <br>In your [tomcat]/conf/context.xml, add this tag right before &lt;/Context&gt; :
       <!-- 2019-05-22 On Bob's PC 50000 KB was sufficient. Add extra to be safe. -->
       <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="80000" /&gt;</kbd>
-      <br>(or some other number, in KB.)
-      <br>For more information see
-          <a rel="help"
+      <br>(or some other number, in KB.) For more information see
+      <br><a rel="help"
             href="https://tomcat.apache.org/tomcat-8.0-doc/config/resources.html"
                  >https://tomcat.apache.org/tomcat-8.0-doc/config/resources.html<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>.
+      <br>&nbsp;
 
     <li><a class="selfLink" id="ApacheTimeout" href="#ApacheTimeout" rel="bookmark"
     >On Linux computers, change the Apache timeout settings</a>
@@ -458,17 +486,17 @@ or Mac server instead.
       <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
         <ul>
         <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
-          <br><kbd>chown -R tomcat apache-tomcat-<i>8.5.38</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chown -R tomcat apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
           <br>(but substitute the actual name of your tomcat directory). 
         <li>Change the "group" to be tomcat, your username, 
           or the name of a small group that includes tomcat and 
           all the administrators of Tomcat/ERDDAP, e.g., 
-          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.5.38</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
         <li>Change permissions so that tomcat and the group have 
           read, write, execute privileges, e.g,. 
-          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>8.5.38</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
         <li>Remove "other" user's permissions to read, write, or execute:
-          <br><kbd>chmod -R o-rwx apache-tomcat-<i>8.5.38</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R o-rwx apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
           <br>This is important, because it prevents other users from
             reading possibly sensitive information in ERDDAP setup files.
         </ul>
@@ -486,10 +514,10 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<kbd>
-      <br>export JAVA_HOME=/usr/local/jdk8u202-b08/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk8u242-b08/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.5.38</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.5.38</i></kbd>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.5.51</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -499,10 +527,10 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<kbd>
-      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u202-b08\jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u242-b08\jre"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
-      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>8.5.38</i>"         <!-- tomcatVersion -->
-      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>8.5.38</i>"</kbd>  <!-- tomcatVersion -->
+      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>8.5.51</i>"         <!-- tomcatVersion -->
+      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>8.5.51</i>"</kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).
       <br>If this is just for local testing, remove "-server".      
       <br>(If you previously set JRE_HOME, you can remove that.)
@@ -817,6 +845,32 @@ or Mac server instead.
     <br>&nbsp;
   </ol>
 
+<li><a class="selfLink" id="NGINX" href="#NGINX" rel="bookmark">(UNCOMMON)</a>
+  If you are using 
+  <a rel="help" href="https://www.nginx.com/">NGINX<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> 
+  (a web server and load balancer):
+  <br>in order to get NGINX and ERDDAP working correctly with https,
+    you need to put the following snippet inside the Tomcat server.xml &lt;Host&gt; block:
+<pre>
+&lt;Valve className="org.apache.catalina.valves.RemoteIpValve"  
+  remoteIpHeader="X-Forwarded-For"  
+  protocolHeader="X-Forwarded-Proto"  
+  protocolHeaderHttpsValue="https" /&gt; 
+</pre>
+And in the nginx config file, you need to set these headers:
+<pre>
+  proxy_set_header Host              $host;
+  proxy_set_header X-Real-IP         $remote_addr;
+  proxy_set_header REMOTE_ADDR       $remote_addr;
+  proxy_set_header HTTP_CLIENT_IP    $remote_addr;
+  proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+</pre>
+(Thanks to Kyle Wilcox.)
+<br>&nbsp;
+
 <li><a class="selfLink" id="startTomcat" href="#startTomcat" rel="bookmark">Start Tomcat.</a>
   <ul>
   <li>(I don't recommend using the Tomcat Web Application Manager. If you don't 
@@ -1090,6 +1144,82 @@ of this paragraph.
       <a rel="help" href="#ApacheTimeout">Apache timeout settings</a>.
   </ul>
 
+
+<li><strong><a class="selfLink" id="monitoring" href="#monitoring" rel="bookmark">Monitoring ERDDAP</a></strong> 
+<br>We all want our data services to find their audience and be extensively used, 
+but sometimes your ERDDAP may be used too much, causing problems, 
+including super slow responses for all requests.
+Our plan to avoid problems is:
+  <ul>
+  <li>Monitor ERDDAP via the 
+    <a rel="help" href="#statusPage">status.html web page</a>. 
+    <br>If the status page responds slowly, or you see that a huge number of requests are coming in,
+      or tons of memory being used, or tons of failed requests, 
+      or each Major LoadDatasets is taking a long time,
+      or see any sign of things getting bogged down and responding slowly, 
+      then look in ERDDAP's <a rel="help" href="#log">log.txt file</a>
+      to see what's going on.
+  <li>If it is clear that some user is making more than one simultaneous request, 
+    repeatedly and continuously, then add their IP address to ERDDAP's 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+      >&lt;requestBlacklist&gt; in your datasets.xml file</a>.  
+    Sometimes the requests are all from one IP address. 
+    Sometimes they are from multiple IP addresses, but clearly the same user.
+    You can also blacklist people making tons of invalid requests 
+    or tons of mind-numbingly inefficient requests.
+  <li>Then, for each request they make, ERDDAP returns:
+    <blockquote>HTTP ERROR 403 - Access Forbidden -- 
+    <br>Your IP address is on this ERDDAP's request blacklist.
+    <br>Did you often submit more than one request at a time?
+    <br>Did you often submit identical requests in a short period of time?
+    <br>Did you submit a large number of invalid requests?
+    <br>If you are ready to avoid these problems, please email 
+    [ERDDAP administrator's email address] to request to be taken off of the blacklist.</blockquote>
+  <li>Hopefully the user sees this message and contacts you
+    to find out how to fix the problem and get off the blacklist. 
+    Sometimes, they just switch IP addresses and try again.
+    <br>&nbsp;
+  </ul>
+  Just doing those things solves the problem most of the time. 
+  It lets things start to simmer, but rarely boil over.
+
+  <p>Also, it is good if your server has a lot of cores and, most importantly, a lot of memory,
+    so you can allocate a lot of memory to ERDDAP, more than it ever needs. 
+    Then, memory is rarely or never a limiting factor. 
+    Network bandwidth is a more common limiting factor. 
+    Basically, as there are more and more simultaneous requests, 
+    the speed to any given user decreases. 
+    That naturally slows down the number of requests coming in if each user 
+    is just submitting one request at a time.
+
+  <p>If your ERDDAP gets some of its data from a THREDDS at your site,
+   there are some advantages to making a copy of the THREDDS data files 
+   (at least for the most popular datasets) on another RAID that ERDDAP has access
+   to so that ERDDAP can serve data from the files directly.
+   At ERD, we do that for our most popular datasets.
+   <ul>
+   <li>ERDDAP can get the data directly and not have to wait for THREDDS to reload the dataset or ...
+   <li>ERDDAP can notice and incorporate new data files immediately, so it doesn't
+     have to pester THREDDS frequently to see if the dataset has changed.
+     See 
+     <a rel="help"  
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    ><kbd>&lt;updateEveryNMillis&gt;</kbd></a>.
+   <li>The load is split between 2 RAIDS and 2 servers, 
+     instead of the request being hard on both ERDDAP and THREDDS.
+   <li>You avoid the mismatch problem caused by THREDDS having a small (by default) maximum request size.
+      ERDDAP has a system to handle the mismatch, but avoiding the problem is better. 
+   <li>You have a backup copy of the data which is always a good idea.
+   </ul>
+   In any case, don't ever run THREDDS and ERDDAP in the same Tomcat. Run them 
+   in separate Tomcats, or better, on separate servers.
+
+  <p>We find that THREDDS periodically gets in a state where requests just hang. 
+    If your ERDDAP is getting data from a THREDDS and the THREDDS is in this state, 
+    ERDDAP has a defense (it says the THREDDS-based dataset isn't available), 
+    but it is still troublesome for ERDDAP. 
+    Some groups (including ERD) avoid this by proactively restarting THREDDS frequently 
+    (e.g., nightly in a cron job). 
 
 <li><strong><a class="selfLink" id="respondingSlowly" href="#respondingSlowly" rel="bookmark">If ERDDAP Is Responding Slowly</a></strong> 
   or if just certain requests are responding slowly,
@@ -3121,10 +3251,13 @@ These are details that you don't need to know until a need arises.
     Compared to most other possible changes to your system 
     (a new server for $10,000? a new RAID for $35,000? a new network switch for $5000? etc.),
     this is by far the best Return On Investment (ROI).
-    If your server isn't loaded with memory, additional memory for your server 
-    is also a great and relatively inexpensive way to speed up all aspects of ERDDAP.
-    <br>[SSD's would be great for gridded data, too, but most gridded datasets are 
+    If/when the SSD dies (in 1, 2, ... 8 years), replace it. Don't rely on it as for
+    long term, archival storage of the data, just for the front-end copy of the data.
+    [SSD's would be great for gridded data, too, but most gridded datasets are 
     much larger, making the SSD very expensive.]
+    
+    <p>If your server isn't loaded with memory, additional memory for your server 
+    is also a great and relatively inexpensive way to speed up all aspects of ERDDAP.
     <br>&nbsp;
 
 <li><strong><a class="selfLink" id="heavyLoads" href="#heavyLoads" rel="bookmark">Heavy Loads / Constraints</a></strong> -- 
@@ -4074,16 +4207,16 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use AdoptOpenJDK's javac jdk8u202-b08 <!-- javaVersion --> to compile gov.noaa.pfeg.coastwatch.TestAll  
+  <li>We currently use AdoptOpenJDK's javac jdk8u242-b08 <!-- javaVersion --> to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and AdoptOpenJDK's java jdk8u202-b08 <!-- javaVersion --> to run the tests.  
+     and AdoptOpenJDK's java jdk8u242-b08 <!-- javaVersion --> to run the tests.  
      For security reasons, it is almost always best to use the latest versions of Java 8 and Tomcat 8. <!-- javaVersion -->
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
      <li><a class="selfLink" id="classpath" href="#classpath" rel="bookmark">Our javac and java classpath</a> (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><kbd>
-./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;</kbd>
+./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-jexl.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;</kbd>
        <br>If you get error messages about classes not found
          when you compile or run ERDDAP or one of its tools, 
          compare your command line's classpath to the classpath above
@@ -4262,7 +4395,7 @@ credit where credit is due.)
   data provider. See
   <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#citeDataset"
   >How to Cite a Dataset in a Paper</a>.
-<li><a rel="bookmark" rel="#licenseCoHortSoftware">The com/cohort classes</a> are from CoHort Software 
+<li><a rel="bookmark" href="#licenseCoHortSoftware">The com/cohort classes</a> are from CoHort Software 
     (<a rel="help" href="http://www.cohort.com">http://www.cohort.com<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
@@ -4407,6 +4540,10 @@ credit where credit is due.)
       title="This link to an external website does not constitute an endorsement."></a>).
 <li>ERDDAP use code from Apache
   <a rel="help" href="https://commons.apache.org/compress/">commons-compress<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+  and
+  <a rel="help" href="https://commons.apache.org/compress/">commons-jexl<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
   (License: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
@@ -4594,6 +4731,11 @@ credit where credit is due.)
   was written and contributed (license: copyrighted open source)
   by Rob Fuller and Adam Leadbetter of the Marine Institute in Ireland.
   Thank you, Rob and Adam!
+
+<li>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
+    Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
+    Thank you Marco Alba.
+<!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
 
 <li>ERDDAP uses code from the 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 

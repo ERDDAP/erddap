@@ -304,7 +304,7 @@ public class EDDGridSideBySide extends EDDGrid {
             if (verbose) String2.log("child[" + c + "].axisVariables[0].size()=" + axis0SourceValues[c].size());
         }
         PrimitiveArray newAxis0Values = PrimitiveArray.factory(
-            axis0SourceValues[0].elementClass(), axis0SourceValues[0].size() + 100, false);
+            axis0SourceValues[0].elementType(), axis0SourceValues[0].size() + 100, false);
         while (true) {
             //repeatedly: 
             //find children which share the lowest axis0 value  (all axis values are numeric and not-NaN)
@@ -524,7 +524,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //make a PrimitiveArray to hold the results for this dv
             PrimitiveArray dvResults = PrimitiveArray.factory(
-                tDataVariables[tdv].sourceDataTypeClass(), nValues, false);
+                tDataVariables[tdv].sourceDataPAType(), nValues, false);
             cumResults[nAv + tdv] = dvResults;
             double tdvSourceMissingValue = tDataVariables[tdv].sourceMissingValue();
 
@@ -610,7 +610,7 @@ public class EDDGridSideBySide extends EDDGrid {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).

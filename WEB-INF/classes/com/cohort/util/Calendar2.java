@@ -5326,8 +5326,11 @@ public class Calendar2 {
                     break;
                 }
             }
-            if (sai < 0) //success!
+            if (sai < 0) { //success!
+                //String2.log(">> Calendar2.suggestDateTimeFormat found " + format + "\n" +
+                //    MustBe.stackTrace());
                 return format;
+            }
         }
         if (debugMode) String2.log(noMatch + 
             "no regex matched all Strings.");
@@ -5843,8 +5846,8 @@ public class Calendar2 {
      * This assumes hour, if present, is 24 hour.   This doesn't handle am pm.
      *
      * @param s a String that might have a poorly defined String date time format.
-     * @return s converted into a correctly defined Java String date time format,
-     *   or the original s if it wasn't a String date time format.
+     * @return s converted into a (hopefully) correctly defined Java String date time format,
+     *   or the original s if it was already valid or wasn't a String date time format.
      */
     public static String convertToJavaDateTimeFormat(String s) {
         String os = s;
@@ -5880,16 +5883,30 @@ public class Calendar2 {
             return s; //no evidence this is a date or time format
         }
 
+        //if it is already a suggested date time format, don't touch it
+        for (int i = 1; i < digitRegexTimeFormat.length;     i+=2)  //every other one has a format
+            if (s.equals(   digitRegexTimeFormat[i]))
+                return s;
+        for (int i = 1; i < allDigitsRegexTimeFormat.length; i+=2)  //every other one has a format
+            if (s.equals(   allDigitsRegexTimeFormat[i]))
+                return s;
+        for (int i = 1; i < letterRegexTimeFormat.length;    i+=2)  //every other one has a format
+            if (s.equals(   letterRegexTimeFormat[i]))
+                return s;
+
         //fix common problems
         s = String2.replaceAllIgnoreCase(s, "mon",  "MMM");
 
         //push iso toward yyyy-MM-dd'T'HH:mm:ssZ and thus Calendar2.parseISODateTime
-        s = String2.replaceAllIgnoreCase(s, "y-m-d", "yyyy-MM-dd");
+        if (String2.indexOfIgnoreCase(s, "yy") < 0) 
+            s = String2.replaceAllIgnoreCase(s, "y-m-d", "yyyy-MM-dd");
         s = String2.replaceAllIgnoreCase(s, "yyyy-mm-dd", "yyyy-MM-dd");
         if (s.toLowerCase().startsWith("yy-mm-dd"))
             s = "yyyy-MM-dd" + s.substring(8);
         if (s.indexOf("yyyy-MM-dd") >= 0) {
-            s = String2.replaceAllIgnoreCase(s, "h:m:s", "HH:mm:ss");
+            //If start is ISO-like, the rest almost always is, too.
+            //flexi-digit times are rare. Incorrect case is common.
+            s = String2.replaceAllIgnoreCase(s, "h:m:s", "HH:mm:ss"); 
             if (s.toLowerCase().endsWith("h:m"))
                 s = s.substring(0, s.length() - 3) + "HH:mm";
         }
@@ -5936,14 +5953,14 @@ public class Calendar2 {
             s = String2.replaceAll(s, "D", "d"); //date
         }
         
-        //change a single y to yy. 
+        //change a single y to yyyy. 
         //It won't cause problems parsing dates and will be much easier to identify as data format.
         ypo = s.indexOf('y');
         int yypo = s.indexOf("yy");
         if (ypo >= 0 && yypo < 0)
-            s = s.substring(0, ypo) + "y" + s.substring(ypo);
+            s = s.substring(0, ypo) + "yyy" + s.substring(ypo);
 
-        //if just MM, assume it's minutes    //but this is just a guess
+        //if just MM, assume it's minutes, not months    //but this is just a guess
         if (s.equals("MM"))
             s = "mm"; 
 

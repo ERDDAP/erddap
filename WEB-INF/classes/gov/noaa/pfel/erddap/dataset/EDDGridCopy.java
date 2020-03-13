@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -413,10 +414,10 @@ public class EDDGridCopy extends EDDGrid {
                             }
                         }
                         ncDataVarNames.add(varName);
-                        Class tClass = NcHelper.getElementClass(var.getDataType());
-                        if      (tClass == char.class)    tClass = String.class;
-                        else if (tClass == boolean.class) tClass = byte.class; 
-                        ncDataVarTypes.add(PrimitiveArray.elementClassToString(tClass));
+                        PAType tPAType = NcHelper.getElementPAType(var.getDataType());
+                        if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
+                        else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
+                        ncDataVarTypes.add(PrimitiveArray.elementTypeToString(tPAType));
                     }
                 }
                 ncFile.close();
@@ -580,7 +581,7 @@ public class EDDGridCopy extends EDDGrid {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).

@@ -124,6 +124,7 @@ public class EDDTableFromNOS extends EDDTable{
             tRowElementXPath = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -175,6 +176,8 @@ public class EDDTableFromNOS extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -185,8 +188,8 @@ public class EDDTableFromNOS extends EDDTable{
 
         return new EDDTableFromNOS(tDatasetID, tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
-            ttDataVariables,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tGlobalAttributes, ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tXmlns, tGetWhat, tWsdlUrl, tRequestTimeFormat, tRowElementXPath);
     }
@@ -277,7 +280,7 @@ public class EDDTableFromNOS extends EDDTable{
     public EDDTableFromNOS(String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -484,6 +487,9 @@ public class EDDTableFromNOS extends EDDTable{
                 dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
             }
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();

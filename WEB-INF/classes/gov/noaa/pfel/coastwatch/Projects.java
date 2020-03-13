@@ -1030,7 +1030,7 @@ String2.log("uniqueYear = " + uniqueYear);
                     data.globalAttributes().copyTo(stationTable.globalAttributes());
                     for (int col = 0; col < 5; col++) {
                         stationTable.addColumn(col, data.getColumnName(col), 
-                            PrimitiveArray.factory(data.getColumn(col).elementClass(), dataCol, false), 
+                            PrimitiveArray.factory(data.getColumn(col).elementType(), dataCol, false), 
                             (Attributes)data.columnAttributes(col).clone());
                     }
                     for (int col = 0; col < nUniqueSpp; col++) {
@@ -1372,7 +1372,7 @@ String2.log("uniqueYear = " + uniqueYear);
                     data.globalAttributes().copyTo(stationTable.globalAttributes());
                     for (int col = 0; col < 5; col++) {
                         stationTable.addColumn(col, data.getColumnName(col), 
-                            PrimitiveArray.factory(data.getColumn(col).elementClass(), dataCol, false), 
+                            PrimitiveArray.factory(data.getColumn(col).elementType(), dataCol, false), 
                             (Attributes)data.columnAttributes(col).clone());
                     }
                     //add data columns
@@ -1705,7 +1705,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
                     data.globalAttributes().copyTo(stationTable.globalAttributes());
                     for (int col = 0; col < 5; col++) {
                         stationTable.addColumn(col, data.getColumnName(col), 
-                            PrimitiveArray.factory(data.getColumn(col).elementClass(), dataCol, false), 
+                            PrimitiveArray.factory(data.getColumn(col).elementType(), dataCol, false), 
                             (Attributes)data.columnAttributes(col).clone());
                     }
                     for (int col = 0; col < nUniqueSpp; col++) {
@@ -2053,15 +2053,15 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                     data.globalAttributes().copyTo(stationTable.globalAttributes());
                     for (int col = 0; col < data.nColumns(); col++) {
                         PrimitiveArray oldColumn = data.getColumn(col);
-                        Class elementClass = oldColumn.elementClass();
+                        PAType elementPAType = oldColumn.elementType();
                         PrimitiveArray newColumn = 
-                            PrimitiveArray.factory(elementClass, tnRows, false);
+                            PrimitiveArray.factory(elementPAType, tnRows, false);
                         stationTable.addColumn(col, data.getColumnName(col), 
                             newColumn, 
                             (Attributes)data.columnAttributes(col).clone());
 
                         //fill the stationTable with data
-                        boolean isString = elementClass == String.class;
+                        boolean isString = elementPAType == PAType.STRING;
                         for (int tRow = startRow; tRow < row; tRow++) {
                             if (isString)
                                 newColumn.addString(oldColumn.getString(tRow));
@@ -2357,15 +2357,15 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                     data.globalAttributes().copyTo(stationTable.globalAttributes());
                     for (int col = 0; col < data.nColumns(); col++) {
                         PrimitiveArray oldColumn = data.getColumn(col);
-                        Class elementClass = oldColumn.elementClass();
+                        PAType elementPAType = oldColumn.elementType();
                         PrimitiveArray newColumn = 
-                            PrimitiveArray.factory(elementClass, tnRows, false);
+                            PrimitiveArray.factory(elementPAType, tnRows, false);
                         stationTable.addColumn(col, data.getColumnName(col), 
                             newColumn, 
                             (Attributes)data.columnAttributes(col).clone());
 
                         //fill the stationTable with data
-                        boolean isString = elementClass == String.class;
+                        boolean isString = elementPAType == PAType.STRING;
                         for (int tRow = startRow; tRow < row; tRow++) {
                             if (isString)
                                 newColumn.addString(oldColumn.getString(tRow));
@@ -3189,7 +3189,7 @@ variables:
                             //if time
                             } else if (name.equals("time")) {
                                 //just read it and write it unchanged
-                                newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months}));
+                                newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months})); 
 
                             //if other variables
                             } else {
@@ -3272,7 +3272,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             //leave define mode
             newFile.create();
 
-            ArrayLong.D1 array = new ArrayLong.D1(5);
+            ArrayLong.D1 array = new ArrayLong.D1(5, false); //isUnsigned
             array.set(0, Long.MIN_VALUE);
             array.set(0, -999);
             array.set(0, 0);
@@ -3374,9 +3374,9 @@ public static void testJanino() throws Exception {
             //Janino
             ExpressionEvaluator ee = new ExpressionEvaluator(
                 "c > d ? c : d",                     // expression
-                int.class,                           // expressionType
+                PAType.INT,                           // expressionType
                 new String[] { "c", "d" },           // parameterNames
-                new Class[] { int.class, int.class } // parameterTypes
+                new PAType[] { PAType.INT, PAType.INT } // parameterTypes
             );
             Integer res = (Integer) ee.evaluate(
                 new Object[] {          // parameterValues
@@ -3389,9 +3389,9 @@ public static void testJanino() throws Exception {
         if (true) {
             ExpressionEvaluator ee = new ExpressionEvaluator(
                 "import com.cohort.util.Calendar2; Calendar2.isoStringToEpochSeconds(a[0] + \"T\" + a[1])",    // expression
-                double.class,                 // expressionType
+                PAType.DOUBLE,                 // expressionType
                 new String[] {"a" },          // array of parameterNames
-                new Class[] {String[].class } // array of parameterTypes, e.g., int.class, or String[].class
+                new PAType[] {String[].class } // array of parameterTypes, e.g., PAType.INT, or String[].class
             );
 
             // Evaluate it with varying parameter values; very fast.
@@ -3609,10 +3609,10 @@ public static void testJanino() throws Exception {
             "station_code, date,         station,      local_time,   depth_or_pressure, " + 
             "temperature,  salinity,     density,      fluorescence, project, " +
             "transect", ',');
-        Class dataColTypes[] = {
-            String.class,  String.class, String.class, String.class, float.class,
-            float.class,   float.class,  float.class,  float.class,  String.class,
-            String.class};
+        PAType dataColTypes[] = {
+            PAType.STRING,  PAType.STRING, PAType.STRING, PAType.STRING, PAType.FLOAT,
+            PAType.FLOAT,   PAType.FLOAT,  PAType.FLOAT,  PAType.FLOAT,  PAType.STRING,
+            PAType.STRING};
         String dataUnits[] = { //date will be ...
             null,          "seconds since 1970-01-01T00:00:00Z", null, null, "meters",
             "degree_C",    "1e-3",       "sigma",      "volts",      null, //1e-3 replaces PSU in CF std names 25
@@ -3622,9 +3622,9 @@ public static void testJanino() throws Exception {
 
         String latLonColNames[] = String2.split(
             "line,        station,      latitude,    longitude,   transect", ',');
-        //schema has double.class for lat, lon, but I think not necessary
-        Class latLonColTypes[] = {
-            String.class, String.class, float.class, float.class, String.class};
+        //schema has PAType.DOUBLE for lat, lon, but I think not necessary
+        PAType latLonColTypes[] = {
+            PAType.STRING, PAType.STRING, PAType.FLOAT, PAType.FLOAT, PAType.STRING};
 
         //find timezone   America/Los_Angeles
         //String2.log(String2.toCSSVString(ZoneId.getAvailableZoneIDs().toArray()));
@@ -3636,7 +3636,9 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1, -1, 0, "", 
+        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1, 
+            "", "", //skipHeaderToRegex, skipLinesRegex,
+            -1, 0, "", 
             null, null, null, null, false); //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
@@ -3660,7 +3662,7 @@ public static void testJanino() throws Exception {
                 dataTable.columnAttributes(col).set("units", dataUnits[col]);
 
             //change the columnType
-            if (dataColTypes[col] != String.class) {
+            if (dataColTypes[col] != PAType.STRING) {
                 PrimitiveArray pa = PrimitiveArray.factory(dataColTypes[col], 1, false);
                 pa.append(dataTable.getColumn(col));
                 dataTable.setColumn(col, pa);
@@ -3746,14 +3748,15 @@ public static void testJanino() throws Exception {
         //read the latLon file
         String2.log("\nreading the latLon source file");
         Table latLonTable = new Table();
-        latLonTable.readASCII(sourceDir + sourceLatLon, -1, 0, "", null, null, null, null);
+        latLonTable.readASCII(sourceDir + sourceLatLon, String2.ISO_8859_1,
+            "", "", -1, 0, "", null, null, null, null, true);
         Test.ensureEqual(latLonTable.nColumns(), latLonColNames.length, "latLonTable.nColumns() != latLonColNames.length");
         for (int col = 0; col < latLonColNames.length; col++) {
             //set the column name
             latLonTable.setColumnName(col, latLonColNames[col]);
 
             //change the columnType
-            if (latLonColTypes[col] != String.class) {
+            if (latLonColTypes[col] != PAType.STRING) {
                 PrimitiveArray pa = PrimitiveArray.factory(latLonColTypes[col], 1, false);
                 pa.append(latLonTable.getColumn(col));
                 latLonTable.setColumn(col, pa);
@@ -3831,7 +3834,7 @@ public static void testJanino() throws Exception {
                 Table table = new Table();
                 for (int col = 0; col < dataTable.nColumns(); col++) {
                     PrimitiveArray oldPa = dataTable.getColumn(col);
-                    PrimitiveArray newPa = PrimitiveArray.factory(oldPa.elementClass(), 
+                    PrimitiveArray newPa = PrimitiveArray.factory(oldPa.elementType(), 
                         lastRow - startRow + 1, false);
                     for (int tRow = startRow; tRow <= lastRow; tRow++) 
                         newPa.addString(oldPa.getString(tRow));
@@ -3880,9 +3883,9 @@ public static void testJanino() throws Exception {
 	region_caught	Int8 (4) */
             "region,       year,         market_category, month,          block, " + 
             "pounds,       area,         imported,        region_caught", ',');
-        Class dataColTypes[] = { //month and region_caught could be byte, but mv=-9999 wouldn't fit
-            short.class,   short.class,  short.class,     short.class,     short.class,
-            int.class,     String.class, String.class,    short.class};
+        PAType dataColTypes[] = { //month and region_caught could be byte, but mv=-9999 wouldn't fit
+            PAType.SHORT,   PAType.SHORT,  PAType.SHORT,     PAType.SHORT,     PAType.SHORT,
+            PAType.INT,     PAType.STRING, PAType.STRING,    PAType.SHORT};
         String dataUnits[] = { //date will be ...
             null,          null,         null,            null,           null,
             "pounds",      null,         null,            null};
@@ -3896,6 +3899,7 @@ public static void testJanino() throws Exception {
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
         dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1,  
+            "", "", //skipHeaderToRegex, skipLinesRegex,
             -1, 0, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
@@ -3919,13 +3923,13 @@ public static void testJanino() throws Exception {
                 dataTable.columnAttributes(col).set("units", dataUnits[col]);
 
             //change the columnType
-            if (dataColTypes[col] != String.class) {
+            if (dataColTypes[col] != PAType.STRING) {
                 PrimitiveArray pa = PrimitiveArray.factory(dataColTypes[col], 1, false);
                 PrimitiveArray opa = dataTable.getColumn(col);
                 //ensure dataColType is appropriate
                 int n = opa.size();
-                int max = dataColTypes[col] == short.class? Short.MAX_VALUE :
-                          dataColTypes[col] == int.class? Integer.MAX_VALUE :
+                int max = dataColTypes[col] == PAType.SHORT? Short.MAX_VALUE :
+                          dataColTypes[col] == PAType.INT? Integer.MAX_VALUE :
                           -1;
                 Test.ensureTrue(max != -1, "Unrecognized dataColType for col=" + col);
                 for (int row = 0; row < n; row++) {
@@ -3990,21 +3994,22 @@ public static void testJanino() throws Exception {
 	species_group		Char (20), 
 	comments			Char (240) */
             "market_category, description, nominal_species, species_group, comments", ',');
-        //schema has double.class for lat, lon, but I think not necessary
-        Class marCatColTypes[] = {
-            short.class, String.class, String.class, String.class, String.class};
+        //schema has PAType.DOUBLE for lat, lon, but I think not necessary
+        PAType marCatColTypes[] = {
+            PAType.SHORT, PAType.STRING, PAType.STRING, PAType.STRING, PAType.STRING};
 
         String2.log("\nreading the marCat source file");
         Table marCatTable = new Table();
 
-        marCatTable.readASCII(sourceDir + sourceMarCat, -1, 0, "", null, null, null, null);
+        marCatTable.readASCII(sourceDir + sourceMarCat, String2.ISO_8859_1,
+            "", "", -1, 0, "", null, null, null, null, true);
         Test.ensureEqual(marCatTable.nColumns(), marCatColNames.length, "marCatTable.nColumns() != marCatColNames.length");
         for (int col = 0; col < marCatColNames.length; col++) {
             //set the column name
             marCatTable.setColumnName(col, marCatColNames[col]);
 
             //change the columnType
-            if (marCatColTypes[col] != String.class) {
+            if (marCatColTypes[col] != PAType.STRING) {
                 PrimitiveArray pa = PrimitiveArray.factory(marCatColTypes[col], 1, false);
                 pa.append(marCatTable.getColumn(col));
                 marCatTable.setColumn(col, pa);
@@ -4061,7 +4066,7 @@ String2.log(marCatTable.toString());
                 Table table = new Table();
                 for (int col = 0; col < dataTable.nColumns(); col++) {
                     PrimitiveArray oldPa = dataTable.getColumn(col);
-                    PrimitiveArray newPa = PrimitiveArray.factory(oldPa.elementClass(), 
+                    PrimitiveArray newPa = PrimitiveArray.factory(oldPa.elementType(), 
                         lastRow - startRow + 1, false);
                     for (int tRow = startRow; tRow <= lastRow; tRow++) 
                         newPa.addString(oldPa.getString(tRow));
@@ -4551,7 +4556,7 @@ String2.log("Projects.touchUrls is finished.");
             .add("description", descriptions.toString());
 
         //"San Diego    Los Angeles  Santa BarbaraMonterey     San FranciscoEureka       "
-        StringArray stationnames = (StringArray)PrimitiveArray.csvFactory(String.class,
+        StringArray stationnames = (StringArray)PrimitiveArray.csvFactory(PAType.STRING,
             "San Diego, Los Angeles, Santa Barbara, Monterey, San Francisco, Eureka");
         Test.ensureEqual(nStations, stationnames.size(), "nStations != nStationnames");
 
@@ -4826,7 +4831,7 @@ String2.log("Projects.touchUrls is finished.");
             .add("long_name", "Fish Name")
             .add("description", descriptions.toString());
 
-        StringArray stationnames = (StringArray)PrimitiveArray.csvFactory(String.class,
+        StringArray stationnames = (StringArray)PrimitiveArray.csvFactory(PAType.STRING,
             "San Diego, Los Angeles, Santa Barbara, Monterey, San Francisco, Eureka");
         Test.ensureEqual(nStations, stationnames.size(), "nStations != nStationnames");
 
@@ -5841,7 +5846,7 @@ project)
                     //a data var
                     String long_name = inTable.columnAttributes(col).getString("long_name");
                     String units     = inTable.columnAttributes(col).getString("units");
-                    String type      = inTable.getColumn(col).elementClassString();
+                    String type      = inTable.getColumn(col).elementTypeString();
                     if (!type.equals("int"))
                         throw new RuntimeException(fileName[filei] + " long_name=" + long_name +
                             " has type=" + type);
@@ -6691,14 +6696,14 @@ project)
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to pmol/kg and set all to -999");
                         tUnits = "pmol/kg";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("e8/l")) && 
                                (colName.equals("bact"))) {
                         //convert bact in wrong units to NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to cells/ml and set all to -999");
                         tUnits = "cells/ml";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("pmol/l") ||
                                 tUnits.equals("umol/l") ||
                                 tUnits.equals("ml/l")) && 
@@ -6713,14 +6718,14 @@ project)
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to umol/kg and set all to -999");
                         tUnits = "umol/kg";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("umol/kg")) && 
                                colName.equals("tritum")) {
                         //convert tritum in umol/kg to NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to TU and set all to -999");
                         tUnits = "tu";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("ppm") || 
                                 tUnits.equals("ppm@eq")) && 
                                colName.equals("pco2")) {
@@ -6728,7 +6733,7 @@ project)
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to uatm and set all to -999");
                         tUnits = "uatm";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("ug/l") ||
                                 tUnits.equals("mg/m3") ||
                                 tUnits.equals("mg/m**3")) && 
@@ -6738,42 +6743,42 @@ project)
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to ug/kg and set all to -999");
                         tUnits = "ug/kg";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("")) && 
                                colName.equals("c13err")) {
                         //convert c13err to g/kg and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to o/oo (g/kg?) and set all to -999");
                         tUnits = "g/kg";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("")) && 
                                colName.equals("phaeo")) {
                         //convert phaeo to ug/l and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to ug/l and set all to -999");
                         tUnits = "ug/l";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("")) && 
                                colName.equals("revprs")) {
                         //convert revprs to dbar and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to dbar and set all to -999");
                         tUnits = "dbar";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("pctmod")) && 
                                colName.equals("delhe3")) {
                         //convert delhe3 to g/100g and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to % (g/100g?) and set all to -999");
                         tUnits = "g/100g";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("degree_C")) && 
                         colName.equals("ctdprs")) {
                         //convert ctdpers to dbar and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to dbar and set all to -999");
                         tUnits = "dbar";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if ((tUnits.equals("degree_C") ||
                          tUnits.equals("umol/kg")) && 
                         (colName.equals("ctdsal") ||
@@ -6782,14 +6787,14 @@ project)
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to 1e-3 and set all to -999");
                         tUnits = "1e-3"; //PSU changed to 1e-3 in CF std names 25
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } else if (tUnits.equals("1e-3") &&  //?  was PSU
                         colName.equals("ctdtmp")) {
                         //convert ctdtmp to degree_C and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to degree_C and set all to -999");
                         tUnits = "degree_C";
-                        table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
+                        table.setColumn(col, PrimitiveArray.factory(PAType.FLOAT, nRows, "-999"));
                     } 
 
 
@@ -6839,7 +6844,7 @@ project)
                     PrimitiveArray pa = table.getColumn(col);
                     if (!(pa instanceof StringArray))
                         table.columnAttributes(col).add("missing_value", 
-                            PrimitiveArray.factory(pa.elementClass(), 1, "-999"));
+                            PrimitiveArray.factory(pa.elementType(), 1, "-999"));
 
                 }
 
@@ -6873,7 +6878,7 @@ project)
                     String colName = table.getColumnName(col);
                     String newInfo = (tUnits == null? "" : tUnits) + 
                         "|" +
-                        table.getColumn(col).elementClassString();
+                        table.getColumn(col).elementTypeString();
                     //if (colName.equals("ph_sws_flag_w") && 
                     //    fileNames[f].equals("06AQ19960712_hy1.csv")) {
                     //    throw new Exception("  col=" + colName + " newInfo=" + newInfo + "\n" +
@@ -7136,16 +7141,16 @@ project)
                             //String2.log("    dim#" + d + "=" + tName + " size=" + tSize);
                             dims[d] = ncOut.addDimension(rootGroup, tName, tSize, true, false, false);
                             newDimVars[d] = ncOut.addVariable(rootGroup, tName, 
-                                NcHelper.getNc3DataType(pas[d + 1].elementClass()), 
+                                NcHelper.getNc3DataType(pas[d + 1].elementType()), 
                                 Arrays.asList(dims[d])); 
                         }
                     }
 
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); 
-                    Class tClass = OpendapHelper.getElementClass(pv);
-                    //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
+                    PAType tType = OpendapHelper.getElementPAType(pv);
+                    //String2.log("pv=" + pv.toString() + " tType=" + tType);
                     newVars[v] = ncOut.addVariable(rootGroup, vars[v], 
-                        NcHelper.getNc3DataType(tClass), dims);
+                        NcHelper.getNc3DataType(tType), dims);
 
                 } else {
                    throw new RuntimeException(beginError + 
@@ -7197,7 +7202,8 @@ project)
                     int origin[] = {0, 0, 0};
                     pas[0].trimToSize(); //so underlying array is exact size
                     ncOut.write(newVars[v], origin,
-                        Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
+                        Array.factory(NcHelper.getNc3DataType(pas[0].elementType()),
+                            jplChunkShape, pas[0].toObjectArray()));
 
                     //read other chunks
                     for (int chunk = 1; chunk < jplNChunks; chunk++) {
@@ -7210,7 +7216,8 @@ project)
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
                         ncOut.write(newVars[v], origin,
-                            Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
+                            Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
+                                jplChunkShape, pas[0].toObjectArray()));
                     }
                 } else {
                     if (v > 0)  //read it
@@ -7218,7 +7225,8 @@ project)
                     pas[0].trimToSize(); //so underlying array is exact size
                     //String2.log("pas[0]=" + pas[0].toString());
                     ncOut.write(newVars[v], 
-                        Array.factory(pas[0].elementClass(), shape, pas[0].toObjectArray()));
+                        Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
+                            shape, pas[0].toObjectArray()));
                 }
 
                 if (verbose) String2.log("  v#" + v + "=" + vars[v] + " finished. time=" + 
@@ -7661,8 +7669,8 @@ dir, tableName = "CC_MOCNESSES", new String[]{
 "oxygenMean",         "double", "?",         "Oxygen Mean",
 "temperatureMean",    "double", "degree_C",  "Temperature Mean",
 "salinityMean",       "double", "?",         "Salinity Mean",
-"temperatureMin",     "double", "degree_C",  "Temperature Miniumum",
-"temperatureMax",     "double", "degree_C",  "Temperature Maxiumum",
+"temperatureMin",     "double", "degree_C",  "Temperature Minimum",
+"temperatureMax",     "double", "degree_C",  "Temperature Maximum",
 "salinityMin",        "double", "?",         "Salinity Minimum",
 "salinityMax",        "double", "?",         "Salinity Maximum",
 "oxygenMin",          "double", "?",         "Oxygen Minimum",
@@ -8148,14 +8156,14 @@ towTypesDescription);
                 atts.add("units", "degrees_north");
                 Dimension latDim = nc.addDimension(rootGroup, latName, nLat);
                 Variable latVar = nc.addVariable(rootGroup, latName, 
-                    NcHelper.getNc3DataType(double.class), Arrays.asList(latDim)); 
+                    NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(latDim)); 
                 NcHelper.setAttributes(nc3Mode, latVar, atts);
 
                 //lon
                 atts.add("units", "degrees_east");
                 Dimension lonDim = nc.addDimension(rootGroup, lonName, nLon);
                 Variable lonVar = nc.addVariable(rootGroup, lonName, 
-                    NcHelper.getNc3DataType(double.class), Arrays.asList(lonDim)); 
+                    NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(lonDim)); 
                 NcHelper.setAttributes(nc3Mode, lonVar, atts);
 
                 //write global attributes
@@ -8168,13 +8176,13 @@ towTypesDescription);
                 DoubleArray da = new DoubleArray();
                 for (int i = 0; i < nLat; i++)
                     da.add(lat0 - i * inc);
-                nc.write(latVar, NcHelper.get1DArray(da.toArray()));
+                nc.write(latVar, NcHelper.get1DArray(da));
 
                 //write the lon values
                 da = new DoubleArray();
                 for (int i = 0; i < nLon; i++)
                     da.add(lon0 + i * inc);
-                nc.write(lonVar, NcHelper.get1DArray(da.toArray()));
+                nc.write(lonVar, NcHelper.get1DArray(da));
 
                 //if close throws Throwable, it is trouble
                 nc.close(); //it calls flush() and doesn't like flush called separately
@@ -8321,7 +8329,8 @@ towTypesDescription);
 
         //read the outer files
         Table outer = new Table();
-        outer.readASCII(dir + outerName + fileExtension, 0, 1, "\t", 
+        outer.readASCII(dir + outerName + fileExtension, String2.ISO_8859_1,
+            "", "", 0, 1, "\t", 
             null, null, null, null, false); //simplify
         Test.ensureEqual(outer.getColumnNamesCSVString(),
             "CRUISE,CTD_INDEX,CTD_NO,STATION,CTD_DATE,CTD_LAT,CTD_LONG,CTD_BOTTOM_DEPTH,BUCKET_TEMP,BUCKET_SAL,TS_TEMP,TS_SAL",
@@ -8399,7 +8408,8 @@ towTypesDescription);
 
         //read inner table
         Table inner = new Table();
-        inner.readASCII(dir + innerName + fileExtension, 0, 1, "\t", 
+        inner.readASCII(dir + innerName + fileExtension, String2.ISO_8859_1,
+            "", "", 0, 1, "\t", 
             null, null, null, null, false); //simplify
         for (int coli = 0; coli < inner.nColumns(); coli++) 
             inner.setColumnName(coli, inner.getColumnName(coli).toLowerCase());
@@ -8448,7 +8458,8 @@ towTypesDescription);
         for (int f = 0; f < tFileNames.length; f++) {
 
             Table table = new Table();
-            table.readASCII(tFileNames[f], 0, 2, "", null, null, null, null, false); //simplify
+            table.readASCII(tFileNames[f], String2.ISO_8859_1,
+                "", "", 0, 2, "", null, null, null, null, false); //simplify
             Test.ensureEqual(table.getColumnNamesCSVString(),
                 headerMode?
                     "cruise,ctd_index,ctd_no,station,time,longitude,latitude,bottom_depth," +
@@ -8807,11 +8818,11 @@ towTypesDescription);
                 int nCols = table.nColumns();
                 PrimitiveArray pa = table.globalAttributes().get("wmo_platform_code");
                 tally.add("wmo_platform_code",
-                    pa == null? "null" : pa.elementClassString());
+                    pa == null? "null" : pa.elementTypeString());
 
                 for (int c = 0; c < nCols; c++)
                     tally.add(table.getColumnName(c), 
-                        table.getColumn(c).elementClassString());
+                        table.getColumn(c).elementTypeString());
             }
         }
         String2.log("\n*** Projects.lookAtFiles finished successfully. nMatchingFiles=" + nMatching + "\n" +
@@ -9649,7 +9660,8 @@ towTypesDescription);
 
         //read the csv
         Table table = new Table();
-        table.readASCII(sourceFullName, 0, 1, ",",
+        table.readASCII(sourceFullName, String2.ISO_8859_1,
+            "", "", 0, 1, ",",
             null, null, null, null, true);  //simplify
         String2.log("acousticCsvToNc " + sourceFullName + "\n" +
             table.toString(3));
@@ -9687,7 +9699,7 @@ towTypesDescription);
             dimensions.clear();
             dimensions.add(timeDimension);
             PrimitiveArray pa = table.getColumn(0);
-            array[0] = NcHelper.get1DArray(pa.toObjectArray());
+            array[0] = NcHelper.get1DArray(pa);
             atts = new Attributes(); 
             //atts.add("_CoordinateAxisType", "Lon");
             atts.add("actual_range", new DoubleArray(new double[]{pa.getDouble(0), pa.getDouble(nRows-1)}));
@@ -9705,7 +9717,7 @@ towTypesDescription);
             DoubleArray da = new DoubleArray();
             for (int col = 1; col < nCols; col++)
                 da.addDouble(String2.parseDouble(table.getColumnName(col)));           
-            array[1] = NcHelper.get1DArray(da.toObjectArray());
+            array[1] = NcHelper.get1DArray(da);
             atts = new Attributes(); 
             //atts.add("_CoordinateAxisType", "Lon");
             atts.add("actual_range", new DoubleArray(new double[]{da.get(0), da.get(da.size() - 1)}));
@@ -9724,7 +9736,7 @@ towTypesDescription);
             for (int col = 1; col < nCols; col++)
                 for (int row = 0; row < nRows; row++)
                     da.add(table.getDoubleData(col, row));
-            array[2] = NcHelper.get1DArray(da.toObjectArray());
+            array[2] = NcHelper.get1DArray(da);
             array[2] = array[2].reshape(new int[]{nRows, nCols1});
             da = null;
             atts = new Attributes(); 

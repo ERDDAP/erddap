@@ -227,17 +227,17 @@ public class CacheOpendapStation {
                         //get the variable
                         Variable variable = in.findVariable(variableNames[v]);
                         Test.ensureNotNull(variable, errorInMethod + "variable not found: " + variableNames[v]);
-                        boolean isStringVariable = variable.getDataType() == DataType.CHAR;
+                        boolean isCharArrayVariable = variable.getDataType() == DataType.CHAR;
 
                         //get dimensions
                         List<Dimension> dimList = variable.getDimensions();
                         Test.ensureTrue(
-                            (dimList.size() == 4 && !isStringVariable) ||
-                            (dimList.size() == 5 &&  isStringVariable), 
+                            (dimList.size() == 4 && !isCharArrayVariable) ||
+                            (dimList.size() == 5 &&  isCharArrayVariable), 
                             errorInMethod + 
                                 "  dimList.size=" + dimList.size() + 
                                 " for variable=" + variable.getName() + 
-                                " isStringVariable=" + isStringVariable); 
+                                " isCharArrayVariable=" + isCharArrayVariable); 
                         for (int d = 0; d < dimList.size(); d++) {
                             Dimension dim = dimList.get(d);
                             String dimName = dim.getName();
@@ -500,17 +500,17 @@ public class CacheOpendapStation {
                         //get the variable
                         Variable inVariable = in.findVariable(variableNames[v]);
                         Test.ensureNotNull(inVariable, errorInMethod + "variable not found: " + variableNames[v]);
-                        boolean isStringVariable = inVariable.getDataType() == DataType.CHAR;
+                        boolean isCharArrayVariable = inVariable.getDataType() == DataType.CHAR;
 
                         //get dimensions
                         List<Dimension> inDimList = inVariable.getDimensions();
                         Test.ensureTrue(
-                            (inDimList.size() == 4 && !isStringVariable) ||
-                            (inDimList.size() == 5 &&  isStringVariable), 
+                            (inDimList.size() == 4 && !isCharArrayVariable) ||
+                            (inDimList.size() == 5 &&  isCharArrayVariable), 
                             errorInMethod + 
                                 "  inDimList.size=" + inDimList.size() + 
                                 " for variable=" + inVariable.getName() + 
-                                " isStringVariable=" + isStringVariable); 
+                                " isCharArrayVariable=" + isCharArrayVariable); 
                         Dimension newDims[] = new Dimension[inDimList.size()];
                         Variable newDimVars[] = new Variable[inDimList.size()];
                         for (int d = 0; d < inDimList.size(); d++) {
@@ -527,8 +527,8 @@ public class CacheOpendapStation {
                             if (!dimNameHashSet.contains(dimName)) {
                                 dimNameHashSet.add(dimName);
                                 newDims[d] = out.addDimension(outRootGroup, 
-                                    dimName, dim.getLength(), true, //shared
-                                    dim.isUnlimited(), false);  //isUnknownLength
+                                    dimName, dim.getLength(), 
+                                    dim.isUnlimited(), false);  //isVariableLength
 
                                 //add the related variable (5th/char dimension doesn't have a variable(?))
                                 if (d < 4) {

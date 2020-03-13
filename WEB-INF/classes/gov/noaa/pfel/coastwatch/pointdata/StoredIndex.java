@@ -40,7 +40,7 @@ public class StoredIndex  {
     private String indexFileName;
     private int nValues, nFinite;
     private double lowestValue, highestValue;
-    private Class elementClass;
+    private PAType elementPAType;
 
     /**
      * A constructor stores the indexPA in indexFileName.
@@ -56,7 +56,7 @@ public class StoredIndex  {
 
         this.indexFileName = indexFileName;
         nValues = indexPA.size();
-        elementClass = indexPA.elementClass();
+        elementPAType = indexPA.elementType();
 
         //find nFinite value
         int lastFinite = nValues - 1;
@@ -115,10 +115,10 @@ public class StoredIndex  {
         long time = System.currentTimeMillis();
         RandomAccessFile raf = new RandomAccessFile(indexFileName, "r");
         try {
-            results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementClass, //safe since reading an int
+            results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementPAType, //safe since reading an int
                 0,  //byte in file that values start at 
                 0, nFinite - 1, desiredMin, 5); //precision=5
-            results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementClass,
+            results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementPAType,
                 0,  //byte in file that values start at 
                 results[0], nFinite - 1, desiredMax, 5); //precision=5
         } finally {

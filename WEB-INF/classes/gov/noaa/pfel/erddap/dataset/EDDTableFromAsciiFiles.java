@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -88,14 +89,16 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex,
         String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
+        String tCharset, String tSkipHeaderToRegex, String tSkipLinesRegex,
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
         boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", tDatasetID, 
@@ -105,13 +108,15 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
             tFileTableInMemory, tAccessibleViaFiles, tRemoveMVRows, 
             tStandardizeWhat, tNThreads, 
-            tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
     }
 
     /** The constructor for subclasses. */
@@ -124,14 +129,16 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
+        String tCharset, String tSkipHeaderToRegex, String tSkipLinesRegex,
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
         boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
@@ -141,13 +148,15 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, 
             tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
             tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
 
     }
 
@@ -171,8 +180,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         Table table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(tFileDir + tFileName, 
-            charset, columnNamesRow - 1, firstDataRow - 1, columnSeparator, 
+        table.readASCII(tFileDir + tFileName, charset, 
+            skipHeaderToRegex, skipLinesRegex, columnNamesRow - 1, firstDataRow - 1, 
+            columnSeparator, 
             null, null, null, //testColumns, testMin, testMax,
             sourceDataNames.toArray(), //loadColumns, 
             false); //don't simplify; just get the strings
@@ -197,7 +207,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                         newPa = ca;
                     } else {
                         newPa = PrimitiveArray.factory(
-                            PrimitiveArray.elementStringToClass(sourceDataTypes[sd]), 1, false);
+                            PrimitiveArray.elementStringToPAType(sourceDataTypes[sd]), 1, false);
                         newPa.append(pa);
                     }
                     table.setColumn(tc, newPa);
@@ -295,6 +305,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (charset == null || charset.length() == 0)
             charset = String2.ISO_8859_1;
         dataSourceTable.readASCII(sampleFileName, charset, 
+            "", "", //skipHeaderToRegex, skipLinesRegex, 
             columnNamesRow-1, firstDataRow-1, columnSeparator, 
             null, null, null, null, false);  //simplify
         dataSourceTable.convertIsSomething2(); //convert e.g., "N/A" to ""
@@ -337,8 +348,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
                 sourceAtts, addAtts, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
 
             //add to dataAddTable
@@ -457,15 +468,14 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         testVerboseOn();
 
         String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml()");
+        String dir = EDStatic.unitTestDataDir + "ascii/";
 
         try {
             Attributes externalAddAttributes = new Attributes();
             externalAddAttributes.add("title", "New Title!");
-            String suggDatasetID = suggestDatasetID(
-                EDStatic.unitTestDataDir + "asciiNdbc/.*\\.csv");
+            String suggDatasetID = suggestDatasetID(dir + "31201_2009_NoComments\\.csv");
             String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",  
-                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv",
+                dir,  "31201_2009_NoComments\\.csv", "",
                 String2.ISO_8859_1, 1, 3, "", -1,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -475,8 +485,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAsciiFiles",
-                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv", 
-                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv",
+                dir,  "31201_2009_NoComments\\.csv", "",
                 String2.ISO_8859_1, "1", "3", "", "-1",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -491,8 +500,8 @@ String expected =
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>" + EDStatic.unitTestDataDir + "asciiNdbc/</fileDir>\n" +
-"    <fileNameRegex>.*\\.csv</fileNameRegex>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "ascii/</fileDir>\n" +
+"    <fileNameRegex>31201_2009_NoComments\\.csv</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -527,7 +536,7 @@ String expected =
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -772,7 +781,7 @@ String expected =
 "        <att name=\"keywords\">atmp, buoy, center, data, identifier, national, ndbc, newer, noaa, station, temperature, time, title, water, wtmp</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">station</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"testOutOfDate\">now-1day</att>\n" +
@@ -910,7 +919,7 @@ String expected =
 "        <att name=\"keywords\">aByte, aDouble, aFloat, aFloat_with_NaN, aFloat_with_nd, aLong, anInt, aShort, aString, bco, bco-dmo, biological, byte, chemical, data, dmo, double, float, int, long, management, newer, oceanography, office, short, statistics, string, title, with</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">aFloat</att>\n" +
 "        <att name=\"summary\">The new summary! Biological and Chemical Oceanography Data Management Office (BCO-DMO) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
@@ -1048,6 +1057,7 @@ String expected =
 
     /**
      * This tests the methods in this class with a 1D dataset.
+     * This tests skipHeaderToRegex and skipLinesRegex.
      *
      * @throws Throwable if trouble
      */
@@ -1192,7 +1202,7 @@ expected =
 "    Float64 Northernmost_Northing 37.75;\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station, longitude, latitude, altitude\";\n" +
 "    String summary \"The summary.\";\n" +
 "    String time_coverage_end \"2006-12-31T23:00:00Z\";\n" +
@@ -1431,7 +1441,7 @@ expected=
 "    Float64 Northernmost_Northing 30.368;\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 26.6255;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
 "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
 "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
@@ -1523,7 +1533,7 @@ expected=
             dapQuery = 
 "longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
             tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
-                dir, eddTable.className() + "_expressionMap" + test,  ".png"); 
+                dir, eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test,  ".png"); 
             SSR.displayInBrowser("file://" + dir + tName);
         }
 
@@ -1661,7 +1671,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +
@@ -2793,7 +2803,8 @@ expected =
                     String2.log(msg);
                     background.append(msg + "\n");
                     Table fileTable = new Table();
-                    fileTable.readASCII(tDataDir + tDataFileName, 0, 1, 
+                    fileTable.readASCII(tDataDir + tDataFileName, String2.ISO_8859_1,
+                        "", "", 0, 1, 
                         null, null, null, null, null, false);  //simplify?  (see below)
                     msg = "> dataFileTable columnNames=" + fileTable.getColumnNamesCSSVString(); 
                     String2.log(msg);
@@ -2906,12 +2917,12 @@ expected =
             String tUnits = addTable.columnAttributes(col).getString("units");
             if (tUnits == null) tUnits = "";
             if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
-                destPA.elementClass() != String.class) {
+                destPA.elementType() != PAType.STRING) {
                 //convert e.g., yyyyMMdd columns from int to String
                 destPA = new StringArray(destPA);   
                 addTable.setColumn(col, destPA);                       
             }
-            if (destPA.elementClass() == String.class) {
+            if (destPA.elementType() == PAType.STRING) {
                 tUnits = Calendar2.suggestDateTimeFormat((StringArray)destPA, false); //evenIfPurelyNumeric
                 if (tUnits.length() > 0)
                     addAtts.set("units", tUnits);
@@ -2922,8 +2933,8 @@ expected =
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 gAddAtts, sourceTable.columnAttributes(col), addAtts, 
                 sourceTable.getColumnName(col), 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
 
             //add missing_value and/or _FillValue if needed
@@ -3156,7 +3167,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Test time_zone\";\n" +
 "    String time_coverage_start \"2005-04-03T08:00:00Z\";\n" + //UTC
 "    String title \"Test time_zone\";\n" +
@@ -3303,7 +3314,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"testTimeMV\";\n" +
 "    String time_coverage_start \"2004-09-13T14:15:00Z\";\n" +  //UTC
 "    String title \"testTimeMV\";\n" +
@@ -4905,7 +4916,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) con
 
                 //read the data
                 sourceTable.readASCII(tsvName, br, 
-                    0, 1, "\t",
+                    "", "", 0, 1, "\t",
                     null, null, null, null, false); //don't simplify until "nd" removed
                 //custom alternative to sourceTable.convertIsSomething2(); //convert e.g., "nd" to ""
                 for (int col = 0; col < sourceTable.nColumns(); col++) 
@@ -5263,10 +5274,10 @@ today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) con
                     String tUnits = addTable.columnAttributes(col).getString("units");
                     if (tUnits == null) tUnits = "";
                     if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
-                        destPA.elementClass() != String.class) 
+                        destPA.elementType() != PAType.STRING) 
                         //convert e.g., yyyyMMdd columns from int to String
                         addTable.setColumn(col, new StringArray(destPA));                       
-                    if (destPA.elementClass() == String.class) {
+                    if (destPA.elementType() == PAType.STRING) {
                         tUnits = Calendar2.suggestDateTimeFormat((StringArray)destPA, false); //evenIfPurelyNumeric
                         if (tUnits.length() > 0)
                             addTable.columnAttributes(col).set("units", tUnits);
@@ -5279,8 +5290,8 @@ today + " GenerateDatasetsXml in ERDDAP v2.03 (contact: bob.simons@noaa.gov) con
                     addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                         gatts, sourceAtts, addAtts, 
                         sourceTable.getColumnName(col), 
-                        destPA.elementClass() != String.class, //tryToAddStandardName
-                        destPA.elementClass() != String.class, //addColorBarMinMax
+                        destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                        destPA.elementType() != PAType.STRING, //addColorBarMinMax
                         true); //tryToFindLLAT
 
                     //add missing_value and/or _FillValue if needed
@@ -5596,7 +5607,7 @@ String expected =
 "        <att name=\"publisher_url\">https://www.bco-dmo.org/</att>\n" +
 "        <att name=\"restricted\">false</att>\n" +
 "        <att name=\"sourceUrl\">http://darchive.mblwhoilibrary.org/bitstream/handle/1912/7908/1/GT10_11_cellular_element_quotas.tsv</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">cruise_id, project, station_GEOTRC, sta_PI, latitude, longitude, cast_GEOTRC, event_GEOTRC, depth, depth_GEOTRC_CTD_round, sample_GEOTRC, sample_bottle_GEOTRC, bottle_GEOTRC, grid_type, grid_num, SXRF_run, cell_type, time</att>\n" +
 "        <att name=\"summary\">Individual phytoplankton cells were collected on the GEOTRACES North Atlantic Transect cruises were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer &amp; Lessard (2000). Trace metal concentrations are reported.\n" +
 "Download zipped images: [ http://data.bco-dmo.org/GEOTRACES/Twining/Chl_image.zip ] Chlorophyll [ http://data.bco-dmo.org/GEOTRACES/Twining/Light_image.zip ] Light [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_map.zip ] SXRF maps [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_spectra.zip ] SXRF spectra\n" +
@@ -6209,7 +6220,7 @@ String expected =
         //generateDatasetsXml doesn't suggest standardizeWhat
         //Admin must request it.
         results = EDDTableFromAsciiFiles.generateDatasetsXml(
-            "/erddapTest/ascii/", "standardizeWhat.*\\.csv", "",
+            String2.unitTestDataDir + "ascii/", "standardizeWhat.*\\.csv", "",
             "", 1, 2, ",", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
             "", "", "", "", "",  //regex
             "", // tSortFilesBySourceNames, 
@@ -6247,7 +6258,7 @@ String expected =
 "        <att name=\"keywords\">data, date, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Data from a local source.</att>\n" +
 "        <att name=\"title\">Data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -6351,9 +6362,9 @@ String expected =
             expected = 
 "Name,Last modified,Size,Description\n" +
 "subdir/,NaN,NaN,\n" +
-"31201_2009.csv,1249487112000,201141,\n" +
-"46026_2005.csv,1249487438000,621518,\n" +
-"46028_2005.csv,1249487458000,623124,\n";
+"31201_2009.csv,1576697736354,201320,\n" +
+"46026_2005.csv,1576697015884,621644,\n" +
+"46028_2005.csv,1576697015900,623250,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/
@@ -6362,24 +6373,31 @@ String expected =
             Test.ensureTrue(results.indexOf("subdir&#x2f;")             > 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("subdir/")                  > 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">201141<")                 > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">201320<")                 > 0, "results=\n" + results);
 
             //get /files/datasetID/subdir/.csv
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/.csv");
             expected = 
 "Name,Last modified,Size,Description\n" +
-"46012_2005.csv,1249487348000,622054,\n" +
-"46012_2006.csv,1249487374000,621686,\n";
+"46012_2005.csv,1576697015869,622197,\n" +
+"46012_2006.csv,1576697015884,621812,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //download a file in root
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableAscii/31201_2009.csv");
             expected = 
+"This is a header line.\n" +
+"*** END OF HEADER\n" +
+"# a comment line\n" +
 "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"# a comment line\n" +
 "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"# a comment line\n" +
 "-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
+"# a comment line\n" +
+"#-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
 "-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"; 
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
@@ -6387,9 +6405,16 @@ String expected =
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/46012_2005.csv");
             expected = 
+"This is a header line.\n" +
+"*** END OF HEADER\n" +
+"# a comment line\n" +
 "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"# a comment line\n" +
 "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"# a comment line\n" +
 "-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n" +
+"# a comment line\n" +
+"# a comment line\n" +
 "-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n"; 
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 

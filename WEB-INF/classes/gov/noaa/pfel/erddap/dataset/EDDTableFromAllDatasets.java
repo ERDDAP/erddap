@@ -99,11 +99,11 @@ public class EDDTableFromAllDatasets extends EDDTable{
             if (Calendar2.SECONDS_SINCE_1970.equals(atts.getString("units"))) {
                  dataVariables[dv] = new EDVTimeStamp(colName, colName, 
                     atts, null, //sourceAtts, addAtts
-                    pa.elementClassString()); //this constructor gets source / sets destination actual_range
+                    pa.elementTypeString()); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[dv] = new EDV(colName, colName, 
                     atts, null, //sourceAtts, addAtts
-                    pa.elementClassString()); 
+                    pa.elementTypeString()); 
                 //actual_range of vars in this table always NaN,NaN
                 dataVariables[dv].setActualRangeFromDestinationMinMax(); 
             }

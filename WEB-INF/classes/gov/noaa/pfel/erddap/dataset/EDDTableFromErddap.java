@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -101,6 +102,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -143,6 +145,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
             else if (localTags.equals( "<subscribeToRemoteErddapDataset>")) {}
             else if (localTags.equals("</subscribeToRemoteErddapDataset>")) 
                 tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
@@ -156,7 +160,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         return new EDDTableFromErddap(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaFiles, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
+            tReloadEveryNMinutes, 
             tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
     }
 
@@ -186,7 +191,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         int tReloadEveryNMinutes, 
         String tLocalSourceUrl, boolean tSubscribeToRemoteErddapDataset,
         boolean tRedirect) throws Throwable {
@@ -317,8 +322,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                     BaseType obt = (BaseType)outerSequence.getVar(outerCol);
                     String tSourceName = obt.getName();
 
-                    //get the data sourceClass
-                    Class tSourceClass = OpendapHelper.getElementClass(obt.newPrimitiveVector());
+                    //get the data sourcePAType
+                    PAType tSourcePAType = OpendapHelper.getElementPAType(obt.newPrimitiveVector());
 
                     //get the attributes
                     Attributes tSourceAtt = new Attributes();
@@ -338,7 +343,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                     }
 
                     sourceTable.addColumn(outerCol, tSourceName, 
-                        PrimitiveArray.factory(tSourceClass, 8, false), tSourceAtt);
+                        PrimitiveArray.factory(tSourcePAType, 8, false), tSourceAtt);
                 }
             }
         }
@@ -352,7 +357,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
             String     tSourceName = sourceTable.getColumnName(col);
             Attributes tSourceAtt  = sourceTable.columnAttributes(col);
-            String     tSourceType = sourceTable.getColumn(col).elementClassString();
+            String     tSourceType = sourceTable.getColumn(col).elementTypeString();
 
             //deal with remote not having ioos_category, but this ERDDAP requiring it
             Attributes tAddAtt = new Attributes();
@@ -411,6 +416,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         dataVariables = new EDV[tDataVariables.size()];
         for (int dv = 0; dv < tDataVariables.size(); dv++)
             dataVariables[dv] = tDataVariables.get(dv);
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
@@ -515,7 +523,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -530,7 +538,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             String url = String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + "/" + nextPath + ".csv";
             BufferedReader reader = SSR.getBufferedUrlReader(url);
             Table table = new Table();
-            table.readASCII(url, reader, 0, 1, ",", 
+            table.readASCII(url, reader, "", "", 0, 1, ",", 
                 null, null, null, null, false); //testColumns[], testMin[], testMax[], loadColumns[], simplify)
             String colNames = table.getColumnNamesCSVString();
             Test.ensureEqual(colNames, "Name,Last modified,Size,Description", "");
@@ -596,7 +604,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         //make the StringBuilder to hold the results and add documentation
         StringBuilder sb = new StringBuilder();
-        sb.append(  //there is very similar text in EDDGridFromErddap
+/*        sb.append(  //there is very similar text in EDDGridFromErddap
 "<!-- Directions:\n" +
 " * The ready-to-use XML below includes information for all of the EDDTable datasets\n" +
 "   at the remote ERDDAP " + XML.encodeAsXML(tLocalSourceUrl) + "\n" +
@@ -616,7 +624,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 "   use EDDTableFromDapSequence to access the dataset instead of EDDTableFromErddap.\n" +
 " * If the remote ERDDAP is version 1.12 or below, this will generate incorrect, useless results.\n" +
 "-->\n");
-
+*/
         //get the tabledap datasets in a json table
         String jsonUrl = tLocalSourceUrl + "/tabledap/index.json";
         String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
@@ -689,6 +697,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
+        int po;
 
         //test local generateDatasetsXml.  In tests, always use non-https url.
         try { 
@@ -704,20 +713,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-"<!-- Directions:\n" +
-" * The ready-to-use XML below includes information for all of the EDDTable datasets\n";
-
-            Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-                expected, "");
-
-expected = 
 "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n" +
 "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n" +
 "    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n" +
 "</dataset>\n";
 String fragment = expected;
-            int po = results.indexOf(expected.substring(0, 80));
             String2.log("\nresults=\n" + results);
+            po = results.indexOf(expected.substring(0, 70));
 try {
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 } catch (Throwable t) {
@@ -854,7 +856,7 @@ try {
 "status,long_name,Status\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,_FillValue,9223372036854775807L\n" +
-"testLong,actual_range,-9223372036854775808L,9223372036854774784L\n" + //max is largest double that can round trip to a long
+"testLong,actual_range,-9223372036854775808L,9223372036854775807L\n" + //2020-03-11 max was largest double that can round trip to a long: 9223372036854774784L 
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
@@ -1261,9 +1263,9 @@ expected =
             expected = 
 "Name,Last modified,Size,Description\n" +
 "subdir/,NaN,NaN,\n" +
-"31201_2009.csv,1249487112000,201141,\n" +
-"46026_2005.csv,1249487438000,621518,\n" +
-"46028_2005.csv,1249487458000,623124,\n";
+"31201_2009.csv,1576697736354,201320,\n" +
+"46026_2005.csv,1576697015884,621644,\n" +
+"46028_2005.csv,1576697015900,623250,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/
@@ -1272,35 +1274,51 @@ expected =
             Test.ensureTrue(results.indexOf("subdir&#x2f;")             > 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("subdir/")                  > 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">201141<")                 > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">201320<")                 > 0, "results=\n" + results);
 
             //get /files/datasetID/subdir/.csv
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/.csv");
             expected = 
 "Name,Last modified,Size,Description\n" +
-"46012_2005.csv,1249487348000,622054,\n" +
-"46012_2006.csv,1249487374000,621686,\n";
+"46012_2005.csv,1576697015869,622197,\n" +
+"46012_2006.csv,1576697015884,621812,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //download a file in root
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableFromErddap/31201_2009.csv");
             expected = 
+"This is a header line.\n" +
+"*** END OF HEADER\n" +
+"# a comment line\n" +
 "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"# a comment line\n" +
 "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"# a comment line\n" +
 "-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
-"-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"; 
+"# a comment line\n" +
+"#-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n" +
+"-48.13, -27.7, 0.0, 2005-04-19T02:00:00Z, 31201, NaN, NaN, NaN, 24.3\n"; 
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
             //download a file in subdir
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/46012_2005.csv");
             expected = 
+"This is a header line.\n" +
+"*** END OF HEADER\n" +
+"# a comment line\n" +
 "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
+"# a comment line\n" +
 "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n" +
+"# a comment line\n" +
 "-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n" +
-"-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n"; 
+"# a comment line\n" +
+"# a comment line\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n" +
+"-122.88, 37.36, 0.0, 2005-01-01T02:00:00Z, 46012, 210, 7.3, 9.6, 12.5\n"; 
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
             //try to download a non-existent dataset

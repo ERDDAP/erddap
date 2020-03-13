@@ -80,6 +80,7 @@ public class EDDTableAggregateRows extends EDDTable{
         int tUpdateEveryNMillis = 0;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -136,6 +137,8 @@ public class EDDTableAggregateRows extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
             else if (localTags.equals("<addAttributes>")) {
                 tAddGlobalAttributes = getAttributesFromXml(xmlReader);
             } else {
@@ -151,7 +154,8 @@ public class EDDTableAggregateRows extends EDDTable{
         return new EDDTableAggregateRows(tErddap, tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tAddGlobalAttributes,
             tReloadEveryNMinutes, tUpdateEveryNMillis, 
             ttChildren);
     }
@@ -165,7 +169,7 @@ public class EDDTableAggregateRows extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery,
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere,
         Attributes tAddGlobalAttributes,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis, 
         EDDTable oChildren[]) throws Throwable {
@@ -356,6 +360,9 @@ public class EDDTableAggregateRows extends EDDTable{
             newVar.setActualRangeFromDestinationMinMax();
             dataVariables[dv] = newVar;
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();

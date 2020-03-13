@@ -94,7 +94,7 @@ public class TableWriterNccsv extends TableWriter {
             time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
 
-                String tClass = table.getColumn(col).elementClassString();
+                String tClass = table.getColumn(col).elementTypeString();
                 isLong[col] = tClass.equals("long");
                 Attributes catts = table.columnAttributes(col);
                 String u = catts.getString("units");
