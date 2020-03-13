@@ -8,17 +8,20 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.Script2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
@@ -48,8 +51,14 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
+
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 
 /** 
  * This class represents a table of data from a database.
@@ -71,6 +80,7 @@ public class EDDTableFromDatabase extends EDDTable{
     protected String tableName;
     protected String columnNameQuotes = "\"";  //may also be ' or empty string
     protected String orderBy[];
+    protected HashMap<String,HashSet<String>> scriptNeedsColumns = new HashMap(); //<sourceName, otherSourceColumnNames>
 
     protected String catalogSeparator;
 
@@ -133,6 +143,7 @@ public class EDDTableFromDatabase extends EDDTable{
         String tSourceCanDoDistinct = "no";
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -199,6 +210,8 @@ public class EDDTableFromDatabase extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -223,7 +236,7 @@ public class EDDTableFromDatabase extends EDDTable{
         else*/ return new EDDTableFromDatabase(tDatasetID, 
                 tAccessibleTo, tGraphsAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-                tDefaultDataQuery, tDefaultGraphQuery, 
+                tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
                 tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
@@ -390,7 +403,7 @@ public class EDDTableFromDatabase extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -451,9 +464,11 @@ public class EDDTableFromDatabase extends EDDTable{
               "".equals(columnNameQuotes), 
             "<columnNameQuotes> must be \", ', or an empty string.");
         orderBy = tOrderBy == null? new String[0] : tOrderBy;
-        sourceCanOrderBy = Math.max(0, //so default=no
+        //database will never be able to deal with all ERDDAP-supported orderBy and distinct() options,
+        //so convert Yes to Partial
+        sourceCanOrderBy = Math2.minMax(0, 1, //so default=no
             getNoPartialYes(tSourceCanOrderBy));
-        sourceCanDoDistinct = Math.max(0, //so default=no
+        sourceCanDoDistinct = Math2.minMax(0, 1, //so default=no
             getNoPartialYes(tSourceCanDoDistinct));
 
         //try to get the dataSource
@@ -478,8 +493,8 @@ public class EDDTableFromDatabase extends EDDTable{
 
         //sql can support everything except regex constraints
         sourceNeedsExpandedFP_EQ      = tSourceNeedsExpandedFP_EQ;
-        sourceCanConstrainNumericData = CONSTRAIN_YES;
-        sourceCanConstrainStringData  = CONSTRAIN_YES; 
+        sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //database won't see sourceName=script constraints, so ERDDAP applies them, too
+        sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //database won't see sourceName=script constraints, so ERDDAP applies them, too
         sourceCanConstrainStringRegex = "";
       
         //set global attributes
@@ -503,6 +518,9 @@ public class EDDTableFromDatabase extends EDDTable{
             String tSourceType = (String)tDataVariables[dv][3];
             Attributes tSourceAtt = new Attributes();
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
+
+            if (tSourceName.startsWith("=")) 
+                scriptNeedsColumns.put(tSourceName, Script2.jexlScriptNeedsColumns(tSourceName)); //needsColumns.size() may be 0
 
             if (EDV.LON_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVLon(tSourceName,
@@ -572,6 +590,9 @@ public class EDDTableFromDatabase extends EDDTable{
         //Don't gather ERDDAP sos information.
         //I am guessing that requesting the min/maxTime for each station is 
         //  *very* taxing for most databases.
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();
@@ -650,15 +671,42 @@ public class EDDTableFromDatabase extends EDDTable{
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
         //String2.log(">>resultsVars=" + resultsVariables.toString());
 
+        //pull script variables out of resultsVariables
+        HashSet<String> sourceNamesSet = new HashSet();
+        BitSet keep = new BitSet();
+        StringArray scriptNames = null; 
+        StringArray scriptTypes = null;
+        HashSet<String> needOtherSourceNames = null;
+        for (int v = 0; v < resultsVariables.size(); v++) {
+            String sourceName = resultsVariables.get(v);
+            if (sourceName.startsWith("=")) {
+                //content comes from a script
+                EDV edv = findDataVariableBySourceName(sourceName); //throws exception, but should always succeed
+                if (scriptNames == null) {
+                    scriptNames = new StringArray();                
+                    scriptTypes = new StringArray();                
+                    needOtherSourceNames = new HashSet();
+                }
+                scriptNames.add(sourceName);
+                scriptTypes.add(edv.sourceDataType());
+
+                //later: ensure columns referenced in script are in sourceNamesSet
+                needOtherSourceNames.addAll(scriptNeedsColumns.get(sourceName));
+            } else {
+                sourceNamesSet.add(sourceName);
+                keep.set(v);
+            }
+        }
+
         //distinct? orderBy...?
         //  Database handles FIRST distinct or orderBY 
         //    IF sourceCanDoDistict/OrderBy = PARTIAL or YES
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
-        String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
         boolean distinct = false; 
         StringArray queryOrderBy = null;  //the query orderBy or distinct source variable names 
         int nDistinctOrOrderBy = 0;
+        String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
         for (int pi = 0; pi < parts.length; pi++) {
             String p = parts[pi];
             //String2.log(">>p#" + pi + "=" + p);
@@ -670,29 +718,56 @@ public class EDDTableFromDatabase extends EDDTable{
                     //To ERDDAP,    DISTINCT does imply a sort order.
                     //So if database is going to handle DISTINCT, also tell it to sort the results.
                     //https://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
+
                     queryOrderBy = (StringArray)(resultsVariables.clone());
                     //String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
                 }
 
-            } else if (p.startsWith("orderBy") && //doesn't matter if orderByMax|Min|MinMax|... 
+            } else if (scriptNames == null && //only ask database to handle orderBy() if no scriptNames in original resultsVariables
+                p.startsWith("orderBy") && //doesn't matter if orderByMax|Min|MinMax|... 
                 p.endsWith("\")")) {
-                nDistinctOrOrderBy++;
-                if (nDistinctOrOrderBy == 1 && sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
+                if (nDistinctOrOrderBy == 0 && sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
                     int tpo = p.indexOf("(\"");
                     if (tpo < 0) 
                         throw new SimpleException(EDStatic.queryError + "Invalid syntax for \"" + p + "\"."); //should have been caught already
-                    queryOrderBy = StringArray.fromCSV(
+                    StringArray tQueryOrderBy = StringArray.fromCSV(
                         p.substring(tpo + 2, p.length() - 2));
                     //change from destNames to sourceNames
-                    for (int oi = 0; oi < queryOrderBy.size(); oi++) {
-                        int v = String2.indexOf(dataVariableDestinationNames(), queryOrderBy.get(oi));
+                    boolean foundScript = false;
+                    for (int oi = 0; oi < tQueryOrderBy.size(); oi++) {
+                        int v = String2.indexOf(dataVariableDestinationNames(), tQueryOrderBy.get(oi));
                         if (v < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 MessageFormat.format(EDStatic.queryErrorUnknownVariable, queryOrderBy.get(oi))); 
-                        queryOrderBy.set(oi, dataVariableSourceNames()[v]);
+                        String tSourceName = dataVariableSourceNames()[v];
+                        tQueryOrderBy.set(oi, tSourceName);
+                        HashSet<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
+                        if (tNeedsColumns != null && tNeedsColumns.size() > 0) { //actually refers to another variable
+                            foundScript = true;
+                            break;
+                        }
+                    }
+                    if (!foundScript) {
+                        //no =script variables, so we can pass this orderBy to the database
+                        queryOrderBy = tQueryOrderBy;
+                        nDistinctOrOrderBy++;
                     }
                 }
             }
+        }
+
+        if (scriptNames != null) {
+            //this works and can be done here because getSourceQueryFromDapQuery
+            //made sure all constraint variables and orderBy variables
+            //were included in resultsVariables.
+            resultsVariables.justKeep(keep);
+
+            //then ensure needOtherSourceNames are in resultsVariables
+            //this can 
+            for (String sourceName : needOtherSourceNames) {
+                if (sourceNamesSet.add(sourceName))  //if not already present
+                    resultsVariables.add(sourceName);
+            }                
         }
 
         //no need to further prune constraints
@@ -796,8 +871,13 @@ public class EDDTableFromDatabase extends EDDTable{
             //add constraints to query  
             int nCv = constraintVariables.size();
             StringBuilder humanQuery = new StringBuilder(query);
+            int nActiveCV = 0;
             for (int cv = 0; cv < nCv; cv++) {    
                 String constraintVariable = constraintVariables.get(cv);
+                //if it's a fixedValue or script variable, don't ask database to constrain it
+                if (constraintVariable.startsWith("="))
+                    continue;
+                nActiveCV++;
                 int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
                 EDV edv = dataVariables[dv];
 
@@ -812,7 +892,7 @@ public class EDDTableFromDatabase extends EDDTable{
                 //again, no danger of sql injection since query has been parsed and
                 //  constraintVariables must be known sourceNames
                 //Quotes around colNames avoid trouble when colName is a SQL reserved word.
-                String ts = (cv == 0? " WHERE " : " AND ") +
+                String ts = (nActiveCV == 1? " WHERE " : " AND ") +
                     columnNameQuotes + constraintVariables.get(cv) + columnNameQuotes + " " + 
                     tOp; 
                 query.append(ts + " ?"); //? is the place holder for a value
@@ -831,26 +911,33 @@ public class EDDTableFromDatabase extends EDDTable{
             //numbers are assured to be numbers).
             statement = connection.prepareStatement(query.toString());
             EDV constraintEDVs[] = new EDV[nCv];
+            nActiveCV = 0;
             for (int cv = 0; cv < nCv; cv++) {
-                int tv = cv + 1; //+1 since sql uses 1..
+                if (constraintVariables.get(cv).startsWith("="))
+                    continue;
+                nActiveCV++; //+1 since sql uses 1..
                 EDV edv = findDataVariableBySourceName(constraintVariables.get(cv));
                 constraintEDVs[cv] = edv;
-                Class tClass = edv.sourceDataTypeClass();
+                PAType tPAType = edv.sourceDataPAType();
                 String val = constraintValues.get(cv);
-                //String2.log("cv=" + cv + " tClass=" + PrimitiveArray.elementClassToString(tClass));
+                //String2.log("cv=" + cv + " tPAType=" + tPAType);
                 if (edv instanceof EDVTimeStamp &&
-                    !constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP)) statement.setTimestamp(tv, 
+                    !constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP)) statement.setTimestamp(nActiveCV, 
                                                   //round to nearest milli
                                                   new Timestamp(Math.round(String2.parseDouble(val)*1000)));
-                else if (edv.isBoolean())         statement.setBoolean(tv, String2.parseBoolean(val)); //special case
-                else if (tClass == String.class)  statement.setString( tv, val);
-                else if (tClass == double.class)  statement.setDouble( tv, String2.parseDouble(val));
-                else if (tClass == float.class)   statement.setFloat(  tv, String2.parseFloat(val));
-                else if (tClass == long.class)    statement.setLong(   tv, String2.parseLong(val));
-                else if (tClass == int.class)     statement.setInt(    tv, String2.parseInt(val)); //???NaN???
-                else if (tClass == short.class)   statement.setShort(  tv, Math2.narrowToShort(String2.parseInt(val))); 
-                else if (tClass == byte.class)    statement.setByte(   tv, Math2.narrowToByte(String2.parseInt(val))); 
-                else if (tClass == char.class)    statement.setString( tv, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
+                else if (edv.isBoolean())         statement.setBoolean(nActiveCV, String2.parseBoolean(val)); //special case
+                else if (tPAType == PAType.STRING)  statement.setString( nActiveCV, val);
+                else if (tPAType == PAType.DOUBLE)  statement.setDouble( nActiveCV, String2.parseDouble(val));
+                else if (tPAType == PAType.FLOAT)   statement.setFloat(  nActiveCV, String2.parseFloat(val));
+                else if (tPAType == PAType.LONG)    statement.setLong(   nActiveCV, String2.parseLong(val));
+                else if (tPAType == PAType.ULONG)   statement.setDouble( nActiveCV, String2.parseDouble(val));  //???
+                else if (tPAType == PAType.INT)     statement.setInt(    nActiveCV, String2.parseInt(val));  //???NaN???
+                else if (tPAType == PAType.UINT)    statement.setLong(   nActiveCV, String2.parseLong(val)); //???NaN???
+                else if (tPAType == PAType.SHORT)   statement.setShort(  nActiveCV, Math2.narrowToShort(String2.parseInt(val))); 
+                else if (tPAType == PAType.USHORT)  statement.setInt(    nActiveCV, String2.parseInt(val)); //???
+                else if (tPAType == PAType.BYTE)    statement.setByte(   nActiveCV, Math2.narrowToByte(String2.parseInt(val))); 
+                else if (tPAType == PAType.UBYTE)   statement.setShort(  nActiveCV, Math2.narrowToShort(String2.parseInt(val))); //???
+                else if (tPAType == PAType.CHAR)    statement.setString( nActiveCV, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
                 else throw new RuntimeException("Prepared statements don't support class type=" + edv.sourceDataType() + ".");            
             }
             if (verbose) String2.log("  statement=" + statement.toString() + "\n" +
@@ -876,41 +963,51 @@ public class EDDTableFromDatabase extends EDDTable{
                 paArray[rv] = table.getColumn(rv);
 
             //process the resultSet rows of data
-            while (rs.next()) {
-                for (int rv = 0; rv < nRv; rv++) {
-                    int rsCol = tableColToRsCol[rv];
-                    EDV edv = resultsEDVs[rv];
-                    Class tClass = edv.sourceDataTypeClass();
-                    if (debugMode) String2.log(rv + " " + rs.getString(rsCol));
-                    if (edv.isBoolean()) { //special case
-                        boolean tb = rs.getBoolean(rsCol);
-                        paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : tb? 1 : 0);
-                    } else if (edv instanceof EDVTimeStamp) {
-                        Timestamp tts = rs.getTimestamp(rsCol);         //zulu millis -> epoch seconds
-                        paArray[rv].addDouble(tts == null? Double.NaN : tts.getTime() / 1000.0); 
-                    } else if (tClass == String.class) {
-                        String ts = rs.getString(rsCol); //it may return null
-                        paArray[rv].addString(ts == null? "" : ts); 
-                    } else if (tClass == double.class) {
-                        double d = rs.getDouble(rsCol);
-                        paArray[rv].addDouble(rs.wasNull()? Double.NaN : d); 
-                    } else if (tClass == float.class) {
-                        float f = rs.getFloat(rsCol);
-                        paArray[rv].addFloat(rs.wasNull()? Float.NaN : f); 
-                    } else if (tClass == long.class) {
-                        long tl = rs.getLong(rsCol);
-                        paArray[rv].addLong(rs.wasNull()? Long.MAX_VALUE : tl); 
-                    } else {
-                        int ti = rs.getInt(rsCol);
-                        paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : ti); 
+            while (true) {
+                boolean hasNext = rs.next();
+
+                if (hasNext) {
+                    for (int rv = 0; rv < nRv; rv++) {
+                        int rsCol = tableColToRsCol[rv];
+                        EDV edv = resultsEDVs[rv];
+                        PAType tPAType = edv.sourceDataPAType();
+                        if (debugMode) String2.log(rv + " " + rs.getString(rsCol));
+                        if (edv.isBoolean()) { //special case
+                            boolean tb = rs.getBoolean(rsCol);
+                            paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : tb? 1 : 0);
+                        } else if (edv instanceof EDVTimeStamp) {
+                            Timestamp tts = rs.getTimestamp(rsCol);         //zulu millis -> epoch seconds
+                            paArray[rv].addDouble(tts == null? Double.NaN : tts.getTime() / 1000.0); 
+                        } else if (tPAType == PAType.STRING) {
+                            String ts = rs.getString(rsCol); //it may return null
+                            paArray[rv].addString(ts == null? "" : ts); 
+                        } else if (tPAType == PAType.DOUBLE) {
+                            double d = rs.getDouble(rsCol);
+                            paArray[rv].addDouble(rs.wasNull()? Double.NaN : d); 
+                        } else if (tPAType == PAType.FLOAT) {
+                            float f = rs.getFloat(rsCol);
+                            paArray[rv].addFloat(rs.wasNull()? Float.NaN : f); 
+                        } else if (tPAType == PAType.LONG) {
+                            long tl = rs.getLong(rsCol);
+                            paArray[rv].addLong(rs.wasNull()? Long.MAX_VALUE : tl); 
+                        } else {
+                            int ti = rs.getInt(rsCol);
+                            paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : ti); 
+                        }
                     }
                 }
 
-                if (paArray[0].size() >= triggerNRows) {
+                if ((paArray[0].size() > 0 && !hasNext) || 
+                    paArray[0].size() >= triggerNRows) {
                     if (Thread.currentThread().isInterrupted())
                         throw new SimpleException("EDDTableFromDatabase.getDataForDapQuery" + 
                             EDStatic.caughtInterrupted);
-        
+
+                    //convert script columns into data columns
+                    if (scriptNames != null)             
+                        convertScriptColumnsToDataColumns("", table, 
+                            scriptNames, scriptTypes, scriptNeedsColumns);
+       
                     //String2.log(table.toString("rows",5));
                     preStandardizeResultsTable(loggedInAs, table); 
                     if (table.nRows() > 0) {
@@ -918,22 +1015,21 @@ public class EDDTableFromDatabase extends EDDTable{
                         tableWriter.writeSome(table); //okay if 0 rows
                     }
 
-                    table = makeEmptySourceTable(resultsEDVs, triggerNRows);
-                    for (int rv = 0; rv < nRv; rv++) 
-                        paArray[rv] = table.getColumn(rv);
+                    if (hasNext) {
+                        table = makeEmptySourceTable(resultsEDVs, triggerNRows);
+                        for (int rv = 0; rv < nRv; rv++) 
+                            paArray[rv] = table.getColumn(rv);
+                    }
                     if (tableWriter.noMoreDataPlease) {
                         tableWriter.logCaughtNoMoreDataPlease(datasetID);
                         break;
                     }
                 }
-            }
-            statement.close();
-            preStandardizeResultsTable(loggedInAs, table); 
-            if (table.nRows() > 0) {
-                standardizeResultsTable(requestUrl, userDapQuery, table);
-                tableWriter.writeSome(table); //okay if 0 rows
+                if (!hasNext)
+                    break;
             }
             tableWriter.finish();
+            statement.close();
 
             //last thing
             connection.close();
@@ -1099,7 +1195,7 @@ public class EDDTableFromDatabase extends EDDTable{
                       (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
                        sqlType == 91? "Date" : 
                        sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
-                    String2.left(pa.elementClassString(), 10) +
+                    String2.left(pa.elementTypeString(), 10) +
                     (remarks == null? "" : remarks) +
                     "\n");    //remarks
                 col++;
@@ -1247,8 +1343,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                     null, //no source global attributes
                     sourceAtts, addAtts, sqlName,  //sourceAtts, addAtts, sourceName
-                    destPA.elementClass() != String.class, //tryToAddStandardName
-                    destPA.elementClass() != String.class, //addColorBarMinMax
+                    destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                    destPA.elementType() != PAType.STRING, //addColorBarMinMax
                     true); //tryToFindLLAT
 
                 dataSourceTable.addColumn(col, sqlName,               sourcePA, sourceAtts);
@@ -1261,7 +1357,7 @@ public class EDDTableFromDatabase extends EDDTable{
                       (sqlType == -7? "bit"  : sqlType == 16? "boolean"  : 
                        sqlType == 91? "Date" : 
                        sqlType == 92? "Time" : sqlType == 93? "TimeStamp" : ""+sqlType), 15) + 
-                    String2.left(sourcePA.elementClassString(), 10) +
+                    String2.left(sourcePA.elementTypeString(), 10) +
                     (remarks == null? "" : remarks));    //remarks
 
                 //add missing_value and/or _FillValue if needed
@@ -1481,7 +1577,7 @@ expected =
 "        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, height_cm, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local database)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
 "        <att name=\"title\">NOAA NMFS SWFSC ERD data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -1645,10 +1741,15 @@ expected =
 "    String long_name \"Height\";\n" +
 "    String units \"cm\";\n" +
 "  \\}\n" +
-"  weight \\{\n" +
+"  weight_kg \\{\n" +
 "    String ioos_category \"Biology\";\n" +
 "    String long_name \"Weight\";\n" +
 "    String units \"kg\";\n" +
+"  \\}\n" +
+"  weight_lb \\{\n" +
+"    String ioos_category \"Biology\";\n" +
+"    String long_name \"Weight\";\n" +
+"    String units \"lb\";\n" +
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
@@ -1677,7 +1778,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(source database\\)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"category\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
@@ -1697,7 +1798,8 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "    String first;\n" +
 "    String last;\n" +
 "    Int32 height;\n" +
-"    Float64 weight;\n" +
+"    Float64 weight_kg;\n" +
+"    Int32 weight_lb;\n" +
 "    Float64 time;\n" +
 "  } s;\n" +
 "} s;\n";
@@ -1710,13 +1812,13 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
                 tedd.className() + "_all", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
-"category,first,last,height,weight,time\n" +
-",,,cm,kg,UTC\n" +
-"A,Bob,Bucher,182,83.2,1966-01-31T16:16:17Z\n" +
-"A,John,Johnson,191,88.5,1961-03-05T04:05:06Z\n" +
-"B,Betty,Bach,161,54.2,1967-07-08T09:10:11Z\n" +
-"B,Stan,Smith,177,81.1,1971-10-12T23:24:25Z\n" +
-",Zele,Zule,NaN,NaN,\n"; 
+"category,first,last,height,weight_kg,weight_lb,time\n" +
+",,,cm,kg,lb,UTC\n" +
+"A,Bob,Bucher,182,83.2,183,1966-01-31T16:16:17Z\n" +
+"A,John,Johnson,191,88.5,195,1961-03-05T04:05:06Z\n" +
+"B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n" +
+"B,Stan,Smith,177,81.1,179,1971-10-12T23:24:25Z\n" +
+",Zele,Zule,NaN,NaN,NaN,\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  all time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
@@ -1732,6 +1834,43 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
+            //just script variable
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&time=1967-07-08T09:10:11Z",
+                dir, tedd.className() + "_script2", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"weight_lb\n" +
+"lb\n" +
+"119\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+            //constraint just script variable
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119",
+                dir, tedd.className() + "_script3", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"category,first,last,height,weight_kg,weight_lb,time\n" +
+",,,cm,kg,lb,UTC\n" +
+"B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+            //constrain script variable (first, not passed to database) and non-script
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119&category=\"B\"",
+                dir, tedd.className() + "_script4", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"category,first,last,height,weight_kg,weight_lb,time\n" +
+",,,cm,kg,lb,UTC\n" +
+"B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+
             //distinct()   subsetVariables
             eTime = System.currentTimeMillis();
             tName = tedd.makeNewFileForDapQuery(null, null, "category&distinct()",
@@ -1746,21 +1885,39 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //distinct()  2 vars
+            //distinct()   subsetVariables
             eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,first&distinct()",
+            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&distinct()",
+                dir, tedd.className() + "_subset2", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"weight_lb\n" +
+"lb\n" +
+"119\n" +
+"179\n" +
+"183\n" +
+"195\n" +
+"NaN\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+            //distinct()  2 vars (one of which is script)
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,weight_lb&distinct()",
                 dir, tedd.className() + "_distinct1", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
-            expected = tDatasetID.equals("testMyDatabaseNo") ||
-                       tDatasetID.equals("testMyDatabasePartial")?
-//ERDDAP sorts "" at top.
-"category,first\n" +
-",\n" +
-",Zele\n" +
-"A,Bob\n" +
-"A,John\n" +
-"B,Betty\n" +
-"B,Stan\n" :
+            expected = //tDatasetID.equals("testMyDatabaseNo") ||
+                       //tDatasetID.equals("testMyDatabasePartial")?
+//ERDDAP sorts category="" at top.   
+//2019-12-10 now ERDDAP always does distinct (even if database does, too)
+"category,weight_lb\n" +
+",lb\n" +
+",NaN\n" +
+"A,183\n" +
+"A,195\n" +
+"B,119\n" +
+"B,179\n";
+/*:
 //Postgres sorts "" at bottom
 "category,first\n" +
 ",\n" +
@@ -1769,22 +1926,23 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Betty\n" +
 "B,Stan\n" +
 ",Zele\n"; 
+*/
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //distinct()  2 vars, different order
             eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "first,category&distinct()",
+            tName = tedd.makeNewFileForDapQuery(null, null, "first,weight_lb&distinct()",
                 dir, tedd.className() + "_distinct2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
-"first,category\n" +
-",\n" +
-"Betty,B\n" +
-"Bob,A\n" +
-"John,A\n" +
-"Stan,B\n" +
-"Zele,\n"; 
+"first,weight_lb\n" +
+",lb\n" +
+"Betty,119\n" +
+"Bob,183\n" +
+"John,195\n" +
+"Stan,179\n" +
+"Zele,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
@@ -1799,6 +1957,22 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "\n" +
 "A\n" +
 "B\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+            //orderBy()  subsetVars
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&orderBy(\"weight_lb\")",
+                dir, tedd.className() + "_orderBy1a", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"weight_lb\n" +
+"lb\n" +
+"119\n" +
+"179\n" +
+"183\n" +
+"195\n" +
+"NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
@@ -1821,19 +1995,21 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
             //orderBy()  
             eTime = System.currentTimeMillis();
             tName = tedd.makeNewFileForDapQuery(null, null, 
-                "category,last,first&orderBy(\"category,last\")",
+                "category,last,first,weight_lb&orderBy(\"category,weight_lb,last\")",
                 dir, tedd.className() + "_orderBy3", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
-            expected = tDatasetID.equals("testMyDatabaseNo") ||
-                       tDatasetID.equals("testMyDatabasePartial")?
-//ERDDAP sorts "" at top.
-"category,last,first\n" +
-",,\n" + //units
-",Zule,Zele\n" +
-"A,Bucher,Bob\n" +
-"A,Johnson,John\n" +
-"B,Bach,Betty\n" +
-"B,Smith,Stan\n" :
+            expected = //tDatasetID.equals("testMyDatabaseNo") ||
+                       //tDatasetID.equals("testMyDatabasePartial")?
+                       //2019-12-12 now ERDDAP always does orderBy (even if database does, too)
+//ERDDAP sorts category="" at top.
+"category,last,first,weight_lb\n" +
+",,,lb\n" +
+",Zule,Zele,NaN\n" +
+"A,Bucher,Bob,183\n" +
+"A,Johnson,John,195\n" +
+"B,Bach,Betty,119\n" +
+"B,Smith,Stan,179\n";
+/* :
 //Postgres sorts "" at bottom
 "category,last,first\n" +
 ",,\n" + //units
@@ -1841,7 +2017,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "A,Johnson,John\n" +
 "B,Bach,Betty\n" +
 "B,Smith,Stan\n" +
-",Zule,Zele\n";
+",Zule,Zele\n"; */
 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 

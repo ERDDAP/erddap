@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.CharArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
@@ -102,8 +103,8 @@ public class TableWriterDodsAscii extends TableWriter {
             isCharOrString = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 isCharOrString[col] = 
-                    pas[col].elementClass() == char.class ||
-                    pas[col].elementClass() == String.class;
+                    pas[col].elementType() == PAType.CHAR ||
+                    pas[col].elementType() == PAType.STRING;
                 writer.write(sequenceName + "." + table.getColumnName(col) +
                     (col == nColumns - 1? OpendapHelper.EOL : ", "));
             }

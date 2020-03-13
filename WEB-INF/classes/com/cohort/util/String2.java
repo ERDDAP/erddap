@@ -683,6 +683,37 @@ public class String2 {
         return (String[])(al.toArray(new String[0]));
     }
 
+    /**
+     * This returns the index of the first value that matches the regex.
+     *
+     * @param ar an array of objects which will be tested via ar[i].toString()
+     * @param regex
+     * @return the index of the first value that matches the regex, or -1 if none matches.
+     * @throws RuntimeException if regex won't compile.
+     */
+    public int firstMatch(Object ar[], String regex) {
+        return firstMatch(ar, Pattern.compile(regex));
+    }
+
+    /**
+     * This returns the index of the first value that matches the regex pattern p.
+     *
+     * @param ar an array of objects which will be tested via ar[i].toString() 
+     * @param p
+     * @return the index of the first value that matches the regex pattern p, or -1 if none matches.
+     */
+    public int firstMatch(Object ar[], Pattern p) {
+        if (ar == null)
+            return -1;
+        for (int i = 0; i < ar.length; i++) {
+            Object s = ar[i];
+            if (s != null && p.matcher(s.toString()).matches())
+                return i;                
+        }
+        return -1;
+    }
+
+
     /** 
      * This converts a hashset to a String[] via o.toString().
      *
@@ -994,7 +1025,7 @@ public class String2 {
                     }
                 }
             }
-                         
+        
             //get the text from the file
             //This uses bufferedReader.readLine() to repeatedly
             //read lines from the file and thus can handle various 
@@ -1014,16 +1045,8 @@ public class String2 {
 
         } catch (Exception e) {
             results[errorIndex] = MustBe.throwable("fileName=" + fileName, e);
-        }
-
-        //close whatever got opened
-        try {
-            //close the highest level file object available
-            br.close();
-        } catch (Exception e) {
-            if (results[errorIndex].length() == 0)
-                results[errorIndex] = e.toString(); 
-            //else ignore the error (the first one is more important)
+        } finally {
+            try {if (br != null) br.close(); } catch (Exception e2) {}
         }
 
         //return results

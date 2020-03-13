@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -280,7 +281,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
 
             PrimitiveArray column = table.getColumn(col);
             if (isKeyCol.get(col)) {
-                dataType[col] = column.elementClassString();
+                dataType[col] = column.elementTypeString();
             } else {
                 if (isDegreeTrueUnitsColumn(table,col)) {
                     degreesTrueCol.set(col);
@@ -294,8 +295,8 @@ public class TableWriterOrderByMean extends TableWriterAll {
                     dataType[col] = "double";
                 } else if (col!=timeCol) {
                     //include this in the output only if a single value
-                    dataType[col] = column.elementClass() == char.class ? 
-                        "char": column.elementClass() == byte.class ? "byte" : "String";
+                    dataType[col] = column.elementType() == PAType.CHAR? "char": 
+                        column.elementType() == PAType.BYTE ? "byte" : "String";
                     cannotMeanCol.set(col);
                 }
             }
@@ -324,7 +325,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
             if (wasDecimalCol.get(col) || !column.isFloatingPointType()) 
                 continue;
             if (areAllValuesIntegers(column)) 
-                meansTable.setColumn(col, PrimitiveArray.factory(int.class, column));
+                meansTable.setColumn(col, PrimitiveArray.factory(PAType.INT, column));
         } 
         */
     }
@@ -449,10 +450,10 @@ public class TableWriterOrderByMean extends TableWriterAll {
         for (int col = 0; col < nColumns; col++) {
             if (!isKeyCol.get(col)) {
                 //convert mv fv to new data types
-                Class tClass = cumulativeTable.getColumn(col).elementClass();
+                PAType tPAType = cumulativeTable.getColumn(col).elementType();
                 Attributes atts = cumulativeTable.columnAttributes(col);
-                //String2.log(">> colName=" + cumulativeTable.getColumnName(col) + " tClass=" + tClass.toString());
-                atts.set(   "_FillValue", PrimitiveArray.factory(tClass, 1, ""));
+                //String2.log(">> colName=" + cumulativeTable.getColumnName(col) + " tPAType=" + tPAType);
+                atts.set(   "_FillValue", PrimitiveArray.factory(tPAType, 1, ""));
                 if (cellMethods != null)
                    atts.set("cell_methods", cellMethods);
                 atts.remove("cf_role");

@@ -59,7 +59,7 @@ public class PointIndex  {
     private int nGroups;
     private int rowsStartAt;
     private int lastFiniteSortedIndex0;
-    private Class index0ElementType;
+    private PAType index0ElementType;
 
     /**
      * A constructor which adds the first and most important index to the
@@ -169,7 +169,7 @@ public class PointIndex  {
         } finally {
             dos.close();
         }
-        index0ElementType = index0PA.elementClass();
+        index0ElementType = index0PA.elementType();
 
         //10,000,000 takes 6.7s to write, 22.6s total
         String2.log("PointIndex nGroups=" + nGroups + " dosWriteTime=" + (System.currentTimeMillis() - tTime) +

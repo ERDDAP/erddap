@@ -170,7 +170,52 @@ public class NcHelper  {
         return sb.toString();
     }
 
-    
+
+    /**
+     * This is a shim for the old Array.factory(Object javaArray).
+     *
+     * @param javaArray e.g., double[]
+     * @return a netcdf Array using the javaArray for storage.
+     * @throws RuntimeException if unexpected type or dimensions
+     */
+    public static Array arrayFactory1D(Object javaArray) {
+        if (javaArray instanceof double[]) {
+            double ar[] = (double[])javaArray;
+            return Array.factory(DataType.DOUBLE, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof float[]) {
+            float ar[] = (float[])javaArray;
+            return Array.factory(DataType.FLOAT, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof long[]) {
+            long ar[] = (long[])javaArray;
+            return Array.factory(DataType.LONG, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof int[]) {
+            int ar[] = (int[])javaArray;
+            return Array.factory(DataType.INT, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof short[]) {
+            short ar[] = (short[])javaArray;
+            return Array.factory(DataType.SHORT, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof byte[]) {
+            byte ar[] = (byte[])javaArray;
+            return Array.factory(DataType.BYTE, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof String[]) {
+            String ar[] = (String[])javaArray;
+            return Array.factory(DataType.STRING, new int[]{ar.length}, ar);
+        }
+        if (javaArray instanceof char[]) {
+            char ar[] = (char[])javaArray;
+            return Array.factory(DataType.CHAR, new int[]{ar.length}, ar);
+        }
+        throw new RuntimeException("Unexpected data type: " + javaArray.getClass().toString());
+    }
+
+
+
     /**
      * This is like fromJson, but specifically designed to 
      * decode an attribute, starting with netcdf-java 4.0 
@@ -199,7 +244,7 @@ public class NcHelper  {
      * @throws Exception if trouble
      */
     public static double[] toDoubleArray(Array array) {
-        return (double[])array.get1DJavaArray(double.class);
+        return (double[])array.get1DJavaArray(DataType.DOUBLE);
     }
 
 
@@ -248,8 +293,8 @@ public class NcHelper  {
         }
         return new Attribute(name, pa instanceof CharArray?
             //pass all (Unicode) chars through unchanged
-            Array.factory(char.class, new int[]{pa.size()}, pa.toObjectArray()) :
-            get1DArray(pa.toObjectArray()));  //this would convert chars to ISO_8859_1
+            Array.factory(DataType.CHAR, new int[]{pa.size()}, pa.toObjectArray()) :
+            get1DArray(pa));  //this would convert chars to ISO_8859_1
     }
 
     /** 
@@ -269,11 +314,28 @@ public class NcHelper  {
      * ucar.nc2.ArrayXxx.D1.
      * The o array is used as the storage for the Array.
      *
+     * @param pa a PrimitiveArray
+     */
+    public static Array get1DArray(PrimitiveArray pa) {
+        return get1DArray(pa.toObjectArray(), false); //isUnsigned?
+    }
+
+    /** A variant that assumes isUnsigned is false. */
+    public static Array get1DArray(Object o) {
+        return get1DArray(o, false); //isUnsigned?
+    }
+
+    /** 
+     * This converts a String or array of primitives into a 
+     * ucar.nc2.ArrayXxx.D1.
+     * The o array is used as the storage for the Array.
+     *
      * @param o the String or array of primitives (e.g., int[])
+     * @param isUnsigned Only used for byte, short, int, long; ignored for other data types.
      * @return an ArrayXxx.D1.  A String is converted to a ArrayChar.D2.
      *    A long[] is converted to a String[] and then to ArrayChar.D2 (nc3 files don't support longs).
      */
-    public static Array get1DArray(Object o) {
+    public static Array get1DArray(Object o, boolean isUnsigned) {
         if (o instanceof String) {
             o = ((String)o).toCharArray();
             //will be handled below
@@ -286,20 +348,32 @@ public class NcHelper  {
             char[] car2 = new char[n];
             for (int i = 0; i < n; i++)
                 car2[i] = String2.toIso88591Char(car1[i]);
-            return Array.factory(char.class, new int[]{n}, car2);
+            return Array.factory(DataType.CHAR, new int[]{n}, car2);
         }
 
 
-        if (o instanceof byte[])   return Array.factory(byte.class,   new int[]{((byte[])o).length}, o);
-        if (o instanceof short[])  return Array.factory(short.class,  new int[]{((short[])o).length}, o);
-        if (o instanceof int[])    return Array.factory(int.class,    new int[]{((int[])o).length}, o);
+        if (o instanceof byte[])   return Array.factory(isUnsigned? DataType.UBYTE  : DataType.BYTE,   new int[]{((byte[])o).length}, o);
+        if (o instanceof short[])  return Array.factory(isUnsigned? DataType.USHORT : DataType.SHORT,  new int[]{((short[])o).length}, o);
+        if (o instanceof int[])    return Array.factory(isUnsigned? DataType.UINT   : DataType.INT,    new int[]{((int[])o).length}, o);
         if (o instanceof long[])   {
             //String2.log("\n>> long values=" + String2.toCSSVString((long[])o));
-            o = (new DoubleArray(new LongArray((long[])o))).toArray();  //then falls through to Double handling
+            if (isUnsigned) {
+                long lar[] = (long[])o;
+                o = null;
+                int tSize = lar.length;
+                double dar[] = new double[tSize];
+                for (int i = 0; i < tSize; i++)
+                    dar[i] = Math2.unsignedLongToDouble(lar[i]); // !!! possible loss of precision
+                o = dar;
+
+            } else {
+                o = (new DoubleArray(new LongArray())).toArray();  
+            }
+            //then falls through to Double handling
             //String2.log(">> as doubles=" + String2.toCSSVString((double[])o));
         }
-        if (o instanceof float[])  return Array.factory(float.class,  new int[]{((float[])o).length}, o);
-        if (o instanceof double[]) return Array.factory(double.class, new int[]{((double[])o).length}, o);
+        if (o instanceof float[])  return Array.factory(DataType.FLOAT,  new int[]{((float[])o).length}, o);
+        if (o instanceof double[]) return Array.factory(DataType.DOUBLE, new int[]{((double[])o).length}, o);
         if (o instanceof String[]) {
             //make ArrayChar.D2
             String[] sar = (String[])o;
@@ -360,7 +434,11 @@ public class NcHelper  {
      * @return a PrimitiveArray
      */
     public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars) {
-        return PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars));
+        //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars));
+        //if (nc2Array.isUnsigned()) 
+        //    pa.setUnsigned(true);
+        return pa;
     }
 
     /** 
@@ -428,59 +506,110 @@ public class NcHelper  {
 
 
     /** 
-     * This converts an netcdf DataType into a PrimitiveArray ElementClass (e.g., int.class for integer primitives).
-     * BEWARE: .nc files store strings as char arrays, so 
+     * This converts an netcdf DataType into a PrimitiveArray elementType 
+     * (e.g., PAType.INT for integer primitives).
+     * BEWARE: This returns the stated dataType (not overthinking it).
+     * .nc3 files store strings as char arrays, so 
      * if variable.getRank()==1 it is a char variable, but
-     * if variable.getRang()==2 it is a String variable.
-     * This throws Exception if dataType not found.
+     * if variable.getRank()==2 it should later be converted to to a String variable.
+     * But .nc4 files have true String dataType.
+     *
+     * <p>Unsigned types return the same type, signed, e.g., ubyte returns byte.
      *
      * @param dataType the Netcdf dataType
-     * @return the corresponding PrimitiveArray elementClass (e.g., int.class for integer primitives)
+     * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer primitives)
+     * @throws RuntimeException if dataType is null or unexpected.
      */
-     public static Class getElementClass(DataType dataType) {
-         if (dataType == DataType.BOOLEAN) return boolean.class;
-         if (dataType == DataType.BYTE)    return byte.class;
-         if (dataType == DataType.CHAR)    return char.class;
-         if (dataType == DataType.DOUBLE)  return double.class;
-         if (dataType == DataType.FLOAT)   return float.class;
-         if (dataType == DataType.INT)     return int.class;
-         if (dataType == DataType.LONG)    return long.class;
-         if (dataType == DataType.SHORT)   return short.class;
-         if (dataType == DataType.STRING)  return String.class;
+     public static PAType getElementPAType(DataType dataType) {
+         if (dataType == DataType.BOOLEAN) return PAType.BOOLEAN;
+         if (dataType == DataType.BYTE)    return PAType.BYTE;
+         if (dataType == DataType.UBYTE)   return PAType.UBYTE;
+         if (dataType == DataType.CHAR)    return PAType.CHAR;
+         if (dataType == DataType.DOUBLE)  return PAType.DOUBLE;
+         if (dataType == DataType.FLOAT)   return PAType.FLOAT;
+         if (dataType == DataType.INT)     return PAType.INT;
+         if (dataType == DataType.UINT)    return PAType.UINT;
+         if (dataType == DataType.LONG)    return PAType.LONG;
+         if (dataType == DataType.ULONG)   return PAType.ULONG;
+         if (dataType == DataType.SHORT)   return PAType.SHORT;
+         if (dataType == DataType.USHORT)  return PAType.USHORT;
+         if (dataType == DataType.STRING)  return PAType.STRING;
          //STRUCTURE not converted
          Test.error(String2.ERROR + " in NcHelper.getElementType:\n" +
-             " unrecognized DataType: " + dataType.toString());
+             " unexpected DataType: " + dataType.toString());
+         return null;
+     }
+
+     /**
+      * This returns true if the dataType is one of the unsigned integer types.
+      */
+     public static boolean isUnsigned(DataType dataType) {
+         return dataType == DataType.UINT   ||
+                dataType == DataType.USHORT ||
+                dataType == DataType.UBYTE  ||
+                dataType == DataType.ULONG;
+     }
+
+
+    /** 
+     * This converts an ElementType (e.g., PAType.INT for integer primitives) 
+     * into an netcdf-3 DataType (so PAType.LONG returns DataType.DOUBLE).
+     * BEWARE: .nc files store strings as char arrays, so 
+     * if variable.getRank()==1 it is a char variable, but
+     * if variable.getRang()==2 it is a String variable. [It isn't that simple!]
+     * This throws Exception if elementPAType not found.
+     *
+     * @param elementPAType the PrimitiveArray elementPAType 
+     *   (e.g., PAType.INT for integer primitives).
+     *   longs are converted to doubles.
+     * @return the corresponding netcdf dataType 
+     */
+     public static DataType getNc3DataType(PAType elementPAType) {
+         if (elementPAType == PAType.BOOLEAN) return DataType.BOOLEAN; //?
+         if (elementPAType == PAType.BYTE)    return DataType.BYTE;
+         if (elementPAType == PAType.CHAR)    return DataType.CHAR;
+         if (elementPAType == PAType.DOUBLE)  return DataType.DOUBLE;
+         if (elementPAType == PAType.FLOAT)   return DataType.FLOAT;
+         if (elementPAType == PAType.INT)     return DataType.INT;
+         if (elementPAType == PAType.LONG)    return DataType.DOUBLE;  // long -> double
+         if (elementPAType == PAType.SHORT)   return DataType.SHORT;
+         if (elementPAType == PAType.STRING)  return DataType.STRING;
+         if (elementPAType == PAType.UBYTE)   return DataType.UBYTE;
+         if (elementPAType == PAType.UINT)    return DataType.UINT;
+         if (elementPAType == PAType.ULONG)   return DataType.DOUBLE; // ulong -> double
+         if (elementPAType == PAType.USHORT)  return DataType.USHORT;
+         //STRUCTURE not converted
+         Test.error(String2.ERROR + " in NcHelper.getNc3DataType:\n" +
+             " unrecognized ElementType: " + elementPAType);
          return null;
      }
 
     /** 
-     * This converts an ElementType (e.g., int.class for integer primitives) 
-     * into an netcdf-3 DataType (so long.class returns DataType.DOUBLE).
-     * BEWARE: .nc files store strings as char arrays, so 
-     * if variable.getRank()==1 it is a char variable, but
-     * if variable.getRang()==2 it is a String variable. [It isn't that simple!]
-     * This throws Exception if elementClass not found.
+     * This converts an ElementType (e.g., PAType.INT for integer primitives) 
+     * into an netcdf-4 DataType.
+     * This throws Exception if elementPAType not found.
      *
-     * @param elementClass the PrimitiveArray elementClass 
-     *   (e.g., int.class for integer primitives).
+     * @param elementPAType the PrimitiveArray elementPAType 
+     *   (e.g., PAType.INT for integer primitives).
      *   longs are converted to doubles.
      * @return the corresponding netcdf dataType 
      */
-     public static DataType getNc3DataType(Class elementClass) {
-         if (elementClass == boolean.class) return DataType.BOOLEAN; //?
-         if (elementClass == byte.class)    return DataType.BYTE;
-         if (elementClass == char.class)    return DataType.CHAR;
-         if (elementClass == double.class)  return DataType.DOUBLE;
-         if (elementClass == float.class)   return DataType.FLOAT;
-         if (elementClass == int.class)     return DataType.INT;
-         if (elementClass == long.class)    return DataType.DOUBLE;  // long -> double
-         if (elementClass == short.class)   return DataType.SHORT;
-         if (elementClass == String.class)  return DataType.STRING;
-         //STRUCTURE not converted
-         Test.error(String2.ERROR + " in NcHelper.getNc3DataType:\n" +
-             " unrecognized ElementType: " + elementClass.toString());
-         return null;
+     public static DataType getNc4DataType(PAType elementPAType) {
+         //just deal with things that are different than nc3
+         if (elementPAType == PAType.LONG)    return DataType.LONG;  // long -> double
+         if (elementPAType == PAType.ULONG)   return DataType.ULONG; // ulong -> double
+         return getNc3DataType(elementPAType);
      }
+
+     /**
+      * This returns the appropriate DataType for nc3 or nc4 files.
+      */
+     public static DataType getDataType(boolean nc3Mode, PAType elementPAType) {
+         return nc3Mode? 
+             getNc3DataType(elementPAType) :
+             getNc4DataType(elementPAType);
+     }
+
 
 
     /**
@@ -585,7 +714,7 @@ public class NcHelper  {
     
 
     /**
-     * This opens a local file name or an "http:" address of a .nc file.
+     * This opens a local file name (or an "http:" address, but that is discouraged) of a .nc file.
      * ALWAYS explicitly call netcdfFile.close() when you are finished with it,
      * preferably in a "finally" clause.
      *
@@ -596,7 +725,7 @@ public class NcHelper  {
      * (see ucar.nc2.NetcdfFile documentation).
      * 
      * @param fullName This may be a local file name, an "http:" address of a
-     *    .nc file, or an opendap url.  
+     *    .nc file (discouraged), or an opendap url.  
      *    If this is an .ncml file, the name must end in .ncml.
      * @return a NetcdfFile
      * @throws Exception if trouble
@@ -941,8 +1070,8 @@ public class NcHelper  {
      * If there is trouble, this lots a warning message and returns null.
      * This is low level and isn't usually called directly.
      *
-     * @param att   
      * @param varName the variable name (or "global"), used for diagnostic messages only
+     * @param att   
      * @return a PrimitiveArray or null if trouble
      */
     public static PrimitiveArray getAttributePA(String varName, ucar.nc2.Attribute att) {
@@ -953,7 +1082,12 @@ public class NcHelper  {
         } else if (String2.isSomething(att.getFullName())) {
             try {
                 //decodeAttribute added with switch to netcdf-java 4.0
-                return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); 
+                Array values = att.getValues();
+                if (values == null) {
+                    String2.log("Warning: varName=" + varName + " attribute=" + att.getFullName() + " has values=null");
+                    return null;
+                }
+                return PrimitiveArray.factory(decodeAttribute(getArray(values))); 
             } catch (Throwable t) {
                 String2.log("Warning: NcHelper caught an exception while reading '" + 
                     varName + "' attribute=" + att.getFullName() + "\n" +
@@ -979,57 +1113,6 @@ public class NcHelper  {
         String attributeName) {
         return getAttributePA(variable.getFullName(), 
             variable.findAttribute(attributeName)); 
-    }
-
-    /**
-     * This gets the first element of one attribute from a netcdf variable as a String.
-     *
-     * @param variable
-     * @param attributeName
-     * @return the value of the attribute (or null if none).
-     *   Note that if pa is integerType and value is cohort missingValue (e.g., 127),
-     *   this will return cohort missingValue.
-     */
-    public static String getRawStringVariableAttribute(Variable variable, 
-        String attributeName) {
-        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
-        if (pa == null || pa.size() == 0)
-            return null;
-        return pa.getRawString(0);
-    }
-
-    /**
-     * This gets the first element of one attribute from a netcdf variable as a double.
-     *
-     * @param variable
-     * @param attributeName
-     * @return the value of the attribute (or NaN if no such attribute).
-     *   Note that if pa is integerType, it is treated as being unsigned 
-     *   (so -1B becomes 255).
-     */
-    public static double getUnsignedDoubleVariableAttribute(Variable variable, 
-        String attributeName) {
-        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
-        if (pa == null || pa.size() == 0)
-            return Double.NaN;
-        return pa.getUnsignedDouble(0);
-    }
-
-    /**
-     * This gets the first element of one attribute from a netcdf variable as a double.
-     *
-     * @param variable
-     * @param attributeName
-     * @return the value of the attribute (or NaN if no such attribute).
-     *   Note that if pa is integerType and value is cohort missingValue (e.g., 127),
-     *   this will return cohort missingValue.
-     */
-    public static double getRawDoubleVariableAttribute(Variable variable,
-        String attributeName) {
-        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
-        if (pa == null || pa.size() == 0)
-            return Double.NaN;
-        return pa.getRawDouble(0);
     }
 
     /**
@@ -1120,6 +1203,14 @@ public class NcHelper  {
         if (variable == null)
             return;
         String variableName = variable.getFullName();
+
+        //deal with netcdf-java 5.2 which now treats unsigned vars as separate types
+        //  and no longer has _Unsigned=true attribute.
+        DataType dataType = variable.getDataType();
+        if (dataType != null && dataType.isUnsigned()) 
+            attributes.add("_Unsigned", "true");
+
+        //add the attributes
         List variableAttList = variable.getAttributes();
         if (variableAttList == null) 
             return;
@@ -1722,20 +1813,21 @@ public class NcHelper  {
         Variable var, int origin[], int shape[], PrimitiveArray pa) throws Exception {
 
         if (nc3Mode) {
-            if (pa.elementClass() == long.class)
+            if (pa.elementType() == PAType.LONG)
                 pa = new DoubleArray(pa);
-            else if (pa.elementClass() == char.class)
+            else if (pa.elementType() == PAType.CHAR)
                 pa = (new CharArray(pa)).toIso88591(); //netcdf-java just writes low byte
-            else if (pa.elementClass() == String.class)
+            else if (pa.elementType() == PAType.STRING)
                 pa = (new StringArray(pa)).toIso88591(); //netcdf-java just writes low byte
         }
 
         if (pa instanceof StringArray) {
             netcdfFileWriter.writeStringData(var, origin, 
-                Array.factory(String.class, shape, pa.toObjectArray()));         
+                Array.factory(DataType.STRING, shape, pa.toObjectArray()));         
         } else {
             netcdfFileWriter.write(var, origin, 
-                Array.factory(pa.elementClass(), shape, pa.toObjectArray()));         
+                Array.factory(getNc3DataType(pa.elementType()),
+                    shape, pa.toObjectArray()));         
         }
     }
 
@@ -1850,13 +1942,13 @@ public class NcHelper  {
             for (int var = 0; var < nVars; var++) {
                 String name = varNames.get(var);
                 tpas[var] = pas[var];
-                if (tpas[var].elementClass() == char.class) {
+                if (tpas[var].elementType() == PAType.CHAR) {
                     //nc 'char' is 1 byte!  So store java char (2 bytes) as shorts.
                     tpas[var] = new ShortArray(((CharArray)pas[var]).toArray());
-                } else if (tpas[var].elementClass() == long.class) {
+                } else if (tpas[var].elementType() == PAType.LONG) {
                     //these will always be decoded by fromJson as-is; no need to encode with toJson
                     tpas[var] = new StringArray(pas[var]);
-                } else if (tpas[var].elementClass() == String.class) {
+                } else if (tpas[var].elementType() == PAType.STRING) {
                     //.nc strings only support characters 1..255, so encode as Json strings
                     StringArray oldSa = (StringArray)pas[var];
                     int tSize = oldSa.size();
@@ -1874,22 +1966,22 @@ public class NcHelper  {
                     }
                 }
 
-                Class type = tpas[var].elementClass();
+                PAType type = tpas[var].elementType();
                 Dimension dimension  = nc.addDimension(rootGroup, name, tpas[var].size());
-                if (type == String.class) {
+                if (type == PAType.STRING) {
                     int max = Math.max(1, ((StringArray)tpas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                     Dimension lengthDimension  = nc.addDimension(rootGroup, 
                         name + StringLengthSuffix, max);
                     newVars[var] = nc.addVariable(rootGroup, name, DataType.CHAR, 
                         Arrays.asList(dimension, lengthDimension)); 
-                    if (pas[var].elementClass() == long.class) 
+                    if (pas[var].elementType() == PAType.LONG) 
                         newVars[var].addAttribute(new Attribute("NcHelper", originally_a_LongArray)); 
-                    else if (pas[var].elementClass() == String.class) 
+                    else if (pas[var].elementType() == PAType.STRING) 
                         newVars[var].addAttribute(new Attribute("NcHelper", "JSON encoded")); 
                 } else {
-                    newVars[var] = nc.addVariable(rootGroup, name, DataType.getType(type), 
+                    newVars[var] = nc.addVariable(rootGroup, name, getNc3DataType(type),
                         Arrays.asList(dimension)); 
-                    if (pas[var].elementClass() == char.class) 
+                    if (pas[var].elementType() == PAType.CHAR) 
                         newVars[var].addAttribute(new Attribute("NcHelper", originally_a_CharArray)); 
                 }
             }
@@ -1899,7 +1991,7 @@ public class NcHelper  {
 
             //write the data
             for (int var = 0; var < nVars; var++) {
-                nc.write(newVars[var], get1DArray(tpas[var].toObjectArray()));
+                nc.write(newVars[var], get1DArray(tpas[var]));
             }
 
             //if close throws exception, it is trouble
@@ -1990,13 +2082,13 @@ public class NcHelper  {
                         String ncHelper = att.getStringValue();
                         if (ncHelper == null) 
                             ncHelper = "";
-                        if (pa.elementClass() == short.class && 
+                        if (pa.elementType() == PAType.SHORT && 
                             ncHelper.indexOf(originally_a_CharArray) >= 0) {
                             pa = new CharArray(((ShortArray)pa).toArray());
-                        } else if (pa.elementClass() == String.class &&  
+                        } else if (pa.elementType() == PAType.STRING &&  
                             ncHelper.indexOf(originally_a_LongArray) >= 0) {  //before JSON test
                             pa = new LongArray(pa);
-                        } else if (pa.elementClass() == String.class && 
+                        } else if (pa.elementType() == PAType.STRING && 
                             ncHelper.indexOf("JSON encoded") >= 0) {
                             int tSize = pa.size();
                             for (int i = 0; i < tSize; i++) 
@@ -2204,10 +2296,10 @@ String2.log(pas13.toString());
                 ArrayChar.D2 ac = new ArrayChar.D2(1, strlen);
 
                 double cTime = System.currentTimeMillis() / 1000.0;
-                array = Array.factory(new double[] {row});             file.write(file.findVariable("time"),    origin1, array);
-                array = Array.factory(new double[] {33.33});           file.write(file.findVariable("lat"),     origin1, array);
-                array = Array.factory(new double[] {-123.45});         file.write(file.findVariable("lon"),     origin1, array);
-                array = Array.factory(new double[] {10 + row / 10.0}); file.write(file.findVariable("sst"),     origin1, array);
+                array = arrayFactory1D(new double[] {row});             file.write(file.findVariable("time"),    origin1, array);
+                array = arrayFactory1D(new double[] {33.33});           file.write(file.findVariable("lat"),     origin1, array);
+                array = arrayFactory1D(new double[] {-123.45});         file.write(file.findVariable("lon"),     origin1, array);
+                array = arrayFactory1D(new double[] {10 + row / 10.0}); file.write(file.findVariable("sst"),     origin1, array);
                 ac.setString(0, row + " comment");                     file.write(file.findVariable("comment"), origin2, ac);
                 file.flush(); //force file update
 
@@ -2234,16 +2326,17 @@ String2.log(pas13.toString());
 "\n" +
 "    char comment(time=2, comment_strlen=6);\n" +
 "\n" +
-" data:\n" +
-"time =\n" +
-"  {0.0, 1.0}\n" +
-"lat =\n" +
-"  {33.33, 33.33}\n" +
-"lon =\n" +
-"  {-123.45, -123.45}\n" +
-"sst =\n" +
-"  {10.0, 10.1}\n" +
-"comment =\"0 comm\", \"1 comm\"\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {0.0, 1.0}\n" +
+"    lat = \n" +
+"      {33.33, 33.33}\n" +
+"    lon = \n" +
+"      {-123.45, -123.45}\n" +
+"    sst = \n" +
+"      {10.0, 10.1}\n" +
+"    comment = \"0 comm\", \"1 comm\"\n" +
 "}\n";
                     if (!results.equals(expected)) {
                         file.close();
@@ -2283,16 +2376,17 @@ String2.log(pas13.toString());
 "\n" +
 "    char comment(time=5, comment_strlen=6);\n" +
 "\n" +
-" data:\n" +
-"time =\n" +
-"  {0.0, 1.0, 2.0, 3.0, 4.0}\n" +
-"lat =\n" +
-"  {33.33, 33.33, 33.33, 33.33, 33.33}\n" +
-"lon =\n" +
-"  {-123.45, -123.45, -123.45, -123.45, -123.45}\n" +
-"sst =\n" +  
-"  {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
-"comment =\"0 comm\", \"1 comm\", \"2 comm\", \"3 comm\", \"4 comm\"\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {0.0, 1.0, 2.0, 3.0, 4.0}\n" +
+"    lat = \n" +
+"      {33.33, 33.33, 33.33, 33.33, 33.33}\n" +
+"    lon = \n" +
+"      {-123.45, -123.45, -123.45, -123.45, -123.45}\n" +
+"    sst = \n" +  
+"      {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
+"    comment = \"0 comm\", \"1 comm\", \"2 comm\", \"3 comm\", \"4 comm\"\n" +
 "}\n";
         Test.ensureEqual(results, expected, "");
 
@@ -2398,8 +2492,8 @@ String2.log(pas13.toString());
         for (int i = 0; i < pas.length; i++) {
             int which = varNames2.indexOf(varNames.get(i));
             PrimitiveArray pa2 = pas2[which];
-            Test.ensureEqual(pas[i].elementClassString(), pa2.elementClassString(), "i=" + i);
-            if (pas[i].elementClass() == String.class) {
+            Test.ensureEqual(pas[i].elementTypeString(), pa2.elementTypeString(), "i=" + i);
+            if (pas[i].elementType() == PAType.STRING) {
                 for (int j = 0; j < pas[i].size(); j++)
                     Test.ensureEqual(String2.toJson(pas[i].getString(j)),
                                      String2.toJson(   pa2.getString(j)), "i=" + i + " j=" + j);
@@ -2422,22 +2516,22 @@ String2.log(pas13.toString());
         writeAttributesToNc(fullName, atts);
         //read 1
         PrimitiveArray pa = readAttributeFromNc(fullName, "sa");
-        Test.ensureEqual(sa.elementClassString(), pa.elementClassString(), "");
+        Test.ensureEqual(sa.elementTypeString(), pa.elementTypeString(), "");
         Test.ensureEqual(sa, pa, "");
         pa = readAttributeFromNc(fullName, "ia");
-        Test.ensureEqual(ia.elementClassString(), pa.elementClassString(), "");
+        Test.ensureEqual(ia.elementTypeString(), pa.elementTypeString(), "");
         Test.ensureEqual(ia, pa, "");
         //read many
         pas2 = readAttributesFromNc(fullName, varNames.toArray());
         for (int i = 0; i < pas.length; i++) {
-            Test.ensureEqual(pas[i].elementClassString(), pas2[i].elementClassString(), "i=" + i);
+            Test.ensureEqual(pas[i].elementTypeString(), pas2[i].elementTypeString(), "i=" + i);
             Test.ensureEqual(pas[i].toJsonCsvString(),    pas2[i].toJsonCsvString(), "i=" + i);
         }
         //read all 
         atts = readAttributesFromNc(fullName);
         for (int i = 0; i < varNames.size(); i++) {
             pa = atts.get(varNames.get(i));
-            Test.ensureEqual(pas[i].elementClassString(), pa.elementClassString(), "i=" + i);
+            Test.ensureEqual(pas[i].elementTypeString(), pa.elementTypeString(), "i=" + i);
             Test.ensureEqual(pas[i].toJsonCsvString(),    pa.toJsonCsvString(), "i=" + i);
         }
         //test fail to read non-existent file
@@ -2562,10 +2656,10 @@ String2.log(pas13.toString());
             String sa6[] = {"", "a", "abcde", "abc", "abcd", "abcde"};
 
             //this fails: so origin and ar must be correct nDimensions and size
-            //ar = Array.factory(String.class, new int[]{6}, sa6);         
+            //ar = Array.factory(DataType.STRING, new int[]{6}, sa6);         
             //ncOut.writeStringData("s1", new int[]{0}, ar);
 
-            ar = Array.factory(String.class, new int[]{2,3}, sa6);         
+            ar = Array.factory(DataType.STRING, new int[]{2,3}, sa6);         
             ncOut.writeStringData(s1Var, new int[]{0, 0}, ar);
         } finally {
             ncOut.close(); //it calls flush() and doesn't like flush called separately
@@ -2582,10 +2676,11 @@ String2.log(pas13.toString());
 "  variables:\n" +
 "    char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
 "\n" +
-" data:\n" +
-"s1 =\n" +
-"  {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" + 
-"  }\n" +
+"\n" +
+"  data:\n" +
+"    s1 = \n" +
+"      {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" + 
+"      }\n" +
 "}\n";
         String2.log("results=\n" + results);
         Test.ensureEqual(results, expected, "");

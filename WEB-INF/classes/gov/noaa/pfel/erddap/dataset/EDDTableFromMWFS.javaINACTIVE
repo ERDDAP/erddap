@@ -90,6 +90,7 @@ public class EDDTableFromMWFS extends EDDTable{
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -145,6 +146,8 @@ public class EDDTableFromMWFS extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -155,7 +158,8 @@ public class EDDTableFromMWFS extends EDDTable{
 
         return new EDDTableFromMWFS(tDatasetID, tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
+            tGlobalAttributes,
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
             tLatitudeSourceMinimum,  tLatitudeSourceMaximum,
             tAltitudeSourceMinimum,  tAltitudeSourceMaximum, 
@@ -233,7 +237,7 @@ public class EDDTableFromMWFS extends EDDTable{
     public EDDTableFromMWFS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery,
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere,
         Attributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
         double tLatMin, double tLatMax,
@@ -330,6 +334,9 @@ public class EDDTableFromMWFS extends EDDTable{
                 dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
             }
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();

@@ -35,11 +35,22 @@ public class ShortArray extends PrimitiveArray {
      */
     public short[] array;
 
-    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
+    }
+
+    /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 2;
     }
 
     /** 
@@ -224,12 +235,12 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (short.class) of the element type.
+     * This returns the PAType (PAType.SHORT) of the element type.
      *
-     * @return the class (short.class) of the element type.
+     * @return the PAType (PAType.SHORT) of the element type.
      */
-    public Class elementClass() {
-        return short.class;
+    public PAType elementType() {
+        return PAType.SHORT;
     }
 
     /**
@@ -237,7 +248,7 @@ public class ShortArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_SHORT) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_SHORT;
     }
 
@@ -415,7 +426,7 @@ public class ShortArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in ShortArray.addFromPA: otherIndex=" + otherIndex + 
@@ -664,8 +675,9 @@ public class ShortArray extends PrimitiveArray {
      *   Short.MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
-        int i = get(index);
-        return i == Short.MAX_VALUE? Integer.MAX_VALUE : i;
+        short s = get(index);
+        return s == Short.MAX_VALUE? Integer.MAX_VALUE : 
+                                     s;
     }
 
     /**
@@ -701,8 +713,9 @@ public class ShortArray extends PrimitiveArray {
      *   Short.MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
-        int i = get(index);
-        return i == Short.MAX_VALUE? Long.MAX_VALUE : i;
+        short s = get(index);
+        return s == Short.MAX_VALUE? Long.MAX_VALUE : 
+                                     s;
     }
 
     /**
@@ -720,13 +733,15 @@ public class ShortArray extends PrimitiveArray {
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a float. String values are parsed
+     * @return the value as a float. 
+     *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      *   Short.MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Float.NaN : s;
+        return s == Short.MAX_VALUE? Float.NaN : 
+                                     s;
     }
 
     /**
@@ -744,13 +759,15 @@ public class ShortArray extends PrimitiveArray {
      * Return a value from the array as a double.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a double. String values are parsed
+     * @return the value as a double. 
+     *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      *   Short.MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Double.NaN : s;
+        return s == Short.MAX_VALUE? Double.NaN : 
+                                     s;
     }
 
     /**
@@ -801,8 +818,9 @@ public class ShortArray extends PrimitiveArray {
      *   or "" for NaN or infinity.
      */
     public String getString(int index) {
-        short b = get(index);
-        return b == Short.MAX_VALUE? "" : String.valueOf(b);
+        short s = get(index);
+        return s == Short.MAX_VALUE? "" : 
+                                     String.valueOf(s);
     }
 
     /**
@@ -811,11 +829,12 @@ public class ShortArray extends PrimitiveArray {
      * String returns a json String with chars above 127 encoded as \\udddd.
      * 
      * @param index the index number 0 ... size-1 
-     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
     public String getJsonString(int index) {
-        short b = get(index);
-        return b == Short.MAX_VALUE? "null" : String.valueOf(b);
+        short s = get(index);
+        return s == Short.MAX_VALUE? "null" : 
+                                     String.valueOf(s);
     }
 
     /**
@@ -1135,6 +1154,28 @@ public class ShortArray extends PrimitiveArray {
         ensureCapacity(size + (long)nValues);
         for (int i = 0; i < nValues; i++) 
             array[size++] = (short)dis.readInt(); //yes, ints; see above
+    }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeShort(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readShort());
     }
 
     /**
@@ -1465,22 +1506,22 @@ public class ShortArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (ShortArray)unsignedFactory(short.class, 
+        anArray = (ShortArray)unsignedFactory(PAType.SHORT, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // -> mv
         anArray.clear();        
 
-        anArray = (ShortArray)unsignedFactory(short.class, 
+        anArray = (ShortArray)unsignedFactory(PAType.SHORT, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
         anArray.clear();        
 
-        anArray = (ShortArray)unsignedFactory(short.class, 
+        anArray = (ShortArray)unsignedFactory(PAType.SHORT, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // ->mv
         anArray.clear();        
 
-        anArray = (ShortArray)unsignedFactory(short.class, 
+        anArray = (ShortArray)unsignedFactory(PAType.SHORT, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // ->mv
         anArray.clear();        
@@ -1493,7 +1534,7 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 32000, "");
         Test.ensureEqual(anArray.getDouble(0), 32000, "");
         Test.ensureEqual(anArray.getString(0), "32000", "");
-        Test.ensureEqual(anArray.elementClass(), short.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.SHORT, "");
         short tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new short[]{(short)32000}, "");
 
@@ -1807,7 +1848,6 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(anArray.firstTie(), -1, "");
         anArray.set(1, (short)30);
         Test.ensureEqual(anArray.firstTie(), 0, "");
-
 
         //hashcode
         anArray = new ShortArray();

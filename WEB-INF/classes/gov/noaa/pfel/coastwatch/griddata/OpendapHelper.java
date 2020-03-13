@@ -29,6 +29,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
+import ucar.ma2.Array;
+import ucar.ma2.ArrayObject;
+import ucar.ma2.ArrayString;
+import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFileWriter;
@@ -221,17 +225,15 @@ public class OpendapHelper  {
                 StringArray sa = new StringArray(sar);
 
                 //store values in the appropriate type of PrimitiveArray
-                //dilemma: store unsigned values as if signed, or in larger data type?
-                //   decision: for now, store uint16 and uint32 as int
                 PrimitiveArray pa = null;
                 int type = attribute.getType();
-                if       (type == Attribute.FLOAT32) pa = new FloatArray(); 
-                else if  (type == Attribute.FLOAT64) pa = new DoubleArray();
-                else if  (type == Attribute.INT32 ||
-                          type == Attribute.UINT32)  pa = new IntArray();
-                else if  (type == Attribute.INT16 ||
-                          type == Attribute.UINT16)  pa = new ShortArray();
-                else if  (type == Attribute.BYTE)    pa = new ByteArray();
+                if      (type == Attribute.FLOAT32) pa = new FloatArray(); 
+                else if (type == Attribute.FLOAT64) pa = new DoubleArray();
+                else if (type == Attribute.INT32)   pa = new IntArray();
+                else if (type == Attribute.UINT32)  pa = new UIntArray();
+                else if (type == Attribute.INT16)   pa = new ShortArray();
+                else if (type == Attribute.UINT16)  pa = new UShortArray();
+                else if (type == Attribute.BYTE)    pa = new ByteArray();
                 //ignore STRING, URL, UNKNOWN, etc. (keep as StringArray)
 
                 //move the sa data into pa
@@ -688,7 +690,7 @@ public class OpendapHelper  {
         else if (pa instanceof ShortArray)  pv = new Int16PrimitiveVector(  new DInt16(name));
         else if (pa instanceof ByteArray)   pv = new BytePrimitiveVector(   new DByte(name));
         else throw new Exception(String2.ERROR + "in OpendapHelper.getPrimitiveVector: The PrimitiveArray type=" + 
-            pa.elementClassString() + " is not supported.");
+            pa.elementTypeString() + " is not supported.");
 
         pv.setInternalStorage(pa.toObjectArray());
         return pv;
@@ -701,21 +703,21 @@ public class OpendapHelper  {
      * <p>Some Java types don't have exact matches. The closest match is returned,
      * e.g., char becomes String, long becomes double
      *
-     * @param c the Java type class e.g., float.class
+     * @param paType a PAType
      * @return the corresponding atomic-type String
      * @throws Exception if trouble
      */
-    public static String getAtomicType(Class c) throws Exception {
-        if (c == long.class ||   // DAP has no long. This is imperfect; there will be loss of precision
-            c == double.class) return "Float64";
-        if (c == float.class)  return "Float32";
-        if (c == int.class)    return "Int32";
-        if (c == short.class)  return "Int16";
-        if (c == byte.class)   return "Byte";
-        if (c == char.class ||    // DAP has no char, so represent it as a String
-            c == String.class) return "String";
+    public static String getAtomicType(PAType paType) throws Exception {
+        if (paType == PAType.LONG ||   // DAP has no long. This is imperfect; there will be loss of precision
+            paType == PAType.DOUBLE) return "Float64";
+        if (paType == PAType.FLOAT)  return "Float32";
+        if (paType == PAType.INT)    return "Int32";
+        if (paType == PAType.SHORT)  return "Int16";
+        if (paType == PAType.BYTE)   return "Byte";
+        if (paType == PAType.CHAR ||    // DAP has no char, so represent it as a String
+            paType == PAType.STRING) return "String";
         throw new Exception(String2.ERROR + "in OpendapHelper.getAtomicType: The classType=" + 
-            PrimitiveArray.elementClassToString(c) + " is not supported.");
+            paType + " is not supported.");
     }
 
     /**
@@ -766,10 +768,10 @@ public class OpendapHelper  {
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) {
             PrimitiveArray pa = attributes.get(names[ni]);
-            Class et = pa.elementClass();
+            PAType et = pa.elementType();
             sb.append(XML.encodeAsHTML("    " + getAtomicType(et) + " " + names[ni] + " ", encodeAsHTML));
             int paSize = pa.size();
-            if (et == char.class || et == String.class) {
+            if (et == PAType.CHAR || et == PAType.STRING) {
                 //enquote, and replace internal quotes with \"
                 String ts = String2.toSVString(pa.toStringArray(), "\n", false);
                 if (encodeAsHTML) {
@@ -785,19 +787,19 @@ public class OpendapHelper  {
                 ts = "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"";
                 //String2.log(">> ts=" + ts);
                 sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
-            } else if (et == double.class ||
-                       et == long.class) {
+            } else if (et == PAType.DOUBLE ||
+                       et == PAType.LONG) {
                 //the spec says must be like Ansi C printf, %g format, precision=6
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getDouble(pai);
-                    //if (et==long.class) String2.log(">> Opendap long att #" + pai + " = " + pa.getString(pai) + " => " + ts); 
+                    //if (et==PAType.LONG) String2.log(">> Opendap long att #" + pai + " = " + pa.getString(pai) + " => " + ts); 
                     ts = String2.replaceAll(ts, "E-", "e-"); //do first
                     ts = String2.replaceAll(ts, "E", "e+");
                     sb.append(ts +
                         //String.format("%g.6", (Object)new Double(pa.getDouble(pai))) + 
                         (pai < paSize - 1 ? ", " : ""));  
                 }
-            } else if (et == float.class) {
+            } else if (et == PAType.FLOAT) {
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getFloat(pai);
                     ts = String2.replaceAll(ts, "E-", "e-"); //do first
@@ -980,21 +982,21 @@ public class OpendapHelper  {
     }
 
     /**
-     * This returns the PrimitiveArray elementClass of a PrimitiveVector.
+     * This returns the PrimitiveArray elementPAType of a PrimitiveVector.
      *
      * @param pv 
-     * @return the PrimitiveArray elementClass of this BaseType.
+     * @return the PrimitiveArray elementPAType of this BaseType.
      * @throws Exception if trouble
      */
-    public static Class getElementClass(PrimitiveVector pv) throws Exception {
+    public static PAType getElementPAType(PrimitiveVector pv) throws Exception {
         Test.ensureNotNull(pv, "pv is null");
-        if (pv instanceof Float32PrimitiveVector)  return float.class;
-        if (pv instanceof Float64PrimitiveVector)  return double.class;
-        if (pv instanceof BytePrimitiveVector)     return byte.class;
-        if (pv instanceof Int16PrimitiveVector)    return short.class;
-        if (pv instanceof Int32PrimitiveVector)    return int.class;
-        if (pv instanceof BaseTypePrimitiveVector) return String.class; //???
-        if (pv instanceof BooleanPrimitiveVector)  return boolean.class;
+        if (pv instanceof Float32PrimitiveVector)  return PAType.FLOAT;
+        if (pv instanceof Float64PrimitiveVector)  return PAType.DOUBLE;
+        if (pv instanceof BytePrimitiveVector)     return PAType.BYTE;
+        if (pv instanceof Int16PrimitiveVector)    return PAType.SHORT;
+        if (pv instanceof Int32PrimitiveVector)    return PAType.INT;
+        if (pv instanceof BaseTypePrimitiveVector) return PAType.STRING; //???
+        if (pv instanceof BooleanPrimitiveVector)  return PAType.BOOLEAN;
         throw new Exception(String2.ERROR + ": Unknown PrimitiveVector (" + pv + ").");
     }
 
@@ -1030,7 +1032,7 @@ public class OpendapHelper  {
             }
             int nDim = dArray.numDimensions();
             //I'm confused. See 'flag' in first test of this method -- no stringLength dim!
-            //if (getElementClass(dArray.getPrimitiveVector()) == String.class)
+            //if (getElementPAType(dArray.getPrimitiveVector()) == PAType.STRING)
             //    nDim--; 
             if (nDim == 0 || nDim < dimNames.size()) 
                 continue;
@@ -1333,16 +1335,16 @@ public class OpendapHelper  {
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, true, false, false));
+                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, false, false)); //isUnlimited, isVariableLength
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
                     }
 
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
-                    Class tClass = getElementClass(pv);
-                    if (debug) String2.log("  DGrid pv=" + pv.toString() + " tClass=" + tClass);
-                    if (tClass == String.class) {
+                    PAType tPAType = getElementPAType(pv);
+                    if (debug) String2.log("  DGrid pv=" + pv.toString() + " tPAType=" + tPAType);
+                    if (tPAType == PAType.STRING) {
                         //make String variable
                         isString[v] = true;
                         int strlen = varAtts.getInt("DODS_strlen");
@@ -1353,7 +1355,7 @@ public class OpendapHelper  {
                         
                         //make numeric variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getNc3DataType(tClass), tDims);
+                            NcHelper.getNc3DataType(tPAType), tDims);
                     }
 
                 } else if (baseType instanceof DArray) {
@@ -1372,16 +1374,16 @@ public class OpendapHelper  {
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, true, false, false));
+                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, false, false)); //isUnlimited, isVariableLength
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
                     }
 
                     PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
-                    Class tClass = getElementClass(pv);
-                    if (debug) String2.log("  DArray pv=" + pv.toString() + " tClass=" + tClass);
-                    if (tClass == String.class) {
+                    PAType tPAType = getElementPAType(pv);
+                    if (debug) String2.log("  DArray pv=" + pv.toString() + " tPAType=" + tPAType);
+                    if (tPAType == PAType.STRING) {
                         //make String variable
                         isString[v] = true;
                         int strlen = varAtts.getInt("DODS_strlen");
@@ -1392,16 +1394,16 @@ public class OpendapHelper  {
                     } else {
                         //make numeric variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getNc3DataType(tClass), tDims);
+                            NcHelper.getNc3DataType(tPAType), tDims);
                     }
 
                 } else {
                     //it's a scalar variable
                     PrimitiveVector pv = baseType.newPrimitiveVector(); //has no data
-                    Class tClass = getElementClass(pv);
-                    if (debug) String2.log("  scalar pv=" + pv.toString() + " tClass=" + tClass);
+                    PAType tPAType = getElementPAType(pv);
+                    if (debug) String2.log("  scalar pv=" + pv.toString() + " tPAType=" + tPAType);
 
-                    if (tClass == String.class) {
+                    if (tPAType == PAType.STRING) {
                         //make String scalar variable
                         isString[v] = true;
                         if (debug) String2.log("  isString=true");
@@ -1418,7 +1420,7 @@ public class OpendapHelper  {
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
                             dims.add(ncOut.addDimension(rootGroup, 
-                                dimName, dimSize, true, false, false));
+                                dimName, dimSize, false, false)); //isUnlimited, isVariableLength
                         }
                         ArrayList tDims = new ArrayList();
                         tDims.add(dims.get(which));
@@ -1431,7 +1433,7 @@ public class OpendapHelper  {
                         //make numeric scalar variable
                         varShape[v] = new int[0];
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getNc3DataType(tClass), new ArrayList());
+                            NcHelper.getNc3DataType(tPAType), new ArrayList());
                     }
                 }
 
@@ -1461,15 +1463,15 @@ public class OpendapHelper  {
                 if (isString[v]) {
                     //String variable
                     int n = pas[0].size();
-                    ucar.ma2.ArrayObject.D1 ao = new 
-                        ucar.ma2.ArrayObject.D1(String.class, n); 
+                    //ArrayString.D1 doesn't work below. Why not?
+                    ArrayObject.D1 ta = (ArrayObject.D1)(Array.factory(DataType.STRING, new int[]{n})); 
                     for (int i = 0; i < n; i++)
-                        ao.set(i, pas[0].getString(i));
-                    ncOut.writeStringData(newVars[v], ao);
+                        ta.set(i, pas[0].getString(i));
+                    ncOut.writeStringData(newVars[v], ta);
                 } else {
                     //non-String variable
                     ncOut.write(newVars[v], 
-                        ucar.ma2.Array.factory(pas[0].elementClass(), 
+                        Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                             varShape[v], pas[0].toObjectArray()));
                 }
 
@@ -1925,10 +1927,10 @@ public class OpendapHelper  {
                             //String2.log("    dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
                             dims.add(ncOut.addDimension(rootGroup, dimName, 
-                                dimSize, true, false, false));
+                                dimSize, false, false)); //isUnlimited, isVariableLength
                             PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
                             newDimVars[d] = ncOut.addVariable(rootGroup, dimName, 
-                                NcHelper.getNc3DataType(getElementClass(pv)), 
+                                NcHelper.getNc3DataType(getElementPAType(pv)), 
                                 Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
@@ -1941,10 +1943,10 @@ public class OpendapHelper  {
 
                     //make the dataVariable
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
-                    Class tClass = getElementClass(pv);
-                    //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
+                    PAType tPAType = getElementPAType(pv);
+                    //String2.log("pv=" + pv.toString() + " tPAType=" + tPAType);
                     newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                        NcHelper.getNc3DataType(tClass), dims);
+                        NcHelper.getNc3DataType(tPAType), dims);
 
                 } else if (baseType instanceof DArray) {
                     //dArray is usually 1 dim, but may be multidimensional
@@ -1969,7 +1971,7 @@ public class OpendapHelper  {
                             //String2.log("    DArray dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
                             dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, 
-                                true, false, false));
+                                false, false)); //isUnlimited, isVariableLength
                             //don't make a related variable
                         } else {
                             //check that dimension names are the same
@@ -1982,10 +1984,10 @@ public class OpendapHelper  {
 
                     //make the dataVariable
                     PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
-                    Class tClass = getElementClass(pv);
-                    //String2.log("  pv tClass=" + tClass);
+                    PAType tPAType = getElementPAType(pv);
+                    //String2.log("  pv tPAType=" + tPAType);
 
-                    if (tClass == String.class) {
+                    if (tPAType == PAType.STRING) {
                         //a String variable.  Add a dim for nchars
                         isStringVar[v] = true;
                         ArrayList tDims = new ArrayList(dims);
@@ -1998,7 +2000,7 @@ public class OpendapHelper  {
                         }
                         tDims.add(ncOut.addDimension(rootGroup, 
                             varNames[v] + NcHelper.StringLengthSuffix, 
-                            nChars, true, false, false));
+                            nChars, false, false));  //isUnlimited, isVariableLength
 
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
                             ucar.ma2.DataType.CHAR, tDims);
@@ -2006,7 +2008,7 @@ public class OpendapHelper  {
                     } else {
                         //a regular variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getNc3DataType(tClass), dims);
+                            NcHelper.getNc3DataType(tPAType), dims);
                     }
 
                 } else {
@@ -2049,7 +2051,7 @@ public class OpendapHelper  {
                         "?" + dims.get(d).getName() + tProjection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     ncOut.write(newDimVars[d], 
-                        ucar.ma2.Array.factory(pas[0].toObjectArray()));
+                        NcHelper.arrayFactory1D(pas[0].toObjectArray()));
                 }
             }
 
@@ -2075,7 +2077,7 @@ public class OpendapHelper  {
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
                         ncOut.write(newVars[v], origin,
-                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                            ucar.ma2.Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                                 jplChunkShape, pas[0].toObjectArray()));
                     }
                 } else {
@@ -2088,15 +2090,15 @@ public class OpendapHelper  {
                     if (isStringVar[v]) {
                         //String variable
                         int n = pas[0].size();
-                        ucar.ma2.ArrayObject.D1 ao = new 
-                            ucar.ma2.ArrayObject.D1(String.class, n); 
+                        //ArrayString.D1 doesn't work below. Why not?
+                        ArrayObject.D1 ta = (ArrayObject.D1)(Array.factory(DataType.STRING, new int[]{n})); 
                         for (int i = 0; i < n; i++)
-                            ao.set(i, pas[0].getString(i));
-                        ncOut.writeStringData(newVars[v], ao);
+                            ta.set(i, pas[0].getString(i));
+                        ncOut.writeStringData(newVars[v], ta);
                     } else {
                         //non-String variable
                         ncOut.write(newVars[v], 
-                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                            Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                                 shape, pas[0].toObjectArray()));
                     }
                 }
@@ -2307,16 +2309,17 @@ public class OpendapHelper  {
 "  :site = \"OSCAR DYSON\";\n" +
 "  :start_date_time = \"2012/01/28 -- 21:36  UTC\";\n" +
 "  :title = \"OSCAR DYSON Meteorological Data\";\n" +
-" data:\n" +
-"time =\n" +
-"  {16870896, 16870897, 16870898, 16870899, 16870900, 16870901, 16870902, 16870903, 16870904, 16870905, 16870906, 16870907, 16870908, 16870909, 16870910, 16870911, 16870912, 16870913, 16870914, 16870915, 16870916, 16870917, 16870918, 16870919, 16870920, 16870921, 16870922, 16870923, 16870924, 16870925, 16870926, 16870927, 16870928, 16870929, 16870930, 16870931, 16870932, 16870933, 16870934, 16870935, 16870936, 16870937, 16870938, 16870939, 16870940, 16870941, 16870942, 16870943, 16870944, 16870945, 16870946, 16870947, 16870948, 16870949, 16870950, 16870951, 16870952, 16870953, 16870954, 16870955, 16870956, 16870957, 16870958, 16870959, 16870960, 16870961, 16870962, 16870963, 16870964, 16870965, 16870966, 16870967, 16870968, 16870969, 16870970, 16870971, 16870972, 16870973, 16870974, 16870975, 16870976, 16870977, 16870978, 16870979, 16870980, 16870981, 16870982, 16870983, 16870984, 16870985, 16870986, 16870987, 16870988, 16870989, 16870990, 16870991, 16870992, 16870993, 16870994, 16870995, 16870996, 16870997, 16870998, 16870999, 16871000, 16871001, 16871002, 16871003, 16871004, 16871005, 16871006, 16871007, 16871008, 16871009, 16871010, 16871011, 16871012, 16871013, 16871014, 16871015, 16871016, 16871017, 16871018, 16871019, 16871020, 16871021, 16871022, 16871023, 16871024, 16871025, 16871026, 16871027, 16871028, 16871029, 16871030, 16871031, 16871032, 16871033, 16871034, 16871035, 16871036, 16871037, 16871038, 16871039}\n" +
-"lat =\n" +
-"  {44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.6, 44.6, 44.6, 44.6, 44.6, 44.6, 44.61, 44.61, 44.61, 44.61, 44.62, 44.62, 44.62, 44.62, 44.63, 44.63, 44.63, 44.64, 44.64, 44.64, 44.65, 44.65, 44.65, 44.66, 44.66, 44.66, 44.67, 44.67, 44.67, 44.68, 44.68, 44.68, 44.69, 44.69, 44.69, 44.7, 44.7, 44.7, 44.71, 44.71, 44.71, 44.72, 44.72, 44.72, 44.73, 44.73, 44.73, 44.73, 44.74, 44.74, 44.74, 44.75}\n" +
-"lon =\n" +
-"  {235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.94, 235.94, 235.94, 235.94, 235.94, 235.93, 235.93, 235.93, 235.92, 235.92, 235.92, 235.91, 235.91, 235.91, 235.9, 235.9, 235.9, 235.89, 235.89, 235.88, 235.88, 235.88, 235.88, 235.88, 235.88, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.84, 235.84, 235.84, 235.84, 235.84, 235.84, 235.83, 235.83, 235.83, 235.83, 235.83, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82}\n" +
-"PL_HD =\n" +
-"  {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
-"flag =\"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\"\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {16870896, 16870897, 16870898, 16870899, 16870900, 16870901, 16870902, 16870903, 16870904, 16870905, 16870906, 16870907, 16870908, 16870909, 16870910, 16870911, 16870912, 16870913, 16870914, 16870915, 16870916, 16870917, 16870918, 16870919, 16870920, 16870921, 16870922, 16870923, 16870924, 16870925, 16870926, 16870927, 16870928, 16870929, 16870930, 16870931, 16870932, 16870933, 16870934, 16870935, 16870936, 16870937, 16870938, 16870939, 16870940, 16870941, 16870942, 16870943, 16870944, 16870945, 16870946, 16870947, 16870948, 16870949, 16870950, 16870951, 16870952, 16870953, 16870954, 16870955, 16870956, 16870957, 16870958, 16870959, 16870960, 16870961, 16870962, 16870963, 16870964, 16870965, 16870966, 16870967, 16870968, 16870969, 16870970, 16870971, 16870972, 16870973, 16870974, 16870975, 16870976, 16870977, 16870978, 16870979, 16870980, 16870981, 16870982, 16870983, 16870984, 16870985, 16870986, 16870987, 16870988, 16870989, 16870990, 16870991, 16870992, 16870993, 16870994, 16870995, 16870996, 16870997, 16870998, 16870999, 16871000, 16871001, 16871002, 16871003, 16871004, 16871005, 16871006, 16871007, 16871008, 16871009, 16871010, 16871011, 16871012, 16871013, 16871014, 16871015, 16871016, 16871017, 16871018, 16871019, 16871020, 16871021, 16871022, 16871023, 16871024, 16871025, 16871026, 16871027, 16871028, 16871029, 16871030, 16871031, 16871032, 16871033, 16871034, 16871035, 16871036, 16871037, 16871038, 16871039}\n" +
+"    lat = \n" +
+"      {44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.6, 44.6, 44.6, 44.6, 44.6, 44.6, 44.61, 44.61, 44.61, 44.61, 44.62, 44.62, 44.62, 44.62, 44.63, 44.63, 44.63, 44.64, 44.64, 44.64, 44.65, 44.65, 44.65, 44.66, 44.66, 44.66, 44.67, 44.67, 44.67, 44.68, 44.68, 44.68, 44.69, 44.69, 44.69, 44.7, 44.7, 44.7, 44.71, 44.71, 44.71, 44.72, 44.72, 44.72, 44.73, 44.73, 44.73, 44.73, 44.74, 44.74, 44.74, 44.75}\n" +
+"    lon = \n" +
+"      {235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.94, 235.94, 235.94, 235.94, 235.94, 235.93, 235.93, 235.93, 235.92, 235.92, 235.92, 235.91, 235.91, 235.91, 235.9, 235.9, 235.9, 235.89, 235.89, 235.88, 235.88, 235.88, 235.88, 235.88, 235.88, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.84, 235.84, 235.84, 235.84, 235.84, 235.84, 235.83, 235.83, 235.83, 235.83, 235.83, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82}\n" +
+"    PL_HD = \n" +
+"      {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
+"    flag = \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\"\n" +
 "}\n";
             Test.ensureEqual(results, expected, "results=" + results);
             File2.delete(fileName);
@@ -2637,49 +2640,50 @@ String expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
 "  :title = \"Wind, QuikSCAT SeaWinds, 0.125°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
-" data:\n" +
-"time =\n" +
-"  {9.48024E8}\n" +
-"altitude =\n" +
-"  {10.0}\n" +
-"latitude =\n" +
-"  {-75.0, -50.0, -25.0, 0.0, 25.0, 50.0, 75.0}\n" +
-"longitude =\n" +
-"  {0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0}\n" +
-"x_wind =\n" +
-"  {\n" +
-"    {\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {9.48024E8}\n" +
+"    altitude = \n" +
+"      {10.0}\n" +
+"    latitude = \n" +
+"      {-75.0, -50.0, -25.0, 0.0, 25.0, 50.0, 75.0}\n" +
+"    longitude = \n" +
+"      {0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0}\n" +
+"    x_wind = \n" +
 "      {\n" +
-"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
-"        {6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454, 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372, 5.775274, 6.8520603},\n" +
-"        {-3.513153, -9999999.0, -5.7222853, -4.0249896, -4.6091595, -9999999.0, -9999999.0, -3.9060166, -1.821446, -2.0546885, -2.349195, -4.2188687, -9999999.0, -0.7905332, -3.715024},\n" +
-"        {0.38850072, -9999999.0, -2.8492346, 0.7843591, -9999999.0, -0.353197, -0.93183184, -5.3337674, -7.8715024, -5.2341905, -2.1567967, 0.46681255, -9999999.0, -3.7223456, -1.3264368},\n" +
-"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -4.250928, -1.9779109, -2.3081408, -6.070514, -3.4209945, 2.3732827, -3.4732149, -3.2282434, -3.99131, -9999999.0},\n" +
-"        {2.3816996, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 1.9863724, 1.746363, 5.305478, 2.3346918, -9999999.0, -9999999.0, 2.0079596, 3.4320266, 1.8692436},\n" +
-"        {0.83961326, -3.4395192, -3.1952338, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -2.9099085}\n" +
+"        {\n" +
+"          {\n" +
+"            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
+"            {6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454, 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372, 5.775274, 6.8520603},\n" +
+"            {-3.513153, -9999999.0, -5.7222853, -4.0249896, -4.6091595, -9999999.0, -9999999.0, -3.9060166, -1.821446, -2.0546885, -2.349195, -4.2188687, -9999999.0, -0.7905332, -3.715024},\n" +
+"            {0.38850072, -9999999.0, -2.8492346, 0.7843591, -9999999.0, -0.353197, -0.93183184, -5.3337674, -7.8715024, -5.2341905, -2.1567967, 0.46681255, -9999999.0, -3.7223456, -1.3264368},\n" +
+"            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -4.250928, -1.9779109, -2.3081408, -6.070514, -3.4209945, 2.3732827, -3.4732149, -3.2282434, -3.99131, -9999999.0},\n" +
+"            {2.3816996, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 1.9863724, 1.746363, 5.305478, 2.3346918, -9999999.0, -9999999.0, 2.0079596, 3.4320266, 1.8692436},\n" +
+"            {0.83961326, -3.4395192, -3.1952338, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -2.9099085}\n" +
+"          }\n" +
+"        }\n" +
 "      }\n" +
-"    }\n" +
-"  }\n" +
-"y_wind =\n" +
-"  {\n" +
-"    {\n" +
+"    y_wind = \n" +
 "      {\n" +
-"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 3.9745862, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
-"        {-1.6358501, -2.1310546, -1.672539, -2.8083494, -1.7282568, -2.5679686, -0.032763753, 0.6524638, 0.9784334, -2.4545083, 0.6344165, -0.5887741, -0.6837046, -0.92711323, -1.9981208},\n" +
-"        {3.7522712, -9999999.0, -0.04178731, 1.6603879, 5.321683, -9999999.0, -9999999.0, 1.5633415, -0.50912154, -2.964269, -0.92438585, 3.959174, -9999999.0, -2.2249718, 0.46982485},\n" +
-"        {4.8992314, -9999999.0, -4.7178936, -3.2770228, -9999999.0, -2.8111093, -0.9852706, 0.46997508, 0.0683085, 0.46172503, 1.2998049, 3.5235379, -9999999.0, 1.1354263, 4.7139735},\n" +
-"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -5.092368, -3.3667018, -0.60028434, -0.7609817, -1.114303, -3.6573937, -0.934499, -0.40036556, -2.5770886, -9999999.0},\n" +
-"        {0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0, -9999999.0, -2.3936603, 3.725975, 0.09879057},\n" +
-"        {-6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609}\n" +
+"        {\n" +
+"          {\n" +
+"            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 3.9745862, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
+"            {-1.6358501, -2.1310546, -1.672539, -2.8083494, -1.7282568, -2.5679686, -0.032763753, 0.6524638, 0.9784334, -2.4545083, 0.6344165, -0.5887741, -0.6837046, -0.92711323, -1.9981208},\n" +
+"            {3.7522712, -9999999.0, -0.04178731, 1.6603879, 5.321683, -9999999.0, -9999999.0, 1.5633415, -0.50912154, -2.964269, -0.92438585, 3.959174, -9999999.0, -2.2249718, 0.46982485},\n" +
+"            {4.8992314, -9999999.0, -4.7178936, -3.2770228, -9999999.0, -2.8111093, -0.9852706, 0.46997508, 0.0683085, 0.46172503, 1.2998049, 3.5235379, -9999999.0, 1.1354263, 4.7139735},\n" +
+"            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -5.092368, -3.3667018, -0.60028434, -0.7609817, -1.114303, -3.6573937, -0.934499, -0.40036556, -2.5770886, -9999999.0},\n" +
+"            {0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0, -9999999.0, -2.3936603, 3.725975, 0.09879057},\n" +
+"            {-6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609}\n" +
+"          }\n" +
+"        }\n" +
 "      }\n" +
-"    }\n" +
-"  }\n" +
 "}\n";
 /*From .asc request:
 https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.asc?x_wind[5][0][0:200:1200][0:200:2880],y_wind[5][0][0:200:1200][0:200:2880]
@@ -2852,7 +2856,7 @@ expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +

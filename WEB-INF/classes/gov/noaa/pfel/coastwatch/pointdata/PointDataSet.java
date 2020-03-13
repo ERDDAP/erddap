@@ -99,10 +99,10 @@ public abstract class PointDataSet implements Comparable {
     public char defaultUnits;
 
     /**
-     * The type of data (e.g., float.class, double.class, or String.class)
+     * The type of data (e.g., PAType.FLOAT, PAType.DOUBLE, or PAType.STRING)
      * in a form suitable for PrimitiveArrays.
      */
-    public Class elementClass;
+    public PAType elementType;
 
     /** 
      * The xxxxFGDC substitution info for this dataset (null if not used). 
@@ -272,7 +272,7 @@ public abstract class PointDataSet implements Comparable {
      *    <br>5) inFileVarName with data (unpacked, in standard units).
      *   <br>LON, LAT, DEPTH and TIME will be DoubleArrays; ID will be a StringArray; 
      *     inFileVarName will be a numeric PrimitiveArray 
-     *     (not necessarily DoubleArray).  The data column will probably be elementClass.
+     *     (not necessarily DoubleArray).  The data column will probably be elementType.
      *   <br>Rows with missing values are NOT removed.
      *   <br>The metadata (e.g., actual_range) will be correct (as correct as I can make it). 
      *   <br>The table will have the proper columns but may have 0 rows.
@@ -442,15 +442,15 @@ public abstract class PointDataSet implements Comparable {
 
         //make the resultTable  (like rawTable, but no data)
         Table resultTable = new Table();
-        PrimitiveArray xResultPA    = PrimitiveArray.factory(xPA.elementClass(), 4, false);
-        PrimitiveArray yResultPA    = PrimitiveArray.factory(yPA.elementClass(), 4, false);
-        PrimitiveArray zResultPA    = PrimitiveArray.factory(zPA.elementClass(), 4, false);
-        PrimitiveArray tResultPA    = PrimitiveArray.factory(timePA.elementClass(), 4, false);
+        PrimitiveArray xResultPA    = PrimitiveArray.factory(xPA.elementType(), 4, false);
+        PrimitiveArray yResultPA    = PrimitiveArray.factory(yPA.elementType(), 4, false);
+        PrimitiveArray zResultPA    = PrimitiveArray.factory(zPA.elementType(), 4, false);
+        PrimitiveArray tResultPA    = PrimitiveArray.factory(timePA.elementType(), 4, false);
         StringArray    idResultPA   = new StringArray();
         //but make sure data column is double or float, since it will hold floating point averages
-        Class tEt = dataPA.elementClass();
-        if (tEt != double.class && tEt != float.class) 
-            tEt = float.class; //arbitrary: should it be double? 
+        PAType tEt = dataPA.elementType();
+        if (tEt != PAType.DOUBLE && tEt != PAType.FLOAT) 
+            tEt = PAType.FLOAT; //arbitrary: should it be double? 
         PrimitiveArray dataResultPA = PrimitiveArray.factory(tEt, 4, false);
         resultTable.addColumn(rawTable.getColumnName(0), xResultPA);
         resultTable.addColumn(rawTable.getColumnName(1), yResultPA);

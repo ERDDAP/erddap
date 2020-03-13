@@ -12,6 +12,7 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -19,10 +20,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
-import com.cohort.util.ScriptCalendar2;
-import com.cohort.util.ScriptMath;
-import com.cohort.util.ScriptMath2;
-import com.cohort.util.ScriptString2;
+import com.cohort.util.Script2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -75,6 +73,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
@@ -370,6 +370,13 @@ public abstract class EDDTable extends EDD {
      */
     public Table minMaxTable() {return minMaxTable; }
 
+    /** When inactive, these will be null. 
+     * addVariablesWhereAttValues parallels addVariablesWhereAttNames.
+     */
+    protected StringArray            addVariablesWhereAttNames  = null; //[0] is always ""
+    protected ArrayList<StringArray> addVariablesWhereAttValues = null; //[0] in each StringArray is always ""
+
+
     //static constructor
     static {
         int nDFTN = dataFileTypeNames.length;
@@ -607,6 +614,45 @@ public abstract class EDDTable extends EDD {
         return String2.replaceAll(EDStatic.EDDTableDapLongDescription, "&erddapUrl;", tErddapUrl); 
     }
 
+    /** 
+     * EDDTable constructors call this after dataVariables are constructed 
+     * and right before ensureValid to process an addVariablesWhere csv list
+     * of attNames.
+     *
+     * @param tAddVariablesWhere a CSV list of attribute names.
+     */
+    protected void makeAddVariablesWhereAttNamesAndValues(String tAddVariablesWhere) {
+        addVariablesWhereAttNames  = null; //not necessary, but be safe
+        addVariablesWhereAttValues = null; //not necessary, but be safe
+        if (String2.isSomething(tAddVariablesWhere)) {
+            int ndv = dataVariables.length;
+            String attNames[] = StringArray.arrayFromCSV(tAddVariablesWhere);
+            for (int attNamesi = 0; attNamesi < attNames.length; attNamesi++) {
+                HashSet<String> validAttValues = new HashSet();
+                for (int dv = 0; dv < ndv; dv++) {
+                    String ts = dataVariables[dv].combinedAttributes().getString(attNames[attNamesi]);
+                    if (String2.isSomething(ts))
+                        validAttValues.add(ts);
+                }
+                if (!validAttValues.isEmpty()) {
+                    if (addVariablesWhereAttNames == null) {
+                        addVariablesWhereAttNames  = new StringArray(new String[]{""}); //with "" initial option
+                        addVariablesWhereAttValues = new ArrayList();
+                        addVariablesWhereAttValues.add(new StringArray(new String[]{""})); 
+                    }
+                    validAttValues.add("");
+                    StringArray tValues = new StringArray(validAttValues.iterator()); 
+                    tValues.sortIgnoreCase();
+                    addVariablesWhereAttNames.add(attNames[attNamesi]);
+                    addVariablesWhereAttValues.add(tValues);
+                } else {
+                    String2.log(String2.WARNING + 
+                        " when creating addVariablesWhere hashmap: no variables have attName=" + attNames[attNamesi]);
+                }
+            }
+        }
+    }
+
     /**
      * This MUST be used by all subclass constructors to ensure that 
      * all of the items common to all EDDTables are properly set.
@@ -693,7 +739,7 @@ public abstract class EDDTable extends EDD {
                 EDV edv = dataVariables[which];
                 PrimitiveArray pa = table.getColumn(col);
                 //note that time is stored as doubles in distinctValues table
-                //String2.log("distinct col=" + colName + " " + pa.elementClassString());
+                //String2.log("distinct col=" + colName + " " + pa.elementTypeString());
                 if (pa instanceof StringArray)
                     continue;
                 int nMinMax[] = pa.getNMinMaxIndex();
@@ -1020,8 +1066,8 @@ public abstract class EDDTable extends EDD {
             String constraintVariable = constraintVariables.get(cv);
             int dv = String2.indexOf(dataVariableDestinationNames(), constraintVariable);
             EDV edv = dataVariables[dv];
-            Class sourceClass = edv.sourceDataTypeClass();
-            Class destClass = edv.destinationDataTypeClass(); 
+            PAType sourcePAType = edv.sourceDataPAType();
+            PAType destPAType = edv.destinationDataPAType(); 
             boolean isTimeStamp = edv instanceof EDVTimeStamp;
 
             String constraintOp = constraintOps.get(cv);
@@ -1029,7 +1075,7 @@ public abstract class EDDTable extends EDD {
             double constraintValueD = String2.parseDouble(constraintValue);
             //Only valid numeric constraintValue for NaN is "NaN".
             //Test this because it helps discover other constraint syntax errors.
-            if ((destClass != char.class && destClass != String.class) &&
+            if ((destPAType != PAType.CHAR && destPAType != PAType.STRING) &&
                 !constraintOp.equals(PrimitiveArray.REGEX_OP) &&
                 Double.isNaN(constraintValueD)) {
                 if (constraintValue.equals("NaN") || (isTimeStamp && constraintValue.equals(""))) {
@@ -1047,11 +1093,11 @@ public abstract class EDDTable extends EDD {
                 //it's a fixedValue; do constraint now
                 //pass=that's nice    fail=NO DATA
                 boolean tPassed = false;
-                if (edv.sourceDataTypeClass() == String.class ||
+                if (edv.sourceDataPAType() == PAType.STRING ||
                     constraintOp.equals(PrimitiveArray.REGEX_OP)) 
                     tPassed = PrimitiveArray.testValueOpValue(edv.fixedValue(),  
                         constraintOp, constraintValue);
-                else if (edv.sourceDataTypeClass() == float.class) 
+                else if (edv.sourceDataPAType() == PAType.FLOAT) 
                     tPassed = PrimitiveArray.testValueOpValue(String2.parseFloat(edv.fixedValue()),
                         constraintOp, constraintValueD);
                 else  
@@ -1071,7 +1117,7 @@ public abstract class EDDTable extends EDD {
                     String2.log("    The fixedValue constraint passes.");
 
             //constraint source is String                  
-            } else if (sourceClass == String.class) {
+            } else if (sourcePAType == PAType.STRING) {
                 if (sourceCanConstrainStringData == CONSTRAIN_NO ||
                     (constraintOp.equals(PrimitiveArray.REGEX_OP) && sourceCanConstrainStringRegex.length() == 0) ||
                     (constraintValue.length() == 0 && edv.safeStringMissingValue().length() > 0)) { //not possible to expand "" constraints to include stringMissingValue and stringFillValue
@@ -1109,11 +1155,11 @@ public abstract class EDDTable extends EDD {
                         String2.log("    The numeric constraint will be (partially) handled by source.");
 
                     if (sourceNeedsExpandedFP_EQ && 
-                        (sourceClass == float.class || sourceClass == double.class) && 
+                        (sourcePAType == PAType.FLOAT || sourcePAType == PAType.DOUBLE) && 
                         !Double.isNaN(constraintValueD) &&
                         constraintValueD != Math2.roundToDouble(constraintValueD)) { //if not int
 
-                        double fudge = Math.abs(constraintValueD) * (sourceClass == float.class? 1e-7 : 1e-16);
+                        double fudge = Math.abs(constraintValueD) * (sourcePAType == PAType.FLOAT? 1e-7 : 1e-16);
                         if (reallyVerbose && constraintOp.indexOf('=') >= 0)
                             String2.log("    The constraint with '=' is being expanded because sourceNeedsExpandedFP_EQ=true.");
                         if (constraintOp.equals(">=")) {
@@ -1150,7 +1196,7 @@ public abstract class EDDTable extends EDD {
         for (int cv = 0; cv < nConstraints; cv++) {
             EDV edv = findDataVariableByDestinationName(constraintVariables.get(cv));
             constraintEdv[cv] = edv;
-            constraintVarIsString[cv] = edv.sourceDataTypeClass() == String.class;
+            constraintVarIsString[cv] = edv.sourceDataPAType() == PAType.STRING;
             constraintOpIsRegex[cv] = constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP);
             constraintValD[cv] = constraintValues.getDouble(cv);
             constraintValDIsNaN[cv] = Double.isNaN(constraintValD[cv]);
@@ -1278,10 +1324,10 @@ public abstract class EDDTable extends EDD {
                 //apply scale_factor and add_offset to non-regex constraintValues
                 // sourceValue = (destintationValue - addOffset) / scaleFactor;
                 double td = (constraintValD[cv] - edv.addOffset()) / edv.scaleFactor();
-                Class tClass = edv.sourceDataTypeClass();
-                if (PrimitiveArray.isIntegerType(tClass))
+                PAType tPAType = edv.sourceDataPAType();
+                if (PrimitiveArray.isIntegerType(tPAType))
                      constraintValues.set(cv, "" + Math2.roundToLong(td));
-                else if (tClass == float.class)  constraintValues.set(cv, "" + (float)td);
+                else if (tPAType == PAType.FLOAT)  constraintValues.set(cv, "" + (float)td);
                 else                             constraintValues.set(cv, "" + td);
                 //String2.log(">>after scaleAddOffset applied constraintVal=" + td);
 
@@ -1474,7 +1520,7 @@ public abstract class EDDTable extends EDD {
                     //edv is a fixedValue
                     //if the column isn't present, add in correct place
                     table.addColumn(rv, resultsVariables.get(rv), 
-                        PrimitiveArray.factory(edv.destinationDataTypeClass(), nRows, 
+                        PrimitiveArray.factory(edv.destinationDataPAType(), nRows, 
                             edv.fixedValue()),
                         new Attributes(edv.combinedAttributes())); //make a copy
                 } else {
@@ -1485,7 +1531,7 @@ public abstract class EDDTable extends EDD {
                     col = table.nColumns();
                     double dmv = edv.safeDestinationMissingValue();
                     table.addColumn(rv, edv.destinationName(), 
-                        PrimitiveArray.factory(edv.destinationDataTypeClass(), nRows, 
+                        PrimitiveArray.factory(edv.destinationDataPAType(), nRows, 
                             (Double.isNaN(dmv)? "" : "" + dmv)),
                         new Attributes(edv.combinedAttributes()));
                 }
@@ -1518,8 +1564,8 @@ public abstract class EDDTable extends EDD {
             String constraintValue    = constraintValues.get(cv);
             int dv = String2.indexOf(dataVariableDestinationNames(), constraintVariable);
             EDV edv = dataVariables[dv];
-            Class sourceClass = edv.sourceDataTypeClass();
-            Class destClass = edv.destinationDataTypeClass();
+            PAType sourcePAType = edv.sourceDataPAType();
+            PAType destPAType = edv.destinationDataPAType();
 
             if (applyAllConstraints) {
                 //applyAllConstraints
@@ -1532,7 +1578,7 @@ public abstract class EDDTable extends EDD {
                     continue;
 
                 //constraint source is String
-                } else if (sourceClass == String.class) {
+                } else if (sourcePAType == PAType.STRING) {
                     if (sourceCanConstrainStringData == CONSTRAIN_NO ||
                         sourceCanConstrainStringData == CONSTRAIN_PARTIAL ||
                         constraintOp.equals(PrimitiveArray.REGEX_OP) ||  //always do all regex tests here (perhaps in addition to source)
@@ -1550,7 +1596,7 @@ public abstract class EDDTable extends EDD {
                         sourceCanConstrainNumericData == CONSTRAIN_PARTIAL ||
                         constraintOp.equals(PrimitiveArray.REGEX_OP) || //always do all regex tests here
                         (sourceNeedsExpandedFP_EQ && //source did an expanded query. Check it here.
-                          (sourceClass == float.class || sourceClass == double.class) &&  
+                          (sourcePAType == PAType.FLOAT || sourcePAType == PAType.DOUBLE) &&  
                           !Double.isNaN(constraintValueD) &&
                           constraintValueD != Math2.roundToDouble(constraintValueD))) { //if not int
                         //fall through to test below
@@ -1713,12 +1759,11 @@ public abstract class EDDTable extends EDD {
             for (int col = 0; col < table.nColumns(); col++) {
                 String colName = table.getColumnName(col);
                 EDV edv = findDataVariableBySourceName(colName); 
-                Class shouldBeType = edv.sourceDataTypeClass();
-                Class isType = table.getColumn(col).elementClass();
+                PAType shouldBeType = edv.sourceDataPAType();
+                PAType isType = table.getColumn(col).elementType();
                 if (shouldBeType != isType) {
                     //if (reallyVerbose) String2.log("  converting col=" + col + 
-                    //    " from=" + PrimitiveArray.elementClassToString(isType) + 
-                    //    " to="   + PrimitiveArray.elementClassToString(shouldBeType));
+                    //    " from=" + isType + " to="   + shouldBeType);
                     PrimitiveArray newPa = PrimitiveArray.factory(shouldBeType, 1, false);
                     newPa.append(table.getColumn(col));
                     table.setColumn(col, newPa);
@@ -1827,6 +1872,17 @@ public abstract class EDDTable extends EDD {
     public int defaultFileTypeOption() {return defaultFileTypeOption; }
 
 
+    /** This is a variant of parseUserDapQuery where processAddVariablesWhere is true.
+     */
+    public void parseUserDapQuery(String userDapQuery, 
+        StringArray resultsVariables,
+        StringArray constraintVariables, StringArray constraintOps, StringArray constraintValues,
+        boolean repair) throws Throwable {
+        parseUserDapQuery(userDapQuery, 
+            resultsVariables, constraintVariables, constraintOps, constraintValues,
+            repair, true); //processAddVariablesWhere
+    }
+
     /**
      * This parses a PERCENT ENCODED OPeNDAP DAP-style query.
      * This checks the validity of the resultsVariable and constraintVariable names.
@@ -1880,6 +1936,7 @@ public abstract class EDDTable extends EDD {
      *    Non-regex EDVTimeStamp constraintValues will be returned as epochSeconds.
      * @param repair if true, this method tries to do its best repair problems (guess at intent), 
      *     not to throw exceptions 
+     * @param processAddVariablesWhere if false, this ignores addVariablesWhere functions.
      * @throws Throwable if invalid query
      *     (0 resultsVariables is a valid query -- it is expanded to be all vars)
      *     A query can't have more than on orderBy... or distinct() constraint 
@@ -1888,7 +1945,7 @@ public abstract class EDDTable extends EDD {
     public void parseUserDapQuery(String userDapQuery, 
         StringArray resultsVariables,
         StringArray constraintVariables, StringArray constraintOps, StringArray constraintValues,
-        boolean repair) throws Throwable {
+        boolean repair, boolean processAddVariablesWhere) throws Throwable {
         //!!! Table.parseDapQuery and EDDTable.parseUserDapQuery ARE ALMOST IDENTICAL!!!
         //IF YOU MAKE CHANGES TO ONE, MAKE CHANGES TO THE OTHER.
 
@@ -2092,14 +2149,49 @@ public abstract class EDDTable extends EDD {
                 continue;
             }
 
-            //special case: server-side functions
+            //special case: server-side function
             if (constraint.equals("distinct()"))
                 continue;
 
-            //special case: server-side functions
+            //special case: server-side function
             if (constraint.endsWith("\")") &&
                 constraint.startsWith("units(\""))
                 continue;
+
+            //special case: server-side function: addVariablesWhere(attName, attValue)
+            if (constraint.endsWith("\")") &&    
+                constraint.startsWith("addVariablesWhere(\"")) {
+                if (!processAddVariablesWhere)
+                    continue;
+                int ppo = constraint.indexOf("(\"");
+                StringArray obv = StringArray.fromCSV(constraint.substring(
+                    ppo + 1, constraint.length() - 1));
+                if (obv.size() != 2 || 
+                    !String2.isSomething(obv.get(0)) || 
+                    !String2.isSomething(obv.get(1))) {
+                    String tmsg = EDStatic.queryError +
+                        "&addVariablesWhere() MUST have 2 parameters: attributeName and attributeValue.";
+                    if (repair)
+                        //ignore the problem
+                        String2.log(String2.WARNING + ": " + tmsg);
+                    else 
+                        throw new SimpleException(tmsg);
+                    continue;
+                }
+                String tAttName  = obv.get(0);
+                String tAttValue = obv.get(1);                    
+
+                //go through vars looking for attName=attValue
+                for (int v = 0; v < dataVariables.length; v++) {
+                    EDV edv = dataVariables[v];
+                    if (tAttValue.equals(edv.combinedAttributes().getString(tAttName))) {
+                        //add var to resultsVariables if not already there
+                        if (resultsVariables.indexOf(edv.destinationName()) < 0) 
+                            resultsVariables.add(    edv.destinationName());
+                    }
+                }
+                continue;
+            }
 
             //look for == (common mistake, but not allowed)
             int eepo = constraintBeforeQuotes.indexOf("==");
@@ -2244,8 +2336,8 @@ public abstract class EDDTable extends EDD {
                     }
                 }
 
-            } else if (conEdv.destinationDataTypeClass() == char.class ||
-                       conEdv.destinationDataTypeClass() == String.class) {
+            } else if (conEdv.destinationDataPAType() == PAType.CHAR ||
+                       conEdv.destinationDataPAType() == PAType.STRING) {
 
                 //String variables must have " around constraintValues
                 if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
@@ -2829,10 +2921,10 @@ public abstract class EDDTable extends EDD {
             for (int dvi = 0; dvi < dataVariables.length; dvi++) {
                 EDV dv = dataVariables[dvi];
                 Attributes catts = dv.combinedAttributes();
-                Class tClass = dv.destinationDataTypeClass();
+                PAType tPAType = dv.destinationDataPAType();
                 if (dv instanceof EDVTimeStamp) {
                     //convert to String times
-                    tClass = String.class;
+                    tPAType = PAType.STRING;
                     catts = new Attributes(catts); //make changes to a copy
                     String timePre = catts.getString(EDV.TIME_PRECISION);
                     catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
@@ -2847,7 +2939,7 @@ public abstract class EDDTable extends EDD {
                     }
                 }
                 table.addColumn(dvi, dv.destinationName(), 
-                    PrimitiveArray.factory(tClass, 1, false), catts);
+                    PrimitiveArray.factory(tPAType, 1, false), catts);
             }        
             Writer writer = new BufferedWriter(new OutputStreamWriter(
                 outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1)); 
@@ -3418,7 +3510,7 @@ public abstract class EDDTable extends EDD {
             if (withAttributes) 
                 atts.set(edv.combinedAttributes()); //make a copy
             table.addColumn(col, edv.destinationName(), 
-                PrimitiveArray.factory(edv.destinationDataTypeClass(), 1, false),
+                PrimitiveArray.factory(edv.destinationDataPAType(), 1, false),
                 atts); 
         }
 
@@ -3428,6 +3520,78 @@ public abstract class EDDTable extends EDD {
 
         if (reallyVerbose) String2.log("  makeEmptyDestinationTable done.");
         return table;
+    }
+
+    /**
+     * Convert JEXL script columns into data columns.
+     * If there are errors doing the conversions, the first error per scriptName
+     * will be logged.
+     *
+     * @param fullFileName  The full name (perhaps a URL) of the current file, or "" if 
+     *   the source is not file-like.
+     * @param table The raw table from the source to which scriptName columns will be added.
+     * @param scriptNames the sourceNames of the script columns to be added.
+     *   If this is null, nothing will be done.
+     * @param scriptTypes the dataTypes which parallel the scriptNames
+     * @param scriptNeedsColumns The map which provides information about which scriptName
+     *   needs which actual source columns
+     */
+    public static void convertScriptColumnsToDataColumns(String fullFileName, Table table, 
+        StringArray scriptNames, StringArray scriptTypes, HashMap<String,HashSet<String>> scriptNeedsColumns) {
+
+        if (scriptNames != null) {            
+            //if (debugMode) String2.log(">> raw table:\n" + table.dataToString(5));
+            int nRows = table.nRows();
+            for (int sni = 0; sni < scriptNames.size(); sni++) {
+                PrimitiveArray pa = PrimitiveArray.factory(
+                    PrimitiveArray.elementStringToPAType(scriptTypes.get(sni)), nRows, false); //active?
+                JexlScript jscript = Script2.jexlEngine().createScript(scriptNames.get(sni).substring(1));
+                MapContext jcontext = Script2.jexlMapContext();
+                ScriptRow scriptRow = new ScriptRow(fullFileName, table);
+                jcontext.set("row", scriptRow);
+                boolean firstError = true;
+
+                if (scriptNeedsColumns.get(scriptNames.get(sni)).size() == 0) {
+                    //script doesn't refer to any columns (e.g., =10.0),
+                    //so just parse once and duplicate that value.
+                    //scriptRow.setRow(0); //already done
+                    Object o = null;
+                    try {
+                        o = jscript.execute(jcontext);
+                    } catch (Exception e2) {
+                        if (firstError) {
+                            String2.log("Caught: first script error (for col=" + 
+                                String2.toJson(scriptNames.get(sni)) + " row[0]):\n" +
+                                MustBe.throwableToString(e2));
+                            firstError = false;
+                        }
+                        o = null;
+                    }
+                    for (int row = 0; row < nRows; row++) 
+                        pa.addObject(o);
+
+                } else {
+                    for (int row = 0; row < nRows; row++) {
+                        scriptRow.setRow(row);
+                        Object o = null;
+                        try {
+                            o = jscript.execute(jcontext);
+                        } catch (Exception e2) {
+                            if (firstError) {
+                                String2.log("Caught: first script error (for col=" + 
+                                    String2.toJson(scriptNames.get(sni)) + " row[" + row + "]):\n" +
+                                    MustBe.throwableToString(e2));
+                                firstError = false;
+                            }
+                            o = null;
+                        }
+                        pa.addObject(o);
+                        //if (debugMode && row < 5) String2.log(">> row[" + row + "] o.class().getName()=" + o.getClass().getName() + " value=" + (o instanceof Number? ((Number)o).doubleValue() : o.toString()));
+                    }
+                }
+                table.addColumn(scriptNames.get(sni), pa);
+            }
+        }
     }
 
 
@@ -4234,7 +4398,7 @@ public abstract class EDDTable extends EDD {
                     EDV edv = findDataVariableByDestinationName(conVar); 
                     constraintTitle.append(conVar + conOp + 
                         ((conOp.equals(PrimitiveArray.REGEX_OP) || 
-                          edv.destinationDataTypeClass() == String.class) ?
+                          edv.destinationDataPAType() == PAType.STRING) ?
                             String2.toJson(conVal) :
                          !Double.isFinite(conValD)?
                             "NaN" :
@@ -4629,8 +4793,8 @@ public abstract class EDDTable extends EDD {
             8 + //field name length (for all fields)
             8 + nCols * 32; //field names
         for (int col = 0; col < nCols; col++) {
-            Class type = twawm.columnType(col);
-            if (type == String.class)
+            PAType type = twawm.columnType(col);
+            if (type == PAType.STRING)
                 ndIndex[col] = Matlab.make2DNDIndex(nRows, twawm.columnMaxStringLength(col)); 
             else
                 ndIndex[col] = Matlab.make2DNDIndex(nRows); 
@@ -4812,7 +4976,7 @@ public abstract class EDDTable extends EDD {
             String stringDim[] = new String[nCols];
             if (!writeStringsAsStrings) {
                 for (int col = 0; col < nCols; col++) {
-                    boolean isString = twawm.columnType(col) == String.class;
+                    boolean isString = twawm.columnType(col) == PAType.STRING;
                     if (isString) {
                         stringDim[col] = String2.toJson(twawm.columnName(col) + NcHelper.StringLengthSuffix);
                         writer.write(",\n" + //end of previous line
@@ -4836,7 +5000,7 @@ public abstract class EDDTable extends EDD {
     //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
     //    }
                 Attributes atts = twawm.columnAttributes(col); 
-                String tType = PrimitiveArray.elementClassToString(twawm.columnType(col));
+                String tType = PrimitiveArray.elementTypeToString(twawm.columnType(col));
                 boolean isString = tType.equals("String");
                 boolean isChar   = tType.equals("char");
                 int bufferSize = (int)Math.min(isChar? 8192 : 10, nRows);  //this is also nPerLine for all except char
@@ -4991,9 +5155,9 @@ public abstract class EDDTable extends EDD {
             //add the variables
             Variable newVars[] = new Variable[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                Class type = twawm.columnType(col);
+                PAType type = twawm.columnType(col);
                 String tColName = twawm.columnName(col);
-                if (nc3Mode && type == String.class) {
+                if (nc3Mode && type == PAType.STRING) {
                     int max = Math.max(1, twawm.columnMaxStringLength(col)); //nc libs want at least 1; 0 happens if no data
                     Dimension lengthDimension = nc.addDimension(rootGroup, 
                         tColName + NcHelper.StringLengthSuffix, max);
@@ -5001,9 +5165,7 @@ public abstract class EDDTable extends EDD {
                         Arrays.asList(dimension, lengthDimension)); 
                 } else {
                     newVars[col] = nc.addVariable(rootGroup, tColName, 
-                        DataType.getType(nc3Mode && type == long.class? 
-                            double.class : type), 
-                        ROW_NAME); 
+                        NcHelper.getDataType(nc3Mode, type), ROW_NAME); 
                 }
             }
 
@@ -5017,10 +5179,10 @@ public abstract class EDDTable extends EDD {
             NcHelper.setAttributes(nc3Mode, rootGroup, globalAttributes);
             for (int col = 0; col < nColumns; col++) {
                 Attributes tAtts = new Attributes(twawm.columnAttributes(col)); //use a copy
-                if (twawm.columnType(col) == String.class)
+                if (twawm.columnType(col) == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == char.class)
+//                else if (twawm.columnType(col) == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
@@ -5039,7 +5201,7 @@ public abstract class EDDTable extends EDD {
                 DoubleArray da = new DoubleArray();
                 DataInputStream dis = twawm.dataInputStream(col);
                 try {
-                    Class colType = twawm.columnType(col);
+                    PAType colType = twawm.columnType(col);
                     Array array;
 
                     while (nToGo > 0) {
@@ -5054,7 +5216,8 @@ public abstract class EDDTable extends EDD {
                             " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
                         if (nc3Mode && pa instanceof StringArray) {
                             //pa is temporary, so ok to change strings
-                            array = Array.factory(colType,      new int[]{bufferSize}, 
+                            array = Array.factory(NcHelper.getNc3DataType(colType),      
+                                new int[]{bufferSize}, 
                                 ((StringArray)pa).toIso88591().toObjectArray());
                             nc.writeStringData(newVars[col], new int[]{ncOffset}, array);
 
@@ -5062,20 +5225,21 @@ public abstract class EDDTable extends EDD {
                             if (nc3Mode && pa instanceof LongArray) {
                                 da.clear(); 
                                 da.append(pa);
-                                array = Array.factory(double.class, new int[]{bufferSize}, da.toObjectArray());
+                                array = Array.factory(DataType.DOUBLE, new int[]{bufferSize}, da.toObjectArray());
                             } else if (pa instanceof CharArray) {
                                 //pa is temporary, so ok to change chars
-                                array = Array.factory(colType,      new int[]{bufferSize}, 
+                                array = Array.factory(DataType.CHAR, new int[]{bufferSize}, 
                                     ((CharArray)pa).toIso88591().toObjectArray());                            
                             } else { 
-                                array = Array.factory(colType,      new int[]{bufferSize}, pa.toObjectArray());
+                                array = Array.factory(NcHelper.getNc3DataType(colType), 
+                                    new int[]{bufferSize}, pa.toObjectArray());
                             }
                             nc.write(newVars[col], new int[]{ncOffset}, array);
                         }
                                 
                         nToGo -= bufferSize;
                         ncOffset += bufferSize;
-                        //String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType == String.class));
+                        //String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType == PAType.STRING));
                     }
                 } finally {
                     dis.close();
@@ -5334,13 +5498,13 @@ public abstract class EDDTable extends EDD {
                         continue;
                     }
                     String tColName = ncColNames[col];
-                    Class type = colEdv[col].destinationDataTypeClass();
+                    PAType type = colEdv[col].destinationDataPAType();
                     int maxStringLength = 1;  //nclib wants at least 1
-                    if (type == String.class)
+                    if (type == PAType.STRING)
                         maxStringLength = Math.max(1, twawm.columnMaxStringLength(col));
-                    if (type == long.class) {
+                    if (type == PAType.LONG) {
                         //store longs as doubles since nc3 doesn't support longs
-                        type = double.class; 
+                        type = PAType.DOUBLE; 
                         //maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;  //was Strings
                     }
                     ArrayList<Dimension> tDimsList = new ArrayList();
@@ -5355,17 +5519,17 @@ public abstract class EDDTable extends EDD {
                     } else {
                         tDimsList.add(isFeatureVar[col]? featureDimension : obsDimension);
                     }
-                    if (type == String.class) {
+                    if (type == PAType.STRING) {
                         newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
                             tDimsList, maxStringLength);
                     } else {
                         newVars[col] = ncCF.addVariable(rootGroup, tColName, 
-                            DataType.getType(type), tDimsList); 
+                            NcHelper.getNc3DataType(type), tDimsList); 
                     }
 
                     //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
                     //(String vars would have "", but that isn't a valid attribute)
-                    if (nodcMode && so == 1 && type != String.class) {
+                    if (nodcMode && so == 1 && type != PAType.STRING) {
                         Attributes atts = twawm.columnAttributes(col);
                         if (atts.getString("missing_value") == null && //getString so distinguish null and NaN
                             atts.getString("_FillValue")    == null) {
@@ -5379,7 +5543,7 @@ public abstract class EDDTable extends EDD {
                 //at end of feature vars, add the rowSize variable
                 if (!nodcMode && so == 0) {
                     rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
-                        DataType.getType(int.class), 
+                        NcHelper.getNc3DataType(PAType.INT), 
                         Arrays.asList(featureDimension)); 
                     //String2.log("  rowSize variable added");
                 }
@@ -5426,10 +5590,10 @@ public abstract class EDDTable extends EDD {
                 if (!isFeatureVar[col] && !isCoordinateVar[col])
                     tAtts.add("coordinates", coordinates);
 
-                if (twawm.columnType(col) == String.class)
+                if (twawm.columnType(col) == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == char.class)
+//                else if (twawm.columnType(col) == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
@@ -5488,7 +5652,7 @@ public abstract class EDDTable extends EDD {
                             //  " tNRows=" + tNRows + " maxFeatureNRows=" + maxFeatureNRows);
                             tNRows = maxFeatureNRows - tNRows;
                             subsetPa.clear();
-                            //if (tEdv.destinationDataTypeClass() == long.class)
+                            //if (tEdv.destinationDataPAType() == PAType.LONG)
                             //    subsetPa.addNStrings(tNRows, "" + tSafeMV);
                             //else 
                             if (subsetPa instanceof StringArray)
@@ -5759,27 +5923,28 @@ public abstract class EDDTable extends EDD {
                             tDimsList.add(obsDimension);
                         }
                     }
-                    Class type = colEdv[col].destinationDataTypeClass();
+                    PAType type = colEdv[col].destinationDataPAType();
                     int maxStringLength = 1;
-                    if (type == String.class) {
+                    if (type == PAType.STRING) {
                         maxStringLength = Math.max(1, twawm.columnMaxStringLength(col)); //nclib wants at least 1
-                    } else if (type == long.class) {
+                    } else if (type == PAType.LONG) {
                         //store longs as doubles since nc3 doesn't support longs
-                        type = double.class; 
+                        type = PAType.DOUBLE; 
                         //maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;  was strings
                     }
 
-                    if (type == String.class) {
+                    if (type == PAType.STRING) {
                         newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
                             tDimsList, maxStringLength);
                     } else {
                         newVars[col] = ncCF.addVariable(rootGroup, tColName, 
-                            DataType.getType(type), tDimsList); 
+                            NcHelper.getNc3DataType(type),
+                            tDimsList); 
                     }
 
                     //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
                     //(String vars would have "", but that isn't a valid attribute)
-                    if (nodcMode && opo == 2 && type != String.class) {
+                    if (nodcMode && opo == 2 && type != PAType.STRING) {
                         Attributes atts = twawm.columnAttributes(col);
                         if (atts.getString("missing_value") == null && //getString so distinguish null and NaN
                             atts.getString("_FillValue")    == null) {
@@ -5792,10 +5957,10 @@ public abstract class EDDTable extends EDD {
                 //at end of profile vars, add 'feature'Index and rowSize variables
                 if (!nodcMode && opo == 1) {
                     indexVar = ncCF.addVariable(rootGroup, indexName, 
-                        DataType.getType(int.class), 
+                        NcHelper.getNc3DataType(PAType.INT), 
                         Arrays.asList(profileDimension)); //yes, profile, since there is one for each profile
                     rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
-                        DataType.getType(int.class), 
+                        NcHelper.getNc3DataType(PAType.INT),
                         Arrays.asList(profileDimension)); 
                     //String2.log("  featureIndex and rowSize variable added");
                 }
@@ -5841,10 +6006,10 @@ public abstract class EDDTable extends EDD {
                 if (!isFeatureVar[col] && !isProfileVar[col] && !isCoordinateVar[col])
                     tAtts.add("coordinates", coordinates);
 
-                if (twawm.columnType(col) == String.class)
+                if (twawm.columnType(col) == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);                
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == char.class)
+//                else if (twawm.columnType(col) == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
@@ -5910,7 +6075,7 @@ public abstract class EDDTable extends EDD {
                             if (nmv > 0) {
                                 origin[1] = tnProfiles;
                                 tpa.clear();
-                                //if (tEdv.destinationDataTypeClass() == long.class)
+                                //if (tEdv.destinationDataPAType() == PAType.LONG)
                                 //    tpa.addNStrings(nmv, "" + tSafeMV);
                                 //else 
                                 if (tpa instanceof StringArray) 
@@ -5933,8 +6098,8 @@ public abstract class EDDTable extends EDD {
                     
                     //fill with mv
                     PrimitiveArray subsetPa = PrimitiveArray.factory(
-                        pa.elementClass(), maxObsPerProfile, 
-                        pa.elementClass() == String.class? "" : "" + tSafeMV);
+                        pa.elementType(), maxObsPerProfile, 
+                        pa.elementType() == PAType.STRING? "" : "" + tSafeMV);
                     int shape[] = {1, 1, maxObsPerProfile};
                     for (int feature = 0; feature < nFeatures; feature++) { 
                         origin[0] = feature;
@@ -6246,7 +6411,7 @@ public abstract class EDDTable extends EDD {
             else if (pa instanceof StringArray) type = "TEXT:" + 
                 Math.min(255, ((StringArray)pa).maxStringLength() + 1);
             else throw new SimpleException(EDStatic.errorInternal + 
-                "Unexpected data type=" + pa.elementClassString() +
+                "Unexpected data type=" + pa.elementTypeString() +
                 " for column=" + colName + ".");
 
             //ODV .txt files are ASCII (7 bit) only. I could use 
@@ -6385,7 +6550,7 @@ public abstract class EDDTable extends EDD {
                     twawm.columnMaxStringLength(col) + "\n");
             } else {
                 String tMin, tMax; 
-                if (PrimitiveArray.isIntegerType(edv.destinationDataTypeClass())) {
+                if (PrimitiveArray.isIntegerType(edv.destinationDataPAType())) {
                     tMin = "" + Math2.roundToLong(twawm.columnMinValue[col]); 
                     tMax = "" + Math2.roundToLong(twawm.columnMaxValue[col]); 
                 } else {
@@ -6479,6 +6644,7 @@ public abstract class EDDTable extends EDD {
         if (userDapQuery == null)
             userDapQuery = "";
         userDapQuery = userDapQuery.trim();
+        String queryParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         StringArray resultsVariables = new StringArray();
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps = new StringArray();
@@ -6488,7 +6654,7 @@ public abstract class EDDTable extends EDD {
         try {
             parseUserDapQuery(userDapQuery, resultsVariables,
                 constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
-                true);
+                true, false); //repair, processAddVariablesWhere
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
@@ -6576,8 +6742,8 @@ public abstract class EDDTable extends EDD {
             double tMax = edv.destinationMax();
             boolean isTime = dv == timeIndex;
             boolean isTimeStamp = edv instanceof EDVTimeStamp;
-            boolean isChar = edv.destinationDataTypeClass() == char.class;
-            boolean isString = edv.destinationDataTypeClass() == String.class;
+            boolean isChar = edv.destinationDataPAType() == PAType.CHAR;
+            boolean isString = edv.destinationDataPAType() == PAType.STRING;
             String tTime_precision = isTimeStamp? ((EDVTimeStamp)edv).time_precision() : null;
 
             writer.write("<tr>\n");
@@ -6704,8 +6870,7 @@ public abstract class EDDTable extends EDD {
                         "onChange='" +
                           //"if (this.selectedIndex>0) {" +
                           " " + docFormName + ".op"  + dv + "_0.selectedIndex=" + String2.indexOf(OPERATORS, "=") + ";" +
-                          " " + docFormName + ".val" + dv + "_0.value=this.options[this.selectedIndex].text;" +
-                          //" this.selectedIndex=0;}" + //last
+                          " " + docFormName + ".val" + dv + "_0.value=this.value;" +
                           "'", 
                         true) + //encodeSpaces solves the problem with consecutive internal spaces
                     "\n" +
@@ -6754,7 +6919,7 @@ public abstract class EDDTable extends EDD {
                 String mins = edv.destinationMinString();
                 String maxs = edv.destinationMaxString();
                 if (tMinMaxTable != null && tMinMaxTable.nRows() >= 2 && 
-                    edv.destinationDataTypeClass() == String.class) {
+                    edv.destinationDataPAType() == PAType.STRING) {
                     //Time variables are numeric,
                     //and Strings vars never have scale_factor or add_offset, 
                     //so String var sourceValue=destinationValue.
@@ -6814,14 +6979,49 @@ public abstract class EDDTable extends EDD {
                     "  <td colspan=\"2\"></td>\n" +
                     "</tr>\n");
             }
-
         }
 
         //end of table
         writer.write(widgets.endTable());
 
+        //addVariablesWhere
+        StringBuilder avwavJavaScript = new StringBuilder();
+        if (addVariablesWhereAttNames != null) {
+            //for each addVariableWhereAttributeName...
+            writer.write(widgets.beginTable("class=\"compact nowrap\""));            
+            for (int attNamei = 1; attNamei < addVariablesWhereAttNames.size(); attNamei++) { //1 since [0] is ""
+                //is there an addVariablesWhere(attName, attValue) in the query?
+                //If there are 2+, only the first is used.
+                String attName = addVariablesWhereAttNames.get(attNamei);
+                String startsWith = "addVariablesWhere(\"" + attName + "\",";
+                String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
+                int attValuei = 0;
+                if (sStartsWith != null && sStartsWith.endsWith("\")")) {
+                    String avwAr[] = StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length()-1));
+                    if (avwAr.length == 2) {                        
+                        String attValue = avwAr[1];
+                        attValuei = Math.max(0, addVariablesWhereAttValues.get(attNamei).indexOf(attValue)); //a valid number even if not a match
+                    }
+                }
+
+                writer.write(
+                    "<tr>\n" +
+                    "<td>Add variables where " + 
+                        XML.encodeAsHTML(attName) +
+                        //make hidden widget with attName
+                        widgets.hidden("avwan" + attNamei, attName) +
+                    "<td>&nbsp;=&nbsp;" + 
+                        //make the Select widget
+                        widgets.select("avwav" + attNamei, EDStatic.addVarWhereAttValue, 1,
+                            addVariablesWhereAttValues.get(attNamei).toArray(), attValuei, "") +
+                        "\n" +
+                        EDStatic.htmlTooltipImage(loggedInAs, EDStatic.addVarWhere) +
+                    "</tr>\n");
+            }
+            writer.write(widgets.endTable());            
+        }
+
         //functions
-        String queryParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         int nOrderByComboBox = 5;
         writeFunctionHtml(loggedInAs, queryParts, writer, widgets, formName, nOrderByComboBox);
 
@@ -6844,13 +7044,20 @@ public abstract class EDDTable extends EDD {
             "    if (tVar.checked) rv.push(tVar.value);\n" +
             "    var tOp  = eval(\"d." + formName + ".op\"  + dv + \"_0\");\n" +
             "    var tVal = eval(\"d." + formName + ".val\" + dv + \"_0\");\n" +
-            "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.options[tOp.selectedIndex].value + percentEncode(tVal.value);\n" +
+            "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n" +
             "    tOp  = eval(\"d." + formName + ".op\"  + dv + \"_1\");\n" +
             "    tVal = eval(\"d." + formName + ".val\" + dv + \"_1\");\n" +
-            "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.options[tOp.selectedIndex].value + percentEncode(tVal.value);\n" +
+            "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n" +
             "  }\n" +
+            (addVariablesWhereAttNames == null? "" :
+            "  for (var avi = 1; avi < " + addVariablesWhereAttNames.size() + "; avi++) {\n" + //1 since [0] is ""
+            "    var avwanv = eval(\"d." + formName + ".avwan\" + avi + \".value\");\n" +
+            "    var avwavv = eval(\"d." + formName + ".avwav\" + avi + \".value\");\n" +
+            "    if (avwanv.length > 0 && avwavv.length > 0)\n" +
+            "      q2 += \"\\x26addVariablesWhere(%22\" + percentEncode(avwanv) + \"%22%2C%22\" + percentEncode(avwavv) + \"%22)\";\n" +
+            "  }\n") +
             functionJavaScript(formName, nOrderByComboBox) +
-            "  var ft = d." + formName + ".fileType.options[d." + formName + ".fileType.selectedIndex].text;\n" +
+            "  var ft = d." + formName + ".fileType.value;\n" +
             "  result = \"" + tErddapUrl + "/tabledap/" + datasetID + 
               "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\" + percentEncode(rv.toString()) + q2;\n" + //if all is well, make result
             "} catch (e) {alert(e);}\n" +  //result is in 'result'  (or "" if error)
@@ -6995,8 +7202,7 @@ public abstract class EDDTable extends EDD {
             "    var nActiveOb = 0;\n" +
             "    var ObOS = d." + formName + ".orderBy;\n" +  //the OrderBy... option Select widget
             "    if (ObOS.selectedIndex > 0) {\n" +  //0 is ""
-            "      var ObO = ObOS.options[ObOS.selectedIndex].text;\n" +
-            "      var tq2 = \"\\x26\" + ObO + \"(%22\";\n" +  // &orderBy...("
+            "      var tq2 = \"\\x26\" + ObOS.value + \"(%22\";\n" +  // &orderBy...("
             "      for (var ob = 0; ob < " + nOrderByComboBox + "; ob++) {\n" +
             "        var tOb = eval(\"d." + formName + ".orderByComboBox\" + ob);\n" +
             "        var obVal = tOb.value.trim();\n" +
@@ -8091,7 +8297,21 @@ public abstract class EDDTable extends EDD {
             "    be altered). If you use more than one function, they will be applied in the order\n" +
             "    that they appear in the request. Most of these options appear near the bottom\n" +
             "    of the Data Access Form and Make A Graph web page for each dataset.\n" + 
+            "    <br>&nbsp;\n" +
             "    <ul>\n" +
+            "    <li><a class=\"selfLink\" id=\"addVariablesWhere\" href=\"#addVariablesWhere\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;addVariablesWhere(\"<i>attributeName</i>\",\"<i>attributeValue</i>\")</kbd></a>\n" +
+            "      <br>is different than the other server-side functions\n" +
+            "      in that it doesn't filter the results table. Instead, if you add it to\n" +
+            "      a query, ERDDAP will add all of the variables in the dataset which have\n" +
+            "      <kbd><i>attributeName=attributeValue</i></kbd>\n" +
+            "      to the list of requested variables. For example, if you add\n"+
+            "      <kbd>&amp;addVariablesWhere(\"ioos_category\",\"Wind\"</i>)</kbd> to a query, ERDDAP\n" +
+            "      will add all of the variables in the dataset that have an <kbd>ioos_category=Wind</kbd> attribute\n" +
+            "      to the list of requested variables (for example, windSpeed, windDirection, windGustSpeed).\n" +
+            "      <i>attributeName</i> and <i>attributeValue</i> are case-sensitive.\n" +
+            "      You can specify 0 or more <kbd>&amp;addVariablesWhere()</kbd> functions to the request.\n" +
+            "      <br>&nbsp;\n" +
             "    <li><a class=\"selfLink\" id=\"distinct\" href=\"#distinct\" rel=\"bookmark\"\n" +
             "      ><kbd>&amp;distinct()</kbd></a>\n" +
             "      <br>If you add <kbd>&amp;distinct()</kbd> to the end of a query, ERDDAP will sort all of the\n" +
@@ -8709,7 +8929,7 @@ public abstract class EDDTable extends EDD {
         String time_precision[] = new String[dataVariables.length];
         for (int dv = 0; dv < dataVariables.length; dv++) {
             EDV edv = dataVariables[dv];
-            if (edv.destinationDataTypeClass() != String.class) {
+            if (edv.destinationDataPAType() != PAType.STRING) {
                 String dn = edv.destinationName();
                 if        (dv == lonIndex)   {axisSA.add(dn); 
                 } else if (dv == latIndex)   {axisSA.add(dn); 
@@ -8824,7 +9044,7 @@ public abstract class EDDTable extends EDD {
             for (int rv = resultsVariables.size() - 1; rv >= 0; rv--) {
                 int dv = String2.indexOf(dataVariableDestinationNames(), resultsVariables.get(rv));
                 if (dv < 0 ||
-                    (dv >= 0 && dataVariables[dv].destinationDataTypeClass() == String.class)) 
+                    (dv >= 0 && dataVariables[dv].destinationDataPAType() == PAType.STRING)) 
                     resultsVariables.remove(rv);
             }
 
@@ -9465,8 +9685,8 @@ public abstract class EDDTable extends EDD {
                             //convert numeric time (from parseUserDapQuery) to iso
                             conVal[cv][con] = ((EDVTimeStamp)conEdv).destinationToString(
                                 String2.parseDouble(conVal[cv][con]));
-                        } else if (dataVariables[conVar[cv] - 1].destinationDataTypeClass() == char.class ||
-                                   dataVariables[conVar[cv] - 1].destinationDataTypeClass() == String.class) { 
+                        } else if (dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.CHAR ||
+                                   dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.STRING) { 
                             //-1 above since option 0=""
                             //leave String constraint values intact
                         } else if (conVal[cv][con].toLowerCase().equals("nan")) { //NaN  (or clean up to "NaN")
@@ -9563,8 +9783,8 @@ public abstract class EDDTable extends EDD {
                         tVal = "";
                     else if (tOp == REGEX_OP_INDEX || 
                         (conEdv != null && 
-                           (conEdv.destinationDataTypeClass() == String.class ||
-                            conEdv.destinationDataTypeClass() == char.class))) {
+                           (conEdv.destinationDataPAType() == PAType.STRING ||
+                            conEdv.destinationDataPAType() == PAType.CHAR))) {
                         tVal = String2.toJson(tVal); //enclose in "
                     }
                     if (con == 0)
@@ -10829,7 +11049,7 @@ public abstract class EDDTable extends EDD {
             if (firstNumericSubsetVar == null && 
                 !pName.equals("longitude") && !pName.equals("latitude")) {
                 EDV edv = findVariableByDestinationName(pName);
-                if (edv.destinationDataTypeClass() != String.class)
+                if (edv.destinationDataPAType() != PAType.STRING)
                     firstNumericSubsetVar = pName;
             }
         }
@@ -10842,7 +11062,7 @@ public abstract class EDDTable extends EDD {
                 EDV edv = dataVariables[v];
                 if (edv.destinationName().equals("longitude") ||
                     edv.destinationName().equals("latitude")  ||
-                    edv.destinationDataTypeClass() == String.class)
+                    edv.destinationDataPAType() == PAType.STRING)
                     continue;
                 firstNumericSubsetVar = edv.destinationName();
                 break;
@@ -12045,7 +12265,8 @@ public abstract class EDDTable extends EDD {
                 " is making subsetVariablesDataTable(loggedInAs=" + loggedInAs + ")\n" +
                 "from file=" + adminSubsetFileName + ".csv");
             table = new Table();
-            table.readASCII(adminSubsetFileName + ".csv", 0, 1, "",  //throws Exception if trouble
+            table.readASCII(adminSubsetFileName + ".csv", String2.ISO_8859_1,
+                "", "", 0, 1, "",  //throws Exception if trouble
                 null, null, null, //no tests
                 tSubsetVars,   //file may have additional columns, but must have these
                 false); //simplify (force below)
@@ -12053,7 +12274,7 @@ public abstract class EDDTable extends EDD {
             //force data types to be as expected
             for (int col = 0; col < tSubsetVars.length; col++) {
                 EDV edv = findDataVariableByDestinationName(tSubsetVars[col]);
-                Class destClass = edv.destinationDataTypeClass();
+                PAType destPAType = edv.destinationDataPAType();
                 if (edv instanceof EDVTimeStamp) {
                     PrimitiveArray oldPa = table.getColumn(col);
                     int nRows = oldPa.size();
@@ -12061,8 +12282,8 @@ public abstract class EDDTable extends EDD {
                     for (int row = 0; row < nRows; row++)
                         newPa.add(Calendar2.safeIsoStringToEpochSeconds(oldPa.getString(row)));
                     table.setColumn(col, newPa);
-                } else if (destClass != String.class) {
-                    PrimitiveArray newPa = PrimitiveArray.factory(destClass, 1, false);
+                } else if (destPAType != PAType.STRING) {
+                    PrimitiveArray newPa = PrimitiveArray.factory(destPAType, 1, false);
                     newPa.append(table.getColumn(col));
                     table.setColumn(col, newPa);
                 }
@@ -12075,7 +12296,7 @@ public abstract class EDDTable extends EDD {
                 EDV edv = findDataVariableByDestinationName(tSubsetVars[sv]);
                 if (edv.isFixedValue()) {
                     table.addColumn(table.nColumns(), edv.destinationName(), 
-                        PrimitiveArray.factory(edv.destinationDataTypeClass(), 1, edv.sourceName().substring(1)), 
+                        PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.sourceName().substring(1)), 
                         new Attributes(edv.combinedAttributes()));
                 } else {
                     justFixed = false;
@@ -12333,7 +12554,7 @@ public abstract class EDDTable extends EDD {
         for (int rv = 0; rv < nRv; rv++) {
             EDV edv = resultsEDVs[rv];
             table.addColumn(edv.sourceName(), 
-                PrimitiveArray.factory(edv.sourceDataTypeClass(), capacityNRows, false));
+                PrimitiveArray.factory(edv.sourceDataPAType(), capacityNRows, false));
         }
         //String2.log("\n>>makeEmptySourceTable cols=" + table.getColumnNamesCSVString());
         return table;
@@ -12467,7 +12688,7 @@ public abstract class EDDTable extends EDD {
                 if (table == null)
                     table = new Table();
                 table.addColumn(table.nColumns(), edv.destinationName(), 
-                    PrimitiveArray.factory(edv.destinationDataTypeClass(), 1, edv.fixedValue()), 
+                    PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.fixedValue()), 
                     new Attributes(edv.combinedAttributes()));
             } else {
                 justFixed = false;
@@ -12481,7 +12702,7 @@ public abstract class EDDTable extends EDD {
                 EDV edv = findDataVariableByDestinationName(constraintVariables.get(cv));
                 if (edv.isFixedValue()) {
                     //is it true?
-                    PrimitiveArray pa = PrimitiveArray.factory(edv.destinationDataTypeClass(), 
+                    PrimitiveArray pa = PrimitiveArray.factory(edv.destinationDataPAType(), 
                         1, edv.sourceName().substring(1));
                     if (pa.applyConstraint(edv instanceof EDVTimeStamp,
                         keep, constraintOps.get(cv), constraintValues.get(cv)) == 0)
@@ -12682,8 +12903,8 @@ public abstract class EDDTable extends EDD {
         if (accessibleViaMAG == null) {
             int nNumeric = 0;
             for (int dv = 0; dv < dataVariables.length; dv++) {
-                //String2.log(">> accessibleViaMAG #" + dv + " " + dataVariables[dv].destinationName() + " " + dataVariables[dv].destinationDataTypeClass());
-                if (dataVariables[dv].destinationDataTypeClass() != String.class)                
+                //String2.log(">> accessibleViaMAG #" + dv + " " + dataVariables[dv].destinationName() + " " + dataVariables[dv].destinationDataPAType());
+                if (dataVariables[dv].destinationDataPAType() != PAType.STRING)                
                     nNumeric++;
             }
             if (nNumeric == 0)
@@ -12831,7 +13052,7 @@ public abstract class EDDTable extends EDD {
 
         //try to get time range from time variable
 
-        sosMinTime   = PrimitiveArray.factory(double.class, 8, true); //unknown
+        sosMinTime   = PrimitiveArray.factory(PAType.DOUBLE, 8, true); //unknown
         sosMaxTime   = sosMinTime;  //unknown
 
         //success
@@ -12933,11 +13154,12 @@ public abstract class EDDTable extends EDD {
 
             //look for the cf_role=timeseries_id (and profile_id and trajectory_id) columns
             //  (or ensure not present if wrong cdmType)
-            int cdmIdIndex[] = new int[]{-1, -1, -1};
+            int    cdmIdIndex[] = new int[]{-1, -1, -1};
+            String cdmIdName[]  = new String[]{null, null, null};
             int ndv = dataVariables.length;
             for (int dv = 0; dv < ndv; dv++) {
-                if (debugMode && dataVariables[dv].destinationName().equals("time")) String2.log(">>time:\n" + 
-                    dataVariables[dv].combinedAttributes());
+                //if (debugMode && dataVariables[dv].destinationName().equals("time")) 
+                //    String2.log(">>time:\n" + dataVariables[dv].combinedAttributes());
                 String cfRole = dataVariables[dv].combinedAttributes().getString("cf_role");
                 if (cfRole != null) {
                     for (int cdmi = 0; cdmi < 3; cdmi++) {
@@ -12952,6 +13174,7 @@ public abstract class EDDTable extends EDD {
                                         dataVariables[dv].destinationName() + ").");
                                 //set it
                                 cdmIdIndex[cdmi] = dv;
+                                cdmIdName[cdmi] = dataVariables[dv].destinationName();
                             } else {
                                 //shouldn't be defined
                                 throw new SimpleException("For cdm_data_type=" + cdmType + 
@@ -12967,14 +13190,14 @@ public abstract class EDDTable extends EDD {
             for (int cdmi = 0; cdmi < 3; cdmi++) {
                 if (cdmUses[cdmi] && cdmIdIndex[cdmi] < 0) 
                     throw new SimpleException("For cdm_data_type=" + cdmType + 
-                        ", one variable must have cf_role=" + cdmLCNames[cdmi] + "_id.");
+                        ", one variable must have cf_role=" + cdmLCNames[cdmi] + "_id. (Currently, none have that cf_role.)");
             }
             profile_idIndex    = cdmIdIndex[0];
             timeseries_idIndex = cdmIdIndex[1];
             trajectory_idIndex = cdmIdIndex[2]; 
             //???set old sosOfferingIndex to one of these? How is that used?
 
-            //look for cdm_xxx_variables   (or ensure they aren't present if they should be)
+            //look/validate for cdm_xxx_variables   (or ensure they aren't present if they shouldn't be)
             String cdmVars[][] = new String[3][];  //subarray may be size=0, won't be null
             for (int cdmi = 0; cdmi < 3; cdmi++) {
                 cdmVars[cdmi] = combinedGlobalAttributes.getStringsFromCSV(
@@ -12995,8 +13218,24 @@ public abstract class EDDTable extends EDD {
                                 cdmVars[cdmi][var] + 
                                 " isn't one of the data variable destinationNames.");
                     }
-                } else {
-                    if (cdmVars[cdmi].length > 0) 
+                    
+
+                    for (int cdmi2 = 0; cdmi2 < 3; cdmi2++) {
+                        if (cdmi == cdmi2) {
+                            //ensure the e.g., cf_role=timeseries_id variable is in the cdm_timeseries_variables list
+                            if (String2.indexOf(cdmVars[cdmi], cdmIdName[cdmi2]) < 0)
+                                throw new SimpleException("For cdm_data_type=" + cdmType + 
+                                    ", the variable with cf_role=" + cdmLCNames[cdmi] + "_id (" +
+                                    cdmIdName[cdmi2] + ") must be in the cdm_" + cdmLCNames[cdmi] + "_variables list.");
+
+                        //ensure the other e.g., cf_role=profile_id variable isn't in the cdm_timeseries_variables list
+                        } else if (cdmIdName[cdmi2] != null && String2.indexOf(cdmVars[cdmi], cdmIdName[cdmi2]) >= 0)
+                            throw new SimpleException("For cdm_data_type=" + cdmType + 
+                                ", the variable with cf_role=" + cdmLCNames[cdmi2] + "_id (" +
+                                cdmIdName[cdmi2] + ") must not be in the cdm_" + cdmLCNames[cdmi] + "_variables list.");
+                    }
+
+                } else if (cdmVars[cdmi].length > 0) {
                         //is set, but shouldn't be
                         throw new SimpleException("For cdm_data_type=" + cdmType + 
                             ", the global attribute cdm_" + cdmLCNames[cdmi] +
@@ -14516,7 +14755,7 @@ public abstract class EDDTable extends EDD {
             } else if (requestedVars.size() == 1) {
 
                 EDV edv1 = findDataVariableByDestinationName(requestedVars.get(0));
-                if (edv1.destinationDataTypeClass().equals(String.class)) 
+                if (edv1.destinationDataPAType().equals(PAType.STRING)) 
                     throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
                         requestedVars.get(0) + " can't be a String phenomena."); 
 
@@ -14534,10 +14773,10 @@ public abstract class EDDTable extends EDD {
                 //1 station, >=2 vars -> use first 2 vars
                 EDV edv1 = findDataVariableByDestinationName(requestedVars.get(0));
                 EDV edv2 = findDataVariableByDestinationName(requestedVars.get(1));
-                if (edv1.destinationDataTypeClass().equals(String.class)) 
+                if (edv1.destinationDataPAType().equals(PAType.STRING)) 
                     throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
                         requestedVars.get(0) + " can't be a String phenomena."); 
-                if (edv2.destinationDataTypeClass().equals(String.class)) 
+                if (edv2.destinationDataPAType().equals(PAType.STRING)) 
                     throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
                         requestedVars.get(1) + " can't be a String phenomena."); 
 
@@ -15728,7 +15967,7 @@ public abstract class EDDTable extends EDD {
             for (int dv = 0; dv < dataVariables.length; dv++) {
                 if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex || 
                     dv == timeIndex || dv == sosOfferingIndex || 
-                    dataVariables[dv].destinationDataTypeClass() == String.class)
+                    dataVariables[dv].destinationDataPAType() == PAType.STRING)
                     continue;
                 fdv = dv;
                 break;
@@ -15743,8 +15982,8 @@ public abstract class EDDTable extends EDD {
             int dv2 = dv1 + 1;
             if (dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == depthIndex || dv1 == timeIndex ||
                 dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == depthIndex || dv2 == timeIndex ||
-                dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
-                dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
+                dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataPAType() == PAType.STRING ||
+                dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataPAType() == PAType.STRING ||
                 dataVariables[dv1].ucumUnits() == null ||
                 dataVariables[dv2].ucumUnits() == null ||
                 !dataVariables[dv1].ucumUnits().equals(dataVariables[dv2].ucumUnits()))
@@ -15763,8 +16002,8 @@ public abstract class EDDTable extends EDD {
                 if (dv1 == dv2 ||
                     dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == depthIndex || dv1 == timeIndex ||
                     dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == depthIndex || dv2 == timeIndex ||
-                    dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
-                    dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
+                    dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataPAType() == PAType.STRING ||
+                    dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataPAType() == PAType.STRING ||
                     dataVariables[dv1].ucumUnits() == null ||
                     dataVariables[dv2].ucumUnits() == null ||
                     dataVariables[dv1].ucumUnits().equals(dataVariables[dv2].ucumUnits()))
@@ -18745,7 +18984,7 @@ writer.write(
             boolean isTimeStamp = Calendar2.isTimeUnits(
                 sourceTable.columnAttributes(col).getString("units"));
             pa.sort();
-            if (pa.elementClass() != String.class) {
+            if (pa.elementType() != PAType.STRING) {
                 //find missing value
                 double dmv = pa.tryToFindNumericMissingValue();
 

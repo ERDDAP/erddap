@@ -94,7 +94,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
 //            -180, 180, //these settings are specific for the ETOPO1 file
 //            -90, 90,  
 //            21601, 10801,
-//and read data as int.class
+//and read data as PAType.INT
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<addAttributes>"))
@@ -252,10 +252,10 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes)) 
             dataVariables[0] = new EDVTimeStamp(tSourceName, tDestinationName,
                 tSourceAttributes, tAddAttributes,
-                ???int.class);  
+                ???PAType.INT);  
         else dataVariables[0] = new EDV(tSourceName, tDestinationName,
             tSourceAttributes, tAddAttributes,
-            ???int.class);  
+            ???PAType.INT);  
         dataVariables[0].setActualRangeFromDestinationMinMax();
 
         //ensure the setup is valid

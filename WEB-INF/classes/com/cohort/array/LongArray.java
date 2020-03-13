@@ -35,11 +35,22 @@ public class LongArray extends PrimitiveArray {
      */
     public long[] array;
 
-    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
+    }
+
+    /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 8;
     }
 
     /** 
@@ -174,12 +185,12 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (long.class) of the element type.
+     * This returns the PAType (PAType.LONG) of the element type.
      *
-     * @return the class (long.class) of the element type.
+     * @return the PAType (PAType.LONG) of the element type.
      */
-    public Class elementClass() {
-        return long.class;
+    public PAType elementType() {
+        return PAType.LONG;
     }
 
     /**
@@ -187,7 +198,7 @@ public class LongArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_LONG) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_LONG;
     }
 
@@ -363,7 +374,7 @@ public class LongArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in LongArray.addFromPA: otherIndex=" + otherIndex + 
@@ -650,13 +661,15 @@ public class LongArray extends PrimitiveArray {
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a float. String values are parsed
+     * @return the value as a float. 
+     *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      *   Long.MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         long tl = get(index);
-        return tl == Long.MAX_VALUE? Float.NaN : tl;
+        return tl == Long.MAX_VALUE? Float.NaN : 
+                                     tl;
     }
 
     /**
@@ -674,7 +687,8 @@ public class LongArray extends PrimitiveArray {
      * Return a value from the array as a double.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a double. String values are parsed
+     * @return the value as a double. 
+     *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      *   Long.MAX_VALUE is returned as Double.NaN.
      */
@@ -689,15 +703,10 @@ public class LongArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
-     *   with String2.parseDouble and so may return Double.NaN.
+     *   with String2.parseDouble, so may return Double.NaN.
      */
     public double getUnsignedDouble(int index) {
-        //https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
-//  9,223,372,036,854,775,808
-// +9,223,372,036,854,775,808
-//=18 446 744 073 709 551 616
-        double d = get(index);
-        return d < 0? d + 18446744073709551616.0 : d; //2^64
+        return Math2.unsignedLongToDouble(get(index)); // !!! possible loss of precision
     }
 
 
@@ -734,8 +743,8 @@ public class LongArray extends PrimitiveArray {
      * @return For numeric types, this returns (String.valueOf(ar[index])), or "" for NaN or infinity.
      */
     public String getString(int index) {
-        long b = get(index);
-        return b == Long.MAX_VALUE? "" : String.valueOf(b);
+        long tl = get(index);
+        return tl == Long.MAX_VALUE? "" : String.valueOf(tl);
     }
 
     /**
@@ -744,11 +753,12 @@ public class LongArray extends PrimitiveArray {
      * String returns a json String with chars above 127 encoded as \\udddd.
      * 
      * @param index the index number 0 ... size-1 
-     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
     public String getJsonString(int index) {
-        long b = get(index);
-        return b == Long.MAX_VALUE? "null" : String.valueOf(b);
+        long tl = get(index);
+        return tl == Long.MAX_VALUE? "null" : 
+                                     String.valueOf(tl);
     }
 
     /**
@@ -1041,6 +1051,28 @@ public class LongArray extends PrimitiveArray {
         ensureCapacity(size + (long)nValues);
         for (int i = 0; i < nValues; i++) 
             array[size++] = dis.readLong();
+    }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeLong(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readLong());
     }
 
     /**
@@ -1375,27 +1407,27 @@ public class LongArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (LongArray)unsignedFactory(long.class, 
+        anArray = (LongArray)unsignedFactory(PAType.LONG, 
             new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 9223372036854775807, 9223372036854775807, 9223372036854775807", ""); // -> mv
         anArray.clear();        
 
-        anArray = (LongArray)unsignedFactory(long.class, 
+        anArray = (LongArray)unsignedFactory(PAType.LONG, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
         anArray.clear();        
 
-        anArray = (LongArray)unsignedFactory(long.class, 
+        anArray = (LongArray)unsignedFactory(PAType.LONG, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
         anArray.clear();        
 
-        anArray = (LongArray)unsignedFactory(long.class, 
+        anArray = (LongArray)unsignedFactory(PAType.LONG, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
         anArray.clear();        
 
-        anArray = (LongArray)unsignedFactory(long.class, 
+        anArray = (LongArray)unsignedFactory(PAType.LONG, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 2147483647, 2147483648, 4294967295", "");
         anArray.clear();        
@@ -1408,7 +1440,7 @@ public class LongArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 2000000000000000.0f, "");
         Test.ensureEqual(anArray.getDouble(0), 2000000000000000L, "");
         Test.ensureEqual(anArray.getString(0), "2000000000000000", "");
-        Test.ensureEqual(anArray.elementClass(), long.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.LONG, "");
         long tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new long[]{2000000000000000L}, "");
 

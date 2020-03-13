@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -70,6 +71,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -77,7 +79,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
         boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", tDatasetID, 
@@ -87,13 +90,15 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
             tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
 
     }
 
@@ -121,9 +126,9 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             int sd = sourceDataNames.indexOf(table.getColumnName(tc));
             if (sd >= 0) {
                 PrimitiveArray pa = table.getColumn(tc);
-                if (!sourceDataTypes[sd].equals(pa.elementClassString())) {
+                if (!sourceDataTypes[sd].equals(pa.elementTypeString())) {
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToClass(sourceDataTypes[sd]), 1, false);
+                        PrimitiveArray.elementStringToPAType(sourceDataTypes[sd]), 1, false);
                     newPa.append(pa);
                     table.setColumn(tc, newPa);
                 }
@@ -250,13 +255,13 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(col);
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             PrimitiveArray sourcePA = (PrimitiveArray)dataSourceTable.getColumn(col).clone();
-            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+            PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts); 
             dataAddTable.addColumn(col, colName, destPA,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     null, //no source global attributes
                     sourceAtts, null, colName, 
-                    destPA.elementClass() != String.class, //tryToAddStandardName
-                    destPA.elementClass() != String.class, //addColorBarMinMax
+                    destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                    destPA.elementType() != PAType.STRING, //addColorBarMinMax
                     true)); //tryToFindLLAT
             Attributes addAtts = dataAddTable.columnAttributes(col);
 
@@ -421,7 +426,7 @@ String expected =
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">The new summary! exploratorium data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -1389,7 +1394,7 @@ String expected2 =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"fileName, station_id, station, city_state_zip, city_state, site_url, altitude\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String time_coverage_end \"2012-11-03T20:30:00Z\";\n" +

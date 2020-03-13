@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -170,7 +171,7 @@ public class EDStatic {
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
-     * !!! People other than the main ERDDAP developer (Bob) 
+     * !!! In general, people other than the main ERDDAP developer (Bob) 
      * should not change the *number* below.
      * If you need to identify a fork of ERDDAP, please append "_" + other 
      * ASCII text (no spaces or control characters) to the number below,
@@ -647,6 +648,9 @@ public static boolean developmentMode = true;
         filesDocumentation;
     public static String 
         addConstraints,
+        addVarWhereAttName,
+        addVarWhereAttValue,
+        addVarWhere,
         admKeywords,
         admSubsetVariables,
         admSummary,
@@ -1896,6 +1900,9 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         //read all the static Strings from messages.xml
         acceptEncodingHtml         = messages.getNotNothingString("acceptEncodingHtml",         errorInMethod);
         addConstraints             = messages.getNotNothingString("addConstraints",             errorInMethod);
+        addVarWhereAttName         = messages.getNotNothingString("addVarWhereAttName",         errorInMethod);
+        addVarWhereAttValue        = messages.getNotNothingString("addVarWhereAttValue",        errorInMethod);
+        addVarWhere                = messages.getNotNothingString("addVarWhere",                errorInMethod);
         admKeywords                = messages.getNotNothingString("admKeywords",                errorInMethod);
         admSubsetVariables         = messages.getNotNothingString("admSubsetVariables",         errorInMethod);
         admSummary                 = messages.getNotNothingString("admSummary",                 errorInMethod);
@@ -2914,13 +2921,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 int nRows = 4;
                 Dimension dimension  = nc.addDimension(rootGroup, "row", nRows);
                 Variable var = nc.addVariable(rootGroup, "myLongs", 
-                    DataType.getType(long.class), Arrays.asList(dimension)); 
+                    NcHelper.getNc3DataType(PAType.LONG),
+                    Arrays.asList(dimension)); 
 
                 //leave "define" mode
                 nc.create();  //error is thrown here if netcdf-c not found
 
                 //write the data
-                Array array = Array.factory(long.class, new int[]{nRows}, new long[]{0,1,2,3});
+                Array array = Array.factory(DataType.LONG, new int[]{nRows}, new long[]{0,1,2,3});
                 nc.write(var, new int[]{0}, array);
 
                 //if close throws Throwable, it is trouble
@@ -3336,7 +3344,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         throws Throwable {
 
         return htmlTooltipImageLowEDV(loggedInAs,
-            edv.destinationDataTypeClass(), 
+            edv.destinationDataPAType(), 
             edv.destinationName(), 
             edv.combinedAttributes());
     }
@@ -3351,7 +3359,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         throws Throwable {
         
         return htmlTooltipImageLowEDV(loggedInAs,
-            edvga.destinationDataTypeClass(), 
+            edvga.destinationDataPAType(), 
             edvga.destinationName() + "[" + edvga.sourceValues().size() + "]",
             edvga.combinedAttributes());
     }
@@ -3367,7 +3375,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         throws Throwable {
 
         return htmlTooltipImageLowEDV(loggedInAs,
-            edv.destinationDataTypeClass(), 
+            edv.destinationDataPAType(), 
             edv.destinationName() + allDimString, 
             edv.combinedAttributes());
     }
@@ -3377,18 +3385,18 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * with a variable's name and attributes.
      * htmlTooltipScript (see HtmlWidgets) must be already in the document.
      *
-     * @param destinationDataTypeClass
+     * @param destinationDataPAType
      * @param destinationName  perhaps with axis information appended (e.g., [time][latitude][longitude]
      * @param attributes
      */
-    public static String htmlTooltipImageLowEDV(String loggedInAs, Class destinationDataTypeClass, 
+    public static String htmlTooltipImageLowEDV(String loggedInAs, PAType destinationDataPAType, 
         String destinationName, Attributes attributes) throws Throwable {
 
         String destType = 
             //long and char aren't handled by getAtomicType. I don't think ever used.
-            destinationDataTypeClass == long.class? "long" :   
-            destinationDataTypeClass == char.class? "char" :  //???   
-            OpendapHelper.getAtomicType(destinationDataTypeClass);
+            destinationDataPAType == PAType.LONG? "long" :   
+            destinationDataPAType == PAType.CHAR? "char" :  //???   
+            OpendapHelper.getAtomicType(destinationDataPAType);
 
         StringBuilder sb = OpendapHelper.dasToStringBuilder(
             destType + " " + destinationName, attributes, false); //false, do encoding below
@@ -4011,7 +4019,26 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *   but &amp;loginInfo; indicates user isn't logged in.
      */
     public static String startBodyHtml(String loggedInAs) {
+        return startBodyHtml(loggedInAs, "");
+    }
+
+    /**
+     * This returns the startBodyHtml (with the user's login info inserted if 
+     * &amp;loginInfo; is present).
+     *
+     * <p>This is safe to use this after outputStream has been written to -- 
+     *     this won't make a session if the user doesn't have one.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *   Special case: "loggedInAsHttps" is for using https without being logged in, 
+     *   but &amp;loginInfo; indicates user isn't logged in.
+     * @param otherBody other content for the &lt;body&gt; tag, e.g., " onload=\"myFunction()\"".
+     *   
+     */
+    public static String startBodyHtml(String loggedInAs, String otherBody) {
         String s = startBodyHtml;
+        if (String2.isSomething(otherBody)) 
+            s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
         if (ampLoginInfoPo >= 0) {
             s = startBodyHtml.substring(0, ampLoginInfoPo) +
                 getLoginHtml(loggedInAs) +
@@ -4481,6 +4508,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Table table = new Table();
         table.readASCII(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
+            String2.ISO_8859_1, "", "",
             0, 1, "", null, null, null, null, false); //false = don't simplify
         return table;
     }
@@ -4988,7 +5016,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             PrimitiveArray pa = addAtts.get(names[i]);
             if (pa == null && sourceAtts != null)
                 pa = sourceAtts.get(names[i]);
-            if (pa != null && pa.size() > 0 && pa.elementClass() == String.class) {
+            if (pa != null && pa.size() > 0 && pa.elementType() == PAType.STRING) {
                 String oValue = pa.getString(0);        
                 String value = updateUrls(oValue);
                 if (!value.equals(oValue))

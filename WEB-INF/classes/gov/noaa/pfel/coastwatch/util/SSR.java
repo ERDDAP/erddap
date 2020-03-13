@@ -1232,13 +1232,17 @@ public class SSR {
         //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
         //    "  toAddress=" + toAddress);
 
+        String notSendingMsg = String2.ERROR + " in SSR.sendEmail: not sending email because ";
         if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
-            String2.log("SSR.sendEmail: no toAddresses");
+            String2.log(notSendingMsg + "no toAddresses.");
             return;
         }
+        if (!String2.isSomething(smtpHost)) 
+            throw new Exception(notSendingMsg + "smtpHost wasn't specified.");
         if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
-            throw new Exception(String2.ERROR + " in sendEmail: smtpPort=" + smtpPort +
-                " is invalid.");
+            throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
+        if (!String2.isSomething(fromAddress)) 
+            throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
         //I'm not sure if System.getProperties returns a new Properties 
         //  or a reference to the same system properties object
         //  so use new Properties to make System properties just the defaults
@@ -1372,7 +1376,7 @@ public class SSR {
     /** 
      * This is used by Erddap.sendRedirect to try to fix urls that are supposedly
      * already percentEncoded, but have characters that are now (with stricter
-     * Tomcat) not allowed, notably |,&gt;,&lt;
+     * Tomcat) not allowed, notably [,],|,&gt;,&lt;
      *
      * @param url the whole URL (which you wouldn't do with minimalPercentEncode)
      * @return url with additional characters encoded
@@ -1704,11 +1708,23 @@ public class SSR {
                         //try to read the errorStream
                         InputStream es = httpUrlCon.getErrorStream(); //will fail if no error content
                         if (es != null) {
+                            if (encoding != null) {
+                                encoding = encoding.toLowerCase();
+                                //if (encoding.indexOf("compress") >= 0) //hard to work with later
+                                //    is = new ZipInputStream(is);
+                                //else 
+                                if (encoding.indexOf("gzip") >= 0)
+                                    es = new GZIPInputStream(es);
+                                else if (encoding.indexOf("deflate") >= 0)
+                                    es = new InflaterInputStream(es);
+                            }
                             String charset = getCharset(urlString, httpUrlCon);
                             msg = readerToString(urlString, //may throw exception
                                 new BufferedReader(new InputStreamReader(es, charset)), 1000); //maxCharacters
                         }
                     } catch (Throwable t) {
+                        String2.log("Caught error while trying to read errorStream (encoding=" + encoding + "):\n" +
+                            MustBe.throwableToString(t));
                     }
                     String eString = e.toString();
                     if (!String2.isSomething(eString))
@@ -1807,6 +1823,7 @@ public class SSR {
             if (!String2.isUrl(urlString))
                 return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 1);
 
+            long time = System.currentTimeMillis();
             BufferedReader in = getBufferedUrlReader(urlString);
             try {
                 ArrayList<String> sa = new ArrayList();
@@ -1814,6 +1831,8 @@ public class SSR {
                 while ((s = in.readLine()) != null) {
                     sa.add(s);
                 }
+                if (reallyVerbose) String2.log("  SSR.getUrlResponseArrayList " + urlString + 
+                    " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
                 return sa;
             } finally {
                 in.close();
@@ -1856,6 +1875,7 @@ public class SSR {
     public static String getUrlResponseStringNewline(String urlString) throws Exception {
         if (String2.isUrl(urlString)) {
             try {
+                long time = System.currentTimeMillis();
                 StringBuilder sb = new StringBuilder(4096); 
                 BufferedReader in = getBufferedUrlReader(urlString);
                 try {
@@ -1867,6 +1887,9 @@ public class SSR {
                 } finally {
                     in.close();
                 }
+                if (reallyVerbose) String2.log("  SSR.getUrlResponseStringNewline " + 
+                    urlString + " finished. TIME=" + 
+                    (System.currentTimeMillis() - time) + "ms");
                 return sb.toString();
             } catch (Exception e) {
                 String msg = e.toString();
@@ -1917,6 +1940,7 @@ public class SSR {
      */
     public static String readerToString(String urlString, Reader in, int maxChars) throws Exception {
         try {
+            long time = System.currentTimeMillis();
             char buffer[] = new char[8192];
             StringBuilder sb = new StringBuilder(8192); 
             try {
@@ -1932,6 +1956,8 @@ public class SSR {
             } finally {
                 in.close();
             }
+            if (reallyVerbose) String2.log("  SSR.readerToString " + urlString + 
+                " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
             return sb.toString();
         } catch (Exception e) {
             String msg = e.toString();
@@ -1953,6 +1979,7 @@ public class SSR {
      */
     public static byte[] getUrlResponseBytes(String urlString) throws Exception {
         try {
+            long time = System.currentTimeMillis();
             byte buffer[] = new byte[1024];
             InputStream is = getUrlBufferedInputStream(urlString); 
             try {
@@ -1964,6 +1991,8 @@ public class SSR {
                         break;
                     ba.add(buffer, 0, getN);
                 }
+                if (reallyVerbose) String2.log("  SSR.getUrlResponseBytes " + urlString + 
+                    " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
                 return ba.toArray();
             } finally {
                 is.close();
@@ -1998,11 +2027,14 @@ public class SSR {
     public static byte[] getFileBytes(String fileName) throws Exception {
         InputStream is = null; 
         try {
+            long time = System.currentTimeMillis();
             byte buffer[] = new byte[1024];
             is = File2.getDecompressedBufferedInputStream(fileName); 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for(int s; (s=is.read(buffer)) != -1; ) 
                 baos.write(buffer, 0, s);
+            if (reallyVerbose) String2.log("  SSR.getFileBytes " + fileName + 
+                " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
             return baos.toByteArray();
         } catch (Exception e) {
             //String2.log(e.toString());

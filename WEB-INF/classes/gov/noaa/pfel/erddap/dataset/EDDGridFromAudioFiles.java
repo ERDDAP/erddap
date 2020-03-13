@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -127,7 +128,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
                 throw new SimpleException("There is no sourceDataName=" + name +
                    ". The available names are [" + table.getColumnNamesCSSVString() + "].");
             sourceDataAttributes[dni].add(table.columnAttributes(tc));
-            Test.ensureEqual(table.getColumn(tc).elementClassString(), 
+            Test.ensureEqual(table.getColumn(tc).elementTypeString(), 
                 sourceDataTypes[dni], "Unexpected source dataType for sourceDataName=" +
                 name + ".");
         }
@@ -182,9 +183,9 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
      * @return a PrimitiveArray[] with an element for each tDataVariable with
      *   the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
-     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass, but
+     *   <br>The primitiveArray dataTypes are usually the sourceDataPAType, but
      *   can be any type. EDDGridFromFiles will convert to the
-     *   sourceDataTypeClass.
+     *   sourceDataPAType.
      *   <br>Note the lack of axisVariable values!
      * @throws Throwable if trouble (notably, WaitThenTryAgainException). If
      *   there is trouble, this doesn't call addBadFile or requestReloadASAP().
@@ -220,7 +221,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
                 if (Double.isNaN(mv))
                     mv = edv.sourceMissingValue();
                 paa[dvi] = PrimitiveArray.factory(
-                    edv.sourceDataTypeClass(), howManyRows, "" + mv);
+                    edv.sourceDataPAType(), howManyRows, "" + mv);
             }
         }            
         return paa;
@@ -326,13 +327,13 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         Attributes sourceAtts = new Attributes();
         Attributes addAtts = (new Attributes()).
             add("units", "seconds since 1970-01-01T00:00:00Z");
-        Class tClass = null;
+        PAType tPAType = null;
         if (extractDataType.startsWith("timeFormat=")) {
-            tClass = String.class;
+            tPAType = PAType.STRING;
         } else {
-            tClass = PrimitiveArray.elementStringToClass(extractDataType);
+            tPAType = PrimitiveArray.elementStringToPAType(extractDataType);
         }
-        PrimitiveArray pa = PrimitiveArray.factory(tClass, 1, false);
+        PrimitiveArray pa = PrimitiveArray.factory(tPAType, 1, false);
         axisSourceTable.addColumn(0, 
             //***fileName,dataType,extractRegex,captureGroupNumber 
             "***fileName," + String2.toJson(extractDataType) + "," + 
@@ -487,7 +488,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedTime, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Audio data from a local source.</att>\n" +
 "        <att name=\"title\">Audio data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -616,7 +617,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedTime, local, source, time</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Audio data from a local source.</att>\n" +
 "        <att name=\"title\">Audio data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -778,7 +779,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Audio data from a local source.\";\n" +
 "    String time_coverage_end \"2014-11-19T00:20:00Z\";\n" +
 "    String time_coverage_start \"2014-11-19T00:15:00Z\";\n" +
@@ -999,12 +1000,15 @@ expected =
 /* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
-        //oneTimeFixFiles();  
         testBasic(true);
         testBasic(false);
         testByteRangeRequest();
         /* */
-    }
+
+        //not usually run:
+        //oneTimeFixFiles();  
+
+   }
 
 }
 

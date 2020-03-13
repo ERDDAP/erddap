@@ -42,6 +42,17 @@ public class CharArray extends PrimitiveArray {
         array = new char[8];
     }
 
+    /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 2;
+    }
+
     /** 
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
@@ -225,12 +236,12 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (char.class) of the element type.
+     * This returns the PAType (PAType.CHAR) of the element type.
      *
-     * @return the class (char.class) of the element type.
+     * @return the PAType (PAType.CHAR) of the element type.
      */
-    public Class elementClass() {
-        return char.class;
+    public PAType elementType() {
+        return PAType.CHAR;
     }
 
     /**
@@ -238,7 +249,7 @@ public class CharArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_CHAR) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_CHAR;
     }
 
@@ -413,7 +424,7 @@ public class CharArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in CharArray.addFromPA: otherIndex=" + otherIndex + 
@@ -424,7 +435,7 @@ public class CharArray extends PrimitiveArray {
             size += nValues;
 
         //add from different type
-        } else if (otherPA.elementClass() == String.class) {
+        } else if (otherPA.elementType() == PAType.STRING) {
             for (int i = 0; i < nValues; i++)
                 addString(otherPA.getString(otherIndex++)); //add and get do checking
 
@@ -443,7 +454,7 @@ public class CharArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        if (otherPA.elementClass() == String.class) 
+        if (otherPA.elementType() == PAType.STRING) 
             set(index, firstChar(otherPA.getString(otherIndex))); //add and get do checking
         else setInt(index, otherPA.getInt(otherIndex));
     }
@@ -759,7 +770,8 @@ public class CharArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * FloatArray converts float to double in a simplistic way.
-     * For this variant: Integer source values will be treated as unsigned.
+     * For this variant: Integer source values will be treated as unsigned,
+     *   regardless of whether getUnsigned()==true.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -1221,6 +1233,28 @@ public class CharArray extends PrimitiveArray {
     }
 
     
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeChar(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readChar());
+    }
+
     /**
      * This reads one value from a randomAccessFile.
      *
@@ -1536,25 +1570,25 @@ public class CharArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (CharArray)unsignedFactory(char.class, 
+        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
             new CharArray(new char[] {0, 1, 65, 252, Character.MAX_VALUE, Character.MIN_VALUE}));
         Test.ensureEqual(anArray.toString(), 
             "\\u0000, \\u0001, A, \\u00fc, \\uffff, \\u0000", ""); // -> mv
         anArray.clear();        
 
-        anArray = (CharArray)unsignedFactory(char.class, 
+        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
             new ByteArray(new byte[] {0, 1, 65, (byte)252, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "\\u0000, \\u0001, A, \\u00fc, \\u007f, \\u0080, \\u00ff", "");
         anArray.clear();        
 
-        anArray = (CharArray)unsignedFactory(char.class, 
+        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
             new ShortArray(new short[] {0, 1, 65, 252, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "\\u0000, \\u0001, A, \\u00fc, \\u7fff, \\u8000, \\uffff", "");
         anArray.clear();        
 
-        anArray = (CharArray)unsignedFactory(char.class, 
+        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
             new IntArray(new int[] {0, 1, 65, 252, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "\\u0000, \\u0001, A, \\u00fc, \\uffff, \\uffff, \\uffff", ""); // ->mv
@@ -1568,7 +1602,7 @@ public class CharArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 122, "");
         Test.ensureEqual(anArray.getDouble(0), 122, "");
         Test.ensureEqual(anArray.getString(0), "z", "");
-        Test.ensureEqual(anArray.elementClass(), char.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.CHAR, "");
         char tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new char[]{'z'}, "");
 

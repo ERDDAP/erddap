@@ -1003,7 +1003,7 @@ EDStatic.standardLicense);
                 String2.log(
                     String2.left("" + col, 3) + " " +
                     String2.left(table.getColumnName(col), 22) + " " +
-                    String2.left(pa.elementClassString(), 8) + " " +
+                    String2.left(pa.elementTypeString(), 8) + " " +
                     (s.length() > 35? s.substring(0, 35) + "..." : s) +
                     ((pa instanceof StringArray)? " [" + maxLength + "]" : ""));
             }

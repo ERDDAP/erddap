@@ -468,7 +468,7 @@ if (lonIndex < nAv - 1)
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3]
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -715,7 +715,7 @@ if (lonIndex < nAv - 1)
         //and make the results data variables
         for (int tdv = 0; tdv < tnDV; tdv++) 
             results[nAV + tdv] = PrimitiveArray.factory(
-                tDataVariables[tdv].sourceDataTypeClass(), nValues, false);
+                tDataVariables[tdv].sourceDataPAType(), nValues, false);
 
         //dest is: dloni180...dloni359, [insert359i...insert0i,]  [dloni0...dloni179]
         //becomes      -180...-1,       [insert359i...insert0i,]  [     0...     179]
@@ -787,7 +787,7 @@ if (lonIndex < nAv - 1)
         }
         Table table = new Table();
         table.readASCII(query, 
-            br, 0, 2, "", null, null, null, null, false); //simplify
+            br, "", "", 0, 2, "", null, null, null, null, false); //simplify
         PrimitiveArray datasetIDPA = table.findColumn("datasetID");
         PrimitiveArray titlePA     = table.findColumn("title");
         PrimitiveArray minLonPA    = table.findColumn("minLongitude");
@@ -1217,19 +1217,19 @@ expected =
             dir, eddGrid.className() + "_1to359", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
+//THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files available
         //test of /files/ system for fromErddap in local host dataset
-        String2.log("\n* Test getting /files/ from local host erddap...");
-        results = SSR.getUrlResponseStringUnchanged(
-            "http://localhost:8080/cwexperimental/files/erdRWdhws1day_LonPM180/");
-        expected = "PH2001244&#x5f;2001273&#x5f;dhw&#x2e;nc"; //"PH2001244_2001273_dhw.nc";
-        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+//        String2.log("\n* Test getting /files/ from local host erddap...");
+//        results = SSR.getUrlResponseStringUnchanged(
+//            "http://localhost:8080/cwexperimental/files/erdRWdhws1day_LonPM180/");
+//        expected = "PH2001244&#x5f;2001273&#x5f;dhw&#x2e;nc"; //"PH2001244_2001273_dhw.nc";
+//        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         String2.log("\n*** EDDGridLonPM180.test1to359 finished.");
 
       } catch (Throwable t) {
-          String2.pressEnterToContinue("\n" +
-              MustBe.throwableToString(t) + "\n" +
-              "*** THIS TEST NEEDS A NEW TEST DATASET.");
+          String2.pressEnterToContinue("\nUnexpected error:\n" +
+              MustBe.throwableToString(t));
       }
 
     }
@@ -1478,15 +1478,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 132];\n" + //changes
+"  Float64 time[time = 136];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 132][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 136][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 132];\n" +  //changes
+"      Float64 time[time = 136];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1830,24 +1830,23 @@ expected =
                 "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/.csv");
             expected = 
 "Name,Last modified,Size,Description\n" +
-"MW2002182_2002212_chla.nc,1332025888000,37201956,\n" +
-"MW2002213_2002243_chla.nc,1332026460000,37201956,\n";
+"MW2002182_2002212_chla.nc.gz,1332025888000,17339003,\n" +
+"MW2002213_2002243_chla.nc.gz,1332026460000,18217295,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/
             results = SSR.getUrlResponseStringNewline(
                 "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/");
             Test.ensureTrue(results.indexOf("MW2002182&#x5f;2002212&#x5f;chla&#x2e;nc") > 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">37201956<")                               > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">17339003<")                               > 0, "results=\n" + results);
 
             //get /files/datasetID/subdir/.csv
 
             //download a file in root
             results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/MW2002182_2002212_chla.nc").substring(0, 50));
+                "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/MW2002182_2002212_chla.nc.gz").substring(0, 50));
             expected = 
-"CDF[1][0][0][0][0][0][0][0][10]\n" +
-"[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][8]altitude[0][0][0][1][0][0][0][3]la[end]"; 
+"[31][139][8][8] [26]eO[0][3]MW2002182_2002212_chla.nc[0][228][216][127][140]#[231]][199]q[223][229][238]r?[end]"; 
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //download a file in subdir

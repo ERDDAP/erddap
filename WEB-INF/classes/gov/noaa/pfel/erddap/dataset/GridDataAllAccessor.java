@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -45,7 +46,7 @@ public class GridDataAllAccessor {
     
     //things the constructor sets
     protected String baseFileName; //to which the dv number is added
-    protected Class dataClass[]; //1 per data variable  e.g., float.class
+    protected PAType dataPAType[]; //1 per data variable  e.g., float.class
 
     /**
      * This sets everything up (i.e., gets all the data and stores it in 
@@ -73,10 +74,10 @@ public class GridDataAllAccessor {
                 String2.md5Hex12(tQuery == null? "" : tQuery) + "_" +
                 Math2.random(Integer.MAX_VALUE) + "_"; //so two identical queries don't interfere with each other
 
-            dataClass = new Class[nDv];
+            dataPAType = new PAType[nDv];
             dos = new DataOutputStream[nDv]; //1 per data variable        
             for (int dv = 0; dv < nDv; dv++) {
-                dataClass[dv] = dataVars[dv].destinationDataTypeClass();
+                dataPAType[dv] = dataVars[dv].destinationDataPAType();
                 dos[dv] = new DataOutputStream(new BufferedOutputStream(
                     new FileOutputStream(baseFileName + dv)));            
             }
@@ -125,7 +126,7 @@ public class GridDataAllAccessor {
     public PrimitiveArray getPrimitiveArray(int dv) throws Exception {
         long n = gridDataAccessor.totalIndex.size();
         EDStatic.ensureArraySizeOkay(n, "GridDataAllAccessor");
-        PrimitiveArray pa = PrimitiveArray.factory(dataClass[dv], (int)n, false);
+        PrimitiveArray pa = PrimitiveArray.factory(dataPAType[dv], (int)n, false);
         DataInputStream dis = getDataInputStream(dv);
         try {
             pa.readDis(dis, (int)n);
@@ -154,8 +155,8 @@ public class GridDataAllAccessor {
     public void releaseResources() {
         releaseGetResources();
         try {
-            if (dataClass != null) {
-                int nDv = dataClass.length;
+            if (dataPAType != null) {
+                int nDv = dataPAType.length;
                 for (int dv = 0; dv < nDv; dv++) {
                     try {
                         File2.delete(baseFileName + dv);
@@ -164,7 +165,7 @@ public class GridDataAllAccessor {
                             MustBe.throwableToString(t2));
                     }
                 }
-                dataClass = null;
+                dataPAType = null;
             }
         } catch (Throwable t) {
         }

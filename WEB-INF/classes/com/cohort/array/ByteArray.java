@@ -36,11 +36,22 @@ public class ByteArray extends PrimitiveArray {
      */
     public byte[] array;
 
-    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
+    }
+
+    /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 1;
     }
 
     /** 
@@ -166,7 +177,7 @@ public class ByteArray extends PrimitiveArray {
                 bar[i] = tl == Long.MAX_VALUE? Byte.MAX_VALUE :
                     tl == 0? zero : one;
             }
-        } else {  //byte, short, int, float, double
+        } else {  //byte, ubyte, short, ushort, int, uint, float, double
             for (int i = 0; i < size; i++) {
                 double td = pa.getDouble(i);
                 bar[i] = Double.isNaN(td)? Byte.MAX_VALUE :
@@ -256,12 +267,12 @@ public class ByteArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (byte.class) of the element type.
+     * This returns the PAType (PAType.BYTE) of the element type.
      *
-     * @return the class (byte.class) of the element type.
+     * @return the PAType (PAType.BYTE) of the element type.
      */
-    public Class elementClass() {
-        return byte.class;
+    public PAType elementType() {
+        return PAType.BYTE;
     }
 
     /**
@@ -269,7 +280,7 @@ public class ByteArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_BYTE) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_BYTE;
     }
 
@@ -457,7 +468,7 @@ public class ByteArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in ByteArray.addFromPA: otherIndex=" + otherIndex + 
@@ -707,8 +718,9 @@ public class ByteArray extends PrimitiveArray {
      *   Byte.MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
-        int i = get(index);
-        return i == Byte.MAX_VALUE? Integer.MAX_VALUE : i;
+        byte b = get(index);
+        return b == Byte.MAX_VALUE? Integer.MAX_VALUE : 
+                                    b;
     }
 
     /**
@@ -744,8 +756,9 @@ public class ByteArray extends PrimitiveArray {
      *   Byte.MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
-        int i = get(index);
-        return i == Byte.MAX_VALUE? Long.MAX_VALUE : i;
+        byte b = get(index);
+        return b == Byte.MAX_VALUE? Long.MAX_VALUE : 
+                                    b;
     }
 
     /**
@@ -763,13 +776,15 @@ public class ByteArray extends PrimitiveArray {
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a float. String values are parsed
+     * @return the value as a float. 
+     *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      *   Byte.MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Float.NaN : b;
+        return b == Byte.MAX_VALUE? Float.NaN : 
+                                    b;
     }
 
     /**
@@ -787,13 +802,15 @@ public class ByteArray extends PrimitiveArray {
      * Return a value from the array as a double.
      * 
      * @param index the index number 0 .. size-1
-     * @return the value as a double. String values are parsed
+     * @return the value as a double. 
+     *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      *   Byte.MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Double.NaN : b;
+        return b == Byte.MAX_VALUE? Double.NaN : 
+                                    b;
     }
 
     /**
@@ -842,10 +859,12 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *    or "" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value (never "").
      */
     public String getString(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? "" : String.valueOf(b);
+        return b == Byte.MAX_VALUE? "" : 
+                                    String.valueOf(b);
     }
 
     /**
@@ -854,11 +873,13 @@ public class ByteArray extends PrimitiveArray {
      * String returns a json String with chars above 127 encoded as \\udddd.
      * 
      * @param index the index number 0 ... size-1 
-     * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+     * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? "null" : String.valueOf(b);
+        return b == Byte.MAX_VALUE? "null" : 
+                                    String.valueOf(b);
     }
 
 
@@ -984,7 +1005,7 @@ public class ByteArray extends PrimitiveArray {
      * Test if o is an ByteArray with the same size and values,
      * but returns a String describing the difference (or "" if equal).
      *
-     * @param o
+     * @param o The other object
      * @return a String describing the difference (or "" if equal).
      *   o=null throws an exception.
      */
@@ -1150,7 +1171,7 @@ public class ByteArray extends PrimitiveArray {
      * DODS Array format (see www.opendap.org DAP 2.0 standard, section 7.3.2.1).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      *
-     * @param dos
+     * @param dos the DataOutputStream
      * @throws Exception if trouble
      */
     public void externalizeForDODS(DataOutputStream dos) throws Exception {
@@ -1167,7 +1188,7 @@ public class ByteArray extends PrimitiveArray {
      * DODS Atomic-type format (see www.opendap.org DAP 2.0 standard, section 7.3.2).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      *
-     * @param dos
+     * @param dos the DataOutputStream
      * @param i the index of the element to be written
      * @throws Exception if trouble
      */
@@ -1179,7 +1200,7 @@ public class ByteArray extends PrimitiveArray {
      * This reads/appends byte values to this PrimitiveArray from a DODS DataInputStream,
      * and is thus the complement of externalizeForDODS.
      *
-     * @param dis
+     * @param dis the DataInputStream
      * @throws IOException if trouble
      */
     public void internalizeFromDODS(DataInputStream dis) throws java.io.IOException {
@@ -1193,6 +1214,29 @@ public class ByteArray extends PrimitiveArray {
         while (nValues++ % 4 != 0)
             dis.readByte();
     }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeByte(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readByte());
+    }
+
 
 
     /**
@@ -1240,6 +1284,7 @@ public class ByteArray extends PrimitiveArray {
         raf.seek(start + index);
         raf.writeByte(Math2.roundToByte(value));
     }
+
 
     /**
      * This appends the data in another pa to the current data.
@@ -1505,12 +1550,12 @@ public class ByteArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (ByteArray)unsignedFactory(byte.class, 
+        anArray = (ByteArray)unsignedFactory(PAType.BYTE, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 127, 127, 127", ""); // -> mv
         anArray.clear();        
 
-        anArray = (ByteArray)unsignedFactory(byte.class, 
+        anArray = (ByteArray)unsignedFactory(PAType.BYTE, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0, 1, 127, 127, 127", ""); // -> mv
         anArray.clear();        
@@ -1523,7 +1568,7 @@ public class ByteArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 120, "");
         Test.ensureEqual(anArray.getDouble(0), 120, "");
         Test.ensureEqual(anArray.getString(0), "120", "");
-        Test.ensureEqual(anArray.elementClass(), byte.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.BYTE, "");
         byte tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new byte[]{(byte)120}, "");
 

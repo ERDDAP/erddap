@@ -222,6 +222,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tStatisticCode = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -263,6 +264,8 @@ public class EDDTableFromNWISDV extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -274,8 +277,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         return new EDDTableFromNWISDV(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
-            ttDataVariables,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
+            tGlobalAttributes, ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl);
 
     }
@@ -358,7 +361,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -502,7 +505,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 stationPA = stationTable.getColumn(stpo);
 
                 //if numeric, set min,max
-                if (edv.sourceDataTypeClass() != String.class) {
+                if (edv.sourceDataPAType() != PAType.STRING) {
                     double stats[] = stationPA.calculateStats();
                     if (stats[PrimitiveArray.STATS_N] > 0) {
                         edv.setDestinationMinMax(
@@ -529,6 +532,9 @@ public class EDDTableFromNWISDV extends EDDTable{
                 }
             }
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid  
         //It will read the /subset/ table or fail trying to get the data if the file isn't present.
@@ -576,7 +582,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 "Setup error: the subset table MUST have beginDate and endDate columns.");
         PrimitiveArray beginDatePA = stationTable.getColumn(beginDateCol);
         PrimitiveArray endDatePA   = stationTable.getColumn(endDateCol);
-        //String2.log("beginDate class=" + beginDatePA.elementClassString());
+        //String2.log("beginDate class=" + beginDatePA.elementTypeString());
 
         //go through the station table to find the stations of interest
         //and find beginTime>= endTime<= 
@@ -772,7 +778,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                     table.addColumn(table.nColumns(), colName,
                         //one value, replicated nRows times
                         PrimitiveArray.factory(
-                            stationTable.getColumn(col).elementClass(),
+                            stationTable.getColumn(col).elementType(),
                             nRows, stationTable.getStringData(col, stationRow)),
                         new Attributes());
                 }
@@ -1320,13 +1326,13 @@ public class EDDTableFromNWISDV extends EDDTable{
         for (int col = 0; col < nCols; col++) { 
             String sourceName = dataSourceTable.getColumnName(col);
             String destName = sourceName;
-            Class sourceClass = dataSourceTable.getColumn(col).elementClass();
+            Class sourceClass = dataSourceTable.getColumn(col).elementType();
 
             //move atts from "source" to addAtts
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             PrimitiveArray destPA = makeDestPAForGDX(
                 PrimitiveArray.factory(sourceClass, 1, false), 
-                sourceAtts);
+                sourceAtts); 
             Attributes addAtts = (Attributes)sourceAtts.clone();
             sourceAtts.clear();
 
@@ -1335,8 +1341,8 @@ public class EDDTableFromNWISDV extends EDDTable{
             Attributes tAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), //but there aren't any
                 addAtts, null, sourceName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
             addAtts.add(tAtts);  //tAtts have precedence
 
@@ -1673,7 +1679,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         //remove 'variables' at end
         starterTable.removeColumn(nCols - 1); 
         starterTable.addColumn(0, "agencySiteCode", 
-            PrimitiveArray.factory(String.class, nRows, ""), //values are irrelevant
+            PrimitiveArray.factory(PAType.STRING, nRows, ""), //values are irrelevant
             new Attributes());
 
         String results = generateDatasetsXml(true, true, //includeInstructions, displayResults
@@ -2747,7 +2753,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
                                 String2.toJson(varSeen + "Qualifiers") : 
                                 varSeen + "Qualifiers");
                         subset.setColumn(subset.findColumnNumber("variables"),
-                            PrimitiveArray.factory(String.class, subset.nRows(), tvar));
+                            PrimitiveArray.factory(PAType.STRING, subset.nRows(), tvar));
 
                         //save the subset table
                         String2.log("\nwriting chunk for " + param + "_" + stat + " " + lookFor + 

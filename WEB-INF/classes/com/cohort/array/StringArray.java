@@ -49,6 +49,17 @@ public class StringArray extends PrimitiveArray {
     static StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase = new StringHolderComparatorIgnoreCase();
 
     /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 20;
+    }
+
+    /**
      * This is the main data structure.
      * This is private, because the Strings are stored as utf8 byte[].
      * Note that if the PrimitiveArray's capacity is increased,
@@ -419,12 +430,12 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (String.class) of the element type.
+     * This returns the PAType (PAType.STRING) of the element type.
      *
-     * @return the class (String.class) of the element type.
+     * @return the PAType (PAType.STRING) of the element type.
      */
-    public Class elementClass() {
-        return String.class;
+    public PAType elementType() {
+        return PAType.STRING;
     }
 
     /**
@@ -432,7 +443,7 @@ public class StringArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_STRING) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_STRING;
     }
 
@@ -680,7 +691,7 @@ public class StringArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in StringArray.addFromPA: otherIndex=" + otherIndex + 
@@ -1446,7 +1457,7 @@ public class StringArray extends PrimitiveArray {
      */
 /* project not finished or tested
     public void writeNccsvDos(DataOutputStream dos) throws Exception {
-        dos.writeShort(elementClassIndex()); 
+        dos.writeShort(elementTypeIndex()); 
         dos.writeInt(size);
         for (int i = 0; i < size; i++) 
             String2.writeNccsvDos(dos, get(i));
@@ -1541,6 +1552,28 @@ public class StringArray extends PrimitiveArray {
             while (nChar++ % 4 != 0)
                 dis.readByte();
         }
+    }
+
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        throw new RuntimeException(String2.ERROR + ": StringArray doesn't support writeToRAF().");
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        throw new RuntimeException(String2.ERROR + ": StringArray doesn't support readFromRAF().");        
     }
 
     /**
@@ -2389,6 +2422,32 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * This returns the index of the first value that matches the regex.
+     *
+     * @param regex
+     * @return the index of the first value that matches the regex, or -1 if none matches.
+     * @throws RuntimeException if regex won't compile.
+     */
+    public int firstMatch(String regex) {
+        return firstMatch(Pattern.compile(regex));
+    }
+
+    /**
+     * This returns the index of the first value that matches the regex pattern p.
+     *
+     * @param p
+     * @return the index of the first value that matches the regex pattern p, or -1 if none matches.
+     */
+    public int firstMatch(Pattern p) {
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            if (s != null && p.matcher(s).matches())
+                return i;                
+        }
+        return -1;
+    }
+
+    /**
      * This returns the index of the first value that doesn't match the regex.
      *
      * @param regex
@@ -2466,35 +2525,35 @@ public class StringArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
         anArray.clear();        
 
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             // 0, 1,    2147483647,    2147483648,    4294967295
             "0.0, 1.0, 2.147483647E9, 2.147483648E9, 4.294967295E9", ""); //precise
         anArray.clear();        
 
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 9.223372036854776E18, 9.223372036854776E18, 1.8446744073709552E19", ""); //rounded/imprecise
         anArray.clear();        
 
-        anArray = (StringArray)unsignedFactory(String.class, 
+        anArray = (StringArray)unsignedFactory(PAType.STRING, 
             new FloatArray(new float[] {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 3.4028235E38, -3.4028235E38, -1.0", ""); 
@@ -2508,7 +2567,7 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 1234.5f, "");
         Test.ensureEqual(anArray.getDouble(0), 1234.5, "");
         Test.ensureEqual(anArray.getString(0), "1234.5", "");
-        Test.ensureEqual(anArray.elementClass(), String.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.STRING, "");
         String tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new String[]{"1234.5"}, "");
 

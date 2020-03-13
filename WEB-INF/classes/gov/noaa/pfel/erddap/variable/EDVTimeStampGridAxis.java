@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -202,7 +203,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //(they will be destination values in epochSeconds)
         //(simpler than EDVTimeStamp because always numeric and range known from axis values)
         destinationDataType = "double";
-        destinationDataTypeClass = double.class;
+        destinationDataPAType = PAType.DOUBLE;
         int n = tSourceValues.size();
         setDestinationMinMaxFromSource(
             tSourceValues.getNiceDouble(0), 
@@ -479,9 +480,9 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     public PrimitiveArray toSource(PrimitiveArray destination) {
         //this doesn't support scaleAddOffset
         int size = destination.size();
-        PrimitiveArray source = sourceDataTypeClass == destination.elementClass()?
+        PrimitiveArray source = sourceDataPAType == destination.elementType()?
             destination :
-            PrimitiveArray.factory(sourceDataTypeClass, size, true);
+            PrimitiveArray.factory(sourceDataPAType, size, true);
         if (source instanceof StringArray) {
             for (int i = 0; i < size; i++)
                 source.setString(i, epochSecondsToSourceTimeString(destination.getDouble(i)));

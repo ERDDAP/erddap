@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAType;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -148,9 +149,9 @@ public class TableWriterGeoJson extends TableWriter {
                     "  \"propertyNames\": [");
                 boolean somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
-                    Class cClass = table.getColumn(col).elementClass();
-                    isChar[  col] = cClass == char.class;
-                    isString[col] = cClass == String.class;
+                    PAType cPAType = table.getColumn(col).elementType();
+                    isChar[  col] = cPAType == PAType.CHAR;
+                    isString[col] = cPAType == PAType.STRING;
                     if (col != lonColumn && col != latColumn && col != altColumn) {
                         if (somethingWritten) writer.write(", "); else somethingWritten = true;
                         writer.write(String2.toJson(table.getColumnName(col)));

@@ -254,7 +254,7 @@ public class TableWriterAll extends TableWriter {
 
     public String columnFileName(int col) {
         return dir + fileNameNoExt + "." + randomInt + "." + 
-            String2.encodeFileNameSafe(columnNames[col]);
+            String2.encodeFileNameSafe(columnNames[col]) + ".temp";
     }
 
     /**

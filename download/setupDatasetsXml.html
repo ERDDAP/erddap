@@ -120,6 +120,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
     <li><a rel="help" href="#graphsAccessibleTo"><kbd>&lt;graphsAccessibleTo&gt;</kbd></a>
     <li><a rel="help" href="#accessibleViaFiles"><kbd>&lt;accessibleViaFiles&gt;</kbd></a>
     <li><a rel="help" href="#accessibleViaWMS"><kbd>&lt;accessibleViaWMS&gt;</kbd></a>
+    <li><a rel="help" href="#addVariablesWhere"><kbd>&lt;addVariablesWhere&gt;</kbd></a>
     <li><a rel="help" href="#defaultDataQuery"><kbd>&lt;defaultDataQuery&gt;</kbd></a>
     <li><a rel="help" href="#defaultGraphQuery"><kbd>&lt;defaultGraphQuery&gt;</kbd></a>
     <li><a rel="help" href="#fgdcFile"><kbd>&lt;fgdcFile&gt;</kbd></a>
@@ -1744,7 +1745,7 @@ to create an
 <li><p><a class="selfLink" id="AwsS3Example"
                         href="#AwsS3Example" rel="bookmark"
   >If you follow the instructions above and load the dataset in ERDDAP,</a>
-you have created an EDDTableFromFiles dataset.
+  you have created an EDDTableFromFiles dataset.
   As an example, and to make it easier for anyone to browse and download
   files from the AWS Open Data buckets, we have created EDDTableFromFileNames
   datasets (see the list at
@@ -2950,6 +2951,7 @@ allowing those would lead to inconsistencies:
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -4539,6 +4541,7 @@ p><a class="selfLink" id="EDDTableFromBMDE" href="#EDDTableFromBMDE" rel="bookma
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!- - 0 or 1 - - &gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
@@ -5239,6 +5242,7 @@ EDDTableFromCassandra dataset is:</a>
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -5290,6 +5294,7 @@ EDDTableFromCassandra dataset is:</a>
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -5937,6 +5942,7 @@ handles data from one relational database table or
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -6021,6 +6027,7 @@ lets you create an EDDTable dataset from any EDDGrid dataset.
     EDDGrid. --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -6372,6 +6379,7 @@ subclasses, this dataset type does not serve data from within the files.
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -7479,46 +7487,52 @@ to actually make changes to the files so that the files are consistent.
 </ul>
 
 
-
-
 <li><a class="selfLink" id="SeparateColumnsForYearMonthDateHourMinuteSecond" href="#SeparateColumnsForYearMonthDateHourMinuteSecond" rel="bookmark"><strong>Separate Columns for Year, Month, Date, Hour, Minute, Second</strong></a> -- 
 <br>It is fairly common for tabular data files to have separate columns for 
 year, month, date, hour, minute, second. 
-Currently, there is no way to configure ERDDAP to combine those columns
-into a unified time column, which is what we encourage. 
-We are aware of this issue. 
-Unfortunately, it would be a big job for us to add to support for that in ERDDAP. 
-So it's on the To Do list, but hasn't been done yet.
+Before ERDDAP v2.03, the only solution was to edit the data file to combine those columns
+into a unified time column.
+With ERDDAP 2.03+, you can use the 
+<br><a href="sourceName" rel="help">&lt;sourceName&gt;=<i>expression</i>&lt;sourceName&gt;</a>
+to tell ERDDAP how to combine the source columns to make unified time column,
+so you no longer have to edit the source file.
 
-<p>A workaround is:
+<li><a class="selfLink" id="skipHeaderToRegex" href="#skipHeaderToRegex" rel="bookmark">&lt;skipHeaderToRegex&gt;</a> --
+<br>OPTIONAL. (For EDDTableFromAsciiFiles and EDDTableFromColumnarAsciiFiles datasets only.)
+<br>When EDDTableFromAsciiFiles reads a data file, 
+it will ignore all of the lines up to and including the line 
+that matches this regular expression. 
+The default is "", which doesn't use this option. 
+An example is 
+<br><kbd>&lt;skipHeaderToRegex&gt;\*\*\* END OF HEADER.*&lt;skipHeaderToRegex&gt;</kbd>
+<br>which will ignore all lines up to and including a line that starts with "*** END OF HEADER".
+
+<p>When you use this tag, <kbd>&lt;columnNamesRow&gt;</kbd> and <kbd>&lt;firstDataRow&gt;</kbd>
+act as if the header has been removed before the file is read. 
+For example, you would use columnNamesRow=0 if the column names are on the row right after the header.
+
+<p>If you want to use generateDatasetsXml with a dataset that needs this tag:
 <ol>
-<li> Make a copy of the data file.
-<li> Edit the copy in a text editor.
-<li> Make a script which converts e.g.,<pre>
-Year Mon Day Hr Min Sec Rain[mm]   Lat        Lon
-2012  01  15 19  35  23  0.142  34.43012  -83.24021</pre>
-into<pre>
-Year-Mon-DayTHr:Min:Sec Rain[mm]   Lat        Lon
-2012-01-15T19:35:23Z     0.142  34.43012  -83.24021</pre>
-Then ERDDAP can read the time data from the unified time column.
+<li>Make a new, temporary, sample file by copying an existing file and removing the header.
+<li>Run generateDatasetsXml and specify that sample file.
+<li>Manually add the &lt;skipHeaderToRegex&gt; tag to the datasets.xml chunk.
+<li>Delete the temporary, sample file.
+<li>Use the dataset in ERDDAP.
 </ol>
 
-<p>Details:
-<ul>
-<li>If the month, date, hour, minute or seconds values are not already
-  0-padded, your script will need to 0-pad them.
-<li>If the hour values reflect a 12 hour clock and have a separate column for am/pm,
-   your script should convert to a 24 hour clock.
-<li>If the values are in the Zulu time zone, append "Z"; otherwise, append the 
-   appropriate time zone offset, e.g., "-05:00".
-</ul>
+<li><a class="selfLink" id="skipLinesRegex" href="#ETFFskipLinesRegex" rel="bookmark">&lt;skipLinesRegex&gt;</a> -- 
+<br>OPTIONAL. (For EDDTableFromAsciiFiles and EDDTableFromColumnarAsciiFiles datasets only.)
+<br>When EDDTableFromAsciiFiles reads a data file, 
+it will ignores all lines which match this regular expression.
+The default is "", which doesn't use this option.
+An example is
+<br><kbd>&lt;skipLinesRegex&gt;#.*&lt;skipLinesRegex&gt;</kbd>
+<br>which will ignore all lines which start with "#".
 
-<p>A similar situation occurs with latitude and longitude columns 
-when there are separate columns for degrees, minutes, and seconds 
-(or degrees and decimal minutes). 
-There is an analogous workaround for that, although it requires some calculations 
-which are hard to do in a script in a text editor. You may need to write a little program
-(e.g., in Python) to make the changes.
+<p>When you use this tag, <kbd>&lt;columnNamesRow&gt;</kbd> and <kbd>&lt;firstDataRow&gt;</kbd>
+act as if all of the matching lines had been removed before the file is read. 
+For example, you would use columnNamesRow=0 even if there are several lines starting with, 
+for example, "#" at the start of the file.
 
 
 <li><a class="selfLink" id="EDDTableFromFilesSkeletonXML" href="#EDDTableFromFilesSkeletonXML" rel="bookmark"><strong>The skeleton XML</strong>
@@ -7537,6 +7551,7 @@ which are hard to do in a script in a text editor. You may need to write a littl
   <a rel="help" href="#EDDTableFromFiles_standardizeWhat">&lt;standardizeWhat&gt;</a>...&lt;/standardizeWhat&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#nThreads">&lt;nThreads&gt;</a>...&lt;/nThreads&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
@@ -7578,6 +7593,8 @@ which are hard to do in a script in a text editor. You may need to write a littl
     only) This OPTIONAL tag specifies the character set (case 
     sensitive!) of the source files, for example, ISO-8859-1 
     (the default) and UTF-8.  --&gt; 
+  <a href="#skipHeaderToRegex" rel="bookmark">&lt;skipHeaderToRegex&gt;</a>...&lt;/skipHeaderToRegex&gt; 
+  <a href="#skipLinesRegex" rel="bookmark">&lt;skipLinesRegex&gt;</a>...&lt;/skipLinesRegex&gt;
   <a class="selfLink" id="columnNamesRow" href="#columnNamesRow" rel="bookmark">&lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt;</a> &lt;-- (For EDDTableFromAsciiFiles 
     only) This specifies the number of the row with the column 
     names in the files. (The first row of the file is "1".
@@ -7704,6 +7721,7 @@ tags in the chunk of XML for this dataset:
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -7755,6 +7773,7 @@ tags in the chunk of XML for this dataset:
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;! - - 0 or 1 - - &gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
@@ -7793,7 +7812,8 @@ for the response. This lets users search for datasets of interest in very powerf
 <br>&nbsp;
 
 
-<p><a class="selfLink" id="EDDTableFromAsciiFiles" href="#EDDTableFromAsciiFiles" rel="bookmark"><strong>EDDTableFromAsciiFiles</strong></a> aggregates data from
+<p><a class="selfLink" id="EDDTableFromAsciiFiles" href="#EDDTableFromAsciiFiles" rel="bookmark"
+><strong>EDDTableFromAsciiFiles</strong></a> aggregates data from
   comma-, tab-, semicolon-, or space-separated tabular ASCII data files.
 <ul>
 <li>Most often, the files will have column names on the first row and data 
@@ -7804,7 +7824,7 @@ for the response. This lets users search for datasets of interest in very powerf
 <li>ERDDAP allows the rows of data to have different numbers of data values.
   ERDDAP assumes that the missing data values are the final columns in the row.
   ERDDAP assigns the standard missing value values for the missing data values. (added v1.56)
-<li>ASCII files are easy to work with, but they are not an efficient way to store/retrieve data. 
+<li>ASCII files are easy to work with, but they are not the most efficient way to store/retrieve data. 
   For greater efficiency, save the files as NetCDF v3 .nc files 
   (which one dimension, "row", shared by all variables) instead.
   You can 
@@ -9362,6 +9382,7 @@ variables:
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -9470,6 +9491,7 @@ Sensor Observation Service
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -9699,6 +9721,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -9907,6 +9930,7 @@ check the source dataset to see if there is additional data available.
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#addVariablesWhere">&lt;addVariablesWhere&gt;</a>...&lt;/addVariablesWhere&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -10752,6 +10776,34 @@ for more information.
       won't be available via ERDDAP's WMS server, regardless of this setting. 
   <br>&nbsp;
 
+<li><a class="selfLink" id="addVariablesWhere" href="#addVariablesWhere" rel="bookmark">&lt;addVariablesWhere&gt;</a> 
+is an OPTIONAL tag within the &lt;dataset&gt; tag for all EDDTable datasets.
+
+<p>Requests to any EDDTable dataset can include 
+<kbd>&amp;addVariablesWhere("<i>attributeName</i>","<i>attributeValue</i>")</kbd>,
+which tells ERDDAP to add all of the variables in the dataset where 
+<kbd><i>attributeName=attributeValue</i></kbd> to the list of requested variables.
+For example, if a user adds
+<kbd>&amp;addVariablesWhere("ioos_category","Wind")</kbd> to a query, ERDDAP
+will add all variables in the dataset that have an <kbd>ioos_category=Wind</kbd> attribute
+to the list of requested variables (for example, windSpeed, windDirection, windGustSpeed).
+<i>attributeName</i> and <i>attributeValue</i> are case-sensitive.
+
+<p>In datasets.xml, if the chunk of dataset.xml for a dataset has
+<br><kbd>&lt;addVariablesWhere&gt;<i>attributeNamesCSV</i>&lt;addVariablesWhere&gt;</kbd>
+<br>for example,
+<br><kbd>&lt;addVariablesWhere&gt;ioos_category,units&lt;addVariablesWhere&gt;</kbd>
+<br>the Data Access Form (.html web page) for the dataset will include a widget 
+(for each attributeName in the comma-separated list) right below
+the list of variables which lets users specify an attribute value.
+If the user selects an attribute value for one or more of the attribute names,
+they will be added to the request via <kbd>&addVariablesWhere("<i>attributeName</i>","<i>attributeValue</i>")</kbd>.
+Thus, this tag in datasets.xml lets you specify the list of attribute names which will
+appear on the Data Access Form for that dataset and makes it easy for users
+to add <kbd>&addVariablesWhere</kbd> functions to the request.
+The <i>attributeNamesCSV</i> list is case-sensitive.
+
+
 <li><a class="selfLink" id="altitudeMetersPerSourceUnit" href="#altitudeMetersPerSourceUnit" rel="bookmark"><kbd><strong>&lt;altitudeMetersPerSourceUnit&gt;</strong></kbd></a>
   is an OPTIONAL tag within the <kbd>&lt;dataset&gt;</kbd> tag for EDDTableFromSOS datasets (only!) that specifies a 
   number which is multiplied by the source altitude or depth values 
@@ -11205,7 +11257,7 @@ while processing each request.
         <br>In some situations, you need to percent encode all characters other than
         A-Za-z0-9_-!.~'()*, but still don't encode the initial '&amp;' or the main '=' in constraints.
         <br>Programming languages have tools to do this (for example, see Java's
-          <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder<img 
+          <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/net/URLEncoder.html">java.net.URLEncoder<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>
         and JavaScript's
@@ -11817,8 +11869,9 @@ while processing each request.
         title="This link to an external website does not constitute an endorsement."></a>
         data type for the dataset.    For example,
         <br><kbd>&lt;att name="cdm_data_type"&gt;Point&lt;/att&gt;</kbd>
-        <br>The CDM is still evolving and may change again. ERDDAP complies with the  
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries<img 
+        <br>The CDM is still evolving and may change again. ERDDAP complies with the 
+        related and more detailed 
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> chapter of the 
         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF 1.6<img 
@@ -11837,11 +11890,17 @@ while processing each request.
           Currently, EDDGrid does not require that any related metadata be specified,
           nor does it check that the data matches the cdm_data_type. That will probably 
           change in the near future.
-        <li>EDDTable uses cdm_data_type in a rigorous way. If a dataset doesn't comply with
-          the cdm_data_type's requirements, the dataset will fail to load and will generate an
+        <li>EDDTable uses cdm_data_type in a rigorous way, following CF's DSG specification
+          rather than CDM, which for some reason hasn't been updated to be consistent
+          with DSG. If a dataset's metadata doesn't comply with
+          the ERDDAP's cdm_data_type's requirements (see below), the dataset will fail to load and will generate an
           <a rel="help" href="#errorMessages">error message</a>. (That's a good thing, 
           in the sense that the error message will tell
           you what is wrong so that you can fix it.)
+          And if the dataset's data doesn't match the dataset's metadata setup
+          (e.g., if there is more than one latitude value for a given station in a timeseries dataset),
+          some requests for data will return incorrect data in the response.
+          So make sure you get all of this right.
 
           <p>For all of these datasets, in the <kbd>Conventions</kbd> and
             <kbd>Metadata_Conventions</kbd> global attributes, please refer to 
@@ -11849,7 +11908,43 @@ while processing each request.
             since CF-1.6 is the first version to include the changes related to 
             Discrete Sampling Geometry (DSG) conventions.
 
-          <p>For EDDTable datasets, the cdm_data_type options (and related requirements) are 
+          <p><a class="selfLink" id="ERDDAPandDSG" href="#ERDDAPandDSG" rel="bookmark"
+            >ERDDAP has a not-simple relationship to CF DSG.</a>
+            <ul>
+            <li>ERDDAP can make a valid DSG dataset out of a source dataset 
+              that is already a valid DSG file(s), or out of a source dataset 
+              that isn't set up for DSG but can be made so via changes to metadata
+              (some of which are ERDDAP-specific in order to provide a more
+              general approach to specifying the DSG setup). 
+            <li>ERDDAP does a lot of validity tests when it loads a dataset. 
+              If the dataset that has a cdm_data_type (or featureType) attribute
+              successfully loads in ERDDAP, then ERDDAP is saying the dataset
+              meets the DSG requirements (otherwise, ERDDAP will throw an 
+              exception explaining the first problem that it found). 
+              <br>WARNING: A successfully-loaded dataset appears to meet the 
+              DSG requirements (it has the right combination of attributes),
+              but still may be incorrectly set up, leading to incorrect results
+              in .ncCF and .ncCFMA response files. 
+              (Software is smart in some ways and clueless in others.)
+            <li>When you look at the dataset's metadata in ERDDAP, 
+              the DSG dataset appears to be in ERDDAP's internal format (a giant, database-like table).
+              It isn't in one of the DSG formats (e.g., the dimensions and metadata aren't right),
+              but the information needed to treat the dataset as a DSG dataset is in the metadata 
+              (for example, <kbd>cdm_data_type=TimeSeries</kbd> and 
+              <kbd>cdm_timeseries_variables=<i>aCsvListOfStationRelatedVarables</i></kbd>
+              in the global metadata and <kbd>cf_role=timeseries_id</kbd> for some variable). 
+            <li>If a user requests a subset of the dataset in a .ncCF 
+              (an .nc file in DSG's Contiguous Ragged Array file format)
+              or .ncCFMA file (a .nc file in DSG's Multidimensional Array file format), 
+              that file will be a valid CF DSG file.
+              <br>WARNING: However, if the dataset was set up incorrectly (so that the promises
+              made by the metadata aren't true), then the response file will be 
+              technically valid but will be incorrect in some way.
+              <br>&nbsp;
+            </ul>
+
+          <li><a class="selfLink" id="EDDTableCdmTypes" href="#EDDTableCdmTypes" rel="bookmark">For EDDTable datasets,</a>
+          the cdm_data_type options (and related requirements in ERDDAP) are 
 
           <ul>
           <li><a class="selfLink" id="cdmPoint" href="#cdmPoint" rel="bookmark">Point</a> -- 
@@ -11857,109 +11952,181 @@ while processing each request.
             <ul>
             <li>As with all cdm_data_types other than Other, Point datasets MUST have longitude,
               latitude, and time variables. 
+              <br>&nbsp;
             </ul>
 
           <li><a class="selfLink" id="cdmProfile" href="#cdmProfile" rel="bookmark">Profile</a> -- 
           is a set of measurements all taken at one time, at one latitude longitude location,
           but at more than one depth (or altitude). 
           The dataset may be a collection of these Profiles, 
-          i.e., 7 profiles from different locations. 
+          for example, 7 profiles from different locations. 
           This cdm_data_type doesn't imply any logical connection between any of the profiles.
             <ul>
+            <li>One of the variables (for example, profile_number) MUST have the variable attribute cf_role=profile_id
+              to identify the variable that uniquely identifies the profiles.
+              <br><kbd>&lt;att name="cf_role"&gt;profile_id&lt;/att&gt;</kbd>
+              <br>If no other variable is suitable, consider using the time variable.
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_profile_variables" href="#cdm_profile_variables" rel="bookmark">cdm_profile_variables</a>, 
               where the
               value is a comma-separated list of the variables which have the information
-              about each profile.  Thus, for a given profile, the values of these variables
-              will be constant.
-            <li>One of the variables MUST have the variable attribute cf_role=profile_id
-              to identify the variable that uniquely identifies the profiles.
-              If no other variable is suitable, consider using the time variable.
+              about each profile.  For a given profile, the values of these variables
+              MUST be constant. For example,
+              <pre>&lt;att name="cdm_profile_variables"&gt;profile_number,time,latitude,longitude&lt;/att&gt;</pre>
+              The list MUST include the cf_role=profile_id variable 
+              and all other variables with information about the profile, 
+              and time, latitude and longitude.
+              <br>The list will never include altitude, depth, or any observation variables.
+              <br>&nbsp;
             </ul>
+          [Opinion: cdm_data_type=Profile should rarely be used. In practice, a given dataset is
+          usually actually either a TimeSeriesProfile (profiles at a fixed position)
+          or a TrajectoryProfile (profiles along a trajectory), and so should be 
+          properly identified as such.]
+          <br>&nbsp;
 
           <li><a class="selfLink" id="cdmTimeSeries" href="#cdmTimeSeries" rel="bookmark">TimeSeries</a> -- 
           is a sequence of measurements (e.g., sea water temperature) taken at
-          one latitude, longitude, depth (or altitude) location. 
+          one, fixed, latitude, longitude, depth (or altitude) location. 
           (Think of it as "station".) The dataset may be a collection of these TimeSeries,
-          i.e., a  sequence from each of 3 different locations.
+          for example, a  sequence from each of 3 different locations.
             <ul>
+            <li>One of the variables (for example, station_id) MUST have the variable attribute cf_role=timeseries_id
+              to identify the variable that uniquely identifies the stations.
+              <br><kbd>&lt;att name="cf_role"&gt;timeseries_id&lt;/att&gt;</kbd>
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_timeseries_variables" href="#cdm_timeseries_variables" rel="bookmark">cdm_timeseries_variables</a>, 
               where the
               value is a comma-separated list of the variables which have the information
-              about each station.  Thus, for a given station, the values of these variables
-              will be constant.
-            <li>One of the variables MUST have the variable attribute cf_role=timeseries_id
-              to identify the variable that uniquely identifies the stations.
-            <li>It is okay if the longitude and latitude vary slightly over time.
-              If the longitude and latitude don't vary, include them in the cdm_timeseries_variables.
-              If they do vary, don't include them in the cdm_timeseries_variables.
+              about each station.                
+              For a given station, the values of these variables
+              MUST be constant. 
+              For example,
+              <pre>&lt;att name="cdm_timeseries_variables"&gt;station_id,station_type,latitude,longitude&lt;/att&gt;</pre>
+              The list MUST include the cf_role=timeseries_id variable 
+              and all other variables with information about the station, 
+              which almost always includes latitude and longitude (and altitude or depth, if present).
+              <br>The list will never include time or any observation variables.
+            <li>For some moored buoys, a dataset may have two sets of latitude and longitude variables:
+              <ol>
+              <li>One pair of latitude and longitude values that are constant
+                (i.e., the fixed location of the mooring).
+                In ERDDAP, give these variables the destinationNames of latitude and longitude,
+                and include these variables in the list of cdm_timeseries_variables.
+              <li>Precise latitude and longitude values associated with each observation.
+                In ERDDAP, give these variables different destinationNames (e.g., preciseLat and preciseLon)
+                and don't include these variables in the list of cdm_timeseries_variables.
+                <br>&nbsp;
+              </ol>
+              The reasoning for this is: from a theoretical perspective, for a DSG TimeSeries dataset, 
+              the latitude and longitude (and altitude or depth, if present) 
+              location of the station MUST be constant.
             </ul>
 
           <li><a class="selfLink" id="cdmTimeSeriesProfile" href="#cdmTimeSeriesProfile" rel="bookmark">TimeSeriesProfile</a> --
-             is for a sequence of profiles taken at one latitude longitude location. 
+             is for a sequence of profiles taken at one, fixed, latitude longitude location. 
+             Each profile is a set of measurements taken at multiple altitudes or depths. 
              The dataset may be a collection of these TimeSeriesProfiles, 
-             i.e., a sequence of profiles taken at each of 12 different locations.
+             for example, a sequence of profiles taken at each of 12 different locations.
             <ul>
+            <li>One of the variables (for example, station_id) MUST have the 
+              variable attribute cf_role=timeseries_id
+              to identify the variable that uniquely identifies the stations.
+              <br><kbd>&lt;att name="cf_role"&gt;timeseries_id&lt;/att&gt;</kbd>
+            <li>One of the variables (for example, profile_number) MUST have the 
+              variable attribute cf_role=profile_id
+              to identify the variable that uniquely identifies the profiles.
+              <br><kbd>&lt;att name="cf_role"&gt;profile_id&lt;/att&gt;</kbd>
+              <br>(A given profile_id only has to be unique for a given timeseries_id.)
+              If no other variable is suitable, consider using the time variable.
             <li>The dataset MUST include the globalAttribute cdm_timeseries_variables,
               where the
               value is a comma-separated list of the variables which have the information
-              about each station.  Thus, for a given station, the values of these variables
-              will be constant.
+              about each station.  For a given station, the values of these variables
+              MUST be constant. 
+              For example,
+              <pre>&lt;att name="cdm_timeseries_variables"&gt;station_id,station_type,latitude,longitude&lt;/att&gt;</pre>
+              The list MUST include the cf_role=timeseries_id variable 
+              and all other variables with information about the station, 
+              which almost always includes latitude and longitude.
+              <br>The list will never include time, altitude, depth, or any observation variables.
             <li>The dataset MUST include the globalAttribute cdm_profile_variables, where the
               value is a comma-separated list of the variables which have the information
-              about each profile.  Thus, for a given profile, the values of these variables
-              will be constant.
-            <li>One of the variables MUST have the variable attribute cf_role=timeseries_id
-              to identify the variable that uniquely identifies the stations.
-            <li>One of the variables MUST have the variable attribute cf_role=profile_id
-              to identify the variable that uniquely identifies the profiles.
-              (A given profile_id only has to be unique for a given timeseries_id.)
-              If no other variable is suitable, consider using the time variable.
-            </ul>
+              about each profile.  For a given profile, the values of these variables
+              MUST be constant. For example,
+              <pre>&lt;att name="cdm_profile_variables"&gt;profile_number,time&lt;/att&gt;</pre>
+              The list MUST include the cf_role=profile_id variable 
+              and all other variables with information about the profile, 
+              which almost always includes time.
+              <br>The list will never include latitude, longitude, altitude, depth, or any observation variables.
+              <br>&nbsp;
+          </ul>
 
           <li><a class="selfLink" id="cdmTrajectory" href="#cdmTrajectory" rel="bookmark">Trajectory</a> -- 
              is a sequence of measurements taken along a trajectory (a path through space and time)
              (e.g., sea_water_temperature taken by a ship as it moves through the water). 
              The dataset may be a collection of these Trajectories, 
-             i.e., a sequence from each of 4 different ships.
+             for example, a sequence from each of 4 different ships.
             <ul>
+            <li>One of the variables (for example, ship_id) MUST have the attribute cf_role=trajectory_id
+              to identify the variable that uniquely identifies the trajectories.
+              <br><kbd>&lt;att name="cf_role"&gt;trajectory_id&lt;/att&gt;</kbd>
             <li>The dataset MUST include the globalAttribute 
               <a class="selfLink" id="cdm_trajectory_variables" href="#cdm_trajectory_variables" rel="bookmark">cdm_trajectory_variables</a>, 
               where the
               value is a comma-separated list of the variables which have the information
-              about each trajectory.  Thus, for a given trajectory, 
-              the values of these variables will be constant.
-            <li>One of the variables MUST have the attribute cf_role=trajectory_id
-              to identify the variable that uniquely identifies the trajectories.
+              about each trajectory.  For a given trajectory, 
+              the values of these variables 
+              MUST be constant. For example,
+              <pre>&lt;att name="cdm_trajectory_variables"&gt;ship_id,ship_type,ship_owner&lt;/att&gt;</pre>
+              The list MUST include the cf_role=trajectory_id variable
+              and all other variables with information about the trajectory.              
+              <br>The list will never include time, latitude, longitude, 
+              or any observation variables.
+              <br>&nbsp;
             </ul>
 
           <li><a class="selfLink" id="cdmTrajectoryProfile" href="#cdmTrajectoryProfile" rel="bookmark">TrajectoryProfile</a> -- 
             is a sequence of profiles taken along a trajectory. 
             The dataset may be a collection of these TrajectoryProfiles, 
-            i.e., a sequence of profiles taken by 14 different ships.           
+            for example, a sequence of profiles taken by 14 different ships.           
             <ul>
+            <li>One of the variables (for example, ship_id) MUST have the variable attribute cf_role=trajectory_id
+              to identify the variable that uniquely identifies the trajectories.
+              <br><kbd>&lt;att name="cf_role"&gt;trajectory_id&lt;/att&gt;</kbd>
+            <li>One of the variables (for example, profile_number) MUST have the variable attribute cf_role=profile_id
+              to identify the variable that uniquely identifies the profiles.
+              <br><kbd>&lt;att name="cf_role"&gt;profile_id&lt;/att&gt;</kbd>
+              <br>(A given profile_id only has to be unique for a given trajectory_id.)
+              If no other variable is suitable, consider using the time variable.
             <li>The dataset MUST include the globalAttribute cdm_trajectory_variables, where the
               value is a comma-separated list of the variables which have the information
-              about each trajectory.  Thus, for a given trajectory, the values of these variables
-              will be constant.
+              about each trajectory.  For a given trajectory, the values of these variables
+              MUST be constant. For example,
+              <pre>&lt;att name="cdm_trajectory_variables"&gt;ship_id,ship_type,ship_owner&lt;/att&gt;</pre>
+              The list MUST include the cf_role=trajectory_id variable
+              and all other variables with information about the trajectory.
+              <br>The list will never include profile-related variables, time, 
+              latitude, longitude, or any observation variables.
             <li>The dataset MUST include the globalAttribute cdm_profile_variables, where the
               value is a comma-separated list of the variables which have the information
-              about each profile.  Thus, for a given profile, the values of these variables
-              will be constant.
-            <li>One of the variables MUST have the variable attribute cf_role=trajectory_id
-              to identify the variable that uniquely identifies the trajectories.
-            <li>One of the variables MUST have the variable attribute cf_role=profile_id
-              to identify the variable that uniquely identifies the profiles.
-              (A given profile_id only has to be unique for a given trajectory_id.)
-              If no other variable is suitable, consider using the time variable.
+              about each profile.  For a given profile, the values of these variables
+              MUST be constant. For example,
+              <pre>&lt;att name="cdm_profile_variables"&gt;profile_number,time,latitude,longitude&lt;/att&gt;</pre>
+              The list MUST include the cf_role=profile_id variable 
+              and all other variables with information about the profile, 
+              which almost always includes time, latitude and longitude.
+              <br>The list will never include altitude, depth, or any observation variables.
+              <br>&nbsp;
             </ul>
 
           <li><a class="selfLink" id="cdmOther" href="#cdmOther" rel="bookmark">Other</a> -- 
             has no requirements. Use it if the dataset doesn't 
             fit one of the other options, notably, if the dataset doesn't include 
             latitude, longitude and time variables.
+            <br>&nbsp;
           </ul>
+
           <a class="selfLink" id="cdmRelatedNotes" href="#cdmRelatedNotes" rel="bookmark">Related notes:</a>
           <ul>
           <li>All EDDTable datasets with a cdm_data_type other than "Other" MUST have longitude,
@@ -11969,25 +12136,27 @@ while processing each request.
           <li>If you can't make a dataset comply with all of the requirements for the ideal
             cdm_data_type, use "Point" (which has few requirements) or "Other" 
             (which has no requirements) instead.
-          <li>This information is used by ERDDAP in various ways, for example, when making
+          <li>This information is used by ERDDAP in various ways, for example, but mostly for making
             .ncCF files (.nc files which comply with the 
-            Contiguous Ragged Array Representations associated with the dataset's cdm_data_type,
-            as defined in the newly ratified 
+            Contiguous Ragged Array Representations associated with the dataset's cdm_data_type)
+            and .ncCFMA files (.nc files which comply with the 
+            Multidimensional Array Representations associated with the dataset's cdm_data_type)
+            as defined in  
             <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
-            >Discrete&nbsp;Sampling&nbsp;Geometries<img 
+            >Discrete&nbsp;Sampling&nbsp;Geometries&nbsp;(DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
           chapter of the 
             <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
-            >CF 1.6<img 
+            >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
                metadata conventions,
-            which were previously named "CF Point Observation Conventions").
-          <li>Hint: Usually, a good starting point for 
+            which were previously named "CF Point Observation Conventions".
+          <li>Hint: For these datasets, the correct setting for  
             <a rel="help" href="#subsetVariables">subsetVariables</a>
-            is the combined values of the cdm_..._variables.  
-            For example, for TimeSeriesProfile, start with the 
+            is usually the combination of all the variables listed in the cdm_..._variables attributes.  
+            For example, for TimeSeriesProfile, uses the 
             cdm_timeseries_variables plus the cdm_profile_variables.
             <br>&nbsp;
           </ul>
@@ -12187,6 +12356,7 @@ while processing each request.
         a map of the data. For example,
         <br><kbd>&lt;att name="drawLandMask"&gt;over&lt;/att&gt;</kbd>
         <br>See the <a rel="help" href="#drawLandMask">drawLandMask overview</a>.
+        <br>&nbsp;
 
       <li><a class="selfLink" id="featureType" href="#featureType" rel="bookmark"><strong>featureType</strong></a> 
         (from the
@@ -12276,7 +12446,7 @@ while processing each request.
         <br>In some situations, you need to percent encode all characters other than
         A-Za-z0-9_-!.~'()*, but still don't encode the initial '&amp;' or the main '='.
         <br>Programming languages have tools to do this (for example, see Java's
-          <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html"
+          <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/net/URLEncoder.html"
           >java.net.URLEncoder<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>
@@ -12891,6 +13061,22 @@ while processing each request.
         This is case sensitive. 
         This is REQUIRED.
 
+        <p><a class="selfLink" id="Groups" href="#Groups" rel="bookmark"><strong>Groups</strong> --</a> 
+        Currently (2019), NetCDF tools support putting variables into groups in a .nc file, 
+        even though the CF standard doesn't yet support this (so the files are 
+        technically not CF compliant). 
+        In practice, this just means that the variables have a long name 
+        which identifies the group(s) and the variable name, for example, group1a.group2c.varName ).
+        ERDDAP supports groups by converting the "."'s in the variable's &lt;sourceName&gt;
+        into "_"'s in the variable's &lt;destinationName&gt;, for example, 
+        group1a_group2c_varName . 
+        (When you see that, you should realize that groups are not much more than a syntax convention.) 
+        When the variables are listed in ERDDAP, all the variables in a group will appear together,
+        mimicking the underlying group. 
+        [If ERDDAP, notably GenerateDatasetsXml, doesn't perform as well as it could
+        with source files that have groups, please email a sample file
+        to bob.simons at noaa.gov .]
+
         <p><a class="selfLink" id="fixedValue" href="#fixedValue" rel="bookmark"><strong>Fixed Value SourceNames</strong> --</a> 
         <br>In an EDDTable dataset, if you want to create a variable (with a single, fixed value)
         that isn't in the source dataset, use:
@@ -12915,9 +13101,12 @@ while processing each request.
           (which would otherwise equal the fixedValue).
         <br>&nbsp;
 
-        <p><a class="selfLink" id="scriptSourceNames" href="#scriptSourceNames" rel="bookmark"><strong>Script SourceNames</strong> --</a> 
-        <br>In an <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> dataset,
-        the &lt;sourceName&gt can be 
+        <p><a class="selfLink" id="scriptSourceNames" href="#scriptSourceNames" rel="bookmark"><strong>Script SourceNames / Derived Variables</strong> --</a> 
+        <br>Starting with ERDDAP v2.03, in an 
+        <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+        <a rel="help" href="#EDDTableFromDatabase">EDDTableFromDatabase</a>, or 
+        <a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a> 
+        dataset, the &lt;sourceName&gt; can be 
         <br>an expression (an equation that evaluates to
         a single value), using the format
         <br><kbd>&lt;sourceName&gt;=<i>expression</i>&lt;/sourceName&gt;</kbd>
@@ -12934,6 +13123,7 @@ while processing each request.
               src="../images/external.png" alt=" (external link)" 
               title="This link to an external website does not constitute an endorsement."></a>)
           to evaluate the expressions and run the scripts.
+        <br>The calculation for a given new variable is done within one row of the results, repeatedly for all rows.
         <br>The expressions and scripts use a Java- and JavaScript-like syntax and can use any of the 
         <br><a rel="bookmark" href="https://commons.apache.org/proper/commons-jexl/reference/syntax.html"
               >operators and methods which are built into JEXL<img 
@@ -12985,7 +13175,7 @@ while processing each request.
             For example,
             <kbd>String2.zeroPad(<i>number, nDigits</i>)</kbd>
             will add 0's to the left of the number String so that the 
-            total number of digits is nDigits (e.g., <kbd>String2.zeroPad("6", 2</i>)</kbd>
+            total number of digits is nDigits (e.g., <kbd>String2.zeroPad("6", 2)</kbd>
             will return "06").
           <li><a rel="help" href="ScriptRow.html">row</a>,
             which has non-static methods for accessing the data from the 
@@ -13001,6 +13191,25 @@ while processing each request.
         (which specifically allows the 6 classes described above).
         If you need other methods and/or other classes to do your work,
         please email your requests to bob.simons at noaa.gov. 
+
+        <p>Efficiency 
+        <br>For EDDTableFromFiles datasets, there is only a very, very minimal
+        (probably not noticeable) slowdown for requests for data from
+        these variables. For EDDTableFromDatabase, there is huge speed penalty
+        for requests that include constraints on these variables (e.g., 
+        (<kbd>&amp;longitude0360&gt;30&amp;longitude0360&lt;40</kbd>) because
+        the constraints can't be passed through to the database,
+        so the database has to return much much more data to ERDDAP (which is very time consuming) 
+        so that ERDDAP can create the new variable and apply the constraint.
+        To avoid the worst case (where there are no constraints
+        being passed to the database), ERDDAP throws an error message
+        so that the database doesn't have to return the entire contents of the 
+        table. (If you want to bypass this, add a constraint to a non-script column 
+        which will always
+        be true, e.g., <kbd>&amp;time&lt;3000-01-01</kbd>.) For this reason,
+        with EDDTableFromDatabase, it is probably always better to create a
+        derived column in the database rather
+        than use sourceName=script in ERDDAP.
 
         <p>Overview Of How An Expression (Or Script) Is Used:
         <br>In response to a user's request for tabular data,
@@ -13070,7 +13279,7 @@ while processing each request.
     row.columnInt("sec")/3660.0&lt;/sourceName&gt;</pre>
 
         <li><a class="selfLink" id="scriptSourceNameLongitude" href="#scriptSourceNameLongitude" rel="bookmark"
-          >Converting a column with longitude values from 0 - 360&deg; into longitude from -180 - 180&deg; 
+          >Converting a column with longitude values</a> from 0 - 360&deg; into longitude from -180 - 180&deg; 
           <pre>
 &lt;dataVariable&gt;
     &lt;sourceName&gt;=Math2.anglePM180(row.columnDouble("lon"))&lt;/sourceName&gt; 
@@ -13355,7 +13564,7 @@ while processing each request.
 
 
         <li><a class="selfLink" id="longData" href="#longData" rel="bookmark">"long"</a> is a special case.
-            Internally, ERDDAP fully supports 4-byte unsigned long integer
+            Internally, ERDDAP supports 4-byte signed long integer
             attribute and data values.
             However, their use is discouraged because 
             many file types don't support longs. 
@@ -14403,7 +14612,7 @@ while processing each request.
             >For the units attribute for time or timestamp data variables with String data,</a>           
             you must specify a 
             <a rel="help" 
-      href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html"
+      href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html"
       >java.time.DateTimeFormatter<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -14669,7 +14878,7 @@ of the format string.</td>
 <td>reserved for future use</td>
 </tr>
 <tr>
-<td>GLQecVzOp</td>
+<td>G,L,Q,e,c,V,z,O,p</td>
 <td></td>
 <td>These formatting characters are supported by Java's DateTimeFormatter,
 but currently not supported by ERDDAP. If you need support for them,

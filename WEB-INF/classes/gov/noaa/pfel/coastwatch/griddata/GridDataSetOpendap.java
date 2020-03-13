@@ -824,12 +824,12 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             Test.ensureEqual(table.getColumnName(4), "ID", "");
             Test.ensureEqual(table.getColumnName(5), "OGAssta", "");
 
-            Test.ensureEqual(table.getColumn(0).elementClassString(), "double", "");
-            Test.ensureEqual(table.getColumn(1).elementClassString(), "double", "");
-            Test.ensureEqual(table.getColumn(2).elementClassString(), "double", "");
-            Test.ensureEqual(table.getColumn(3).elementClassString(), "double", "");
-            Test.ensureEqual(table.getColumn(4).elementClassString(), "String", "");
-            Test.ensureEqual(table.getColumn(5).elementClassString(), "float", "");
+            Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
+            Test.ensureEqual(table.getColumn(1).elementTypeString(), "double", "");
+            Test.ensureEqual(table.getColumn(2).elementTypeString(), "double", "");
+            Test.ensureEqual(table.getColumn(3).elementTypeString(), "double", "");
+            Test.ensureEqual(table.getColumn(4).elementTypeString(), "String", "");
+            Test.ensureEqual(table.getColumn(5).elementTypeString(), "float", "");
 
             Test.ensureEqual(table.getDoubleData(0,0),  rLon,       "");
             Test.ensureEqual(table.getDoubleData(1,0),  rLat,         "");
@@ -991,7 +991,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             Test.ensureEqual(grid.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2006-06-10T00:00:00Z"}), "time_coverage_start");
             Test.ensureEqual(grid.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2006-06-11T00:00:00Z"}), "time_coverage_end");
             //Test.ensureEqual(grid.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-            Test.ensureEqual(grid.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v55"}), "standard_name_vocabulary");
+            Test.ensureEqual(grid.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v70"}), "standard_name_vocabulary");
             Test.ensureEqual(grid.globalAttributes().get("license"),                    new StringArray(new String[]{"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information."}), "license");
             Test.ensureEqual(grid.globalAttributes().get("contributor_name"),           new StringArray(new String[]{"Remote Sensing Systems, Inc."}), "contributor_name");
             Test.ensureEqual(grid.globalAttributes().get("contributor_role"),           new StringArray(new String[]{"Source of level 2 data."}), "contributor_role");

@@ -140,11 +140,13 @@ public class TestUtil {
             -9223372036854775808L)), 
            -9.223372036854776E18, "k-2"); 
         Test.ensureEqual(Math.round(-9.223372036854776E18), 
-                                     -9223372036854775808L, "k-3"); 
+                                     -9223372036854775808L, "k-3"); //Long.MIN_VALUE
         Test.ensureEqual(Math2.roundToLong(-9.223372036854776E18), 
-                                            -9223372036854775808L, "k-3"); 
-        Test.ensureEqual(Math.round(Math2.longToDoubleNaN( 9223372036854775806L)), 
-                                                           9223372036854774784L, "k+"); //Not good, but best available
+                                            -9223372036854775808L, "k-3"); //Long.MIN_VALUE
+        Test.ensureEqual(Math2.longToDoubleNaN( 9223372036854775806L), //Long.MAX_VALUE - 1
+                                                9223372036854774784.0, "k+"); //Not good, but best available
+        Test.ensureEqual(Math.rint(9223372036854774784.0),
+                                   9223372036854774784L, "k+");
 
         Test.ensureEqual(Math2.longToDoubleNaN(9223372036854775807L),  Double.NaN, "kMV"); 
         Test.ensureEqual(Math2.longToDoubleNaN(Long.MAX_VALUE),        Double.NaN, "kMV2"); 
@@ -2904,13 +2906,13 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyy-mm-ddThh:mm:ssZ"),"yyyy-MM-dd'T'HH:mm:ssZ", "");
  
         //compact
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMD"),                 "yyMd", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHM"),               "yyMdHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHMSZ"),             "yyMdHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMD"),                 "yyyyMd", ""); //yyyyMMdd?
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHM"),               "yyyyMdHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHMSZ"),             "yyyyMdHmsZ", "");
 
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymd"),                 "yyMd", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhm"),               "yyMdHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhmsZ"),             "yyMdHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymd"),                 "yyyyMd", ""); //yyyyMMdd?
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhm"),               "yyyyMdHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhmsZ"),             "yyyyMdHmsZ", "");
 
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYYMMDD"),            "yyyyMMdd", "");
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYYMMDDHHMM"),        "yyyyMMddHHmm", "");
@@ -2921,13 +2923,13 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyymmddhhmmssZ"),     "yyyyMMddHHmmssZ", "");
 
         //m/d/y
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y"),               "M/d/yy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y H:M"),           "M/d/yy' 'H:m", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/YTH:M:SZ"),        "M/d/yy'T'H:m:sZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y"),               "M/d/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y H:M"),           "M/d/yyyy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/YTH:M:SZ"),        "M/d/yyyy'T'H:m:sZ", "");
 
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y"),               "M/d/yy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y h:m"),           "M/d/yy' 'H:m", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/yTh:m:sZ"),        "M/d/yy'T'H:m:sZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y"),               "M/d/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y h:m"),           "M/d/yyyy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/yTh:m:sZ"),        "M/d/yyyy'T'H:m:sZ", "");
 
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YY"),            "MM/dd/yy", "");
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YY HH:MM"),      "MM/dd/yy' 'HH:mm", "");
@@ -2946,13 +2948,13 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yyyyThh:mm:ssZ"),"MM/dd/yyyy'T'HH:mm:ssZ", "");
 
         //compact
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDY"),                 "Mdyy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHM"),               "MdyyHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHMSZ"),             "MdyyHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDY"),                 "Mdyyyy", "");  //MMddyyyy?
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHM"),               "MdyyyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHMSZ"),             "MdyyyyHmsZ", "");
 
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdy"),                 "Mdyy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhm"),               "MdyyHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhmsZ"),             "MdyyHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdy"),                 "Mdyyyy", "");//MMddyyyy?
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhm"),               "MdyyyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhmsZ"),             "MdyyyyHmsZ", "");
 
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MMDDYYYY"),            "MMddyyyy", "");
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MMDDYYYYHHMM"),        "MMddyyyyHHmm", "");
@@ -2963,13 +2965,13 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mmddyyyyhhmmssZ"),     "MMddyyyyHHmmssZ", "");
 
         //d/m/y
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y"),               "d/M/yy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y H:M"),           "d/M/yy' 'H:m", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/YTH:M:SZ"),        "d/M/yy'T'H:m:sZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y"),               "d/M/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y H:M"),           "d/M/yyyy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/YTH:M:SZ"),        "d/M/yyyy'T'H:m:sZ", "");
 
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y"),               "d/M/yy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y h:m"),           "d/M/yy' 'H:m", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/yTh:m:sZ"),        "d/M/yy'T'H:m:sZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y"),               "d/M/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y h:m"),           "d/M/yyyy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/yTh:m:sZ"),        "d/M/yyyy'T'H:m:sZ", "");
 
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YY"),            "dd/MM/yy", "");
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YY HH:MM"),      "dd/MM/yy' 'HH:mm", "");
@@ -2988,13 +2990,13 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yyyyThh:mm:ssZ"),"dd/MM/yyyy'T'HH:mm:ssZ", "");
 
         //compact
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMY"),                 "dMyy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHM"),               "dMyyHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHMSZ"),             "dMyyHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMY"),                 "dMyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHM"),               "dMyyyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHMSZ"),             "dMyyyyHmsZ", "");
 
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmy"),                 "dMyy", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhm"),               "dMyyHm", "");
-        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhmsZ"),             "dMyyHmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmy"),                 "dMyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhm"),               "dMyyyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhmsZ"),             "dMyyyyHmsZ", "");
 
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DDMMYYYY"),            "ddMMyyyy", "");
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DDMMYYYYHHMM"),        "ddMMyyyyHHmm", "");

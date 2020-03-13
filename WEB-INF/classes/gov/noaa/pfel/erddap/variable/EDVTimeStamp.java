@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -238,9 +239,9 @@ public class EDVTimeStamp extends EDV {
 
         }
 
-        //then set missing_value  (as double.class)
+        //then set missing_value  (as PAType.DOUBLE)
         destinationDataType = "double";
-        destinationDataTypeClass = double.class;
+        destinationDataPAType = PAType.DOUBLE;
         destinationMissingValue     = sourceTimeToEpochSeconds(destinationMissingValue);
         destinationFillValue        = sourceTimeToEpochSeconds(destinationFillValue);
         safeDestinationMissingValue = sourceTimeToEpochSeconds(safeDestinationMissingValue);       
@@ -259,7 +260,7 @@ public class EDVTimeStamp extends EDV {
             if (actualRange != null) {
             //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax + " sourceTimeIsNumeric=" + sourceTimeIsNumeric);
             //String2.log(">>actual_range metadata for " + destinationName + " (size=" + actualRange.size() + "): " + actualRange);
-                if (actualRange.elementClass() == String.class && actualRange.size() == 1) 
+                if (actualRange.elementType() == PAType.STRING && actualRange.size() == 1) 
                     actualRange = new StringArray(String2.split(actualRange.getString(0), '\n'));                  
                 if (actualRange.size() == 2) {
                     if (Double.isNaN(destinationMin)) destinationMin = sourceTimeToEpochSeconds(actualRange.getString(0));
@@ -558,9 +559,9 @@ public class EDVTimeStamp extends EDV {
     public PrimitiveArray toSource(PrimitiveArray destination) {
         //this doesn't support scaleAddOffset
         int size = destination.size();
-        PrimitiveArray source = sourceDataTypeClass == destination.elementClass()?
+        PrimitiveArray source = sourceDataPAType == destination.elementType()?
             destination :
-            PrimitiveArray.factory(sourceDataTypeClass, size, true);
+            PrimitiveArray.factory(sourceDataPAType, size, true);
         if (sourceTimeIsNumeric) {
             for (int i = 0; i < size; i++)
                 source.setDouble(i, epochSecondsToSourceTimeDouble(destination.getDouble(i)));

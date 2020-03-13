@@ -10,6 +10,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -314,8 +315,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 if (dataType.equals("String")) {
                     tSourceAttributes.add(attName, value);
                 } else {
-                    Class tClass = PrimitiveArray.elementStringToClass(dataType);
-                    PrimitiveArray pa = PrimitiveArray.csvFactory(tClass, value);
+                    PAType tPAType = PrimitiveArray.elementStringToPAType(dataType);
+                    PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
                     tSourceAttributes.add(attName, pa);
                 }
 
@@ -532,7 +533,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
         //newSize > oldSize, get last old value (for testing below) and new values
         PrimitiveArray newValues = null;
-        if (edvga.sourceDataTypeClass() == int.class &&                  //not a perfect test
+        if (edvga.sourceDataPAType() == PAType.INT &&                  //not a perfect test
             "count".equals(edvga.sourceAttributes().getString("units"))) 
             newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
         else {
@@ -554,11 +555,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 "expected=" + (newSize - oldSize) + ").");
             return false;
         }
-        if (oldValues.elementClass() != newValues.elementClass())  //they're canonical, so != works
+        if (oldValues.elementType() != newValues.elementType())  
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                 "\n(" + msg + edvga.destinationName() + " dataType changed: " +
-                   " new=" + newValues.elementClassString() +
-                " != old=" + oldValues.elementClassString() + ")"); 
+                   " new=" + newValues.elementTypeString() +
+                " != old=" + oldValues.elementTypeString() + ")"); 
 
         //ensure last old value is unchanged 
         if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
@@ -843,7 +844,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -858,7 +859,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             String url = String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/" + nextPath + ".csv";
             BufferedReader reader = SSR.getBufferedUrlReader(url);
             Table table = new Table();
-            table.readASCII(url, reader, 0, 1, ",", 
+            table.readASCII(url, reader, "", "", 0, 1, ",", 
                 null, null, null, null, false); //testColumns[], testMin[], testMax[], loadColumns[], simplify)
             String colNames = table.getColumnNamesCSVString();
             Test.ensureEqual(colNames, "Name,Last modified,Size,Description", "");
@@ -920,13 +921,14 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
         //make the StringBuilder to hold the results and add documentation
         StringBuilder sb = new StringBuilder();
-        sb.append(  //there is very similar text in EDDGridFromErddap
+/*        sb.append(  //there is very similar text in EDDGridFromErddap
 "<!-- Directions:\n" +
 " * The ready-to-use XML below includes information for all of the EDDGrid datasets\n" +
 "   at the remote ERDDAP " + XML.encodeAsXML(url) + "\n" +
 "   (except for etopo180 and etopo360, which are built into every ERDDAP).\n" +
 " * If you want to add all of these datasets to your ERDDAP, just paste the XML\n" +
 "   into your datasets.xml file.\n" +
+
 " * The datasetIDs listed below are not the same as the remote datasets' datasetIDs.\n" +
 "   They are generated automatically from the sourceURLs in a way that ensures that they are unique.\n" +
 " * !!!reloadEveryNMinutes is left as the default 10080=oncePerWeek on the assumption\n" +
@@ -940,7 +942,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
 "   use EDDGridFromDap to access the dataset instead of EDDGridFromErddap.\n" +
 "-->\n");
-
+*/
         //get the griddap datasets in a json table
         String jsonUrl = url + "/griddap/index.json";
         String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
@@ -1026,18 +1028,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-"<!-- Directions:\n" +
-" * The ready-to-use XML below includes information for all of the EDDGrid datasets\n";
-
-            Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-                expected, "results=\n" + results);
-
-expected = 
 "<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_8f86_303c_35ff\" active=\"true\">\n" +
 "    <!-- SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite) -->\n" +
 "    <sourceUrl>http://localhost:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
 "</dataset>";
-
             int po = results.indexOf(expected.substring(0, 80));
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
@@ -1084,9 +1078,9 @@ expected =
         String name, tName, axisDapQuery, query, results, expected, expected2, error;
         int tPo;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        String userDapQuery  = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
-        String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]"; 
-        String mapDapQuery   = "chlorophyll[200][][(29):(50)][(225):(247)]"; //stride irrelevant 
+        String userDapQuery  = SSR.minimalPercentEncode("chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]");
+        String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]"); 
+        String mapDapQuery   = SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); //stride irrelevant 
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
         String localUrl = EDStatic.erddapUrl + "/griddap/rMHchla8day"; //in tests, always non-https url
@@ -1224,7 +1218,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
 "    String sourceUrl \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "    Float64 Southernmost_Northing -90.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "    String time_coverage_end \"20.{8}T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
@@ -1324,7 +1318,7 @@ expected2 =
 
             //.csv
             String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
-            query = "time[0:100:200],longitude[last]";
+            query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1350,7 +1344,7 @@ expected2 =
 
             //.csv  test of gridName.axisName notation
             String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
-            query = "chlorophyll.time[0:100:200],chlorophyll.longitude[last]";
+            query = SSR.minimalPercentEncode("chlorophyll.time[0:100:200],chlorophyll.longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_AxisG.A", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1376,7 +1370,7 @@ expected2 =
 
             //.dods
             String2.log("\n*** EDDGridFromErddap test get .DODS axis data\n");
-            query = "time[0:100:200],longitude[last]";
+            query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".dods"); 
             results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
@@ -1400,7 +1394,7 @@ expected2 =
             //.mat
             //octave> load('c:/temp/griddap/EDDGridFromErddap_Axis.mat');
             //octave> erdMHchla8day
-            String matlabAxisQuery = "time[0:100:200],longitude[last]"; 
+            String matlabAxisQuery = SSR.minimalPercentEncode("time[0:100:200],longitude[last]"); 
             String2.log("\n*** EDDGridFromErddap test get .MAT axis data\n");
             tName = gridDataset.makeNewFileForDapQuery(null, null, matlabAxisQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".mat"); 
@@ -1440,7 +1434,7 @@ expected2 =
 
             //.ncHeader
             String2.log("\n*** EDDGridFromErddap test get .NCHEADER axis data\n");
-            query = "time[0:100:200],longitude[last]";
+            query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".ncHeader"); 
             results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -1721,30 +1715,31 @@ expected2 =
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v55\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
 "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 224.98437319134158; // double\n" +
-" data:\n" +
-"time =\n" +
-"  \\{1.17072E9\\}\n" +
-"altitude =\n" +
-"  \\{0.0\\}\n" +
-"latitude =\n" +
-"  \\{28.985876360268577, 29.40263949988423, 29.81940263949987, 30.236165779115524, 30.652928918731178, 31.06969205834683, 31.486455197962485, 31.90321833757814, 32.31998147719379, 32.73674461680943, 33.153507756425086, 33.57027089604074, 33.98703403565639, 34.40379717527205, 34.8205603148877, 35.237323454503354, 35.65408659411899, 36.07084973373465, 36.4876128733503, 36.904376012965955, 37.32113915258161, 37.73790229219726, 38.1546654318129, 38.571428571428555, 38.98819171104421, 39.40495485065986, 39.821717990275516, 40.23848112989117, 40.655244269506824, 41.07200740912248, 41.48877054873813, 41.905533688353785, 42.32229682796944, 42.73905996758509, 43.155823107200746, 43.57258624681637, 43.989349386432025, 44.40611252604768, 44.82287566566333, 45.239638805278986, 45.65640194489464, 46.07316508451029, 46.48992822412595, 46.9066913637416, 47.323454503357254, 47.74021764297291, 48.15698078258856, 48.573743922204216, 48.99050706181987, 49.407270201435495, 49.82403334105115\\}\n" +
-"longitude =\n" +
-"  \\{224.98437319134158, 225.40108808889917, 225.81780298645677, 226.23451788401434, 226.65123278157193, 227.06794767912953, 227.4846625766871, 227.9013774742447, 228.3180923718023, 228.73480726935986, 229.15152216691746, 229.56823706447506, 229.98495196203262, 230.40166685959022, 230.81838175714782, 231.2350966547054, 231.65181155226298, 232.06852644982058, 232.48524134737815, 232.90195624493575, 233.31867114249334, 233.7353860400509, 234.1521009376085, 234.5688158351661, 234.98553073272367, 235.40224563028127, 235.81896052783887, 236.23567542539644, 236.65239032295403, 237.06910522051163, 237.48582011806923, 237.9025350156268, 238.3192499131844, 238.735964810742, 239.15267970829956, 239.56939460585716, 239.98610950341475, 240.40282440097232, 240.81953929852992, 241.23625419608751, 241.65296909364508, 242.06968399120268, 242.48639888876028, 242.90311378631785, 243.31982868387544, 243.73654358143304, 244.1532584789906, 244.5699733765482, 244.9866882741058, 245.40340317166337, 245.82011806922097, 246.23683296677856, 246.65354786433613\\}\n" +
-"chlorophyll =\n" +
-"  \\{\n" +
-"    \\{\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      \\{1.17072E9\\}\n" +
+"    altitude = \n" +
+"      \\{0.0\\}\n" +
+"    latitude = \n" +
+"      \\{28.985876360268577, 29.40263949988423, 29.81940263949987, 30.236165779115524, 30.652928918731178, 31.06969205834683, 31.486455197962485, 31.90321833757814, 32.31998147719379, 32.73674461680943, 33.153507756425086, 33.57027089604074, 33.98703403565639, 34.40379717527205, 34.8205603148877, 35.237323454503354, 35.65408659411899, 36.07084973373465, 36.4876128733503, 36.904376012965955, 37.32113915258161, 37.73790229219726, 38.1546654318129, 38.571428571428555, 38.98819171104421, 39.40495485065986, 39.821717990275516, 40.23848112989117, 40.655244269506824, 41.07200740912248, 41.48877054873813, 41.905533688353785, 42.32229682796944, 42.73905996758509, 43.155823107200746, 43.57258624681637, 43.989349386432025, 44.40611252604768, 44.82287566566333, 45.239638805278986, 45.65640194489464, 46.07316508451029, 46.48992822412595, 46.9066913637416, 47.323454503357254, 47.74021764297291, 48.15698078258856, 48.573743922204216, 48.99050706181987, 49.407270201435495, 49.82403334105115\\}\n" +
+"    longitude = \n" +
+"      \\{224.98437319134158, 225.40108808889917, 225.81780298645677, 226.23451788401434, 226.65123278157193, 227.06794767912953, 227.4846625766871, 227.9013774742447, 228.3180923718023, 228.73480726935986, 229.15152216691746, 229.56823706447506, 229.98495196203262, 230.40166685959022, 230.81838175714782, 231.2350966547054, 231.65181155226298, 232.06852644982058, 232.48524134737815, 232.90195624493575, 233.31867114249334, 233.7353860400509, 234.1521009376085, 234.5688158351661, 234.98553073272367, 235.40224563028127, 235.81896052783887, 236.23567542539644, 236.65239032295403, 237.06910522051163, 237.48582011806923, 237.9025350156268, 238.3192499131844, 238.735964810742, 239.15267970829956, 239.56939460585716, 239.98610950341475, 240.40282440097232, 240.81953929852992, 241.23625419608751, 241.65296909364508, 242.06968399120268, 242.48639888876028, 242.90311378631785, 243.31982868387544, 243.73654358143304, 244.1532584789906, 244.5699733765482, 244.9866882741058, 245.40340317166337, 245.82011806922097, 246.23683296677856, 246.65354786433613\\}\n" +
+"    chlorophyll = \n" +
 "      \\{\n" +
+"        \\{\n" +
+"          \\{\n" +
 //pre 2010-10-26 was 
 //"        {-9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0, 0.088, 0.085, 0.088, -9999999.0, 0.098, -9999999.0, 0.076, -9999999.0, 0.07, 0.071, -9999999.0, -9999999.0, -9999999.0, 0.078, -9999999.0, 0.09, 0.084, -9999999.0, -9999999.0, 0.098, -9999999.0, 0.079, 0.076, 0.085, -9999999.0, 0.086, 0.127, 0.199, 0.167, 0.191, 0.133, 0.14, 0.173, 0.204, 0.239, 0.26, 0.252, 0.274, 0.289, 0.367, 0.37, 0.65, 0.531, -9999999.0, -9999999.0, 1.141},";
 //pre 2012-08-17 was
 //"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},";
-  "        \\{-9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009, 0.10116, -9999999.0, 0.10095, -9999999.0, 0.07243, -9999999.0, 0.08363, 0.08291, -9999999.0, -9999999.0, -9999999.0, 0.08885, -9999999.0, 0.09632, 0.0909, -9999999.0, -9999999.0, 0.09725, -9999999.0, 0.09978, 0.09462, 0.09905, -9999999.0, 0.09937, 0.12816, 0.20255, 0.17595, 0.20562, 0.14333, 0.15073, 0.18803, 0.22673, 0.27252, 0.29005, 0.28787, 0.31865, 0.33447, 0.43293, 0.43297, 0.68101, 0.48409, -9999999.0, -9999999.0, 1.20716\\},"; //no \n
+  "            \\{-9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009, 0.10116, -9999999.0, 0.10095, -9999999.0, 0.07243, -9999999.0, 0.08363, 0.08291, -9999999.0, -9999999.0, -9999999.0, 0.08885, -9999999.0, 0.09632, 0.0909, -9999999.0, -9999999.0, 0.09725, -9999999.0, 0.09978, 0.09462, 0.09905, -9999999.0, 0.09937, 0.12816, 0.20255, 0.17595, 0.20562, 0.14333, 0.15073, 0.18803, 0.22673, 0.27252, 0.29005, 0.28787, 0.31865, 0.33447, 0.43293, 0.43297, 0.68101, 0.48409, -9999999.0, -9999999.0, 1.20716\\},"; //no \n
             tPo = results.indexOf("  :infoUrl");
             int tPo2 = results.indexOf("1.20716},", tPo + 1);
             if (tPo < 0 || tPo2 < 0)

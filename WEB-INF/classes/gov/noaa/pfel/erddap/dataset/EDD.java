@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -1370,17 +1371,17 @@ public abstract class EDD {
                     if (tType.equals("unsignedShort")) { //the xml name
                         //parse as ints, then convert to char
                         tType = "char"; //the PrimitiveArray name
-                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToClass("int"), 
+                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToPAType("int"), 
                             content); 
                         pa = new CharArray(pa);
                     } else {
-                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToClass(tType), 
+                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToPAType(tType), 
                             content); 
                     }
                 }
                 //if (tName.equals("_FillValue")) 
                 //    String2.log(">>EDD attribute name=\"" + tName + "\" content=" + content + 
-                //    "\n  type=" + pa.elementClassString() + " pa=" + pa.toString());
+                //    "\n  type=" + pa.elementTypeString() + " pa=" + pa.toString());
                 tAttributes.add(tName, pa);
                 //String2.log(">>????EDD _FillValue=" + tAttributes.get("_FillValue"));
 
@@ -1443,7 +1444,7 @@ public abstract class EDD {
                     type = "char"; //the PrimitiveArray name
                 else if (type.equals("string")) //the xml name
                     type = "String"; //the PrimitiveArray name
-                Class elementClass = PrimitiveArray.elementStringToClass(type); //throws Throwable if trouble
+                PAType elementPAType = PrimitiveArray.elementStringToPAType(type); //throws Throwable if trouble
                 double start      = String2.parseDouble(xmlReader.attributeValue("start"));
                 double increment  = String2.parseDouble(xmlReader.attributeValue("increment"));
                 int n             = String2.parseInt(xmlReader.attributeValue("n"));
@@ -1451,17 +1452,17 @@ public abstract class EDD {
                     increment > 0 && //this could change to !NaN and !0
                     n > 0 && n < Integer.MAX_VALUE) {
                     //make PA with 1+ evenly spaced values
-                    tValuesPA = PrimitiveArray.factory(elementClass, n, false);
+                    tValuesPA = PrimitiveArray.factory(elementPAType, n, false);
                     for (int i = 0; i < n; i++) 
                         tValuesPA.addDouble(start + i * increment);
                 } else {
                     //make PA with correct type, but size=0
-                    tValuesPA = PrimitiveArray.factory(elementClass, 0, "");
+                    tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
                 }
             } else if (topTag.equals("/values")) {
                 if (tValuesPA.size() == 0) {
                     //make a new PA from content values 
-                    tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementClass(), content);         
+                    tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);         
                 }
                 if (reallyVerbose) String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA.toString());
 
@@ -1687,7 +1688,7 @@ public abstract class EDD {
      * This converts a dnlsTable into a table ready for /files/ response.
      * 
      * @param fileTable Input columns: directory (String), name (String), lastModified (long), size (long).
-     *   Output columns: "Name" (String), "Last modified" (long), 
+     *   Output columns: "Name" (String), "Last modified" (long millis), 
      *   "Size" (long), and "Description" (String, but no content)
      * @throws RuntimeException if trouble
      */
@@ -1711,7 +1712,7 @@ public abstract class EDD {
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -3477,8 +3478,8 @@ public abstract class EDD {
 
         for (int col = 0; col < sn; col++) {
             //class not always known
-            Class tClass = addTable.getColumn(col).elementClass();
-            boolean isNumeric = tClass != String.class && tClass != char.class;
+            PAType tPAType = addTable.getColumn(col).elementType();
+            boolean isNumeric = tPAType != PAType.STRING && tPAType != PAType.CHAR;
             String colName = addTable.getColumnName(col);
             String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
             Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
@@ -3616,8 +3617,8 @@ public abstract class EDD {
         //Does it have the correct name and correct units (or units="")?
         for (int col = 0; col < sn; col++) {
             //class not always known
-            Class tClass = addTable.getColumn(col).elementClass();
-            boolean isNumeric = tClass != String.class && tClass != char.class;
+            PAType tPAType = addTable.getColumn(col).elementType();
+            boolean isNumeric = tPAType != PAType.STRING && tPAType != PAType.CHAR;
             String colName = addTable.getColumnName(col);
             String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
             Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
@@ -3738,8 +3739,8 @@ public abstract class EDD {
         //look for lat and lon and time with date and time
         for (int col = 0; col < sn; col++) {
             //class not always known
-            Class tClass = addTable.getColumn(col).elementClass();
-            boolean isNumeric = tClass != String.class && tClass != char.class;
+            PAType tPAType = addTable.getColumn(col).elementType();
+            boolean isNumeric = tPAType != PAType.STRING && tPAType != PAType.CHAR;
             String colName = addTable.getColumnName(col);
             String colNameLC = colName.toLowerCase();
             String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
@@ -3776,7 +3777,7 @@ public abstract class EDD {
                 units.indexOf('d') >= 0 && units.indexOf('H') >= 0) {   //has date and has hour!
                 addTable.setColumnName(col, EDV.TIME_NAME);
                 if (Calendar2.isStringTimeUnits(units) &&
-                    addTable.getColumn(col).elementClass() != String.class)
+                    addTable.getColumn(col).elementType() != PAType.STRING)
                     addTable.setColumn(col, new StringArray(addTable.getColumn(col)));
                 if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
                     addAtts.set("source_name", sourceName);
@@ -3790,8 +3791,8 @@ public abstract class EDD {
         //look for LLAT
         for (int col = 0; col < sn; col++) {
             //class not always known
-            Class tClass = addTable.getColumn(col).elementClass();
-            boolean isNumeric = tClass != String.class && tClass != char.class;
+            PAType tPAType = addTable.getColumn(col).elementType();
+            boolean isNumeric = tPAType != PAType.STRING && tPAType != PAType.CHAR;
             String colName = addTable.getColumnName(col);
             String colNameLC = colName.toLowerCase();
             String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
@@ -3854,7 +3855,7 @@ public abstract class EDD {
                     !"uuuu".equals(units) && !"yyyy".equals(units) && !"YYYY".equals(units)) { //many datasets have date components. Don't treat year as time.
                 addTable.setColumnName(col, EDV.TIME_NAME);
                 if (Calendar2.isStringTimeUnits(units) &&
-                    addTable.getColumn(col).elementClass() != String.class)
+                    addTable.getColumn(col).elementType() != PAType.STRING)
                     addTable.setColumn(col, new StringArray(addTable.getColumn(col)));
                 if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
                     addAtts.set("source_name", sourceName);
@@ -4610,9 +4611,9 @@ public abstract class EDD {
             return false;
 
         //skip string or char pa's
-        Class eClass = pa.elementClass(); 
+        PAType ePAType = pa.elementType(); 
         int size = pa.size();
-        if (size == 0 || eClass == String.class)
+        if (size == 0 || ePAType == PAType.STRING)
             return false;
 
         //skip if mv and fv already defined and different.  No slots for other values.
@@ -4623,9 +4624,9 @@ public abstract class EDD {
         //String2.log(">> sfv=" + sfv + " smv=" + smv);
         if (sfv != null && smv != null && sfv.equals(smv))
             smv = null; //if same, pretend mv not defined
-        //if (sfv != null && smv != null && !sfv.equals(smv)) return false; //no, keep going in case need to change eClass
+        //if (sfv != null && smv != null && !sfv.equals(smv)) return false; //no, keep going in case need to change ePAType
 
-        if (eClass == char.class) {
+        if (ePAType == PAType.CHAR) {
 
             int ti = (int)pa.missingValue(); //cohort mv is MAX_VALUE, e.g., 65536
             String ts = "" + ti;                   //as String, e.g., "65536"
@@ -4641,32 +4642,30 @@ public abstract class EDD {
                 else if (smv == null && !ts.equals(sfv)) smv = ts; 
             }
 
-        } else if (eClass == byte.class ||
-                   eClass == short.class ||
-                   eClass == int.class ||
-                   eClass == long.class) {
-
-            long ti = eClass == long.class? 
-                Long.MAX_VALUE : 
-                (int)pa.missingValue(); //cohort mv is MAX_VALUE, e.g., 127
-            String ts = "" + ti;            //as String, e.g., "127"
+        } else if (pa.isIntegerType()) {
+            //get cohort missingValue (MAX_VALUE) as string that looks like an integer
+            pa.addString("");
+            String ts = pa.getRawString(pa.size() - 1);  //e.g., "127" for ByteArray
+            pa.remove(pa.size() - 1);
+            //String2.log(">> ts=" + ts + " sfv=" + sfv + " smv=" + smv);
             if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
                 if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
                 else if (smv == null && !ts.equals(sfv)) smv = ts; 
             }
 
-            ti = -ti; //e.g., -127
-            ts = "" + ti;  //e.g., "-127"
-            if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                else if (smv == null && !ts.equals(sfv)) smv = ts; 
-            }
+            if (!pa.isUnsigned()) {
+                //test 1 up from min of primitive type, e.g., "-127". Unidata uses these
+                ts = "-" + ts;  
+                if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
+                    if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
+                    else if (smv == null && !ts.equals(sfv)) smv = ts; 
+                }
 
-            ti = ti - 1; //e.g., -128
-            ts = "" + ti;  //e.g., "-128"
-            if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                else if (smv == null && !ts.equals(sfv)) smv = ts; 
+                ts = pa.MINEST_VALUE();  //e.g., "-128"
+                if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
+                    if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
+                    else if (smv == null && !ts.equals(sfv)) smv = ts; 
+                }
             }
 
             //min or max (but just one) is e.g. 99?
@@ -4679,7 +4678,7 @@ public abstract class EDD {
                     whichMv9 = DoubleArray.MV9.indexOf(stats[PrimitiveArray.STATS_MAX]);
                 if (whichMv9 >= 0) {
                     double td = DoubleArray.MV9.getDouble(whichMv9);
-                    ti = Math2.roundToInt(td);
+                    int ti = Math2.roundToInt(td);
                     if (td == ti) { //double check: only care about integer MV9's
                         ts = "" + ti;
                         if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
@@ -4691,7 +4690,7 @@ public abstract class EDD {
 
             //this is good because it uses the observed min or max,
             //  so can find several related values
-            boolean isFloat = eClass == float.class;
+            boolean isFloat = ePAType == PAType.FLOAT;
             double stats[] = pa.calculateStats();
             boolean hasFinite = stats[PrimitiveArray.STATS_N] > 0;
             boolean hasNaN = stats[PrimitiveArray.STATS_N] < size;
@@ -4745,16 +4744,16 @@ public abstract class EDD {
             apa =    addAtts.get("_FillValue");
         if (apa == null && sourceAtts != null) 
             apa = sourceAtts.get("_FillValue");
-        if (sfv != null && (!sfv.equals(ofv) || (apa != null && apa.elementClass() != eClass))) {
-            addAtts.set("_FillValue", PrimitiveArray.factory(eClass, 1, sfv));
+        if (sfv != null && (!sfv.equals(ofv) || (apa != null && apa.elementType() != ePAType))) {
+            addAtts.set("_FillValue", PrimitiveArray.factory(ePAType, 1, sfv));
             madeChange = true;
         }
             apa =    addAtts.get("missing_value");
         if (apa == null && sourceAtts != null)
             apa = sourceAtts.get("missing_value");
-        //String2.pressEnterToContinue("\n>> destVarName=" + destVarName + " omv=" + omv + " smv=" + smv + " eClass=" + eClass.toString() + " apa=" + (apa == null? "" : apa.toString()));
-        if (smv != null && (!smv.equals(omv) || (apa != null && apa.elementClass() != eClass))) {
-            addAtts.set("missing_value", PrimitiveArray.factory(eClass, 1, smv));
+        //String2.pressEnterToContinue("\n>> destVarName=" + destVarName + " omv=" + omv + " smv=" + smv + " ePAType=" + ePAType + " apa=" + (apa == null? "" : apa.toString()));
+        if (smv != null && (!smv.equals(omv) || (apa != null && apa.elementType() != ePAType))) {
+            addAtts.set("missing_value", PrimitiveArray.factory(ePAType, 1, smv));
             madeChange = true;
         }
         return madeChange;
@@ -5084,7 +5083,7 @@ public abstract class EDD {
             "LICENSE",       "License",
             "PROGRAM",       "Program",
             "PROJECT",       "Project", 
-            "REFERENCES",    "References",   "REFERENCE",   "Reference",   "reference",   
+            "ref",           "REFERENCES",    "References",   "REFERENCE",   "Reference",   "reference",   
             "SOURCE",        "Source",
             "SUMMARY",       "Summary",
             "TITLE",         "Title",
@@ -5115,7 +5114,7 @@ public abstract class EDD {
             "license",       "license",
             "program",       "program", 
             "project",       "project",
-            "references",    "references",   "references",  "references",  "references", 
+            "references",    "references",    "references",   "references",  "references",  "references", 
             "source",        "source",
             "summary",       "summary",
             "title",         "title",
@@ -5849,7 +5848,7 @@ public abstract class EDD {
         value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);
         if (!String2.isSomething2(value) || 
             //this isn't very sophisticated:
-            //ensure it is the new ACDD-1.3 style "CF Standard Name Table v55"
+            //ensure it is the new ACDD-1.3 style "CF Standard Name Table v70"
             !value.matches("CF Standard Name Table v[0-9]+")) 
             addAtts.add(name, FileNameUtility.getStandardNameVocabulary());
 
@@ -7053,7 +7052,7 @@ public abstract class EDD {
             //not getAddOrSourceAtt since want pa
             PrimitiveArray  pa = addAtts.get(sourceNames[i]);
             if (pa == null) pa = sourceAtts.get(sourceNames[i]);
-            if (pa == null || pa.elementClass() != String.class) 
+            if (pa == null || pa.elementType() != PAType.STRING) 
                 continue; 
             value = pa.getString(0);
             if (!String2.isSomething2(value)) { //e.g., "none"
@@ -7078,7 +7077,7 @@ public abstract class EDD {
             "LONGNAME",     "LONG_NAME",    "LongName",   "longName",   "longname", "long_nime",
             "MISSING_VALUE","MissingValue", "missingValue", 
             "POSITIVE",     "Positive", 
-            "REFERENCES",   "References",   "REFERENCE",  "Reference", "reference",
+            "ref",          "REFERENCES",   "References",   "REFERENCE",  "Reference", "reference",
             "SCALE_FACTOR", "ScaleFactor",  "scaleFactor",  
             "SOURCE",       "Source",
             "STANDARD_NAME","StandardName", "standardName",
@@ -7101,7 +7100,7 @@ public abstract class EDD {
             "long_name",    "long_name",    "long_name",  "long_name",  "long_name", "long_name",  
             "missing_value","missing_value","missing_value", 
             "positive",     "positive", 
-            "references",   "references",   "references", "references", "references", 
+            "references",   "references",   "references",   "references", "references", "references", 
             "scale_factor", "scale_factor", "scale_factor",
             "source",       "source",
             "standard_name","standard_name","standard_name",
@@ -7169,6 +7168,7 @@ public abstract class EDD {
             "l2_flag_names", 
             "latitude_step", "latitude_units", "length", "longitude_step", "longitude_units",
             "maximum", "minimum",  //see above
+            "metadata_retrieved_from",
             "mission_characteristics",
             "northernmost_latitude", "number_of_columns", "number_of_lines",
             "numberofobservations", 
@@ -7422,13 +7422,14 @@ public abstract class EDD {
             if (tUnits.indexOf(" since -4713") > 0)
                 tUnits = String2.replaceAll(tUnits, " since -4713", " since -4712"); //seaDataNet 4713 BC -> ERDDAP astronomical year -4712 
 
-            if (tUnitsLC.indexOf("%y") >= 0) //e.g., a date format
+            if (tUnitsLC.indexOf("%y") >= 0)
+                //convert a pseudo-date format into Java format (more below)
                 tUnits = String2.replaceAll(tUnits, "%", "");
             else if (tUnits.indexOf("%") >= 0)
                 tUnits = String2.replaceAll(tUnits, "%", "percent");
 
-            if (tUnitsLC.indexOf("yy") >= 0)  //after %y %yy above
-                tUnits = Calendar2.convertToJavaDateTimeFormat(tUnits);
+            //if this might be a date/time units string, try to clean it up
+            tUnits = Calendar2.convertToJavaDateTimeFormat(tUnits);
 
             if (Calendar2.isNumericTimeUnits(tUnits)) {
                 try {
@@ -7561,14 +7562,14 @@ public abstract class EDD {
         //unpack actual_range if packed (using scaleFactorPA and addOffsetPA)
         PrimitiveArray    arPa = addAtts.get(   "actual_range");        
         if (arPa == null) arPa = sourceAtts.get("actual_range");        
-        if (arPa != null && arPa.elementClass() != String.class) {
-            Class arPaClass = arPa.elementClass();
+        if (arPa != null && arPa.elementType() != PAType.STRING) {
+            PAType arPaPAType = arPa.elementType();
             PrimitiveArray saPa = scaleFactorPA != null? scaleFactorPA : addOffsetPA;
             if (saPa != null) {
-                Class saPaClass = saPa.elementClass();
-                if (arPaClass != saPaClass && saPaClass != String.class) {
-                    //their classes are numeric but different
-                    arPa = PrimitiveArray.factory(saPaClass, arPa);
+                PAType saPaPAType = saPa.elementType();
+                if (arPaPAType != saPaPAType && saPaPAType != PAType.STRING) {
+                    //their PATypes are numeric but different
+                    arPa = PrimitiveArray.factory(saPaPAType, arPa);
                     if (arPa.isIntegerType() && saPa.isFloatingPointType()) //covers most cases
                         arPa.scaleAddOffset(tScaleFactor, tAddOffset);
                     addAtts.set("actual_range", arPa);
@@ -8373,16 +8374,16 @@ public abstract class EDD {
 
             if (sourceAtts.get("flag_masks") != null) {  //before flag_values, e.g., 1b, 2b, 4b, 8b
                 PrimitiveArray pa = sourceAtts.get("flag_masks");
-                if (pa.elementClass() == String.class) {
+                if (pa.elementType() == PAType.STRING) {
                     //ssv or csv stored as string?
                     String s = String2.replaceAll(pa.getString(0), "b", "");
                     int nCommas = String2.countAll(s, ",");
                     pa = nCommas > 0?
                         PrimitiveArray.csvFactory(
-                            nCommas > 31? long.class :
-                            nCommas > 15? int.class : short.class, 
+                            nCommas > 31? PAType.LONG :
+                            nCommas > 15? PAType.INT : PAType.SHORT, 
                             s) :
-                        PrimitiveArray.factory(int.class, 
+                        PrimitiveArray.factory(PAType.INT, 
                             StringArray.wordsAndQuotedPhrases(s));
                 }
                 double d = pa.getDouble(pa.size() - 1);
@@ -8395,16 +8396,16 @@ public abstract class EDD {
 
             else if (sourceAtts.get("flag_values") != null) {  //e.g., 1b, 2b, 4b, 8b, 12b
                 PrimitiveArray pa = sourceAtts.get("flag_values");
-                if (pa.elementClass() == String.class) {
+                if (pa.elementType() == PAType.STRING) {
                     //ssv or csv stored as string?
                     String s = String2.replaceAll(pa.getString(0), "b", "");
                     int nCommas = String2.countAll(s, ",");
                     pa = nCommas > 0?
                         PrimitiveArray.csvFactory(
-                            nCommas > 31? long.class :
-                            nCommas > 15? int.class : short.class, 
+                            nCommas > 31? PAType.LONG :
+                            nCommas > 15? PAType.INT : PAType.SHORT, 
                             s) :
-                        PrimitiveArray.factory(int.class, 
+                        PrimitiveArray.factory(PAType.INT, 
                             StringArray.wordsAndQuotedPhrases(s));
                 }
                 double d = pa.getDouble(pa.size() - 1);
@@ -8701,7 +8702,7 @@ public abstract class EDD {
                 if (ao == null || ao instanceof StringArray)  //e.g., "null"
                     ao = sourceAtts.get("add_offset");
                 if (isDegreesK && ao != null && 
-                    (ao.elementClass() == float.class || ao.elementClass() == double.class)) {
+                    (ao.elementType() == PAType.FLOAT || ao.elementType() == PAType.DOUBLE)) {
                     isDegreesK = false;
                     isDegreesC = true;
                     tUnits = "degree_C";
@@ -8786,7 +8787,7 @@ public abstract class EDD {
                     if (ao == null || ao instanceof StringArray)  //e.g., "null"
                         ao = sourceAtts.get("add_offset");
                     if (isDegreesK && ao != null && 
-                        (ao.elementClass() == float.class || ao.elementClass() == double.class)) {
+                        (ao.elementType() == PAType.FLOAT || ao.elementType() == PAType.DOUBLE)) {
                         isDegreesK = false;
                         isDegreesC = true;
                         tUnits = "degree_C";
@@ -8862,7 +8863,7 @@ public abstract class EDD {
                     if (ao == null || ao instanceof StringArray)  //e.g., "null"
                         ao = sourceAtts.get("add_offset");
                     if (isDegreesK && ao != null && 
-                        (ao.elementClass() == float.class || ao.elementClass() == double.class)) {
+                        (ao.elementType() == PAType.FLOAT || ao.elementType() == PAType.DOUBLE)) {
                         isDegreesK = false;
                         isDegreesC = true;
                         tUnits = "degree_C";
@@ -9938,7 +9939,7 @@ public abstract class EDD {
                     indent + "    <destinationName>" + tDestName + "</destinationName>\n");
 
             if (includeDataType) sb.append(
-                indent + "    <dataType>" + addTable.getColumn(col).elementClassString() + "</dataType>\n");
+                indent + "    <dataType>" + addTable.getColumn(col).elementTypeString() + "</dataType>\n");
             if (sourceTable != null)
                 sb.append(writeAttsForDatasetsXml(false, sourceAtts, indent + "    "));
             sb.append    (writeAttsForDatasetsXml(true,  addAtts,    indent + "    "));
@@ -10189,7 +10190,7 @@ public abstract class EDD {
                     val = String2.replaceAll(val, "--", "- - "); 
                 sb.append(">" + val + "</att>\n");
             } else {
-                sb.append(" type=\"" + attPa.elementClassString() + 
+                sb.append(" type=\"" + attPa.elementTypeString() + 
                     (attPa.size() > 1? "List" : "") +
                     "\">" + String2.replaceAll(attPa.toString(), ", ", " ") + "</att>\n");
             }
@@ -10315,9 +10316,9 @@ public abstract class EDD {
                 Test.ensureEqual(badTable.getColumnName(0), "fileName", "Unexpected column#0 name.");
                 Test.ensureEqual(badTable.getColumnName(1), "lastMod",  "Unexpected column#1 name.");
                 Test.ensureEqual(badTable.getColumnName(2), "reason",   "Unexpected column#2 name.");
-                Test.ensureEqual(badTable.getColumn(0).elementClassString(), "String", "Unexpected column#0 type.");
-                Test.ensureEqual(badTable.getColumn(1).elementClassString(), "long",   "Unexpected column#1 type.");
-                Test.ensureEqual(badTable.getColumn(2).elementClassString(), "String", "Unexpected column#2 type.");
+                Test.ensureEqual(badTable.getColumn(0).elementTypeString(), "String", "Unexpected column#0 type.");
+                Test.ensureEqual(badTable.getColumn(1).elementTypeString(), "long",   "Unexpected column#1 type.");
+                Test.ensureEqual(badTable.getColumn(2).elementTypeString(), "String", "Unexpected column#2 type.");
                 if (nRows == 0)
                     return badFilesMap;
                 for (int row = 0; row < nRows; row++) 
@@ -10771,7 +10772,6 @@ public abstract class EDD {
 
 
 
-
     /**
      * This walks through the start directory and subdirectories and tries
      * to generateDatasetsXml for groups of data files that it finds.
@@ -10942,9 +10942,8 @@ public abstract class EDD {
                 topExt.equals("")) {  //.hdf are sometimes unidentified
                 try {
                     String xmlChunk = EDDGridFromNcFiles.generateDatasetsXml(
-                        tDir, ".*\\" + topExt, 
-                        tDir + sampleName, 
-                        tReloadEveryNMinutes, 
+                        tDir, ".*\\" + topExt, tDir + sampleName, 
+                        "", tReloadEveryNMinutes,  //dimensionsCSV
                         null, null); //cacheFromUrl, externalAddGlobalAttributes
                     resultsSB.append(xmlChunk);  //recursive=true
                     for (int diri2 = diri; diri2 < nDirs; diri2++)
@@ -12211,7 +12210,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         try {
             Table table = new Table();
             table.readASCII("sparqlP01toP02", 
-                SSR.getBufferedUrlReader(urlString), 0, 1, "", 
+                SSR.getBufferedUrlReader(urlString), "", "", 0, 1, "", 
                 null, null, null, null, false); //readColumns, simplify
             //String2.log(table.dataToString(5));
 //row,Identifier,PrefLabel,Definition,Version,related,Date,Url
@@ -12249,17 +12248,17 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
      * (given scale_factor, add_offset, and _Unsigned) for
      * GenerateDatasetsXml.
      * If not scaled/offset/unsigned, this returns the sourcePA.
+     *
      */
     public static PrimitiveArray makeDestPAForGDX(PrimitiveArray sourcePA,
         Attributes sourceAtts) {
 
-        Class tClass = sourcePA.elementClass();
-        if (tClass == String.class)
+        PAType tPAType = sourcePA.elementType();
+        if (tPAType == PAType.STRING)
             return sourcePA;
         
         PrimitiveArray sf = sourceAtts.get("scale_factor");
         PrimitiveArray ao = sourceAtts.get("add_offset");
-        PrimitiveArray un = sourceAtts.get("_Unsigned");
         if ((sf == null || sf.getDouble(0) == 1) &&  //default or explicit
             (ao == null || ao.getDouble(0) == 0)) {  //default or explicit
             //In this case, makeReadyToUseAddVariableAttributes will set these
@@ -12269,24 +12268,16 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         }        
         
         if (ao != null) 
-            tClass = ao.elementClass();
+            tPAType = ao.elementType();
         else if (sf != null) 
-            tClass = sf.elementClass();
-        else if (un != null && "true".equals(un.toString()) &&
-            PrimitiveArray.isIntegerType(tClass))
-            tClass = 
-                tClass == byte.class?  short.class :
-                tClass == short.class? int.class :
-                tClass == int.class?   long.class :
-                tClass == long.class?  double.class :
-                                       double.class; //shouldn't happen
+            tPAType = sf.elementType();
 
         //scale or add att is String?!  that's an improper type!
-        if (tClass == String.class)
+        if (tPAType == PAType.STRING)
             return sourcePA;
 
         //convert (if different)
-        return PrimitiveArray.factory(tClass, sourcePA); 
+        return PrimitiveArray.factory(tPAType, sourcePA); 
     }
 
     /** 
@@ -12394,14 +12385,14 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         pa = new ByteArray(new byte[]{12,-127});
         sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{127}));
         addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{127}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{-127}), "");
 
         //127 -> true if mv fv already defined different but identical
         pa = new ByteArray(new byte[]{12,127});
         sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{-127}));
         addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{-127}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{127}), "");
 
         //99 -> false if mv fv already defined but identical
@@ -12420,14 +12411,14 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         pa = new ShortArray(new short[]{12,-32767,32767});
         sourceAtts = (new Attributes()).add("missing_value", new ShortArray(new short[]{32767}));
         addAtts    = (new Attributes()).add("_FillValue",    new ShortArray(new short[]{32767}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new ShortArray(new short[]{-32767}), "");
 
         //int -2147483647 -> true if mv fv already defined different but identical
         pa = new IntArray(new int[]{12,-2147483647,2147483647});
         sourceAtts = (new Attributes()).add("missing_value", new IntArray(new int[]{2147483647}));
         addAtts    = (new Attributes()).add("_FillValue",    new IntArray(new int[]{2147483647}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new IntArray(new int[]{-2147483647}), "");
 
 
@@ -12435,28 +12426,28 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         pa = new LongArray(new long[]{12,-9223372036854775808L});
         sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
         addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{-9223372036854775808L}), "");
 
         //long -9223372036854775807 -> true if mv fv already defined different but identical
         pa = new LongArray(new long[]{12,-9223372036854775807L});
         sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
         addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{-9223372036854775807L}), "");
 
         //long 9223372036854775807 -> true if mv fv already defined different but identical
         pa = new LongArray(new long[]{12,9223372036854775807L});
         sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{-9223372036854775807L}));
         addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{-9223372036854775807L}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{9223372036854775807L}), "");
 
         //long 9999 -> true if mv fv already defined different but identical
         pa = new LongArray(new long[]{12,999,9223372036854775807L});
         sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
         addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{999}), "");
 
 
@@ -12464,28 +12455,28 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         pa = new FloatArray(new float[]{12,-999});
         sourceAtts = (new Attributes()).add("missing_value", new FloatArray(new float[]{9999}));
         addAtts    = (new Attributes()).add("_FillValue",    new FloatArray(new float[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new FloatArray(new float[]{-999}), "");
 
         //float NaN -> true if mv fv already defined different but identical
         pa = new FloatArray(new float[]{12,Float.NaN});
         sourceAtts = (new Attributes()).add("missing_value", new FloatArray(new float[]{9999}));
         addAtts    = (new Attributes()).add("_FillValue",    new FloatArray(new float[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new FloatArray(new float[]{Float.NaN}), "");
 
         //float 1.234567e36f -> true if mv fv already defined different but identical
         pa = new FloatArray(new float[]{12,1.234567e36f});
         sourceAtts = (new Attributes()).add("missing_value", new FloatArray(new float[]{9999}));
         addAtts    = (new Attributes()).add("_FillValue",    new FloatArray(new float[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new FloatArray(new float[]{1.234567e36f}), "");
 
         //float -99.9f -> true if mv fv already defined different but identical
         pa = new FloatArray(new float[]{12,9999,-99.9f});
         sourceAtts = (new Attributes()).add("missing_value", new FloatArray(new float[]{9999}));
         addAtts    = (new Attributes()).add("_FillValue",    new FloatArray(new float[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new FloatArray(new float[]{-99.9f}), "");
 
 
@@ -12494,7 +12485,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         sourceAtts = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}))
                                        .add("missing_value", new DoubleArray(new double[]{-999}));  //will be ignored
         addAtts    = (new Attributes()).add("missing_value", new DoubleArray(new double[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{-999}), "");
 
         //double NaN -> true if mv fv already defined different but identical
@@ -12502,7 +12493,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         sourceAtts = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}))
                                        .add("missing_value", new DoubleArray(new double[]{-999}));  //will be ignored
         addAtts    = (new Attributes()).add("missing_value", new DoubleArray(new double[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{Double.NaN}), "");
 
         //double 1.234567890987654e36 -> true if mv fv already defined different but identical
@@ -12510,7 +12501,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         sourceAtts = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}))
                                        .add("missing_value", new DoubleArray(new double[]{-999}));  //will be ignored
         addAtts    = (new Attributes()).add("missing_value", new DoubleArray(new double[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{1.234567890987654e36}), "");
 
         //double 1.5e301 -> true if mv fv already defined different but identical
@@ -12518,14 +12509,14 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         sourceAtts = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}))
                                        .add("missing_value", new DoubleArray(new double[]{-999}));  //will be ignored
         addAtts    = (new Attributes()).add("missing_value", new DoubleArray(new double[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{1.5e301}), "");
 
         //double -99.9 -> true if mv fv already defined different but identical
         pa = new DoubleArray(new double[]{12,9999,-99.9});
         sourceAtts = (new Attributes()).add("missing_value", new DoubleArray(new double[]{9999}));
         addAtts    = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{-99.9}), "");
 
 

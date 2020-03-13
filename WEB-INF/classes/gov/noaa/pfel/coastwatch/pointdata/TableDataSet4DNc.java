@@ -139,7 +139,7 @@ public class TableDataSet4DNc extends TableDataSet {
                             dataType == DataType.STRING ||
                             dataType == DataType.STRUCTURE) {
                             if (verbose) String2.log(reject + 
-                                "dataType=" + NcHelper.getElementClass(dataType).toString());
+                                "dataType=" + NcHelper.getElementPAType(dataType).toString());
                             continue;
                         }
 
@@ -280,7 +280,7 @@ public class TableDataSet4DNc extends TableDataSet {
                         Attributes tAttributes = new Attributes();
                         NcHelper.getVariableAttributes(variable, tAttributes);
                         dataAttributes.add(tAttributes);
-                        dataElementType.add(NcHelper.getElementClass(variable.getDataType()));
+                        dataElementType.add(NcHelper.getElementPAType(variable.getDataType()));
                     }
 
                     //close the file  (do care if exception)
@@ -458,7 +458,7 @@ public class TableDataSet4DNc extends TableDataSet {
         try {
         TableDataSet4DNc dataset = new TableDataSet4DNc(
             "4NBmeto", "NDBC Meteorological",
-            "c:/u00/data/points/ndbcMet/", 
+            "c:/u00/data/points/ndbcMet2/historical/", 
             //".+\\.nc");
             "NDBC_41..._met.nc");
 

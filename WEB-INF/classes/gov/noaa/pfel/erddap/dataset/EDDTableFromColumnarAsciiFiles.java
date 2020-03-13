@@ -8,6 +8,8 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -80,6 +82,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -87,7 +90,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
         boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex)
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere)
         throws Throwable {
 
         super("EDDTableFromColumnarAsciiFiles", tDatasetID, 
@@ -97,12 +101,14 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
     }
 
     /**
@@ -128,7 +134,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         int nCol = tLoadCol.length;
         int tStartColumn[] = new int[nCol];
         int tStopColumn[]  = new int[nCol];
-        Class tColClass[]  = new Class[nCol];
+        PAType tColPAType[]  = new PAType[nCol];
         String sourceNames[] = dataVariableSourceNames();
         //String2.log(">> sourceDataTypes=" + String2.toCSSVString(sourceDataTypes));
         for (int col = 0; col < nCol; col++) {
@@ -138,13 +144,14 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     " not found in " + String2.toCSSVString(sourceNames));
             tStartColumn[col] = startColumn[dv];
             tStopColumn[col] = stopColumn[dv];
-            tColClass[col] = sourceDataTypes[col].equals("boolean")? boolean.class :
-                PrimitiveArray.elementStringToClass(sourceDataTypes[col]);
+            tColPAType[col] = sourceDataTypes[col].equals("boolean")? PAType.BOOLEAN :
+                PrimitiveArray.elementStringToPAType(sourceDataTypes[col]);
         }
 
         Table table = new Table();
         table.readColumnarASCIIFile(tFileDir + tFileName, charset, 
-            firstDataRow - 1, tLoadCol, tStartColumn, tStopColumn, tColClass);
+            skipHeaderToRegex, skipLinesRegex, firstDataRow - 1, 
+            tLoadCol, tStartColumn, tStopColumn, tColPAType);
         //String2.log(">> lowGetSourceData:\n" + table.dataToString(5));
 
         //unpack
@@ -342,7 +349,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
-        dataSourceTable.readColumnarASCIIFile(sampleFileName, charset, firstDataRow - 1,
+        dataSourceTable.readColumnarASCIIFile(sampleFileName, charset, 
+            "", "", //skipHeaderToRegex, skipLinesRegex, 
+            firstDataRow - 1,
             colNames.toArray(), start.toArray(), stop.toArray(), null); //null = simplify
 
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
@@ -387,8 +396,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
                 sourceAtts, addAtts, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
             addAtts.add("startColumn", start.get(col));
             addAtts.add("stopColumn", stop.get(col));
@@ -504,7 +513,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     /**
      * This is like generateDatasetsXmlFromEML, but works on a batch of EML files.
      *
-     * @param startDir e.g., http://sbc.lternet.edu/data/eml/files/
+     * @param startDir e.g., https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/
+     *   2020-01-08 was http://sbc.lternet.edu/data/eml/files/
      * @param emlFileNameRegex e.g., "knb-lter-sbc\\.\\d+",
      */
     public static String generateDatasetsXmlFromEMLBatch(
@@ -623,7 +633,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      * EML 2.1.1 documentation:
      *   https://knb.ecoinformatics.org/external//emlparser/docs/eml-2.1.1/eml-attribute.html
      * Info about 2.0.1 to 2.1.0 transition:
-     *   http://sbc.lternet.edu/external/InformationManagement/EML/docs/eml-2.1.0/eml-210info.html
+     *   2020-01-08 gone. Was http://sbc.lternet.edu/external/InformationManagement/EML/docs/eml-2.1.0/eml-210info.html
+     * 
      *
      * <p>See the documentation for this in /downloads/EDDTableFromEML.html.
      *
@@ -905,7 +916,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     String2.ifSomethingConcat(licenseOther, "\n", s);
 
                 //online distribute is too general, so not very useful
-                //<distribution><online><url function="information">http://sbc.lternet.edu/</url>
+                //<distribution><online><url function="information">https://sbclter.msi.ucsb.edu/</url>
 
                 //geographicCoverage
                 } else if (tags.equals("<eml:eml><dataset><coverage><geographicCoverage>")) {
@@ -1184,12 +1195,12 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     //  typeSystem="https://www.w3.org/2001/XMLSchema-datatypes"
                     //e.g., lterSbc storageType just uses float, string, decimal, integer, date, "", dateTime
                     //      lterSbc NumberType uses real, whole, integer, natural (positive integer)
-                    Class tClass =
-                        varType == null? String.class :
+                    PAType tPAType =
+                        varType == null? PAType.STRING :
                         varType.equals("boolean") ||  //???
-                        varType.equals("byte")?      byte.class :  
+                        varType.equals("byte")?      PAType.BYTE :  
                         varType.equals("unsignedByte") ||  
-                        varType.equals("short")?     short.class :  
+                        varType.equals("short")?     PAType.SHORT :  
                         varType.equals("integer") || 
                         varType.equals("int") || 
                         varType.equals("gYear") || 
@@ -1202,24 +1213,24 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                         varType.equals("positiveInteger") || 
                         varType.equals("unsignedShort") ||  
                         varType.equals("whole") || 
-                        varType.equals("hexBinary")? int.class : 
+                        varType.equals("hexBinary")? PAType.INT : 
                         varType.equals("real") ||  //Fortran and sql "real" -> float  
-                        varType.equals("float")?     float.class :
+                        varType.equals("float")?     PAType.FLOAT :
                         varType.equals("unsignedInt")  ||  
                         varType.equals("long")         ||  //longs are trouble -> double 
                         varType.equals("unsignedLong") ||  
                         varType.equals("decimal") ||
-                        varType.equals("double")?    double.class :
-                        String.class; //the default
+                        varType.equals("double")?    PAType.DOUBLE :
+                        PAType.STRING; //the default
 
                     //special case: "real" lat/lon -> double
                     String varNameLC = varName.toLowerCase();
                     if ((varNameLC.startsWith("lat") || varNameLC.startsWith("lon")) && 
                         (varUnits.toLowerCase().indexOf("deg") >= 0) &&
                         "real".equals(varType))
-                        tClass = double.class;
+                        tPAType = PAType.DOUBLE;
 
-                    PrimitiveArray pa = PrimitiveArray.factory(tClass, 1, false);
+                    PrimitiveArray pa = PrimitiveArray.factory(tPAType, 1, false);
 
                     //special case: gtime_GMT
                     if ("mtime_GMT".equals(varName) && "nominal day".equals(varUnits)) 
@@ -1504,6 +1515,7 @@ boolean columnar = false;  // are there any? how detect?
                 colNames, colStart, colStop);
 
             sourceTable.readColumnarASCIIFile(emlDir + dataFileName, charset, 
+                "", "", //not auto detected: skipHeaderToRegex, skipLinesRegex, 
                 numHeaderLines - 1, //firstDataRow  (0..)
                 colNames.toArray(), colStart.toArray(), colStop.toArray(), null); //null = dest classes
             sourceTable.convertIsSomething2();
@@ -1513,6 +1525,7 @@ boolean columnar = false;  // are there any? how detect?
         } else { 
             //read comma, space, or tab separated
             sourceTable.readASCII(emlDir + dataFileName, charset, 
+                "", "", //skipHeaderToRegex, skipLinesRegex,
                 numHeaderLines - 1, //namesRow (0..)  -1 for none
                 numHeaderLines, "", //dataRow  (0..)
                 null, null, null, null, false);  //simplify
@@ -1620,15 +1633,15 @@ boolean columnar = false;  // are there any? how detect?
             String sourceVarName = sourceTable.getColumnName(col);
             Attributes sourceVarAtts = sourceTable.columnAttributes(col);
             sourceVarAtts.trimAndMakeValidUnicode();       
-            Class sourceClass = sourceTable.getColumn(col).elementClass(); //from file
-            Class destClass   =    addTable.getColumn(col).elementClass(); //as defined
+            PAType sourcePAType = sourceTable.getColumn(col).elementType(); //from file
+            PAType destPAType   =    addTable.getColumn(col).elementType(); //as defined
 
             //make and apply revisions to the variable's addAtts
             Attributes addVarAtts = addTable.columnAttributes(col);
             addVarAtts.set(makeReadyToUseAddVariableAttributesForDatasetsXml(
                 addGlobalAtts, sourceVarAtts, addVarAtts, sourceVarName, 
-                destClass != String.class, //tryToAddStandardName
-                destClass != String.class, //addColorBarMinMax
+                destPAType != PAType.STRING, //tryToAddStandardName
+                destPAType != PAType.STRING, //addColorBarMinMax
                 true)); //tryToFindLLAT
             if (columnar) {
                 addVarAtts.add("startColumn", colStart.get(col));
@@ -1660,32 +1673,32 @@ boolean columnar = false;  // are there any? how detect?
             //dataType
             if (Calendar2.isStringTimeUnits(tUnits)) { 
                 //force to be String
-                sourceClass = String.class;
-                destClass   = String.class;
+                sourcePAType = PAType.STRING;
+                destPAType   = PAType.STRING;
                 sourceTable.setColumn(col, 
-                    PrimitiveArray.factory(sourceClass, sourceTable.getColumn(col)));                
+                    PrimitiveArray.factory(sourcePAType, sourceTable.getColumn(col)));                
                 addTable.setColumn(col, 
-                    PrimitiveArray.factory(destClass, addTable.getColumn(col)));                
-            } else if (sourceClass == destClass) {
+                    PrimitiveArray.factory(destPAType, addTable.getColumn(col)));                
+            } else if (sourcePAType == destPAType) {
                 // don't change anything
-            } else if (destClass == String.class) {
+            } else if (destPAType == PAType.STRING) {
                 //go with type found in file (from simplify)
                 String2.log("!!! WARNING: For datasetID=" + datasetID + 
                     ", for destinationColName=" + colName +
                     ", ERDDAP is changing the data type from String " + 
-                    "(as specified in EML) to " + sourceClass + 
+                    "(as specified in EML) to " + sourcePAType + 
                     ". [observed in file]");
                 addTable.setColumn(col, 
-                    PrimitiveArray.factory(sourceClass, addTable.getColumn(col)));                
-                destClass = sourceClass;
+                    PrimitiveArray.factory(sourcePAType, addTable.getColumn(col)));                
+                destPAType = sourcePAType;
             } else {
                 //varType specified? use addTable type
                 sourceTable.setColumn(col, 
-                    PrimitiveArray.factory(destClass, sourceTable.getColumn(col)));                
-                sourceClass = destClass;
+                    PrimitiveArray.factory(destPAType, sourceTable.getColumn(col)));                
+                sourcePAType = destPAType;
             }
 
-            if (destClass == String.class) { 
+            if (destPAType == PAType.STRING) { 
                 //for String vars, remove any colorBar info
                 addVarAtts.remove("colorBarMinimum");
                 addVarAtts.remove("colorBarMaximum");
@@ -1723,14 +1736,14 @@ boolean columnar = false;  // are there any? how detect?
                 addTable.setColumnName(col, "latitude");
                 addTable.columnAttributes(col).set("long_name", "Latitude"); //not e.g., "lat"
                 //force to be doubles
-                String destClass = addTable.getColumn(col).elementClassString();
-                if (destClass.equals("String")) {
+                String destPATypeString = addTable.getColumn(col).elementTypeString();
+                if (destPATypeString.equals("String")) {
                     String2.log("!!! WARNING: For datasetID=" + datasetID + 
                         ", for destinationColName=" + addTable.getColumnName(col) +
                         ", I'm changing the data type from String " + 
                         "(as specified in EML) to double. [latitude]");
                     addTable.setColumn(col, 
-                        PrimitiveArray.factory(double.class, addTable.getColumn(col)));
+                        PrimitiveArray.factory(PAType.DOUBLE, addTable.getColumn(col)));
                 }
 
                 //no other column can be called latitude
@@ -1756,14 +1769,14 @@ boolean columnar = false;  // are there any? how detect?
                 addTable.setColumnName(col, "longitude");
                 addTable.columnAttributes(col).set("long_name", "Longitude");
                 //force to be doubles
-                String destClass = addTable.getColumn(col).elementClassString();
-                if (destClass.equals("String")) {
+                String destPATypeString = addTable.getColumn(col).elementTypeString();
+                if (destPATypeString.equals("String")) {
                     String2.log("!!! WARNING: For datasetID=" + datasetID + 
                         ", for destinationColName=" + addTable.getColumnName(col) +
                         ", I'm changing the data type from String " + 
                         "(as specified in EML) to double. [longitude]");
                     addTable.setColumn(col, 
-                        PrimitiveArray.factory(double.class, addTable.getColumn(col)));
+                        PrimitiveArray.factory(PAType.DOUBLE, addTable.getColumn(col)));
                 }
 
                 //no other column can be called longitude
@@ -1785,14 +1798,14 @@ boolean columnar = false;  // are there any? how detect?
                 addTable.columnAttributes(col).set("long_name", "Altitude");
 
                 //force to be floats
-                String destClass = addTable.getColumn(col).elementClassString();
-                if (destClass.equals("String")) {
+                String destPATypeString = addTable.getColumn(col).elementTypeString();
+                if (destPATypeString.equals("String")) {
                     String2.log("!!! WARNING: For datasetID=" + datasetID + 
                         ", for destinationColName=" + addTable.getColumnName(col) +
                         ", I'm changing the data type from String " + 
                         "(as specified in EML) to float. [altitude]");
                     addTable.setColumn(col, 
-                        PrimitiveArray.factory(float.class, addTable.getColumn(col)));
+                        PrimitiveArray.factory(PAType.FLOAT, addTable.getColumn(col)));
                 }
 
                 //no other column can be called altitude
@@ -1808,14 +1821,14 @@ boolean columnar = false;  // are there any? how detect?
                 addTable.columnAttributes(col).set("long_name", "Depth");
 
                 //force to be floats
-                String destClass = addTable.getColumn(col).elementClassString();
-                if (destClass.equals("String")) {
+                String destPATypeString = addTable.getColumn(col).elementTypeString();
+                if (destPATypeString.equals("String")) {
                     String2.log("!!! WARNING: For datasetID=" + datasetID + 
                         ", for destinationColName=" + addTable.getColumnName(col) +
                         ", I'm changing the data type from String " + 
                         "(as specified in EML) to float. [depth]");
                     addTable.setColumn(col, 
-                        PrimitiveArray.factory(float.class, addTable.getColumn(col)));
+                        PrimitiveArray.factory(PAType.FLOAT, addTable.getColumn(col)));
                 }
 
                 //no other column can be called depth
@@ -1894,9 +1907,9 @@ boolean columnar = false;  // are there any? how detect?
                     tAtts.set("units", "days since 0000-01-01T00:00:00Z");
                     //force to be double
                     sourceTable.setColumn(col, 
-                        PrimitiveArray.factory(double.class, sourceTable.getColumn(col)));                
+                        PrimitiveArray.factory(PAType.DOUBLE, sourceTable.getColumn(col)));                
                     addTable.setColumn(col, 
-                        PrimitiveArray.factory(double.class, addTable.getColumn(col)));                
+                        PrimitiveArray.factory(PAType.DOUBLE, addTable.getColumn(col)));                
                     break; //it is ideal, so look no further
                 }
 
@@ -2048,11 +2061,11 @@ boolean columnar = false;  // are there any? how detect?
         for (int col = 0; col < addTable.nColumns(); col++) {
             Attributes addAtts = addTable.columnAttributes(col);
             String destName = addTable.getColumnName(col);
-            Class destClass = addTable.getColumn(col).elementClass();
+            PAType destPAType = addTable.getColumn(col).elementType();
 
             //if numeric, set colorBarMin Max
             //Note: doing it here overrides naive suggestions in makeReadyToUseAddVariableAttributes
-            if (destClass != String.class &&
+            if (destPAType != PAType.STRING &&
                 "|longitude|latitude|altitude|depth|time|".indexOf("|" + destName + "|") < 0) {
                 double[] stats = sourceTable.getColumn(col).calculateStats(addTable.columnAttributes(col));
                 if (stats[PrimitiveArray.STATS_N] > 0) {
@@ -2065,7 +2078,7 @@ boolean columnar = false;  // are there any? how detect?
                         "Log".equals(addAtts.getString("colorBarScale")))
                         addAtts.remove("colorBarScale");
                     if (verbose) String2.log("  destName=" + destName + 
-                        " destClass=" + destClass + 
+                        " destPAType=" + destPAType + 
                         " data min=" + stats[PrimitiveArray.STATS_MIN] +
                         " max=" + stats[PrimitiveArray.STATS_MAX] + 
                         " -> colorBar Min=" + lh[0] + " Max=" + lh[1]);
@@ -2166,10 +2179,10 @@ boolean columnar = false;  // are there any? how detect?
             "fromEML_" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".log";
         
         if ("lterSbc".equals(mode)) {
-            //SBC LTER: http://sbc.lternet.edu/data/eml/files/
             tAccessibleTo = "lterSbc";
             emlDir = baseDataDir + "lterSbc/";  
-            startUrl = "http://sbc.lternet.edu/data/eml/files/";        
+            startUrl = "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/";
+                //2020-01-08 gone. was "http://sbc.lternet.edu/data/eml/files/";        
             Table table = FileVisitorDNLS.oneStep(startUrl, "knb-lter-sbc\\.\\d+",
                 false, ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
             names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
@@ -2238,9 +2251,9 @@ boolean columnar = false;  // are there any? how detect?
         String emlDir, startUrl, localTimeZone;
 
         if (tAccessibleTo.equals("lterSbc")) {
-            //SBC LTER: http://sbc.lternet.edu/data/eml/files/
+            //SBC LTER: 2020-01-09 was http://sbc.lternet.edu/data/eml/files/
             emlDir = "/u00/data/points/lterSbc/";  
-            startUrl = "http://sbc.lternet.edu/data/eml/files/knb-lter-sbc." + which; //original test: .17       
+            startUrl = "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc." + which; //original test: .17       
             localTimeZone = "US/Pacific";
 
         } else if (tAccessibleTo.equals("lterNtl")) {
@@ -2274,7 +2287,7 @@ boolean columnar = false;  // are there any? how detect?
 
         int which = 6;
         String emlDir = "/u00/data/points/lterSbc/";  
-        String startUrl = "http://sbc.lternet.edu/data/eml/files/knb-lter-sbc." + which; //original test: .17       
+        String startUrl = "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc." + which; //original test: .17       
         String results = generateDatasetsXmlFromEML(
             false, //pauseForErrors, 
             emlDir, 
@@ -2326,7 +2339,7 @@ String expected =
 "        <att name=\"creator_email\">john.melack@lifesci.ucsb.edu</att>\n" +
 "        <att name=\"creator_name\">John M Melack</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
-"        <att name=\"creator_url\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"creator_url\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"date_created\">2015-09-26</att>\n" +
 "        <att name=\"doi\">10.6073/pasta/6d015c56b343adf6b8003e9d82a35f70</att>\n" +
 "        <att name=\"doi_authority\">http://doi.org</att>\n" +
@@ -2362,7 +2375,7 @@ String expected =
 "        <att name=\"geospatial_lon_min\" type=\"double\">-120.28885</att>\n" +
 "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
 "        <att name=\"id\">knb_lter_sbc_6_t1</att>\n" +
-"        <att name=\"infoUrl\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"infoUrl\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"institution\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -2389,7 +2402,7 @@ String expected =
 "* Any violation of the terms of this agreement will result in immediate forfeiture of the data and loss of access privileges to other SBC LTER data sets.\n" +
 "\n" +
 "* SBC LTER is committed to protecting the privacy and accuracy of your confidential information. See our Privacy Policy for more information.</att>\n" +
-"        <att name=\"metadata_link\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"metadata_link\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"methods\">*** Method #1:\n" +
 "* Title: Stream Chemistry - Sample Collection Protocol\n" +
 "* Description: Stream Chemistry Sample Collection\n" +
@@ -2397,7 +2410,7 @@ String expected =
 "Samples for stream chemistry are collected according to the following\n" +
 "protocol\n" +
 "* Creator: Melack\n" +
-"* URL: http://sbc.lternet.edu/external/Land/Protocols/Stream_Chemistry/Melack_20090526_SBCLTER_Stream_Chemistry_Sample_Collection.pdf\n" +
+"* URL: https://sbclter.msi.ucsb.edu/external/Land/Protocols/Stream_Chemistry/Melack_20090526_SBCLTER_Stream_Chemistry_Sample_Collection.pdf\n" +
 "\n" +
 "*** Method #2:\n" +
 "* Title: Stream Chemistry Sample - Laboratory Analysis Protocol\n" +
@@ -2407,7 +2420,7 @@ String expected =
 "protocol\n" +
 "* Creator: Melack\n" +
 "* Creator: Schimel\n" +
-"* URL: http://sbc.lternet.edu/external/Land/Protocols/Stream_Chemistry/Melack_Schimel_20090529_SBCLTER_Laboratory_Analyses.pdf</att>\n" +
+"* URL: https://sbclter.msi.ucsb.edu/external/Land/Protocols/Stream_Chemistry/Melack_Schimel_20090529_SBCLTER_Laboratory_Analyses.pdf</att>\n" +
 "        <att name=\"program\">LTER</att>\n" +
 "        <att name=\"project\">Santa Barbara Coastal Long Term Ecological Research Project</att>\n" +
 "        <att name=\"project_abstract\">The primary research objective of the Santa Barbara Coastal LTER is to investigate\n" +
@@ -2444,7 +2457,7 @@ String expected =
 "        <att name=\"publisher_name\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, registered stations, all years. stream water chemistry at REGISTERED SBC stations. Registered stations are geo-located in metadata.</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
@@ -2705,7 +2718,7 @@ String expected =
 "        <att name=\"creator_email\">john.melack@lifesci.ucsb.edu</att>\n" +
 "        <att name=\"creator_name\">John M Melack</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
-"        <att name=\"creator_url\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"creator_url\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"date_created\">2015-09-26</att>\n" +
 "        <att name=\"doi\">10.6073/pasta/6d015c56b343adf6b8003e9d82a35f70</att>\n" +
 "        <att name=\"doi_authority\">http://doi.org</att>\n" +
@@ -2741,7 +2754,7 @@ String expected =
 "        <att name=\"geospatial_lon_min\" type=\"double\">-120.28885</att>\n" +
 "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
 "        <att name=\"id\">knb_lter_sbc_6_t2</att>\n" +
-"        <att name=\"infoUrl\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"infoUrl\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"institution\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, non, non-registered, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -2768,7 +2781,7 @@ String expected =
 "* Any violation of the terms of this agreement will result in immediate forfeiture of the data and loss of access privileges to other SBC LTER data sets.\n" +
 "\n" +
 "* SBC LTER is committed to protecting the privacy and accuracy of your confidential information. See our Privacy Policy for more information.</att>\n" +
-"        <att name=\"metadata_link\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
+"        <att name=\"metadata_link\">https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc.6</att>\n" +
 "        <att name=\"methods\">*** Method #1:\n" +
 "* Title: Stream Chemistry - Sample Collection Protocol\n" +
 "* Description: Stream Chemistry Sample Collection\n" +
@@ -2776,7 +2789,7 @@ String expected =
 "Samples for stream chemistry are collected according to the following\n" +
 "protocol\n" +
 "* Creator: Melack\n" +
-"* URL: http://sbc.lternet.edu/external/Land/Protocols/Stream_Chemistry/Melack_20090526_SBCLTER_Stream_Chemistry_Sample_Collection.pdf\n" +
+"* URL: https://sbclter.msi.ucsb.edu/external/Land/Protocols/Stream_Chemistry/Melack_20090526_SBCLTER_Stream_Chemistry_Sample_Collection.pdf\n" +
 "\n" +
 "*** Method #2:\n" +
 "* Title: Stream Chemistry Sample - Laboratory Analysis Protocol\n" +
@@ -2786,7 +2799,7 @@ String expected =
 "protocol\n" +
 "* Creator: Melack\n" +
 "* Creator: Schimel\n" +
-"* URL: http://sbc.lternet.edu/external/Land/Protocols/Stream_Chemistry/Melack_Schimel_20090529_SBCLTER_Laboratory_Analyses.pdf</att>\n" +
+"* URL: https://sbclter.msi.ucsb.edu/external/Land/Protocols/Stream_Chemistry/Melack_Schimel_20090529_SBCLTER_Laboratory_Analyses.pdf</att>\n" +
 "        <att name=\"program\">LTER</att>\n" +
 "        <att name=\"project\">Santa Barbara Coastal Long Term Ecological Research Project</att>\n" +
 "        <att name=\"project_abstract\">The primary research objective of the Santa Barbara Coastal LTER is to investigate\n" +
@@ -2823,7 +2836,7 @@ String expected =
 "        <att name=\"publisher_name\">Santa Barbara Coastal LTER</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM, TPP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, non-registered stations, all years. stream water chemistry at NON_REGISTERED stations</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
@@ -3093,8 +3106,8 @@ String expected =
         //    standardizeWhat, cacheFromUrl,
         //    Attributes externalAddGlobalAttributes)
         String results = generateDatasetsXml(
-            EDStatic.unitTestDataDir,  "columnar.*\\.txt",
-            EDStatic.unitTestDataDir + "columnarAscii.txt", 
+            EDStatic.unitTestDataDir,  "columnarAsciiNoComments\\.txt",
+            EDStatic.unitTestDataDir + "columnarAsciiNoComments.txt", 
             null, 3, 4, 1440,
             "", "", "", "",  
             "", 
@@ -3105,8 +3118,8 @@ String expected =
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromColumnarAsciiFiles",
-            EDStatic.unitTestDataDir,  "columnar.*\\.txt",
-            EDStatic.unitTestDataDir + "columnarAscii.txt", 
+            EDStatic.unitTestDataDir,  "columnarAsciiNoComments\\.txt",
+            EDStatic.unitTestDataDir + "columnarAsciiNoComments.txt", 
             "", "3", "4", "1440",
             "", "", "", "",  
             "", 
@@ -3118,11 +3131,11 @@ String expected =
 String expected = 
 "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
 "  below, notably 'units' for each of the dataVariables. -->\n" +
-"<dataset type=\"EDDTableFromColumnarAsciiFiles\" datasetID=\"erddapTest_4df3_40f4_29c6\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromColumnarAsciiFiles\" datasetID=\"erddapTest_8281_517b_e725\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "</fileDir>\n" +
-"    <fileNameRegex>columnar.*\\.txt</fileNameRegex>\n" +
+"    <fileNameRegex>columnarAsciiNoComments\\.txt</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -3150,7 +3163,7 @@ String expected =
 "        <att name=\"keywords\">aBoolean, aByte, aChar, aDouble, aFloat, aLong, anInt, aShort, aString, boolean, buoy, byte, center, char, data, double, float, int, long, national, ndbc, newer, noaa, short, string, title</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -3281,7 +3294,7 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        String tDatasetID = "erddapTest_4df3_40f4_29c6";
+        String tDatasetID = "erddapTest_8281_517b_e725";
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -3313,6 +3326,7 @@ String expected =
 
     /**
      * This tests the methods in this class with a 1D dataset.
+     * This tests skipHeaderToRegex and skipLinesRegex.
      *
      * @throws Throwable if trouble
      */
@@ -3415,7 +3429,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble, five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +
@@ -3463,16 +3477,16 @@ expected =
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,,,\n" +
-"columnarAscii,5.0,abcdef,A,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"columnarAscii,5.0,fg,F,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
-"columnarAscii,5.0,h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
-"columnarAscii,5.0,i,I,1,13,12003,12000,120000000,1.23,3.0E200\n" +
-"columnarAscii,5.0,j,J,0,14,12004,1200,12000000,1.24,4.0E200\n" +
-"columnarAscii,5.0,k,K,0,15,12005,120,1200000,1.25,5.0E200\n" +
-"columnarAscii,5.0,l,L,0,16,12006,12,120000,1.26,6.0E200\n" +
-"columnarAscii,5.0,m,M,0,17,12007,121,12000,1.27,7.0E200\n" +
-"columnarAscii,5.0,n,N,1,18,12008,122,1200,1.28,8.0E200\n" +
-"columnarAscii,5.0,short:,,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n";
+"columnarAsciiWithComments,5.0,abcdef,A,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"columnarAsciiWithComments,5.0,fg,F,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
+"columnarAsciiWithComments,5.0,h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
+"columnarAsciiWithComments,5.0,i,I,1,13,12003,12000,120000000,1.23,3.0E200\n" +
+"columnarAsciiWithComments,5.0,j,J,0,14,12004,1200,12000000,1.24,4.0E200\n" +
+"columnarAsciiWithComments,5.0,k,K,0,15,12005,120,1200000,1.25,5.0E200\n" +
+"columnarAsciiWithComments,5.0,l,L,0,16,12006,12,120000,1.26,6.0E200\n" +
+"columnarAsciiWithComments,5.0,m,M,0,17,12007,121,12000,1.27,7.0E200\n" +
+"columnarAsciiWithComments,5.0,n,N,1,18,12008,122,1200,1.28,8.0E200\n" +
+"columnarAsciiWithComments,5.0,short:,,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -3484,16 +3498,16 @@ expected =
         expected = 
 "fileName,five\n" +       
 ",\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n" +
-"columnarAscii,5.0\n";
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n" +
+"columnarAsciiWithComments,5.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //subset of variables, constrain boolean and five
@@ -3504,11 +3518,11 @@ expected =
         expected = 
 "anInt,fileName,five,aBoolean\n" +
 ",,,\n" +
-"24000000,columnarAscii,5.0,1\n" +
-"1200000,columnarAscii,5.0,1\n" +
-"120000,columnarAscii,5.0,1\n" +
-"12000,columnarAscii,5.0,1\n" +
-"122,columnarAscii,5.0,1\n";
+"24000000,columnarAsciiWithComments,5.0,1\n" +
+"1200000,columnarAsciiWithComments,5.0,1\n" +
+"120000,columnarAsciiWithComments,5.0,1\n" +
+"12000,columnarAsciiWithComments,5.0,1\n" +
+"122,columnarAsciiWithComments,5.0,1\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.testBasic() finished successfully\n");
