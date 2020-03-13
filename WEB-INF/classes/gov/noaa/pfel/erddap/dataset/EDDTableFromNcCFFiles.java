@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -81,6 +82,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -88,7 +90,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles,
         boolean tRemoveMVRows, int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromNcCFFiles",  
@@ -99,13 +102,15 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator, //irrelevant
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator, //irrelevant
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
     }
 
     /**
@@ -222,8 +227,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
             dataAddTable.addColumn(c, colName, destPA, addAtts); 
 
@@ -453,7 +458,7 @@ String expected =
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
 "        <att name=\"keywords\">1984-2004, altitude, animals, animals/vertebrates, aquatic, atmosphere, biological, biology, biosphere, calcofi, california, classification, coastal, code, common, cooperative, count, cruise, data, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Biological Classification &gt; Animals/Vertebrates &gt; Fish, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat, Earth Science &gt; Oceans &gt; Aquatic Sciences &gt; Fisheries, ecosystems, fish, fisheries, habitat, height, identifier, investigations, larvae, latitude, line, line_station, longitude, marine, name, number, observed, obsScientific, obsUnits, obsValue, occupancy, ocean, oceanic, oceans, order, science, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>line_station</sourceName>\n" +
@@ -717,7 +722,7 @@ String expected =
 "        <att name=\"publisher_url\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n" +
 "        <att name=\"title\">World Ocean Database, Multi-cast file</att>\n" +
 "    </addAttributes>\n" +
@@ -1509,9 +1514,9 @@ String expected =
         table.readNcCF(dir + tName, null, 0, //standardizeWhat
             null, null, null);
         results = table.dataToString();
-        expected = 
-"array,station,wmo_platform_code,longitude,latitude,time,depth,LON_502,QX_5502,LAT_500,QY_5500\n" +
-"TAO/TRITON,0n110w,32323,250.0,0.0,1.4529456E9,0.0,250.06406,2.0,0.03540476,2.0\n";
+        expected = //depth/time are unexpected order because of .ncCF file read then flatten
+"array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n" +
+"TAO/TRITON,0n110w,32323,250.0,0.0,0.0,1.4529456E9,250.06406,2.0,0.03540476,2.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //percent-encoded query is okay for other file type(s)    
@@ -1525,6 +1530,9 @@ String expected =
             null, 0, 0, true);
         //expected is same except there's an additional 'row' column, remove it
         table.removeColumn(table.findColumnNumber("row"));
+        expected = //then same except for order depth/time 
+"array,station,wmo_platform_code,longitude,latitude,time,depth,LON_502,QX_5502,LAT_500,QY_5500\n" +
+"TAO/TRITON,0n110w,32323,250.0,0.0,1.4529456E9,0.0,250.06406,2.0,0.03540476,2.0\n";
         results = table.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1540,7 +1548,9 @@ String expected =
         table.readNcCF(dir + tName, null, 0, //standardizeWhat
             null, null, null);
         results = table.dataToString();
-        //expected is same
+        expected = //depth/time are unexpected order because of .ncCF file read then flatten
+"array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n" +
+"TAO/TRITON,0n110w,32323,250.0,0.0,0.0,1.4529456E9,250.06406,2.0,0.03540476,2.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -2199,7 +2209,7 @@ expected =
 "    String references \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
 "    String source \"World Ocean Database\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute,Cast_Tow_number,Temperature_WODprofileFlag,Temperature_Scale,Temperature_instrument\";\n" +
 "    String summary \"Test WOD .ncCF file\";\n" +
 "    String time_coverage_end \"1991-05-31T23:37:55Z\";\n" +
@@ -2306,7 +2316,7 @@ expected =
     public static void testNcml() throws Throwable {
         String2.log("\n****************** EDDTableFromNcCFFiles.testNcml() *****************\n");
         testVerboseOn();
-       String baseName = //don't make this public via GitHub
+        String baseName = //don't make this public via GitHub
             "/data/medrano/CTZ-T500-MCT-NS5649-Z408-INS12-REC14";
         String results, expected;
         Table table;
@@ -2438,7 +2448,7 @@ expected =
 "      :long_name = \"Bandera presion\";\n" +
 "      :units = \"N/A\";\n" +
 "\n" +
-"    int station(station=1);\n" +
+"    double station(station=1);\n" +  //2020-01-23 this was int before netcdf-java 5.2!
 "      :long_name = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\";\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "\n" +
@@ -2533,7 +2543,7 @@ expected =
 " double var_pres(row) ;\n" +
 "  var_pres:long_name = \"Bandera presion\" ;\n" +
 "  var_pres:units = \"N/A\" ;\n" +
-" int station(row) ;\n" +
+" double station(row) ;\n" +  //was int!
 "  station:cf_role = \"timeseries_id\" ;\n" +
 "  station:long_name = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
 " double time(row) ;\n" +
@@ -2581,11 +2591,11 @@ expected =
 "  :title = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
 "}\n" +
 "Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
-"3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
-"3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
-"3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
-"3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
-"3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0.0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0.0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0.0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0.0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0.0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -2599,7 +2609,7 @@ expected =
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
 "station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres\n" +
-"0,18.843666666666667,-94.81761666666667,406.0,408.0,500.0,498.0,1.0\n";
+"0.0,18.843666666666667,-94.81761666666667,406.0,408.0,500.0,498.0,1.0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
@@ -2991,10 +3001,10 @@ expected =
         testNcml();
         testKevin20160519();
         test7SampleDimensions();
-//        testJP14323();
         /* */
 
         //not usually run
+        //testJP14323();
     }
 }
 

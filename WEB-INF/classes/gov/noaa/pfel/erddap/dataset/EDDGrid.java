@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -634,7 +635,7 @@ public abstract class EDDGrid extends EDD {
                 //find the numeric dataVariables 
                 boolean hasNumeric = false;
                 for (int dv = 0; dv < dataVariables.length; dv++) {
-                    if (dataVariables[dv].destinationDataTypeClass() != String.class) {
+                    if (dataVariables[dv].destinationDataPAType() != PAType.STRING) {
                         hasNumeric = true;
                         break;
                     }
@@ -1580,7 +1581,7 @@ public abstract class EDDGrid extends EDD {
         EDVGridAxis av = axisVariables[axis];
         int nAvSourceValues = av.sourceValues().size();
         int precision = av instanceof EDVTimeStampGridAxis? 13 : 
-            av.destinationDataTypeClass() == double.class? 9 : 5;
+            av.destinationDataPAType() == PAType.DOUBLE? 9 : 5;
         String diagnostic = 
             MessageFormat.format(EDStatic.queryErrorGridDiagnostic,
                 destinationName, "" + axis, av.destinationName());
@@ -2749,7 +2750,7 @@ public abstract class EDDGrid extends EDD {
             //find the numeric dataVariables 
             sa = new StringArray();
             for (int dv = 0; dv < dataVariables.length; dv++) {
-                if (dataVariables[dv].destinationDataTypeClass() != String.class) 
+                if (dataVariables[dv].destinationDataPAType() != PAType.STRING) 
                     sa.add(dataVariables[dv].destinationName());
             }
             String[] dvNames = sa.toArray();  //list of dvNames
@@ -2987,7 +2988,7 @@ public abstract class EDDGrid extends EDD {
                 sourceSize[av] = edvga.sourceValues().size();
                 boolean isTimeStamp = edvga instanceof EDVTimeStampGridAxis;
                 int precision = isTimeStamp? 13 : 
-                    edvga.destinationDataTypeClass() == double.class? 9 : 5; 
+                    edvga.destinationDataPAType() == PAType.DOUBLE? 9 : 5; 
                 showStartAndStopFields[av] = av == axisVarX || av == axisVarY;
 
                 //find start and end
@@ -3765,7 +3766,7 @@ public abstract class EDDGrid extends EDD {
             //*** end of form
             writer.write(widgets.endTable()); //end of Graph Settings table
 
-            //make javascript function to generate query    \\x26=&   %7C=|
+            //make javascript function to generate query    \\x26=& %5B=[ %5D=] %7C=|
             writer.write(
                 "<script> \n" +
                 "function makeQuery(varsToo) { \n" +
@@ -3776,9 +3777,9 @@ public abstract class EDDGrid extends EDD {
             for (int av = 0; av < nAv; av++) 
                 writer.write(
                     "    start = d.f1.start" + av + ".value; \n" +
-                    "    c += \"[\"; \n" +
+                    "    c += \"%5B\"; \n" +
                     "    if (start != \"SeeStop\") c += \"(\" + start + \"):\"; \n" + //javascript uses !=, not !equals()
-                    "    c += \"(\" + d.f1.stop" + av + ".value + \")]\"; \n");
+                    "    c += \"(\" + d.f1.stop" + av + ".value + \")%5D\"; \n");
             //allow graph with 2 axes to swap axes
             if (varOptions[1] == avNames)
                 writer.write( 
@@ -4724,7 +4725,7 @@ Attributes {
                 String destName = ada.axisVariables(av).destinationName();
                 PrimitiveArray apa = ada.axisValues(av);
                 writer.write("  " + //e.g., Float64 time[time = 404];
-                    OpendapHelper.getAtomicType(apa.elementClass()) + " " + 
+                    OpendapHelper.getAtomicType(apa.elementType()) + " " + 
                     destName + "[" + destName + " = " + apa.size() + "];" + OpendapHelper.EOL); 
             }
             //Thredds recently started using urlEncoding the final name (and other names?). I don't.
@@ -4752,7 +4753,7 @@ Attributes {
             PrimitiveArray apa = gridDataAccessor.axisValues(av);
             arrayDims[av] = "[" + axisVariables[av].destinationName() + " = " + 
                 apa.size() + "]";
-            dims[av] = OpendapHelper.getAtomicType(apa.elementClass()) +
+            dims[av] = OpendapHelper.getAtomicType(apa.elementType()) +
                 " " + axisVariables[av].destinationName() + arrayDims[av] + ";" + OpendapHelper.EOL;
             allArrayDims.append(arrayDims[av]);
             if (entireDataset) 
@@ -4764,7 +4765,7 @@ Attributes {
             writer.write("    ARRAY:" + OpendapHelper.EOL); 
             writer.write("      " + 
                 OpendapHelper.getAtomicType(
-                    gridDataAccessor.dataVariables()[dv].destinationDataTypeClass()) +
+                    gridDataAccessor.dataVariables()[dv].destinationDataPAType()) +
                 " " + dvName + allArrayDims + ";" + OpendapHelper.EOL); 
             writer.write("    MAPS:" + OpendapHelper.EOL); 
             for (int av = 0; av < nAxisVariables; av++) 
@@ -4798,7 +4799,7 @@ Attributes {
             writer.write(indent + "<attribute name=\"" + XML.encodeAsXML(names[i]) + "\" ");
             //title" value="Daily MUR SST, Interim near-real-time (nrt) product" />
             PrimitiveArray pa = atts.get(names[i]);
-            if (pa.elementClass() == long.class)
+            if (pa.elementType() == PAType.LONG)
                 pa = new DoubleArray(pa);
             //even nc3 files write char and String attributes as UTF-8
 
@@ -4810,7 +4811,7 @@ Attributes {
                 String s = String2.replaceAll(pa.toString(), ",", ""); //comma-space -> space separated
                 //NCML types same as Java: String (default), byte, short, int, float, double (and long, but not in nc3)
                 writer.write("type=\"" + 
-                    pa.elementClassString() + "\" " + 
+                    pa.elementTypeString() + "\" " + 
                     "value=\"" + s + "\" />\n"); 
             }
         }
@@ -4905,10 +4906,10 @@ Attributes {
                 writer.write(">\n");
                 Attributes tAtts = new Attributes(edv.combinedAttributes()); //use a copy
 
-                if (edv.destinationDataTypeClass() == String.class)
+                if (edv.destinationDataPAType() == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
     // disabled until there is a standard
-    //            else if (edv.destinationDataTypeClass() == char.class)
+    //            else if (edv.destinationDataPAType() == PAType.CHAR)
     //                tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 writeNcmlAttributes(writer, tAtts, "    "); 
@@ -5037,49 +5038,32 @@ Attributes {
                     dos.writeInt((int)tSize); //safe since checked above
 
                     //send the array data   (Note that DAP doesn't have exact match for some Java data types.)
-                    Class type = tDataVariables[dv].destinationDataTypeClass();
+                    PAType type = tDataVariables[dv].destinationDataPAType();
          
-                    /* //old system 
-                    if        (type == byte.class  ) {while (partialGda.increment()) dos.writeByte(partialGda.getDataValueAsInt(0));
-                        //pad byte array to 4 byte boundary
-                        long tn = partialGda.totalIndex().size();
-                        while (tn++ % 4 != 0) dos.writeByte(0);
-                    } else if (type == short.class || //no exact DAP equivalent
-                               type == char.class ||  //no exact DAP equivalent
-                               type == int.class)    {while (partialGda.increment()) dos.writeInt(partialGda.getDataValueAsInt(0));                    
-                    } else if (type == float.class ) {while (partialGda.increment()) dos.writeFloat(partialGda.getDataValueAsFloat(0));
-                    } else if (type == long.class ||  //no exact DAP equivalent
-                               type == double.class) {while (partialGda.increment()) dos.writeDouble(partialGda.getDataValueAsDouble(0));
-                    } else if (type == String.class) {while (partialGda.increment()) StringArray.externalizeForDODS(dos, partialGda.getDataValueAsString(0));
-                    } else {throw new RuntimeException(EDStatic.errorInternal + "unsupported source data type=" + 
-                        PrimitiveArray.elementClassToString(type));
-                    }  /* */
-
-                    //2017-09-14 new system
                     PrimitiveArray[] pas = partialGda.getPartialDataValues();
-                    if        (type == byte.class  ) {
+                    if        (type == PAType.BYTE  ) {
                         while (partialGda.incrementChunk()) 
                             pas[0].writeDos(dos);
                         //pad byte array to 4 byte boundary
                         long tn = partialGda.totalIndex().size();
                         while (tn++ % 4 != 0) dos.writeByte(0);
-                    } else if (type == short.class || //no exact DAP equivalent
-                               type == char.class  || //no exact DAP equivalent
-                               type == int.class)    {
+                    } else if (type == PAType.SHORT || //no exact DAP equivalent
+                               type == PAType.CHAR  || //no exact DAP equivalent
+                               type == PAType.INT)    {
                         while (partialGda.incrementChunk()) 
-                            (type == int.class? pas[0] : new IntArray(pas[0])).writeDos(dos);                
-                    } else if (type == float.class) {
+                            (type == PAType.INT? pas[0] : new IntArray(pas[0])).writeDos(dos);                
+                    } else if (type == PAType.FLOAT) {
                         while (partialGda.incrementChunk()) 
                             pas[0].writeDos(dos);
-                    } else if (type == long.class ||  //no exact DAP equivalent
-                               type == double.class) {
+                    } else if (type == PAType.LONG ||  //no exact DAP equivalent
+                               type == PAType.DOUBLE) {
                         while (partialGda.incrementChunk()) 
-                            (type == double.class? pas[0] : new DoubleArray(pas[0])).writeDos(dos);                
-                    } else if (type == String.class) {
+                            (type == PAType.DOUBLE? pas[0] : new DoubleArray(pas[0])).writeDos(dos);                
+                    } else if (type == PAType.STRING) {
                         while (partialGda.incrementChunk()) 
                             pas[0].externalizeForDODS(dos);
-                    } else {throw new RuntimeException(EDStatic.errorInternal + "unsupported source data type=" + 
-                        PrimitiveArray.elementClassToString(type));
+                    } else {throw new RuntimeException(EDStatic.errorInternal +
+                        "unsupported source data type=" + type);
                     } /* */
 
                     for (int av = 0; av < nAxisVariables; av++) 
@@ -5156,10 +5140,10 @@ Attributes {
             throw new SimpleException(EDStatic.queryError + 
                 MessageFormat.format(EDStatic.queryError1Var, ".esriAscii"));
         EDV edv = gridDataAccessor.dataVariables()[0];
-        Class edvClass = edv.destinationDataTypeClass();
-        boolean isIntType = !edvClass.equals(float.class) && !edvClass.equals(double.class) &&
-            !edvClass.equals(String.class);
-        boolean isFloatType = edvClass.equals(float.class);
+        PAType edvPAType = edv.destinationDataPAType();
+        boolean isIntType = !edvPAType.equals(PAType.FLOAT) && !edvPAType.equals(PAType.DOUBLE) &&
+            !edvPAType.equals(PAType.STRING);
+        boolean isFloatType = edvPAType.equals(PAType.FLOAT);
 
         //check that request meets ESRI restrictions
         PrimitiveArray lonPa = null, latPa = null;
@@ -6214,10 +6198,10 @@ Attributes {
                     throw new SimpleException(EDStatic.queryError +
                         "The variable assigned to the y axis (" + vars[0].destinationName() + ") must be an axis variable.");
                 table = new Table();
-                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray zpa = PrimitiveArray.factory(vars[2].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray tpa = PrimitiveArray.factory(vars[3].destinationDataTypeClass(), requestN, false);
+                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
+                PrimitiveArray zpa = PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
+                PrimitiveArray tpa = PrimitiveArray.factory(vars[3].destinationDataPAType(), requestN, false);
                 table.addColumn(vars[0].destinationName(), xpa);
                 table.addColumn(vars[1].destinationName(), ypa);
                 table.addColumn(vars[2].destinationName(), zpa);
@@ -6267,9 +6251,9 @@ Attributes {
             } else if (drawSticks) {
                 //put the data in a Table   0=xAxisVar 1=uDataVar 2=vDataVar 
                 table = new Table();
-                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray zpa = PrimitiveArray.factory(vars[2].destinationDataTypeClass(), requestN, false);
+                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
+                PrimitiveArray zpa = PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
                 table.addColumn(vars[0].destinationName(), xpa);
                 table.addColumn(vars[1].destinationName(), ypa);
                 table.addColumn(vars[2].destinationName(), zpa);
@@ -6433,10 +6417,10 @@ Attributes {
             } else {  //make graph with lines, linesAndMarkers, or markers
                 //put the data in a Table   x,y,(z)
                 table = new Table();
-                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataTypeClass(), requestN, false);
-                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataTypeClass(), requestN, false);
+                PrimitiveArray xpa = PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+                PrimitiveArray ypa = PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
                 PrimitiveArray zpa = vars[2] == null? null :
-                                     PrimitiveArray.factory(vars[2].destinationDataTypeClass(), requestN, false);
+                                     PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
                 table.addColumn(vars[0].destinationName(), xpa);
                 table.addColumn(vars[1].destinationName(), ypa);
 
@@ -6872,10 +6856,10 @@ Attributes {
                 for (int avi = 0; avi < axisVariables.length; avi++) {
                     EDVGridAxis av = axisVariables[avi];
                     Attributes catts = av.combinedAttributes();
-                    Class tClass = av.destinationDataTypeClass();
+                    PAType tPAType = av.destinationDataPAType();
                     if (av instanceof EDVTimeStampGridAxis) {
                         //convert to String times
-                        tClass = String.class;
+                        tPAType = PAType.STRING;
                         catts = new Attributes(catts); //make changes to a copy
                         String timePre = catts.getString(EDV.TIME_PRECISION);
                         catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
@@ -6890,20 +6874,20 @@ Attributes {
                         }
                     }
                     table.addColumn(avi, av.destinationName(), 
-                        PrimitiveArray.factory(tClass, 1, false), catts);
+                        PrimitiveArray.factory(tPAType, 1, false), catts);
                 }
                 for (int dvi = 0; dvi < dataVariables.length; dvi++) {
                     EDV dv = dataVariables[dvi];
                     Attributes catts = dv.combinedAttributes();
-                    Class tClass = dv.destinationDataTypeClass();
+                    PAType tPAType = dv.destinationDataPAType();
                     if (dv instanceof EDVTimeStamp) {
                         catts = new Attributes(catts); //make changes to a copy
                         catts.set("units", Calendar2.timePrecisionToTimeFormat(
                             catts.getString(EDV.TIME_PRECISION)));
-                        tClass = String.class;
+                        tPAType = PAType.STRING;
                     }
                     table.addColumn(table.nColumns(), dv.destinationName(), 
-                        PrimitiveArray.factory(tClass, 1, false), catts);
+                        PrimitiveArray.factory(tPAType, 1, false), catts);
                 }        
                 table.saveAsNccsv(false, true, 0, 0, writer); //catchScalars, writeMetadata, writeDataRows; writer is flushed not closed
             } finally {
@@ -7441,16 +7425,16 @@ Attributes {
         int nDV = tDataVariables.length; 
 
         //ensure all same type of data (and not char or string)
-        String tClass = tDataVariables[0].destinationDataType();
-        Test.ensureTrue(!tClass.equals("String") && !tClass.equals("char"), 
+        String tPATypeString = tDataVariables[0].destinationDataType();
+        Test.ensureTrue(!tPATypeString.equals("String") && !tPATypeString.equals("char"), 
             errorWhile + "All data columns must be numeric.");
         boolean java8 = System.getProperty("java.version").startsWith("1.8.");
         if (java8 &&
-            (tClass.equals("float") || tClass.equals("double"))) 
+            (tPATypeString.equals("float") || tPATypeString.equals("double"))) 
             throw new SimpleException(errorWhile + 
             "Until Java 9, float and double values can't be written to .wav files.");
         for (int dvi = 1; dvi < nDV; dvi++) {
-            Test.ensureEqual(tClass, tDataVariables[dvi].destinationDataType(),
+            Test.ensureEqual(tPATypeString, tDataVariables[dvi].destinationDataType(),
                 errorWhile + "All data columns must be of the same data type.");
         }
 
@@ -7462,7 +7446,7 @@ Attributes {
             //send the data to dos
             PrimitiveArray[] pdv = gda.getPartialDataValues();
             NDimensionalIndex partialIndex = gda.partialIndex();
-            if (tClass.equals("long")) {
+            if (tPATypeString.equals("long")) {
                 while (gda.increment()) {
                     int i = (int)(partialIndex.getIndex()); //safe since partialIndex size checked when constructed
                     for (int dvi = 0; dvi < nDV; dvi++) 
@@ -7483,7 +7467,7 @@ Attributes {
 
         //create the wav file
         Table.writeWaveFile(fullDosName, nDV, gda.totalIndex().size(),
-            tClass.equals("long")? "int" : tClass, 
+            tPATypeString.equals("long")? "int" : tPATypeString, 
             gda.globalAttributes, randomInt, 
             fullOutName, time);
         File2.delete(fullDosName);
@@ -7743,14 +7727,14 @@ Attributes {
             avNDIndex[av] = Matlab.make2DNDIndex(avPa[av].size());
             cumSize += 8 + Matlab.sizeOfNDimensionalArray( //throws exception if too big for Matlab
                 "", //names are done separately
-                avPa[av].elementClass(), avNDIndex[av]);
+                avPa[av].elementType(), avNDIndex[av]);
         }
 
         GridDataAccessor tGda[] = new GridDataAccessor[ntDv];
         NDimensionalIndex dvNDIndex[] = new NDimensionalIndex[ntDv];
         String arrayQuery = buildDapArrayQuery(mainGda.constraints());
         for (int dv = 0; dv < ntDv; dv++) {
-            if (tDataVariables[dv].destinationDataTypeClass() == String.class) 
+            if (tDataVariables[dv].destinationDataPAType() == PAType.STRING) 
                 //can't do String data because you need random access to all values
                 //that could be a memory nightmare
                 //so just don't allow it
@@ -7769,7 +7753,7 @@ Attributes {
             
             cumSize += 8 + Matlab.sizeOfNDimensionalArray( //throws exception if too big for Matlab
                 "", //names are done separately
-                tDataVariables[dv].destinationDataTypeClass(), dvNDIndex[dv]);
+                tDataVariables[dv].destinationDataPAType(), dvNDIndex[dv]);
         }
         if (cumSize >= Integer.MAX_VALUE - 1000)
             throw new SimpleException(Math2.memoryTooMuchData + "  " +
@@ -7867,26 +7851,26 @@ Attributes {
 
         //do the first part
         EDV edv = gda.dataVariables()[0];
-        Class elementClass = edv.destinationDataTypeClass();
-        if (elementClass == String.class) 
+        PAType elementPAType = edv.destinationDataPAType();
+        if (elementPAType == PAType.STRING) 
             //can't do String data because you need random access to all values
             //that could be a memory nightmare
             //so just don't allow it
             throw new SimpleException("Error: " +
                 "Matlab files can't have String data.");
         int nDataBytes = Matlab.writeNDimensionalArray1(stream, name, 
-            elementClass, ndIndex);
+            elementPAType, ndIndex);
 
         //do the second part here 
         //note:  calling increment() on column-major gda returns data in column-major order
-        if      (elementClass == double.class) while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
-        else if (elementClass == float.class)  while (gda.increment()) stream.writeFloat( gda.getDataValueAsFloat(0));
-        else if (elementClass == long.class)   while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
-        else if (elementClass == int.class)    while (gda.increment()) stream.writeInt(   gda.getDataValueAsInt(0));
-        else if (elementClass == short.class)  while (gda.increment()) stream.writeShort( gda.getDataValueAsInt(0));
-        else if (elementClass == byte.class)   while (gda.increment()) stream.writeByte(  gda.getDataValueAsInt(0));
-        else if (elementClass == char.class)   while (gda.increment()) stream.writeChar(  gda.getDataValueAsInt(0));
-        //else if (elementClass == String.class) ...
+        if      (elementPAType == PAType.DOUBLE) while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
+        else if (elementPAType == PAType.FLOAT)  while (gda.increment()) stream.writeFloat( gda.getDataValueAsFloat(0));
+        else if (elementPAType == PAType.LONG)   while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
+        else if (elementPAType == PAType.INT)    while (gda.increment()) stream.writeInt(   gda.getDataValueAsInt(0));
+        else if (elementPAType == PAType.SHORT)  while (gda.increment()) stream.writeShort( gda.getDataValueAsInt(0));
+        else if (elementPAType == PAType.BYTE)   while (gda.increment()) stream.writeByte(  gda.getDataValueAsInt(0));
+        else if (elementPAType == PAType.CHAR)   while (gda.increment()) stream.writeChar(  gda.getDataValueAsInt(0));
+        //else if (elementPAType == PAType.STRING) ...
 
         //pad data to 8 byte boundary
         int i = nDataBytes % 8;
@@ -7955,21 +7939,21 @@ Attributes {
                         pa = new DoubleArray(pa);
                     Dimension dimension = nc.addDimension(rootGroup, destName, pa.size());
                     axisArrays[av] = Array.factory(
-                        pa.elementClass(),
+                        NcHelper.getNc3DataType(pa.elementType()),
                         new int[]{pa.size()},
                         pa.toObjectArray());
                     if (ncVersion == NetcdfFileWriter.Version.netcdf3)
                         String2.log("HELP");
                     newAxisVars[av] = nc.addVariable(rootGroup, destName, 
-                        DataType.getType(pa.elementClass()), //nc3Mode long->double done above. No Strings as axes.
+                        NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long->double done above. No Strings as axes.
                         Arrays.asList(dimension)); 
 
                     //write axis attributes
                     Attributes atts = new Attributes(ada.axisAttributes(av)); //use a copy
-                    if (pa.elementClass() == String.class)  //never
+                    if (pa.elementType() == PAType.STRING)  //never
                         atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                    else if (pa.elementClass() == char.class)  //never
+//                    else if (pa.elementType() == PAType.CHAR)  //never
 //                        atts.add(String2.CHARSET, String2.ISO_8859_1);
 
                     NcHelper.setAttributes(nc3Mode, newAxisVars[av], atts);
@@ -8065,12 +8049,12 @@ Attributes {
                 if (av == lonIndex)
                     pa.scaleAddOffset(1, lonAdjust);
                 axisArrays[a] = Array.factory(
-                    gda.axisValues(av).elementClass(),
+                    NcHelper.getNc3DataType(gda.axisValues(av).elementType()),
                     new int[]{pa.size()},
                     pa.toObjectArray());
                 //if (reallyVerbose) String2.log(" create var=" + avName);
                 newAxisVars[a] = nc.addVariable(rootGroup, avName, 
-                    DataType.getType(pa.elementClass()), //nc3Mode long->double done above. No Strings as axes.
+                    NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long->double done above. No Strings as axes.
                     Arrays.asList(axisDimensionList.get(a)));
             }            
 
@@ -8078,11 +8062,11 @@ Attributes {
             Variable newVars[] = new Variable[tDataVariables.length];
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 String destName = tDataVariables[dv].destinationName();
-                Class destClass = tDataVariables[dv].destinationDataTypeClass();
+                PAType destPAType = tDataVariables[dv].destinationDataPAType();
                 //if (reallyVerbose) String2.log(" create var=" + destName);
 
                 //nc3 String data? need to create a strlen dimension for this variable
-                if (nc3Mode && destClass == String.class) {
+                if (nc3Mode && destPAType == PAType.STRING) {
                     StringArray tsa = (StringArray)gdaa.getPrimitiveArray(dv);
                     ArrayList<Dimension> tDimList = new ArrayList(axisDimensionList);
                     tDimList.add(nc.addDimension(rootGroup, 
@@ -8093,9 +8077,7 @@ Attributes {
 
                 } else {
                     newVars[dv] = nc.addVariable(rootGroup, destName, 
-                        DataType.getType(
-                            nc3Mode && destClass == long.class? double.class : 
-                            destClass), 
+                        NcHelper.getDataType(nc3Mode, destPAType), 
                         axisDimensionList);
                 }
             }
@@ -8107,11 +8089,11 @@ Attributes {
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
                 Attributes atts = new Attributes(gda.axisAttributes[av]); //use a copy
-                Class tc = gda.axisValues[av].elementClass();
-                if (tc == String.class)  //never
+                PAType tc = gda.axisValues[av].elementType();
+                if (tc == PAType.STRING)  //never
                     atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (tc == char.class)  //never
+//                else if (tc == PAType.CHAR)  //never
 //                    atts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts);
@@ -8120,11 +8102,11 @@ Attributes {
             //write data attributes
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 Attributes atts = new Attributes(gda.dataAttributes[dv]); //use a copy
-                Class tc = gda.dataVariables[dv].destinationDataTypeClass();
-                if (tc == String.class)  //never
+                PAType tc = gda.dataVariables[dv].destinationDataPAType();
+                if (tc == PAType.STRING)  //never
                     atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (tc == char.class)  //never
+//                else if (tc == PAType.CHAR)  //never
 //                    atts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[dv], atts);
@@ -8144,13 +8126,13 @@ Attributes {
 
                 EDV edv = tDataVariables[dv];
                 String destName = edv.destinationName();
-                Class edvClass = edv.destinationDataTypeClass();
+                PAType edvPAType = edv.destinationDataPAType();
                 PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
                 if (nc3Mode && pa instanceof LongArray)
                     pa = new DoubleArray(pa);
-                Array array = Array.factory(edvClass, 
+                Array array = Array.factory(NcHelper.getNc3DataType(edvPAType), 
                     stdShape, pa.toObjectArray());
-                if (nc3Mode && edvClass == String.class) {
+                if (nc3Mode && edvPAType == PAType.STRING) {
                     nc.writeStringData(newVars[dv], array);
                 } else {
                     nc.write(newVars[dv], array);
@@ -8336,7 +8318,7 @@ Attributes {
             if (!writeStringsAsStrings) {
                 for (int dvi = 0; dvi < nRDV; dvi++) {
                     EDV dv = gda.dataVariables[dvi];
-                    if (dv.destinationDataTypeClass() == String.class) {
+                    if (dv.destinationDataPAType() == PAType.STRING) {
                         int max = 1;
                         long n = gda.totalIndex().size();
                         DataInputStream dis = gdaa.getDataInputStream(dvi);
@@ -8432,7 +8414,7 @@ Attributes {
 
                     //create the bufferPA
                     PrimitiveArray pa = 
-                        PrimitiveArray.factory(dv.destinationDataTypeClass(), 
+                        PrimitiveArray.factory(dv.destinationDataPAType(), 
                            1, false);  //safe since checked above
                     CharArray ca = isChar? (CharArray)pa : null;
                     if (isChar)
@@ -8798,21 +8780,21 @@ Attributes {
         int nBufferRows = tableWriterNBufferRows;
         for (int av = 0; av < nAv; av++) {
             EDV edv = axisVariables[av];
-            Class tClass = edv.destinationDataTypeClass();
-            isDoubleAv[av] = tClass == double.class || tClass == long.class;
-            isFloatAv[av]  = tClass == float.class;
-            avPa[av] = PrimitiveArray.factory(tClass, nBufferRows, false);
+            PAType tPAType = edv.destinationDataPAType();
+            isDoubleAv[av] = tPAType == PAType.DOUBLE || tPAType == PAType.LONG;
+            isFloatAv[av]  = tPAType == PAType.FLOAT;
+            avPa[av] = PrimitiveArray.factory(tPAType, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(av, edv.destinationName(), avPa[av], 
                 gridDataAccessor.axisAttributes(av)); //(Attributes)(edv.combinedAttributes().clone());
         }
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = queryDataVariables[dv];
-            Class tClass = edv.destinationDataTypeClass();
-            isStringDv[dv] = tClass == String.class;
-            isDoubleDv[dv] = tClass == double.class || tClass == long.class;
-            isFloatDv[dv]  = tClass == float.class;
-            dvPa[dv] = PrimitiveArray.factory(tClass, nBufferRows, false);
+            PAType tPAType = edv.destinationDataPAType();
+            isStringDv[dv] = tPAType == PAType.STRING;
+            isDoubleDv[dv] = tPAType == PAType.DOUBLE || tPAType == PAType.LONG;
+            isFloatDv[dv]  = tPAType == PAType.FLOAT;
+            dvPa[dv] = PrimitiveArray.factory(tPAType, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(nAv + dv, edv.destinationName(), dvPa[dv], 
                 gridDataAccessor.dataAttributes(dv)); //(Attributes)(edv.combinedAttributes().clone());
@@ -9101,13 +9083,13 @@ Attributes {
               "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\";\n" +
             "  var sss = new Array(); var cum = \"\"; var done = false;\n" +
 
-            //gather startStrideStop and cumulative sss
+            //gather startStrideStop and cumulative sss.   %5B=[ %5D=] %7C=|
             "  for (var av = 0; av < " + nAv + "; av++) {\n" +
-            "    sss[av] = \"[(\" + " + 
+            "    sss[av] = \"%5B(\" + " + 
                    "eval(\"form1.start\"  + av + \".value\") + \"):\" + " +                   
                    //"eval(\"form1.start\"  + av + \".options[form1.start\"  + av + \".selectedIndex].text\") + \"):\" + " +
                    "eval(\"form1.stride\" + av + \".value\") + \":(\" + " +
-                   "eval(\"form1.stop\"   + av + \".value\") + \")]\";\n" +                   
+                   "eval(\"form1.stop\"   + av + \".value\") + \")%5D\";\n" +                   
                    //"eval(\"form1.stop\"   + av + \".options[form1.stop\"   + av + \".selectedIndex].text\") + \")]\";\n" +
             "    cum += sss[av];\n" +
             "  }\n" +
@@ -14245,7 +14227,7 @@ writer.write(
             Table table = new Table();
             table.readASCII(datasetID, 
                 SSR.getBufferedUrlReader(datasetID + ".csvp?time"), 
-                0, 1, ",", null, null, null, null, false);
+                "", "", 0, 1, ",", null, null, null, null, false);
             PrimitiveArray isoPA = table.getColumn(0);
             int n = isoPA.size();
             times = new DoubleArray(n, false);

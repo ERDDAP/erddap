@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -55,7 +56,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File,
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -66,8 +67,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         super("EDDTableFromAsciiServiceNOS", tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
-            tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
-            tDataVariables,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tAddGlobalAttributes, tDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tBeforeData, tAfterData, tNoData);
 
@@ -125,7 +126,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             sosMinLat    = stationTable.getColumn(stationLatCol);
             sosMaxLat    = sosMinLat;
             sosMinTime   = stationTable.getColumn(stationDateEstCol); //epochSeconds
-            sosMaxTime   = PrimitiveArray.factory(double.class, nSosOfferings, "");
+            sosMaxTime   = PrimitiveArray.factory(PAType.DOUBLE, nSosOfferings, "");
             sosOfferings = stationTable.getColumn(stationIDCol);
         }
 
@@ -1460,7 +1461,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMC" +
-                "\nUnexpected error."); 
+                "\nSometimes a row is missing from source. Otherwise: Unexpected error."); 
         }
         }
 

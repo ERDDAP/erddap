@@ -10,7 +10,10 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.jexl3.introspection.JexlSandbox;
-import org.apache.commons.jexl3.*;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 
 /**
  * A class with static Jexl script methods.

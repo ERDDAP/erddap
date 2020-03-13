@@ -212,8 +212,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      *   !!! If there is a special axis0, this will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
-     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
-     *     but can be any type. EDDGridFromFiles will convert to the sourceDataTypeClass.
+     *   <br>The primitiveArray dataTypes are usually the sourceDataPAType,
+     *     but can be any type. EDDGridFromFiles will convert to the sourceDataPAType.
      *   <br>Note the lack of axisVariable values!
      * @throws Throwable if trouble (notably, WaitThenTryAgainException).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
@@ -350,11 +350,11 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 if (dimensions == null || dimensions.size() <= 1) 
                     continue;
                 nGridsAtSource++;
-                Class tClass = NcHelper.getElementClass(var.getDataType());
-                if      (tClass == char.class)    tClass = String.class;
-                else if (tClass == boolean.class) tClass = byte.class; 
+                Class tClass = NcHelper.getElementPAType(var.getDataType());
+                if      (tClass == PAType.CHAR)    tClass = PAType.STRING;
+                else if (tClass == PAType.BOOLEAN) tClass = PAType.BYTE; 
                 PrimitiveArray sourcePA = PrimitiveArray.factory(tClass, 1, false);
-                int tDim = dimensions.size() - (tClass == String.class? 1 : 0);
+                int tDim = dimensions.size() - (tClass == PAType.STRING? 1 : 0);
                 if (tDim < maxDim) {
                     continue;
                 } else if (tDim > maxDim) {
@@ -406,13 +406,13 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 Attributes sourceAtts = new Attributes();
                 NcHelper.getVariableAttributes(sourceAtts, var);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
-                PrimitiveArray destPA = makeDestPAForGDX(sourceAtts, sourcePA);
+                PrimitiveArray destPA = makeDestPAForGDX(sourceAtts, sourcePA); 
                 dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, destPA, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
                         sourceAtts, null, varName, 
-                        destPA.elementClass() != String.class, //tryToAddStandardName
-                        destPA.elementClass() != String.class, //addColorBarMinMax
+                        destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                        destPA.elementType() != PAType.STRING, //addColorBarMinMax
                         false)); //tryToFindLLAT
             }
 

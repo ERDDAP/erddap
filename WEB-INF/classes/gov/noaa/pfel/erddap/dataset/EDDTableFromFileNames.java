@@ -8,12 +8,14 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.Script2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -38,10 +40,14 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//import org.apache.commons.jexl3.introspection.JexlSandbox;
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 
 /** 
  * This class represents a table of file names.
@@ -55,6 +61,7 @@ public class EDDTableFromFileNames extends EDDTable{
     protected boolean recursive;
     protected String extractRegex[];        
     protected byte extractGroup[];        
+    protected HashMap<String,HashSet<String>> scriptNeedsColumns = new HashMap(); //<sourceName, otherSourceColumnNames>
 
 
     /**
@@ -130,6 +137,7 @@ public class EDDTableFromFileNames extends EDDTable{
         String tIso19115File = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -167,6 +175,8 @@ public class EDDTableFromFileNames extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
             else if (localTags.equals( "<fileDir>")) {} 
             else if (localTags.equals("</fileDir>")) tFileDir = content; 
             else if (localTags.equals( "<fileNameRegex>")) {}
@@ -186,8 +196,8 @@ public class EDDTableFromFileNames extends EDDTable{
         return new EDDTableFromFileNames(tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, 
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
-            ttDataVariables,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
+            tGlobalAttributes, ttDataVariables,
             tReloadEveryNMinutes, tFileDir, tFileNameRegex, tRecursive, tPathRegex);
 
     }
@@ -269,7 +279,7 @@ public class EDDTableFromFileNames extends EDDTable{
     public EDDTableFromFileNames(String tDatasetID, 
         String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -347,14 +357,15 @@ public class EDDTableFromFileNames extends EDDTable{
                     -1, //int tUpdateEveryNMillis,
                     parts[2], parts[3], true, ".*", //String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
                     EDDTableFromFiles.MF_LAST, "UTF-8", //String tMetadataFrom, String tCharset, 
-                    1, 2, ",", //int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
+                    "", "", 1, 2, ",", //skipHeaderToRegex, skipLinesRegex, int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
                     null, null, null, //String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
                     null, //String tColumnNameForExtract,
                     "", "directory,name", //String tSortedColumnSourceName, String tSortFilesBySourceNames,
                     false, false, //boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
                     true, true, //boolean tAccessibleViaFiles, boolean tRemoveMVRows,
                     0, 1, //int tStandardizeWhat, int tNThreads, 
-                    null, -1, null); //String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+                    null, -1, null, //String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex 
+                    null); //addVariablesWhere
             } else {
                 throw new SimpleException(String2.ERROR + ": Unexpected fromFilesFileType=" + fromFilesFileType);
             }
@@ -452,11 +463,18 @@ public class EDDTableFromFileNames extends EDDTable{
             addAtt.remove("extractGroup");
             if (extractGroup[dv] == Byte.MAX_VALUE)
                 extractGroup[dv] = 1; //default
-            if (!sourceName.startsWith("=") &&
-                !sourceName.equals(URL) &&
-                !sourceName.equals(NAME) &&
-                !sourceName.equals(LASTMODIFIED) &&
-                !sourceName.equals(SIZE)) {
+            if (sourceName.startsWith("=")) {
+                //gather columns needed for this script
+                scriptNeedsColumns.put(sourceName, Script2.jexlScriptNeedsColumns(sourceName)); //needsColumns.size() may be 0
+
+            } else if (sourceName.equals(URL) ||
+                       sourceName.equals(NAME) ||
+                       sourceName.equals(LASTMODIFIED) ||
+                       sourceName.equals(SIZE)) {
+                //do nothing
+
+            } else {
+                //must be extractRegex
                 Test.ensureTrue(String2.isSomething(extractRegex[dv]),
                     "'extractRegex' attribute wasn't specified for sourceName=" + 
                     sourceName);
@@ -548,7 +566,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 twawm);
             for (int dv = 0; dv < ndv; dv++) {
                 EDV edv = dataVariables[dv];
-                if (edv.destinationDataTypeClass() != String.class) {
+                if (edv.destinationDataPAType() != PAType.STRING) {
                     //Min and max were gathered as the data was written.
                     //How cool is that?!
                     edv.setDestinationMinMax(twawm.columnMinValue(dv), twawm.columnMaxValue(dv));
@@ -562,6 +580,9 @@ public class EDDTableFromFileNames extends EDDTable{
             if (from == fromFiles) 
                 writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(3)); //may be null
         }
+
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
 
         //ensure the setup is valid
         ensureValid();
@@ -760,7 +781,7 @@ public class EDDTableFromFileNames extends EDDTable{
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble (table.nRows + nSubdirs = 0 is not trouble)
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -884,14 +905,14 @@ public class EDDTableFromFileNames extends EDDTable{
                 return null;
             }
             Table dnlsTable = (Table)oar[0];
-            StringArray dirSA  = (StringArray)dnlsTable.getColumn(0);
-            StringArray nameSA = (StringArray)dnlsTable.getColumn(1);
+            //String2.log(">> " + msg + "\n" + dnlsTable.dataToString());
+            StringArray nameSA = (StringArray)dnlsTable.getColumn(0);
             int which = nameSA.indexOf(nameAndExt);
             if (which < 0) {
                 String2.log(msg + "That file isn't in the fileTable.");
                 return null;
             }
-            return dirSA.get(which) + nameAndExt;
+            return fileDir + relativeFileName;
 
         } catch (Exception e) {
             String2.log(msg + ":\n" +
@@ -944,6 +965,34 @@ public class EDDTableFromFileNames extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery, resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
+        int nResultsVariables = resultsVariables.size();
+
+        //gather info for columns that have =script sourceNames
+        StringArray scriptNames = null;
+        StringArray scriptTypes = null;
+        for (int i = 0; i < nResultsVariables; i++) {
+            String name = resultsVariables.get(i);
+            if (name.startsWith("=")) {
+                //content comes from a script or fixedValue
+                if (scriptNames == null) {
+                    scriptNames = new StringArray();                
+                    scriptTypes = new StringArray();                
+                }
+                //find the corresponding dataVariable (dataVariableSourceNames hasn't been created when this is called by constructor)
+                int dv = 0;
+                int ndv = dataVariables.length;
+                while (dv < ndv && !dataVariables[dv].sourceName().equals(name))
+                    dv++;
+                if (dv == ndv) //shouldn't happen
+                   throw new RuntimeException("sourceName not found: " + name);
+                scriptNames.add(name);
+                scriptTypes.add(dataVariables[dv].sourceDataType());
+
+                //ensure columns referenced in script are in sourceNamesSet
+                //But that's not an issue here because source always supplies all columns.
+                //needOtherSourceNames.addAll(scriptNeedsColumns.get(name));
+            }
+        }
 
         int nSubTables = 1;  //usually just 1 table. fromFiles is the exception
 
@@ -1037,8 +1086,7 @@ public class EDDTableFromFileNames extends EDDTable{
             int namei = table.findColumnNumber(NAME);
             StringArray namePA = (StringArray)table.getColumn(namei);
             Attributes atts = table.columnAttributes(namei);
-            int nrv = resultsVariables.size();
-            for (int rvi = 0; rvi < nrv; rvi++) {
+            for (int rvi = 0; rvi < nResultsVariables; rvi++) {
 
                 String sourceName = resultsVariables.get(rvi);
                 if (sourceName.equals(URL) ||
@@ -1052,27 +1100,39 @@ public class EDDTableFromFileNames extends EDDTable{
                         ": Unexpected resultsVariable sourceName=" + sourceName);
                 EDV edv = dataVariables[dvi];
 
-                //create this column from a fixed value EDV
                 if (edv.isFixedValue()) {
-                    PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
-                        nRows, edv.fixedValue()); 
+                    //now let =script handle it below
+                    ////create this column from a fixed value EDV
+                    //PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataPAType(),
+                    //    nRows, edv.fixedValue()); 
+                    //table.addColumn(sourceName, pa);
+                    continue;
+                }
+                
+                if (extractRegex[dvi] != null) {
+                    //create this column by extracting info from file name
+                    PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataPAType(),
+                        nRows, false); 
                     table.addColumn(sourceName, pa);
+                    String regex = extractRegex[dvi];
+                    Pattern pat = Pattern.compile(regex);
+                    for (int row = 0; row < nRows; row++) {
+                        Matcher matcher = pat.matcher(namePA.get(row));
+                        pa.addString(matcher.matches()? matcher.group(extractGroup[dvi]) : ""); 
+                    }
                     continue;
                 }
 
-                //create this variable by extracting info from file name
-                PrimitiveArray pa = PrimitiveArray.factory(edv.sourceDataTypeClass(),
-                    nRows, false); 
-                table.addColumn(sourceName, pa);
-                String regex = extractRegex[dvi];
-                Pattern pat = Pattern.compile(regex);
-                for (int row = 0; row < nRows; row++) {
-                    Matcher matcher = pat.matcher(namePA.get(row));
-                    pa.addString(matcher.matches()? matcher.group(extractGroup[dvi]) : ""); 
-                }
+                //Remaining columns are script columns. Handle below.
             }
 
-if (debugMode) String2.log(">> getDataForDapQuery:\n" + table.toString());
+            //convert script columns into data columns
+            if (scriptNames != null)             
+                convertScriptColumnsToDataColumns("", //tFileDir + tFileName: there is no single source file name for this table
+                    table, 
+                    scriptNames, scriptTypes, scriptNeedsColumns);
+
+            if (debugMode) String2.log(">> getDataForDapQuery:\n" + table.toString());
             if (table.nRows() > 0) { //should be
                 standardizeResultsTable(requestUrl, userDapQuery, table);
                 tableWriter.writeSome(table);
@@ -1781,6 +1841,7 @@ String expected =
 "    Float64 longitude;\n" +
 "    String mySpecialString;\n" +
 "    String fvEmptyString;\n" +
+"    String fromScript;\n" +
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1863,6 +1924,9 @@ String expected =
 "  fvEmptyString \\{\n" +
 "    String ioos_category \"Other\";\n" +
 "  \\}\n" +
+"  fromScript \\{\n" +
+"    String ioos_category \"Other\";\n" +
+"  \\}\n" +
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Other\";\n" +
@@ -1901,11 +1965,11 @@ String expected =
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
-"five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString\n" +
-"m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n";
+"five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString,fromScript\n" +
+"m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,,\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png name=jplMURSST20150103090000.png time=20150103090000 day=3 lastMod=1.421272444E9 size=46482.0 fileType=.png\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png name=jplMURSST20150104090000.png time=20150104090000 day=4 lastMod=1.420665738E9 size=46586.0 fileType=.png\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png name=jplMURSST20150105090000.png time=20150105090000 day=5 lastMod=1.420665704E9 size=46549.0 fileType=.png\n";
         Test.ensureEqual(results, expected, "results=\n" + String2.annotatedString(results));
 
         //test that min and max are being set by the constructor
@@ -2399,6 +2463,67 @@ String expected =
     }
 
     /**
+     * Test an AWS S3 dataset in localhost ERDDAP.
+     */
+    public static void testAwsS3local() throws Throwable {
+
+        String2.log("\n*** EDDTableFromFileNames.testAwsS3b");
+        String results, expected;
+        String url = "http://localhost:8080/cwexperimental/files/awsS3Files_1000genomes/";
+
+        //base url dir
+        results = SSR.getUrlResponseStringNewline(url + ".csv");
+        expected = 
+"Name,Last modified,Size,Description\n" +
+"1000G_2504_high_coverage/,NaN,NaN,\n" +
+"alignment_indices/,NaN,NaN,\n" +
+"changelog_details/,NaN,NaN,\n" +
+"complete_genomics_indices/,NaN,NaN,\n" +
+"data/,NaN,NaN,\n" +
+"hgsv_sv_discovery/,NaN,NaN,\n" +
+"phase1/,NaN,NaN,\n" +
+"phase3/,NaN,NaN,\n" +
+"pilot_data/,NaN,NaN,";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+        //file in base url dir
+        results = SSR.getUrlResponseStringNewline(url + "20131219.superpopulations.tsv");
+        expected = 
+"Description\tPopulation Code\n" +
+"East Asian\tEAS\n" +
+"South Asian\tSAS\n" +
+"African\tAFR\n" +
+"European\tEUR\n" +
+"American\tAMR\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //subdir
+        results = SSR.getUrlResponseStringNewline(url + "changelog_details/.csv");
+        expected = 
+"Name,Last modified,Size,Description\n" +
+"changelog_detail_20100621_new_bams,1409641614000,108000,\n" +
+"changelog_details_20081217,1337355796000,882798,\n" +
+"changelog_details_20081219,1337355796000,160,\n" +
+"changelog_details_20081222,1337355796000,176513,\n" +
+"changelog_details_20090105,1337355796000,855,\n" +
+"changelog_details_20090108,1337355796000,80901,\n" +
+"changelog_details_20090127,1337355795000,11357,\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+        //file in subdir
+        results = SSR.getUrlResponseStringNewline(url + "changelog_details/changelog_details_20081219");
+        expected = 
+"OLD\tNEW\n" +
+"simulations\ttechnical/simulations\n" +
+"technical/SOLiD\ttechnical/method_development/SOLiD\n" +
+"technical/recalibration\ttechnical/method_development/recalibration\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+       
+
+    }
+
+
+    /**
      * Test a ***fromOnTheFile dataset
      */
     public static void testOnTheFly() throws Throwable {
@@ -2430,10 +2555,11 @@ String expected =
             Test.ensureTrue(fileTableNRows + subDirs.size() > 0, "No results!");
             results = fileTable.dataToString(5);
             expected =
-"Name,Last modified,Size,Description\n";
+"Name,Last modified,Size,Description\n" +
+"index.html,1581534868000,32356,\n";  //last modified is millis (stored as long)
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, GLM-L2-LCFA";
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
@@ -2456,7 +2582,7 @@ String expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
-"2018, 2019";  
+"2018, 2019, 2020";  
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
             String2.log("get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)");
@@ -2488,7 +2614,7 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 693; //ms
             String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "");
+            Test.ensureTrue(time < expTime * 2, "Too slow!");
         }
 
         
@@ -2498,32 +2624,75 @@ String expected =
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-02-12T19:14:28Z,32356.0,.html\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n";
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = edd.makeNewFileForDapQuery(null, null, "&url=~\".*-L1b-.*\"", 
@@ -2534,7 +2703,13 @@ String expected =
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n";
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
     }
@@ -2555,6 +2730,7 @@ String expected =
 
         testGenerateDatasetsXmlAwsS3();
         testAwsS3();
+        testAwsS3local();
 
         testGenerateDatasetsXmlFromFiles();
         testAccessibleViaFilesFileTable(true,  false);  //deleteCachedInfo, bigTest

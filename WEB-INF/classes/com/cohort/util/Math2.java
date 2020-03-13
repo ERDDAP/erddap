@@ -4,6 +4,8 @@
  */
 package com.cohort.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -31,6 +33,17 @@ public class Math2 {
     public static final double ln10 = Math.log(10.0); //2.302585092994046;
     public static final double ln2 = Math.log(2.0);
     public static final double kelvinToC = -273.15;
+    public static final short  UBYTE_MIN_VALUE  = 0;
+    public static final int    USHORT_MIN_VALUE = 0;
+    public static final long   UINT_MIN_VALUE   = 0;
+    public static final double ULONG_MIN_VALUE  = 0.0;  //trouble
+    //public static final BigInteger ULONG_MIN_VALUE  = BigInteger.ZERO;  
+    public static final short  UBYTE_MAX_VALUE  = 255;
+    public static final int    USHORT_MAX_VALUE = 65535;
+    public static final long   UINT_MAX_VALUE   = 0xffffffff;
+    public static final double ULONG_MAX_VALUE  = 18446744073709551615.0;
+    //public static final BigInteger ULONG_MAX_VALUE  = new BigInteger("18446744073709551615");
+    public static final double ULONG_MAX_VALUE_AS_DOUBLE = 18446744073709551615.0; //trouble: won't be stored exactly
     public static final int Binary0 = -2000; //less than -980-980
     public static final int BinaryLimit = 980; //2^980 = ~1e295
     public static final int BytesPerKB = 1024;
@@ -100,6 +113,7 @@ public class Math2 {
     public final static double meterPerFoot = 1200.0 / 3927.0;
     public final static double mPerMile = 5280 * meterPerFoot;
     public final static double kmPerMile = mPerMile * 0.001;
+    public final static double kmPerNMile = 1.852; //#exact in UDUNITS
 
     /**
      *<tt>two</tt> defines powers of two,
@@ -781,9 +795,23 @@ public class Math2 {
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
     public static final byte roundToByte(double d) {
-        return d > Byte.MAX_VALUE || d <= Byte.MIN_VALUE - 0.5 || !Double.isFinite(d)? 
+        return d >= Byte.MAX_VALUE || d <= Byte.MIN_VALUE - 0.5 || !Double.isFinite(d)? 
             Byte.MAX_VALUE : 
             (byte)Math.round(d);
+    }
+
+    /**
+     * Safely rounds a double to a ubyte.
+     * 
+     * @param d any double
+     * @return 255 if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest byte.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final short roundToUByte(double d) {
+        return d >= 255 || d <= -0.5 || !Double.isFinite(d)? 
+            255 : 
+            (short)Math.round(d);
     }
 
     /**
@@ -815,6 +843,20 @@ public class Math2 {
     }
 
     /**
+     * Safely rounds a double to a ushort.
+     * 
+     * @param d any double
+     * @return 0xffff if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest short.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final int roundToUShort(double d) {
+        return d > 0xffff || d <= -0.5 || !Double.isFinite(d)? 
+            0xffff : 
+            (short)Math.round(d);
+    }
+
+    /**
      * Safely rounds a double to an int.
      * (Math.round but rounds to a long and not safely.)
      * 
@@ -830,6 +872,20 @@ public class Math2 {
     }
 
     /**
+     * Safely rounds a double to a uint.
+     * 
+     * @param d any double
+     * @return 0xffffffff if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest short.
+     *   Undesirable: d.5 rounds up for positive numbers, down for negative.
+     */
+    public static final long roundToUInt(double d) {
+        return d > 0xffffffff || d <= -0.5 || !Double.isFinite(d)? 
+            0xffffffff : 
+            Math.round(d);
+    }
+
+    /**
      * Safely rounds a double to a long.
      * 
      * @param d any double
@@ -842,6 +898,28 @@ public class Math2 {
             Long.MAX_VALUE : 
             Math.round(d);
     }
+
+    /**
+     * Safely rounds a double to a ulong.
+     * 
+     * @param d any double
+     * @return ULONG_MAX_VALUE if d is too small, too big, or NaN;
+     *   otherwise d, rounded to the nearest integer double.
+     *   Undesirable: d.5 rounds up.
+     */
+    public static double roundToULong(double d) {
+        return Math.rint(d);  //trouble  see unfinished version below
+    }
+
+/*    public static BigInteger roundToULong(double d) {
+        if (d <= -0.5 || !Double.isFinite(d)) 
+            return ULONG_MAX_VALUE; 
+        BigDecimal bd = new BigDecimal(d);
+        bd = bd.add(new BigDecimal(0.5));
+        BigInteger bi = bd.toBigInteger();
+        return bi.compareTo(ULONG_MAX_VALUE) >= 0? ULONG_MAX_VALUE : bi; 
+    }
+*/
 
     /**
      * Safely rounds a double to the nearest integer (stored as a double).
@@ -946,6 +1024,62 @@ public class Math2 {
         return i > Integer.MAX_VALUE || i < Integer.MIN_VALUE? 
             Integer.MAX_VALUE : (int)i;
     }
+
+    /**
+     * Safely narrows an int to a ubyte.
+     * 
+     * @param i any int
+     * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
+     */
+    public static final short narrowToUByte(int i) {
+        return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE? 
+            UBYTE_MAX_VALUE : (short)i;
+    }
+
+    /**
+     * Safely narrows a long to a ubyte.
+     * 
+     * @param i any long
+     * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
+     */
+    public static final short narrowToUByte(long i) {
+        return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE? 
+            UBYTE_MAX_VALUE : (short)i;
+    }
+
+    /**
+     * Safely narrows an int to a ushort.
+     * 
+     * @param i any int
+     * @return USHORT_MAX_VALUE if i is too small or too big; otherwise i.
+     */
+    public static final int narrowToUShort(int i) {
+        return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE? 
+            USHORT_MAX_VALUE : i;
+    }
+
+    /**
+     * Safely narrows a long to a ushort.
+     * 
+     * @param i any long
+     * @return USHORT_MAX_VALUE if i is too small or too big; otherwise i.
+     */
+    public static final int narrowToUShort(long i) {
+        return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE? 
+            USHORT_MAX_VALUE : (int)i;
+    }
+
+    /**
+     * Safely narrows a long to a uint.
+     * 
+     * @param i any long
+     * @return UINT_MAX_VALUE if i is too small or too big; otherwise i.
+     */
+    public static final long narrowToUInt(long i) {
+        return i > UINT_MAX_VALUE || i < UINT_MIN_VALUE? 
+            UINT_MAX_VALUE : i;
+    }
+
 
     /**
      * Safely converts a byte (-128..127) to char (0..255).
@@ -1211,16 +1345,29 @@ public class Math2 {
      *
      * @param tl
      * @return a double.
-     *    If f is NaN or +-INFINITY, this returns Double.NaN.
+     *    If tl is Long.MAX_VALUE, this returns Double.NaN.
      */
     public static final double longToDoubleNaN(long tl) {
         if (tl == Long.MAX_VALUE)
             return Double.NaN;
-        //make sure round(d) is legit long. Low numbers are not a problem. 
-        //ideally    9223372036854775806
-        if (tl >     9223372036854774784L)   //best available
-            return  9.223372036854774784E18;
         return tl;
+    }
+
+    /**
+     * This converts an unsigned long to a double.
+     * !!! Possible loss of precision!
+     * This does nothing with default "cohort" NaN from Long.MAX_VALUE,
+     * because that is presumably a legit number in the middle of the unsigned long range.
+     *
+     * @param tl
+     * @return a double.
+     */
+    public static final double unsignedLongToDouble(long tl) {
+        //https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
+        //  9,223,372,036,854,775,808
+        // +9,223,372,036,854,775,808
+        //=18 446 744 073 709 551 616
+        return tl < 0? tl + 18446744073709551616.0 : tl; //2^64
     }
 
     /**

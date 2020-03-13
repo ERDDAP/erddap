@@ -272,7 +272,9 @@ public class File2 {
                         return result;
                     }
                     String2.log("WARNING #" + attempt + 
-                        ": File2.delete is having trouble. It will try again to delete " + fullName);
+                        ": File2.delete is having trouble. It will try again to delete " + fullName 
+                        //+ "\n" + MustBe.stackTrace()
+                        );
                     if (attempt % 4 == 1)
                         Math2.gcAndWait(); //wait before retry delete. By experiment, gc works better than sleep.
                     else Math2.sleep(1000);
@@ -687,13 +689,13 @@ public class File2 {
      *
      * @param fullName the full name of the file.
      *   It can have forward or backslashes.
-     * @return the directory (or currentDirectory if none)
+     * @return the directory (or "" if none; 2020-01-10 was currentDirectory)
      */
     public static String getDirectory(String fullName) {
         int po = fullName.lastIndexOf('/');
         if (po < 0)
             po = fullName.lastIndexOf('\\');
-        return po > 0? fullName.substring(0, po + 1) : getCurrentDirectory();
+        return po > 0? fullName.substring(0, po + 1) : "";
     }
 
     /**
@@ -1034,9 +1036,54 @@ public class File2 {
         return success;
     }
 
+
     /** A variant that copies the entire source. */
     public static boolean copy(String source, OutputStream out) {
         return copy(source, out, 0, -1);
+    }
+
+    /**
+     * This is like copy(), but decompresses if the source is compressed
+     *
+     * @param source the full file name of the source file.
+     *   If compressed, this does decompress!
+     * @param destination the full file name of the destination file.
+     *   If the directory doesn't exist, it will be created.
+     *   It is closed at the end.
+     * @param first the first byte to be transferred (0..)
+     * @param last  the last byte to be transferred (inclusive),
+     *    or -1 to transfer to the end.
+     * @return true if successful. If not successful, the destination file
+     *   won't exist.
+     */
+    public static boolean decompress(String source, String destination) {
+
+        if (source.equals(destination)) return false;
+        InputStream in = null;
+        OutputStream out = null;
+        boolean success = false;
+        try {
+            File dir = new File(getDirectory(destination));
+            if (!dir.isDirectory())
+                 dir.mkdirs();
+            in = getDecompressedBufferedInputStream(source);
+            out = new BufferedOutputStream(new FileOutputStream(destination));
+            success = copy(in, out, 0, -1);
+        } catch (Exception e) {
+            String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + 
+                e.toString());
+        }
+        try { 
+            if (in != null) in.close();
+        } catch (Exception e) {}
+        try { 
+            if (out != null) out.close();
+        } catch (Exception e) {}
+
+        if (!success) 
+            delete(destination);
+
+        return success;
     }
 
     /**

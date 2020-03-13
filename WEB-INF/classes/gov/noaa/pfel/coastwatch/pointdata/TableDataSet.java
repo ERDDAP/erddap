@@ -80,8 +80,8 @@ public abstract class TableDataSet implements Comparable {
 
     /** Set by the constructor: dataVariables information set by each constructor */
     protected String dataVariableNames[]; //the names in the file (and in results tables)
-    protected ArrayList dataAttributes;   //returns Attributes         
-    protected ArrayList dataElementType;  //returns a Class object e.g., float.class */ 
+    protected ArrayList<Attributes> dataAttributes;   //returns Attributes         
+    protected ArrayList<PAType>     dataElementType;  //returns a PAType, e.g., PAType.FLOAT */ 
 
 
     /** dataVariables information set by extractDataVariableInfo */
@@ -128,7 +128,7 @@ public abstract class TableDataSet implements Comparable {
         scaleFactors = new double[ndv];
         addOffsets = new double[ndv];
         for (int v = 0; v < ndv; v++) {
-            Attributes attributes = (Attributes)dataAttributes.get(v);
+            Attributes attributes = dataAttributes.get(v);
             if (attributes == null) {
                 units[v] = DataHelper.UNITLESS;
                 fillValues[v] = null;
@@ -531,8 +531,8 @@ public abstract class TableDataSet implements Comparable {
         for (int v = 0; v < desiredDataVariableNames.length; v++) {
             int whichDV = whichDataVariableName(desiredDataVariableNames[v]);
             table.addColumn(5 + v, dataVariableNames[whichDV], 
-                PrimitiveArray.factory((Class)dataElementType.get(whichDV), 8, false), 
-                (Attributes)(((Attributes)dataAttributes.get(whichDV)).clone()));
+                PrimitiveArray.factory(dataElementType.get(whichDV), 8, false), 
+                (Attributes)(dataAttributes.get(whichDV).clone()));
         }
         return table;
     }
@@ -824,15 +824,15 @@ public abstract class TableDataSet implements Comparable {
 
         //make the resultTable  (like rawTable, but no data)
         Table resultTable = new Table();
-        PrimitiveArray xResultPA    = PrimitiveArray.factory(xPA.elementClass(), 4, false);
-        PrimitiveArray yResultPA    = PrimitiveArray.factory(yPA.elementClass(), 4, false);
-        PrimitiveArray zResultPA    = PrimitiveArray.factory(zPA.elementClass(), 4, false);
-        PrimitiveArray tResultPA    = PrimitiveArray.factory(timePA.elementClass(), 4, false);
+        PrimitiveArray xResultPA    = PrimitiveArray.factory(xPA.elementType(), 4, false);
+        PrimitiveArray yResultPA    = PrimitiveArray.factory(yPA.elementType(), 4, false);
+        PrimitiveArray zResultPA    = PrimitiveArray.factory(zPA.elementType(), 4, false);
+        PrimitiveArray tResultPA    = PrimitiveArray.factory(timePA.elementType(), 4, false);
         StringArray    idResultPA   = new StringArray();
         //but make sure data column is double or float, since it will hold floating point averages
-        Class tEt = dataPA.elementClass();
-        if (tEt != double.class && tEt != float.class) 
-            tEt = float.class; //arbitrary: should it be double? 
+        Class tEt = dataPA.elementType();
+        if (tEt != PAType.DOUBLE && tEt != PAType.FLOAT) 
+            tEt = PAType.FLOAT; //arbitrary: should it be double? 
         PrimitiveArray dataResultPA = PrimitiveArray.factory(tEt, 4, false);
         resultTable.addColumn(rawTable.getColumnName(0), xResultPA);
         resultTable.addColumn(rawTable.getColumnName(1), yResultPA);

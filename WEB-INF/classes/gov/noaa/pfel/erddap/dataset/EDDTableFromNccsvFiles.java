@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -73,6 +74,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -80,7 +82,8 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
         int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromNccsvFiles", tDatasetID, 
@@ -90,12 +93,14 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
 
     }
 
@@ -219,8 +224,8 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
             dataAddTable.addColumn(c, colName, destPA, addAtts);
 
@@ -1771,26 +1776,27 @@ expected =
 "  :time_coverage_start = \"2017-03-23T00:45:00Z\";[10]\n" +
 "  :title = \"NCCSV Demonstration\";[10]\n" +
 "  :Westernmost_Easting = -132.1591; // double[10]\n" +
-" data:[10]\n" +
-"ship =\" a[9]~[252],[10]\n" +            // Is \n in middle of a value okay?
+"[10]\n" +
+"  data:[10]\n" +
+"    ship = \" a[9]~[252],[10]\n" +            // Is \n in middle of a value okay?
 "'z\"?\", \" a[9]~[252],[10]\n" +
 "'z\"?\", \" a[9]~[252],[10]\n" +
 "'z\"?\", \" a[9]~[252],[10]\n" +
 "'z\"?\", \" a[9]~[252],[10]\n" +
 "'z\"?\", \" a[9]~[252],[10]\n" +
 "'z\"?\"[10]\n" +
-"time =[10]\n" +
-"  {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
-"latitude =[10]\n" +
-"  {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
-"longitude =[10]\n" +
-"  {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
-"status =  \"A?[9]\"[252]?\"[10]\n" +  //source status chars are A\u20AC\t"\u00fc\uFFFF
-"testLong =[10]\n" +
+"    time = [10]\n" +
+"      {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
+"    latitude = [10]\n" +
+"      {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
+"    longitude = [10]\n" +
+"      {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
+"    status =   \"A?[9]\"[252]?\"[10]\n" +  //source status chars are A\u20AC\t"\u00fc\uFFFF
+"    testLong = [10]\n" +
     //these are largest doubles that can round trip to a long
-"  {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" + 
-"sst =[10]\n" +
-"  {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
+"      {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" + 
+"    sst = [10]\n" +
+"      {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
 "}[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -1933,23 +1939,24 @@ expected =
 "  :time_coverage_start = \"2017-03-23T00:45:00Z\";[10]\n" +
 "  :title = \"NCCSV Demonstration\";[10]\n" +
 "  :Westernmost_Easting = -132.1591; // double[10]\n" +
-" data:[10]\n" +
-"ship =\" a[9]~[252],[10]\n" +     //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
+"[10]\n" +
+"  data:[10]\n" +
+"    ship = \" a[9]~[252],[10]\n" +     //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 "'z\"?\"[10]\n" +             
-"rowSize =[10]\n" +
-"  {6}[10]\n" +
-"time =[10]\n" +
-"  {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
-"latitude =[10]\n" +
-"  {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
-"longitude =[10]\n" +
-"  {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
-"status =  \"A?[9]\"[252]?\"[10]\n" + // source status chars are A\u20AC\t"\u00fc\uFFFF
-"testLong =[10]\n" +
+"    rowSize = [10]\n" +
+"      {6}[10]\n" +
+"    time = [10]\n" +
+"      {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
+"    latitude = [10]\n" +
+"      {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
+"    longitude = [10]\n" +
+"      {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
+"    status =   \"A?[9]\"[252]?\"[10]\n" + // source status chars are A\u20AC\t"\u00fc\uFFFF
+"    testLong = [10]\n" +
           //these are largest consecutive longs that can round trip to doubles
-"  {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
-"sst =[10]\n" +
-"  {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
+"      {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
+"    sst = [10]\n" +
+"      {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
 "}[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -2090,31 +2097,32 @@ expected =
 "  :time_coverage_start = \"2017-03-23T00:45:00Z\";[10]\n" +
 "  :title = \"NCCSV Demonstration\";[10]\n" +
 "  :Westernmost_Easting = -132.1591; // double[10]\n" +
-" data:[10]\n" +
-"ship =\" a[9]~[252],[10]\n" +
+"[10]\n"+
+"  data:[10]\n" +
+"    ship = \" a[9]~[252],[10]\n" +
 "'z\"?\"[10]\n" +            
-"time =[10]\n" +
-"  {[10]\n" +
-"    {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
-"  }[10]\n" +
-"latitude =[10]\n" +
-"  {[10]\n" +
-"    {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
-"  }[10]\n" +
-"longitude =[10]\n" +
-"  {[10]\n" +
-"    {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
-"  }[10]\n" +
-"status =\"A?[9]\"[252]?\"[10]\n" +
-"testLong =[10]\n" +
-"  {[10]\n" +
+"    time = [10]\n" +
+"      {[10]\n" +
+"        {1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9}[10]\n" +
+"      }[10]\n" +
+"    latitude = [10]\n" +
+"      {[10]\n" +
+"        {28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002}[10]\n" +
+"      }[10]\n" +
+"    longitude = [10]\n" +
+"      {[10]\n" +
+"        {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
+"      }[10]\n" +
+"    status = \"A?[9]\"[252]?\"[10]\n" +
+"    testLong = [10]\n" +
+"      {[10]\n" +
           //these are largest consecutive longs that can round trip to doubles
-"    {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
-"  }[10]\n" +
-"sst =[10]\n" +
-"  {[10]\n" +
-"    {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
-"  }[10]\n" +
+"        {-9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.2233720368547748E18, NaN, NaN}[10]\n" +
+"      }[10]\n" +
+"    sst = [10]\n" +
+"      {[10]\n" +
+"        {10.9, NaN, 10.7, 99.0, 10.0, NaN}[10]\n" +
+"      }[10]\n" +
 "}[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -2662,7 +2670,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2019-11-06 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2020-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -2673,11 +2681,11 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,-25.0d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v70\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2019-11-05T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2020-01-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2717,7 +2725,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2019-11-05T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2020-01-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -2815,7 +2823,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2019-11-06 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2020-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -2830,11 +2838,11 @@ expected2 =
 "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
 "*GLOBAL*,sourceUrl,(local files)\n" +
 "*GLOBAL*,Southernmost_Northing,-25.0d\n" +
-"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v55\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v70\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2019-11-05T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2020-01-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3003,8 +3011,8 @@ expected2 =
         //String2.pressEnterToContinue();
 
         testGenerateDatasetsXml();
-        testBasic(true); //deleteCachedDatasetInfo
-        testBasic(false); //deleteCachedDatasetInfo
+        testBasic(true); //deleteCachedDatasetInfo    //unsigned -- needs work
+        testBasic(false); //deleteCachedDatasetInfo   //unsigned -- needs work
         testChar();
         testDap();
         testActualRange();

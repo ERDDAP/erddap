@@ -5400,6 +5400,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "\nUnexpected error."); 
         }
 
+        //2020-03-03 This test of CWBrowsers stopped working after I removed NDBCMet data from public browsers
+        /*
         try {
             String tName = "station.kml";
             File2.delete(testDir + tName);
@@ -5416,9 +5418,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 
                 "\nUnexpected error."); 
-        }
-
-
+        }*/
 
     }
 }

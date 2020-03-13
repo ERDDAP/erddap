@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -223,6 +224,7 @@ public class EDDTableFromSOS extends EDDTable{
         boolean tSourceNeedsExpandedFP_EQ = true;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -298,6 +300,8 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -308,7 +312,8 @@ public class EDDTableFromSOS extends EDDTable{
 
         return new EDDTableFromSOS(tDatasetID, tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes, tSosServerType,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, 
+            tGlobalAttributes, tSosServerType,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
             tAltitudeSourceName, tAltitudeSourceMinimum, tAltitudeSourceMaximum, 
             tAltitudeMetersPerSourceUnit,
@@ -429,7 +434,7 @@ public class EDDTableFromSOS extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes, String tSosServerType,
         String tStationIdSourceName,
         String tLonSourceName,
@@ -1045,6 +1050,9 @@ public class EDDTableFromSOS extends EDDTable{
             }
         }
 
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
         //ensure the setup is valid
         ensureValid();
 
@@ -1618,7 +1626,7 @@ public class EDDTableFromSOS extends EDDTable{
             boolean simplify = false;
             sosTable.readASCII(grabFileName, 
                 new BufferedReader(new StringReader(sar[1])), 
-                0, 1, "", null, null, null, null, simplify); 
+                "", "", 0, 1, "", null, null, null, null, simplify); 
             sar = null; //encourage garbage collection
 
             //!!! DANGER: if server changes source names or units, 
@@ -1770,7 +1778,7 @@ public class EDDTableFromSOS extends EDDTable{
             tableDVI.add(dvi);
             EDV edv = dataVariables[dvi];
             tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
-            isStringCol[col] = edv.sourceDataTypeClass().equals(String.class);
+            isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
         }
 
 
@@ -2058,7 +2066,7 @@ public class EDDTableFromSOS extends EDDTable{
             tableDVI.add(dvi);
             EDV edv = dataVariables[dvi];
             tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
-            isStringCol[col] = edv.sourceDataTypeClass().equals(String.class);
+            isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
         }
 
 
@@ -2420,7 +2428,7 @@ public class EDDTableFromSOS extends EDDTable{
                         table.addColumn(
                             ts.equals("sensor")? stationIdDestinationName : ts,
                             PrimitiveArray.factory(
-                                ts.equals("time") || ts.equals("sensor")? String.class : double.class,
+                                ts.equals("time") || ts.equals("sensor")? PAType.STRING : PAType.DOUBLE,
                                 capacity, false)); //active?
                     }
 
@@ -2429,7 +2437,7 @@ public class EDDTableFromSOS extends EDDTable{
                     String ts = xmlReader.attributeValue("name");
                     if (String2.isSomething(ts)) {
                         table.addColumn(ts, 
-                            PrimitiveArray.factory(double.class, capacity, false)); //active?
+                            PrimitiveArray.factory(PAType.DOUBLE, capacity, false)); //active?
                     }
 
                 //units (for last created column)
@@ -2720,7 +2728,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 
 expected = 
 "    Float64 Southernmost_Northing -14.2767;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +
@@ -4681,7 +4689,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 Northernmost_Northing 60.799;\n" +
 "    String sourceUrl \"https://sdf.ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.037;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have currents data.\n" +
 "\n" +
@@ -5016,7 +5024,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    Float64 Northernmost_Northing 60.799;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -55.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_practical_salinity data.\n" +
 "\n" +
@@ -5273,7 +5281,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    Float64 Northernmost_Northing 57.654;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -46.83;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_floor_depth_below_sea_surface data.\n" +
 "\n" +
@@ -5435,7 +5443,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    Float64 Northernmost_Northing 71.758;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -55.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.\n" +
 "\n" +
@@ -5789,7 +5797,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "    Float64 Northernmost_Northing 71.758;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have waves data.\n" +
 "\n" +
@@ -6038,7 +6046,7 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    Float64 Northernmost_Northing 71.758;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -55.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have winds data.\n" +
 "\n" +
@@ -7095,8 +7103,8 @@ So I will make ERDDAP able to read
             PrimitiveArray destPA = new DoubleArray();
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 sgAtts, sourceAtts, null, dvName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, false); //addColorBarMinMax, tryToFindLLAT
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, false); //addColorBarMinMax, tryToFindLLAT
             //then add the sourceAtts to the addAtts (since addAtts is all that will be shown)
             addAtts.add("observedProperty", prop);
             addAtts.add("standard_name", dvName);
@@ -7221,7 +7229,7 @@ String expected2 =
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">buoy, center, data, national, ndbc, noaa, server.php, sos</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">National Data Buoy Center SOS. NOAA NDBC data from https://sdf.ndbc.noaa.gov/sos/server.php.das .</att>\n" +
 "        <att name=\"title\">National Data Buoy Center SOS (server.php)</att>\n" +
@@ -7802,7 +7810,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
             boolean simplify = true;
             sosTable = new Table();
             sosTable.readASCII(safeFileName, br, 
-                0, 1, "", null, null, null, null, simplify); 
+                "", "", 0, 1, "", null, null, null, null, simplify); 
             timeSourceName = "date_time";
             longitudeSourceName = "longitude (degree)";
             latitudeSourceName  = "latitude (degree)";
@@ -7883,7 +7891,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "        <att name=\"infoUrl\">" + XML.encodeAsXML(tInfoUrl) + "</att>\n" +
 "        <att name=\"institution\">" + XML.encodeAsXML(tInstitution) + "</att>\n" +
 "        <att name=\"license\">" + XML.encodeAsXML(tLicense) + "</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  " +
 "The stations in this dataset have " + XML.encodeAsXML(shortObservedProperty) + " data.\n" +
@@ -7921,14 +7929,14 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
             //make addAtts
             Attributes sourceAtts = sosTable.columnAttributes(col);
             Attributes addAtts = new Attributes();
-            Class tClass = sosTable.getColumn(col).elementClass();
+            PAType tPAType = sosTable.getColumn(col).elementType();
             sourceAtts.add("standard_name", colNameNoParen);  //add now, remove later
-            PrimitiveArray destPA = PrimitiveArray.factory(tClass, 1, false);
+            PrimitiveArray destPA = PrimitiveArray.factory(tPAType, 1, false);
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 sosTable.globalAttributes(), //but there are none
                 sourceAtts, null, colNameNoParen, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 true); //tryToFindLLAT
             if (tUnits != null) 
                 addAtts.add("units", tUnits);
@@ -7950,7 +7958,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         if (reallyVerbose) {
             for (int col = 0; col < nCol; col++) 
                 String2.log(
-                    String2.left(sosTable.getColumn(col).elementClassString(), 10) + 
+                    String2.left(sosTable.getColumn(col).elementTypeString(), 10) + 
                     String2.left(sosTable.getColumnName(col), 15) + 
                     " units=" + sosTable.columnAttributes(col).getString("units"));
         }
@@ -8043,7 +8051,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have " + whichObsProp + " data.\n" +
 "\n" +
@@ -8627,7 +8635,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 
     /**
      * This tests datasetID=whoiSos.
-     * See the email from Janet Fredericks to me 2013-01-28 6:36 AM
+     * See the email from Janet Fredericks (now retired) to me 2013-01-28 6:36 AM
      * (in response to my email suggesting she work with NOAA IOOS and standardize)
      * saying this was funded by IOOS!
      *
@@ -8683,13 +8691,14 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         Test.ensureEqual(results, expected, results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSmall changes are common. WHOI Server is in flux."); 
+                "\nSmall changes are common. The WHOI SOS Server is in flux." +
+                "\n2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).");
         }
 
 
         try {
         //there was a problem with 2 rows have different data for same L,L,A,T,ID
-        //2013-03-05 I used this to find the problem times. See emails to Janet Fredericks.
+        //2013-03-05 I used this to find the problem times. See emails to Janet Fredericks (now retired).
         userDapQuery = "&time>2009-09-01&time<2009-10";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.datasetID() + "_Data2", ".csv"); 
@@ -8703,7 +8712,8 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSmall changes are common. Neracoos Server is in flux."); 
+                "\nSmall changes are common. The WHOI SOS Server is in flux." + 
+                "\n2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).");
         }
 
 
@@ -8720,7 +8730,8 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSmall changes are common. Neracoos Server is in flux."); 
+                "\nSmall changes are common. The WHOI SOS Server is in flux." + 
+                "\n2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).");
         }
 
 
@@ -8737,7 +8748,8 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSmall changes are common. Neracoos Server is in flux."); 
+                "\nSmall changes are common. The WHOI SOS Server is in flux." + 
+                "\n2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).");
         }
 
 
@@ -8755,7 +8767,8 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSmall changes are common. Neracoos Server is in flux."); 
+                "\nSmall changes are common. The WHOI SOS Server is in flux." + 
+                "\n2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).");
         }
 
         EDStatic.sosActive = oSosActive;
@@ -8986,7 +8999,7 @@ expected =
 "    Float64 Northernmost_Northing 30.766;\n" +
 "    String sourceUrl \"http://data.gcoos.org:8080/52nSOS/sos/kvp\";\n" +
 "    Float64 Southernmost_Northing 16.834;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_pressure data.\n" +
 "\n" +
@@ -9148,7 +9161,7 @@ expected =
 
 expected = 
 "    Float64 Southernmost_Northing -14.28;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +

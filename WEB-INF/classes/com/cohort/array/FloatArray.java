@@ -36,6 +36,17 @@ public class FloatArray extends PrimitiveArray {
     public float[] array;
 
     /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 4;
+    }
+
+    /**
      * A constructor for a capacity of 8 elements. The initial 'size' will be 0.
      */
     public FloatArray() {
@@ -94,7 +105,7 @@ public class FloatArray extends PrimitiveArray {
         return array.length;
     }
 
-    /** This indicates if this class' type is float.class or double.class. 
+    /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
      */
     public boolean isFloatingPointType() {
         return true;
@@ -164,12 +175,12 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (float.class) of the element type.
+     * This returns the PAType (PAType.FLOAT) of the element type.
      *
-     * @return the class (float.class) of the element type.
+     * @return the PAType (PAType.FLOAT) of the element type.
      */
-    public Class elementClass() {
-        return float.class;
+    public PAType elementType() {
+        return PAType.FLOAT;
     }
 
     /**
@@ -177,7 +188,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_FLOAT) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_FLOAT;
     }
 
@@ -353,7 +364,7 @@ public class FloatArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in FloatArray.addFromPA: otherIndex=" + otherIndex + 
@@ -1017,6 +1028,30 @@ public class FloatArray extends PrimitiveArray {
             array[size++] = dis.readFloat();
     }
 
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeFloat(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readFloat());
+    }
+
+
+
     /**
      * This reads one value from a randomAccessFile.
      *
@@ -1428,36 +1463,36 @@ public class FloatArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new FloatArray(new float[] 
             {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, Float.MIN_VALUE, Float.NaN, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 3.4028235E38, -3.4028235E38, 1.4E-45, NaN, -1.0", ""); // -> mv
         anArray.clear();        
 
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
         anArray.clear();        
 
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             // 0, 1,    2147483647,   2147483648,   4294967295
             "0.0, 1.0, 2.14748365E9, 2.14748365E9, 4.2949673E9", ""); //rounded/imprecise
         anArray.clear();        
 
-        anArray = (FloatArray)unsignedFactory(float.class, 
+        anArray = (FloatArray)unsignedFactory(PAType.FLOAT, 
             new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 9.223372E18, 9.223372E18, 1.8446744E19", ""); //rounded/imprecise
@@ -1471,7 +1506,7 @@ public class FloatArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), 1e34f, ""); //'f' defines it as a float
         Test.ensureEqual(anArray.getDouble(0), 1e34f, ""); //'f' bruises it so they match
         Test.ensureEqual(anArray.getString(0), "1.0E34", "");
-        Test.ensureEqual(anArray.elementClass(), float.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.FLOAT, "");
         float tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new float[]{1e34f}, "");
 

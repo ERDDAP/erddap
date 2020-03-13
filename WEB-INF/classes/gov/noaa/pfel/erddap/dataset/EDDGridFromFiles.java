@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -106,7 +107,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     protected String   axis0TimeZoneString = null;
     protected TimeZone axis0TimeZone = null;
     protected DateTimeFormatter axis0DateTimeFormatter = null;  //java.time (was Joda)
-    protected Class    axis0Class = double.class; //the default
+    protected PAType    axis0PAType = PAType.DOUBLE; //the default
     protected String   axis0Regex = "(.*)";       //the default
     protected Pattern  axis0RegexPattern = null;  //from regex
     protected int      axis0CaptureGroup = 1;     //the default
@@ -554,8 +555,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                                     Calendar2.makeDateTimeFormatter(axis0TimeFormat, axis0TimeZoneString);
                                 tp = "double";
                             } //otherwise it should be a primitive type, e.g., double
-                            axis0Class = PrimitiveArray.elementStringToClass(tp);
-                            if (axis0Class == String.class)
+                            axis0PAType = PrimitiveArray.elementStringToPAType(tp);
+                            if (axis0PAType == PAType.STRING)
                                 throw new IllegalArgumentException(
                                     "Axis variables can't be Strings.");
                         }
@@ -575,7 +576,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                         if (verbose)
                             String2.log("axis0 " + parts.get(0) + 
                                 " format=" + axis0TimeFormat +
-                                " class=" + axis0Class +
+                                " class=" + axis0PAType +
                                 " regex=" + axis0Regex +
                                 " captureGroup=" + axis0CaptureGroup);
                     } else {
@@ -695,8 +696,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         IntArray    ftStartIndex = (IntArray)   fileTable.getColumn(FT_START_INDEX_COL);
 
         //get sourceAxisValues and sourceAxisAttributes from an existing file (if any)
-        //first one (if any) should succeed
-        for (int i = 0; i < ftFileList.size(); i++) {
+        //Last one should succeed and has newest (most?) data variables.
+        for (int i = ftFileList.size() - 1; i >= 0; i--) {
             String tDir  = dirList.get(ftDirIndex.get(i));
             String tName = ftFileList.get(i);
 
@@ -718,6 +719,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     tSourceGlobalAttributes, 
                     tSourceAxisAttributes, tSourceAxisValues,
                     tSourceDataAttributes); 
+                if (verbose) String2.log("got sample metadata from " + tDir + tName);
                 break; //successful, no need to continue
             } catch (Throwable t) {
                 String reason = MustBe.throwableToShortString(t); 
@@ -1087,7 +1089,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         //finish up, validate, and (if !quickRestart) save dirTable, fileTable, badFileMap
         PrimitiveArray sourceAxisValues0 = PrimitiveArray.factory(
-            sourceAxisValues[0].elementClass(), 
+            sourceAxisValues[0].elementType(), 
             ftDirIndex.size(), //size is a guess: the minimum possible, but usually correct
             false); //not active
         updateValidateFileTable(dirList, ftDirIndex, ftFileList,
@@ -1344,7 +1346,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 Attributes  saAtt =  sourceAxisAttributes[avi];
                 String emsg2 = " for sourceName=" + sourceAxisNames.get(avi) + " are different.";
                 double d1, d2;
-                
+               
                 d1 = tsaAtt.getDouble("add_offset");
                 d2 =  saAtt.getDouble("add_offset");
                 Test.ensureEqual(Double.isNaN(d1)? 0: d1,
@@ -1378,6 +1380,19 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 Attributes tsdAtt = tSourceDataAttributes[dvi];
                 Attributes  sdAtt =  sourceDataAttributes[dvi];
                 String emsg2 = " for sourceName=" + sourceDataNames.get(dvi) + " are different.";
+
+                //Deal with obs or exp file not having a variable, 
+                //  but I still want to allow this file in collection.
+                //A not perfect solution: if 0 attributes, assume no var in file.
+                //  So copy atts from other.
+                //  This way, a file missing a var can be first or subsequent file read.
+                int ntsdAtt = tsdAtt.size();
+                int  nsdAtt =  sdAtt.size();
+                if (ntsdAtt == 0 && nsdAtt > 0) 
+                     tsdAtt.set(     sdAtt);
+                else if (nsdAtt == 0 && ntsdAtt > 0) 
+                          sdAtt.set(     tsdAtt);
+
                 Test.ensureEqual(tsdAtt.getDouble("add_offset"),
                                   sdAtt.getDouble("add_offset"),
                     emsg1 + "add_offset"    + emsg2);
@@ -1676,7 +1691,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             //first, change local info only
             //finish up, validate, and save dirTable, fileTable, badFileMap
             PrimitiveArray sourceAxisValues0 = PrimitiveArray.factory(
-                axisVariables[0].sourceValues().elementClass(), 
+                axisVariables[0].sourceValues().elementType(), 
                 ftDirIndex.size(), //size is a guess: the minimum possible, but usually correct
                 false); //not active
             updateValidateFileTable(dirList, ftDirIndex, ftFileList,
@@ -1837,7 +1852,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
      *   or Object[3] where 
-     *   [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+     *   [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
      *     "Size" (long), and "Description" (String, but usually no content),
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
@@ -2083,7 +2098,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
             int nAxes = sourceAxisNames.size();
             PrimitiveArray nsav[] = new PrimitiveArray[nAxes];
-            nsav[0] = PrimitiveArray.factory(axis0Class, 1, false);
+            nsav[0] = PrimitiveArray.factory(axis0PAType, 1, false);
 
             //special case: don't read the file! 
             if (matchAxisNDigits == 0 &&
@@ -2168,8 +2183,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   have been customized for this file.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
-     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
-     *     but can be any type. EDDGridFromFiles will convert to the sourceDataTypeClass.
+     *   <br>The primitiveArray dataTypes are usually the sourceDataPAType,
+     *     but can be any type. EDDGridFromFiles will convert to the sourceDataPAType.
      *   <br>Note the lack of axisVariable values!
      * @throws Throwable if trouble (e.g., invalid file).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
@@ -2225,7 +2240,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
-     *   are the dataValues (using the sourceDataTypeClass).
+     *   are the dataValues (using the sourceDataPAType).
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -2267,9 +2282,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tConstraints.get(avi*3 + 1),
                 tConstraints.get(avi*3 + 2));
         for (int dvi = 0; dvi < ndv; dvi++) {
-            //String2.log("!dvi#" + dvi + " " + tDataVariables[dvi].destinationName() + " " + tDataVariables[dvi].sourceDataTypeClass().toString());
+            //String2.log("!dvi#" + dvi + " " + tDataVariables[dvi].destinationName() + " " + tDataVariables[dvi].sourceDataPAType().toString());
             results[nav + dvi] = PrimitiveArray.factory(
-                tDataVariables[dvi].sourceDataTypeClass(), 64, false);
+                tDataVariables[dvi].sourceDataPAType(), 64, false);
         }
         IntArray ttConstraints = (IntArray)tConstraints.clone();
         int nFiles = ftStartIndex.size();
@@ -2336,7 +2351,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 }
             }
 
-            //merge dataVariables   (converting to sourceDataTypeClass if needed)
+            //merge dataVariables   (converting to sourceDataPAType if needed)
             for (int dv = 0; dv < ndv; dv++) 
                 results[nav + dv].append(tResults[dv]);
             //String2.log("!merged tResults[1stDV]=" + results[nav].toString());

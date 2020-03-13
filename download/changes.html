@@ -75,7 +75,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>CHANGED: Advanced Search is now strict for non-.html requests. 
+  <li>IMPROVED: Advanced Search is now strict for non-.html requests. 
     It will now throw exceptions for requests that have permanent errors
     (e.g., requests where minLat &gt; maxLat) or temporary errors
     (e.g., requests for a standard_name that doesn't exist).
@@ -105,6 +105,21 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv
     <br>&nbsp;
 
+  <li>IMPROVED: Graphs and maps created by ERDDAP can now include 3 new
+    marker types: Borderless Filled Square, Borderless Filled Circle,  
+    Borderless Filled Up Triangle.
+    The code for this was contributed by Marco Alba of ETT / EMODnet Physics.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+
+  <li>NEW: If a request to an EDDTable datasets includes 
+    <kbd>&addVariablesWhere(<i>attributeName, attributeValue</i>)</kbd> ,
+    ERDDAP will add all variables which have <kbd><i>attributeName=attributeValue</i></kbd>
+    to the list of requested variables.     
+    <br>See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#addVariablesWhere"
+        ><kbd>&amp;addVariablesWhere</kbd> documentation</a>.
+    Thanks to Aurelie Briand, et al.
   </ul>
 
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
@@ -116,12 +131,34 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         string in double quotes. For example,
         <br>Before: <kbd>&lt;sourceName&gt;=KZ401&lt;/sourceName&gt;</kbd>
         <br>After: <kbd>&lt;sourceName&gt;="KZ401"&lt;/sourceName&gt;</kbd>
+        <br>&nbsp;
+      <li>If you compile ERDDAP, you need to modify the classpath parameter 
+        on the javac command lines to add a reference to these new jar's:
+        lib/commons-jexl.jar;lib/aws-java-sdk.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar .
+        <br>&nbsp;
       </ul>
-      <br>&nbsp;
 
-  <li>NEW: EDDTableFromFiles datasets may now include expressions and scripts 
+  <li>Tomcat 9 is now the recommended version of Tomcat for ERDDAP.
+    The latest version of Tomcat 8.5+ is also fine.
+    We cleaned up ERDDAP's 
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#tomcat"
+        >Tomcat installation instructions</a>.
+
+    <p>The latest version of Java 8 (not Java 9, 10, 11, ...) from 
+    <a rel="bookmark" href="https://adoptopenjdk.net/">AdoptOpenJDK<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> 
+      remains the recommended version of Java for ERDDAP. 
+    <br>&nbsp;
+
+  <li>NEW: Script SourceNames / Derived Variables in Tabular Datasets
+    <br>EDDTableFromFiles, EDDTableFromDatabase, and EDDTableFromFileNames
+    datasets may now include expressions and scripts 
     in the sourceName. This lets you make new variables based on existing
-    variables in the source files. For example, to make a longitude variable
+    variables in the source files. The calculation for a given new variable 
+    is done within one row of the results, repeatedly for all rows.
+    For example, to make a longitude variable
     with values in the range -180 - 180&deg; from a variable with 
     values in the range 0 - 360&deg;:
     <br>&lt;sourceName&gt;=Math2.anglePM180(row.columnDouble("lon"))&lt;/sourceName&gt; 
@@ -129,8 +166,9 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       <a rel="help"
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#scriptSourceNames"
       >Script SourceNames</a>
-    <br>Thanks to Bob Simons (who planned this before ERDDAP v1.0 and finally implemented it),
-      Kevin O'Brien, and Roland Schweitzer.
+    <br>Thanks to Bob Simons (who planned this before ERDDAP v1.0 and finally found a way to implemented it),
+      Kevin O'Brien, Roland Schweitzer, John Maurer,
+      and the Apache JEXL library for doing the really hard part (and doing it well).
     <br>&nbsp;
 
   <li>IMPROVED: There is now 
@@ -139,13 +177,6 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         >better documentation/advice</a>
     for how to create a dataset from files in AWS S3 buckets.
     Thanks to Micah Wengren.
-    <br>&nbsp;
-
-  <li>IMPROVED: Now, if a source dataset has CF grid_mapping information, 
-    generateDatasetsXml for gridded datasets will add the information to global <addAtts>,
-    and the information will be added to global <sourceAtts> everytime data is read from the file.
-    The information will appear in the dataset's global attributes as a set of attributes
-    with the prefix grid_mapping_ .
     <br>&nbsp;
 
   <li>There are several changes related to the "files" system.
@@ -179,7 +210,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         since the default is now true.
       </ol>
 
-    <li>CHANGED: Now, GenerateDatasetsXml won't include a 
+    <li>IMPROVED: Now, GenerateDatasetsXml won't include a 
       &lt;accessibleViaFiles&gt; tag in the output, 
 
     <li>IMPROVED: Additional dataset types now support accessibleViaFiles:
@@ -209,6 +240,20 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
 
     </ul>
 
+  <li>IMPROVED: Now, if a source dataset has CF grid_mapping information, 
+    generateDatasetsXml for gridded datasets will add the information to global <addAtts>,
+    and the information will be added to global <sourceAtts> everytime data is read from the file.
+    The information will appear in the dataset's global attributes as a set of attributes
+    with the prefix grid_mapping_ .
+    <br>&nbsp;
+
+  <li>IMPROVED: GenerateDatasetsXml for EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked now 
+    support a "DimensionsCSV" paramater which lets you specify the source names
+    of the dimensions that you want this dataset to use.
+    Use "" to get the variables that use the most dimensions, as before.
+    Also, a related small bug that occurred with this type of file is now fixed.
+    <br>&nbsp;
+
   <li>IMPROVED: The drawLandMask setting now supports two more options:
     <br>"outline" just draws the landmask outline, political boundaries, lakes and rivers. 
     <br>"off" doesn't draw anything.
@@ -231,17 +276,94 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       See the <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fixedValue"
         >fixed value documentation</a>.
-      Thanks to Mathew Biddle.
+      <br>Thanks to Mathew Biddle.
+      <br>&nbsp;
 
-  <li>FIX: The new version of Hyrax displays directory listings differently than before.
+  <li>NEW: Now, the datasets.xml chunk for a EDDTableFromAsciiFiles or 
+    EDDTableFromColumnarAsciiFiles dataset can 
+    include a tag which tells ERDDAP to ignore all of the lines at the top of 
+    the file up to and including the line which matches the specified
+    regular expression. For example,
+    <br><kbd>&lt;skipHeaderToRegex&gt;\*\*\* END OF HEADER.*&lt;/skipHeaderToRegex&gt;
+    <br>will ignore all lines up to and including a line that starts with "*** END OF HEADER".
+    <br>Thanks to Eli Hunter
+
+  <li>NEW: Now, the datasets.xml chunk for a EDDTableFromAsciiFiles or 
+    EDDTableFromColumnarAsciiFilesdataset can 
+    include a tag which tells ERDDAP to ignore all of the lines in the file
+    which match the specified regular expression. For example,
+    <br><kbd>&lt;skipLinesRegex&gt;#.*&lt;/skipLinesRegex&gt;
+    <br>will skip all lines which start with "#".
+    <br>Thanks to Eli Hunter.
+    <br>&nbsp;
+
+  <li>NEW: The datasets.xml chunk for any EDDTable dataset may now include 
+    <kbd>&addVariablesWhere(<i>attributeNamesCSV</i>)</kbd> .
+    If it does, ERDDAP will add a widget for each of the specified attributeNames
+    to the dataset's Data Access Form (.html web page) to make it easy 
+    for users to add <kbd>&amp;addVariablesWhere(<i>attributeName, attributeValue</i>)</kbd>
+    to the request.     
+    <br>See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addVariablesWhere"
+        ><kbd>&amp;addVariablesWhere</kbd> documentation</a>.
+    <br>Thanks to Aurelie Briand, et al.
+    <br>&nbsp;
+
+  <li>NEW: Now it is okay if some of the files in a EDDGridFromFiles dataset
+    don't have all of the dataset's variables. The files will be included as if
+    they had the variables (with all missing values).
+    [Bob: apply this to nesdisSSH1day]
+    <br>Thanks to Dale Robinson.
+    <br>&nbsp;
+
+  <li>NEW: The new version of Hyrax displays directory listings differently than before.
     ERDDAP can now read the old and new directory listings. 
+    <br>&nbsp;
+
+  <li>IMPROVED: The URLs generated when a user uses a Data Access Form (.html) 
+    or a Make-A-Graph (.graph) web page now properly percent-encode the characters 
+    [ and ].
+    This makes the URLs a little harder for humans to read, but is better from a 
+    web-security standpoint.
+    Administrators now have the option of setting <kbd>relaxedQueryChars='[]|'</kbd>
+    in the Tomcat server.xml file (less secure) or not (more secure).
+    <br>Thanks to Antoine Queric and others.
+    <br>&nbsp;
+
+  <li>IMPROVED: When validating a CF DSG dataset, ERDDAP now ensures that variables with 
+    cf_role attributes are in the corresponding cdm_..._variables list
+    and aren't in other cdm_..._variables lists.
+    For example, if a timeseriesProfile dataset has a "station_id" variable 
+    which has the cf_role=timeseries_id attribute,
+    then "station_id" must be in the cf_timeseries_variables list,
+    but must not be in the cf_profile_variables list.
+    <br>Thanks to Micah Wengren.
+
+  <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
+    requested variable, with a file name ending in the variable's name.
+    If the variable's name was also a type of compression (e.g., .Z), ERDDAP
+    would try (and fail) to decompress the temporary file.
+    Now the temporary file names end in ".temp".
+    Thanks to Matthew Biddle.
+    <br>&nbsp;
+
+  <li>BUG FIX: GenerateDatasetsXml and Calendar2.convertToJavaDateTimeFormat 
+    are now much less likely to make an incorrect change when trying to 
+    fix a possibly invalid date time format.
+    Notably, no auto-suggested dateTime format will be modified.
+    Thanks to Matthew Biddle.
+    <br>&nbsp;
+
+  <li>BUG FIX: If there was an error while getting content from a remote URL,
+    and if the errorStream content is compressed, ERDDAP now properly
+    decompresses the error message.
+    Thanks to Bob Simons.
     <br>&nbsp;
 
   <li>BUG FIX: GenerateDatasetsXml no longer thinks a source variable name 
     starting with "latin" might be latitude.
     Thanks to Vincent Luzzo.
     <br>&nbsp;
-
 
   </ul>
 </ul>
@@ -265,7 +387,7 @@ in ERDDAP version 2.02 (released 2019-08-21)</h2>
     Thanks to Tylar Murray for the original request.
     <br>&nbsp;
 
-  <li>CHANGE: a request to the "files" system to download a file that is actually at a
+  <li>IMPROVED: a request to the "files" system to download a file that is actually at a
     remote site (e.g., AWS S3) now leads to a redirect, 
     so the user will actually download the data from the source,
     instead of using ERDDAP as an intermediary.
@@ -340,7 +462,7 @@ in ERDDAP version 2.02 (released 2019-08-21)</h2>
     <br>Thanks to Andy Ziegler and NOAA.
     <br>&nbsp;
 
-  <li>CHANGE: GenerateDatasetsXml now treats additional common missing_values
+  <li>IMPROVED: GenerateDatasetsXml now treats additional common missing_values
     stand-ins as missing values
     and so is more likely to convert a column to a numeric data type.
     Also, PrimitiveArray.simplify() now logs which particular data value
@@ -348,7 +470,7 @@ in ERDDAP version 2.02 (released 2019-08-21)</h2>
     Thanks to Mathew Biddle.
       <br>&nbsp;
 
-  <li>CHANGE: &lt;requestBlacklist&gt; now supports .*.* (or :*:* for IPv6) 
+  <li>IMPROVED: &lt;requestBlacklist&gt; now supports .*.* (or :*:* for IPv6) 
     at the end of the IP addresses so that you can blacklist a bigger chunk
     of IP addresses, e.g., 110.52.*.* (China Unicom Tianjin).
     See the documentation for <a rel="help"
@@ -357,7 +479,7 @@ in ERDDAP version 2.02 (released 2019-08-21)</h2>
     Thanks to China Unicom and China Telecom.
       <br>&nbsp;
 
-  <li>CHANGE: If a dataset's source doesn't specify an "institution" attribute,
+  <li>IMPROVED: If a dataset's source doesn't specify an "institution" attribute,
     GenerateDatasetsXml and loadDataset now
     get it from a "creator_institution" attribute (if available).
     Thanks to Micah Wengren.
@@ -400,13 +522,13 @@ in ERDDAP version 2.01 (released 2019-07-02)</h2>
     Also, I improved the handling of unexpected errors on all HTML pages so they 
     will (usually) display an error message.
     Thanks to Marco Alba.
-  <li>CHANGE: GenerateDatasetsXml no longer prints a lengthy warning at the top of the output. 
+  <li>IMPROVED: GenerateDatasetsXml no longer prints a lengthy warning at the top of the output. 
     Instead, please see 
     <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EditingGDXOutput"
         >Editing GenerateDatasetsXml Output</a>.
     Thanks to Steven Baum.
-  <li>CHANGE: GenerateDatasetsXml now makes slightly different recommendations 
+  <li>IMPROVED: GenerateDatasetsXml now makes slightly different recommendations 
     in different situations for &lt;updateEveryNMillis&gt; for EDD...From...Files datasets.
     Also, GenerateDatasetsXml now discourages the original "extract" system for EDDTableFromFiles datasets.
   </ul>
@@ -554,14 +676,14 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
         >.xRange and .yRange documentation</a>.
     Thanks to Carrie Wall Bell / the Hydrophone project.
     <br>&nbsp;
-  <li>CHANGE: ERDDAP now makes better use of various HTTP error codes 
+  <li>IMPROVED: ERDDAP now makes better use of various HTTP error codes 
     and now returns an (OPeN)DAPv2.0-formatted error message payload.
     See <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#Errors"
         >the details</a>.
       Thanks to Antoine Queric and Aurelie Briand.
     <br>&nbsp;
-  <li>CHANGE: Don't use Netcdf-java/c or other software tools to connect to 
+  <li>IMPROVED: Don't use Netcdf-java/c or other software tools to connect to 
     .nc or .hdf files served by ERDDAP's /files/ system as if they were local files. 
     ERDDAP now refuses these requests.
     It is horribly inefficient and often causes other problems. 
@@ -575,20 +697,20 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
       then access the data from your local copy of the file.
     </ul>
     <br>&nbsp;
-  <li>CHANGE: On the ERDDAP homepage, Full Text Search is now
+  <li>IMPROVED: On the ERDDAP homepage, Full Text Search is now
     above "View a List of All Datasets" since it is the best starting point for most users.
     Thanks to Didier Mallarino and Maurice Libes.
     <br>&nbsp;
-  <li>CHANGE: On DataProviderForm3.html there are now dropdown lists of common standard_names.
+  <li>IMPROVED: On DataProviderForm3.html there are now dropdown lists of common standard_names.
     Thanks to someone at the IOOS DMAC meeting.
     <br>&nbsp;
-  <li>CHANGE: On the /files/ web pages, there is now a link to the new
+  <li>IMPROVED: On the /files/ web pages, there is now a link to the new
     "What can I do with these files?" section of the /files/ documentation.
     That section describes various file types and gives suggestions for how to 
     work with them.
     Thanks to Maurice Libes.
     <br>&nbsp;
-  <li>CHANGE: Almost every request to ERDDAP should be at least a little bit faster,
+  <li>IMPROVED: Almost every request to ERDDAP should be at least a little bit faster,
     and sometimes a lot faster.
     <br>&nbsp;
   <li>BUG FIX: Under some circumstances, when an EDDTable dataset saved data in some
@@ -965,7 +1087,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     the available valid data even though some lines of the file have flaws. 
     Previously, ERDDAP marked the file as "bad" and removed it from the dataset.
     <br>&nbsp;
-  <li>CHANGE: When precise times (e.g., to the nearest second or millisecond) are 
+  <li>IMPROVED: When precise times (e.g., to the nearest second or millisecond) are 
     stored at the source as "minutes since ..." (or larger units),
     ERDDAP now rounds them to the nearest millisecond 
     when reading the values into ERDDAP.
@@ -1013,7 +1135,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     in numeric data columns that ERDDAP should look for.
     Thanks to Matt Biddle of BCO-DMO.
     <br>&nbsp;
-  <li>CHANGE: the ncdump option in generateDatasetsXml is now more
+  <li>IMPROVED: the ncdump option in generateDatasetsXml is now more
     like ncdump (but still uses NCdumpW, the netcdf-java version of ncdump).
     Now, it prints a new list of options. 
     Now, for .ncml files, it prints the ncdump output for the result
@@ -1044,14 +1166,14 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
   <li>BUG FIX: Two bugs related to EDDTableCopy.
     Thanks to Sam McClatchie.  
     <br>&nbsp;
-  <li>CHANGE: The number of failed requests shown on the status.html page 
+  <li>IMPROVED: The number of failed requests shown on the status.html page 
     will increase because more things
     are counted as failures than before.
     <br>&nbsp;
-  <li>CHANGE: ERDDAP's status.html now shows "Requests (median times in ms)" in the time series.
+  <li>IMPROVED: ERDDAP's status.html now shows "Requests (median times in ms)" in the time series.
     Previously, it showed median times truncated to integer seconds.
     <br>&nbsp;
-  <li>CHANGE: In the jsonld output, the jsonld "name" now comes from the dataset's "title" in ERDDAP,
+  <li>IMPROVED: In the jsonld output, the jsonld "name" now comes from the dataset's "title" in ERDDAP,
     and the jsonld "headline" now comes from the dataset's "datasetID" in ERDDAP.
     Previously, it was reversed.
     This seems wrong to me because in normal English usage, "name" is usually a short, 
@@ -1068,7 +1190,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     based on the specification alone, without guidance from experts.
     But I defer to Google (notably Natasha Noy), NCEI (notably John Relph), and Rob Fuller.
     <br>&nbsp;
-  <li>CHANGE: In the jsonld output, the four "spatialCoverage GeoShape box" values are now
+  <li>IMPROVED: In the jsonld output, the four "spatialCoverage GeoShape box" values are now
     minLat minLon maxLat maxLon. Previously, the lat and lon positions were reversed.
     Gee, it would be great if the schema.org definition of 
     <a rel="help" href="https://schema.org/GeoShape"
@@ -1092,16 +1214,16 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
   <ul>
   <li>Numerous subtle changes to the look-and-feel of ERDDAP web pages.
     <ul>
-    <li>CHANGE: ERDDAP now uses HTML 5 and makes better use of CSS.
-    <li>CHANGE: The web pages have been slightly modified to make them cleaner
+    <li>IMPROVED: ERDDAP now uses HTML 5 and makes better use of CSS.
+    <li>IMPROVED: The web pages have been slightly modified to make them cleaner
       and less "busy". (They are still dense and there are still things
       one could complain about, but hopefully much less so than before.)
       Thanks to John Kerfoot for some comments.
-    <li>CHANGE: The web pages now look much better on mobile phones and
+    <li>IMPROVED: The web pages now look much better on mobile phones and
       other small devices, particularly if you use them in landscape
       orientation. They also look better in very small and very large
       windows in desktop browsers.
-    <li>CHANGE: To improve security and other reasons, the use of an out-of-date Openlayers 
+    <li>IMPROVED: To improve security and other reasons, the use of an out-of-date Openlayers 
       version for the WMS demonstration pages has been replaced by Leaflet.
     <li>NEW: support for previews of image, audio, and video files 
       in the "files" system (for example, 
@@ -1148,7 +1270,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         >documentation</a>)
       Thanks to Jim Potemra, Rich Signell, OOI, and Carrie Wall Bell
         for requests for audio/hydrophone file support.      
-    <li>CHANGE: The format for the Web Accessible Folders (WAF) (e.g., the /files/ folders)
+    <li>IMPROVED: The format for the Web Accessible Folders (WAF) (e.g., the /files/ folders)
       has been updated to use an HTML table.
       The new format mimics the more recent version of the directory listing web pages 
       created by more recent versions of Apache.
@@ -1175,7 +1297,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         the clever people of Ireland's Marine Institute who gave me the
         inspiration via their dedicated Raspberry Pi and monitor 
         which always shows a screen like this in their office.
-    <li>CHANGE: .htmlTable and .xhtml response are now better formatted, more compact,
+    <li>IMPROVED: .htmlTable and .xhtml response are now better formatted, more compact,
       and thus load faster. Thanks to HTML5 and CSS.
     </ul>
   <li>NEW output file type for griddap datasets: .timeGaps. It shows
@@ -1186,7 +1308,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     to know if there are unexpected gaps in the time values for a dataset 
     that is expected to have regularly spaced time values.
     Thanks to Bob Simons and Roy Mendelssohn who needed this feature.
-  <li>CHANGE: The default graph for the allDatasets dataset is now a map
+  <li>IMPROVED: The default graph for the allDatasets dataset is now a map
     with x=maxLon and y=maxLat. Thanks to John Kerfoot, Rich Signell, and OOI-CI.
   <li>NEW: <a rel="bookmark" href="https://github.com/ioos/erddapy">erddapy<img 
         src="../images/external.png" alt=" (external link)" 
@@ -1452,7 +1574,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         If ERDDAP doesn't recognize the format, it leaves the time value unchanged.
         If you see a format that ERDDAP doesn't recognize and fix, 
         please email it to bob.simons at noaa.gov.
-      <li>CHANGE: The low level code for the EDDGridFromThreddsCatalog option
+      <li>IMPROVED: The low level code for the EDDGridFromThreddsCatalog option
         in GenerateDatasetsXml now relies on the Unidata netcdf-java catalog crawler code 
         (thredds.catalog classes) so that it can handle all THREDDS catalogs
         (which can be surprisingly complex).  
@@ -1464,7 +1586,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
       <li>NEW: GenerateDatasetsXml for EDDGridFromDap now adds 
         ", [resolution]&deg;" to the title if the dataset is evenly spaced and 
         the same for lat and lon.
-      <li>CHANGE: The time converter now has additional features, notably
+      <li>IMPROVED: The time converter now has additional features, notably
         the ability to convert string times in a wide variety of common
         formats into ISO 8601 strings or into a UDUnits-compatible number.
         All previously supported features continue to work, unchanged.
@@ -1474,7 +1596,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         in the keywords attribute that don't start with "Earth Science > "
         or that use anything other than title case (where the first letter of 
         each word is capitalized). 
-      <li>CHANGE: When suggesting &lt;destinationName&gt;'s, GenerateDatasetsXml for 
+      <li>IMPROVED: When suggesting &lt;destinationName&gt;'s, GenerateDatasetsXml for 
         EDDTableFromAsciiFiles just used the tail end of sourceNames with '/' 
         (some were filename-like).
         Now it uses the entire sourceName (e.g., "blahblahblah (m/s)". 
@@ -1496,11 +1618,11 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     if the dataset is a gridded dataset.  
   <li>NEW: Advanced Search now accepts "now<i>-nUnits</i>" time values. 
     Thanks to Rich Signell.
-  <li>CHANGE: To improve security, when an email address in a dataset's metadata or data
+  <li>IMPROVED: To improve security, when an email address in a dataset's metadata or data
     is written to an html web page, the "@" is replaced with " at ".
     This only catches email addresses that are the entire metadata or data value,
     not email addresses embedded in longer values.
-  <li>CHANGE: To increase security, 
+  <li>IMPROVED: To increase security, 
     the RSS information for private datasets is now only available to users
     (and RSS readers) who are logged in and authorized to use that dataset.
   <li>NEW: Now, when a dataset is loaded, if 
@@ -1510,7 +1632,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     If ERDDAP doesn't recognize the format, it leaves the time value unchanged.
     If you see a format that ERDDAP doesn't recognize and fix, 
     please email it to bob.simons at noaa.gov.
-  <li>CHANGE: .dods responses from EDDGrid datasets should now be significantly faster. 
+  <li>IMPROVED: .dods responses from EDDGrid datasets should now be significantly faster. 
     Thanks to Rich Signell.
   <li>Changes related to ERDDAP's creation of ISO 19115 documents:
       <ul>
@@ -1541,7 +1663,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     This may fix using ERDDAP's WMS 1.3.0 service in ArcGIS (thanks to Paola Arce).
     Thanks (not) to OGC for making this so complicated.
     Thanks to Leaflet for handling this correctly and for giving me a way to test this.
-  <li>CHANGE: Previous, the suggested link for RSS and email subscriptions 
+  <li>IMPROVED: Previous, the suggested link for RSS and email subscriptions 
     has the http URL for your ERDDAP. Now it is the https URL,
     if that is active.
   <li>NEW: EDDGridCopy now supports an optional tag 
@@ -1553,7 +1675,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#onlySince"
     >onlySince documentation</a>.
     Thanks to Drew P.
-  <li>CHANGE: If available, ERDDAP will show the https URL
+  <li>IMPROVED: If available, ERDDAP will show the https URL
     (from &lt;baseHttpsUrl&gt;, if available) instead of the http URL  
     when it tells users the URL to add/validate/remove/list a subscription.
   <li>BUG FIX: ERDDAP now allows a subscription action to start with "https://".
@@ -1570,19 +1692,19 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
   <li>NEW: When a dataset is loaded in ERDDAP, 
     the keywords are now rearranged into sorted order and any newline characters
     are removed.
-  <li>CHANGE: Now, if a .geoJson, .json or .ncoJson request has .jsonp parameter, 
+  <li>IMPROVED: Now, if a .geoJson, .json or .ncoJson request has .jsonp parameter, 
     the response mime type is application/javascript.
     Note that .jsonp is not supported for .jsonlCSV or .jsonlKVP, since it wouldn't work.
     Thanks to Rob Fuller.  
-  <li>CHANGe: The mime type for json lines fileType options is now "application/x-jsonlines".
+  <li>IMPROVED: The mime type for json lines fileType options is now "application/x-jsonlines".
     It was application/jsonl.
     Currently, there is no definitive correct choice.
-  <li>CHANGE: The number of failed requests shown on the status.html page 
+  <li>IMPROVED: The number of failed requests shown on the status.html page 
     will increase because more things
     are counted as failures than before, e.g., ClientAbortException.
-  <li>CHANGE: Now, if a response from ERDDAP is not compressed, then
+  <li>IMPROVED: Now, if a response from ERDDAP is not compressed, then
     the header of the response will include "Content-Encoding"="identity".
-  <li>CHANGE: The "license" attribute wasn't required. Now, if it isn't specified, 
+  <li>IMPROVED: The "license" attribute wasn't required. Now, if it isn't specified, 
     the standardLicense from messages.xml (or from setup.xml if present) is used
     as the default.
   <li>NEW: There is now an optional 
@@ -1593,7 +1715,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     <a rel="help"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fileAccessBaseUrl"
     ><kbd>fileAccessBaseUrl</kbd> attribute</a>.
-  <li>CHANGE: To increase security, this version was compiled with the latest
+  <li>IMPROVED: To increase security, this version was compiled with the latest
     Java JDK v8u162.
   <li>NEW: To increase security, several common domains that offer temporary
     email addresses (e.g., @mailinator.com) are now on a permanent email blacklist
@@ -1605,7 +1727,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     <br>SetDatasetFlag IP Address Succeeded (since startup)
     <br>The "Failed" tallies let you see who (a hacker?) is trying to set a flag, 
       but is failing.
-  <li>CHANGE: To increase security, 
+  <li>IMPROVED: To increase security, 
     email addresses in the &lt;subscriptionEmailBlacklist&gt; in 
     your datasets.xml are now considered to be case-insensitive.
     <br>&nbsp;
@@ -1757,7 +1879,7 @@ in ERDDAP version 1.80 (released 2017-08-04)</h2>
     See the <a rel="help"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar"
     >colorBar settings</a>.
-  <li>CHANGE: the state boundary color on maps was purple 
+  <li>IMPROVED: the state boundary color on maps was purple 
     (Deep Purple for you Baby Boomers).
     Now it is gray 
     (in between the national boundary gray and the land gray).
@@ -1781,7 +1903,7 @@ in ERDDAP version 1.78 (released 2017-05-27)</h2>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <br>&nbsp;
   <ul>
-  <li>CHANGE: The order of lines in "Major LoadDatasets Time Series"
+  <li>IMPROVED: The order of lines in "Major LoadDatasets Time Series"
     on the status.html page is now newest on top to oldest at the bottom.
   <li>BUG FIX: ERDDAP now writes .nccsv files with the time variable's actual_range as
     an ISO-8601 String time. That fixes the bug with EDDTableFromErddap parsing 
@@ -1812,7 +1934,7 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
       Browsers take care of percent encoding for you. 
       so using ERDDAP in a browser isn't affected unless the request gets
       redirected to another ERDDAP.
-  <li>CHANGE: Previously, ERDDAP treated <strong>char variables</strong> more like 
+  <li>IMPROVED: Previously, ERDDAP treated <strong>char variables</strong> more like 
     unsigned short integers than characters. 
     Now it treats them more like 1-character-long UCS-2 (Unicode) Strings. 
     See the
@@ -1820,7 +1942,7 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#charData"
       >char documentation</a>.
     Thanks to Aurelie Briand and the Argo project.
-  <li>CHANGE: Previously, ERDDAP offered little support for <strong>Unicode characters</strong> 
+  <li>IMPROVED: Previously, ERDDAP offered little support for <strong>Unicode characters</strong> 
     above character #255 in Strings.
     Now, internally, ERDDAP fully supports 2-byte UCS-2 chars 
     (characters numbered 0 through 65535) in Strings.
@@ -1832,7 +1954,7 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
     <a rel="help" 
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#StringData"
       >String data</a>.
-  <li>CHANGE: In .nc files written by ERDDAP,  
+  <li>IMPROVED: In .nc files written by ERDDAP,  
     char variables to be interpreted as Strings will have the attribute
     <br><kbd><strong>_Encoding=ISO-8859-1</strong></kbd>
     <br>In .nc files read by ERDDAP, char variables with "_Encoding" will be interpreted
@@ -1849,7 +1971,7 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
         >https://en.wikipedia.org/wiki/Unicode<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
-  <li>CHANGE: Previously, ERDDAP offered limited support for <strong>long integer</strong>
+  <li>IMPROVED: Previously, ERDDAP offered limited support for <strong>long integer</strong>
     variables. 
     Now ERDDAP fully supports longs internally and does its best 
     when writing long data to various file types. . 
@@ -1912,10 +2034,10 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html"
     ><strong>How to Access Private Datasets in ERDDAP via Scripts</strong></a>.
     Thanks to Lynn DeWitt.
-  <li>CHANGE: The minimum extent of the <strong>OpenLayers</strong> map was 2 degrees and is
+  <li>IMPROVED: The minimum extent of the <strong>OpenLayers</strong> map was 2 degrees and is
     now 4 data pixels.
     Thanks to Rusty Holleman.
-  <li>CHANGE: In some common cases, requests which include a <strong>regular expression</strong> 
+  <li>IMPROVED: In some common cases, requests which include a <strong>regular expression</strong> 
     constraint will be processed much faster.
     <br>&nbsp;
   </ul>
@@ -1973,13 +2095,13 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
         title="This link to an external website does not constitute an endorsement."></a>.
     NCEI may standardize on this format.
     Thanks to Scott Cross and John Relph.
-  <li>CHANGE: The links to download the erddap.war on the ERDDAP web pages 
+  <li>IMPROVED: The links to download the erddap.war on the ERDDAP web pages 
     now point to <strong>GitHub</strong>. 
     (They are public links, so you don't have to join GitHub.) 
     This means much faster downloads (up to 12Mb/s versus 1Mb/s) and few problems with downloads.
     Thanks to Damian Smyth, Rob Fuller, Adam Leadbetter, Conor Delaney,
     and Ireland's Marine Institute.
-  <li>CHANGE: The <strong>status.html page and the daily Status Report email</strong> now
+  <li>IMPROVED: The <strong>status.html page and the daily Status Report email</strong> now
     include a "Major LoadDatasets Time Series" section which shows statistics 
     about ERDDAP as of the end of each major loadDatasets for the last
     100 major loadDatasets.
@@ -2004,19 +2126,19 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
       href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html"
       >NCCSV .csv files</a>.
     Thanks to Steve Hankin.
-  <li>CHANGE: <strong>EDDTableFromErddap</strong> now uses .nccsv to get information
+  <li>IMPROVED: <strong>EDDTableFromErddap</strong> now uses .nccsv to get information
   from remote
     ERDDAPs and for local archive of that metadata info.
     This enables full support for the char and long data types, and for 
     Unicode (UCS-2) charset for chars and Strings.
     Thanks to Rob Fuller and Ireland's Marine Institute.
-  <li>CHANGE: EDDTableFromErddap and EDDGridFromErddap now support
+  <li>IMPROVED: EDDTableFromErddap and EDDGridFromErddap now support
     <kbd><strong>&lt;redirect&gt;false&lt;/redirect&gt;</strong></kbd>
     which tells ERDDAP never to redirect the request to the remote ERDDAP.
     The default is true. 
     This is useful when the remote ERDDAP is a private ERDDAP.
     Thanks to Damian Smyth, Rob Fuller, and Ireland's Marine Institute.
-  <li>CHANGE: ERDDAP now catches <strong>cancelled user requests</strong> sooner.
+  <li>IMPROVED: ERDDAP now catches <strong>cancelled user requests</strong> sooner.
     And ERDDAP now shuts down faster because the low level threads shut down faster.
     Thanks to our troublesome RAID.
   <li><strong>GenerateDatasetsXml:</strong>
@@ -2046,27 +2168,27 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
       ERDDAP Category search system to search for datasets with specific
       values of these attributes. 
       Thanks to BODC and Alexandra Kokkinaki.
-    <li>CHANGE: GenerateDatasetsXml now changes many http:// references 
+    <li>IMPROVED: GenerateDatasetsXml now changes many http:// references 
       in the metadata to https:// when appropriate.
-    <li>CHANGE: GenerateDatasetsXml now tries to guess creator_type and publisher_type.
-    <li>CHANGE: The variable's dataTypes suggested by GenerateDatasetsXml 
+    <li>IMPROVED: GenerateDatasetsXml now tries to guess creator_type and publisher_type.
+    <li>IMPROVED: The variable's dataTypes suggested by GenerateDatasetsXml 
       are now be a little better.
       Thanks to Margaret O'Brien, LTER, and EML.
-    <li>CHANGE: GenerateDatasetsXml is better at specifying the &lt;cdm_data_type&gt;,
+    <li>IMPROVED: GenerateDatasetsXml is better at specifying the &lt;cdm_data_type&gt;,
       and adding the related, required attributes (e.g., &lt;cdm_timeseries_variables&gt;),
       so you can supply that information.
       Thanks to Rich Signell.
-    <li>CHANGE: In GenerateDatasetsXml, for EDDTable datasets, the suggestion for
+    <li>IMPROVED: In GenerateDatasetsXml, for EDDTable datasets, the suggestion for
       &lt;subsetVariables&gt; is now much more conservative.
       Thanks to John Kerfoot.
-    <li>CHANGE: If datasets.xml for a datasets specifies featureType 
+    <li>IMPROVED: If datasets.xml for a datasets specifies featureType 
       but not cdm_data_type, the featureType will be used as the cdm_data_type.
       Thanks to Rich Signell.
     <li>BUG FIX: generateDatasetsXml now suggests the correct &lt;dataType&gt;
       for data variables that have scale_factor, add_offset 
       and/or _Unsigned attributes. 
     </ul>
-  <li>CHANGE: When ERDDAP opens a .nc file that is <strong>shorter</strong> 
+  <li>IMPROVED: When ERDDAP opens a .nc file that is <strong>shorter</strong> 
     than it is supposed 
     to be (e.g., it didn't get completely copied into place),
     ERDDAP now treats the file as bad.
@@ -2074,8 +2196,8 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
     because that is the default behavior for netcdf-java.
     ERDDAP now uses ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = true;
     Thanks to our troublesome RAID and Christian Ward-Garrison.
-  <li>CHANGE: the ISO 19115 writer now makes use of <strong>creator_type</strong>, if present.
-  <li>CHANGE: ERDDAP now uses the latest netcdf-java v4.6.9 which 
+  <li>IMPROVED: the ISO 19115 writer now makes use of <strong>creator_type</strong>, if present.
+  <li>IMPROVED: ERDDAP now uses the latest netcdf-java v4.6.9 which 
     can read additional types of <strong>netcdf-4 files</strong>.
     Thanks to Craig Risien, Rich Signell, Christopher Wingard and OOI.
   <li>BUG FIX: avoid trouble if different source files have different data types
@@ -2188,7 +2310,7 @@ in ERDDAP version 1.74 (released 2016-10-07)</h2>
   >this documentation</a>.
   Thanks to Evan Howell and Melanie Abecassis.
   <br>&nbsp;
-<li>CHANGE: ERDDAP now uses netcdf-java 4.6.6.
+<li>IMPROVED: ERDDAP now uses netcdf-java 4.6.6.
   <br>With earlier versions, 
   netcdf-java read some fill values (perhaps, just in netcdf-4 files) as 0's. 
   Now it reads some of them as the netcdf
@@ -2312,11 +2434,11 @@ in ERDDAP version 1.74 (released 2016-10-07)</h2>
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#hardFlag"
   >hardFlag</a> for each EDDGridFromNcFilesUnpacked dataset in your ERDDAP.
   <br>&nbsp;
-<li>CHANGE: EDDTableFromNcCFFiles can now handle files that have multiple sample_dimension's.
+<li>IMPROVED: EDDTableFromNcCFFiles can now handle files that have multiple sample_dimension's.
   A given dataset must only use variables that use one of the sample_dimensions.
   Thanks to Ajay Krishnan.  
   <br>&nbsp;
-<li>CHANGE: For EDDTableFrom...Files, &lt;sortFilesBySourceNames&gt; now allows
+<li>IMPROVED: For EDDTableFrom...Files, &lt;sortFilesBySourceNames&gt; now allows
   comma-separated (recommended) or space separated lists of variable source names. 
   In either case, individual variable names may be surrounded by double quotes,
   e.g., if the name has an internal space.
@@ -2351,12 +2473,12 @@ in ERDDAP version 1.72 (released 2016-05-12)</h2>
     <br>I think IP v6 addresses appear as 8 colon-separated hex numbers.
     <br>So ERDDAP now supports colons in the IP addresses in that list
       and :* at the end of the list to block a range of addresses.
-  <li>CHANGE: ERDDAP now uses NetcdfFileWriter to write .nc files instead
+  <li>IMPROVED: ERDDAP now uses NetcdfFileWriter to write .nc files instead
     of the deprecated NetcdfFileWriteable. There should be no discernable change
     to the resulting files. This opens up the possibility of making
     big .nc files that use the .nc3 64bit extensions. If you want/need that,
     please send a request to bob.simons at noaa.gov .
-  <li>CHANGE: Many of the links to remote websites were out-of-date.
+  <li>IMPROVED: Many of the links to remote websites were out-of-date.
     Now they are up-to-date and use https: instead of http: whenever possible.
   <li>Many small changes.
   </ul>    
@@ -2672,7 +2794,7 @@ in ERDDAP version 1.68 (released 2016-02-08)</h2>
     by adding a new leftmost
     dimension, usually time, based on a value derived from each filename
     or from the value of a global attribute that is in each file.
-  <li>Change: We previously suggested that you might like to create an
+  <li>IMPROVED: We previously suggested that you might like to create an
     EDDGridFromErddap dataset in your datasets.xml that referenced and re-served
     the jplMURSST dataset in our ERDDAP.
     Since there is now a newer version of that dataset, that dataset is now deprecated.
@@ -3688,9 +3810,9 @@ in ERDDAP version 1.44 (released 2013-05-30)</h2>
     fixed value variables.
     Now they will.
     Thanks to Lynn DeWitt and John Peterson.
-  <li>Change: now, all queries for just subset variables act as if 
+  <li>IMPROVED: now, all queries for just subset variables act as if 
     <kbd>&amp;distinct()</kbd> is part of the query.
-  <li>Change: now, for queries that include <kbd>&amp;.jsonp=<i>functionName</i></kbd>, 
+  <li>IMPROVED: now, for queries that include <kbd>&amp;.jsonp=<i>functionName</i></kbd>, 
     <kbd><i>functionName</i></kbd> MUST now be a series of 1 or more (period-separated) words.
     Each word must start with an ISO 8859 letter or "_" and be followed
     by 0 or more ISO 8859 letters, digits, or "_".
@@ -4525,7 +4647,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
 
   <li>In your [tomcat]/content/erddap/datasets.xml:
     <ul>
-    <li>Big change: ERDDAP has new requirements related to a tabular dataset's cdm_data_type.
+    <li>Big IMPROVED: ERDDAP has new requirements related to a tabular dataset's cdm_data_type.
       Notably, each dataset MUST have the correct metadata and variables related to the
       cdm_data_type. If not, the dataset won't load and will throw an error.
       See the documentation for 
@@ -5261,7 +5383,7 @@ now also supports IP addresses where the last number has been replaced by *.
 <li>Erddap has additional, general-purpose protection against all errors (e.g., OutOfMemoryError).
   Thanks to Charles Carleton.
 <li>Improvements to error handling if the response has already been committed.
-<li>Change: EDDTableFromFiles and EDDGridFromFiles now just allow <kbd>&lt;metadataFrom&gt;</kbd>
+<li>IMPROVED: EDDTableFromFiles and EDDGridFromFiles now just allow <kbd>&lt;metadataFrom&gt;</kbd>
   <kbd>first</kbd> or <kbd>last</kbd>.
   <kbd>penultimate</kbd> is no longer supported.
   And first and last are now based on the files' lastModifiedTime.

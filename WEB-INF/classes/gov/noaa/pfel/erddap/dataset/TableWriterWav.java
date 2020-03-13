@@ -90,7 +90,7 @@ public class TableWriterWav extends TableWriter {
         nColumns = table.nColumns();
         if (firstTime) {
 
-            tClass = table.getColumn(0).elementClassString();
+            tClass = table.getColumn(0).elementTypeString();
             Test.ensureTrue(!tClass.equals("String") && !tClass.equals("char"), 
                 String2.ERROR + ": For .wav files, all data columns must be numeric.");
             isLong = tClass.equals("long");
@@ -101,7 +101,7 @@ public class TableWriterWav extends TableWriter {
                 ": Until Java 9, float and double values can't be written to .wav files.");
             for (int col = 0; col < nColumns; col++) {
                 Test.ensureEqual(tClass, 
-                    table.getColumn(col).elementClassString(),
+                    table.getColumn(col).elementTypeString(),
                     String2.ERROR + 
                     ": For .wav files, all data columns must be of the same data type.");
             }

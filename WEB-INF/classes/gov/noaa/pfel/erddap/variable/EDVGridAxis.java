@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -76,7 +77,7 @@ public class EDVGridAxis extends EDV {
 
         super(tSourceName, tDestinationName,
             tSourceAttributes, tAddAttributes, 
-            tSourceValues.elementClassString(), 
+            tSourceValues.elementTypeString(), 
             Math.min(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)),
             Math.max(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)));
         
@@ -152,7 +153,7 @@ public class EDVGridAxis extends EDV {
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        PrimitiveArray pa = PrimitiveArray.factory(destinationDataTypeClass(), 2, false);
+        PrimitiveArray pa = PrimitiveArray.factory(destinationDataPAType(), 2, false);
         pa.addDouble(Math.min(firstDestinationValue(), lastDestinationValue()));
         pa.addDouble(Math.max(firstDestinationValue(), lastDestinationValue()));
         combinedAttributes.set("actual_range", pa);
@@ -267,7 +268,7 @@ public class EDVGridAxis extends EDV {
      * This relies on alt and time overriding toDestination().
      */
     public PrimitiveArray destinationValue(int which) {
-        PrimitiveArray sourceVal = PrimitiveArray.factory(destinationDataTypeClass, 1, false);
+        PrimitiveArray sourceVal = PrimitiveArray.factory(destinationDataPAType, 1, false);
 
         sourceVal.addDouble(sourceValues().getNiceDouble(which)); 
         return toDestination(sourceVal); 
@@ -281,9 +282,9 @@ public class EDVGridAxis extends EDV {
         PrimitiveArray tSourceValues = sourceValues(); //work with stable local reference
         if (scaleAddOffset) {
             double d = tSourceValues.getNiceDouble(which) * scaleFactor + addOffset;
-            if (destinationDataTypeClass == double.class)
+            if (destinationDataPAType == PAType.DOUBLE)
                 return d;
-            if (destinationDataTypeClass == float.class)
+            if (destinationDataPAType == PAType.FLOAT)
                 return Math2.doubleToFloatNaN(d);
             //int type
             return Math2.roundToInt(d);
@@ -301,9 +302,9 @@ public class EDVGridAxis extends EDV {
         PrimitiveArray tSourceValues = sourceValues(); //work with stable local reference
         if (scaleAddOffset) {
             double d = tSourceValues.getNiceDouble(which) * scaleFactor + addOffset;
-            if (destinationDataTypeClass == double.class)
+            if (destinationDataPAType == PAType.DOUBLE)
                 return "" + d;
-            if (destinationDataTypeClass == float.class)
+            if (destinationDataPAType == PAType.FLOAT)
                 return "" + Math2.doubleToFloatNaN(d);
             //int type
             return "" + Math2.roundToInt(d);
@@ -443,9 +444,9 @@ public class EDVGridAxis extends EDV {
      */
     public String destinationToString(double destD) {
         if (Double.isNaN(destD)) return "";
-        //destinationDataTypeClass won't be String.class
-        if (destinationDataTypeClass == double.class)  return "" + destD;
-        if (destinationDataTypeClass == float.class)   return "" + (float)destD;
+        //destinationDataPAType won't be PAType.STRING
+        if (destinationDataPAType == PAType.DOUBLE)  return "" + destD;
+        if (destinationDataPAType == PAType.FLOAT)   return "" + (float)destD;
         return "" + Math.rint(destD);  //ints are nicer without trailing ".0"
     }
 

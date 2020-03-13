@@ -318,11 +318,11 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
 
                 //add the data to the columns
                 PrimitiveArray column;
-                column = table.getColumn(0); column.append(PrimitiveArray.factory(column.elementClass(), n, String2.genEFormat10(this.minX + xAdjust)));
-                column = table.getColumn(1); column.append(PrimitiveArray.factory(column.elementClass(), n, String2.genEFormat10(this.minY)));
-                column = table.getColumn(2); column.append(PrimitiveArray.factory(column.elementClass(), n, String2.genEFormat10(depthLevels.get(zLevel))));
+                column = table.getColumn(0); column.append(PrimitiveArray.factory(column.elementType(), n, String2.genEFormat10(this.minX + xAdjust)));
+                column = table.getColumn(1); column.append(PrimitiveArray.factory(column.elementType(), n, String2.genEFormat10(this.minY)));
+                column = table.getColumn(2); column.append(PrimitiveArray.factory(column.elementType(), n, String2.genEFormat10(depthLevels.get(zLevel))));
                 column = table.getColumn(3); column.append(timePa);
-                column = table.getColumn(4); column.append(PrimitiveArray.factory(column.elementClass(), n, groupName));
+                column = table.getColumn(4); column.append(PrimitiveArray.factory(column.elementType(), n, groupName));
                 column = table.getColumn(5); column.append(data);
             }
         } finally {

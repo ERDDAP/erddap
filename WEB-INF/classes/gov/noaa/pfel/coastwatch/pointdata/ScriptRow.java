@@ -13,7 +13,11 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import org.apache.commons.jexl3.introspection.JexlSandbox;
-import org.apache.commons.jexl3.*;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 
 
 /** 
@@ -34,7 +38,8 @@ public class ScriptRow  {
     /**
      * The constructor.
      *
-     * @param fullFileName
+     * @param fullFileName  The full name (perhaps a URL) of the current file, or "" if 
+     * the source is not file-like.
      */
     public ScriptRow(String tFullFileName, Table tTable) {
         if (String2.isSomething(tFullFileName)) {

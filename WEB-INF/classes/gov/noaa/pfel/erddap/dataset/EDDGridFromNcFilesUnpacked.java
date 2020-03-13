@@ -73,12 +73,12 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
     /** subclasses call lower version */
     public static String generateDatasetsXml(
         String tFileDir, String tFileNameRegex, String sampleFileName, 
-        int tReloadEveryNMinutes, String tCacheFromUrl,
+        String tDimensionsCSV, int tReloadEveryNMinutes, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         return generateDatasetsXml("EDDGridFromNcFilesUnpacked",
             tFileDir, tFileNameRegex, sampleFileName, 
-            tReloadEveryNMinutes, tCacheFromUrl,
+            tDimensionsCSV, tReloadEveryNMinutes, tCacheFromUrl,
             externalAddGlobalAttributes);
     }
     
@@ -198,40 +198,41 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "  :file_quality_index = \"0\";\n" +
 "  :History = \"Translated to CF-1.0 Conventions by Netcdf-Java CDM (NetcdfCFWriter)\n" +
 "Original Dataset = satellite/MUR/ssta/1day; Translation Date = Thu Oct 08 09:39:01 PDT 2015\";\n" +
-" data:\n" +
-"analysed_sst =\n" +
-"  {\n" +
-"    {\n" +
-"      {1779, 1790, 1802, 1815, 1827, 1839, 1851, 1862, 1874, 1886},\n" +
-"      {1782, 1792, 1804, 1816, 1828, 1840, 1851, 1863, 1875, 1887},\n" +
-"      {1786, 1795, 1805, 1817, 1828, 1839, 1851, 1862, 1874, 1885},\n" +
-"      {1789, 1798, 1807, 1817, 1828, 1838, 1849, 1860, 1871, 1882},\n" +
-"      {1793, 1800, 1808, 1817, 1827, 1836, 1846, 1856, 1866, 1876},\n" +
-"      {1795, 1801, 1809, 1816, 1825, 1833, 1842, 1851, 1859, 1868},\n" +
-"      {1796, 1802, 1808, 1815, 1822, 1829, 1836, 1844, 1851, 1858},\n" +
-"      {1797, 1801, 1807, 1812, 1818, 1824, 1830, 1836, 1842, 1848},\n" +
-"      {1796, 1800, 1804, 1809, 1813, 1818, 1822, 1827, 1832, 1836},\n" +
-"      {1794, 1797, 1801, 1804, 1807, 1811, 1814, 1817, 1821, 1824}\n" +
-"    },\n" +
-"    {\n" +
-"      {1773, 1777, 1782, 1787, 1792, 1798, 1803, 1809, 1815, 1821},\n" +
-"      {1776, 1780, 1784, 1789, 1794, 1800, 1805, 1811, 1817, 1823},\n" +
-"      {1778, 1782, 1787, 1792, 1797, 1802, 1807, 1813, 1819, 1825},\n" +
-"      {1781, 1785, 1789, 1794, 1799, 1804, 1809, 1815, 1820, 1826},\n" +
-"      {1783, 1787, 1791, 1796, 1800, 1805, 1810, 1816, 1821, 1826},\n" +
-"      {1786, 1789, 1793, 1798, 1802, 1806, 1811, 1816, 1821, 1826},\n" +
-"      {1788, 1791, 1795, 1799, 1803, 1807, 1812, 1816, 1821, 1825},\n" +
-"      {1790, 1793, 1796, 1800, 1804, 1807, 1811, 1815, 1820, 1824},\n" +
-"      {1791, 1794, 1797, 1800, 1804, 1807, 1811, 1814, 1818, 1822},\n" +
-"      {1792, 1795, 1797, 1800, 1803, 1806, 1809, 1812, 1816, 1819}\n" +
-"    }\n" +
-"  }\n" +
-"time =\n" +
-"  {1096880400, 1096966800}\n" +
-"lat =\n" +
-"  {20.0006, 20.0116, 20.0226, 20.0336, 20.0446, 20.0555, 20.0665, 20.0775, 20.0885, 20.0995}\n" +
-"lon =\n" +
-"  {-134.995, -134.984, -134.973, -134.962, -134.951, -134.94, -134.929, -134.918, -134.907, -134.896}\n" +
+"\n" +
+"  data:\n" +
+"    analysed_sst = \n" +
+"      {\n" +
+"        {\n" +
+"          {1779, 1790, 1802, 1815, 1827, 1839, 1851, 1862, 1874, 1886},\n" +
+"          {1782, 1792, 1804, 1816, 1828, 1840, 1851, 1863, 1875, 1887},\n" +
+"          {1786, 1795, 1805, 1817, 1828, 1839, 1851, 1862, 1874, 1885},\n" +
+"          {1789, 1798, 1807, 1817, 1828, 1838, 1849, 1860, 1871, 1882},\n" +
+"          {1793, 1800, 1808, 1817, 1827, 1836, 1846, 1856, 1866, 1876},\n" +
+"          {1795, 1801, 1809, 1816, 1825, 1833, 1842, 1851, 1859, 1868},\n" +
+"          {1796, 1802, 1808, 1815, 1822, 1829, 1836, 1844, 1851, 1858},\n" +
+"          {1797, 1801, 1807, 1812, 1818, 1824, 1830, 1836, 1842, 1848},\n" +
+"          {1796, 1800, 1804, 1809, 1813, 1818, 1822, 1827, 1832, 1836},\n" +
+"          {1794, 1797, 1801, 1804, 1807, 1811, 1814, 1817, 1821, 1824}\n" +
+"        },\n" +
+"        {\n" +
+"          {1773, 1777, 1782, 1787, 1792, 1798, 1803, 1809, 1815, 1821},\n" +
+"          {1776, 1780, 1784, 1789, 1794, 1800, 1805, 1811, 1817, 1823},\n" +
+"          {1778, 1782, 1787, 1792, 1797, 1802, 1807, 1813, 1819, 1825},\n" +
+"          {1781, 1785, 1789, 1794, 1799, 1804, 1809, 1815, 1820, 1826},\n" +
+"          {1783, 1787, 1791, 1796, 1800, 1805, 1810, 1816, 1821, 1826},\n" +
+"          {1786, 1789, 1793, 1798, 1802, 1806, 1811, 1816, 1821, 1826},\n" +
+"          {1788, 1791, 1795, 1799, 1803, 1807, 1812, 1816, 1821, 1825},\n" +
+"          {1790, 1793, 1796, 1800, 1804, 1807, 1811, 1815, 1820, 1824},\n" +
+"          {1791, 1794, 1797, 1800, 1804, 1807, 1811, 1814, 1818, 1822},\n" +
+"          {1792, 1795, 1797, 1800, 1803, 1806, 1809, 1812, 1816, 1819}\n" +
+"        }\n" +
+"      }\n" +
+"    time = \n" +
+"      {1096880400, 1096966800}\n" +
+"    lat = \n" +
+"      {20.0006, 20.0116, 20.0226, 20.0336, 20.0446, 20.0555, 20.0665, 20.0775, 20.0885, 20.0995}\n" +
+"    lon = \n" +
+"      {-134.995, -134.984, -134.973, -134.962, -134.951, -134.94, -134.929, -134.918, -134.907, -134.896}\n" +
 "}\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -240,21 +241,19 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         //  so here it appears not to be double var with no scale_factor or add_offset
         results = generateDatasetsXml(
             sampleDir, sampleRegex, sampleName,
-            DEFAULT_RELOAD_EVERY_N_MINUTES, null, null) + "\n"; //cacheFromUrl
+            "", DEFAULT_RELOAD_EVERY_N_MINUTES, null, null) + "\n"; //dimensionsCSV, reloadMinutes, cacheFromUrl
         String suggDatasetID = suggestDatasetID(sampleDir + sampleRegex);
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromNcFilesUnpacked",
             sampleDir, sampleRegex, sampleName,
-            "" + DEFAULT_RELOAD_EVERY_N_MINUTES, ""}, //cacheFromUrl
+            "", "" + DEFAULT_RELOAD_EVERY_N_MINUTES, ""}, //dimensionsCSV, reloadMinutes, cacheFromUrl
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
             gdxResults.length() + " " + results.length());
 
         expected = 
-"<!-- NOTE! The source for nc_5633_008e_cd85 has nGridVariables=4,\n" +
-"  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
 "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -308,7 +307,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "        <att name=\"netcdf_version_id\">null</att>\n" +
 "        <att name=\"northernmost_latitude\">null</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"start_date\">null</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"stop_date\">null</att>\n" +
@@ -524,7 +523,7 @@ expected =
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 20.0006;\n" +
 "    String spatial_resolution \"0.011 degrees\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Interim-Multi-scale Ultra-high Resolution (MUR)(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Resolution\\\"; produced under NASA Making Earth System Data Records for Use in Research Environments (MEaSUREs) program.\";\n" +
 "    String time_coverage_end \"2015-10-06T09:00:00Z\";\n" +
 "    String time_coverage_start \"2015-10-05T09:00:00Z\";\n" +
@@ -735,7 +734,7 @@ NcHelper.debugMode = true;
         //one time
         if (false)
             String2.log(generateDatasetsXml(fileDir, fileName, fileDir + fileName,
-                DEFAULT_RELOAD_EVERY_N_MINUTES, null, null));        
+                "", DEFAULT_RELOAD_EVERY_N_MINUTES, null, null));        
 
         //ensure files are reread
         File2.deleteAllFiles(datasetDir("testUInt16FileUnpacked"));
@@ -844,7 +843,7 @@ expected =
 "    String Software_Version \"4.0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -89.95834;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image\";\n" +
 "    String time_coverage_end \"2002-07-04T00:00:00Z\";\n" +
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
@@ -978,7 +977,7 @@ NcHelper.debugMode = true;
 "      :scale_factor = 1.0f; // float\n" +
 "      :add_offset = 0.0f; // float\n" +
 "      :reference = \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
-"      :_ChunkSizes = 64, 64; // int\n" +
+"      :_ChunkSizes = 64U, 64U; // uint\n" +
 "\n" +
 "    float lon(lon=8640);\n" +
 "      :long_name = \"Longitude\";\n" +
@@ -987,9 +986,9 @@ NcHelper.debugMode = true;
 "      :valid_min = -180.0f; // float\n" +
 "      :valid_max = 180.0f; // float\n" +
 "\n" +
-"    byte palette(rgb=3, eightbitcolor=256);\n" +
-"      :_FillValue = -1UB; // byte\n" +
-"      :_Unsigned = \"true\";\n" +
+"    ubyte palette(rgb=3, eightbitcolor=256);\n" +
+//"      :_FillValue = -1UB; // byte\n" + //gone with 
+//"      :_Unsigned = \"true\";\n" +
 "\n" +
 "    float lat(lat=4320);\n" +
 "      :long_name = \"Latitude\";\n" +
@@ -1015,7 +1014,7 @@ NcHelper.debugMode = true;
     "    valid_min=-180.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
     "    _FillValue=NaNf\n" +  //converted to PA standard mv
@@ -1031,21 +1030,22 @@ NcHelper.debugMode = true;
             NcHelper.getVariableAttributes(var, atts);
             results = atts.toString();
             expected = 
-    "    _FillValue=-1b\n" +
-    "    _Unsigned=true\n";
+//    "    _FillValue=-1b\n" + 
+    "    _Unsigned=true\n"; //disappeared w netcdf-java 5.2, so I added back in with code in getVariableAttributes.
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
-    "    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv
-    //"    _Unsigned=true\n"; //removed
+                "";
+//    "    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv
+//    "    _Unsigned=true\n"; 
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //palette as unsigned byte
             pa = NcHelper.getPrimitiveArray(
                 var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
-            Test.ensureEqual(pa.elementClassString(), "byte", "");
+            Test.ensureEqual(pa.elementTypeString(), "byte", "");
             results = pa.toString();
             expected = 
     "-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
@@ -1053,7 +1053,7 @@ NcHelper.debugMode = true;
 
             //palette unpacked as short
             pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-            Test.ensureEqual(pa.elementClassString(), "short", "");
+            Test.ensureEqual(pa.elementTypeString(), "short", "");
             results = pa.toString();
             expected = 
     "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";  //unsigned
@@ -1080,7 +1080,7 @@ NcHelper.debugMode = true;
     "    valid_min=0.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
     "    _ChunkSizes=64i,64i\n" +
@@ -1101,7 +1101,7 @@ NcHelper.debugMode = true;
             //poc as packed values (shorts)
             pa = NcHelper.getPrimitiveArray(   
                 var.read(new Section("(0:4100:1000,0:8100:1000)"))); //start:end:stride 
-            Test.ensureEqual(pa.elementClassString(), "float", "");
+            Test.ensureEqual(pa.elementTypeString(), "float", "");
             results = pa.toString();
             expected = 
     "-32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, " +
@@ -1114,7 +1114,7 @@ NcHelper.debugMode = true;
 
             //poc as unpacked values (float)
             pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-            Test.ensureEqual(pa.elementClassString(), "float", "");
+            Test.ensureEqual(pa.elementTypeString(), "float", "");
             results = pa.toString();
             expected = //standardized mv
     "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
@@ -1151,11 +1151,11 @@ NcHelper.debugMode = true;
 "      :display_scale = \"log\";\n" +
 "      :display_min = 10.0f; // float\n" +
 "      :display_max = 1000.0f; // float\n" +
-"      :_ChunkSizes = 40, 1729; // int\n" +
+"      :_ChunkSizes = 40U, 1729U; // uint\n" +
 "\n" +
-"    byte palette(rgb=3, eightbitcolor=256);\n" +
-"      :_FillValue = -1UB; // byte\n" +
-"      :_Unsigned = \"true\";\n" +
+"    ubyte palette(rgb=3, eightbitcolor=256);\n" + //'u' added in netcdf-java 5.2
+//"      :_FillValue = -1UB; // byte\n" + //gone in netcdf-java 5.2
+//"      :_Unsigned = \"true\";\n" +
 "\n" +
 "    float lat(lat=4320);\n" +
 "      :long_name = \"Latitude\";\n" +
@@ -1187,7 +1187,7 @@ NcHelper.debugMode = true;
 "    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = 
 "    _FillValue=NaNf\n" + //converted to PA standard mv
@@ -1203,21 +1203,21 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=-1b\n" +
-"    _Unsigned=true\n";
+//"    _FillValue=-1b\n" +
+"    _Unsigned=true\n";  //2020-01-23 added in NcHelper.getVariableAttributes to deal with changes in netcdf-java 5.2
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
-        expected = 
-"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv
+        expected = "";
+//"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
 //"    _Unsigned=true\n"; //removed
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette as unsigned byte
         pa = NcHelper.getPrimitiveArray(
             var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
-        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        Test.ensureEqual(pa.elementTypeString(), "byte", "");
         results = pa.toString();
         expected = 
 "-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
@@ -1225,7 +1225,7 @@ NcHelper.debugMode = true;
 
         //palette unpacked as short
         pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.elementTypeString(), "short", "");
         results = pa.toString();
         expected = 
 "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
@@ -1252,7 +1252,7 @@ NcHelper.debugMode = true;
 "    valid_min=-32000s\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementClass(var.getDataType()));
+        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = 
 "    _ChunkSizes=40i,1729i\n" +
@@ -1273,7 +1273,7 @@ NcHelper.debugMode = true;
         //poc as packed values (shorts)
         pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
             var.read(new Section("(70:4100:1000,70:8100:1000)"))); //start:end:stride 
-        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.elementTypeString(), "short", "");
         results = pa.toString();
         expected = 
 "-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
@@ -1285,7 +1285,7 @@ NcHelper.debugMode = true;
 
         //poc as unpacked values (float)
         pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-        Test.ensureEqual(pa.elementClassString(), "float", "");
+        Test.ensureEqual(pa.elementTypeString(), "float", "");
         results = pa.toString();
         expected = 
 "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 96.4, NaN, 162.8, " +
@@ -1435,7 +1435,7 @@ expected =
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -89.97918;\n" +
 "    String spatialResolution \"4.64 km\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)\";\n" +
 "    String temporal_range \"day\";\n" +
 "    String testOutOfDate \"now-4days\";\n" +

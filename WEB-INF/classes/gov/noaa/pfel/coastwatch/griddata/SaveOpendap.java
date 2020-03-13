@@ -94,8 +94,8 @@ public class SaveOpendap  {
                 for (int i = 0; i < nGlobalDim; i++) {
                     Dimension dim = (Dimension)globalDimList.get(i);
                     String dimName = dim.getName();
-                    out.addDimension(outRootGroup, dimName, dim.getLength(), true, //shared
-                        dim.isUnlimited(), false);  //isUnknownLength
+                    out.addDimension(outRootGroup, dimName, dim.getLength(), 
+                        dim.isUnlimited(), false);  //isVariableLength
                     if (verbose) String2.log("    dimName" + i + "=" + dimName);
                 }
 

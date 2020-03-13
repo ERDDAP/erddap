@@ -95,6 +95,7 @@ public class EDDTableFromBMDE extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tAddVariablesWhere = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -138,6 +139,8 @@ public class EDDTableFromBMDE extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<addVariablesWhere>")) {}
+            else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -148,7 +151,7 @@ public class EDDTableFromBMDE extends EDDTable{
 
         return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere, tGlobalAttributes,
             ttDataVariables, tReloadEveryNMinutes, tLocalSourceUrl, tSourceCode);
     }
 
@@ -230,7 +233,7 @@ public class EDDTableFromBMDE extends EDDTable{
         String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix;
-        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
         Attributes tAddGlobalAttributes,
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
@@ -399,6 +402,9 @@ public class EDDTableFromBMDE extends EDDTable{
             }
         }
 
+        //make addVariablesWhereAttNames and addVariablesWhereAttValues
+        makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
         //ensure the setup is valid
         ensureValid();
 
@@ -444,7 +450,7 @@ public class EDDTableFromBMDE extends EDDTable{
             int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
             EDV edv = dataVariables[dv];
 
-            if (edv.sourceDataTypeClass() == String.class &&
+            if (edv.sourceDataPAType() == PAType.STRING &&
                 String2.indexOf(GTLT_OPERATORS, constraintOps.get(c)) >= 0) {
                 //remove >, >=, <, <= ops for String variables
                 constraintVariables.remove(c);

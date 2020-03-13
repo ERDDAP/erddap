@@ -60,6 +60,16 @@ to requesting compressed .png files since the files' contents are already compre
 <addConstraints>You can add tabledap-like constraints to requests to this web page,
 for example,</addConstraints>
 
+<addVarWhereAttName>Optional: Specify an attribute name.</addVarWhereAttName>
+<addVarWhereAttValue>Optional: Specify an attribute value.</addVarWhereAttValue>
+<addVarWhere><![CDATA[
+Optional: If you specify an attribute value here,
+<br><kbd>&amp;addVariablesWhere("<i>attName</i>","<i>attValue</i>")</kbd>
+<br>will be added to the request. Then, ERDDAP will add all of
+<br>the variables in the dataset where <kbd><i>attName=attValue</i></kbd>
+<br>to the list of requested variables.
+]]></addVarWhere>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
@@ -183,6 +193,7 @@ This is optional.
 <br>latitude text fields. 
 <br>The values in the longitude and latitude text fields are what really count.
 <br>Drawing a rectangle on the map is just an easy way to specify those values.
+<p>The search will find datasets that have some data within the specified bounds.
 ]]></advancedSearchMapTooltip>
 
 <advancedSearchLonTooltip><![CDATA[
@@ -205,6 +216,9 @@ This is optional.
 <li>Or specify the number of seconds since 1970-01-01T00:00:00Z.
   <br>&nbsp;
 <li>Or specify <kbd>now-<i>nUnits</i></kbd>, for example, <kbd>now-7days</kbd> .
+  <br>&nbsp;
+<li>The search will find datasets that have some data within the 
+  <br>specified time bounds.
 </ul>
 ]]></advancedSearchTimeTooltip>
 
@@ -1598,15 +1612,15 @@ ERDDAP will respond with just the text result, but modified to have updated URLs
     title="This link to an external website does not constitute an endorsement."></a>.  
 ]]></convertURLsService>
 
-<!-- cookiesHelp last updated 2016-03-21 -->
+<!-- cookiesHelp last updated 2019-12-19 -->
 <cookiesHelp><![CDATA[Make sure your browser is set to allow
   <a rel="help" href="https://en.wikipedia.org/wiki/HTTP_cookie">cookies<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>:
   <ul>
-  <li>In Chrome, use "Settings : Show advanced settings : Privacy/Content Settings : Cookies/Allow local data to be set"
+  <li>In Chrome, use "Settings : Advanced : Privacy and security : Cookies and site data"
+  <li>In Edge, use "Settings : Privacy &amp; security : Block only their party cookies" or "Don't block cookies"
   <li>In Firefox, use "Options : Privacy : History/Accept cookies from sites"
-  <li>In Internet Explorer, use "Tools : Internet Options : Privacy : Settings : Advanced : First Party Cookies/Accept"
   <li>In Opera, use "Menu : Settings : Privacy and Security : Cookies/Allow local data to be set"
   <li>In Safari, use "Safari : Preferences : Security : Cookies and website data : Allow"
   </ul>
@@ -2185,7 +2199,7 @@ If you want the examples to point to your ERDDAP, the easiest method is:
 <errorFileNotFoundImage>File not found in cache. Recreate the image and try again.</errorFileNotFoundImage>
 <errorInternal>Internal error:</errorInternal>
 <!-- Don't include the invalid (malicious?) functionName in the error message. -->
-<errorJsonpFunctionName>That jsonp functionName isn't allowed. The first character must be an ISO 8859 letter or "_".  Each optional subsequent character must be an ISO 8859 letter, "_", a digit, or ".".</errorJsonpFunctionName>
+<errorJsonpFunctionName>That jsonp functionName isn't allowed. The first character must be an ISO 8859-1 letter or "_".  Each optional subsequent character must be an ISO 8859-1 letter, "_", a digit, or ".".</errorJsonpFunctionName>
 <errorJsonpNotAllowed>A jsonp request is not allowed for this file type.</errorJsonpNotAllowed>
 <errorMoreThan2GB>{1} is more than the {0} 2 GB limit.</errorMoreThan2GB>
 <errorNotFound>Error: {0} wasn''t found.</errorNotFound>
@@ -2352,7 +2366,7 @@ Some datasets in this ERDDAP aren't available via the "files" system. Common rea
 include:
 <ul>
 <li>The dataset's data doesn't come from files (e.g., it comes from a database
-  or Cassandra, or from a remote ERDDAP, THREDDS, or GRADS data server).
+  or Cassandra, or from a remote THREDDS, HYRAX, or GRADS data server).
 <li>The immediate source files are .ncml files which specify how to modify the
   actual data files on-the-fly.
 <li>The ERDDAP administrator chose not to make the source data files available.
@@ -2553,6 +2567,8 @@ Fortunately, there are lots of software tools for working with the various file 
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a>   
       can read .hdf files via an add-on library.
+   <li>Many <a rel="help" href="#ncFiles">tools for .nc files</a> 
+      will also work with .hdf files. 
    <br>&nbsp;
    </ul>
 
@@ -3230,7 +3246,7 @@ If a cached web page says you aren't logged in, reload the page.
 
 <logoutOpenID>Log out from your OpenID provider.</logoutOpenID>
 
-<!-- logoutSuccess last updated 2016-03-28 -->
+<!-- logoutSuccess last updated 2019-12-19 -->
 <logoutSuccess>
 You have successfully logged out.
 
@@ -3238,17 +3254,16 @@ Don't use your browser's Back button. Use the "ERDDAP" link above,
 then use other links to go to ERDDAP pages you are interested in.
 If a cached web page says you are still logged in, reload the page.
 
-For increased security (especially if use Orcid or if this is a shared computer),
-you should:
+For increased security (especially if this is a shared computer), you should:
+ * If you used ORCHID, go to https://orcid.org/my-orcid and log out there, too.
  * Clear your browser's cache:
-   * In Chrome, use "More tools : Clear browsing data : Cached images and files 
-       (and perhaps others)"
-   * In Firefox, use "Options : Advanced : Network : Cached Web Content : Clear Now"
-   * In Internet Explorer, use "Options : Safety : Delete Browsing History :
-       Temporary Internet files and website files : Delete"
+   * In Chrome, use "More tools : Clear browsing data : Cached images and files" 
+       and "Cookies".
+   * In Edge, use "Settings : Privacy &amp; security : Clear browsing data".
+   * In Firefox, use "Options : Advanced : Network : Cached Web Content : Clear Now".
    * In Opera, use "Menu : More tools : Clear browsing data".
    * In Safari, use "Safari : Preferences : Advanced : Show Develop", 
-       then "Safari : Develop : Empty Caches"
+       then "Safari : Develop : Empty Caches".
  * Close this browser tab.
 </logoutSuccess>
 
@@ -4890,7 +4905,8 @@ offers several ways to search for interesting datasets.</a></strong>
   </ul>
 
 <li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Requesting Compressed Files</a></strong>
-  <br>ERDDAP doesn't offer results stored in compressed (e.g., .zip or .gzip) files.
+  <br>ERDDAP doesn't offer results stored in compressed (e.g., .zip or .gzip) files
+  unless the source file is already compressed.
   Instead, ERDDAP looks for
   <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
     >accept-encoding<img 
@@ -5215,7 +5231,7 @@ Government or the National Oceanic and Atmospheric Administration.]
 They fear that if something happens
 to me, that will be end of ERDDAP. That is simply not true. 
 ERDDAP's positioning for long-term sustainability is excellent, 
-perhaps the best it could possibly be.
+and close to the best it could possibly be.
 
 <p>Yes, I am the main developer of ERDDAP. I am a fully funded federal employee. 
 My funding isn't "soft" money, so I don't receive or rely on grants.
@@ -5237,8 +5253,9 @@ But the side benefit is that any other organization can
 <a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">download, install, and use ERDDAP</a>
 <strong>for free</strong> to distribute their scientific data.  
-<br><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations">Over 60 organizations around the world use ERDDAP</a>. Maybe there is such a thing as a free lunch.
+<p><a rel="bookmark" 
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+>Over 85 organizations in at least 14 countries use ERDDAP</a>. Maybe there is such a thing as a free lunch.
 
 <p>ERDDAP is a Java program. The source code
 for every version is on 
@@ -5246,7 +5263,46 @@ for every version is on
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
 the most commonly used system for collaborative
-software projects. One person in France has also contributed code (thank you!).
+software projects. 
+So far, four other groups have contributed code to ERDDAP:
+<ul> 
+<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGridFromMergeIRFiles.java</a> was written and contributed by
+   Jonathan Lafite and Philippe Makowski of 
+   <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+   (license: copyrighted open source). Thank you, Jonathan and Philippe!
+
+<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a> was written and contributed by Roland Schweitzer of NOAA
+   (license: copyrighted open source). Thank you, Roland!
+
+<li>The initial version of the 
+  <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a>
+  feature (and thus all of the hard work in designing the content) was 
+  written and contributed (license: copyrighted open source)
+  by Adam Leadbetter and Rob Fuller of the Marine Institute in Ireland.
+  Thank you, Adam and Rob!
+
+<li>The code for the 
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
+  >orderByMean filter</a> 
+  in tabledap and the extensive changes to the code to
+  support the 
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
+  ><i>variableName/divisor:offset</i> notation</a>
+  for all orderBy filters
+  was written and contributed (license: copyrighted open source)
+  by Rob Fuller and Adam Leadbetter of the Marine Institute in Ireland.
+  Thank you, Rob and Adam!
+
+<li>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
+    Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
+    Thank you Marco Alba.
+
+<!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
+</ul>
 I hope others will contribute code in the future.
 If something happens to me, my bosses will hire a replacement with the specific goal that
 s/he continues the development of ERDDAP.
@@ -5285,7 +5341,7 @@ discontinued projects. Apple has discontinued projects. ...
 The point is that just having the backing of a large company is no assurance
 that the project will continue.
 The users of that software are out of luck, 
-<strong>unless</strong> the software was (and therefore, is) Free and Open Source Software 
+<strong>unless</strong> the software was (and therefore, always is) Free and Open Source Software 
 (FOSS). Then, whenever there is interest by even one developer, the project can and will 
 continue to evolve. FOSS is an insurance policy. In fact, FOSS is the only
 insurance policy, the only assurance, that matters. FOSS insures that there
@@ -5297,7 +5353,7 @@ will be more sustainable than software with one main developer. But
 lots of developers usually need lots of funding. I know a famous, reasonably 
 large project with 10 developers (I won't embarrass them by naming them) that is
 in constant serious danger of stopping the project because they don't have
-enough funding. They rely on grants. They always run a deficit. Their patron always bails them 
+enough funding. They rely on grants. They always run a deficit. Their patron has always bailed them 
 out at the last minute, but is getting really tired of bailing them out. 
 So if they can't raise a million dollars a year in grant money 
 (or the patron gets too tired of bailing them out), they'll stop. And the group can't 
@@ -5845,6 +5901,12 @@ https://erddap.emodnet-physics.eu
 http://erddap.marine.ie
 https://erddap.marine.ie
 
+http://erddap.secoora.org
+https://erddap.secoora.org
+
+http://erddap.sensors.ioos.us/erddap/
+https://erddap.sensors.ioos.us/erddap/
+
 http://ferret.pmel.noaa.gov
 https://ferret.pmel.noaa.gov
 
@@ -6007,6 +6069,9 @@ https://samos.coaps.fsu.edu
 http://sampleserver3.arcgisonline.com
 https://sampleserver3.arcgisonline.com
 
+http://sbc.lternet.edu
+https://sbclter.msi.ucsb.edu
+
 http://schema.org/
 https://schema.org/
 
@@ -6145,6 +6210,9 @@ https://www.ec.gc.ca
 http://www.eorc.jaxa.jp
 https://www.eorc.jaxa.jp
 
+http://www.esa-oceancolour-cci.org
+https://www.esa-oceancolour-cci.org
+
 http://www.esr.org
 https://www.esr.org
 
@@ -6195,6 +6263,9 @@ https://www.ietf.org
 
 http://wwz.ifremer.fr
 https://wwz.ifremer.fr
+
+http://www.iooc.us
+https://www.iooc.us
 
 http://www.iso.org
 https://www.iso.org
@@ -6274,9 +6345,6 @@ https://www.opengeospatial.org
 http://www.oracle.com
 https://www.oracle.com
 
-http://www.osmc.noaa.gov
-https://www.osmc.noaa.gov
-
 http://www.ospo.noaa.gov
 https://www.ospo.noaa.gov
 
@@ -6324,6 +6392,9 @@ https://www.udel.edu
 
 http://www.uky.edu
 https://www.uky.edu
+
+http://www.uncertweb.org
+https://www.uncertweb.org
 
 http://www.unidata.ucar.edu
 https://www.unidata.ucar.edu
@@ -6373,6 +6444,7 @@ https://xkcd.com
 There are listed as a comment here for quick testing.
 !!! WHEN ONE BECOMES VALID, Bob will move it into updateUrls above 
   and make the change to relevant source code, .html pages, messages.xml, and my datasets.xml.
+
 Some are listed with extra paths to test if content, not just the base domain, now supports https.
   If these become valid, just move the domain into http to https section in updateUrls above.
 
@@ -6385,6 +6457,7 @@ http://www.aviso.oceanobs.com to https://www.aviso.altimetry.fr/   no simple fix
 https://apdrc.soest.hawaii.edu works but e.g., http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php  doesn't
 https://atm-phys.nies.go.jp
 https://bcodata.whoi.edu
+https://bmlsc.ucdavis.edu/erddap/index.html
 https://cfconventions.org  and in setupDatasetsXml.html
 https://climate.geog.udel.edu
 https://colossus.dl.stevens-tech.edu/thredds/catalog.html
@@ -6397,8 +6470,6 @@ https://dust.ess.uci.edu
 https://edac-dap.northerngulfinstitute.org
 https://edac-dap3.northerngulfinstitute.org
 https://erddap.incois.gov.in
-https://erddap.secoora.org/erddap/   almost. needs correct baseHttpsUrl.  redirects to http://??
-https://erddap.sensors.ioos.us/erddap/   almost. needs correct baseHttpsUrl 
 https://fgdcxml.sourceforge.net
 https://geoport.whoi.edu/
 https://geoport.whoi.edu/thredds/catalog.html
@@ -6413,14 +6484,14 @@ https://marine.copernicus.eu/
 https://meteora.ucsd.edu
 https://mmisw.org  //never update, because SOS parameters require http://  ???
 https://nco.sourceforge.net
+https://nrm-erddap.nci.org.au/erddap/
 https://ocean.dmi.dk/
 https://oceandata.gmri.org
 https://oos.soest.hawaii.edu
-https://osmc.noaa.gov
+https://osmc.noaa.gov/erddap/index.html
 https://postgresql-8.4.sourcearchive.com
 https://rs-data1-mel.csiro.au
 https://rtech-engineering.com/?lang=en
-https://sbc.lternet.edu    ?! want me to sign in
 https://sccoos.org/erddap/index.html
 https://schemas.opengis.net
 https://sfbaynutrients.sfei.org/erddap/index.html
@@ -6429,7 +6500,7 @@ https://tds.marine.rutgers.edu/erddap/info/index.html?page=1&amp;itemsPerPage=10
 https://udig.refractions.net
 https://weather.hawaii.edu
 https://west.rssoffice.com
-https://wiki.esipfed.org ,   also in setupDatasetsXml.html
+https://wiki.esipfed.org (has placeholder content! I emailed esip 2020-01-08),   also in setupDatasetsXml.html
 https://wiki.geojson.org 
 https://www.bom.gov.au
 https://www.coml.org
@@ -6441,7 +6512,6 @@ https://www.godac.jamstec.go.jp
 https://www.geotraces.org/science/intercalibration/322-standards-and-reference-materials
 https://www.globec.org
 https://www.iobis.org
-https://www.iooc.us
 http://www.isotc211.org/2005/srv  Don't ever switch these to https. They are for URIs in 19115 docs.
 https://www.j2eeprogrammer.com
 https://www.jdom.org
@@ -6449,6 +6519,7 @@ https://www.libpng.org
 https://www.marine-geo.org
 https://www.meteofrance.com
 https://www.myocean.eu
+https://www.myroms.org/erddap/index.html https://myroms.org is okay
 https://www.nanoos.org
 https://www.neracoos.org
 https://www.ogcnetwork.net

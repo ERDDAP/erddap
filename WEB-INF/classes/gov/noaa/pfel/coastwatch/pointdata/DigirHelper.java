@@ -1355,7 +1355,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 !type.equals("dateTime")) {
                 //it's a numeric column
                 PrimitiveArray pa = PrimitiveArray.factory(
-                    PrimitiveArray.elementStringToClass(type), 8, false);
+                    PrimitiveArray.elementStringToPAType(type), 8, false);
                 pa.append(tTable.getColumn(col));
                 tTable.setColumn(col, pa);
 
@@ -1457,7 +1457,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 !type.equals("dateTime")) {
                 //it's a numeric column
                 PrimitiveArray pa = PrimitiveArray.factory(
-                    PrimitiveArray.elementStringToClass(type), nRows, false);
+                    PrimitiveArray.elementStringToPAType(type), nRows, false);
                 pa.append(table.getColumn(col));
                 table.setColumn(col, pa);
 

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -55,7 +56,7 @@ public abstract class TableWriter {
 
     //these are set the first time ensureCompatible is called
     protected String[] columnNames;
-    protected Class[] columnTypes;
+    protected PAType[] columnTypes;
     protected Attributes[] columnAttributes;
     protected Attributes globalAttributes;
 
@@ -90,9 +91,9 @@ public abstract class TableWriter {
     protected void ensureCompatible(Table table) throws Throwable {
         String[] tColumnNames = table.getColumnNames();
         int nColumns = tColumnNames.length;
-        Class[] tColumnTypes = new Class[nColumns];
+        PAType[] tColumnTypes = new PAType[nColumns];
         for (int c = 0; c < nColumns; c++)
-            tColumnTypes[c] = table.getColumn(c).elementClass();
+            tColumnTypes[c] = table.getColumn(c).elementType();
 
         //first time this is called? note column names, types, and metadata
         if (columnNames == null) {
@@ -137,8 +138,7 @@ public abstract class TableWriter {
                     " != oldName=" + columnNames[c] + ".");
             if (!columnTypes[c].equals(tColumnTypes[c]))
                 throw new RuntimeException("Internal error in TableWriter: for column#" + c + "=" + columnNames[c] +
-                      ", newType=" + PrimitiveArray.elementClassToString(tColumnTypes[c]) + 
-                    " != oldType=" + PrimitiveArray.elementClassToString(columnTypes[c]) + ".");
+                      ", newType=" + tColumnTypes[c] + " != oldType=" + columnTypes[c] + ".");
 
             //restore missing_value and _FillValue attributes 
             //  (if removed via convertToStandardMissingValues() and reuse of the table)
@@ -226,7 +226,7 @@ public abstract class TableWriter {
      * @param col   0..
      * @return one of the destination column's types.
      */
-    public Class columnType(int col) {return columnTypes[col];}
+    public PAType columnType(int col) {return columnTypes[col];}
 
     /**
      * This returns one of the destination column's columnAttributes.

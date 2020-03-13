@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -72,7 +73,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
     protected String         columnNames[];  //all, not just NEC
     protected String         columnUnits[];
-    protected Class          columnClasses[];
+    protected PAType         columnPATypes[];
     protected PrimitiveArray columnMvFv[];
 
     protected long lastSaveDirTableFileTableBadFiles = 0; //System.currentTimeMillis
@@ -159,6 +160,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, 
+        String tSkipHeaderToRegex, String tSkipLinesRegex,
         int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
@@ -166,7 +168,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles, boolean tRemoveMVRows, 
         int tStandardizeWhat, int tNThreads, 
-        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex) 
+        String tCacheFromUrl, int tCacheSizeGB, String tCachePartialPathRegex,
+        String tAddVariablesWhere) 
         throws Throwable {
 
         super("EDDTableFromHttpGet", tDatasetID, 
@@ -176,7 +179,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+            tCharset, tSkipHeaderToRegex, tSkipLinesRegex,
+            tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, 
             tSortFilesBySourceNames,
@@ -184,7 +188,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             tFileTableInMemory,
             tAccessibleViaFiles,
             tRemoveMVRows, tStandardizeWhat, 
-            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex);
+            tNThreads, tCacheFromUrl, tCacheSizeGB, tCachePartialPathRegex,
+            tAddVariablesWhere);
 
         //standardizeWhat must be 0 or absent
         String msg = String2.ERROR + 
@@ -233,7 +238,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         int nDV = dataVariables.length;
         columnNames   = new String[nDV];
         columnUnits   = new String[nDV];
-        columnClasses = new Class[nDV];
+        columnPATypes = new PAType[nDV];
         columnMvFv    = new PrimitiveArray[nDV];
         for (int dvi = 0; dvi < nDV; dvi++) {
             EDV edv = dataVariables[dvi];
@@ -241,10 +246,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String destName = edv.destinationName();         
             columnNames[dvi] = sourceName;
             columnUnits[dvi] = edv.addAttributes().getString("units"); //here, "source" units are in addAttributes!
-            columnClasses[dvi] = edv.sourceDataTypeClass();
+            columnPATypes[dvi] = edv.sourceDataPAType();
 
             // No char variables
-            if (columnClasses[dvi] == char.class)
+            if (columnPATypes[dvi] == PAType.CHAR)
                 throw new SimpleException(msg + "No dataVariable can have dataType=char.");
 
             //! column sourceNames must equal destinationNames (unless "=something")
@@ -255,12 +260,12 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     sourceName + " != " + destName + ").");
 
             //columnMvFv
-            if (columnClasses[dvi] == String.class) {
+            if (columnPATypes[dvi] == PAType.STRING) {
                 StringArray tsa = new StringArray(2, false);
                 if (edv.stringMissingValue().length() > 0) tsa.add(edv.stringMissingValue());
                 if (edv.stringFillValue().length()    > 0) tsa.add(edv.stringFillValue());
                 columnMvFv[dvi] = tsa.size() == 0? null : tsa;
-            } else if (columnClasses[dvi] == long.class) {
+            } else if (columnPATypes[dvi] == PAType.LONG) {
                 StringArray tsa = new StringArray(2, false);
                 String ts = edv.combinedAttributes().getString("missing_value");
                 if (ts != null) tsa.add(ts);
@@ -329,7 +334,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * up to and including rows with the specified timestampSeconds value.
      *
      * @param sourceDataNames must be fully specified (not null or length=0)
-     * @param sourceDataClasses must be fully specified (not null or length=0)
+     * @param sourceDataPATypes must be fully specified (not null or length=0)
      * @param tRequiredVariableNames are the dataset's requiredVariableNames, e.g., stationID, time
      * @param process If true, the log is processed.  If false, the raw data is returned.
      * @param timestampSeconds the maximum timestampSeconds to be kept if process=true. 
@@ -620,7 +625,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             httpGetDirectoryStructureCalendars,
             httpGetKeys,
             combinedGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,
+            columnNames, columnUnits, columnPATypes, columnMvFv,
             httpGetRequiredVariableNames,
             command, userDapQuery,
             tDirTable, tFileTable);  
@@ -698,9 +703,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      *   or numeric time units (e.g., "days since 1985-01-01").
      *   For INSERT and DELETE calls, the time values must be in that format
      *   (you can't revert to ISO 8601 format as with data requests in the rest of ERDDAP).
-     * @param columnClasses the Java types (e.g., double.class, long.class, char.class, String.class).
+     * @param columnPATypes the Java types (e.g., PAType.DOUBLE, PAType.LONG, PAType.CHAR, PAType.STRING).
      *   The missing values are the default missing values for PrimitiveArrays.
-     *   All timestamp columns (in the general sense) MUST be double.class.
+     *   All timestamp columns (in the general sense) MUST be PAType.DOUBLE.
      * @param columnMvFv a PrimitiveArray of any suitable type
      *   (all are used via pa.indexOf(String)).  
      *   with the missing_value and/or _FillValue for each column (or null for each).
@@ -731,7 +736,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         IntArray tDirStructureNs, IntArray tDirStructureCalendars,
         HashSet<String> keys,
         Attributes tGlobalAttributes,
-        String columnNames[], String columnUnits[], Class columnClasses[], PrimitiveArray columnMvFv[],
+        String columnNames[], String columnUnits[], PAType columnPATypes[], PrimitiveArray columnMvFv[],
         String requiredVariableNames[],
         byte command, String userDapQuery,
         Table dirTable, Table fileTable) throws Throwable {
@@ -758,8 +763,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         int commandColumn = -1;
         for (int col = 0; col < nColumns; col++) {
             columnIsFixed[ col] = columnNames[col].charAt(0) == '=';
-            columnIsString[col] = columnClasses[col] == String.class; //char treated as numeric
-            columnIsLong[  col] = columnClasses[col] == long.class;
+            columnIsString[col] = columnPATypes[col] == PAType.STRING; //char treated as numeric
+            columnIsLong[  col] = columnPATypes[col] == PAType.LONG;
 
             if (!String2.isSomething(columnUnits[col]))
                 columnUnits[col] = "";
@@ -850,8 +855,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
                     StringArray sa = new StringArray(StringArray.arrayFromCSV(
                         tValue.substring(1, tValue.length() - 1), ",", false)); //trim?
-                    columnValues[whichCol] = PrimitiveArray.factory(columnClasses[whichCol], sa); //does nothing if desired class is String
-                    //if (columnClasses[whichCol] == char.class || columnClasses[whichCol] == String.class) String2.log(">> writing var=" + tName + " pa=" + columnValues[whichCol]);
+                    columnValues[whichCol] = PrimitiveArray.factory(columnPATypes[whichCol], sa); //does nothing if desired class is String
+                    //if (columnPATypes[whichCol] == PAType.CHAR || columnPATypes[whichCol] == PAType.STRING) String2.log(">> writing var=" + tName + " pa=" + columnValues[whichCol]);
                     if (arraySize < 0)
                         arraySize = columnValues[whichCol].size();
                     else if (arraySize != columnValues[whichCol].size())
@@ -872,9 +877,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                             ") expected for columnName=" + tName + ". (missing [ ] ?)");
                     if (sa.size() == 0)
                         sa.add("");
-                    columnValues[whichCol] = PrimitiveArray.factory(columnClasses[whichCol], sa); //does nothing if desired class is String
+                    columnValues[whichCol] = PrimitiveArray.factory(columnPATypes[whichCol], sa); //does nothing if desired class is String
 
-                    //if (columnClasses[whichCol] == String.class &&
+                    //if (columnPATypes[whichCol] == PAType.STRING &&
                     //    (tValue.length() < 2 || 
                     //     tValue.charAt(0) != '"' ||
                     //     tValue.charAt(tValue.length() - 1) != '"'))
@@ -910,12 +915,12 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
             //If this var wasn't in the command, so use mv's
             if (pa == null) 
-                pa = columnValues[col] = PrimitiveArray.factory(columnClasses[col],
+                pa = columnValues[col] = PrimitiveArray.factory(columnPATypes[col],
                     maxSize, ""); //if strings, "" is already UTF-8
 
             //duplicate scalar n=maxSize times
             if (pa.size() == 1 && maxSize > 1) 
-                columnValues[col] = PrimitiveArray.factory(columnClasses[col],
+                columnValues[col] = PrimitiveArray.factory(columnPATypes[col],
                     maxSize, pa.getString(0));
         }
 
@@ -1271,15 +1276,15 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "",           "",             "m",          "days since 1985-01-01", 
             "degree_C",   EDV.TIME_UNITS, null,         "m.s-1",
             Calendar2.SECONDS_SINCE_1970, null, null};
-        Class columnClasses[] = {         String.class, double.class,               
-            byte.class,   char.class,     short.class,  int.class, 
-            float.class,  double.class,   String.class, int.class,
-            double.class, String.class,   byte.class}; 
+        PAType columnPATypes[] = {         PAType.STRING, PAType.DOUBLE,               
+            PAType.BYTE,   PAType.CHAR,     PAType.SHORT,  PAType.INT, 
+            PAType.FLOAT,  PAType.DOUBLE,   PAType.STRING, PAType.INT,
+            PAType.DOUBLE, PAType.STRING,   PAType.BYTE}; 
         int nCol = columnNames.length;
         PrimitiveArray columnMvFv[] = new PrimitiveArray[nCol];               
         String columnTypes[] = new String[nCol];
         for (int col = 0; col < nCol; col++) 
-            columnTypes[col] = PrimitiveArray.elementClassToString(columnClasses[col]);
+            columnTypes[col] = PrimitiveArray.elementTypeToString(columnPATypes[col]);
         String requiredVariableNames[] = {"stationID","time"};
 
         Table table;
@@ -1291,14 +1296,14 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String tHammer = "" + hammer;
             if (hammer >= 10) 
                 tHammer = "[" + 
-                    PrimitiveArray.factory(int.class, hammer, "" + hammer).toCSVString() +
+                    PrimitiveArray.factory(PAType.INT, hammer, "" + hammer).toCSVString() +
                     "]";
             String2.log(">> tHammer=" + tHammer);
             for (int i = 0; i < n; i++) {
                 //error will throw exception
                 results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                     keys, tGlobalAttributes,
-                    columnNames, columnUnits, columnClasses, columnMvFv,
+                    columnNames, columnUnits, columnPATypes, columnMvFv,
                     requiredVariableNames,
                     INSERT_COMMAND, 
                     "stationID=\"46088\"&time=" + hammer + "&aByte=" + tHammer + 
@@ -1332,7 +1337,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.log("\n>> insertOrDelete #1: insert 1 row");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,  
+            columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
             INSERT_COMMAND, 
             "stationID=\"46088\"&time=3.3&aByte=17.1&aChar=g" +
@@ -1359,7 +1364,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.log("\n>> insertOrDelete #2: insert 2 rows via array");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,  
+            columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames, INSERT_COMMAND, 
             "stationID=\"46088\"&time=[4.4,5.5]&aByte=[18.2,18.8]&aChar=[\"\u20AC\",\" \"]" +  // unicode char
             "&aShort=[30002.2,30003.3]&anInt=3&aFloat=[1.45,1.67]" +
@@ -1396,7 +1401,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.log("\n>> insertOrDelete #3: change all values in a row");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,  
+            columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
             INSERT_COMMAND, 
             "stationID=46088&time=3.3&aByte=19.9&aChar=¼" +  //stationID not in quotes    //the character itself
@@ -1425,7 +1430,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.log("\n>> insertOrDelete #4: change a few values in a row");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,  
+            columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
             INSERT_COMMAND, 
             "stationID=\"46088\"&time=3.3&aByte=29.9&aChar=\" \"" + 
@@ -1451,7 +1456,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.log("\n>> insertOrDelete #4: delete a row");
         results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
-            columnNames, columnUnits, columnClasses, columnMvFv,  
+            columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
             DELETE_COMMAND, 
             "stationID=\"46088\"&time=3.3" +
@@ -1488,7 +1493,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1507,7 +1512,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1526,7 +1531,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1545,7 +1550,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1563,7 +1568,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "time=3.3&aByte=19.9&aChar=A" +     //no stationID
@@ -1582,7 +1587,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"\"&time=3.3&aByte=19.9&aChar=A" +     //  ""
@@ -1601,7 +1606,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=1e14&aByte=19.9&aChar=A" +     //time is invalid
@@ -1620,7 +1625,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1639,7 +1644,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         try {
             results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
-                columnNames, columnUnits, columnClasses, columnMvFv,  
+                columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
                 INSERT_COMMAND, 
                 "stationID=\"46088\"&time=3.3&aByte=19.9&aChar=A" +     
@@ -1731,9 +1736,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             Attributes destAtts = new Attributes();
             PrimitiveArray destPA;
-            //String2.log(">> colName=" + colName + " sourceClass=" + sourcePA.elementClassString());
+            //String2.log(">> colName=" + colName + " sourcePAType=" + sourcePA.elementType());
             if (colName.equals("time")) {
-                if (sourcePA.elementClass() == String.class) {
+                if (sourcePA.elementType() == PAType.STRING) {
                     String tFormat = Calendar2.suggestDateTimeFormat(
                         (StringArray)sourcePA, true); //evenIfPurelyNumeric?   true since String data
                     destAtts.add("units", 
@@ -1768,23 +1773,23 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 destAtts.add("flag_meanings", "insert delete");
                 destAtts.add("ioos_category", "Other");
                 destPA = new ByteArray(sourcePA);
-            } else if (sourcePA.elementClass() == String.class) {
+            } else if (sourcePA.elementType() == PAType.STRING) {
                 destPA = new StringArray(sourcePA);
             } else {  //non-StringArray
                 destAtts.add("units", "_placeholder");
                 destPA = (PrimitiveArray)(sourcePA.clone());
             }
 
-            if (destPA.elementClass() != String.class) 
+            if (destPA.elementType() != PAType.STRING) 
                 destAtts.add("missing_value", 
-                    PrimitiveArray.factory(destPA.elementClass(), 1,
+                    PrimitiveArray.factory(destPA.elementType(), 1,
                         "" + destPA.missingValue()));
             
-            //String2.log(">> in  colName= " + colName + " type=" + sourcePA.elementClassString() + " units=" + destAtts.get("units"));
+            //String2.log(">> in  colName= " + colName + " type=" + sourcePA.elementTypeString() + " units=" + destAtts.get("units"));
             destAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), sourceAtts, destAtts, colName, 
-                destPA.elementClass() != String.class, //tryToAddStandardName
-                destPA.elementClass() != String.class, //addColorBarMinMax
+                destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                destPA.elementType() != PAType.STRING, //addColorBarMinMax
                 false); //tryToFindLLAT
             //String2.log(">> out colName= " + colName + " units=" + destAtts.get("units"));
 
@@ -1952,7 +1957,7 @@ String expected =
 "        <att name=\"keywords\">air, airTemp, author, center, command, data, erd, fisheries, great, identifier, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">stationID</att>\n" +
 "        <att name=\"summary\">This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
 "        <att name=\"testOutOfDate\">now-1day</att>\n" +
@@ -2049,7 +2054,7 @@ String expected =
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+
 
             String tDatasetID = "testFromHttpGet_25bf_9033_586b";
             EDD.deleteCachedDatasetInfo(tDatasetID);
@@ -2223,7 +2228,7 @@ expected =
 "    Float64 Northernmost_Northing 10.2;\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 10.2;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"stationID, longitude, latitude\";\n" +
 "    String summary \"This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.\";\n" +
 "    String testOutOfDate \"now-1day\";\n" +

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
@@ -131,8 +132,8 @@ public class TableWriterSeparatedValue extends TableWriter {
             isStringOrChar = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 isStringOrChar[col] = 
-                    pas[col].elementClass() == String.class ||
-                    pas[col].elementClass() == char.class;
+                    pas[col].elementType() == PAType.STRING ||
+                    pas[col].elementType() == PAType.CHAR;
                 
                 if (writeColumnNames) {
                     String units = "";

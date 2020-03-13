@@ -205,17 +205,18 @@ public class WatchDirectory {
         for (int i = 0; i < n; i++) {
             WatchEvent.Kind kind = eventKinds.get(i);
             results = kind + " " + contexts.get(i);
-            String2.log("  " + results);
+            String2.log("results i=" + i + "=\n" + results);
             Test.ensureTrue(
                 results.equals(CREATE + " " + watchDir + file1) ||
                 results.equals(MODIFY + " " + watchDir + file1) ||
+                results.equals(DELETE + " " + watchDir + file1) ||
                 results.equals(MODIFY + " " + subDirNS), // !
                 "");
             //ensure testing via '==' works
             Test.ensureTrue(kind == CREATE || kind == MODIFY || kind == DELETE, 
                 "kind=" + kind);
         }
-        Test.ensureBetween(n, 2, 3, ""); //sometimes the dir event isn't caught
+        Test.ensureBetween(n, 1, 4, ""); //sometimes the dir event isn't caught
 
         //programmatic test: delete files 
         String2.log("test not recursive " + DELETE);
@@ -225,7 +226,7 @@ public class WatchDirectory {
         for (int i = 0; i < n; i++) {
             WatchEvent.Kind kind = eventKinds.get(i);
             results = kind + " " + contexts.get(i);
-            String2.log("  " + results);
+            String2.log("results i=" + i + "=\n" + results);
             Test.ensureTrue(
                 results.equals(DELETE + " " + watchDir + file1) ||
                 results.equals(MODIFY + " " + watchDir + file1) ||
@@ -235,7 +236,7 @@ public class WatchDirectory {
             Test.ensureTrue(kind == CREATE || kind == MODIFY || kind == DELETE, 
                 "kind=" + kind);
         }
-        Test.ensureBetween(n, 2, 3, ""); //sometimes the dir event isn't caught
+        Test.ensureBetween(n, 1, 3, "Sometimes nEvents=0 because the dir events weren't caught.");
 
 
         //*** test recursive
@@ -251,10 +252,11 @@ public class WatchDirectory {
         n = wd.getEvents(eventKinds, contexts);
         for (int i = 0; i < n; i++) {
             results = eventKinds.get(i) + " " + contexts.get(i);
-            String2.log("  " + results);
+            String2.log("results i=" + i + "=\n" + results);
             Test.ensureTrue(
                 results.equals(CREATE + " " + watchDir + file1) ||
                 results.equals(MODIFY + " " + watchDir + file1) ||
+                results.equals(DELETE + " " + watchDir + file1) ||
                 results.equals(CREATE + " " + subDir   + file2) ||
                 results.equals(MODIFY + " " + subDir   + file2) ||
                 results.equals(MODIFY + " " + subDirNS),
@@ -269,7 +271,7 @@ public class WatchDirectory {
         n = wd.getEvents(eventKinds, contexts);
         for (int i = 0; i < n; i++) {
             results = eventKinds.get(i) + " " + contexts.get(i);
-            String2.log("  " + results);
+            String2.log("results i=" + i + "=\n" + results);
             Test.ensureTrue(
                 results.equals(DELETE + " " + watchDir + file1) ||
                 results.equals(MODIFY + " " + watchDir + file1) ||
@@ -278,7 +280,7 @@ public class WatchDirectory {
                 results.equals(MODIFY + " " + subDirNS),
                 "");
         }
-        Test.ensureBetween(n, 4, 5, ""); //sometimes the dir event isn't caught
+        Test.ensureBetween(n, 3, 5, ""); //sometimes the dir event isn't caught
 
         //*** test creating a huge number 
         //This is allowed on Windows. It doesn't appear to have max number.
@@ -328,7 +330,7 @@ public class WatchDirectory {
             n = wd.getEvents(eventKinds, contexts);
             for (int i = 0; i < n; i++) {
                 WatchEvent.Kind kind = eventKinds.get(i);
-                String2.log("  " + kind + " " + contexts.get(i));
+                String2.log("results i=" + i + "=\n" + kind + " " + contexts.get(i));
                 //ensure testing via '==' works
                 Test.ensureTrue(kind == CREATE || kind == MODIFY || kind == DELETE ||
                     kind == OVERFLOW, "kind=" + kind);

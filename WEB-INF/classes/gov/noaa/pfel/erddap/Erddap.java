@@ -4557,7 +4557,7 @@ writer.write(
                 }
             }
 
-            //make columns: "Name" (String), "Last modified" (long), 
+            //make columns: "Name" (String), "Last modified" (long millis), 
             //  "Size" (long), and "Description" (String)
             Table table = new Table();
             table.addColumn("Name",          new StringArray(new String[]{"documentation.html"}));
@@ -4656,7 +4656,7 @@ writer.write(
             //This is a copy of any internal data, so contents can be modified.
             //It returns null (if unrecognized nextPath, or if trouble),
             //  or Object[3]: 
-            //  [0] is a sorted table with file "Name" (String), "Last modified" (long), 
+            //  [0] is a sorted table with file "Name" (String), "Last modified" (long millis), 
             //      "Size" (long), and "Description" (String, but usually no content).
             //  [1] is a sorted String[] with the short names of directories that are 1 level lower, and
             //  [2] is the local directory corresponding to this (or null, if not a local dir)
@@ -8656,7 +8656,7 @@ breadCrumbs + endBreadCrumbs +
         String serviceDataType = "altitude".equals(tEdv.combinedAttributes().getString("standard_name"))? 
             "esriImageServiceDataTypeElevation" : 
             "esriImageServiceDataTypeProcessed";
-        String pixelType = PrimitiveArray.classToEsriPixelType(tEdv.destinationDataTypeClass());
+        String pixelType = PrimitiveArray.paTypeToEsriPixelType(tEdv.destinationDataPAType());
         String spatialReference = "GEOGCS[\"unnamed\",DATUM[\"WGS_1984\"," +  //found on sample server
             "SPHEROID[\"WGS 84\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0]," +
             "UNIT[\"degree\",0.0174532925199433]]";
@@ -9344,9 +9344,9 @@ breadCrumbs + endBreadCrumbs +
                     "Don't try to connect to .nc or .hdf files on ERDDAP's /files/ system as if they were local files. " +
                     "It is horribly inefficient and often causes other problems. Instead: " +
                     "a) Use (OPeN)DAP client software to connect to ERDDAP's DAP services for this dataset " +
-                    "(which have /griddap/ or /tabledap/ in the URL). That's what DAP is for." +
-                    "b) Use the dataset's Data Access Form to request a subset of data. " +
-                    "c) If you need the entire file or repeated access over a long period of time, " +
+                    "(which have /griddap/ or /tabledap/ in the URL). That's what DAP is for. " +
+                    "b) Or, use the dataset's Data Access Form to request a subset of data. " +
+                    "c) Or, if you need the entire file or repeated access over a long period of time, " +
                     "use curl, wget, or your browser to download the entire file, " +
                     "then access the data from your local copy of the file.");
             }
@@ -12522,7 +12522,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             variableNameSA.add("NC_GLOBAL");
             attributeNameSA.add(names[i]);
             PrimitiveArray value = atts.get(names[i]);
-            javaTypeSA.add(value.elementClassString());
+            javaTypeSA.add(value.elementTypeString());
             valueSA.add(Attributes.valueToNcString(value));
         }
 
@@ -12566,7 +12566,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     variableNameSA.add(edv.destinationName());
                     attributeNameSA.add(names[i]);
                     PrimitiveArray value = atts.get(names[i]);
-                    javaTypeSA.add(value.elementClassString());
+                    javaTypeSA.add(value.elementTypeString());
                     valueSA.add(Attributes.valueToNcString(value));
                 }
             }
@@ -12592,7 +12592,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 variableNameSA.add(edv.destinationName());
                 attributeNameSA.add(names[i]);
                 PrimitiveArray value = atts.get(names[i]);
-                javaTypeSA.add(value.elementClassString());
+                javaTypeSA.add(value.elementTypeString());
                 valueSA.add(Attributes.valueToNcString(value));
             }
         }
@@ -16806,7 +16806,7 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf("directories") >= 0, "results=\n" + results);            
             Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/cwwcNDBCMet/");
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/");
             Test.ensureTrue(results.indexOf("NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("Make a graph") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
@@ -16819,7 +16819,7 @@ jsonp + "(" +
             String localName = EDStatic.fullTestCacheDirectory + "NDBC_41004_met.nc";
             File2.delete(localName);
             SSR.downloadFile( //throws Exception if trouble
-                EDStatic.erddapUrl + "/files/cwwcNDBCMet/NDBC_41004_met.nc",
+                EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc",
                 localName, true); //tryToUseCompression
             Test.ensureTrue(File2.isFile(localName), 
                 "/files download failed. Not found: localName=" + localName);
@@ -17335,7 +17335,7 @@ expected =
 "A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF\\nsourceUrl=(local files" +
 ")\\nSouthernmost_Northing=-89.99\\nspatial_resolution=0.01 degrees\\nstandard_name_vocabulary=CF Standard Name Tab" +
 //                                                end date changes   
-"le v55\\ntestOutOfDate=now-3days\\ntime_coverage_end=2018-08-07T09:00:00Z\\ntime_coverage_start=2002-06-01T09:00:0" +
+"le v70\\ntestOutOfDate=now-3days\\ntime_coverage_end=2018-08-07T09:00:00Z\\ntime_coverage_start=2002-06-01T09:00:0" +
 "0Z\\nWesternmost_Easting=-179.99\",\n" +
 "  \"url\": \"https://localhost:8443/cwexperimental/griddap/jplMURSST41.html\",\n" +
 "  \"includedInDataCatalog\": {\n" +

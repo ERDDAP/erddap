@@ -28,6 +28,17 @@ public class DoubleArray extends PrimitiveArray {
 
 
     /**
+     * This returns the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     *
+     * @return the number of bytes per element for this PrimitiveArray.
+     * The value for "String" isn't a constant, so this returns 20.
+     */
+    public int elementSize() {
+        return 8;
+    }
+
+    /**
      * This is the main data structure.
      * This should be private, but is public so you can manipulate it if you 
      * promise to be careful.
@@ -95,7 +106,7 @@ public class DoubleArray extends PrimitiveArray {
         return array.length;
     }
 
-    /** This indicates if this class' type is float.class or double.class. 
+    /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
      */
     public boolean isFloatingPointType() {
         return true;
@@ -168,12 +179,12 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class (double.class) of the element type.
+     * This returns the PAType (PAType.DOUBLE) of the element type.
      *
-     * @return the class (double.class) of the element type.
+     * @return the PAType (PAType.DOUBLE) of the element type.
      */
-    public Class elementClass() {
-        return double.class;
+    public PAType elementType() {
+        return PAType.DOUBLE;
     }
 
     /**
@@ -181,7 +192,7 @@ public class DoubleArray extends PrimitiveArray {
      *
      * @return the class index (CLASS_INDEX_DOUBLE) of the element type.
      */
-    public int elementClassIndex() {
+    public int elementTypeIndex() {
         return CLASS_INDEX_DOUBLE;
     }
 
@@ -357,7 +368,7 @@ public class DoubleArray extends PrimitiveArray {
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
 
         //add from same type
-        if (otherPA.elementClass() == elementClass()) {
+        if (otherPA.elementType() == elementType()) {
             if (otherIndex + nValues > otherPA.size)
                 throw new IllegalArgumentException(String2.ERROR + 
                     " in DoubleArray.addFromPA: otherIndex=" + otherIndex + 
@@ -990,6 +1001,28 @@ public class DoubleArray extends PrimitiveArray {
             array[size++] = dis.readDouble();
     }
 
+    /** 
+     * This writes array[index] to a randomAccessFile at the current position.
+     *
+     * @param raf the RandomAccessFile
+     * @param index
+     * @throws Exception if trouble
+     */
+    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+        raf.writeDouble(get(index));
+    }
+
+    /** 
+     * This reads one value from a randomAccessFile at the current position
+     * and adds it to the PrimitiveArraay.
+     *
+     * @param raf the RandomAccessFile
+     * @throws Exception if trouble
+     */
+    public void readFromRAF(RandomAccessFile raf) throws Exception {
+        add(raf.readDouble());
+    }
+
     /**
      * This reads one value from a randomAccessFile.
      *
@@ -1423,42 +1456,42 @@ public class DoubleArray extends PrimitiveArray {
         anArray.clear();
 
         //unsignedFactory, which uses unsignedAppend
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new DoubleArray(new double[] 
             {0, 1, Double.MAX_VALUE, -Double.MAX_VALUE, Double.MIN_VALUE, Double.NaN, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 1.7976931348623157E308, -1.7976931348623157E308, 4.9E-324, NaN, -1.0", ""); // -> mv
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             // 0, 1,    2147483647,    2147483648,    4294967295
             "0.0, 1.0, 2.147483647E9, 2.147483648E9, 4.294967295E9", ""); //precise
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 9.223372036854776E18, 9.223372036854776E18, 1.8446744073709552E19", ""); //rounded/imprecise
         anArray.clear();        
 
-        anArray = (DoubleArray)unsignedFactory(double.class, 
+        anArray = (DoubleArray)unsignedFactory(PAType.DOUBLE, 
             new FloatArray(new float[] {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, -1}));
         Test.ensureEqual(anArray.toString(), 
             "0.0, 1.0, 3.4028234663852886E38, -3.4028234663852886E38, -1.0", ""); 
@@ -1475,7 +1508,7 @@ public class DoubleArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getFloat(0), Float.NaN, "");
         Test.ensureEqual(anArray.getDouble(0), 1e307, "");
         Test.ensureEqual(anArray.getString(0), "1.0E307", "");
-        Test.ensureEqual(anArray.elementClass(), double.class, "");
+        Test.ensureEqual(anArray.elementType(), PAType.DOUBLE, "");
         double tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new double[]{1e307}, "");
 

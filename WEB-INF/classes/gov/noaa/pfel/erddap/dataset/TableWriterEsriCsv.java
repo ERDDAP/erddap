@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.CharArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
@@ -113,10 +114,10 @@ public class TableWriterEsriCsv extends TableWriter {
             isCharOrString = new boolean[nColumns];
             isTimeStamp    = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                Class elementClass = pas[col].elementClass();
-                isFloat[       col] = (elementClass == float.class) || (elementClass == double.class);
-                isCharOrString[col] = elementClass == char.class ||
-                                      elementClass == String.class;
+                PAType elementPAType = pas[col].elementType();
+                isFloat[       col] = (elementPAType == PAType.FLOAT) || (elementPAType == PAType.DOUBLE);
+                isCharOrString[col] = elementPAType == PAType.CHAR ||
+                                      elementPAType == PAType.STRING;
                 String u = table.columnAttributes(col).getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));

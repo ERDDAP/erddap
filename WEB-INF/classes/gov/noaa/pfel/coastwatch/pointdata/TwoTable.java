@@ -135,13 +135,13 @@ public class TwoTable  {
             //add the variables
             for (int col = 0; col < nColumns; col++) {
                 PrimitiveArray pa = getColumn(col);
-                Class type = pa.elementClass();
+                Class type = pa.elementType();
                 String tColName = getColumnNameWithoutSpaces(col);
-                if (type == String.class) {
+                if (type == PAType.STRING) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nclib wants at least 1
                     Dimension lengthDimension = nc.addDimension(rootGroup, 
                         tcolName + NcHelper.StringLengthSuffix, max);
-                    nc.addVariable(rootGroup, tColName, char.class, 
+                    nc.addVariable(rootGroup, tColName, PAType.CHAR, 
                         Arrays.asList(obsDimension, lengthDimension)); 
                 } else {
                     nc.addVariable(rootGroup, tColName, type, Arrays.asList(obsDimension)); 
