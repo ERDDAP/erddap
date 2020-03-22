@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -22,7 +23,7 @@ import java.util.Set;
  * CharArray is a thin shell over a char[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses Char.MAX_VALUE to represent a missing value (NaN).
+ * <p>This class uses Character.MAX_VALUE to represent a missing value (NaN).
  */
 public class CharArray extends PrimitiveArray {
 
@@ -245,12 +246,12 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (CLASS_INDEX_CHAR of the element type.
+     * This returns the class index (PATYPE_INDEX_CHAR of the element type.
      *
-     * @return the class index (CLASS_INDEX_CHAR) of the element type.
+     * @return the class index (PATYPE_INDEX_CHAR) of the element type.
      */
     public int elementTypeIndex() {
-        return CLASS_INDEX_CHAR;
+        return PATYPE_INDEX_CHAR;
     }
 
     /**
@@ -411,6 +412,16 @@ public class CharArray extends PrimitiveArray {
      */
     public void addLong(long value) {
         add(Math2.narrowToChar(value));
+    }
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNLongs(int n, long value) {
+        addN(n, Math2.narrowToChar(value));
     }
 
     /**
@@ -731,6 +742,29 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * Return a value from the array as a ulong.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a ulong. 
+     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     */
+    public BigInteger getULong(int index) {
+        char b = get(index);
+        return b == Character.MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + (int)b);
+    }
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(long).
+     */
+    public void setULong(int index, BigInteger i) {
+        set(index, Math2.narrowToChar(i));
+    }
+
+    /**
      * Return a value from the array as a float.
      * 
      * @param index the index number 0 .. size-1
@@ -808,15 +842,29 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 .. 
      * @return This returns (int)(ar[index]), or "" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
         char ch = get(index);
         //String2.log(">> CharArray.getString index=" + index + " ch=" + ch);
         return ch == Character.MAX_VALUE? "" : "" + ch;
+    }
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    public String getSimpleString(int index) {
+        return String.valueOf(get(index));
     }
 
     /**
@@ -1058,23 +1106,42 @@ public class CharArray extends PrimitiveArray {
 
 
     /**
-     * This compares the values in row1 and row2 for SortComparator,
+     * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
-     * Currently, this does not checking of the range of index1 and index2,
+     * The cohort missing value sorts highest.
+     * Currently, this does not range check index1 and index2,
      * so the caller should be careful.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return returns a negative integer, zero, or a positive integer if the 
      *   value at index1 is less than, equal to, or greater than 
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, int index2) {
-        return array[index1] - array[index2];
+    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+        return getString(index1).compareTo(otherPA.getString(index2));
     }
+
+    /**
+     * This is like compare(), except for CharArray and StringArray it is caseInsensitive.
+     *
+     * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
+     * @param index2 an index number 0 ... size-1
+     * @return  a negative integer, zero, or a positive integer if the 
+     * value at index1 is less than, equal to, or greater than 
+     * the value at index2.
+     */
+    public int compareIgnoreCase(int index1, PrimitiveArray otherPA, int index2) {
+        return String2.STRING_COMPARATOR_IGNORE_CASE.compare(
+            getString(index1), otherPA.getString(index2));
+    }
+
+
 
     /**
      * This copies the value in row 'from' to row 'to'.
@@ -1254,53 +1321,6 @@ public class CharArray extends PrimitiveArray {
     public void readFromRAF(RandomAccessFile raf) throws Exception {
         add(raf.readChar());
     }
-
-    /**
-     * This reads one value from a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @return the requested value as a double
-     * @throws Exception if trouble
-     */
-    public static double rafReadDouble(RandomAccessFile raf, long start, long index) 
-        throws Exception {
- 
-        raf.seek(start + 2*index);
-        char c = raf.readChar();
-        return c == Character.MAX_VALUE? Double.NaN : c;
-    }
-
-    /**
-     * This writes one value to a randomAccessFile at the current position.
-     *
-     * @param raf the RandomAccessFile
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, double value) throws Exception {
-        raf.writeChar(Math2.roundToChar(value));
-    }
-
-    /**
-     * This writes one value to a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, long start, long index,
-        double value) throws Exception {
- 
-        raf.seek(start + 2*index);
-        raf.writeChar(Math2.roundToChar(value));
-    }
-
 
     /**
      * This appends the data in another pa to the current data.
@@ -1568,31 +1588,6 @@ public class CharArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
         Test.ensureEqual(anArray.getString(0), "", "");
         anArray.clear();
-
-        //unsignedFactory, which uses unsignedAppend
-        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
-            new CharArray(new char[] {0, 1, 65, 252, Character.MAX_VALUE, Character.MIN_VALUE}));
-        Test.ensureEqual(anArray.toString(), 
-            "\\u0000, \\u0001, A, \\u00fc, \\uffff, \\u0000", ""); // -> mv
-        anArray.clear();        
-
-        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
-            new ByteArray(new byte[] {0, 1, 65, (byte)252, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            "\\u0000, \\u0001, A, \\u00fc, \\u007f, \\u0080, \\u00ff", "");
-        anArray.clear();        
-
-        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
-            new ShortArray(new short[] {0, 1, 65, 252, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            "\\u0000, \\u0001, A, \\u00fc, \\u7fff, \\u8000, \\uffff", "");
-        anArray.clear();        
-
-        anArray = (CharArray)unsignedFactory(PAType.CHAR, 
-            new IntArray(new int[] {0, 1, 65, 252, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            "\\u0000, \\u0001, A, \\u00fc, \\uffff, \\uffff, \\uffff", ""); // ->mv
-        anArray.clear();        
 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add('z');

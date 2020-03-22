@@ -6,6 +6,7 @@ package gov.noaa.pfel.coastwatch.pointdata;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -206,8 +207,8 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
         }
 
         //find firstZ and lastZ
-        int firstZ = depthLevels.binaryFindFirstGAE(0, depthLevels.size() - 1, minDepth, 5);
-        int lastZ  = depthLevels.binaryFindLastLAE( 0, depthLevels.size() - 1, maxDepth, 5);
+        int firstZ = depthLevels.binaryFindFirstGAE(0, depthLevels.size() - 1, PAOne.fromDouble(minDepth), 5);
+        int lastZ  = depthLevels.binaryFindLastLAE( 0, depthLevels.size() - 1, PAOne.fromDouble(maxDepth), 5);
 
         //reject because z range is between 2 z levels or no valid depths?
         if (firstZ > lastZ) {

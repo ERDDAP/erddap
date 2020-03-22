@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -22,17 +23,22 @@ import java.util.Set;
  * UShortArray is a thin shell over a short[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses 0xffff (65535) to represent a missing value (NaN).
+ * <p>This class uses MAX_VALUE to represent a missing value (NaN).
  */
-public class UShortArray extends ShortArray {
+public class UShortArray extends PrimitiveArray {
 
     /** 
-     * This is the maxiumum unsigned value (the CoHort missing value), stored as a signed byte.
+     * This is the minimum unsigned value, stored as a signed int.
      */
-    public final static short MAX_VALUE_AS_SHORT = -1;
+    public final static int MIN_VALUE = Math2.USHORT_MIN_VALUE;
 
     /** 
-     * This is the maxiumum unsigned value (the CoHort missing value), stored as a signed int.
+     * This is the maximum unsigned value (the CoHort missing value), stored as a signed byte.
+     */
+    public final static short PACKED_MAX_VALUE = -1;
+
+    /** 
+     * This is the maximum unsigned value (the CoHort missing value), stored as a signed int.
      */
     public final static int MAX_VALUE = Math2.USHORT_MAX_VALUE;
 
@@ -59,14 +65,14 @@ public class UShortArray extends ShortArray {
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
     public double missingValue() {
-        return Math2.USHORT_MAX_VALUE;
+        return MAX_VALUE;
     }
 
     /**
      * This packs a signed int holding an unsigned short as a short.
      */
     public static short pack(int i) {
-        return (short)(i & 0xffff);
+        return i < 0 || i >= MAX_VALUE? PACKED_MAX_VALUE : (short)(i & MAX_VALUE);
     }
     /**
      * This packs a signed long holding an unsigned short as a short.
@@ -79,7 +85,23 @@ public class UShortArray extends ShortArray {
      * This unpacks a ushort stored in a short as an int.
      */
     public static int unpack(short s) {
-        return (int)(s & 0xffff);
+        return s >= 0? s : s + MAX_VALUE + 1;
+    }
+
+    /**
+     * This is the main data structure.
+     * This should be private, but is public so you can manipulate it if you 
+     * promise to be careful.
+     * Note that if the PrimitiveArray's capacity is increased,
+     * the PrimitiveArray will use a different array for storage.
+     */
+    public short[] array;
+
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
+     * The integer type classes overwrite this.
+     */
+    public boolean isIntegerType() {
+        return true;
     }
 
     /**
@@ -124,21 +146,34 @@ public class UShortArray extends ShortArray {
         size = last - first + 1;
         array = new short[size];
         for (int i = 0; i < size; i++) 
-            array[i] = (short)(first + i);
+            array[i] = pack(first + i);
     }
 
     /**
      * A constructor which (at least initially) uses the array and all its 
      * elements ('size' will equal anArray.length).
      *
-     * @param anArray the array to be used as this object's array.
-     *   The incoming signed values will be interpreted as unsigned values.
+     * @param anArray the array with already packed values to be used as this object's array.
      */
     public UShortArray(short[] anArray) {
         array = anArray;
         size = anArray.length;
     }
 
+    /**
+     * A constructor which does NOT use the array and all its 
+     * elements ('size' will equal anArray.length).
+     *
+     * @param anArray the array with not-yet-packed values.
+     */
+    public UShortArray(int[] anArray) {
+        size = anArray.length;
+        Math2.ensureMemoryAvailable(2L * size, "UShortArray");
+        array = new short[size];
+        for (int i = 0; i < size; i++)
+            array[i] = pack(anArray[i]);
+    }
+    
     /**
      * A special constructor which encodes all char values as short values via
      * <tt>sh[i] = (short)ch[i]</tt>.
@@ -178,11 +213,37 @@ public class UShortArray extends ShortArray {
     }
 
     /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "0";}
+    public String MINEST_VALUE() {return "" + MIN_VALUE;}
 
     /** The maximum value that can be held by this class 
         (not including the cohort missing value). */
     public String MAXEST_VALUE() {return "" + (MAX_VALUE - 1);}
+
+    /**
+     * This returns the current capacity (number of elements) of the internal data array.
+     * 
+     * @return the current capacity (number of elements) of the internal data array.
+     */
+    public int capacity() {
+        return array.length;
+    }
+
+    /**
+     * This returns the hashcode for this byteArray (dependent only on values,
+     * not capacity).
+     * WARNING: the algorithm used may change in future versions.
+     *
+     * @return the hashcode for this byteArray (dependent only on values,
+     * not capacity)
+     */
+    public int hashCode() {
+        //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        int code = 0;
+        for (int i = 0; i < size; i++)
+            code = 31*code + array[i];
+        return code;
+    }
 
     /**
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
@@ -231,21 +292,21 @@ public class UShortArray extends ShortArray {
     }
 
     /**
-     * This returns the PAType (PAType.USHORT) of the element type.
+     * This returns the PAType (PAType.SHORT) of the element type.
      *
-     * @return the PAType (PAType.USHORT) of the element type.
+     * @return the PAType (PAType.SHORT) of the element type.
      */
     public PAType elementType() {
         return PAType.USHORT;
     }
 
     /**
-     * This returns the class index (CLASS_INDEX_SHORT) of the element type.
+     * This returns the class index (PATYPE_INDEX_USHORT) of the element type.
      *
-     * @return the class index (CLASS_INDEX_SHORT) of the element type.
+     * @return the class index (PATYPE_INDEX_USHORT) of the element type.
      */
     public int elementTypeIndex() {
-        return CLASS_INDEX_SHORT;
+        return PATYPE_INDEX_USHORT;
     }
 
     /**
@@ -253,27 +314,38 @@ public class UShortArray extends ShortArray {
      *
      * @param value the value to be added to the array
      */
-    public void add(short value) {
+    public void add(int value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = value;
+        array[size++] = pack(value);
+    }
+
+    /**
+     * This adds an already packed value to the array (increasing 'size' by 1).
+     *
+     * @param value the already packed value to be added to the array
+     */
+    public void addPacked(short packedValue) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        array[size++] = packedValue;
     }
 
     /**
      * This adds an item to the array (increasing 'size' by 1).
      *
      * @param value the value to be added to the array.
-     *    If value instanceof Number, this uses Number.shortValue().
+     *    If value instanceof Number, this uses Number.longValue().
      *    (If you want a more sophisticated conversion, save to DoubleArray,
      *    then convert DoubleArray to UShortArray.)
-     *    If null or not a Number, this adds Short.MAX_VALUE.
+     *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);        
         array[size++] = value != null && value instanceof Number?
-            ((Number)value).shortValue() :
-            Short.MAX_VALUE;
+            pack(((Number)value).longValue()) :
+            PACKED_MAX_VALUE;
     }
 
     /**
@@ -295,13 +367,13 @@ public class UShortArray extends ShortArray {
      * @param value the value to be added to the array.
      *    n &lt; 0 throws an Exception.
      */
-    public void addN(int n, short value) {
+    public void addN(int n, int value) {
         if (n == 0) return;
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
-        Arrays.fill(array, size, size + n, value);
+        Arrays.fill(array, size, size + n, pack(value));
         size += n;
     }
 
@@ -312,7 +384,7 @@ public class UShortArray extends ShortArray {
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void atInsert(int index, short value) {
+    public void atInsert(int index, int value) {
         if (index < 0 || index > size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
@@ -320,7 +392,7 @@ public class UShortArray extends ShortArray {
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
         size++;
-        array[index] = value;
+        array[index] = pack(value);
     }
 
     /**
@@ -331,7 +403,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, Math2.narrowToShort(String2.parseInt(value)));
+        atInsert(index, Math2.narrowToUShort(String2.parseInt(value)));
     }
 
     /**
@@ -342,7 +414,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, Math2.narrowToShort(String2.parseInt(value)));
+        addN(n, Math2.narrowToUShort(String2.parseInt(value)));
     }
 
     /**
@@ -351,7 +423,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a String.
      */
     public void addString(String value) {
-        add(Math2.narrowToShort(String2.parseInt(value)));
+        add(Math2.narrowToUShort(String2.parseInt(value)));
     }
 
     /**
@@ -360,7 +432,7 @@ public class UShortArray extends ShortArray {
      * @param value the float value
      */
     public void addFloat(float value) {
-        add(Math2.roundToShort(value));
+        add(Math2.roundToUShort(value));
     }
 
     /**
@@ -369,7 +441,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a double.
      */
     public void addDouble(double value) {
-        add(Math2.roundToShort(value));
+        add(Math2.roundToUShort(value));
     }
 
     /**
@@ -380,7 +452,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
-        addN(n, Math2.roundToShort(value));
+        addN(n, Math2.roundToUShort(value));
     }
 
     /**
@@ -389,7 +461,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as an int.
      */
     public void addInt(int value) {
-        add(Math2.narrowToShort(value));
+        add(Math2.narrowToUShort(value));
     }
 
     /**
@@ -399,7 +471,7 @@ public class UShortArray extends ShortArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, Math2.narrowToShort(value));
+        addN(n, Math2.narrowToUShort(value));
     }
 
     /**
@@ -408,7 +480,17 @@ public class UShortArray extends ShortArray {
      * @param value the value, as a long.
      */
     public void addLong(long value) {
-        add(Math2.narrowToShort(value));
+        add(Math2.narrowToUShort(value));
+    }
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNLongs(int n, long value) {
+        addN(n, Math2.narrowToUShort(value));
     }
 
     /**
@@ -608,14 +690,14 @@ public class UShortArray extends ShortArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   Short.MAX_VALUE is converted to Double.NaN.
+     *   MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UShortArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
-            short s = array[i];
-            dar[i] = s == Short.MAX_VALUE? Double.NaN : s;
+            int s = unpack(array[i]);
+            dar[i] = s == MAX_VALUE? Double.NaN : s;
         }
         return dar;
     }
@@ -624,14 +706,14 @@ public class UShortArray extends ShortArray {
      * This returns a String[] which has 'size' elements.
      *
      * @return a String[] which has 'size' elements.
-     *    Short.MAX_VALUE appears as "".
+     *    MAX_VALUE appears as "".
      */
     public String[] toStringArray() {
         Math2.ensureMemoryAvailable(8L * size, "UShortArray.toStringArray"); //8L is feeble minimal estimate
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
-            short s = array[i];
-            sar[i] = s == Short.MAX_VALUE? "" : String.valueOf(s);
+            int s = unpack(array[i]);
+            sar[i] = s == MAX_VALUE? "" : String.valueOf(s);
         }
         return sar;
     }
@@ -642,7 +724,20 @@ public class UShortArray extends ShortArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public short get(int index) {
+    public int get(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: index (" + 
+                index + ") >= size (" + size + ").");
+        return unpack(array[index]);
+    }
+
+    /**
+     * This gets a specified element as a packed value.
+     *
+     * @param index 0 ... size-1
+     * @return the specified element
+     */
+    public short getPacked(int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -655,11 +750,11 @@ public class UShortArray extends ShortArray {
      * @param index 0 ... size-1
      * @param value the value for that element
      */
-    public void set(int index, short value) {
+    public void set(int index, int value) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.set: index (" + 
                 index + ") >= size (" + size + ").");
-        array[index] = value;
+        array[index] = pack(value);
     }
 
 
@@ -668,12 +763,11 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as an int. 
-     *   Short.MAX_VALUE is returned as Integer.MAX_VALUE.
+     *   MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? Integer.MAX_VALUE : 
-                                     s;
+        int s = get(index);
+        return s == MAX_VALUE? Integer.MAX_VALUE : s;
     }
 
     /**
@@ -698,7 +792,7 @@ public class UShortArray extends ShortArray {
      *   if needed by methods like Math2.narrowToByte(i).
      */
     public void setInt(int index, int i) {
-        set(index, Math2.narrowToShort(i));
+        set(index, Math2.narrowToUShort(i));
     }
 
     /**
@@ -706,12 +800,11 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   Short.MAX_VALUE is returned as Long.MAX_VALUE.
+     *   MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? Long.MAX_VALUE : 
-                                     s;
+        int s = get(index);
+        return s == MAX_VALUE? Long.MAX_VALUE : s;
     }
 
     /**
@@ -719,10 +812,33 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
-     *   if needed by methods like Math2.narrowToShort(long).
+     *   if needed by methods like Math2.narrowToUShort(long).
      */
     public void setLong(int index, long i) {
-        set(index, Math2.narrowToShort(i));
+        set(index, Math2.narrowToUShort(i));
+    }
+
+    /**
+     * Return a value from the array as a ulong.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a ulong. 
+     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     */
+    public BigInteger getULong(int index) {
+        int b = get(index);
+        return b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+    }
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(long).
+     */
+    public void setULong(int index, BigInteger i) {
+        set(index, Math2.narrowToUShort(i));
     }
 
     /**
@@ -732,12 +848,11 @@ public class UShortArray extends ShortArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   Short.MAX_VALUE is returned as Float.NaN.
+     *   MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? Float.NaN : 
-                                     s;
+        int s = get(index);
+        return s == MAX_VALUE? Float.NaN : s;
     }
 
     /**
@@ -745,10 +860,10 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToShort(d).
+     *   if needed by methods like Math2.roundToUShort(d).
      */
     public void setFloat(int index, float d) {
-        set(index, Math2.roundToShort(d));
+        set(index, Math2.roundToUShort(d));
     }
 
     /**
@@ -758,12 +873,11 @@ public class UShortArray extends ShortArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   Short.MAX_VALUE is returned as Double.NaN.
+     *   MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? Double.NaN : 
-                                     s;
+        int s = get(index);
+        return s == MAX_VALUE? Double.NaN : s;
     }
 
     /**
@@ -777,7 +891,7 @@ public class UShortArray extends ShortArray {
      */
     public double getUnsignedDouble(int index) {
         //or see https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
-        return Short.toUnsignedInt(get(index));
+        return getDouble(index); //already unsigned
     }
 
     /**
@@ -800,23 +914,36 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToShort(d).
+     *   if needed by methods like Math2.roundToUShort(d).
      */
     public void setDouble(int index, double d) {
-        set(index, Math2.roundToShort(d));
+        set(index, Math2.roundToUShort(d));
     }
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *   or "" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? "" : 
-                                     String.valueOf(s);
+        int s = get(index);
+        return s == MAX_VALUE? "" : String.valueOf(s);
+    }
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    public String getSimpleString(int index) {
+        return String.valueOf(get(index));
     }
 
     /**
@@ -828,9 +955,8 @@ public class UShortArray extends ShortArray {
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
     public String getJsonString(int index) {
-        short s = get(index);
-        return s == Short.MAX_VALUE? "null" : 
-                                     String.valueOf(s);
+        int s = get(index);
+        return s == MAX_VALUE? "null" : String.valueOf(s);
     }
 
     /**
@@ -854,10 +980,10 @@ public class UShortArray extends ShortArray {
      * 
      * @param index the index number 0 .. 
      * @param s the value. For numeric PrimitiveArray's, it is parsed
-     *   with String2.parseInt and narrowed by Math2.narrowToShort(i).
+     *   with String2.parseInt and narrowed by Math2.narrowToUShort(i).
      */
     public void setString(int index, String s) {
-        set(index, Math2.narrowToShort(String2.parseInt(s)));
+        set(index, Math2.narrowToUShort(String2.parseInt(s)));
     }
 
     /**
@@ -866,7 +992,7 @@ public class UShortArray extends ShortArray {
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(short lookFor) {
+    public int indexOf(int lookFor) {
         return indexOf(lookFor, 0);
     }
 
@@ -878,9 +1004,10 @@ public class UShortArray extends ShortArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(short lookFor, int startIndex) {
+    public int indexOf(int lookFor, int startIndex) {
+        short packedLookFor = pack(lookFor);
         for (int i = startIndex; i < size; i++) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -895,7 +1022,7 @@ public class UShortArray extends ShortArray {
     public int indexOf(String lookFor, int startIndex) {
         if (startIndex >= size)
             return -1;
-        return indexOf(Math2.roundToShort(String2.parseInt(lookFor)), startIndex);
+        return indexOf(Math2.roundToUShort(String2.parseInt(lookFor)), startIndex);
     }
 
     /**
@@ -905,12 +1032,13 @@ public class UShortArray extends ShortArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(short lookFor, int startIndex) {
+    public int lastIndexOf(int lookFor, int startIndex) {
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
+        short packedLookFor = pack(lookFor);
         for (int i = startIndex; i >= 0; i--) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -923,7 +1051,7 @@ public class UShortArray extends ShortArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
-        return lastIndexOf(Math2.roundToShort(String2.parseInt(lookFor)), startIndex);
+        return lastIndexOf(Math2.roundToUShort(String2.parseInt(lookFor)), startIndex);
     }
 
     /**
@@ -970,29 +1098,38 @@ public class UShortArray extends ShortArray {
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (array[i] != other.array[i])
-                return "The two UShortArrays aren't equal: this[" + i + "]=" + array[i] + 
-                                                      "; other[" + i + "]=" + other.array[i] + ".";
+                return "The two UShortArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
+                                                       "; other[" + i + "]=" + unpack(other.array[i]) + ".";
         return "";
     }
 
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
     public String toString() {
-        return String2.toCSSVString(toArray()); //toArray() get just 'size' elements
+        //estimate 7 bytes/element
+        StringBuilder sb = new StringBuilder(7 * Math.min(size, (Integer.MAX_VALUE-8192) / 7));
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(unpack(array[i]));
+        }
+        return sb.toString();
     }
 
     /** 
      * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
         StringBuilder sb = new StringBuilder(size * 8);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "" : ",") + array[i] + "s");
+            sb.append((i == 0? "" : ",") + unpack(array[i]) + "us"); 
         return sb.toString();
     }
 
@@ -1006,22 +1143,24 @@ public class UShortArray extends ShortArray {
     }
 
     /**
-     * This compares the values in row1 and row2 for SortComparator,
+     * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
-     * Currently, this does not checking of the range of index1 and index2,
+     * The cohort missing value sorts highest.
+     * Currently, this does not range check index1 and index2,
      * so the caller should be careful.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return returns a negative integer, zero, or a positive integer if the 
      *   value at index1 is less than, equal to, or greater than 
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, int index2) {
-        return array[index1] - array[index2];
+    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+        return Integer.compare(getInt(index1), otherPA.getInt(index2));
     }
 
     /**
@@ -1160,7 +1299,7 @@ public class UShortArray extends ShortArray {
      * @throws Exception if trouble
      */
     public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
-        raf.writeShort(get(index));
+        raf.writeShort(array[index]);
     }
 
     /** 
@@ -1171,55 +1310,8 @@ public class UShortArray extends ShortArray {
      * @throws Exception if trouble
      */
     public void readFromRAF(RandomAccessFile raf) throws Exception {
-        add(raf.readShort());
+        addPacked(raf.readShort());
     }
-
-    /**
-     * This reads one value from a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @return the requested value as a double
-     * @throws Exception if trouble
-     */
-    public static double rafReadDouble(RandomAccessFile raf, long start, long index) 
-        throws Exception {
- 
-        raf.seek(start + 2*index);
-        short s = raf.readShort();
-        return s == Short.MAX_VALUE? Double.NaN : s;
-    }
-
-    /**
-     * This writes one value to a randomAccessFile at the current position.
-     *
-     * @param raf the RandomAccessFile
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, double value) throws Exception {
-        raf.writeShort(Math2.roundToShort(value));
-    }
-
-    /**
-     * This writes one value to a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, long start, long index,
-        double value) throws Exception {
- 
-        raf.seek(start + 2*index);
-        raf.writeShort(Math2.roundToShort(value));
-    }
-
 
     /**
      * This appends the data in another pa to the current data.
@@ -1236,7 +1328,7 @@ public class UShortArray extends ShortArray {
             System.arraycopy(((UShortArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = Math2.narrowToShort(pa.getInt(i)); //this converts mv's
+                array[size + i] = pack(pa.getInt(i)); //this converts mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1258,7 +1350,7 @@ public class UShortArray extends ShortArray {
             System.arraycopy(((UShortArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = Math2.narrowToShort(pa.getRawInt(i)); //this DOESN'T convert mv's
+                array[size + i] = pack(Math2.narrowToUShort(pa.getRawInt(i))); //this DOESN'T convert mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1281,16 +1373,16 @@ public class UShortArray extends ShortArray {
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
         HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
-        short lastValue = array[0]; //since lastValue often equals currentValue, cache it
-        hashMap.put(new Short(lastValue), dummy);
+        int lastValue = unpack(array[0]); //since lastValue often equals currentValue, cache it
+        hashMap.put(new Integer(lastValue), dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            short currentValue = array[i];
+            int currentValue = unpack(array[i]);
             if (currentValue != lastValue) {
                 if (currentValue < lastValue) 
                     alreadySorted = false;
                 lastValue = currentValue;
-                hashMap.put(new Short(lastValue), dummy);
+                hashMap.put(new Integer(lastValue), dummy);
             }
         }
 
@@ -1319,23 +1411,23 @@ public class UShortArray extends ShortArray {
 
         //put the unique values back in the hashMap with the ranks as the associated values
         //and make tUnique 
-        short tUnique[] = new short[nUnique];
+        int tUnique[] = new int[nUnique];
         for (int i = 0; i < count; i++) {
             hashMap.put(unique[i], new Integer(i));
-            tUnique[i] = ((Short)unique[i]).shortValue();
+            tUnique[i] = ((Integer)unique[i]).intValue();
         }
 
         //convert original values to ranks
         int ranks[] = new int[size];
-        lastValue = array[0];
-        ranks[0] = ((Integer)hashMap.get(new Short(lastValue))).intValue();
+        lastValue = unpack(array[0]);
+        ranks[0] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
             if (array[i] == lastValue) {
                 ranks[i] = lastRank;
             } else {
-                lastValue = array[i];
-                ranks[i] = ((Integer)hashMap.get(new Short(lastValue))).intValue();
+                lastValue = unpack(array[i]);
+                ranks[i] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
                 lastRank = ranks[i];
             }
         }
@@ -1355,67 +1447,18 @@ public class UShortArray extends ShortArray {
      * @return the number of values switched
      */
     public int switchFromTo(String tFrom, String tTo) {
-        short from = Math2.roundToShort(String2.parseDouble(tFrom));
-        short to   = Math2.roundToShort(String2.parseDouble(tTo));
-        if (from == to)
+        short packedFrom = pack(Math2.roundToUShort(String2.parseDouble(tFrom)));
+        short packedTo   = pack(Math2.roundToUShort(String2.parseDouble(tTo)));
+        if (packedFrom == packedTo)
             return 0;
         int count = 0;
         for (int i = 0; i < size; i++) {
-            if (array[i] == from) {
-                array[i] = to;
+            if (array[i] == packedFrom) {
+                array[i] =  packedTo;
                 count++;
             }
         }
         return count;
-    }
-
-    /**
-     * This tests if the values in the array are sorted in ascending order (tied is ok).
-     * The details of this test are geared toward determining if the 
-     * values are suitable for binarySearch.
-     *
-     * @return "" if the values in the array are sorted in ascending order (or tied);
-     *   or an error message if not (i.e., if descending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isAscending() {
-        if (size == 0)
-            return "";
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] > array[i]) {
-                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
-            }
-        }
-        if (array[size - 1] == Short.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
-        return "";
-    }
-
-    /**
-     * This tests if the values in the array are sorted in descending order (tied is ok).
-     *
-     * @return "" if the values in the array are sorted in descending order (or tied);
-     *   or an error message if not (i.e., if ascending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isDescending() {
-        if (size == 0)
-            return "";
-        if (array[0] == Short.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                "[0]=(" + ArrayMissingValue + ")");
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] < array[i]) {
-                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                    "[" + (i-1) + "]=" + array[i-1] + 
-                     " < [" + i + "]=" + array[i]);
-            }
-        }
-        return "";
     }
 
     /**
@@ -1443,11 +1486,11 @@ public class UShortArray extends ShortArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        short tmin = Short.MAX_VALUE - 1;
-        short tmax = Short.MIN_VALUE;
+        int tmin = MAX_VALUE - 1;
+        int tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            short v = array[i];
-            if (v != Short.MAX_VALUE) {
+            if (array[i] != PACKED_MAX_VALUE) {
+                int v = unpack(array[i]);
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
                 if (v >= tmax) {tmaxi = i; tmax = v; }
@@ -1468,7 +1511,8 @@ public class UShortArray extends ShortArray {
     public void changeSignedToFromUnsigned() {
         for (int i = 0; i < size; i++) {
             int i2 = array[i];
-            array[i] = (short)(i2 < 0? i2 + Short.MAX_VALUE : i2 - Short.MAX_VALUE);
+            array[i] = (short)(i2 < 0? i2 + MAX_VALUE + 1: 
+                                       i2 - MAX_VALUE - 1); //order of ops is important
         }
     }
 
@@ -1481,46 +1525,40 @@ public class UShortArray extends ShortArray {
         String2.log("*** Testing UShortArray");
 /* for releases, this line should have open/close comment */
 
+        Test.ensureEqual(pack(     0),      0, "");
+        Test.ensureEqual(pack( 32767),  32767, "");
+        Test.ensureEqual(pack( 32768), -32768, "");
+        Test.ensureEqual(pack( 65534),     -2, "");
+        Test.ensureEqual(pack( 65535),     -1, "");
+
+        Test.ensureEqual(unpack((short)     0),     0, "");
+        Test.ensureEqual(unpack((short) 32767), 32767, "");
+        Test.ensureEqual(unpack((short)-32768), 32768, "");
+        Test.ensureEqual(unpack((short)    -2), 65534, "");
+        Test.ensureEqual(unpack((short)    -1), 65535, "");
+
         //** test default constructor and many of the methods
         UShortArray anArray = new UShortArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), Short.MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue(), MAX_VALUE, "");
         anArray.addString("");
-        Test.ensureEqual(anArray.get(0),               Short.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawInt(0),         Short.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawDouble(0),      Short.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getUnsignedDouble(0), Short.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawString(0), "" + Short.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawNiceDouble(0),  Short.MAX_VALUE, "");
+        Test.ensureEqual(anArray.get(0),               MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawInt(0),         MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawDouble(0),      MAX_VALUE, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
+        Test.ensureEqual(anArray.getRawString(0), "" + MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  MAX_VALUE, "");
         Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
         Test.ensureEqual(anArray.getString(0), "", "");
 
-        anArray.set(0, (short)-32768); Test.ensureEqual(anArray.getUnsignedDouble(0), 32768, "");
-        anArray.set(0, (short)-32767); Test.ensureEqual(anArray.getUnsignedDouble(0), 32769, "");
-        anArray.set(0, (short)    -1); Test.ensureEqual(anArray.getUnsignedDouble(0), 65535, "");
+        anArray.set(0,     0); Test.ensureEqual(anArray.getUnsignedDouble(0),     0, "");
+        anArray.set(0, 32767); Test.ensureEqual(anArray.getUnsignedDouble(0), 32767, "");
+        anArray.set(0, 32768); Test.ensureEqual(anArray.getUnsignedDouble(0), 32768, "");
+        anArray.set(0, 65534); Test.ensureEqual(anArray.getUnsignedDouble(0), 65534, "");
+        anArray.set(0, 65535); Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
         anArray.clear();
 
-        //unsignedFactory, which uses unsignedAppend
-        anArray = (UShortArray)unsignedFactory(PAType.SHORT, 
-            new UShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // -> mv
-        anArray.clear();        
-
-        anArray = (UShortArray)unsignedFactory(PAType.SHORT, 
-            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
-        anArray.clear();        
-
-        anArray = (UShortArray)unsignedFactory(PAType.SHORT, 
-            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // ->mv
-        anArray.clear();        
-
-        anArray = (UShortArray)unsignedFactory(PAType.SHORT, 
-            new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32767, 32767", ""); // ->mv
-        anArray.clear();        
 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add((short)32000);
@@ -1530,7 +1568,7 @@ public class UShortArray extends ShortArray {
         Test.ensureEqual(anArray.getFloat(0), 32000, "");
         Test.ensureEqual(anArray.getDouble(0), 32000, "");
         Test.ensureEqual(anArray.getString(0), "32000", "");
-        Test.ensureEqual(anArray.elementType(), PAType.SHORT, "");
+        Test.ensureEqual(anArray.elementType(), PAType.USHORT, "");
         short tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new short[]{(short)32000}, "");
 
@@ -1639,9 +1677,9 @@ public class UShortArray extends ShortArray {
         Test.ensureEqual(anArray.get(4), 8, "");
 
         //test compare
-        Test.ensureEqual(anArray.compare(1, 3), -4, "");
+        Test.ensureEqual(anArray.compare(1, 3), -1, "");
         Test.ensureEqual(anArray.compare(1, 1),  0, "");
-        Test.ensureEqual(anArray.compare(3, 1),  4, "");
+        Test.ensureEqual(anArray.compare(3, 1),  1, "");
 
         //test toString
         Test.ensureEqual(anArray.toString(), "0, 2, 4, 6, 8", "");
@@ -1729,11 +1767,11 @@ public class UShortArray extends ShortArray {
         //** test append and clone
         anArray = new UShortArray(new short[]{(short)1});
         anArray.append(new ByteArray(new byte[]{5, -5}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5}, "");
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN}, "");
         anArray.append(new StringArray(new String[]{"a", "9"}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
         anArray2 = (UShortArray)anArray.clone();
-        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
 
         //test move
         anArray = new UShortArray(new short[]{0,1,2,3,4});
@@ -1763,8 +1801,8 @@ public class UShortArray extends ShortArray {
         Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 10, 25", "");
         Test.ensureEqual(indices.toString(), "2, 0, 0, 1", "");
 
-        anArray = new UShortArray(new short[] {35,35,Short.MAX_VALUE,1,2});
-        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 32767", "");
+        anArray = new UShortArray(new int[] {35,35,MAX_VALUE,1,2});
+        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 65535", "");
         Test.ensureEqual(indices.toString(), "2, 2, 3, 0, 1", "");
 
         anArray = new UShortArray(new short[] {10,20,30,40});
@@ -1772,11 +1810,11 @@ public class UShortArray extends ShortArray {
         Test.ensureEqual(indices.toString(), "0, 1, 2, 3", "");
 
         //switchToFakeMissingValue
-        anArray = new UShortArray(new short[] {Short.MAX_VALUE,1,2,Short.MAX_VALUE,3,Short.MAX_VALUE});
+        anArray = new UShortArray(new int[] {MAX_VALUE,1,2,MAX_VALUE,3,MAX_VALUE});
         Test.ensureEqual(anArray.switchFromTo("", "75"), 3, "");
         Test.ensureEqual(anArray.toString(), "75, 1, 2, 75, 3, 75", "");
         anArray.switchFromTo("75", "");
-        Test.ensureEqual(anArray.toString(), "32767, 1, 2, 32767, 3, 32767", "");
+        Test.ensureEqual(anArray.toString(), "65535, 1, 2, 65535, 3, 65535", "");
         Test.ensureEqual(anArray.getNMinMaxIndex(), new int[]{3, 1, 4}, "");
 
         //addN
@@ -1822,7 +1860,7 @@ public class UShortArray extends ShortArray {
         //isAscending
         anArray = new UShortArray(new short[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
-        anArray.set(2, Short.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isAscending(), 
             "UShortArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, (short)9);
@@ -1832,9 +1870,9 @@ public class UShortArray extends ShortArray {
         //isDescending
         anArray = new UShortArray(new short[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
-        anArray.set(2, Short.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isDescending(), 
-            "UShortArray isn't sorted in descending order: [1]=10 < [2]=32767.", "");
+            "UShortArray isn't sorted in descending order: [1]=10 < [2]=65535.", "");
         anArray.set(1, (short)35);
         Test.ensureEqual(anArray.isDescending(), 
             "UShortArray isn't sorted in descending order: [0]=30 < [1]=35.", "");
@@ -1868,15 +1906,18 @@ public class UShortArray extends ShortArray {
         anArray.addString(anArray.MINEST_VALUE());
         anArray.addString(anArray.MAXEST_VALUE());
         Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
-        Test.ensureEqual(anArray.getString(0), "-32768", "");
+        Test.ensureEqual(anArray.getString(0), "0", "");
         Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new UShortArray(new short[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UShortArray(new short[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UShortArray(new short[] {Short.MIN_VALUE})).tryToFindNumericMissingValue(), Short.MIN_VALUE, "");
-        Test.ensureEqual((new UShortArray(new short[] {Short.MAX_VALUE})).tryToFindNumericMissingValue(), Short.MAX_VALUE, "");
-        Test.ensureEqual((new UShortArray(new short[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
+        Test.ensureEqual((new UShortArray(new short[] {         })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UShortArray(new short[] {1, 2     })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UShortArray(new short[] {0        })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UShortArray(new short[] {32767    })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UShortArray(new int[]   {MAX_VALUE})).tryToFindNumericMissingValue(),  MAX_VALUE, "");
+        Test.ensureEqual((new UShortArray(new short[] {1, 99    })).tryToFindNumericMissingValue(),         99, "");
+
+        /* */
     }
 
 }

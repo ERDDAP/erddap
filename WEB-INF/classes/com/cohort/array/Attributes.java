@@ -1135,8 +1135,8 @@ public class Attributes {
      *
      * @param standardizeWhat This determines what gets done.
      *   It is the sum of these options (when applicable):
-     *   <br>1: apply scale_factor, add_offset, 
-     *          make _Unsigned into signed, e.g., unsigned bytes become signed shorts,
+     *   <br>1: apply scale_factor and add_offset, 
+     *          if _Unsigned=true, make signed PA into unsigned PA,
      *          convert defined numeric _FillValue's and missing_value's to "standard" values
      *          (MAX_VALUE for integer types, and NAN for doubles and floats),
      *          and unpack packed attributes (e.g., actual|data|valid_min|max|range) (if packed).
@@ -1244,10 +1244,10 @@ public class Attributes {
             //If dataPa is unsigned, these are already unsigned
             //If dataPa is packed, these are packed too.
             double dFillValue    = unsigned?
-                oldAtts.getUnsignedDouble("_FillValue") :    //so -1b becomes 255
+                oldAtts.getUnsignedDouble("_FillValue") :    //so -1b becomes 255, works whether source is unsigned or not
                 oldAtts.getDouble(        "_FillValue");    
             double dMissingValue = unsigned?
-                oldAtts.getUnsignedDouble("missing_value") : //so -1b becomes 255
+                oldAtts.getUnsignedDouble("missing_value") : //so -1b becomes 255, works whether source is unsigned or not
                 oldAtts.getDouble(        "missing_value");                              
             newAtts.remove("missing_value");
             newAtts.remove("_FillValue");
@@ -1261,17 +1261,19 @@ public class Attributes {
                     standardizeNumericDateTimes? PAType.DOUBLE :
                     scalePA != null? scalePA.elementType() :
                     addPA   != null? addPA.elementType() : 
-                    unsigned && oPAType == PAType.BYTE?  PAType.SHORT :  //similar code below   //trouble (not), but change to not doing this???
-                    unsigned && oPAType == PAType.SHORT? PAType.INT :
-                    unsigned && oPAType == PAType.INT?   PAType.DOUBLE : //ints are converted to double because nc3 doesn't support long
-                    unsigned && oPAType == PAType.LONG?  PAType.DOUBLE : //longs are converted to double (not ideal)
+                    unsigned && oPAType == PAType.BYTE?  PAType.UBYTE  : //similar code below   //trouble (not), but change to not doing this???
+                    unsigned && oPAType == PAType.SHORT? PAType.USHORT :
+                    unsigned && oPAType == PAType.INT?   PAType.UINT   : 
+                    unsigned && oPAType == PAType.LONG?  PAType.ULONG  : 
                     destPAType;  
 
                 //switch data type
+                //String2.log(">> unsigned=" + unsigned + " oPAType=" + oPAType + 
+                //    " destPAType=" + destPAType + " dataPA type=" + dataPa.elementType() + " " + dataPa.toString());
                 dataPa = 
                     //if stated missing_value or _FillValue is same as cohort missingValue...
                     unsigned? 
-                        PrimitiveArray.unsignedFactory(destPAType, dataPa) : //unsigned 
+                        dataPa.makeUnsignedPA() : //unsigned 
                         dataPa.isIntegerType() &&
                             (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
                              dFillValue    == dataPa.missingValue())?
@@ -1299,16 +1301,23 @@ public class Attributes {
                 //Atts are always already unsigned.
                 //Whether these are initially packed or standardizeed is not reliable.
                 //  So if these are already float or doubles, assume already standardizeed
+                String names[] = {"actual_min", "actual_max", "actual_range",
+                                  "data_min",   "data_max",   "data_range",
+                                  "valid_min",  "valid_max",  "valid_range"};
                 if (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE) {
-                    String names[] = {"actual_min", "actual_max", "actual_range",
-                                      "data_min",   "data_max",   "data_range",
-                                      "valid_min",  "valid_max",  "valid_range"};
                     for (int i = 0; i < names.length; i++) {
                         PrimitiveArray pa = newAtts.get(names[i]);
                         if (pa != null && pa.elementType() != PAType.FLOAT && pa.elementType() != PAType.DOUBLE) {
                             pa = PrimitiveArray.factory(destPAType, pa);
                             pa.scaleAddOffset(scale, add);
                             newAtts.set(names[i], pa); 
+                        }
+                    }
+                } else if (unsigned) {
+                    for (int i = 0; i < names.length; i++) {
+                        PrimitiveArray pa = newAtts.get(names[i]);
+                        if (pa != null && pa.isIntegerType() && !pa.isUnsigned()) {
+                            newAtts.set(names[i], pa.makeUnsignedPA());
                         }
                     }
                 }
@@ -1670,7 +1679,7 @@ public class Attributes {
             PrimitiveArray dataPa2 = 
                 //if stated missing_value or _FillValue is same as cohort missingValue...
                 unsigned? 
-                    PrimitiveArray.unsignedFactory(tPAType, dataPa) : //unsigned 
+                    dataPa.makeUnsignedPA() : //unsigned 
                     dataPa.isIntegerType() &&
                         (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
                          dFillValue    == dataPa.missingValue())?
@@ -1721,7 +1730,7 @@ public class Attributes {
             PrimitiveArray dataPa2 = 
                 //if stated missing_value or _FillValue is same as cohort missingValue...
                 unsigned?
-                    PrimitiveArray.unsignedFactory(PAType.DOUBLE, dataPa) :
+                    dataPa.makeUnsignedPA() :
                     dataPa.isIntegerType() &&
                         (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
                          dFillValue    == dataPa.missingValue())?
@@ -2020,29 +2029,31 @@ public class Attributes {
         //***** PrimitiveArray standardizeVariable(int standardizeWhat, String varName, PrimitiveArray dataPa) 
         PrimitiveArray pa;
 
-        //standardizeWhat = 1: _Unsigned byte -> short
+        //standardizeWhat = 1: _Unsigned byte -> ubyte
         atts.clear();
         atts.set("_Unsigned", "true");  
         atts.set("data_min", (byte)0); 
         atts.set("missing_value", (byte)99);
         pa = PrimitiveArray.csvFactory(PAType.BYTE, "-128, -1, 0, 1, 99, 127");
         pa = atts.standardizeVariable(1, "test", pa);
-        Test.ensureEqual(pa.toString(), "128, 255, 0, 1, 32767, 127", ""); 
+        Test.ensureEqual(pa.elementType(), PAType.UBYTE, "");
+        Test.ensureEqual(pa.toString(), "128, 255, 0, 1, 255, 127", ""); 
         Test.ensureEqual(atts.toString(), 
-"    _FillValue=32767s\n" +
-"    data_min=0b\n", "");  
+"    _FillValue=255ub\n" +
+"    data_min=0ub\n", "");  
 
-        //standardizeWhat = 1: _Unsigned int -> long -> double 
+        //standardizeWhat = 1: _Unsigned int -> uint 
         atts.clear();
         atts.set("_Unsigned", "true");  
-        atts.set("data_min", 0.0); 
+        atts.set("data_min", 0); 
         atts.set("missing_value", 99);
         pa = PrimitiveArray.csvFactory(PAType.INT, "-2000000000, -1, 0, 1, 99, 2000000000");
         pa = atts.standardizeVariable(1, "test", pa);
-        Test.ensureEqual(pa.toString(), "2.294967296E9, 4.294967295E9, 0.0, 1.0, NaN, 2.0E9", ""); 
+        Test.ensureEqual(pa.elementType(), PAType.UINT, "");
+        Test.ensureEqual(pa.toString(), "2294967296, 4294967295, 0, 1, 4294967295, 2000000000", ""); 
         Test.ensureEqual(atts.toString(), 
-"    _FillValue=NaNd\n" +
-"    data_min=0.0d\n", "");  
+"    _FillValue=4294967295ui\n" +
+"    data_min=0ui\n", "");  
 
         //standardizeWhat = 1: scale_factor
         //if scale_factor is defined (e.g., in .nc file), mv's should be too. If not, then all values are valid.

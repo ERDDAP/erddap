@@ -1311,7 +1311,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" + //long vars appear as double vars in DAP
             //these are the largest longs, converted to doubles
-"            <att name=\"actual_range\" type=\"doubleList\">-9.223372036854776E18 9.2233720368547748E18</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">-9.223372036854776E18 9.2233720368547748E18</att>\n" +  //trouble
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test of Longs</att>\n" +
 "            <att name=\"units\">1</att>\n" +
@@ -2060,7 +2060,7 @@ expected =
 /* for releases, this line should have open/close comment */
         //always done        
         testGenerateDatasetsXml();
-        testGenerateDatasetsXml2();  //unsigned: needs work
+        testGenerateDatasetsXml2();  //trouble: unsigned: needs work
         testPsdac();
         //testSourceNeedsExpandedFP_EQ(); 2016-01-16 source is gone
         testReadDas();

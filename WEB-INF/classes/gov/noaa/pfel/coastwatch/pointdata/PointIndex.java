@@ -279,12 +279,12 @@ public class PointIndex  {
         try {
             firstIndex0 = (int)PrimitiveArray.rafFirstGAE(raf, index0ElementType, //safe since reading an int
                 0,  //byte in file that values start at 
-                0, lastFiniteSortedIndex0, desiredMin[0], 5); //precision=5
+                0, lastFiniteSortedIndex0, PAOne.fromDouble(desiredMin[0]), 5); //precision=5
             if (firstIndex0 < 0)
                 return rowOk;
             lastIndex0 = (int)PrimitiveArray.rafLastLAE(raf, index0ElementType, //safe since reading an int
                 0,  //byte in file that values start at 
-                firstIndex0, lastFiniteSortedIndex0, desiredMax[0], 5); //precision=5
+                firstIndex0, lastFiniteSortedIndex0, PAOne.fromDouble(desiredMax[0]), 5); //precision=5
         } finally {
             raf.close();
         }

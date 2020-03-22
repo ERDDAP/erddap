@@ -27,7 +27,9 @@ public class StringHolderComparatorIgnoreCase implements Comparator {
     public int compare(Object o1, Object o2) {
         if (o1 == null)
             return o2 == null? 0 : -1;
-        return ((StringHolder)o1).compareToIgnoreCase((StringHolder)o2);
+        if (o2 == null) 
+            return 1;
+        return ((StringHolder)o1).compareToIgnoreCase((StringHolder)o2); //it is fancy
     }
 
     /**

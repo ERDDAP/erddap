@@ -504,9 +504,9 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         testVerboseOn();
 
         String2.log("\n*** EDDTableFromNcFiles.testGenerateDatasetsXml");
-        String2.pressEnterToContinue("\nDownload /nrt/NDBC_41004_met.nc from coastwatch\n" +
-            "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/ \n" +
-            "to /u00/data/points/nrt/ndbcMet2/ .");
+        String2.pressEnterToContinue("\nDownload NDBC_41004_met.nc from coastwatch\n" +
+            "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n" +
+            "to /u00/data/points/ndbcMet2/nrt/ .");
 
         try {
             String results = generateDatasetsXml(
@@ -16848,7 +16848,7 @@ expected =
             "\n*** EDDTableFromNcFiles.testNewTime()\n" +
             "Download NDBC_46088_met.nc from coastwatch\n" +
             "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n" +
-            "to /u00/data/points/ndbcMet/ .");
+            "to /u00/data/points/ndbcMet/nrt/ .");
 
         EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
         EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -18119,7 +18119,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 37844917;\n" + //changes
+"    Int32 actual_range 1, 38096073;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18164,7 +18164,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.58012568e+9;\n" + //changes
+"    Float64 actual_range 4.811229e+8, 1.58271804e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18226,7 +18226,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2020-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2020-03-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18785,7 +18785,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
         testTimeAxis();
         testLogAxis(-1);  //-1=all
         testModTime();
-testNetcdf();  //!!!!! EEEK: opendap bytes are 0 - 255, Java/ERDDAP bytes are -128 to 127 !  //unsigned test?
+testNetcdf();  //trouble: opendap bytes are 0 - 255, Java/ERDDAP bytes are -128 to 127 !  //unsigned test?
         testGlobecBirds();
         testLatLon();
         testDapErrors();

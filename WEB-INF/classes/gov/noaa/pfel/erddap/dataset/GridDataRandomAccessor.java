@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.File2;
@@ -32,7 +33,7 @@ import java.io.RandomAccessFile;
  *   bytes byte[] with utf8 bytes from the string, appended one after another 
  *      (StringArray.writeDos)
  *   offset long[] with offset of end of string. (beginning of first string is offset=0)
- * 3) add  public String getDataValueAsString(int current[], int dv)
+ * 3) add  public String getDataValueAsPAOne(int current[], int dv)
  *   which uses a variant of StringArray.readDis (but from RandomAccessFile).
  * ]
  *
@@ -94,20 +95,25 @@ public class GridDataRandomAccessor {
         }
     }
 
+    /**
+     * This returns the PAType of the specified data variable.
+     */
+    public PAType dataPAType(int i) {
+        return dataPAType[i];
+    }
 
     /**
-     * Call this after increment() to get a data value (as a double) 
+     * Call this after increment() to get a data value (as a PAOne) 
      * from the specified dataVariable.
      *
      * @param current  from gridDataAccessor.totalIndex().getCurrent() (or compatible),
      *   but with values changed to what you want.
      * @param dv a dataVariable number (within the request, not the EDD dataVariable number).
-     * @return the data value
+     * @return the PAOne (for convenience)
      * @param throws Throwable if trouble
      */
-    public double getDataValueAsDouble(int current[], int dv) throws Throwable {
-        return PrimitiveArray.rafReadDouble(dataRaf[dv], dataPAType[dv], 0,
-            gdaTotalIndex.setCurrent(current));
+    public PAOne getDataValueAsPAOne(int current[], int dv, PAOne paOne) throws Throwable {
+        return paOne.readFromRAF(dataRaf[dv], 0, gdaTotalIndex.setCurrent(current));
     }
 
     /**
@@ -119,11 +125,11 @@ public class GridDataRandomAccessor {
      * @param dv a dataVariable number (within the request, not the EDD dataVariable number).
      * @param throws Throwable if trouble
      */
-    public void getDataValue(int current[], int dv, PrimitiveArray pa) throws Throwable {
+    /* public void getDataValue(int current[], int dv, PrimitiveArray pa) throws Throwable {
         gdaTotalIndex.setCurrent(current);
         dataRaf[dv].seek(gdaTotalIndex.getIndex() * (long)pa.elementSize());
         pa.readFromRAF(dataRaf[dv]);
-    }
+    } */
 
 
     /** 

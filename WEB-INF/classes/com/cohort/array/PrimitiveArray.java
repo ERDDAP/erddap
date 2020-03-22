@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -58,14 +59,19 @@ public abstract class PrimitiveArray {
 
     //these are carefully ordered from smallest to largest data class
     //DON'T CHANGE THESE: NCCSV BINARY depends on them.
-    public final static int CLASS_INDEX_BYTE = 0;
-    public final static int CLASS_INDEX_SHORT = 1;
-    public final static int CLASS_INDEX_CHAR = 2;
-    public final static int CLASS_INDEX_INT = 3;
-    public final static int CLASS_INDEX_LONG = 4;
-    public final static int CLASS_INDEX_FLOAT = 5;
-    public final static int CLASS_INDEX_DOUBLE = 6;
-    public final static int CLASS_INDEX_STRING = 7;     
+    public final static int PATYPE_INDEX_BYTE = 0;
+    public final static int PATYPE_INDEX_SHORT = 1;
+    public final static int PATYPE_INDEX_CHAR = 2;
+    public final static int PATYPE_INDEX_INT = 3;
+    public final static int PATYPE_INDEX_LONG = 4;
+    public final static int PATYPE_INDEX_FLOAT = 5;
+    public final static int PATYPE_INDEX_DOUBLE = 6;
+    public final static int PATYPE_INDEX_STRING = 7;     
+
+    public final static int PATYPE_INDEX_UBYTE = 8;
+    public final static int PATYPE_INDEX_USHORT = 9;
+    public final static int PATYPE_INDEX_UINT = 10;
+    public final static int PATYPE_INDEX_ULONG = 11;
 
     /** The regular expression operator. The OPeNDAP spec says =~, so that is the ERDDAP standard.
      * But some implementations use ~=, so see sourceRegexOp. 
@@ -262,20 +268,15 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This always returns a new pa of a specified type.
-     * In this "unsigned" variant, if pa isIntegerType, 
-     * the values in pa are treated as unsigned (being added to a new signed PrimitiveArray). 
-     * E.g., incoming ByteArray -1 is interpreted as 255.
-     * Int type to same int type causes negative values to become missingValues
-     * (so don't do it).
+     * If this is a signed integer type, this makes an unsigned variant 
+     * (e.g., PAType.BYTE returns a PAType.UBYTE).
+     * The values from pa are then treated as unsigned, e.g., -1 in ByteArray  
+     * becomes 255 in a UByteArray.
      *
-     * @param elementType e.g., PAType.FLOAT
-     * @return a PrimitiveArray
+     * @return a new unsigned PrimitiveArray, or this pa.
      */
-    public static PrimitiveArray unsignedFactory(PAType elementType, PrimitiveArray pa) {
-        PrimitiveArray newPa = factory(elementType, pa.size(), false); //not active            
-        newPa.unsignedAppend(pa);
-        return newPa;
+    public PrimitiveArray makeUnsignedPA() {
+        return this;
     }
 
     /** 
@@ -533,8 +534,7 @@ public abstract class PrimitiveArray {
     /** 
      * This converts a data class into an ESRI Pixel Type.
      * http://help.arcgis.com/en/arcgismobile/10.0/apis/android/api/com/esri/core/map/ImageServiceParameters.PIXEL_TYPE.html
-     * Currently, PAType.LONG returns F64
-     * Currently, PAType.BYTE returns a Java-like S8, not an OPenDAP-like U8.
+     * Currently, PAType.LONG and PAType.ULONG return F64.
      * Currently, PAType.CHAR returns a numeric U16.
      * Currently, PAType.STRING and others return UNKNOWN.
      *
@@ -695,6 +695,16 @@ public abstract class PrimitiveArray {
         return Double.NaN;
     }
 
+    /** 
+     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * as a PAOne. FloatArray and StringArray return Double.NaN. 
+     */
+    public PAOne missingValueAsPAOne() {
+        PAOne paOne = new PAOne(elementType());
+        paOne.setString("");
+        return paOne;
+    }
+
     /**
      * This returns for missing value for a given element type (e.g., PAType.BYTE),
      * expressed as a double.
@@ -723,9 +733,9 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This returns the class index (e.g., CLASS_INDEX_INT) of the element type.
+     * This returns the class index (e.g., PATYPE_INDEX_INT) of the element type.
      *
-     * @return the class index (e.g., CLASS_INDEX_INT) of the element type.
+     * @return the class index (e.g., PATYPE_INDEX_INT) of the element type.
      */
     abstract public int elementTypeIndex();
 
@@ -808,6 +818,14 @@ public abstract class PrimitiveArray {
      * @param value the value, as a long.
      */
     abstract public void addLong(long value);
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    abstract public void addNLongs(int n, long value);
 
     /**
      * This adds an element from another PrimitiveArray.
@@ -954,6 +972,25 @@ public abstract class PrimitiveArray {
      */
     abstract public void setLong(int index, long i);
 
+    /**
+     * Return a value from the array as a ulong.
+     * Floating point values are rounded.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a long. String values are parsed
+     *   with String2.parseLong and so may return Long.MAX_VALUE.
+     */
+    abstract public BigInteger getULong(int index);
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(i).
+     */
+    abstract public void setULong(int index, BigInteger i);
+
 
     /**
      * Return a value from the array as a float.
@@ -988,7 +1025,7 @@ public abstract class PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * FloatArray converts float to double in a simplistic way.
-     * For this variant: Integer source values will be treated as unsigned.
+     * For this variant: signed Integer source values will be treated as unsigned.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -1049,12 +1086,24 @@ public abstract class PrimitiveArray {
     abstract public void setDouble(int index, double d);
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     abstract public String getString(int index);
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    abstract String getSimpleString(int index);
 
     /**
      * Return a value from the array as a String suitable for a JSON file. 
@@ -1183,6 +1232,7 @@ public abstract class PrimitiveArray {
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
      * CharArray and StringArray overwrite this to specially encode the strings.
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
@@ -1198,6 +1248,7 @@ public abstract class PrimitiveArray {
 
     /** 
      * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return an NCCSV attribute String
      */
@@ -1342,10 +1393,27 @@ public abstract class PrimitiveArray {
     
 
     /**
+     * This compares the values in this.row1 and otherPA.row2
+     * and returns a negative integer, zero, or a positive integer if the 
+     * value at index1 is less than, equal to, or greater than 
+     * the value at index2.  Think (ar[index1] - ar[index2]).
+     * The cohort missing value sorts highest.
+     *
+     * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
+     * @param index2 an index number 0 ... size-1
+     * @return  a negative integer, zero, or a positive integer if the 
+     * value at index1 is less than, equal to, or greater than 
+     * the value at index2.
+     */
+    abstract public int compare(int index1, PrimitiveArray otherPA, int index2);
+
+    /**
      * This compares the values in row1 and row2 for SortComparator,
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.  Think (ar[index1] - ar[index2]).
+     * The cohort missing value sorts highest.
      *
      * @param index1 an index number 0 ... size-1
      * @param index2 an index number 0 ... size-1
@@ -1353,10 +1421,28 @@ public abstract class PrimitiveArray {
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
      */
-    abstract public int compare(int index1, int index2);
+    public int compare(int index1, int index2) {
+        return compare(index1, this, index2);
+    }
 
     /**
-     * This is like compare(), except for StringArray it is caseInsensitive.
+     * This is like compare(), except for CharArray and StringArray (which overwrite this)
+     * it is fancy caseInsensitive.
+     *
+     * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
+     * @param index2 an index number 0 ... size-1
+     * @return  a negative integer, zero, or a positive integer if the 
+     * value at index1 is less than, equal to, or greater than 
+     * the value at index2.
+     */
+    public int compareIgnoreCase(int index1, PrimitiveArray otherPA, int index2) {
+        return compare(index1, otherPA, index2);
+    }
+
+    /**
+     * This is like compare(), except for CharArray and StringArray (which overwrite this)
+     * it is fancy caseInsensitive.
      *
      * @param index1 an index number 0 ... size-1
      * @param index2 an index number 0 ... size-1
@@ -1365,7 +1451,7 @@ public abstract class PrimitiveArray {
      * the value at index2.
      */
     public int compareIgnoreCase(int index1, int index2) {
-        return compare(index1, index2);
+        return compareIgnoreCase(index1, this, index2);
     }
 
     /**
@@ -1641,93 +1727,6 @@ public abstract class PrimitiveArray {
      */
     abstract public void readFromRAF(RandomAccessFile raf) throws Exception;
 
-    /**
-     * This reads one number from a randomAccessFile.
-     * This doesn't support StringArray (for which you need nBytesPer)
-     * and in which you generally wouldn't be storing numbers.
-     *
-     * @param raf the RandomAccessFile
-     * @param type the elementType of the original PrimitiveArray
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @return the requested value as a double
-     * @throws Exception if trouble
-     */
-    public static double rafReadDouble(RandomAccessFile raf, PAType type, 
-        long start, long index) throws Exception {
-
-        if (type == PAType.BYTE)   return ByteArray.rafReadDouble(  raf, start, index);
-        if (type == PAType.CHAR)   return CharArray.rafReadDouble(  raf, start, index);
-        if (type == PAType.DOUBLE) return DoubleArray.rafReadDouble(raf, start, index);
-        if (type == PAType.FLOAT)  return FloatArray.rafReadDouble( raf, start, index);
-        if (type == PAType.INT)    return IntArray.rafReadDouble(   raf, start, index);
-        if (type == PAType.LONG)   return LongArray.rafReadDouble(  raf, start, index);
-        if (type == PAType.SHORT)  return ShortArray.rafReadDouble( raf, start, index);
-        if (type == PAType.UBYTE)  return UByteArray.rafReadDouble( raf, start, index);
-        if (type == PAType.UINT)   return UIntArray.rafReadDouble(  raf, start, index);
-        if (type == PAType.ULONG)  return ULongArray.rafReadDouble( raf, start, index);
-        if (type == PAType.USHORT) return UShortArray.rafReadDouble(raf, start, index);
-        //if (type == PAType.STRING) return ByteArray.rafReadDouble(raf, start, index, nBytesPer);
-        throw new Exception("PrimitiveArray.rafReadDouble type '" + type + "' not supported.");
-    }
-
-    /**
-     * This writes one number to a randomAccessFile at the current position.
-     * This doesn't support StringArray (for which you need nBytesPer)
-     * and in which you generally wouldn't be storing numbers.
-     *
-     * @param raf the RandomAccessFile
-     * @param type the element type of the original PrimitiveArray
-     * @param value the value which will be converted to 'type' and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, PAType type, 
-        double value) throws Exception {
-
-        if (type == PAType.BYTE)   {raf.writeByte(Math2.roundToByte(value));       return;}
-        if (type == PAType.CHAR)   {raf.writeChar(Math2.roundToChar(value));       return;}     
-        if (type == PAType.DOUBLE) {raf.writeDouble(value);                        return;}
-        if (type == PAType.FLOAT)  {raf.writeFloat(Math2.doubleToFloatNaN(value)); return;}
-        if (type == PAType.INT)    {raf.writeInt(Math2.roundToInt(value));         return;}
-        if (type == PAType.LONG)   {raf.writeLong(Math2.roundToLong(value));       return;}
-        if (type == PAType.SHORT)  {raf.writeShort(Math2.roundToShort(value));     return;}
-        if (type == PAType.UBYTE)  {raf.writeByte( UByteArray.pack( Math2.roundToUByte(value)));  return;} //trouble?
-        if (type == PAType.USHORT) {raf.writeShort(UShortArray.pack(Math2.roundToUShort(value))); return;} //trouble?
-        if (type == PAType.UINT)   {raf.writeInt(  UIntArray.pack(  Math2.roundToUInt(value)));   return;} //trouble?
-        if (type == PAType.ULONG)  {raf.writeLong( ULongArray.pack( Math2.roundToULong(value)));  return;} //trouble?
-        //if (type == PAType.STRING) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
-        throw new Exception("PrimitiveArray.rafWriteDouble type '" + type + "' not supported.");
-    }
-
-    /**
-     * This writes one number to a randomAccessFile.
-     * This doesn't support StringArray (for which you need nBytesPer)
-     * and in which you generally wouldn't be storing numbers.
-     *
-     * @param raf the RandomAccessFile
-     * @param type the elementType of the original PrimitiveArray
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the value (0..)
-     * @param value the value which will be converted to 'type' and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, PAType type, 
-        long start, long index, double value) throws Exception {
-
-        if (type == PAType.BYTE)   {ByteArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == PAType.CHAR)   {CharArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == PAType.DOUBLE) {DoubleArray.rafWriteDouble(raf, start, index, value); return;}
-        if (type == PAType.FLOAT)  {FloatArray.rafWriteDouble( raf, start, index, value); return;}
-        if (type == PAType.INT)    {IntArray.rafWriteDouble(   raf, start, index, value); return;}
-        if (type == PAType.LONG)   {LongArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == PAType.SHORT)  {ShortArray.rafWriteDouble( raf, start, index, value); return;}
-        if (type == PAType.UBYTE)  {UByteArray.rafWriteDouble( raf, start, index, value); return;}
-        if (type == PAType.UINT)   {UIntArray.rafWriteDouble(  raf, start, index, value); return;}
-        if (type == PAType.ULONG)  {ULongArray.rafWriteDouble( raf, start, index, value); return;}
-        if (type == PAType.USHORT) {UShortArray.rafWriteDouble(raf, start, index, value); return;}
-        //if (type == PAType.STRING) {ByteArray.rafWriteDouble(raf, start, index, nBytesPer); return;}
-        throw new Exception("PrimitiveArray.rafWriteDouble type '" + type + "' not supported.");
-    }
 
     /**
      * This tests if the other object is of the same type and has equal values.
@@ -1885,7 +1884,7 @@ public abstract class PrimitiveArray {
      * @throws Exception if trouble
      */
     public static long rafBinarySearch(RandomAccessFile raf, PAType type,
-        long start, long lowPo, long highPo, double value) throws Exception {
+        long start, long lowPo, long highPo, PAOne value) throws Exception {
         
         //ensure lowPo <= highPo
         //lowPo == highPo is handled by the following two chunks of code
@@ -1894,18 +1893,21 @@ public abstract class PrimitiveArray {
                 " in PrimitiveArray.rafBinarySearch: lowPo(" + lowPo + 
                 ") > highPo(" + highPo + ").");
         
-        double tValue = rafReadDouble(raf, type, start, lowPo);
+        PAOne tValue = new PAOne(type);
+        tValue.readFromRAF(raf, start, lowPo);
         //String2.log("rafBinarySearch value=" + value + " po=" + lowPo + " tValue=" + tValue);
-        if (tValue == value)
+        int compare = tValue.compareTo(value);
+        if (compare == 0)
             return lowPo;
-        if (tValue > value)
+        if (compare > 0)
             return -lowPo - 1;
 
-        tValue = rafReadDouble(raf, type, start, highPo);
+        tValue.readFromRAF(raf, start, highPo);
         //String2.log("rafBinarySearch value=" + value + " po=" + highPo + " tValue=" + tValue);
-        if (tValue == value)
+        compare = tValue.compareTo(value);
+        if (compare == 0)
             return highPo;
-        if (tValue < value)
+        if (compare < 0)
             return -(highPo+1) - 1;
 
         //repeatedly look at midpoint
@@ -1913,11 +1915,12 @@ public abstract class PrimitiveArray {
         //  and desired value would be in between them.
         while (highPo - lowPo > 1) {
             long midPo = (highPo + lowPo) / 2;
-            tValue = rafReadDouble(raf, type, start, midPo);
+            tValue.readFromRAF(raf, start, midPo);
             //String2.log("rafBinarySearch value=" + value + " po=" + midPo + " tValue=" + tValue);
-            if (tValue == value)
+            compare = tValue.compareTo(value);
+            if (compare == 0)
                 return midPo;
-            if (tValue < value) 
+            if (compare < 0) 
                 lowPo = midPo;
             else highPo = midPo;
         }
@@ -1946,15 +1949,16 @@ public abstract class PrimitiveArray {
      * @throws Exception if trouble
      */
     public static long rafFirstGE(RandomAccessFile raf, PAType type,
-        long start, long lowPo, long highPo, double value) throws Exception {
+        long start, long lowPo, long highPo, PAOne value) throws Exception {
 
         if (lowPo > highPo)
             return highPo + 1;
         long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
 
         //an exact match? find the first exact match
+        PAOne tValue = new PAOne(type);
         if (po >= 0) {
-            while (po > lowPo && rafReadDouble(raf, type, start, po - 1) == value)
+            while (po > lowPo && tValue.readFromRAF(raf, start, po - 1).compareTo(value) == 0)
                 po--;
             return po;
         }
@@ -1986,7 +1990,7 @@ public abstract class PrimitiveArray {
      * @throws Exception if trouble
      */
     public static long rafFirstGAE(RandomAccessFile raf, PAType type,
-        long start, long lowPo, long highPo, double value, int precision) throws Exception {
+        long start, long lowPo, long highPo, PAOne value, int precision) throws Exception {
 
         if (lowPo > highPo)
             return highPo + 1;
@@ -2000,7 +2004,8 @@ public abstract class PrimitiveArray {
             po = -po -1;
 
         //find the first GAE
-        while (po > lowPo && Math2.almostEqual(precision, rafReadDouble(raf, type, start, po - 1), value))
+        PAOne tValue = new PAOne(type);
+        while (po > lowPo && tValue.readFromRAF(raf, start, po - 1).almostEqual(precision, value))
             po--;
 
         return po;
@@ -2026,15 +2031,16 @@ public abstract class PrimitiveArray {
      * @throws Exception if trouble
      */
     public static long rafLastLE(RandomAccessFile raf, PAType type,
-        long start, long lowPo, long highPo, double value) throws Exception {
+        long start, long lowPo, long highPo, PAOne value) throws Exception {
 
         if (lowPo > highPo)
             return -1;
         long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
 
         //an exact match? find the first exact match
+        PAOne tValue = new PAOne(type);
         if (po >= 0) {
-            while (po < highPo && rafReadDouble(raf, type, start, po + 1) == value)
+            while (po < highPo && tValue.readFromRAF(raf, start, po + 1).equals(value))
                 po++;
             return po;
         }
@@ -2066,7 +2072,7 @@ public abstract class PrimitiveArray {
      * @throws Exception if trouble
      */
     public static long rafLastLAE(RandomAccessFile raf, PAType type,
-        long start, long lowPo, long highPo, double value, int precision) throws Exception {
+        long start, long lowPo, long highPo, PAOne value, int precision) throws Exception {
 
         if (lowPo > highPo)
             return -1;
@@ -2079,8 +2085,9 @@ public abstract class PrimitiveArray {
             po = -po -1 -1;
 
         //look for last almost equal value
+        PAOne tValue = new PAOne(type);
         while (po < highPo && 
-            Math2.almostEqual(precision, rafReadDouble(raf, type, start, po + 1), value))
+            tValue.readFromRAF(raf, start, po + 1).almostEqual(precision, value))
             po++;
 
         return po;
@@ -2103,7 +2110,7 @@ public abstract class PrimitiveArray {
      *     [So insert at -response-1.]
      * @throws RuntimeException if lowPo &gt; highPo.
      */
-    public int binarySearch(int lowPo, int highPo, double value) {
+    public int binarySearch(int lowPo, int highPo, PAOne value) {
         
         //ensure lowPo <= highPo
         //lowPo == highPo is handled by the following two chunks of code
@@ -2111,17 +2118,20 @@ public abstract class PrimitiveArray {
             throw new RuntimeException(String2.ERROR + 
                 " in PrimitiveArray.binarySearch: lowPo(" + lowPo + 
                 ") > highPo(" + highPo + ").");
-        
-        double tValue = getDouble(lowPo);
-        if (tValue == value)
+
+        PAOne tValue = new PAOne(elementType());
+        tValue.readFrom(this, lowPo);
+        int compare = tValue.compareTo(value);
+        if (compare == 0)
             return lowPo;
-        if (tValue > value)
+        if (compare > 0)
             return -lowPo - 1;
 
-        tValue = getDouble(highPo);
-        if (tValue == value)
+        tValue.readFrom(this, highPo);
+        compare = tValue.compareTo(value);
+        if (compare == 0)
             return highPo;
-        if (tValue < value)
+        if (compare < 0)
             return -(highPo+1) - 1;
 
         //repeatedly look at midpoint
@@ -2129,10 +2139,11 @@ public abstract class PrimitiveArray {
         //  and desired value would be in between them.
         while (highPo - lowPo > 1) {
             int midPo = (highPo + lowPo) / 2;
-            tValue = getDouble(midPo);
-            if (tValue == value)
+            tValue.readFrom(this, midPo);
+            compare = tValue.compareTo(value);
+            if (compare == 0)
                 return midPo;
-            if (tValue < value) 
+            if (compare < 0) 
                 lowPo = midPo;
             else highPo = midPo;
         }
@@ -2155,7 +2166,7 @@ public abstract class PrimitiveArray {
      * @return the index of the first element &gt;= value 
      *     (or highPo + 1, if there are none)
      */
-    public int binaryFindFirstGE(int lowPo, int highPo, double value) {
+    public int binaryFindFirstGE(int lowPo, int highPo, PAOne value) {
 
         if (lowPo > highPo)
             return highPo + 1;
@@ -2163,8 +2174,9 @@ public abstract class PrimitiveArray {
         int po = binarySearch(lowPo, highPo, value);
 
         //an exact match? find the first exact match
+        PAOne tValue = new PAOne(elementType());
         if (po >= 0) {
-            while (po > lowPo && getDouble(po - 1) == value)
+            while (po > lowPo && tValue.readFrom(this, po - 1).equals(value))
                 po--;
             return po;
         }
@@ -2190,7 +2202,7 @@ public abstract class PrimitiveArray {
      * @return the index of the first element &gt; or Math2.almostEqual to value 
      *     (or highPo + 1, if there are none)
      */
-    public int binaryFindFirstGAE(int lowPo, int highPo, double value, int precision) {
+    public int binaryFindFirstGAE(int lowPo, int highPo, PAOne value, int precision) {
 
         if (lowPo > highPo)
             return highPo + 1;
@@ -2202,7 +2214,8 @@ public abstract class PrimitiveArray {
             po = -po -1;
 
         //find the first match
-        while (po > lowPo && Math2.almostEqual(precision, getDouble(po - 1), value))
+        PAOne tValue = new PAOne(elementType());
+        while (po > lowPo && tValue.readFrom(this, po - 1).almostEqual(precision, value))
             po--;
 
         return po;
@@ -2224,15 +2237,16 @@ public abstract class PrimitiveArray {
      * @return the index of the first element &lt;= value 
      *     (or -1, if there are none)
      */
-    public int binaryFindLastLE(int lowPo, int highPo, double value) {
+    public int binaryFindLastLE(int lowPo, int highPo, PAOne value) {
 
         if (lowPo > highPo)
             return -1;
         int po = binarySearch(lowPo, highPo, value);
 
         //an exact match? find the first exact match
+        PAOne tValue = new PAOne(elementType());
         if (po >= 0) {
-            while (po < highPo && getDouble(po + 1) == value)
+            while (po < highPo && tValue.readFrom(this, po + 1).equals(value))
                 po++;
             return po;
         }
@@ -2260,7 +2274,7 @@ public abstract class PrimitiveArray {
      * @return the index of the first element &lt; or Math2.almostEqual to value 
      *     (or -1, if there are none)
      */
-    public int binaryFindLastLAE(int lowPo, int highPo, double value, int precision) {
+    public int binaryFindLastLAE(int lowPo, int highPo, PAOne value, int precision) {
 
         if (lowPo > highPo)
             return -1;
@@ -2271,8 +2285,9 @@ public abstract class PrimitiveArray {
         if (po < 0)
             po = -po -1 -1;
 
-        //find the first match
-        while (po < highPo && Math2.almostEqual(precision, getDouble(po + 1), value))
+        //find the last match
+        PAOne tValue = new PAOne(elementType());
+        while (po < highPo && tValue.readFrom(this, po + 1).almostEqual(precision, value)) 
             po++;
 
         return po;
@@ -2290,7 +2305,7 @@ public abstract class PrimitiveArray {
     public int binaryFindClosest(double x) {
         if (Double.isNaN(x))
             return -1;
-        int i = binarySearch(0, size - 1, x);
+        int i = binarySearch(0, size - 1, PAOne.fromDouble(x));
         if (i >= 0)
             return i; //success, exact match
 
@@ -3128,8 +3143,22 @@ public abstract class PrimitiveArray {
      * @return "" if the values in the array are sorted in ascending order;
      *   or an error message if not (i.e., if descending or unordered).
      *   If size is 0 or 1 (non-missing value), this returns "".
+     *   A missing value returns an error message.
      */
-    public abstract String isAscending();
+    public String isAscending() {
+        if (size == 0)
+            return "";
+        for (int i = 1; i < size; i++) {
+            if (compare(i - 1, i) > 0) {
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + (i-1) + "]=" + getSimpleString(i-1) + " > [" + i + "]=" + getSimpleString(i));
+            }
+        }
+        if (missingValueAsPAOne().equals(this, size-1))  //[size-1] = mv
+            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
+        return "";
+    }
 
     /**
      * This tests if the values in the array are sorted in descending order (ties are ok).
@@ -3137,8 +3166,23 @@ public abstract class PrimitiveArray {
      * @return "" if the values in the array are sorted in descending order;
      *   or an error message if not (i.e., if ascending or unordered).
      *   If size is 0 or 1 (non-missing value), this returns "".
+     *   A missing value returns an error message.
      */
-    public abstract String isDescending();
+    public String isDescending() {
+        if (size == 0)
+            return "";
+        if (missingValueAsPAOne().equals(this, 0)) //[0] = mv 
+            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                "[0]=(" + ArrayMissingValue + ")");
+        for (int i = 1; i < size; i++) {
+            if (compare(i - 1, i) < 0) {
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + (i-1) + "]=" + getSimpleString(i-1) + 
+                     " < [" + i + "]=" + getSimpleString(i));
+            }
+        }
+        return "";
+    }
 
     /**
      * This tests for adjacent tied values and returns the index of the first tied value.
@@ -3954,8 +3998,12 @@ public abstract class PrimitiveArray {
                 return max;
         } else if (elementType() == PAType.STRING) {
 
+        } else if (isUnsigned()) {
+            if (hasCoHortMV)
+                return missingValue(); //cohort mv
+
         } else {
-            //integer types
+            //signed integer types
             if (String2.parseDouble(MINEST_VALUE()) == min)  
                 return min;
             if (hasCoHortMV)
@@ -4576,6 +4624,7 @@ public abstract class PrimitiveArray {
         File2.delete(raf2Name);
         Test.ensureEqual(File2.isFile(raf2Name), false, "");
 
+        /*
         RandomAccessFile raf2 = new RandomAccessFile(raf2Name, "rw");
         long bStart = raf2.getFilePointer();
         rafWriteDouble(raf2, PAType.BYTE, 1.0);
@@ -4598,7 +4647,33 @@ public abstract class PrimitiveArray {
         long sStart = raf2.getFilePointer();
         rafWriteDouble(raf2, PAType.SHORT, 7.0);
         rafWriteDouble(raf2, PAType.SHORT, Double.NaN);
+
+        long ubStart = raf2.getFilePointer();
+        rafWriteDouble(raf2, PAType.UBYTE, 1.0);
+        rafWriteDouble(raf2, PAType.UBYTE, Double.NaN);
+        long uiStart = raf2.getFilePointer();
+        rafWriteDouble(raf2, PAType.UINT, 5.0);
+        rafWriteDouble(raf2, PAType.UINT, Double.NaN);
+        long ulStart = raf2.getFilePointer();
+        rafWriteDouble(raf2, PAType.ULONG, 6.0);
+        rafWriteDouble(raf2, PAType.ULONG, Double.NaN);
+        long usStart = raf2.getFilePointer();
+        rafWriteDouble(raf2, PAType.USHORT, 7.0);
+        rafWriteDouble(raf2, PAType.USHORT, Double.NaN);
+
         //read in reverse order
+        Test.ensureEqual(rafReadDouble(raf2, PAType.USHORT,  usStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.USHORT,  usStart, 0), 7.0, "");
+
+        Test.ensureEqual(rafReadDouble(raf2, PAType.ULONG,   ulStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.ULONG,   ulStart, 0), 6.0, "");
+
+        Test.ensureEqual(rafReadDouble(raf2, PAType.UINT,    uiStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.UINT,    uiStart, 0), 5.0, "");
+
+        Test.ensureEqual(rafReadDouble(raf2, PAType.UBYTE,   ubStart, 1), Double.NaN, "");
+        Test.ensureEqual(rafReadDouble(raf2, PAType.UBYTE,   ubStart, 0), 1.0, "");
+
         Test.ensureEqual(rafReadDouble(raf2, PAType.SHORT,  sStart, 1), Double.NaN, "");
         Test.ensureEqual(rafReadDouble(raf2, PAType.SHORT,  sStart, 0), 7.0, "");
 
@@ -4621,6 +4696,8 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(rafReadDouble(raf2, PAType.BYTE,   bStart, 0), 1.0, "");
 
         raf2.close();
+        */
+
 
         //raf test
         String rafName = File2.getSystemTempDirectory() + "PrimitiveArrayRafTest.bin";
@@ -4646,7 +4723,7 @@ public abstract class PrimitiveArray {
 
         //test rafReadDouble 
         RandomAccessFile raf = new RandomAccessFile(rafName, "rw");
-        Test.ensureEqual(rafReadDouble(raf, PAType.BYTE,   barStart, 0), 2, "");
+        /*Test.ensureEqual(rafReadDouble(raf, PAType.BYTE,   barStart, 0), 2, "");
         Test.ensureEqual(rafReadDouble(raf, PAType.BYTE,   barStart, 5), 8, "");
         Test.ensureEqual(rafReadDouble(raf, PAType.CHAR,   carStart, 0), 2, "");
         Test.ensureEqual(rafReadDouble(raf, PAType.CHAR,   carStart, 5), 8, "");
@@ -4662,176 +4739,177 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(rafReadDouble(raf, PAType.SHORT,  sarStart, 5), 8, "");
         //Test.ensureEqual(StringArray.rafReadString(raf,   SarStart, 0, nBytesPerS), "22", "");
         //Test.ensureEqual(StringArray.rafReadString(raf,   SarStart, 5, nBytesPerS), "88888888", "");
+        */
 
         //test rafBinarySearch
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 6), 2, ""); //2,3,4
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 1), -1, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 3), -2, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 5), -3, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 7), -6, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, 9), -7, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)), 2, ""); //2,3,4
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)), -2, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)), -3, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)), -6, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)), -7, "");
 
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 2), 0, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 4), 1, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 6), 4, ""); //any of 2,3,4
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 1), -1, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 3), -2, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 5), -3, "");
-        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, 7), -6, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(6)), 4, ""); //any of 2,3,4
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(3)), -2, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(5)), -3, "");
+        Test.ensureEqual(rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(7)), -6, "");
 
         //test rafFirstGE
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 6), 2, ""); //first
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 1), 0, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 3), 1, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 5), 2, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 7), 5, "");
-        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, 9), 6, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)), 2, ""); //first
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)), 0, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)), 1, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)), 2, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)), 5, "");
+        Test.ensureEqual(rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)), 6, "");
 
         //test rafFirstGAE         lastParam: precision = 5
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2        , 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 4        , 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 6        , 5), 2, ""); //first
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 6.0000001, 5), 2, ""); 
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 5.9999999, 5), 2, ""); 
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 8        , 5), 5, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 1        , 5), 0, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 3        , 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 3.0000001, 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 2.9999999, 5), 1, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 5        , 5), 2, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 7        , 5), 5, "");
-        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, 9        , 5), 6, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2         ), 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4         ), 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6         ), 5), 2, ""); //first
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8         ), 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1         ), 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3         ), 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5         ), 5), 2, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7         ), 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9         ), 5), 6, "");
 
         //test rafLastLE
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 6), 4, ""); //last
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 1), -1, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 3), 0, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 5), 1, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 7), 4, "");
-        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, 9), 5, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)), 4, ""); //last
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)), 0, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)), 1, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)), 4, "");
+        Test.ensureEqual(rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)), 5, "");
 
         //test rafLastLAE   lastParam: precision = 5
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2        , 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 4        , 5), 1, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 6        , 5), 4, ""); //last
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 6.0000001, 5), 4, ""); 
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 5.9999999, 5), 4, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 8        , 5), 5, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 1        , 5), -1, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 3        , 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 3.0000001, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 2.9999999, 5), 0, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 5        , 5), 1, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 7        , 5), 4, "");
-        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, 9        , 5), 5, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2         ), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4         ), 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6         ), 5), 4, ""); //last
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5), 4, ""); 
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8         ), 5), 5, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1         ), 5), -1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3         ), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5         ), 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7         ), 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9         ), 5), 5, "");
         raf.close();
 
         //test binarySearch
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});
-        Test.ensureEqual(far.binarySearch(0, 5, 2), 0, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 4), 1, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 6), 2, ""); //2,3,4
-        Test.ensureEqual(far.binarySearch(0, 5, 8), 5, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 1), -1, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 3), -2, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 5), -3, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 7), -6, "");
-        Test.ensureEqual(far.binarySearch(0, 5, 9), -7, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(6)), 2, ""); //2,3,4
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(3)), -2, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(5)), -3, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(7)), -6, "");
+        Test.ensureEqual(far.binarySearch(0, 5, PAOne.fromFloat(9)), -7, "");
 
-        Test.ensureEqual(far.binarySearch(0, 4, 2), 0, "");
-        Test.ensureEqual(far.binarySearch(0, 4, 4), 1, "");
-        Test.ensureEqual(far.binarySearch(0, 4, 6), 4, ""); //any of 2,3,4
-        Test.ensureEqual(far.binarySearch(0, 4, 1), -1, "");
-        Test.ensureEqual(far.binarySearch(0, 4, 3), -2, "");
-        Test.ensureEqual(far.binarySearch(0, 4, 5), -3, "");
-        Test.ensureEqual(far.binarySearch(0, 4, 7), -6, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(6)), 4, ""); //any of 2,3,4
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(3)), -2, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(5)), -3, "");
+        Test.ensureEqual(far.binarySearch(0, 4, PAOne.fromFloat(7)), -6, "");
 
         //test binaryFindFirstGE
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 2), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 4), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 6), 2, ""); //first
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 8), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 1), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 3), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 5), 2, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 7), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGE(0, 5, 9), 6, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(6)), 2, ""); //first
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(1)), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(3)), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(5)), 2, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(7)), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGE(0, 5, PAOne.fromFloat(9)), 6, "");
 
         //test binaryFindFirstGAE last param: precision=5
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2,         5), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 4,         5), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 6,         5), 2, ""); //first
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 6.0000001, 5), 2, ""); 
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 5.9999999, 5), 2, ""); 
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 8,         5), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 1,         5), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 3,         5), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 3.0000001, 5), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2.9999999, 5), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 5,         5), 2, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 7,         5), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 9,         5), 6, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(2         ), 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(2.0000001f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(1.9999999f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(4         ), 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(6         ), 5), 2, ""); //first
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(6.0000001f), 5), 2, ""); 
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(5.9999999f), 5), 2, ""); 
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(8         ), 5), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(1         ), 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(3         ), 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(3.0000001f), 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(2.9999999f), 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(5         ), 5), 2, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(7         ), 5), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, PAOne.fromFloat(9         ), 5), 6, "");
 
         //test binaryFindLastLE
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 2), 0, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 4), 1, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 6), 4, ""); //last
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 8), 5, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 1), -1, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 3), 0, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 5), 1, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 7), 4, "");
-        Test.ensureEqual(far.binaryFindLastLE(0, 5, 9), 5, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(2)), 0, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(4)), 1, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(6)), 4, ""); //last
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(8)), 5, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(1)), -1, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(3)), 0, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(5)), 1, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(7)), 4, "");
+        Test.ensureEqual(far.binaryFindLastLE(0, 5, PAOne.fromFloat(9)), 5, "");
 
         //test binaryFindLastLAE5  lastParam: precision = 5
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2        , 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2.0000001, 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 1.9999999, 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 4        , 5), 1, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 6        , 5), 4, ""); //last
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 6.0000001, 5), 4, ""); 
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 5.9999999, 5), 4, ""); 
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 8        , 5), 5, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 1        , 5), -1, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 3        , 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 3.0000001, 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2.9999999, 5), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 5        , 5), 1, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 7        , 5), 4, "");
-        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 9        , 5), 5, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(2         ), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(2.0000001f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(1.9999999f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(4         ), 5), 1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(6         ), 5), 4, ""); //last
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(6.0000001f), 5), 4, ""); 
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(5.9999999f), 5), 4, ""); 
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(8         ), 5), 5, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(1         ), 5), -1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(3         ), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(3.0000001f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(2.9999999f), 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(5         ), 5), 1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(7         ), 5), 4, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, PAOne.fromFloat(9         ), 5), 5, "");
 
         //test binaryFindClosest
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});
-        Test.ensureEqual(far.binaryFindClosest(2),   0, "");
-        Test.ensureEqual(far.binaryFindClosest(2.1), 0, "");
-        Test.ensureEqual(far.binaryFindClosest(1.9), 0, "");
-        Test.ensureEqual(far.binaryFindClosest(4),   1, "");
-        Test.ensureEqual(far.binaryFindClosest(6),   2, ""); //by chance
-        Test.ensureEqual(far.binaryFindClosest(5.9), 2, ""); 
-        Test.ensureEqual(far.binaryFindClosest(6.1), 4, ""); //since between 6 and 8
-        Test.ensureEqual(far.binaryFindClosest(8),   5, "");
-        Test.ensureEqual(far.binaryFindClosest(1),   0, "");
-        Test.ensureEqual(far.binaryFindClosest(2.9), 0, "");
-        Test.ensureEqual(far.binaryFindClosest(3.1), 1, "");
-        Test.ensureEqual(far.binaryFindClosest(5.1), 2, "");
-        Test.ensureEqual(far.binaryFindClosest(7.1), 5, "");
-        Test.ensureEqual(far.binaryFindClosest(9),   5, "");
+        Test.ensureEqual(far.binaryFindClosest(2   ), 0, "");
+        Test.ensureEqual(far.binaryFindClosest(2.1f), 0, "");
+        Test.ensureEqual(far.binaryFindClosest(1.9f), 0, "");
+        Test.ensureEqual(far.binaryFindClosest(4   ), 1, "");
+        Test.ensureEqual(far.binaryFindClosest(6   ), 2, ""); //by chance
+        Test.ensureEqual(far.binaryFindClosest(5.9f), 2, ""); 
+        Test.ensureEqual(far.binaryFindClosest(6.1f), 4, ""); //since between 6 and 8
+        Test.ensureEqual(far.binaryFindClosest(8   ), 5, "");
+        Test.ensureEqual(far.binaryFindClosest(1   ), 0, "");
+        Test.ensureEqual(far.binaryFindClosest(2.9f), 0, "");
+        Test.ensureEqual(far.binaryFindClosest(3.1f), 1, "");
+        Test.ensureEqual(far.binaryFindClosest(5.1f), 2, "");
+        Test.ensureEqual(far.binaryFindClosest(7.1f), 5, "");
+        Test.ensureEqual(far.binaryFindClosest(9   ), 5, "");
 
         //test linearFindClosest
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});

@@ -4,6 +4,7 @@
 package com.cohort.util;
 
 import com.cohort.util.Math2;
+import java.math.BigInteger;
 
 
 /** 
@@ -49,11 +50,11 @@ public class ScriptMath2  {
     /** 65535 */
     public static final int    USHORT_MAX_VALUE = Math2.USHORT_MAX_VALUE;
 
-    /** 0xffffffff */
+    /** 4294967295L */
     public static final long   UINT_MAX_VALUE   = Math2.UINT_MAX_VALUE;
 
     /** 18446744073709551615.0 */
-    public static final double ULONG_MAX_VALUE  = Math2.ULONG_MAX_VALUE;  
+    public static final BigInteger ULONG_MAX_VALUE  = Math2.ULONG_MAX_VALUE;  
 
     /** -2000 */
     public static final int Binary0 = Math2.Binary0; 
@@ -550,7 +551,7 @@ public class ScriptMath2  {
      * Safely rounds a double to a uint.
      * 
      * @param d any double
-     * @return 0xffffffff if d is too small, too big, or NaN;
+     * @return 4294967295L if d is too small, too big, or NaN;
      *   otherwise d, rounded to the nearest short.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
@@ -578,7 +579,7 @@ public class ScriptMath2  {
      *   otherwise d, rounded to the nearest short.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final double roundToULong(double d) {
+    public static final BigInteger roundToULong(double d) {
         return Math2.roundToULong(d);
     }
 
@@ -844,8 +845,8 @@ public class ScriptMath2  {
      * @param tl
      * @return a double.
      */
-    public static final double unsignedLongToDouble(long tl) {
-        return Math2.unsignedLongToDouble(tl); // !!! possible loss of precision
+    public static final double ulongToDouble(long tl) {
+        return Math2.ulongToDouble(tl); // !!! possible loss of precision
     }
 
     /**

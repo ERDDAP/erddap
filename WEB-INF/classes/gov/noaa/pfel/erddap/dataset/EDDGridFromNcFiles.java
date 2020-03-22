@@ -1414,12 +1414,12 @@ expected =
      */
     public static void testGenerateDatasetsXml5() throws Throwable {
 
-        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml4");
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml5");
         reallyVerbose = true;
         String results, gdxResults, expected;
         try {
 
-        String fileDir = String2.unitTestDataDir + "nc/";
+        String fileDir = String2.unitTestBigDataDir + "nc/";
         String fileRegex = "V20172742017304\\.L3m_MO_SNPP_CHL_chlor_a_4km\\.nc";  //just 1 file, don't aggregate
 
 
@@ -1438,10 +1438,10 @@ expected =
         expected = 
 "<!-- NOTE! The source for this dataset has nGridVariables=2,\n" +
 "  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_fa07_6b82_906c\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_3077_1111_bdf4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>/erddapTest/nc/</fileDir>\n" +
+"    <fileDir>/erddapTestBig/nc/</fileDir>\n" +
 "    <fileNameRegex>V20172742017304\\.L3m_MO_SNPP_CHL_chlor_a_4km\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -1657,7 +1657,7 @@ expected =
             "lat, lon", -1, null, null) + "\n"; //dimensionsCSV, reloadMinutes, cacheFromUrl
 
         //expected is unchanged except for datasetID (because dimensionsCSV changed)
-        expected = String2.replaceAll(expected, "nc_fa07_6b82_906c", "nc_9cc1_7ac0_3095");
+        expected = String2.replaceAll(expected, "nc_3077_1111_bdf4", "nc_7344_9960_7945");
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -1668,10 +1668,10 @@ expected =
         expected = //this is used as testUnsignedGrid in datasets2.xml
 "<!-- NOTE! The source for this dataset has nGridVariables=2,\n" +
 "  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_81c1_4596_1ece\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_0304_078a_e6f9\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>/erddapTest/nc/</fileDir>\n" +
+"    <fileDir>/erddapTestBig/nc/</fileDir>\n" +
 "    <fileNameRegex>V20172742017304\\.L3m_MO_SNPP_CHL_chlor_a_4km\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -1838,7 +1838,7 @@ expected =
 "    <dataVariable>\n" +
 "        <sourceName>palette</sourceName>\n" +
 "        <destinationName>palette</destinationName>\n" +
-"        <dataType>byte</dataType>\n" +  //NcHelper.ncdump() says "ubyte" in the file
+"        <dataType>ubyte</dataType>\n" +  //NcHelper.ncdump() says "ubyte" in the file
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_Unsigned\">true</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -4777,6 +4777,7 @@ expected =
         lastTest = Math.min(lastTest, extensions.length - 1);
         for (int ext = firstTest; ext <= lastTest; ext++) {
             //String2.pressEnterToContinue("");
+            Math2.sleep(3000);
             String dotExt = extensions[ext];
             try {
                 String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + ": " + 
@@ -11735,7 +11736,7 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testUnsignedGrid()");
         testVerboseOn();
 
-        String2.log(NcHelper.ncdump(String2.unitTestDataDir + 
+        String2.log(NcHelper.ncdump(String2.unitTestBigDataDir + 
             "nc/V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc", "-h"));
 
         String name, tName, results, tResults, expected;
@@ -12091,7 +12092,7 @@ expected =
         testGenerateDatasetsXml3();
         testGenerateDatasetsXml4();
         testGenerateDatasetsXmlLong2();
-testGenerateDatasetsXml5(); //not finished test of unsigned PAType
+ testGenerateDatasetsXml5(); //not finished test of unsigned PAType
         testSpeed(0, 1000);  //0, 1000
         testAVDVSameSource();
         test2DVSameSource();
@@ -12113,7 +12114,7 @@ testGenerateDatasetsXml5(); //not finished test of unsigned PAType
         testDapErrors();
         testFiles();  
         testIslandShift();
-testUnsignedGrid();  //not finished test of unsigned PAType
+ testUnsignedGrid();  //not finished test of unsigned PAType
 
 //unfinished:    testRTechHdf();
         testUpdate();

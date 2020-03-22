@@ -10,6 +10,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -3310,23 +3311,27 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         GridDataRandomAccessor gdra = new GridDataRandomAccessor(gda);
         //maka a new rowMajor gda and test if same data
         gda = new GridDataAccessor(gridDataset, "", userDapQuery, true, true); //rowMajor toNaN
+        PAOne gdaPAOne  = new PAOne(gda.dataVariables()[0].sourceDataPAType());
+        PAOne gdraPAOne = new PAOne(gdra.dataPAType(0));
         int current[] = gda.totalIndex().getCurrent(); //the internal object that changes
         int count = 0;
         while (gda.increment()) {
             //String2.log(String2.toCSSVString(current));  //to prove that access is rowMajor
-            Test.ensureEqual(gda.getDataValueAsDouble(0), 
-                gdra.getDataValueAsDouble(current, 0), "count=" + count);
+            Test.ensureEqual(gda.getDataValueAsPAOne(0, gdaPAOne), 
+                            gdra.getDataValueAsPAOne(current, 0, gdraPAOne), "count=" + count);
             count++;
         }
         String2.log("Test of GridDataRandomAccess rowMajor succeeded. count=" + count);
         //maka a new columnMajor gda and test if same data
         gda = new GridDataAccessor(gridDataset, "", userDapQuery, false, true); //rowMajor toNaN
+        gdaPAOne  = new PAOne(gda.dataVariables()[0].sourceDataPAType());
+        gdraPAOne = new PAOne(gdra.dataPAType(0));
         current = gda.totalIndex().getCurrent(); //the internal object that changes
         count = 0;
         while (gda.increment()) {
             //String2.log(String2.toCSSVString(current)); //to prove that access is columnMajor
-            Test.ensureEqual(gda.getDataValueAsDouble(0), 
-                gdra.getDataValueAsDouble(current, 0), "count=" + count);
+            Test.ensureEqual(gda.getDataValueAsPAOne(0, gdaPAOne), 
+                            gdra.getDataValueAsPAOne(current, 0, gdraPAOne), "count=" + count);
             count++;
         }
         String2.log("Test of GridDataRandomAccess columnMajor succeeded. count=" + count);
@@ -4833,7 +4838,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Tue Nov 19 10:09:04 HST 2019 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
+"        <att name=\"history\">Wed Mar 18 10:21:59 HST 2020 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
 "        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +

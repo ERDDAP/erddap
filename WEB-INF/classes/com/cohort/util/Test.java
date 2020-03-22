@@ -13,6 +13,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.File;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
@@ -95,12 +96,27 @@ public class Test {
     public static void ensureEqual(long i1, long i2, String message)
         throws RuntimeException {
         if (i1 != i2) 
-            error("\n" + String2.ERROR + " in Test.ensureEqual(int):\n" + 
+            error("\n" + String2.ERROR + " in Test.ensureEqual(long):\n" + 
                 message + "\nSpecifically: " + i1 + " != " + i2);
     }  
       
     /** 
-     * If the two int values are equal, 
+     * If the two BigInteger values aren't equal, this throws a RuntimeException 
+     * with the specified message. 
+     *
+     * @param i1
+     * @param i2 
+     * @param message
+     */
+    public static void ensureEqual(BigInteger i1, BigInteger i2, String message)
+        throws RuntimeException {
+        if (!i1.equals(i2)) 
+            error("\n" + String2.ERROR + " in Test.ensureEqual(BigInteger):\n" + 
+                message + "\nSpecifically: " + i1 + " != " + i2);
+    }  
+      
+    /** 
+     * If the two long values are equal, 
      * this throws a RuntimeException with the specified message. 
      *
      * @param i1
@@ -110,7 +126,22 @@ public class Test {
     public static void ensureNotEqual(long i1, long i2, String message)
         throws RuntimeException {
         if (i1 == i2) 
-            error("\n" + String2.ERROR + " in Test.ensureNotEqual(int):\n" + 
+            error("\n" + String2.ERROR + " in Test.ensureNotEqual(long):\n" + 
+                message + "\nSpecifically: " + i1 + " = " + i2);
+    }  
+      
+    /** 
+     * If the two BigInteger values are equal, 
+     * this throws a RuntimeException with the specified message. 
+     *
+     * @param i1
+     * @param i2 
+     * @param message
+     */
+    public static void ensureNotEqual(BigInteger i1, BigInteger i2, String message)
+        throws RuntimeException {
+        if (i1.equals(i2)) 
+            error("\n" + String2.ERROR + " in Test.ensureNotEqual(BigInteger):\n" + 
                 message + "\nSpecifically: " + i1 + " = " + i2);
     }  
       
@@ -627,6 +658,19 @@ public class Test {
                         "\na long[" + i + "]=" + aar[i] + " != b long[" + i + "]=" + bar[i] + ".");
             return;
         }
+        if (a instanceof BigInteger[] && b instanceof BigInteger[]) {
+            BigInteger aar[] = (BigInteger[])a;
+            BigInteger bar[] = (BigInteger[])b;
+            int an = aar.length;
+            int bn = bar.length;
+            ensureEqual(an, bn, 
+                errorInObjectEquals + message + "\na BigInteger[] length != b BigInteger[] length");
+            for (int i = 0; i < an; i++)
+                if (!aar[i].equals(bar[i]))
+                    Test.error(errorInObjectEquals + message + 
+                        "\na BigInteger[" + i + "]=" + aar[i] + " != b BigInteger[" + i + "]=" + bar[i] + ".");
+            return;
+        }
         if (a instanceof float[] && b instanceof float[]) {
             float aar[] = (float[])a;
             float bar[] = (float[])b;
@@ -678,7 +722,7 @@ public class Test {
         }
 
         //fall through to most general case
-        if (!a.equals(b))
+        if (!a.toString().equals(b.toString()))
             error(errorInObjectEquals + message + "\nSpecifically:\n" +
                 "a(" + a.getClass().getName() + ")=" + a.toString() + "\n" +
                 "b(" + b.getClass().getName() + ")=" + b.toString());
