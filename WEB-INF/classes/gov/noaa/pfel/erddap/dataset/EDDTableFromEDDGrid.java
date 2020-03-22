@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -540,24 +541,26 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 sourceTableVars[av] = dataVariables[childDatasetNAV - av - 1];
             for (int dv = 0; dv < nQueryDV; dv++) 
                 sourceTableVars[childDatasetNAV + dv] = findDataVariableByDestinationName(
-                    queryDV[dv].destinationName()); 
+                    queryDV[dv].destinationName());
 
             //make a table to hold a chunk of the results            
             int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
             Table tTable = makeEmptySourceTable(sourceTableVars, chunkNRows); //source table, but source here is tChildDataset's destination
             PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
-            for (int col = 0; col < tTable.nColumns(); col++)
+            PAOne paOne[] = new PAOne[tTable.nColumns()];
+            for (int col = 0; col < tTable.nColumns(); col++) {
                 paAr[col] = tTable.getColumn(col);
+                paOne[col] = new PAOne(paAr[col]);
+            }
+
 
             //walk through it, periodically saving to tableWriter
             int cumNRows = 0;
             while (gda.increment()) {
                 for (int av = 0; av < childDatasetNAV; av++) 
-                    //FUTURE: switch to pa.addFromPA(otherPA, otherIndex, nValues);
-                    paAr[av].addDouble(gda.getAxisValueAsDouble(av));  
+                    gda.getAxisValueAsPAOne(av, paOne[av]).addTo(paAr[av]);
                 for (int dv = 0; dv < nQueryDV; dv++) 
-                    //FUTURE: switch to pa.addFromPA(otherPA, otherIndex, nValues);
-                    paAr[childDatasetNAV + dv].addDouble(gda.getDataValueAsDouble(dv));  
+                    gda.getDataValueAsPAOne(dv, paOne[childDatasetNAV + dv]).addTo(paAr[childDatasetNAV + dv]);
                 if (++cumNRows >= chunkNRows) {
                     if (debugMode) String2.log(tTable.dataToString(5));
                     if (Thread.currentThread().isInterrupted())

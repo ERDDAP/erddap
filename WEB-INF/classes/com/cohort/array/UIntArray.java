@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -22,17 +23,22 @@ import java.util.Set;
  * UIntArray is a thin shell over an int[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses 0xffffffff to represent a missing value (NaN).
+ * <p>This class uses MAX_VALUE to represent a missing value (NaN).
  */
-public class UIntArray extends IntArray {
+public class UIntArray extends PrimitiveArray {
 
     /** 
-     * This is the maxiumum unsigned value (the CoHort missing value), stored as a signed int.
+     * This is the minimum unsigned value, stored as a signed long.
      */
-    public final static int MAX_VALUE_AS_INT = -1;
+    public final static long MIN_VALUE = Math2.UINT_MIN_VALUE;
 
     /** 
-     * This is the maxiumum unsigned value (the CoHort missing value), stored as a signed long.
+     * This is the maximum unsigned value (the CoHort missing value), stored as a signed int.
+     */
+    public final static int PACKED_MAX_VALUE = -1;
+
+    /** 
+     * This is the maximum unsigned value (the CoHort missing value), stored as a signed long.
      */
     public final static long MAX_VALUE = Math2.UINT_MAX_VALUE;
 
@@ -55,7 +61,7 @@ public class UIntArray extends IntArray {
     }
 
     /** 
-     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * This returns for cohort missing value for this class (e.g., MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
     public double missingValue() {
@@ -66,14 +72,30 @@ public class UIntArray extends IntArray {
      * This packs a signed long holding an unsigned int as a int.
      */
     public static int pack(long i) {
-        return (int)(i & 0xffffffffL);
+        return i < 0 || i >= MAX_VALUE? PACKED_MAX_VALUE : (int)(i & MAX_VALUE);
     }
 
     /**
      * This unpacks a uint stored in an int as a long.
      */
     public static long unpack(int i) {
-        return (long)(i & 0xffffffff);
+        return i >= 0? i : i + MAX_VALUE + 1;
+    }
+
+    /**
+     * This is the main data structure.
+     * This should be private, but is public so you can manipulate it if you 
+     * promise to be careful.
+     * Note that if the PrimitiveArray's capacity is increased,
+     * the PrimitiveArray will use a different array for storage.
+     */
+    public int[] array;
+
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
+     * The integer type classes overwrite this.
+     */
+    public boolean isIntegerType() {
+        return true;
     }
 
     /**
@@ -118,27 +140,66 @@ public class UIntArray extends IntArray {
         size = last - first + 1;
         array = new int[size];
         for (int i = 0; i < size; i++) 
-            array[i] = first + i;
+            array[i] = pack(first + i);
     }
 
     /**
      * A constructor which (at least initially) uses the array and all its 
      * elements ('size' will equal anArray.length).
      *
-     * @param anArray the array to be used as this object's array.
-     *   The incoming signed values will be interpreted as unsigned values.
+     * @param anArray the array with already packed values to be used as this object's array.
      */
     public UIntArray(int[] anArray) {
         array = anArray;
         size = anArray.length;
     }
 
+    /**
+     * A constructor which does NOT use the array and all its 
+     * elements ('size' will equal anArray.length).
+     *
+     * @param anArray the array with not-yet-packed values.
+     */
+    public UIntArray(long[] anArray) {
+        size = anArray.length;
+        Math2.ensureMemoryAvailable(4L * size, "UIntArray");
+        array = new int[size];
+        for (int i = 0; i < size; i++)
+            array[i] = pack(anArray[i]);
+    }
+    
     /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "0";}
+    public String MINEST_VALUE() {return "" + MIN_VALUE;}
 
     /** The maximum value that can be held by this class 
         (not including the cohort missing value). */
     public String MAXEST_VALUE() {return "" + (MAX_VALUE - 1);}
+
+    /**
+     * This returns the current capacity (number of elements) of the internal data array.
+     * 
+     * @return the current capacity (number of elements) of the internal data array.
+     */
+    public int capacity() {
+        return array.length;
+    }
+
+    /**
+     * This returns the hashcode for this byteArray (dependent only on values,
+     * not capacity).
+     * WARNING: the algorithm used may change in future versions.
+     *
+     * @return the hashcode for this byteArray (dependent only on values,
+     * not capacity)
+     */
+    public int hashCode() {
+        //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        int code = 0;
+        for (int i = 0; i < size; i++)
+            code = 31*code + array[i];
+        return code;
+    }
 
     /**
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
@@ -187,21 +248,21 @@ public class UIntArray extends IntArray {
     }
 
     /**
-     * This returns the PAType (PAType.UINT) of the element type.
+     * This returns the PAType (PAType.INT) of the element type.
      *
-     * @return the PAType (PAType.UINT) of the element type.
+     * @return the PAType (PAType.INT) of the element type.
      */
     public PAType elementType() {
         return PAType.UINT;
     }
 
     /**
-     * This returns the class index (CLASS_INDEX_INT) of the element type.
+     * This returns the class index (PATYPE_INDEX_UINT) of the element type.
      *
-     * @return the class index (CLASS_INDEX_INT) of the element type.
+     * @return the class index (PATYPE_INDEX_UINT) of the element type.
      */
     public int elementTypeIndex() {
-        return CLASS_INDEX_INT;
+        return PATYPE_INDEX_UINT;
     }
 
     /**
@@ -209,10 +270,21 @@ public class UIntArray extends IntArray {
      *
      * @param value the value to be added to the array
      */
-    public void add(int value) {
+    public void add(long value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = value;
+        array[size++] = pack(value);
+    }
+
+    /**
+     * This adds an already packed value to the array (increasing 'size' by 1).
+     *
+     * @param value the already packed value to be added to the array
+     */
+    public void addPacked(int packedValue) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        array[size++] = packedValue;
     }
 
     /**
@@ -222,14 +294,14 @@ public class UIntArray extends IntArray {
      *    If value instanceof Number, this uses Number.intValue().
      *    (If you want a more sophisticated conversion, save to DoubleArray,
      *    then convert DoubleArray to UIntArray.)
-     *    If null or not a Number, this adds Integer.MAX_VALUE.
+     *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);        
         array[size++] = value != null && value instanceof Number?
-            ((Number)value).intValue() :
-            Integer.MAX_VALUE;
+            pack(((Number)value).longValue()) :
+            PACKED_MAX_VALUE;
     }
 
     /**
@@ -251,13 +323,13 @@ public class UIntArray extends IntArray {
      * @param value the value to be added to the array.
      *    n &lt; 0 throws an Exception.
      */
-    public void addN(int n, int value) {
+    public void addN(int n, long value) {
         if (n == 0) return;
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
-        Arrays.fill(array, size, size + n, value);
+        Arrays.fill(array, size, size + n, pack(value));
         size += n;
     }
 
@@ -268,7 +340,7 @@ public class UIntArray extends IntArray {
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void atInsert(int index, int value) {
+    public void atInsert(int index, long value) {
 //String2.log(">>UIntArray index=" + index + " value=" + value + " size=" + size + " al=" + array.length);
         if (index < 0 || index > size)
             throw new IllegalArgumentException(MessageFormat.format(
@@ -277,7 +349,7 @@ public class UIntArray extends IntArray {
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
         size++;
-        array[index] = value;
+        array[index] = pack(value);
     }
 
     /**
@@ -288,7 +360,7 @@ public class UIntArray extends IntArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, String2.parseInt(value));
+        atInsert(index, String2.parseLong(value));
     }
 
     /**
@@ -299,7 +371,7 @@ public class UIntArray extends IntArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, String2.parseInt(value));
+        addN(n, String2.parseLong(value));
     }
 
     /**
@@ -308,7 +380,7 @@ public class UIntArray extends IntArray {
      * @param value the value, as a String.
      */
     public void addString(String value) {
-        add(String2.parseInt(value));
+        add(String2.parseLong(value));
     }
 
     /**
@@ -317,7 +389,7 @@ public class UIntArray extends IntArray {
      * @param value the float value
      */
     public void addFloat(float value) {
-        add(Math2.roundToInt(value));
+        add(Math2.roundToUInt(value));
     }
 
     /**
@@ -326,7 +398,7 @@ public class UIntArray extends IntArray {
      * @param value the value, as a double.
      */
     public void addDouble(double value) {
-        add(Math2.roundToInt(value));
+        add(Math2.roundToUInt(value));
     }
 
     /**
@@ -337,7 +409,7 @@ public class UIntArray extends IntArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
-        addN(n, Math2.roundToInt(value));
+        addN(n, Math2.roundToUInt(value));
     }
 
     /**
@@ -365,7 +437,17 @@ public class UIntArray extends IntArray {
      * @param value the value, as a long.
      */
     public void addLong(long value) {
-        add(Math2.narrowToInt(value));
+        add(Math2.narrowToUInt(value));
+    }
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNLongs(int n, long value) {
+        addN(n, Math2.narrowToUInt(value));
     }
 
     /**
@@ -393,7 +475,7 @@ public class UIntArray extends IntArray {
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            add(otherPA.getInt(otherIndex++)); //does error checking
+            add(otherPA.getLong(otherIndex++)); //does error checking
         return this;
     }
 
@@ -405,7 +487,7 @@ public class UIntArray extends IntArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        set(index, otherPA.getInt(otherIndex));
+        set(index, otherPA.getLong(otherIndex));
     }
 
     /**
@@ -586,14 +668,14 @@ public class UIntArray extends IntArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   Integer.MAX_VALUE is converted to Double.NaN.
+     *   MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UIntArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
-            int j = array[i];
-            dar[i] = j == Integer.MAX_VALUE? Double.NaN : j;
+            long j = unpack(array[i]);
+            dar[i] = j == MAX_VALUE? Double.NaN : j;
         }
         return dar;
     }
@@ -602,14 +684,14 @@ public class UIntArray extends IntArray {
      * This returns a String[] which has 'size' elements.
      *
      * @return a String[] which has 'size' elements.
-     *    Integer.MAX_VALUE appears as "".
+     *    MAX_VALUE appears as "".
      */
     public String[] toStringArray() {
         Math2.ensureMemoryAvailable(8L * size, "UIntArray.toStringArray"); //8L is feeble minimal estimate
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
-            int j = array[i];
-            sar[i] = j == Integer.MAX_VALUE? "" : String.valueOf(j);
+            long j = unpack(array[i]);
+            sar[i] = j == MAX_VALUE? "" : String.valueOf(j);
         }
         return sar;
     }
@@ -620,7 +702,20 @@ public class UIntArray extends IntArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public int get(int index) {
+    public long get(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in UIntArray.get: index (" + 
+                index + ") >= size (" + size + ").");
+        return unpack(array[index]);
+    }
+
+    /**
+     * This gets a specified element as a packed value.
+     *
+     * @param index 0 ... size-1
+     * @return the specified element
+     */
+    public int getPacked(int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UIntArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -633,11 +728,11 @@ public class UIntArray extends IntArray {
      * @param index 0 ... size-1
      * @param value the value for that element
      */
-    public void set(int index, int value) {
+    public void set(int index, long value) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UIntArray.set: index (" + 
                 index + ") >= size (" + size + ").");
-        array[index] = value;
+        array[index] = pack(value);
     }
 
 
@@ -648,10 +743,11 @@ public class UIntArray extends IntArray {
      * @return the value as an int. 
      */
     public int getInt(int index) {
-        return get(index);
+        long i = get(index);
+        return i >= Integer.MAX_VALUE? Integer.MAX_VALUE : (int)i;
     }
 
-    //getRawInt(index) uses default getInt(index) 
+    //getRawUInt(index) uses default getUInt(index) 
 
     /**
      * Set a value in the array as an int.
@@ -668,12 +764,11 @@ public class UIntArray extends IntArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   Integer.MAX_VALUE is returned as Long.MAX_VALUE.
+     *   MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
-        int i = get(index);
-        return i == Integer.MAX_VALUE? Long.MAX_VALUE : 
-                                       i;
+        long i = get(index);
+        return i == MAX_VALUE? Long.MAX_VALUE : i;
     }
 
     /**
@@ -681,10 +776,33 @@ public class UIntArray extends IntArray {
      * 
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
-     *   if needed by methods like Math2.narrowToInt(long).
+     *   if needed by methods like Math2.narrowToUInt(long).
      */
     public void setLong(int index, long i) {
-        set(index, Math2.narrowToInt(i));
+        set(index, pack(i));
+    }
+
+    /**
+     * Return a value from the array as a ulong.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a ulong. 
+     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     */
+    public BigInteger getULong(int index) {
+        long b = get(index);
+        return b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+    }
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(long).
+     */
+    public void setULong(int index, BigInteger i) {
+        set(index, Math2.narrowToUInt(i));
     }
 
 
@@ -695,12 +813,11 @@ public class UIntArray extends IntArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   Int.MAX_VALUE is returned as Float.NaN.
+     *   MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
-        int i = get(index);
-        return i == Integer.MAX_VALUE? Float.NaN : 
-                                       i;
+        long i = get(index);
+        return i == MAX_VALUE? Float.NaN : i;
     }
 
     /**
@@ -708,10 +825,10 @@ public class UIntArray extends IntArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToInt(d).
+     *   if needed by methods like Math2.roundToUInt(d).
      */
     public void setFloat(int index, float d) {
-        set(index, Math2.roundToInt(d));
+        set(index, Math2.roundToUInt(d));
     }
 
     /**
@@ -721,12 +838,11 @@ public class UIntArray extends IntArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   Int.MAX_VALUE is returned as Double.NaN.
+     *   MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
-        int i = get(index);
-        return i == Integer.MAX_VALUE? Double.NaN : 
-                                       i;
+        long i = get(index);
+        return i == MAX_VALUE? Double.NaN : i;
     }
 
     /**
@@ -739,7 +855,7 @@ public class UIntArray extends IntArray {
      *   with String2.parseDouble and so may return Double.NaN.
      */
     public double getUnsignedDouble(int index) {
-        return Integer.toUnsignedLong(get(index));
+        return getDouble(index); //already unsigned
     }
 
     /**
@@ -762,22 +878,36 @@ public class UIntArray extends IntArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToInt(d).
+     *   if needed by methods like Math2.roundToUInt(d).
      */
     public void setDouble(int index, double d) {
-        set(index, Math2.roundToInt(d));
+        set(index, Math2.roundToUInt(d));
     }
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])), or "" for NaN or infinity.
+     * @return For numeric types, this returns (String.valueOf(ar[index])), 
+     *   or "" for NaN or infinity.
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
-        int i = get(index);
-        return i == Integer.MAX_VALUE? "" : 
-                                       String.valueOf(i);
+        long i = get(index);
+        return i == MAX_VALUE? "" : String.valueOf(i);
+    }
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    public String getSimpleString(int index) {
+        return String.valueOf(get(index));
     }
 
     /**
@@ -790,9 +920,8 @@ public class UIntArray extends IntArray {
      *   If this PA is unsigned, this method retuns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
-        int i = get(index);
-        return i == Integer.MAX_VALUE? "null" : 
-                                       String.valueOf(i);
+        long i = get(index);
+        return i == MAX_VALUE? "null" : String.valueOf(i);
     }
 
     /**
@@ -816,10 +945,10 @@ public class UIntArray extends IntArray {
      * 
      * @param index the index number 0 .. 
      * @param s the value. For numeric PrimitiveArray's, it is parsed
-     *   with String2.parseInt.
+     *   with String2.parseLong.
      */
     public void setString(int index, String s) {
-        set(index, String2.parseInt(s));
+        set(index, String2.parseLong(s));
     }
 
 
@@ -829,7 +958,7 @@ public class UIntArray extends IntArray {
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(int lookFor) {
+    public int indexOf(long lookFor) {
         return indexOf(lookFor, 0);
     }
 
@@ -840,9 +969,10 @@ public class UIntArray extends IntArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(int lookFor, int startIndex) {
+    public int indexOf(long lookFor, int startIndex) {
+        int packedLookFor = pack(lookFor);
         for (int i = startIndex; i < size; i++) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -857,7 +987,7 @@ public class UIntArray extends IntArray {
     public int indexOf(String lookFor, int startIndex) {
         if (startIndex >= size)
             return -1;
-        return indexOf(String2.parseInt(lookFor), startIndex);
+        return indexOf(String2.parseLong(lookFor), startIndex);
     }
 
     /**
@@ -867,12 +997,13 @@ public class UIntArray extends IntArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(int lookFor, int startIndex) {
+    public int lastIndexOf(long lookFor, int startIndex) {
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UIntArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
+        int packedLookFor = pack(lookFor);
         for (int i = startIndex; i >= 0; i--) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -885,7 +1016,7 @@ public class UIntArray extends IntArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
-        return lastIndexOf(String2.parseInt(lookFor), startIndex);
+        return lastIndexOf(String2.parseLong(lookFor), startIndex);
     }
 
     /**
@@ -932,29 +1063,38 @@ public class UIntArray extends IntArray {
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (array[i] != other.array[i])
-                return "The two UIntArrays aren't equal: this[" + i + "]=" + array[i] + 
-                                                    "; other[" + i + "]=" + other.array[i] + ".";
+                return "The two UIntArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
+                                                     "; other[" + i + "]=" + unpack(other.array[i]) + ".";
         return "";
     }
 
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
     public String toString() {
-        return String2.toCSSVString(toArray()); //toArray() get just 'size' elements
+        //estimate 9 bytes/element
+        StringBuilder sb = new StringBuilder(9 * Math.min(size, (Integer.MAX_VALUE-8192) / 9));
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(unpack(array[i]));
+        }
+        return sb.toString();
     }
 
     /** 
      * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
         StringBuilder sb = new StringBuilder(size * 10);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "" : ",") + array[i] + "i");
+            sb.append((i == 0? "" : ",") + unpack(array[i]) + "ui"); 
         return sb.toString();
     }
 
@@ -968,22 +1108,24 @@ public class UIntArray extends IntArray {
     }
 
     /**
-     * This compares the values in row1 and row2 for SortComparator,
+     * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
-     * Currently, this does not checking of the range of index1 and index2,
+     * The cohort missing value sorts highest.
+     * Currently, this does not range check index1 and index2,
      * so the caller should be careful.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return returns a negative integer, zero, or a positive integer if the 
      *   value at index1 is less than, equal to, or greater than 
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, int index2) {
-        return array[index1] - array[index2];
+    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+        return Long.compare(getLong(index1), otherPA.getLong(index2));
     }
 
     /**
@@ -1128,7 +1270,7 @@ public class UIntArray extends IntArray {
      * @throws Exception if trouble
      */
     public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
-        raf.writeInt(get(index));
+        raf.writeInt(array[index]);
     }
 
     /** 
@@ -1139,53 +1281,7 @@ public class UIntArray extends IntArray {
      * @throws Exception if trouble
      */
     public void readFromRAF(RandomAccessFile raf) throws Exception {
-        add(raf.readInt());
-    }
-
-    /**
-     * This reads one value from a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @return the requested value as a double
-     * @throws Exception if trouble
-     */
-    public static double rafReadDouble(RandomAccessFile raf, long start, long index) 
-        throws Exception {
- 
-        raf.seek(start + 4*index);
-        int i = raf.readInt();
-        return i == Integer.MAX_VALUE? Double.NaN : i;
-    }
-
-    /**
-     * This writes one value to a randomAccessFile at the current position.
-     *
-     * @param raf the RandomAccessFile
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, double value) throws Exception {
-        raf.writeInt(Math2.roundToInt(value));
-    }
-
-    /**
-     * This writes one value to a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, long start, long index,
-        double value) throws Exception {
- 
-        raf.seek(start + 4*index);
-        raf.writeInt(Math2.roundToInt(value));
+        addPacked(raf.readInt());
     }
 
     /**
@@ -1209,7 +1305,7 @@ public class UIntArray extends IntArray {
      */
     public static double readDisAsDouble(DataInputStream dis) throws Exception {
         int i = dis.readInt();
-        return i == Integer.MAX_VALUE? Double.NaN : i;
+        return i == MAX_VALUE? Double.NaN : i;
     }
     
     /**
@@ -1218,7 +1314,7 @@ public class UIntArray extends IntArray {
      * primitiveArray is of a simpler type.
      *
      * @param pa pa must be the same or a narrower 
-     *  data type, or the data will be narrowed with pa.getInt.
+     *  data type, or the data will be narrowed with pa.getUInt.
      */
     public void append(PrimitiveArray pa) {
         int otherSize = pa.size(); 
@@ -1227,7 +1323,7 @@ public class UIntArray extends IntArray {
             System.arraycopy(((UIntArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pa.getInt(i);  //this converts mv's
+                array[size + i] = pack(pa.getLong(i));  //this converts mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1240,7 +1336,7 @@ public class UIntArray extends IntArray {
      * primitiveArray is of a simpler type.
      *
      * @param pa pa must be the same or a narrower 
-     *  data type, or the data will be narrowed with pa.getInt.
+     *  data type, or the data will be narrowed with pa.getUInt.
      */
     public void rawAppend(PrimitiveArray pa) {
         int otherSize = pa.size(); 
@@ -1249,7 +1345,7 @@ public class UIntArray extends IntArray {
             System.arraycopy(((UIntArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pa.getRawInt(i);  //this DOESN'T convert mv's
+                array[size + i] = pack(Math2.roundToUInt(pa.getRawDouble(i)));  //this DOESN'T convert mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1272,16 +1368,16 @@ public class UIntArray extends IntArray {
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
         HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
-        int lastValue = array[0]; //since lastValue often equals currentValue, cache it
-        hashMap.put(new Integer(lastValue), dummy);
+        long lastValue = unpack(array[0]); //since lastValue often equals currentValue, cache it
+        hashMap.put(new Long(lastValue), dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            int currentValue = array[i];
+            long currentValue = unpack(array[i]);
             if (currentValue != lastValue) {
                 if (currentValue < lastValue) 
                     alreadySorted = false;
                 lastValue = currentValue;
-                hashMap.put(new Integer(lastValue), dummy);
+                hashMap.put(new Long(lastValue), dummy);
             }
         }
 
@@ -1310,23 +1406,23 @@ public class UIntArray extends IntArray {
 
         //put the unique values back in the hashMap with the ranks as the associated values
         //and make tUnique 
-        int tUnique[] = new int[nUnique];
+        long tUnique[] = new long[nUnique];
         for (int i = 0; i < count; i++) {
             hashMap.put(unique[i], new Integer(i));
-            tUnique[i] = ((Integer)unique[i]).intValue();
+            tUnique[i] = ((Long)unique[i]).longValue();
         }
 
         //convert original values to ranks
         int ranks[] = new int[size];
-        lastValue = array[0];
-        ranks[0] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
+        lastValue = unpack(array[0]);
+        ranks[0] = ((Integer)hashMap.get(new Long(lastValue))).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
             if (array[i] == lastValue) {
                 ranks[i] = lastRank;
             } else {
-                lastValue = array[i];
-                ranks[i] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
+                lastValue = unpack(array[i]);
+                ranks[i] = ((Integer)hashMap.get(new Long(lastValue))).intValue();
                 lastRank = ranks[i];
             }
         }
@@ -1346,14 +1442,14 @@ public class UIntArray extends IntArray {
      * @return the number of values switched
      */
     public int switchFromTo(String tFrom, String tTo) {
-        int from = Math2.roundToInt(String2.parseDouble(tFrom));
-        int to   = Math2.roundToInt(String2.parseDouble(tTo));
-        if (from == to)
+        int packedFrom = pack(Math2.roundToUInt(String2.parseDouble(tFrom)));
+        int packedTo   = pack(Math2.roundToUInt(String2.parseDouble(tTo)));
+        if (packedFrom == packedTo)
             return 0;
         int count = 0;
         for (int i = 0; i < size; i++) {
-            if (array[i] == from) {
-                array[i] = to;
+            if (array[i] == packedFrom) {
+                array[i] =  packedTo;
                 count++;
             }
         }
@@ -1361,54 +1457,6 @@ public class UIntArray extends IntArray {
     }
 
 
-    /**
-     * This tests if the values in the array are sorted in ascending order (tied is ok).
-     * The details of this test are geared toward determining if the 
-     * values are suitable for binarySearch.
-     *
-     * @return "" if the values in the array are sorted in ascending order (or tied);
-     *   or an error message if not (i.e., if descending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isAscending() {
-        if (size == 0)
-            return "";
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] > array[i]) {
-                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
-            }
-        }
-        if (array[size - 1] == Integer.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
-        return "";
-    }
-
-    /**
-     * This tests if the values in the array are sorted in descending order (tied is ok).
-     *
-     * @return "" if the values in the array are sorted in descending order (or tied);
-     *   or an error message if not (i.e., if ascending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isDescending() {
-        if (size == 0)
-            return "";
-        if (array[0] == Integer.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                "[0]=(" + ArrayMissingValue + ")");
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] < array[i]) {
-                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                    "[" + (i-1) + "]=" + array[i-1] + 
-                     " < [" + i + "]=" + array[i]);
-            }
-        }
-        return "";
-    }
 
     /**
      * This tests for adjacent tied values and returns the index of the first tied value.
@@ -1435,11 +1483,11 @@ public class UIntArray extends IntArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        int tmin = Integer.MAX_VALUE - 1;
-        int tmax = Integer.MIN_VALUE;
+        long tmin = MAX_VALUE - 1;
+        long tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            int v = array[i];
-            if (v != Integer.MAX_VALUE) {
+            if (array[i] != PACKED_MAX_VALUE) {
+                long v = unpack(array[i]);
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
                 if (v >= tmax) {tmaxi = i; tmax = v; }
@@ -1459,7 +1507,8 @@ public class UIntArray extends IntArray {
     public void changeSignedToFromUnsigned() {
         for (int i = 0; i < size; i++) {
             int i2 = array[i];
-            array[i] = i2 < 0? i2 + Integer.MAX_VALUE : i2 - Integer.MAX_VALUE;
+            array[i] = (int)(i2 < 0? i2 + MAX_VALUE + 1 : 
+                                     i2 - MAX_VALUE - 1); //order of ops is important 
         }
     }
 
@@ -1472,46 +1521,40 @@ public class UIntArray extends IntArray {
         String2.log("*** Testing UIntArray");
 /* for releases, this line should have open/close comment */
 
+        Test.ensureEqual(pack(                  0L  ),                 0, "");
+        Test.ensureEqual(pack(Integer.MAX_VALUE     ), Integer.MAX_VALUE, "");
+        Test.ensureEqual(pack(Integer.MAX_VALUE+1L  ), Integer.MIN_VALUE, "");
+        Test.ensureEqual(pack(Integer.MAX_VALUE*2L  ),                -2, "");
+        Test.ensureEqual(pack(Integer.MAX_VALUE*2L+1),                -1, "");
+
+        Test.ensureEqual(unpack(                  0),                     0L, "");
+        Test.ensureEqual(unpack(Integer.MAX_VALUE  ), Integer.MAX_VALUE     , "");
+        Test.ensureEqual(unpack(Integer.MIN_VALUE  ), Integer.MAX_VALUE+1L  , "");
+        Test.ensureEqual(unpack(                 -2), Integer.MAX_VALUE*2L  , "");
+        Test.ensureEqual(unpack(                 -1), Integer.MAX_VALUE*2L+1, "");
+
         //** test default constructor and many of the methods
         UIntArray anArray = new UIntArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue(), MAX_VALUE, "");
         anArray.addString("");
-        Test.ensureEqual(anArray.get(0),               Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawDouble(0),      Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getUnsignedDouble(0), Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawString(0), "" + Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawNiceDouble(0),  Integer.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.get(0),               MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");  //getRawInt->int is too small to hold correct answer
+        Test.ensureEqual(anArray.getRawDouble(0),      MAX_VALUE, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
+        Test.ensureEqual(anArray.getRawString(0), "" + MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  MAX_VALUE, "");
+        Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");  //getInt->int is too small to hold correct answer
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
         Test.ensureEqual(anArray.getString(0), "", "");
 
-        anArray.set(0, -2147483648); Test.ensureEqual(anArray.getUnsignedDouble(0), 2147483648L, "");
-        anArray.set(0, -2147483647); Test.ensureEqual(anArray.getUnsignedDouble(0), 2147483649L, "");
-        anArray.set(0,          -1); Test.ensureEqual(anArray.getUnsignedDouble(0), 4294967295L, "");
+        anArray.set(0, 0);                    Test.ensureEqual(anArray.getUnsignedDouble(0),                    0, "");
+        anArray.set(0, Integer.MAX_VALUE);    Test.ensureEqual(anArray.getUnsignedDouble(0), Integer.MAX_VALUE   , "");
+        anArray.set(0, Integer.MAX_VALUE+1L); Test.ensureEqual(anArray.getUnsignedDouble(0), Integer.MAX_VALUE+1L, "");
+        anArray.set(0, unpack(-2));           Test.ensureEqual(anArray.getUnsignedDouble(0), 4294967295.0,         "");
+        anArray.set(0, unpack(-1));           Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN,           "");
+
         anArray.clear();
-
-        //unsignedFactory, which uses unsignedAppend
-        anArray = (UIntArray)unsignedFactory(PAType.INT, 
-            new UIntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 2147483647, 2147483647, 2147483647", ""); // -> mv
-        anArray.clear();        
-
-        anArray = (UIntArray)unsignedFactory(PAType.INT, 
-            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
-        anArray.clear();        
-
-        anArray = (UIntArray)unsignedFactory(PAType.INT, 
-            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
-        anArray.clear();        
-
-        anArray = (UIntArray)unsignedFactory(PAType.INT, 
-            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
-        anArray.clear();        
 
 
         Test.ensureEqual(anArray.size(), 0, "");
@@ -1522,7 +1565,7 @@ public class UIntArray extends IntArray {
         Test.ensureEqual(anArray.getFloat(0), 2000000000, "");
         Test.ensureEqual(anArray.getDouble(0), 2000000000, "");
         Test.ensureEqual(anArray.getString(0), "2000000000", "");
-        Test.ensureEqual(anArray.elementType(), PAType.INT, "");
+        Test.ensureEqual(anArray.elementType(), PAType.UINT, "");
         int tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new int[]{2000000000}, "");
 
@@ -1589,18 +1632,18 @@ public class UIntArray extends IntArray {
         }
 
         //set NaN returned as NaN
-        anArray.setDouble(0, Double.NaN);   Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
-        anArray.setDouble(0, -1e300);       Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
-        anArray.setDouble(0, 2.2);          Test.ensureEqual(anArray.getDouble(0), 2,          ""); 
-        anArray.setFloat( 0, Float.NaN);    Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
-        anArray.setFloat( 0, -1e33f);       Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
-        anArray.setFloat( 0, 3.3f);         Test.ensureEqual(anArray.getFloat(0),  3,          ""); 
-        anArray.setLong(0, Long.MAX_VALUE); Test.ensureEqual(anArray.getLong(0),   Long.MAX_VALUE, ""); 
-        anArray.setLong(0, 9123456789L);    Test.ensureEqual(anArray.getLong(0),   Long.MAX_VALUE, ""); 
-        anArray.setLong(0, 4);              Test.ensureEqual(anArray.getLong(0),   4, ""); 
-        anArray.setInt(0,Integer.MAX_VALUE);Test.ensureEqual(anArray.getInt(0),    Integer.MAX_VALUE, ""); 
-        anArray.setInt(0, 1123456789);      Test.ensureEqual(anArray.getInt(0),    1123456789, ""); 
-        anArray.setInt(0, 5);               Test.ensureEqual(anArray.getInt(0),    5, ""); 
+        anArray.setDouble(0, Double.NaN);    Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
+        anArray.setDouble(0, -1e300);        Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
+        anArray.setDouble(0, 2.2);           Test.ensureEqual(anArray.getDouble(0), 2,          ""); 
+        anArray.setFloat( 0, Float.NaN);     Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
+        anArray.setFloat( 0, -1e33f);        Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
+        anArray.setFloat( 0, 3.3f);          Test.ensureEqual(anArray.getFloat(0),  3,          ""); 
+        anArray.setLong(0, Long.MAX_VALUE);  Test.ensureEqual(anArray.getLong(0),   Long.MAX_VALUE, ""); 
+        anArray.setLong(0, 9123456789L);     Test.ensureEqual(anArray.getLong(0),   Long.MAX_VALUE, ""); 
+        anArray.setLong(0, 4);               Test.ensureEqual(anArray.getLong(0),   4, ""); 
+        anArray.setInt(0, Integer.MAX_VALUE);Test.ensureEqual(anArray.getInt(0),    Integer.MAX_VALUE, ""); 
+        anArray.setInt(0, 1123456789);       Test.ensureEqual(anArray.getInt(0),    1123456789, ""); 
+        anArray.setInt(0, 5);                Test.ensureEqual(anArray.getInt(0),    5, ""); 
 
 
         //** test capacity constructor, test expansion, test clear
@@ -1631,9 +1674,9 @@ public class UIntArray extends IntArray {
         Test.ensureEqual(anArray.get(4), 8, "");
 
         //test compare
-        Test.ensureEqual(anArray.compare(1, 3), -4, "");
+        Test.ensureEqual(anArray.compare(1, 3), -1, "");
         Test.ensureEqual(anArray.compare(1, 1),  0, "");
-        Test.ensureEqual(anArray.compare(3, 1),  4, "");
+        Test.ensureEqual(anArray.compare(3, 1),  1, "");
 
         //test toString
         Test.ensureEqual(anArray.toString(), "0, 2, 4, 6, 8", "");
@@ -1738,11 +1781,11 @@ public class UIntArray extends IntArray {
         //** test append and clone
         anArray = new UIntArray(new int[]{1});
         anArray.append(new ByteArray(new byte[]{5, -5}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5}, "");
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN}, "");
         anArray.append(new StringArray(new String[]{"a", "9"}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
         anArray2 = (UIntArray)anArray.clone();
-        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
 
         //test constructor(first, last)
         anArray = new UIntArray(10, 15);
@@ -1776,21 +1819,20 @@ public class UIntArray extends IntArray {
         Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 10, 25", "");
         Test.ensureEqual(indices.toString(), "2, 0, 0, 1", "");
 
-        anArray = new UIntArray(new int[] {35,35,Integer.MAX_VALUE,1,2});
-        indices = new IntArray();
-        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 2147483647", "");
+        anArray = new UIntArray(new long[] {35,35,MAX_VALUE,1,2});
+        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 4294967295", "");
         Test.ensureEqual(indices.toString(), "2, 2, 3, 0, 1", "");
 
-        anArray = new UIntArray(new int[] {10,20,30,40});
+        anArray = new UIntArray(new long[] {10,20,30,40});
         Test.ensureEqual(anArray.makeIndices(indices).toString(), "10, 20, 30, 40", "");
         Test.ensureEqual(indices.toString(), "0, 1, 2, 3", "");
 
         //switchToFakeMissingValue
-        anArray = new UIntArray(new int[] {Integer.MAX_VALUE,1,2,Integer.MAX_VALUE,3,Integer.MAX_VALUE});
+        anArray = new UIntArray(new long[] {MAX_VALUE,1,2,MAX_VALUE,3,MAX_VALUE});
         Test.ensureEqual(anArray.switchFromTo("", "75"), 3, "");
         Test.ensureEqual(anArray.toString(), "75, 1, 2, 75, 3, 75", "");
         anArray.switchFromTo("75", "");
-        Test.ensureEqual(anArray.toString(), "2147483647, 1, 2, 2147483647, 3, 2147483647", "");
+        Test.ensureEqual(anArray.toString(), "4294967295, 1, 2, 4294967295, 3, 4294967295", "");
         Test.ensureEqual(anArray.getNMinMaxIndex(), new int[]{3, 1, 4}, "");
 
         //addN
@@ -1836,7 +1878,7 @@ public class UIntArray extends IntArray {
         //isAscending
         anArray = new UIntArray(new int[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
-        anArray.set(2, Integer.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isAscending(), 
             "UIntArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, 9);
@@ -1846,9 +1888,9 @@ public class UIntArray extends IntArray {
         //isDescending
         anArray = new UIntArray(new int[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
-        anArray.set(2, Integer.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isDescending(), 
-            "UIntArray isn't sorted in descending order: [1]=10 < [2]=2147483647.", "");
+            "UIntArray isn't sorted in descending order: [1]=10 < [2]=4294967295.", "");
         anArray.set(1, 35);
         Test.ensureEqual(anArray.isDescending(), 
             "UIntArray isn't sorted in descending order: [0]=30 < [1]=35.", "");
@@ -1882,15 +1924,18 @@ public class UIntArray extends IntArray {
         anArray.addString(anArray.MINEST_VALUE());
         anArray.addString(anArray.MAXEST_VALUE());
         Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
-        Test.ensureEqual(anArray.getString(0), "-2147483648", "");
+        Test.ensureEqual(anArray.getString(0), "0", "");
         Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new UIntArray(new int[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UIntArray(new int[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UIntArray(new int[] {Integer.MIN_VALUE})).tryToFindNumericMissingValue(), Integer.MIN_VALUE, "");
-        Test.ensureEqual((new UIntArray(new int[] {Integer.MAX_VALUE})).tryToFindNumericMissingValue(), Integer.MAX_VALUE, "");
-        Test.ensureEqual((new UIntArray(new int[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
+        Test.ensureEqual((new UIntArray(new int[] {                 })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UIntArray(new int[] {1, 2             })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UIntArray(new int[] {0                })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UIntArray(new int[] {Integer.MAX_VALUE})).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UIntArray(new long[]{MAX_VALUE        })).tryToFindNumericMissingValue(),  MAX_VALUE, "");
+        Test.ensureEqual((new UIntArray(new int[] {1, 99            })).tryToFindNumericMissingValue(),         99, "");
+
+        /* */
     }
 
 }

@@ -32,7 +32,6 @@ public class StringComparatorIgnoreCase implements Comparator {
             return 1;
         String s1 = o1.toString(); //as opposed to (String)o1, this works with many object types
         String s2 = o2.toString();
-//        int c = s1.toUpperCase().compareTo(s2.toUpperCase());
         int c = s1.compareToIgnoreCase(s2);
         if (c != 0) 
             return c;

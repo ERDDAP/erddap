@@ -6,9 +6,13 @@ package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.UByteArray;
+import com.cohort.array.UShortArray;
+import com.cohort.array.UIntArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
@@ -139,14 +143,16 @@ clear sst2
     public final static int mxUINT16_CLASS = 11;
     public final static int mxINT32_CLASS  = 12;
     public final static int mxUINT32_CLASS = 13;
+    public final static int mxINT64_CLASS  = 14;
+    public final static int mxUINT64_CLASS = 15;
 
     /** The name associated with the mx constants. */
     public final static String[] mxNames = {
         "mx0", "mxCELL_CLASS", "mxSTRUCT_CLASS", "mxOBJECT_CLASS", 
         "mxCHAR_CLASS", "mxSPARSE_CLASS", "mxDOUBLE_CLASS", 
         "mxSINGLE_CLASS", "mxINT8_CLASS", "mxUINT8_CLASS", 
-        "mxINT16_CLASS", "mxUINT16_CLASS", "mxINT32_CLASS", "mxUINT32_CLASS"};
-        
+        "mxINT16_CLASS", "mxUINT16_CLASS", "mxINT32_CLASS", "mxUINT32_CLASS",
+        "mxINT64_CLASS", "mxUINT64_CLASS"};        
 
 
     /**
@@ -497,14 +503,14 @@ clear sst2
         int arrayType, dataType;
         if      (paElementType == PAType.DOUBLE) {arrayType = mxDOUBLE_CLASS; dataType = miDOUBLE; }
         else if (paElementType == PAType.FLOAT)  {arrayType = mxSINGLE_CLASS; dataType = miSINGLE; }
-        else if (paElementType == PAType.LONG)   {arrayType = mxDOUBLE_CLASS; dataType = miDOUBLE; } //no mxINT64_CLASS! so use doubles
-        else if (paElementType == PAType.ULONG)  {arrayType = mxDOUBLE_CLASS; dataType = miDOUBLE; } //no mxINT64_CLASS! so use doubles
+        else if (paElementType == PAType.LONG)   {arrayType = mxINT64_CLASS;  dataType = miINT64;  } 
+        else if (paElementType == PAType.ULONG)  {arrayType = mxUINT64_CLASS; dataType = miUINT64; } 
         else if (paElementType == PAType.INT)    {arrayType = mxINT32_CLASS;  dataType = miINT32;  }
-        else if (paElementType == PAType.UINT)   {arrayType = mxINT32_CLASS;  dataType = miUINT32; }
+        else if (paElementType == PAType.UINT)   {arrayType = mxUINT32_CLASS; dataType = miUINT32; }
         else if (paElementType == PAType.SHORT)  {arrayType = mxINT16_CLASS;  dataType = miINT16;  }
-        else if (paElementType == PAType.USHORT) {arrayType = mxINT16_CLASS;  dataType = miUINT16; }
+        else if (paElementType == PAType.USHORT) {arrayType = mxUINT16_CLASS; dataType = miUINT16; }
         else if (paElementType == PAType.BYTE)   {arrayType = mxINT8_CLASS;   dataType = miINT8;   }
-        else if (paElementType == PAType.UBYTE)  {arrayType = mxINT8_CLASS;   dataType = miUINT8;  }
+        else if (paElementType == PAType.UBYTE)  {arrayType = mxUINT8_CLASS;  dataType = miUINT8;  }
         else if (paElementType == PAType.CHAR)   {arrayType = mxCHAR_CLASS;   dataType = miUINT16; }  //pg 1-18
         else if (paElementType == PAType.STRING) {arrayType = mxCHAR_CLASS;   dataType = miUINT16; }  //pg 1-18   
         else throw new Exception(String2.ERROR + " in Matlab.writeNDimensionalArray: " +
@@ -550,14 +556,7 @@ clear sst2
 
         PAType paElementType = pa.elementType();
 
-        if      (paElementType == PAType.DOUBLE) while (ndIndex.incrementCM()) stream.writeDouble(pa.getDouble((int)ndIndex.getIndex()));  //safe since pa max size is int
-        else if (paElementType == PAType.FLOAT)  while (ndIndex.incrementCM()) stream.writeFloat( pa.getFloat((int)ndIndex.getIndex()));   //safe since pa max size is int
-        else if (paElementType == PAType.LONG)   while (ndIndex.incrementCM()) stream.writeDouble(pa.getDouble((int)ndIndex.getIndex()));  //safe since pa max size is int
-        else if (paElementType == PAType.INT)    while (ndIndex.incrementCM()) stream.writeInt(   pa.getInt((int)ndIndex.getIndex()));     //safe since pa max size is int
-        else if (paElementType == PAType.SHORT)  while (ndIndex.incrementCM()) stream.writeShort( pa.getInt((int)ndIndex.getIndex()));     //safe since pa max size is int
-        else if (paElementType == PAType.BYTE)   while (ndIndex.incrementCM()) stream.writeByte(  pa.getInt((int)ndIndex.getIndex()));     //safe since pa max size is int
-        else if (paElementType == PAType.CHAR)   while (ndIndex.incrementCM()) stream.writeChar(  pa.getInt((int)ndIndex.getIndex()));     //safe since pa max size is int
-        else if (paElementType == PAType.STRING) {
+        if (paElementType == PAType.STRING) {
             //isStringArray, so write strings padded to maxLength
             int n = pa.size();
             int shape[] = ndIndex.shape();
@@ -568,6 +567,10 @@ clear sst2
                     stream.writeChar(po < s.length()? s.charAt(po) : ' ');
                 }
             }
+        } else {
+            PAOne paOne = new PAOne(paElementType);
+            while (ndIndex.incrementCM()) 
+                paOne.readFrom(pa, (int)ndIndex.getIndex()).writeToDOS(stream);
         }
 
         //pad data to 8 byte boundary
@@ -733,7 +736,17 @@ clear sst2
                                 littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
                             vector.add(a);
                         } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                    } else if (subMIDataType == miINT32 || subMIDataType == miUINT32) { //convert uint -> int
+                    } else if (subMIDataType == miINT64 || subMIDataType == miUINT64) { //trouble
+                        if (dim.length == 2) {
+                            long a[][] = DataStream.read2DCMLongArray(
+                                littleEndian, stream, buffer, dim[0], dim[1]);
+                            vector.add(a);
+                        } else if (dim.length == 3) {
+                            long a[][][] = DataStream.read3DLongArray(
+                                littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
+                            vector.add(a);
+                        } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
+                    } else if (subMIDataType == miINT32 || subMIDataType == miUINT32) { //trouble
                         if (dim.length == 2) {
                             int a[][] = DataStream.read2DCMIntArray(
                                 littleEndian, stream, buffer, dim[0], dim[1]);
@@ -743,7 +756,7 @@ clear sst2
                                 littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
                             vector.add(a);
                         } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                    } else if (subMIDataType == miINT16 || subMIDataType == miUINT16) { //convert uint -> int
+                    } else if (subMIDataType == miINT16 || subMIDataType == miUINT16) { //trouble
                         if (dim.length == 2) {
                             short a[][] = DataStream.read2DCMShortArray(
                                 littleEndian, stream, buffer, dim[0], dim[1]);
@@ -753,7 +766,7 @@ clear sst2
                                 littleEndian, stream, buffer, dim[0], dim[1], dim[2]);
                             vector.add(a);
                         } else Test.ensureEqual(dim.length, 2, methodName + "miMATRIX dim.length != 2 or 3.");
-                    } else if (subMIDataType == miINT8 || subMIDataType == miUINT8) { //convert uint -> int
+                    } else if (subMIDataType == miINT8 || subMIDataType == miUINT8) { //trouble
                         if (dim.length == 2) {
                             byte a[][] = DataStream.read2DCMByteArray(
                                 stream, dim[0], dim[1]);

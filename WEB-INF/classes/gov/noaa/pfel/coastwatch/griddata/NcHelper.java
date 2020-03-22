@@ -363,7 +363,7 @@ public class NcHelper  {
                 int tSize = lar.length;
                 double dar[] = new double[tSize];
                 for (int i = 0; i < tSize; i++)
-                    dar[i] = Math2.unsignedLongToDouble(lar[i]); // !!! possible loss of precision
+                    dar[i] = Math2.ulongToDouble(lar[i]); // !!! possible loss of precision
                 o = dar;
 
             } else {
@@ -571,12 +571,12 @@ public class NcHelper  {
          if (elementPAType == PAType.DOUBLE)  return DataType.DOUBLE;
          if (elementPAType == PAType.FLOAT)   return DataType.FLOAT;
          if (elementPAType == PAType.INT)     return DataType.INT;
-         if (elementPAType == PAType.LONG)    return DataType.DOUBLE;  // long -> double
+         if (elementPAType == PAType.LONG)    return DataType.DOUBLE;  // long -> double in .nc3
          if (elementPAType == PAType.SHORT)   return DataType.SHORT;
          if (elementPAType == PAType.STRING)  return DataType.STRING;
          if (elementPAType == PAType.UBYTE)   return DataType.UBYTE;
          if (elementPAType == PAType.UINT)    return DataType.UINT;
-         if (elementPAType == PAType.ULONG)   return DataType.DOUBLE; // ulong -> double
+         if (elementPAType == PAType.ULONG)   return DataType.DOUBLE; // ulong -> double in .nc3
          if (elementPAType == PAType.USHORT)  return DataType.USHORT;
          //STRUCTURE not converted
          Test.error(String2.ERROR + " in NcHelper.getNc3DataType:\n" +

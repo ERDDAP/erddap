@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -1609,8 +1610,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     //Insert row in tFileTable for this valid file.
                     //Use exact binary search.  AlmostEquals isn't a problem. 
                     //  If file was in tFileTable, it is gone now (above).
-                    double tMin = tSourceAxisValues[0].getDouble(0);
-                    int fileListPo = ftMin.binaryFindFirstGE(0, ftMin.size() - 1, tMin); 
+                    int fileListPo = ftMin.binaryFindFirstGE(0, ftMin.size() - 1, 
+                        new PAOne(tSourceAxisValues[0], 0)); 
                     if (verbose)
                         String2.log(msg + 
                             (wasInFileTable? "updated a file in" : "added a file to") + 
@@ -2298,7 +2299,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     EDStatic.caughtInterrupted);
 
             //find next relevant file
-            ftRow = ftStartIndex.binaryFindLastLE(ftRow, nFiles - 1, axis0Start);
+            ftRow = ftStartIndex.binaryFindLastLE(ftRow, nFiles - 1, PAOne.fromInt(axis0Start));
             int tNValues = ftNValues.get(ftRow);
             int tStart = axis0Start - ftStartIndex.get(ftRow);
             int tStop = tStart;

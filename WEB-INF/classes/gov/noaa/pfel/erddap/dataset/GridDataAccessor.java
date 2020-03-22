@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -827,30 +828,10 @@ class GetChunkCallable implements Callable {
      * Call this after increment() to get a current axis destination value (as an int).
      *
      * @param av an axisVariable number
-     * @return the axis destination value
+     * @return paOne, for convenience
      */
-    public int getAxisValueAsInt(int av) {
-        return axisValues[av].getInt(totalIndex.getCurrent()[av]);
-    }
-
-    /**
-     * Call this after increment() to get a current axis destination value (as a long).
-     *
-     * @param av an axisVariable number
-     * @return the axis destination value
-     */
-    public long getAxisValueAsLong(int av) {
-        return axisValues[av].getLong(totalIndex.getCurrent()[av]);
-    }
-
-    /**
-     * Call this after increment() to get a current axis destination value (as a float).
-     *
-     * @param av an axisVariable number
-     * @return the axis destination value
-     */
-    public float getAxisValueAsFloat(int av) {
-        return axisValues[av].getFloat(totalIndex.getCurrent()[av]);
+    public PAOne getAxisValueAsPAOne(int av, PAOne paOne) {
+        return paOne.readFrom(axisValues[av], totalIndex.getCurrent()[av]);
     }
 
     /**
@@ -863,15 +844,6 @@ class GetChunkCallable implements Callable {
         return axisValues[av].getDouble(totalIndex.getCurrent()[av]);
     }
 
-    /**
-     * Call this after increment() to get a current axis destination value (as a String).
-     *
-     * @param av an axisVariable number
-     * @return the axis destination value
-     */
-    public String getAxisValueAsString(int av) {
-        return axisValues[av].getString(totalIndex.getCurrent()[av]);
-    }
 
     /**
      * Call this after increment() to get the current data value (as an int) 
@@ -881,32 +853,10 @@ class GetChunkCallable implements Callable {
      * will return standard missing value as Integer.MAX_VALUE (not Byte.MAX_VALUE).
      *
      * @param dv a dataVariable number in the query 
-     * @return the data value
+     * @return paOne, for convenience
      */
-    public int getDataValueAsInt(int dv) {
-        return partialDataValues[dv].getInt((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
-    }
-
-    /**
-     * Call this after increment() to get the current data value (as a long) 
-     * from the specified dataVariable.
-     *
-     * @param dv a dataVariable number in the query 
-     * @return the data value
-     */
-    public long getDataValueAsLong(int dv) {
-        return partialDataValues[dv].getLong((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
-    }
-
-    /**
-     * Call this after increment() to get the current data value (as a float) 
-     * from the specified dataVariable.
-     *
-     * @param dv a dataVariable number in the query
-     * @return the data value
-     */
-    public float getDataValueAsFloat(int dv) {
-        return partialDataValues[dv].getFloat((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
+    public PAOne getDataValueAsPAOne(int dv, PAOne paOne) {
+        return paOne.readFrom(partialDataValues[dv], (int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
     }
 
     /**
@@ -921,21 +871,6 @@ class GetChunkCallable implements Callable {
     }
 
     /**
-     * Call this after increment() to get a data value (as a double) 
-     * from the specified dataVariable and add it to the specified PrimitiveArray.
-     *
-     * @param current  from gridDataAccessor.totalIndex().getCurrent() (or compatible),
-     *   but with values changed to what you want.
-     * @param dv a dataVariable number (within the request, not the EDD dataVariable number).
-     * @param pa the PrimitiveArray to which the value will be added
-     * @param throws Throwable if trouble
-     */
-/*    public void getDataValue(int current[], int dv, PrimitiveArray pa) {
-        ...
-        return partialDataValues[dv].getDouble((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
-    }
-*/
-    /**
      * This writes the dv to the randomAccessFile.
      * This is getDataValueAsDouble() turned inside out so it works perfectly and efficiently will all PATypes.
      * 
@@ -944,17 +879,6 @@ class GetChunkCallable implements Callable {
      */
     public void writeToRAF(int dv, RandomAccessFile raf) throws Exception {
         partialDataValues[dv].writeToRAF(raf, (int)partialIndex.getIndex());
-    }
-
-    /**
-     * Call this after increment() to get the current data value (as a String) 
-     * from the specified dataVariable.
-     *
-     * @param dv a dataVariable number in the query
-     * @return the data value
-     */
-    public String getDataValueAsString(int dv) {
-        return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
     }
 
     /**

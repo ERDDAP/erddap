@@ -156,7 +156,7 @@ public class TestAll  {
 //    Table.testReadColumnarASCIIFile();
 //    Table.testReadShortAudioFile("/erddapTest/audio/M1F1-int16-AFsp.wav");
 //    Table.testReadFloatAudioFile("/erddapTest/audio/M1F1-float32-AFsp.wav");
-//    Table.testReadAudioWriteWaveFiles(6, 6);  //start, stop
+//    Table.testReadAudioWriteWaveFiles(0, 1000);  //start, stop
 //    Table.testReadWriteFloatWaveFile();
 //    Table.testReadStandardTabbedASCII();
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
@@ -1505,6 +1505,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    NetCheck.verbose = true;
 //    NetCheck nc = new NetCheck("c:/content/bat/NetCheck.xml", true); //testmode
 //    OpendapHelper.testDapToNcDArray();
+//    PAOne.test();
 //    Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
 //        Matcher matcher = pattern.matcher("test 2009-01-02 12:13:14abcaaaaab");
 //        if (matcher.find(1)) String2.log("matched at start=" + matcher.start());
@@ -1817,6 +1818,7 @@ NcHelper ncHelper;
 NetCheck netCheck;
 OneOf oneOf;
 OpendapHelper opendapHelper;
+PAOne paOne;
 ParseJSON parseJSON;
 PauseTest pt;
 PlainAxis2 sgtpa2;
@@ -1835,6 +1837,10 @@ SgtUtil sgtUtil;
 Shared shared;
 gov.noaa.pfel.coastwatch.sgt.PathCartesianRenderer sgtptcr;
 String2LogFactory s2lf;
+UByteArray uba;
+UShortArray usa;
+UIntArray uia;
+ULongArray ula;
 
 gov.noaa.pmel.sgt.AnnotationCartesianRenderer sgtacr;
 gov.noaa.pmel.sgt.AxisTransform sgtat;
@@ -2029,10 +2035,10 @@ WaitThenTryAgainException wttae;
         FloatArray.test();
         DoubleArray.test();
         StringArray.test();
-//        UByteArray.test();
-//        UShortArray.test();
-//        UIntArray.test();
-//        ULongArray.test();
+        UByteArray.test();
+        UShortArray.test();
+        UIntArray.test();
+        ULongArray.test();
         PrimitiveArray.test();
         Attributes.test();
         ResourceBundle2.test();

@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -23,17 +24,22 @@ import java.util.Set;
  * UByteArray is a thin shell over a byte[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  * 
- * <p>This class uses 0xff (255) to represent a missing value (NaN).
+ * <p>This class uses Math2.UBYTE_MAX_VALUE (255) to represent a missing value (NaN).
  */
-public class UByteArray extends ByteArray {
+public class UByteArray extends PrimitiveArray {
 
     /** 
-     * This is the maxiumum unsigned value (the cohort missing value), stored as a signed byte.
+     * This is the minimum unsigned value, stored as a signed short.
      */
-    public final static byte MAX_VALUE_AS_BYTE = -1;
+    public final static short MIN_VALUE = Math2.UBYTE_MIN_VALUE;
 
     /** 
-     * This is the maxiumum unsigned value (the cohort missing value), stored as a signed short.
+     * This is the maximum unsigned value (the cohort missing value), stored as a signed byte.
+     */
+    public final static byte PACKED_MAX_VALUE = (byte)-1;
+
+    /** 
+     * This is the maximum unsigned value (the cohort missing value), stored as a signed short.
      */
     public final static short MAX_VALUE = Math2.UBYTE_MAX_VALUE;
 
@@ -61,14 +67,14 @@ public class UByteArray extends ByteArray {
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
     public double missingValue() {
-        return Math2.UBYTE_MAX_VALUE;
+        return MAX_VALUE;
     }
 
     /**
      * This packs a signed int holding an unsigned byte as a byte.
      */
     public static byte pack(int i) {
-        return (byte)(i & 0xff);
+        return i < 0 || i >= MAX_VALUE? PACKED_MAX_VALUE : (byte)(i & MAX_VALUE);
     }
     /**
      * This packs a signed long holding an unsigned byte as a byte.
@@ -81,7 +87,25 @@ public class UByteArray extends ByteArray {
      * This unpacks a ubyte stored in a byte as a short.
      */
     public static short unpack(byte b) {
-        return (short)(b & 0xff);
+        return b >= 0? b : (short)(b + MAX_VALUE + 1);
+    }
+
+
+    /**
+     * This is the main data structure.
+     * This should be private, but is public so you can manipulate it if you 
+     * promise to be careful.
+     * Note that if the PrimitiveArray's capacity is increased,
+     * the PrimitiveArray will use a different array for storage.
+     */
+    public byte[] array;
+
+
+    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
+     * The integer type classes overwrite this.
+     */
+    public boolean isIntegerType() {
+        return true;
     }
 
     /**
@@ -92,7 +116,7 @@ public class UByteArray extends ByteArray {
     }
 
     /**
-     * This constructs a ByteArray by copying elements from the incoming
+     * This constructs a UByteArray by copying elements from the incoming
      * PrimitiveArray (using append()).
      *
      * @param primitiveArray a primitiveArray of any type 
@@ -120,12 +144,25 @@ public class UByteArray extends ByteArray {
      * A constructor which (at least initially) uses the array and all its 
      * elements ('size' will equal anArray.length).
      *
-     * @param anArray the array to be used as this object's array.
-     *   The incoming signed values will be interpreted as unsigned values.
+     * @param anArray the array with already packed values.
      */
     public UByteArray(byte[] anArray) {
         array = anArray;
         size = anArray.length;
+    }
+    
+    /**
+     * A constructor which does NOT use the array and all its 
+     * elements ('size' will equal anArray.length).
+     *
+     * @param anArray the array with not-yet-packed values.
+     */
+    public UByteArray(short[] anArray) {
+        size = anArray.length;
+        Math2.ensureMemoryAvailable(1L * size, "UByteArray");
+        array = new byte[size];
+        for (int i = 0; i < size; i++)
+            array[i] = pack(anArray[i]);
     }
     
     /**
@@ -138,7 +175,7 @@ public class UByteArray extends ByteArray {
         size = last - first + 1;
         array = new byte[size];
         for (int i = 0; i < size; i++) 
-            array[i] = (byte)(first + i);
+            array[i] = pack(first + i);
     }
 
     /**
@@ -162,16 +199,9 @@ public class UByteArray extends ByteArray {
         }
     }
 
-    /** 
-     * This neuters this inherited method. 
-     */
-    public static UByteArray toBooleanToByte(PrimitiveArray pa) {
-        throw new RuntimeException("Invalid method.");
-    }
-
     /** This constructs a UByteArray from the values of another PrimitiveArray by
      * considering the incoming pa as boolean which needs to be  
-     * converted to ubytes.
+     * converted to bytes.
      * <ul>
      * <li>StringArray uses String2.parseBooleanToByte.
      * <li>CharArray uses StandardMissingValue-&gt;StandardMissingValue, 
@@ -181,7 +211,7 @@ public class UByteArray extends ByteArray {
      * </ul>
      *
      * @param pa the values of pa are interpreted as boolean, which are then
-     *   converted to ubytes.
+     *   converted to bytes.
      * @return a UByteArray
      */
     public static UByteArray toBooleanToUByte(PrimitiveArray pa) {
@@ -197,20 +227,27 @@ public class UByteArray extends ByteArray {
             CharArray ca = (CharArray)pa;
             for (int i = 0; i < size; i++) {
                 char c = ca.get(i);
-                bar[i] = c == Character.MAX_VALUE? MAX_VALUE_AS_BYTE :
+                bar[i] = c == Character.MAX_VALUE? PACKED_MAX_VALUE :
                     "0fF".indexOf(ca.get(i)) >= 0? zero : one;
             }
         } else if (pa instanceof LongArray) {
             LongArray la = (LongArray)pa;
             for (int i = 0; i < size; i++) {
                 long tl = la.get(i);
-                bar[i] = tl == Long.MAX_VALUE? MAX_VALUE_AS_BYTE :
+                bar[i] = tl == Long.MAX_VALUE? PACKED_MAX_VALUE :
                     tl == 0? zero : one;
             }
-        } else {  //byte, ubyte, short, ushort, int, uint, ulong, float, double
+        } else if (pa instanceof ULongArray) {
+            ULongArray la = (ULongArray)pa;
+            for (int i = 0; i < size; i++) {
+                BigInteger bi = la.get(i);
+                bar[i] = bi.equals(ULongArray.MAX_VALUE)? PACKED_MAX_VALUE :
+                    bi.equals(BigInteger.ZERO)? zero : one;
+            }
+        } else {  //byte, ubyte, short, ushort, int, uint, float, double
             for (int i = 0; i < size; i++) {
                 double td = pa.getDouble(i);
-                bar[i] = Double.isNaN(td)? MAX_VALUE_AS_BYTE :
+                bar[i] = Double.isNaN(td)? PACKED_MAX_VALUE :
                     td == 0? zero : one;
             }
         }
@@ -218,11 +255,37 @@ public class UByteArray extends ByteArray {
     }
 
     /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "0";}
+    public String MINEST_VALUE() {return "" + MIN_VALUE;}
 
     /** The maximum value that can be held by this class 
         (not including the cohort missing value). */
     public String MAXEST_VALUE() {return "" + (MAX_VALUE - 1);}
+
+    /**
+     * This returns the current capacity (number of elements) of the internal data array.
+     * 
+     * @return the current capacity (number of elements) of the internal data array.
+     */
+    public int capacity() {
+        return array.length;
+    }
+
+    /**
+     * This returns the hashcode for this byteArray (dependent only on values,
+     * not capacity).
+     * WARNING: the algorithm used may change in future versions.
+     *
+     * @return the hashcode for this byteArray (dependent only on values,
+     * not capacity)
+     */
+    public int hashCode() {
+        //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        int code = 0;
+        for (int i = 0; i < size; i++)
+            code = 31*code + array[i];
+        return code;
+    }
 
     /**
      * This makes a new subset of this PrimitiveArray based on startIndex, stride,
@@ -271,21 +334,21 @@ public class UByteArray extends ByteArray {
     }
 
     /**
-     * This returns the PAType (PAType.UBYTE) of the element type.
+     * This returns the PAType (PAType.BYTE) of the element type.
      *
-     * @return the PAType (PATypeUBYTE) of the element type.
+     * @return the PAType (PAType.BYTE) of the element type.
      */
     public PAType elementType() {
         return PAType.UBYTE;
     }
 
     /**
-     * This returns the class index (CLASS_INDEX_BYTE) of the element type.
+     * This returns the class index (PATYPE_INDEX_UBYTE) of the element type.
      *
-     * @return the class index (CLASS_INDEX_BYTE) of the element type.
+     * @return the class index (PATYPE_INDEX_UBYTE) of the element type.
      */
     public int elementTypeIndex() {
-        return CLASS_INDEX_BYTE;
+        return PATYPE_INDEX_UBYTE;
     }
 
     /**
@@ -293,27 +356,36 @@ public class UByteArray extends ByteArray {
      *
      * @param value the value to be added to the array
      */
-    public void add(byte value) {
+    public void add(short value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = value;
+        array[size++] = pack(value);
+    }
+
+    /**
+     * This adds an already packed value to the array (increasing 'size' by 1).
+     *
+     * @param value the already packed value to be added to the array
+     */
+    public void addPacked(byte packedValue) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        array[size++] = packedValue;
     }
 
     /**
      * This adds an item to the array (increasing 'size' by 1).
      *
      * @param value the value to be added to the array.
-     *    If value instanceof Number, this uses Number.byteValue().
+     *    If value instanceof Number, this uses Number.longValue().
      *    (If you want a more sophisticated conversion, save to DoubleArray,
      *    then convert DoubleArray to UByteArray.)
-     *    If null or not a Number, this adds Byte.MAX_VALUE.
+     *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
-        if (size == array.length) //if we're at capacity
-            ensureCapacity(size + 1L);        
-        array[size++] = value != null && value instanceof Number?
-            ((Number)value).byteValue() :
-            Byte.MAX_VALUE;
+        add(value != null && value instanceof Number?
+            pack(((Number)value).longValue()) :
+            PACKED_MAX_VALUE);
     }
 
     /**
@@ -345,13 +417,13 @@ public class UByteArray extends ByteArray {
      * @param value the value to be added to the array.
      *    n &lt; 0 throws an Exception.
      */
-    public void addN(int n, byte value) {
+    public void addN(int n, short value) {
         if (n == 0) return;
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
-        Arrays.fill(array, size, size + n, value);
+        Arrays.fill(array, size, size + n, pack(value));
         size += n;
     }
 
@@ -362,7 +434,7 @@ public class UByteArray extends ByteArray {
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void atInsert(int index, byte value) {
+    public void atInsert(int index, short value) {
         if (index < 0 || index > size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
@@ -370,7 +442,7 @@ public class UByteArray extends ByteArray {
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
         size++;
-        array[index] = value;
+        array[index] = pack(value);
     }
 
     /**
@@ -381,7 +453,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, Math2.narrowToByte(String2.parseInt(value)));
+        atInsert(index, Math2.narrowToUByte(String2.parseInt(value)));
     }
 
     /**
@@ -392,7 +464,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, Math2.narrowToByte(String2.parseInt(value)));
+        addN(n, Math2.narrowToUByte(String2.parseInt(value)));
     }
 
     /**
@@ -401,7 +473,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a String.
      */
     public void addString(String value) {
-        add(Math2.narrowToByte(String2.parseInt(value)));
+        add(Math2.narrowToUByte(String2.parseInt(value)));
     }
 
     /**
@@ -410,7 +482,7 @@ public class UByteArray extends ByteArray {
      * @param value the float value
      */
     public void addFloat(float value) {
-        add(Math2.roundToByte(value));
+        add(Math2.roundToUByte(value));
     }
 
     /**
@@ -419,7 +491,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a double.
      */
     public void addDouble(double value) {
-        add(Math2.roundToByte(value));
+        add(Math2.roundToUByte(value));
     }
 
     /**
@@ -430,7 +502,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
-        addN(n, Math2.roundToByte(value));
+        addN(n, Math2.roundToUByte(value));
     }
 
     /**
@@ -439,7 +511,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as an int.
      */
     public void addInt(int value) {
-        add(Math2.narrowToByte(value));
+        add(Math2.narrowToUByte(value));
     }
 
     /**
@@ -449,7 +521,7 @@ public class UByteArray extends ByteArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, Math2.narrowToByte(value));
+        addN(n, Math2.narrowToUByte(value));
     }
 
     /**
@@ -458,7 +530,17 @@ public class UByteArray extends ByteArray {
      * @param value the value, as a long.
      */
     public void addLong(long value) {
-        add(Math2.narrowToByte(value));
+        add(Math2.narrowToUByte(value));
+    }
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNLongs(int n, long value) {
+        addN(n, Math2.narrowToUByte(value));
     }
 
     /**
@@ -659,14 +741,14 @@ public class UByteArray extends ByteArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   Byte.MAX_VALUE is converted to Double.NaN.
+     *   MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UByteArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
-            byte b = array[i];
-            dar[i] = b == Byte.MAX_VALUE? Double.NaN : b;
+            short b = unpack(array[i]);
+            dar[i] = b == MAX_VALUE? Double.NaN : b;
         }
         return dar;
     }
@@ -675,14 +757,14 @@ public class UByteArray extends ByteArray {
      * This returns a String[] which has 'size' elements.
      *
      * @return a String[] which has 'size' elements.
-     *    Byte.MAX_VALUE appears as "".
+     *    MAX_VALUE appears as "".
      */
     public String[] toStringArray() {
         Math2.ensureMemoryAvailable(8L * size, "UByteArray.toStringArray"); //8L is feeble minimal estimate
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
-            byte b = array[i];
-            sar[i] = b == Byte.MAX_VALUE? "" : String.valueOf(b);
+            short b = unpack(array[i]);
+            sar[i] = b == MAX_VALUE? "" : String.valueOf(b);
         }
         return sar;
     }
@@ -693,7 +775,20 @@ public class UByteArray extends ByteArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public byte get(int index) {
+    public short get(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in UByteArray.get: index (" + 
+                index + ") >= size (" + size + ").");
+        return unpack(array[index]);
+    }
+
+    /**
+     * This gets a specified element as a packed value.
+     *
+     * @param index 0 ... size-1
+     * @return the specified element
+     */
+    public byte getPacked(int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UByteArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -706,11 +801,11 @@ public class UByteArray extends ByteArray {
      * @param index 0 ... size-1
      * @param value the value for that element
      */
-    public void set(int index, byte value) {
+    public void set(int index, short value) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UByteArray.set: index (" + 
                 index + ") >= size (" + size + ").");
-        array[index] = value;
+        array[index] = pack(value);
     }
 
 
@@ -719,18 +814,17 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as an int. 
-     *   Byte.MAX_VALUE is returned as Integer.MAX_VALUE.
+     *   MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? Integer.MAX_VALUE : 
-                                    b;
+        short b = get(index);
+        return b == MAX_VALUE? Integer.MAX_VALUE : b;
     }
 
     /**
      * Return a value from the array as an int.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., UByteArray missingValue=127) AS IS.
+     * (e.g., UByteArray missingValue=255) AS IS.
      * Floating point values are rounded.
      * 
      * @param index the index number 0 ... size-1
@@ -746,10 +840,10 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
-     *   if needed by methods like Math2.narrowToByte(i).
+     *   if needed by methods like Math2.narrowToUByte(i).
      */
     public void setInt(int index, int i) {
-        set(index, Math2.narrowToByte(i));
+        set(index, Math2.narrowToUByte(i));
     }
 
     /**
@@ -757,12 +851,11 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   Byte.MAX_VALUE is returned as Long.MAX_VALUE.
+     *   MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? Long.MAX_VALUE : 
-                                    b;
+        short b = get(index);
+        return b == MAX_VALUE? Long.MAX_VALUE : b;
     }
 
     /**
@@ -770,10 +863,33 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
-     *   if needed by methods like Math2.narrowToByte(long).
+     *   if needed by methods like Math2.narrowToUByte(long).
      */
     public void setLong(int index, long i) {
-        set(index, Math2.narrowToByte(i));
+        set(index, Math2.narrowToUByte(i));
+    }
+
+    /**
+     * Return a value from the array as a ulong.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a ulong. 
+     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     */
+    public BigInteger getULong(int index) {
+        short b = get(index);
+        return b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+    }
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(long).
+     */
+    public void setULong(int index, BigInteger i) {
+        set(index, Math2.narrowToUByte(i));
     }
 
     /**
@@ -783,12 +899,11 @@ public class UByteArray extends ByteArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   Byte.MAX_VALUE is returned as Float.NaN.
+     *   MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? Float.NaN : 
-                                    b;
+        short b = get(index);
+        return b == MAX_VALUE? Float.NaN : b;
     }
 
     /**
@@ -796,10 +911,10 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToByte(d).
+     *   if needed by methods like Math2.roundToUByte(d).
      */
     public void setFloat(int index, float d) {
-        set(index, Math2.roundToByte(d));
+        set(index, Math2.roundToUByte(d));
     }
 
     /**
@@ -809,12 +924,11 @@ public class UByteArray extends ByteArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   Byte.MAX_VALUE is returned as Double.NaN.
+     *   MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? Double.NaN : 
-                                    b;
+        short b = get(index);
+        return b == MAX_VALUE? Double.NaN : b;
     }
 
     /**
@@ -828,7 +942,7 @@ public class UByteArray extends ByteArray {
      */
     public double getUnsignedDouble(int index) {
         //or see https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
-        return Byte.toUnsignedInt(get(index));
+        return getDouble(index); //already unsigned
     }
 
     /**
@@ -851,24 +965,36 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
-     *   if needed by methods like Math2.roundToByte(d).
+     *   if needed by methods like Math2.roundToUByte(d).
      */
     public void setDouble(int index, double d) {
-        set(index, Math2.roundToByte(d));
+        set(index, Math2.roundToUByte(d));
     }
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *    or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value (never "").
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? "" : 
-                                    String.valueOf(b);
+        short b = get(index);
+        return b == MAX_VALUE? "" : String.valueOf(b);
+    }
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    public String getSimpleString(int index) {
+        return String.valueOf(get(index));
     }
 
     /**
@@ -881,9 +1007,8 @@ public class UByteArray extends ByteArray {
      *   If this PA is unsigned, this method retuns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
-        byte b = get(index);
-        return b == Byte.MAX_VALUE? "null" : 
-                                    String.valueOf(b);
+        short b = get(index);
+        return b == MAX_VALUE? "null" : String.valueOf(b);
     }
 
 
@@ -908,10 +1033,10 @@ public class UByteArray extends ByteArray {
      * 
      * @param index the index number 0 .. 
      * @param s the value. For numeric PrimitiveArray's, it is parsed
-     *   with String2.parseInt and narrowed by Math2.narrowToByte(i).
+     *   with String2.parseInt and narrowed by Math2.narrowToUByte(i).
      */
     public void setString(int index, String s) {
-        set(index, Math2.narrowToByte(String2.parseInt(s)));
+        set(index, Math2.narrowToUByte(String2.parseInt(s)));
     }
 
     /**
@@ -920,7 +1045,7 @@ public class UByteArray extends ByteArray {
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(byte lookFor) {
+    public int indexOf(short lookFor) {
         return indexOf(lookFor, 0);
     }
 
@@ -931,9 +1056,10 @@ public class UByteArray extends ByteArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(byte lookFor, int startIndex) {
+    public int indexOf(short lookFor, int startIndex) {
+        byte packedLookFor = pack(lookFor);
         for (int i = startIndex; i < size; i++) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -948,7 +1074,7 @@ public class UByteArray extends ByteArray {
     public int indexOf(String lookFor, int startIndex) {
         if (startIndex >= size)
             return -1;
-        return indexOf(Math2.roundToByte(String2.parseInt(lookFor)), startIndex);
+        return indexOf(Math2.roundToUByte(String2.parseInt(lookFor)), startIndex);
     }
 
     /**
@@ -958,12 +1084,13 @@ public class UByteArray extends ByteArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(byte lookFor, int startIndex) {
+    public int lastIndexOf(short lookFor, int startIndex) {
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UByteArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
+        byte packedLookFor = pack(lookFor);
         for (int i = startIndex; i >= 0; i--) 
-            if (array[i] == lookFor) 
+            if (array[i] == packedLookFor) 
                 return i;
         return -1;
     }
@@ -976,7 +1103,7 @@ public class UByteArray extends ByteArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
-        return lastIndexOf(Math2.roundToByte(String2.parseInt(lookFor)), startIndex);
+        return lastIndexOf(Math2.roundToUByte(String2.parseInt(lookFor)), startIndex);
     }
 
     /**
@@ -1009,7 +1136,7 @@ public class UByteArray extends ByteArray {
      * Test if o is an UByteArray with the same size and values,
      * but returns a String describing the difference (or "" if equal).
      *
-     * @param o
+     * @param o The other object
      * @return a String describing the difference (or "" if equal).
      *   o=null throws an exception.
      */
@@ -1023,29 +1150,38 @@ public class UByteArray extends ByteArray {
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
             if (array[i] != other.array[i])
-                return "The two UByteArrays aren't equal: this[" + i + "]=" + array[i] + 
-                                                     "; other[" + i + "]=" + other.array[i] + ".";
+                return "The two UByteArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
+                                                      "; other[" + i + "]=" + unpack(other.array[i]) + ".";
         return "";
     }
 
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
     public String toString() {
-        return String2.toCSSVString(toArray()); //toArray() get just 'size' elements
+        //estimate 5 bytes/element
+        StringBuilder sb = new StringBuilder(5 * Math.min(size, (Integer.MAX_VALUE-8192) / 5));
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(unpack(array[i]));
+        }
+        return sb.toString();
     }
 
     /** 
      * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     * Integer types show MAX_VALUE numbers (not "").
      *
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
         StringBuilder sb = new StringBuilder(size * 6);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "" : ",") + array[i] + "b");
+            sb.append((i == 0? "" : ",") + unpack(array[i]) + "ub"); 
         return sb.toString();
     }
 
@@ -1060,7 +1196,8 @@ public class UByteArray extends ByteArray {
     public void changeSignedToFromUnsigned() {
         for (int i = 0; i < size; i++) {
             int b = array[i];
-            array[i] = (byte)(b < 0? b + 128 : b - 128);
+            array[i] = (byte)(b < 0? b + 128 : 
+                                     b - 128);
         }
     }
 
@@ -1074,22 +1211,24 @@ public class UByteArray extends ByteArray {
     }
 
     /**
-     * This compares the values in row1 and row2 for SortComparator,
+     * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
-     * Currently, this does not checking of the range of index1 and index2,
+     * The cohort missing value sorts highest.
+     * Currently, this does not range check index1 and index2,
      * so the caller should be careful.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return returns a negative integer, zero, or a positive integer if the 
      *   value at index1 is less than, equal to, or greater than 
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, int index2) {
-        return array[index1] - array[index2];
+    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+        return Integer.compare(getInt(index1), otherPA.getInt(index2));
     }
 
     /**
@@ -1175,7 +1314,7 @@ public class UByteArray extends ByteArray {
      * DODS Array format (see www.opendap.org DAP 2.0 standard, section 7.3.2.1).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      *
-     * @param dos
+     * @param dos the DataOutputStream
      * @throws Exception if trouble
      */
     public void externalizeForDODS(DataOutputStream dos) throws Exception {
@@ -1192,7 +1331,7 @@ public class UByteArray extends ByteArray {
      * DODS Atomic-type format (see www.opendap.org DAP 2.0 standard, section 7.3.2).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      *
-     * @param dos
+     * @param dos the DataOutputStream
      * @param i the index of the element to be written
      * @throws Exception if trouble
      */
@@ -1204,7 +1343,7 @@ public class UByteArray extends ByteArray {
      * This reads/appends byte values to this PrimitiveArray from a DODS DataInputStream,
      * and is thus the complement of externalizeForDODS.
      *
-     * @param dis
+     * @param dis the DataInputStream
      * @throws IOException if trouble
      */
     public void internalizeFromDODS(DataInputStream dis) throws java.io.IOException {
@@ -1228,7 +1367,7 @@ public class UByteArray extends ByteArray {
      * @throws Exception if trouble
      */
     public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
-        raf.writeByte(get(index));
+        raf.writeByte(array[index]);
     }
 
     /** 
@@ -1239,53 +1378,7 @@ public class UByteArray extends ByteArray {
      * @throws Exception if trouble
      */
     public void readFromRAF(RandomAccessFile raf) throws Exception {
-        add(raf.readByte());
-    }
-
-    /**
-     * This reads one value from a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @return the requested value as a double
-     * @throws Exception if trouble
-     */
-    public static double rafReadDouble(RandomAccessFile raf, long start, long index) 
-        throws Exception {
- 
-        raf.seek(start + index);
-        byte b = raf.readByte();
-        return b == Byte.MAX_VALUE? Double.NaN : b;
-    }
-
-    /**
-     * This writes one value to a randomAccessFile at the current position.
-     *
-     * @param raf the RandomAccessFile
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, double value) throws Exception {
-        raf.writeByte(Math2.roundToByte(value));
-    }
-
-    /**
-     * This writes one value to a randomAccessFile.
-     *
-     * @param raf the RandomAccessFile
-     * @param start the raf offset of the start of the array (nBytes)
-     * @param index the index of the desired value (0..)
-     * @param value the value which will be converted to this PrimitiveArray's 
-     *    type and then stored
-     * @throws Exception if trouble
-     */
-    public static void rafWriteDouble(RandomAccessFile raf, long start, long index,
-        double value) throws Exception {
- 
-        raf.seek(start + index);
-        raf.writeByte(Math2.roundToByte(value));
+        addPacked(raf.readByte());
     }
 
     /**
@@ -1294,7 +1387,7 @@ public class UByteArray extends ByteArray {
      * primitiveArray is of a simpler type.
      *
      * @param pa pa must be the same or a narrower or the same
-     *  data type, or the data will be narrowed with Math2.narrowToByte.
+     *  data type, or the data will be narrowed with Math2.narrowToUByte.
      */
     public void append(PrimitiveArray pa) {
         int otherSize = pa.size(); 
@@ -1303,7 +1396,7 @@ public class UByteArray extends ByteArray {
             System.arraycopy(((UByteArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++) {
-                array[size + i] = Math2.narrowToByte(pa.getInt(i)); //this converts mv's
+                array[size + i] = pack(pa.getInt(i)); //this converts mv's
             }
         }
         size += otherSize; //do last to minimize concurrency problems
@@ -1317,7 +1410,7 @@ public class UByteArray extends ByteArray {
      * primitiveArray is of a simpler type.
      *
      * @param pa pa must be the same or a narrower 
-     *  data type, or the data will be narrowed with Math2.narrowToByte.
+     *  data type, or the data will be narrowed with Math2.narrowToUByte.
      */
     public void rawAppend(PrimitiveArray pa) {
         //since there are no smaller data types than byte, rawAppend() = append()
@@ -1343,16 +1436,16 @@ public class UByteArray extends ByteArray {
         //(actually bytes could be done more efficiently with a boolean array -128 to 127... )
         Integer dummy = new Integer(-1);
         HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
-        byte lastValue = array[0]; //since lastValue often equals currentValue, cache it
-        hashMap.put(new Byte(lastValue), dummy);
+        short lastValue = unpack(array[0]); //since lastValue often equals currentValue, cache it
+        hashMap.put(new Short(lastValue), dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            byte currentValue = array[i];
+            short currentValue = unpack(array[i]);
             if (currentValue != lastValue) {
                 if (currentValue < lastValue) 
                     alreadySorted = false;
                 lastValue = currentValue;
-                hashMap.put(new Byte(lastValue), dummy);
+                hashMap.put(new Short(lastValue), dummy);
             }
         }
 
@@ -1381,23 +1474,23 @@ public class UByteArray extends ByteArray {
 
         //put the unique values back in the hashMap with the ranks as the associated values
         //and make tUnique 
-        byte tUnique[] = new byte[nUnique];
+        short tUnique[] = new short[nUnique];
         for (int i = 0; i < count; i++) {
             hashMap.put(unique[i], new Integer(i));
-            tUnique[i] = ((Byte)unique[i]).byteValue();
+            tUnique[i] = ((Short)unique[i]).shortValue();
         }
 
         //convert original values to ranks
         int ranks[] = new int[size];
-        lastValue = array[0];
-        ranks[0] = ((Integer)hashMap.get(new Byte(lastValue))).intValue();
+        lastValue = unpack(array[0]);
+        ranks[0] = ((Integer)hashMap.get(new Short(lastValue))).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
             if (array[i] == lastValue) {
                 ranks[i] = lastRank;
             } else {
-                lastValue = array[i];
-                ranks[i] = ((Integer)hashMap.get(new Byte(lastValue))).intValue();
+                lastValue = unpack(array[i]);
+                ranks[i] = ((Integer)hashMap.get(new Short(lastValue))).intValue();
                 lastRank = ranks[i];
             }
         }
@@ -1417,69 +1510,20 @@ public class UByteArray extends ByteArray {
      * @return the number of values switched
      */
     public int switchFromTo(String tFrom, String tTo) {
-        byte from = Math2.roundToByte(String2.parseDouble(tFrom));
-        byte to   = Math2.roundToByte(String2.parseDouble(tTo));
-        if (from == to)
+        byte packedFrom = pack(Math2.roundToUByte(String2.parseDouble(tFrom)));
+        byte packedTo   = pack(Math2.roundToUByte(String2.parseDouble(tTo)));
+        if (packedFrom == packedTo)
             return 0;
         int count = 0;
         for (int i = 0; i < size; i++) {
-            if (array[i] == from) {
-                array[i] = to;
+            if (array[i] == packedFrom) {
+                array[i] =  packedTo;
                 count++;
             }
         }
         return count;
     }
 
-
-    /**
-     * This tests if the values in the array are sorted in ascending order (tied is ok).
-     * The details of this test are geared toward determining if the 
-     * values are suitable for binarySearch.
-     *
-     * @return "" if the values in the array are sorted in ascending order (or tied);
-     *   or an error message if not (i.e., if descending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isAscending() {
-        if (size == 0)
-            return "";
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] > array[i]) {
-                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
-            }
-        }
-        if (array[size - 1] == Byte.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
-        return "";
-    }
-
-
-    /**
-     * This tests if the values in the array are sorted in descending order (tied is ok).
-     *
-     * @return "" if the values in the array are sorted in descending order (or tied);
-     *   or an error message if not (i.e., if ascending or unordered).
-     *   If size is 0 or 1 (non-missing value), this returns "".
-     *   A missing value returns an error message.
-     */
-    public String isDescending() {
-        if (size == 0)
-            return "";
-        if (array[0] == Byte.MAX_VALUE) 
-            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                "[0]=(" + ArrayMissingValue + ")");
-        for (int i = 1; i < size; i++) {
-            if (array[i - 1] < array[i]) {
-                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                    "[" + (i-1) + "]=" + array[i-1] + " < [" + i + "]=" + array[i]);
-            }
-        }
-        return "";
-    }
 
     /**
      * This tests for adjacent tied values and returns the index of the first tied value.
@@ -1508,11 +1552,11 @@ public class UByteArray extends ByteArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        byte tmin = Byte.MAX_VALUE - 1;
-        byte tmax = Byte.MIN_VALUE;
+        short tmin = MAX_VALUE - 1;
+        short tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            byte v = array[i];
-            if (v != Byte.MAX_VALUE) {
+            if (array[i] != PACKED_MAX_VALUE) {
+                short v = unpack(array[i]);
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
                 if (v >= tmax) {tmaxi = i; tmax = v; }
@@ -1532,43 +1576,47 @@ public class UByteArray extends ByteArray {
 /* for releases, this line should have open/close comment */
 
         byte b;
+        short s;
         b = 0;     Test.ensureEqual(0,   b & 255, "");
         b = 127;   Test.ensureEqual(127, b & 255, "");
         b = -128;  Test.ensureEqual(128, b & 255, "");
         b = -1;    Test.ensureEqual(255, b & 255, "");
         Test.ensureEqual("" + PAType.STRING, "STRING", "");
 
-/*
+        Test.ensureEqual(pack((short)   0),    0, "");
+        Test.ensureEqual(pack((short) 127),  127, "");
+        Test.ensureEqual(pack((short) 128), -128, "");
+        Test.ensureEqual(pack((short) 254),   -2, "");
+        Test.ensureEqual(pack((short) 255),   -1, "");
+
+        Test.ensureEqual(unpack((byte)   0),   0, "");
+        Test.ensureEqual(unpack((byte) 127), 127, "");
+        Test.ensureEqual(unpack((byte)-128), 128, "");
+        Test.ensureEqual(unpack((byte)  -2), 254, "");
+        Test.ensureEqual(unpack((byte)  -1), 255, "");
+
         //** test default constructor and many of the methods
         UByteArray anArray = new UByteArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), Byte.MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue(), MAX_VALUE, "");
         anArray.addString("");
-        Test.ensureEqual(anArray.get(0),               Byte.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawInt(0),         Byte.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawDouble(0),      Byte.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getUnsignedDouble(0), Byte.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawString(0), "" + Byte.MAX_VALUE, "");
-        Test.ensureEqual(anArray.getRawNiceDouble(0),  Byte.MAX_VALUE, "");
+        Test.ensureEqual(anArray.get(0),               MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawInt(0),         MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawDouble(0),      MAX_VALUE, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
+        Test.ensureEqual(anArray.getRawString(0), "" + MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  MAX_VALUE, "");
         Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
         Test.ensureEqual(anArray.getString(0), "", "");
 
-        anArray.set(0, (byte)-128); Test.ensureEqual(anArray.getUnsignedDouble(0), 128, "");
-        anArray.set(0, (byte)-127); Test.ensureEqual(anArray.getUnsignedDouble(0), 129, "");
-        anArray.set(0, (byte)  -1); Test.ensureEqual(anArray.getUnsignedDouble(0), 255, "");
+        anArray.set(0, (short)   0); Test.ensureEqual(anArray.getUnsignedDouble(0),   0, "");
+        anArray.set(0, (short) 127); Test.ensureEqual(anArray.getUnsignedDouble(0), 127, "");
+        anArray.set(0, (short) 128); Test.ensureEqual(anArray.getUnsignedDouble(0), 128, "");
+        anArray.set(0, (short) 254); Test.ensureEqual(anArray.getUnsignedDouble(0), 254, "");
+        anArray.set(0, (short) 255); Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
         anArray.clear();
 
-        //unsignedFactory, which uses unsignedAppend
-        anArray = (UByteArray)unsignedFactory(PAType.BYTE, 
-            new UByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 127, 127, 127", ""); // -> mv
-        anArray.clear();        
-
-        anArray = (UByteArray)unsignedFactory(PAType.BYTE, 
-            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0, 1, 127, 127, 127", ""); // -> mv
-        anArray.clear();        
 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add((byte)120);
@@ -1578,7 +1626,7 @@ public class UByteArray extends ByteArray {
         Test.ensureEqual(anArray.getFloat(0), 120, "");
         Test.ensureEqual(anArray.getDouble(0), 120, "");
         Test.ensureEqual(anArray.getString(0), "120", "");
-        Test.ensureEqual(anArray.elementType(), PAType.BYTE, "");
+        Test.ensureEqual(anArray.elementType(), PAType.UBYTE, "");
         byte tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new byte[]{(byte)120}, "");
 
@@ -1687,9 +1735,9 @@ public class UByteArray extends ByteArray {
         Test.ensureEqual(anArray.get(4), 8, "");
 
         //test compare
-        Test.ensureEqual(anArray.compare(1, 3), -4, "");
+        Test.ensureEqual(anArray.compare(1, 3), -1, "");
         Test.ensureEqual(anArray.compare(1, 1),  0, "");
-        Test.ensureEqual(anArray.compare(3, 1),  4, "");
+        Test.ensureEqual(anArray.compare(3, 1),  1, "");
 
         //test toString
         Test.ensureEqual(anArray.toString(), "0, 2, 4, 6, 8", "");
@@ -1776,12 +1824,12 @@ public class UByteArray extends ByteArray {
 
         //** test append  and clone
         anArray = new UByteArray(new byte[]{1});
-        anArray.append(new UByteArray(new byte[]{5, -5}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5}, "");
+        anArray.append(new ByteArray(new byte[]{5, -5}));
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN}, "");
         anArray.append(new StringArray(new String[]{"a", "9"}));
-        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
         anArray2 = (UByteArray)anArray.clone();
-        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, -5, Double.NaN, 9}, "");
+        Test.ensureEqual(anArray2.toDoubleArray(), new double[]{1, 5, Double.NaN, Double.NaN, 9}, "");
 
         //test move
         anArray = new UByteArray(new byte[]{0,1,2,3,4});
@@ -1811,9 +1859,9 @@ public class UByteArray extends ByteArray {
         Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 10, 25", "");
         Test.ensureEqual(indices.toString(), "2, 0, 0, 1", "");
 
-        anArray = new UByteArray(new byte[] {35,35,Byte.MAX_VALUE,1,2});
+        anArray = new UByteArray(new short[] {35,35,MAX_VALUE,1,2});
         indices = new IntArray();
-        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 127", "");
+        Test.ensureEqual(anArray.makeIndices(indices).toString(), "1, 2, 35, 255", "");
         Test.ensureEqual(indices.toString(), "2, 2, 3, 0, 1", "");
 
         anArray = new UByteArray(new byte[] {10,20,30,40});
@@ -1821,11 +1869,11 @@ public class UByteArray extends ByteArray {
         Test.ensureEqual(indices.toString(), "0, 1, 2, 3", "");
 
         //switchToFakeMissingValue
-        anArray = new UByteArray(new byte[] {Byte.MAX_VALUE,1,2,Byte.MAX_VALUE,3,Byte.MAX_VALUE});
+        anArray = new UByteArray(new short[] {MAX_VALUE,1,2,MAX_VALUE,3,MAX_VALUE});
         Test.ensureEqual(anArray.switchFromTo("", "75"), 3, "");
         Test.ensureEqual(anArray.toString(), "75, 1, 2, 75, 3, 75", "");
         anArray.switchFromTo("75", "");
-        Test.ensureEqual(anArray.toString(), "127, 1, 2, 127, 3, 127", "");
+        Test.ensureEqual(anArray.toString(), "255, 1, 2, 255, 3, 255", "");
         Test.ensureEqual(anArray.getNMinMaxIndex(), new int[]{3, 1, 4}, "");
 
         //addN
@@ -1837,11 +1885,13 @@ public class UByteArray extends ByteArray {
         //add array
         anArray.add(new byte[]{17, 19});
         Test.ensureEqual(anArray.toString(), "25, 5, 5, 17, 19", "");
+        Test.ensureEqual(anArray.getClass().getName(), "com.cohort.array.UByteArray", "");
 
         //subset
         PrimitiveArray ss = anArray.subset(1, 3, 4);
         Test.ensureEqual(ss.toString(), "5, 19", "");
         ss = anArray.subset(0, 1, 0);
+        Test.ensureEqual(ss.getClass().getName(), "com.cohort.array.UByteArray", "");
         Test.ensureEqual(ss.toString(), "25", "");
         ss = anArray.subset(0, 1, -1);
         Test.ensureEqual(ss.toString(), "", "");
@@ -1849,6 +1899,7 @@ public class UByteArray extends ByteArray {
         Test.ensureEqual(ss.toString(), "", "");
 
         ss.trimToSize();
+        Test.ensureEqual(ss.getClass().getName(), "com.cohort.array.UByteArray", "");
         anArray.subset(ss, 1, 3, 4);
         Test.ensureEqual(ss.toString(), "5, 19", "");
         anArray.subset(ss, 0, 1, 0);
@@ -1871,7 +1922,7 @@ public class UByteArray extends ByteArray {
         //isAscending
         anArray = new UByteArray(new byte[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
-        anArray.set(2, Byte.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isAscending(), 
             "UByteArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, (byte)9);
@@ -1881,9 +1932,9 @@ public class UByteArray extends ByteArray {
         //isDescending
         anArray = new UByteArray(new byte[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
-        anArray.set(2, Byte.MAX_VALUE);
+        anArray.set(2, MAX_VALUE);
         Test.ensureEqual(anArray.isDescending(), 
-            "UByteArray isn't sorted in descending order: [1]=10 < [2]=127.", "");
+            "UByteArray isn't sorted in descending order: [1]=10 < [2]=255.", "");
         anArray.set(1, (byte)35);
         Test.ensureEqual(anArray.isDescending(), 
             "UByteArray isn't sorted in descending order: [0]=30 < [1]=35.", "");
@@ -1917,17 +1968,18 @@ public class UByteArray extends ByteArray {
         anArray.addString(anArray.MINEST_VALUE());
         anArray.addString(anArray.MAXEST_VALUE());
         Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
-        Test.ensureEqual(anArray.getString(0), "-128", "");
+        Test.ensureEqual(anArray.getString(0), "0", "");
         Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
 
         //tryToFindNumericMissingValue() 
         Test.ensureEqual((new UByteArray(new byte[] {     })).tryToFindNumericMissingValue(), Double.NaN, "");
         Test.ensureEqual((new UByteArray(new byte[] {1, 2 })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UByteArray(new byte[] {-128 })).tryToFindNumericMissingValue(), -128, "");
-        Test.ensureEqual((new UByteArray(new byte[] {127  })).tryToFindNumericMissingValue(),  127, "");
-        Test.ensureEqual((new UByteArray(new byte[] {1, 99})).tryToFindNumericMissingValue(),   99, "");
-        /* */
+        Test.ensureEqual((new UByteArray(new byte[] {-128 })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UByteArray(new byte[] {127  })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UByteArray(new short[]{255  })).tryToFindNumericMissingValue(),        255, "");
+        Test.ensureEqual((new UByteArray(new byte[] {1, 99})).tryToFindNumericMissingValue(),         99, "");
 
+        /* */
     }
 
 }

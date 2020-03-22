@@ -418,7 +418,7 @@ public class EDV {
                 //adjust valid_range
                 //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
                 if (sourceIsUnsigned)
-                    vr = PrimitiveArray.unsignedFactory(destinationDataPAType, vr);
+                    vr = vr.makeUnsignedPA();
                 vr = vr.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
                 combinedAttributes.set("valid_range", vr);
             }
@@ -430,14 +430,14 @@ public class EDV {
         PrimitiveArray vMin = combinedAttributes.get("valid_min"); //attributes are never unsigned
         if (vMin != null) {
             if (sourceIsUnsigned)
-                vMin = PrimitiveArray.unsignedFactory(destinationDataPAType, vMin);
+                vMin = vMin.makeUnsignedPA();
             vMin = vMin.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
             combinedAttributes.set("valid_min", vMin);
         }
         PrimitiveArray vMax = combinedAttributes.get("valid_max"); //attributes are never unsigned
         if (vMax != null) {
             if (sourceIsUnsigned)
-                vMax = PrimitiveArray.unsignedFactory(destinationDataPAType, vMax);
+                vMax = vMax.makeUnsignedPA();
             vMax = vMax.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
             combinedAttributes.set("valid_max", vMax);
         }

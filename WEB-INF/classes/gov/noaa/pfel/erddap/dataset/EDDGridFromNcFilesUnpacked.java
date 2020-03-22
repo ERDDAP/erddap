@@ -1051,9 +1051,9 @@ NcHelper.debugMode = true;
     "-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //palette unpacked as short
+            //palette ubyte
             pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-            Test.ensureEqual(pa.elementTypeString(), "short", "");
+            Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
             results = pa.toString();
             expected = 
     "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";  //unsigned
@@ -1223,9 +1223,9 @@ NcHelper.debugMode = true;
 "-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //palette unpacked as short
+        //palette ubyte
         pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-        Test.ensureEqual(pa.elementTypeString(), "short", "");
+        Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
         results = pa.toString();
         expected = 
 "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
@@ -1626,7 +1626,7 @@ expected =
         String2.log("\n*** EDDGridFromNcFilesUnpacked.test");
         testGenerateDatasetsXml();
         testBasic(deleteCachedDatasetInfo);
-        testUInt16File();
+        testUInt16File();  //trouble
         testMissingValue();
     }
 

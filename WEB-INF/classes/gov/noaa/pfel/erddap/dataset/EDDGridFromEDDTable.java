@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -708,25 +709,25 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 System.arraycopy(axisIndex, 0, oAxisIndex, 0, nav);
                 for (int av = 0; av < nav; av++) {
 
-                    double avDouble = twaPA[av].getDouble(0);                
-                    if (debugMode) String2.log("row=" + row + " av=" + av + " value=" + avDouble);
+                    PAOne twaPAOne = new PAOne(twaPA[av], 0);                
+                    if (debugMode) String2.log("row=" + row + " av=" + av + " value=" + twaPAOne);
                     int navPA = results[av].size();
                     int insertAt;
                     int precision = avPrecision[av];
                     int oIndex = oAxisIndex[av];
                     if (precision == fullPrecision) {
-                        if (results[av].getDouble(oIndex) == avDouble) //same as last row?
+                        if (twaPAOne.equals(results[av], oIndex)) //same as last row?
                             insertAt = oIndex;
                         else
-                            insertAt = results[av].binarySearch(0, navPA - 1, avDouble);
+                            insertAt = results[av].binarySearch(0, navPA - 1, twaPAOne);
                     } else {
-                        if (Math2.almostEqual(precision, results[av].getDouble(oIndex), avDouble)) {
+                        if (twaPAOne.almostEqual(precision, new PAOne(results[av], oIndex))) {
                             insertAt = oIndex;
                         } else {
-                            insertAt = results[av].binaryFindFirstGAE(0, navPA - 1, avDouble,
+                            insertAt = results[av].binaryFindFirstGAE(0, navPA - 1, twaPAOne,
                                 precision);
                             if (insertAt >= navPA || //not close
-                                !Math2.almostEqual(precision, avDouble, results[av].getDouble(insertAt)))
+                                !twaPAOne.almostEqual(precision, new PAOne(results[av], insertAt)))
                                 insertAt = -1;
                         }
                     }
