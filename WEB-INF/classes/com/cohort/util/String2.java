@@ -30,6 +30,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -4461,6 +4464,42 @@ and zoom and pan with controls in
             return Double.NaN;
         }
     }
+
+    /** 
+     * This parses the string to a BigDecimal (or null if trouble).
+     */
+    public static BigDecimal parseBigDecimal(String s) {
+        try {
+            return new BigDecimal(s);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+   
+    /**
+     * This converts the string into a BigInteger in the ULong range (or ULONG_MISSING_VALUE if trouble). 
+     *
+     * return a BigInteger (ULONG_MISSING_VALUE if trouble). 
+     */
+    public static BigInteger parseULong(String s) {
+        if (s == null) 
+            return Math2.ULONG_MAX_VALUE;
+        s = s.trim();
+        if (s.length() == 0)
+            return Math2.ULONG_MAX_VALUE;
+
+        try {
+            BigInteger bi = new BigDecimal(s).round(MathContext.UNLIMITED).toBigInteger();
+            if (bi.compareTo(Math2.ULONG_MIN_VALUE) < 0 ||
+                bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0)
+                return Math2.ULONG_MAX_VALUE;
+            return bi;
+
+        } catch (Exception e) {
+            return Math2.ULONG_MAX_VALUE;
+        }
+    }
+  
 
     /** 
      * DON'T USE THIS; RELY ON THE FIXES AVAILABLE FOR JAVA: 

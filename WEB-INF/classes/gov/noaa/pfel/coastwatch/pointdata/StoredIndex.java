@@ -117,10 +117,10 @@ public class StoredIndex  {
         try {
             results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementPAType, //safe since reading an int
                 0,  //byte in file that values start at 
-                0, nFinite - 1, desiredMin, 5); //precision=5
+                0, nFinite - 1, PAOne.fromDouble(desiredMin), 5); //precision=5
             results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementPAType,
                 0,  //byte in file that values start at 
-                results[0], nFinite - 1, desiredMax, 5); //precision=5
+                results[0], nFinite - 1, PAOne.fromDouble(desiredMax), 5); //precision=5
         } finally {
             raf.close();
         }

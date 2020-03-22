@@ -6584,11 +6584,12 @@ Dataset {
                         PrimitiveArray cpa = axisPAs[constraintCol];
                         String asc = cpa.isAscending();
                         if (asc.length() == 0) {
-                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, constraintMin, 5);
+                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, 
+                                PAOne.fromDouble(constraintMin), 5);
                             if (constraintFirst >= cpa.size())
                                 constraintFirst = -1;
                             else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
-                                cpa.size() - 1, constraintMax, 5);
+                                cpa.size() - 1, PAOne.fromDouble(constraintMax), 5);
                             if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);
@@ -6728,11 +6729,12 @@ Dataset {
                         PrimitiveArray cpa = axisPAs[constraintCol];
                         String asc = cpa.isAscending();
                         if (asc.length() == 0) {
-                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, constraintMin, 5);
+                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, 
+                                PAOne.fromDouble(constraintMin), 5);
                             if (constraintFirst >= cpa.size())
                                 constraintFirst = -1;
                             else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
-                                cpa.size() - 1, constraintMax, 5);
+                                cpa.size() - 1, PAOne.fromDouble(constraintMax), 5);
                             if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);

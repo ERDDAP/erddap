@@ -516,9 +516,15 @@ public class OpendapHelper  {
         } else if (baseType instanceof DInt32)   {
             return new PrimitiveArray[]{
                 new IntArray(   new int[]   {((DInt32)  baseType).getValue()})}; 
+        } else if (baseType instanceof DUInt32)   {
+            return new PrimitiveArray[]{
+                new UIntArray(  new int[]   {((DUInt32) baseType).getValue()})}; 
         } else if (baseType instanceof DInt16)   {
             return new PrimitiveArray[]{
                 new ShortArray( new short[] {((DInt16)  baseType).getValue()})}; 
+        } else if (baseType instanceof DUInt16)   {
+            return new PrimitiveArray[]{
+                new UShortArray( new short[] {((DUInt16) baseType).getValue()})}; 
         } else if (baseType instanceof DByte)    {
             return new PrimitiveArray[]{
                 new ByteArray(  new byte[]  {((DByte)   baseType).getValue()})}; 
@@ -631,46 +637,6 @@ public class OpendapHelper  {
             pa.removeRange(pv.getLength(), pa.size());
         }
         return pa;
-        /*
-        int n = pv.getLength();
-        if (pv instanceof Float32PrimitiveVector) {
-            float a[] = new float[n];
-            Float32PrimitiveVector tpv = (Float32PrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                a[i] = tpv.getValue(i);
-            return new FloatArray(a);
-        }
-        if (pv instanceof Float64PrimitiveVector) {
-            double a[] = new double[n];
-            Float64PrimitiveVector tpv = (Float64PrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                a[i] = tpv.getValue(i);
-            return new DoubleArray(a);
-        } 
-        if (pv instanceof BytePrimitiveVector) {
-            byte a[] = new byte[n];
-            BytePrimitiveVector tpv = (BytePrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                a[i] = tpv.getValue(i);
-            return new ByteArray(a);
-        } 
-        if (pv instanceof Int16PrimitiveVector) {
-            short a[] = new short[n];
-            Int16PrimitiveVector tpv = (Int16PrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                a[i] = tpv.getValue(i);
-            return new ShortArray(a);
-        } 
-        if (pv instanceof Int32PrimitiveVector) {
-            int a[] = new int[n];
-            Int32PrimitiveVector tpv = (Int32PrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                a[i] = tpv.getValue(i);
-            return new IntArray(a);
-        } 
-        throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
-        */
-
     }
 
     /**
@@ -684,11 +650,16 @@ public class OpendapHelper  {
     public static PrimitiveVector getPrimitiveVector(String name, PrimitiveArray pa) 
             throws Exception {
         PrimitiveVector pv;
-        if      (pa instanceof DoubleArray) pv = new Float64PrimitiveVector(new DFloat64(name));
+        if      (pa instanceof DoubleArray ||
+                 pa instanceof LongArray ||
+                 pa instanceof ULongArray)  pv = new Float64PrimitiveVector(new DFloat64(name));
         else if (pa instanceof FloatArray)  pv = new Float32PrimitiveVector(new DFloat32(name));
         else if (pa instanceof IntArray)    pv = new Int32PrimitiveVector(  new DInt32(name));
+        else if (pa instanceof UIntArray)   pv = new UInt32PrimitiveVector( new DUInt32(name));
         else if (pa instanceof ShortArray)  pv = new Int16PrimitiveVector(  new DInt16(name));
-        else if (pa instanceof ByteArray)   pv = new BytePrimitiveVector(   new DByte(name));
+        else if (pa instanceof UShortArray) pv = new UInt16PrimitiveVector( new DUInt16(name));
+        else if (pa instanceof ByteArray)   pv = new BytePrimitiveVector(   new DByte(name)); 
+        else if (pa instanceof UByteArray)  pv = new BytePrimitiveVector(   new DByte(name));
         else throw new Exception(String2.ERROR + "in OpendapHelper.getPrimitiveVector: The PrimitiveArray type=" + 
             pa.elementTypeString() + " is not supported.");
 
@@ -708,11 +679,14 @@ public class OpendapHelper  {
      * @throws Exception if trouble
      */
     public static String getAtomicType(PAType paType) throws Exception {
-        if (paType == PAType.LONG ||   // DAP has no long. This is imperfect; there will be loss of precision
+        if (paType == PAType.LONG ||   // DAP has no long.  This is imperfect; there will be loss of precision
+            paType == PAType.ULONG ||  // DAP has no ulong. This is imperfect; there will be loss of precision
             paType == PAType.DOUBLE) return "Float64";
         if (paType == PAType.FLOAT)  return "Float32";
         if (paType == PAType.INT)    return "Int32";
+        if (paType == PAType.UINT)   return "UInt32";
         if (paType == PAType.SHORT)  return "Int16";
+        if (paType == PAType.USHORT) return "UInt16";
         if (paType == PAType.BYTE)   return "Byte";
         if (paType == PAType.CHAR ||    // DAP has no char, so represent it as a String
             paType == PAType.STRING) return "String";
@@ -788,7 +762,8 @@ public class OpendapHelper  {
                 //String2.log(">> ts=" + ts);
                 sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
             } else if (et == PAType.DOUBLE ||
-                       et == PAType.LONG) {
+                       et == PAType.LONG   ||
+                       et == PAType.ULONG) {
                 //the spec says must be like Ansi C printf, %g format, precision=6
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getDouble(pai);
@@ -843,8 +818,16 @@ public class OpendapHelper  {
             Int16PrimitiveVector tpv = (Int16PrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
+        } else if (pv instanceof UInt16PrimitiveVector) {
+            UInt16PrimitiveVector tpv = (UInt16PrimitiveVector)pv;
+            for (int i = 0; i < n; i++)
+                da[i] = tpv.getValue(i);
         } else if (pv instanceof Int32PrimitiveVector) {
             Int32PrimitiveVector tpv = (Int32PrimitiveVector)pv;
+            for (int i = 0; i < n; i++)
+                da[i] = tpv.getValue(i);
+        } else if (pv instanceof UInt32PrimitiveVector) {
+            UInt32PrimitiveVector tpv = (UInt32PrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
         } else {
@@ -866,11 +849,15 @@ public class OpendapHelper  {
     public static int getInt(PrimitiveVector pv, int index) throws Exception {
         Test.ensureNotNull(pv, "pv is null");
         if (pv instanceof BytePrimitiveVector) 
-            return ((BytePrimitiveVector)pv).getValue(index);
+            return      ((BytePrimitiveVector)pv).getValue(index);
         if (pv instanceof Int16PrimitiveVector) 
-            return ((Int16PrimitiveVector)pv).getValue(index);
+            return      ((Int16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector) 
+            return      ((UInt16PrimitiveVector)pv).getValue(index);
         if (pv instanceof Int32PrimitiveVector) 
-            return ((Int32PrimitiveVector)pv).getValue(index);
+            return      ((Int32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector) 
+            return      ((UInt32PrimitiveVector)pv).getValue(index);
         if (pv instanceof Float32PrimitiveVector) 
             return Math2.roundToInt(((Float32PrimitiveVector)pv).getValue(index));
         if (pv instanceof Float64PrimitiveVector) 
@@ -888,16 +875,20 @@ public class OpendapHelper  {
      */
     public static double getDouble(PrimitiveVector pv, int index) throws Exception {
         Test.ensureNotNull(pv, "pv is null");
-        if (pv instanceof Float32PrimitiveVector) 
-            return ((Float32PrimitiveVector)pv).getValue(index);
-        if (pv instanceof Float64PrimitiveVector) 
-            return ((Float64PrimitiveVector)pv).getValue(index);
-        if (pv instanceof BytePrimitiveVector) 
-            return ((BytePrimitiveVector)pv).getValue(index);
-        if (pv instanceof Int16PrimitiveVector) 
-            return ((Int16PrimitiveVector)pv).getValue(index);
-        if (pv instanceof Int32PrimitiveVector) 
-            return ((Int32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Float32PrimitiveVector) 
+            return       ((Float32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Float64PrimitiveVector) 
+            return       ((Float64PrimitiveVector)pv).getValue(index);
+        if (pv instanceof   BytePrimitiveVector) 
+            return        ((BytePrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Int16PrimitiveVector) 
+            return       ((Int16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector) 
+            return      ((UInt16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Int32PrimitiveVector) 
+            return       ((Int32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector) 
+            return      ((UInt32PrimitiveVector)pv).getValue(index);
         throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
     }
 
@@ -915,12 +906,16 @@ public class OpendapHelper  {
             return "" + ((Float32PrimitiveVector)pv).getValue(index);
         if (pv instanceof Float64PrimitiveVector) 
             return "" + ((Float64PrimitiveVector)pv).getValue(index);
-        if (pv instanceof BytePrimitiveVector) 
-            return "" + ((BytePrimitiveVector)pv).getValue(index);
-        if (pv instanceof Int16PrimitiveVector) 
-            return "" + ((Int16PrimitiveVector)pv).getValue(index);
-        if (pv instanceof Int32PrimitiveVector) 
-            return "" + ((Int32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof   BytePrimitiveVector) 
+            return "" +   ((BytePrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Int16PrimitiveVector) 
+            return "" +  ((Int16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector) 
+            return "" + ((UInt16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof  Int32PrimitiveVector) 
+            return "" +  ((Int32PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector) 
+            return "" + ((UInt32PrimitiveVector)pv).getValue(index);
         //if (pv instanceof StringPrimitiveVector)
         //    return ((StringPrimitiveVector)pv).getValue(index);
         if (pv instanceof BooleanPrimitiveVector)
@@ -939,7 +934,9 @@ public class OpendapHelper  {
         Test.ensureNotNull(bt, "bt is null");
         if (bt instanceof DByte)     return ((DByte)bt).getValue();
         if (bt instanceof DInt16)    return ((DInt16)bt).getValue();
+        if (bt instanceof DUInt16)   return ((DUInt16)bt).getValue();
         if (bt instanceof DInt32)    return ((DInt32)bt).getValue();
+        if (bt instanceof DUInt32)   return ((DUInt32)bt).getValue();
         if (bt instanceof DFloat32)  return Math2.roundToInt(((DFloat32)bt).getValue());
         if (bt instanceof DFloat64)  return Math2.roundToInt(((DFloat64)bt).getValue());
         throw new Exception(String2.ERROR + ": The BaseType is not numeric (" + bt + ").");
@@ -958,7 +955,9 @@ public class OpendapHelper  {
         if (bt instanceof DFloat64)  return ((DFloat64)bt).getValue();
         if (bt instanceof DByte)     return ((DByte)bt).getValue();
         if (bt instanceof DInt16)    return ((DInt16)bt).getValue();
+        if (bt instanceof DUInt16)   return ((DUInt16)bt).getValue();
         if (bt instanceof DInt32)    return ((DInt32)bt).getValue();
+        if (bt instanceof DUInt32)   return ((DUInt32)bt).getValue();
         throw new Exception(String2.ERROR + ": The BaseType is not numeric (" + bt + ").");
     }
 
@@ -975,7 +974,9 @@ public class OpendapHelper  {
         if (bt instanceof DFloat64)  return "" + ((DFloat64)bt).getValue();
         if (bt instanceof DByte)     return "" + ((DByte)bt).getValue();
         if (bt instanceof DInt16)    return "" + ((DInt16)bt).getValue();
+        if (bt instanceof DUInt16)   return "" + ((DUInt16)bt).getValue();
         if (bt instanceof DInt32)    return "" + ((DInt32)bt).getValue();
+        if (bt instanceof DUInt32)   return "" + ((DUInt32)bt).getValue();
         if (bt instanceof DString)   return ((DString)bt).getValue();
         if (bt instanceof DBoolean)  return ((DBoolean)bt).getValue()? "true" : "false";
         throw new Exception(String2.ERROR + ": Unknown BaseType (" + bt + ").");
@@ -992,9 +993,11 @@ public class OpendapHelper  {
         Test.ensureNotNull(pv, "pv is null");
         if (pv instanceof Float32PrimitiveVector)  return PAType.FLOAT;
         if (pv instanceof Float64PrimitiveVector)  return PAType.DOUBLE;
-        if (pv instanceof BytePrimitiveVector)     return PAType.BYTE;
+        if (pv instanceof BytePrimitiveVector)     return PAType.BYTE; //technically should be UByte
         if (pv instanceof Int16PrimitiveVector)    return PAType.SHORT;
+        if (pv instanceof UInt16PrimitiveVector)   return PAType.USHORT;
         if (pv instanceof Int32PrimitiveVector)    return PAType.INT;
+        if (pv instanceof UInt32PrimitiveVector)   return PAType.UINT;
         if (pv instanceof BaseTypePrimitiveVector) return PAType.STRING; //???
         if (pv instanceof BooleanPrimitiveVector)  return PAType.BOOLEAN;
         throw new Exception(String2.ERROR + ": Unknown PrimitiveVector (" + pv + ").");
@@ -1129,7 +1132,9 @@ public class OpendapHelper  {
                 baseType instanceof DString  ||
                 baseType instanceof DByte    ||
                 baseType instanceof DInt16   ||
+                baseType instanceof DUInt16  ||
                 baseType instanceof DInt32   ||
+                baseType instanceof DUInt32  ||
                 baseType instanceof DFloat32 ||
                 baseType instanceof DFloat64 ||
                 baseType instanceof DBoolean;
@@ -1137,7 +1142,7 @@ public class OpendapHelper  {
 
     /** 
      * This finds all 
-     *   scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16, DInt32, DString) 
+     *   scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16, DUInt16, DInt32, DUInt32, DString) 
      *   and multidimensional (DGrid, DArray) variables.
      * This won't find DVectors, DLists, DStructures or DSequences.
      *

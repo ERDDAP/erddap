@@ -2535,7 +2535,8 @@ String expected =
         time = System.currentTimeMillis() - time;
         long expTime = 3563;
         String2.log("loadDataset time=" + time + "ms (expected=" + expTime + "ms)");
-        Test.ensureTrue(time < expTime * 2, "");
+        if (time > expTime * 2) 
+            String2.pressEnterToContinue("Too slow.");
         Object o2[];
         String dir = EDStatic.fullTestCacheDirectory;
         Table fileTable;
@@ -2559,7 +2560,7 @@ String expected =
 "index.html,1581534868000,32356,\n";  //last modified is millis (stored as long)
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe13, SUVI-L1b-Fe131, SUVI-L1b-Fe17, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
@@ -2688,7 +2689,9 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe13/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe17/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
@@ -2705,7 +2708,9 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe13/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe17/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +

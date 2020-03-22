@@ -4036,7 +4036,7 @@ String2.log(marCatTable.toString());
         int nRows = dataMarCatPa.size();
         for (int row = 0; row < nRows; row++) {
             int dataMarCat = dataMarCatPa.getInt(row);
-            int po = marCatPa.binarySearch(0, marCatPaSize - 1, dataMarCat);
+            int po = marCatPa.binarySearch(0, marCatPaSize - 1, PAOne.fromInt(dataMarCat));
             if (po < 0) {
 //marCat=7 isn't defined
                 String2.log("dataMarCat=" + dataMarCat + " not in marCatPa");

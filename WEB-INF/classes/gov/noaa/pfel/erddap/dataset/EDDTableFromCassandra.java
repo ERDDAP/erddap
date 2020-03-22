@@ -1343,23 +1343,28 @@ public class EDDTableFromCassandra extends EDDTable{
                 } else if (edv.isBoolean()) {
                     boundStatement.setBool(i, 
                         (usePK? pa.getInt(pkdRow) == 1 : String2.parseBoolean(conVal)));
-                } else if (tPAType == PAType.DOUBLE) {
+                } else if (tPAType == PAType.DOUBLE ||
+                           tPAType == PAType.ULONG) {  //trouble: loss of precision
                     boundStatement.setDouble(i, 
                         (usePK? pa.getDouble(pkdRow) : String2.parseDouble(conVal)));
                 } else if (tPAType == PAType.FLOAT) {
                     boundStatement.setFloat(i, 
                         (usePK? pa.getFloat(pkdRow) : String2.parseFloat(conVal)));
-                } else if (tPAType == PAType.INT ||    
-                         tPAType == PAType.SHORT || 
-                         tPAType == PAType.BYTE) {
+                } else if (tPAType == PAType.LONG ||
+                           tPAType == PAType.UINT) {  //???
+                    boundStatement.setLong(i, 
+                        (usePK? pa.getLong(pkdRow) : String2.parseLong(conVal)));
+                } else if (tPAType == PAType.INT  ||    
+                           tPAType == PAType.SHORT  || 
+                           tPAType == PAType.USHORT ||  //???
+                           tPAType == PAType.BYTE   ||
+                           tPAType == PAType.UBYTE) {   //???
                     boundStatement.setInt(i, 
                         (usePK? pa.getInt(pkdRow) : String2.parseInt(conVal))); 
                 } else {
                     String val = usePK? pa.getString(pkdRow) : conVal;
                     if (tPAType == PAType.STRING)   
                         boundStatement.setString(i, val);
-                    else if (tPAType == PAType.LONG)
-                        boundStatement.setLong(  i, String2.parseLong(val));
                     else if (tPAType == PAType.CHAR)
                         boundStatement.setString(i, 
                             val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
@@ -1514,12 +1519,19 @@ public class EDDTableFromCassandra extends EDDTable{
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addLong(list.get(i)); 
-                    } else { //erddap byte, short, int
+                    } else if (tPAType == PAType.INT ||
+                               tPAType == PAType.SHORT ||
+                               tPAType == PAType.BYTE) {   
                         List<Integer> list = row.getList(rsCol, Integer.class);
                         tListSize = list.size();
                         for (int i = 0; i < tListSize; i++)
                             pa.addInt(list.get(i)); 
+                    } else {  //PAType.UINT, PAType.USHORT, PAType.UBYTE 
+                        //I think C* doesn't support unsigned data types,
+                        //so no variable in ERDDAP should be an unsigned type
+                        throw new RuntimeException("Unexpected PAType=" + tPAType);
                     }
+
 
                     //ensure valid
                     if (listSize == -1) {
@@ -1569,8 +1581,14 @@ public class EDDTableFromCassandra extends EDDTable{
                         pa.addFloat(row.getFloat(rsCol)); 
                     } else if (tPAType == PAType.LONG) {
                         pa.addLong(row.getLong(rsCol)); 
-                    } else { //erddap byte, short, int
+                    } else if (tPAType == PAType.INT ||
+                               tPAType == PAType.SHORT ||
+                               tPAType == PAType.BYTE) {   
                         pa.addInt(row.getInt(rsCol)); 
+                    } else { //PAType.UINT, PAType.USHORT, PAType.UBYTE
+                        //I think C* doesn't support unsigned data types,
+                        //so no variable in ERDDAP should be an unsigned type
+                        throw new RuntimeException("Unexpected PAType=" + tPAType);
                     }
                 }
                 maxNRows = Math.max(maxNRows, pa.size());

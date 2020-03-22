@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -322,9 +323,10 @@ if (lonIndex < nAv - 1)
 // old: [ignored] ||      0,  90, 179 ||      180, 270,  359           || [ignored]
 // new:                                      -180, -90,   -1 insert359 || insert0,  0, 90, 179 
         //all of the searches use EXACT math 
+        PAOne clvPAOne = new PAOne(childLonValues);
         if (childLon.destinationMin() < 180) {
-            sloni0   = childLonValues.binaryFindFirstGE(0,     nChildLonValues - 1,   0); //first index >=0
-            sloni179 = childLonValues.binaryFindLastLE(sloni0, nChildLonValues - 1, 180); //last index <180
+            sloni0   = childLonValues.binaryFindFirstGE(0,     nChildLonValues - 1, clvPAOne.setDouble(  0)); //first index >=0
+            sloni179 = childLonValues.binaryFindLastLE(sloni0, nChildLonValues - 1, clvPAOne.setDouble(180)); //last index <180
             if (childLonValues.getDouble(sloni179) == 180)
                 sloni179--;
         } else {
@@ -335,7 +337,7 @@ if (lonIndex < nAv - 1)
         if (childLonValues.getDouble(sloni180) > 360)
             throw new RuntimeException(errorInMethod + 
                 "There are no child longitude values in the range 180 to 360!");
-        sloni359 = childLonValues.binaryFindLastLE(sloni180, nChildLonValues - 1, 360); //last index <=360
+        sloni359 = childLonValues.binaryFindLastLE(sloni180, nChildLonValues - 1, clvPAOne.setDouble(360)); //last index <=360
         if (childLonValues.getDouble(sloni359) == 360 && //there is a value=360
             sloni359 > sloni180 &&  //and it isn't the only value in the range 180 to 360...
             sloni0 >= 0 &&                         //and if there is a sloni0

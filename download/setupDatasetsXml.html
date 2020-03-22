@@ -2748,9 +2748,11 @@ a remote ERDDAP server.
     <li>The redirect is transparent to the user regardless of the client software
       (a browser or any other software or command line tool).
      </ul>
-  <li>You can tell ERDDAP not to redirect any user requests by setting 
+  <li><a class="selfLink" id="redirect" href="#redirect" rel="bookmark">You can tell ERDDAP</a>
+    not to redirect any user requests by setting 
     <kbd>&lt;redirect&gt;false&lt;/redirect&gt;</kbd>,
-    but this negates most of the advantages of the ...FromErddap dataset type.
+    but this negates most of the advantages of the ...FromErddap dataset type 
+    (notably, dispersing the load on the front end ERDDAP to the remote/backend ERDDAP).
     <br>&nbsp;
   </ul>
 
@@ -2935,8 +2937,7 @@ allowing those would lead to inconsistencies:
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  &lt;redirect&gt;true(default)|false&lt;/redirect&gt; &lt;!-- 0 or 1; false tells 
-    ERDDAP never to redirect a user's request --&gt;
+  <a rel="help" href="#redirect">&lt;redirect&gt;</a>true(default)|false&lt;/redirect&gt; &lt;!-- 0 or 1; --&gt;
 
 &lt;/dataset&gt;
 </pre>
@@ -2955,8 +2956,7 @@ allowing those would lead to inconsistencies:
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  &lt;redirect&gt;true(default)|false&lt;/redirect&gt; &lt;!-- 0 or 1; false tells 
-    ERDDAP never to redirect a user's request --&gt;
+  <a rel="help" href="#redirect">&lt;redirect&gt;</a>true(default)|false&lt;/redirect&gt; &lt;!-- 0 or 1; --&gt;
 &lt;/dataset&gt;
 </pre>
 &nbsp;

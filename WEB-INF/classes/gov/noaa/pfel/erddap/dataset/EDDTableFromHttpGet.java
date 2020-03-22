@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -385,7 +386,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             //String2.log(">>  timestamp values=" + table.getColumn(timestampColi));
 
             int row = table.getColumn(timestampColi).binaryFindFirstGE(0, nRows - 1, 
-                timestampSeconds + 0.0005); // 1/2 milli later to avoid rounding problems, and because I just want > (not GE)
+                PAOne.fromDouble(timestampSeconds + 0.0005)); // 1/2 milli later to avoid rounding problems, and because I just want > (not GE)
             //String2.log("  timestamp constraint removed " + (nRows-row) + " rows. Now nRows=" + row);
             if (row < nRows) {
                 table.removeRows(row, nRows);  //exclusive

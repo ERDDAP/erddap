@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -439,12 +440,12 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (CLASS_INDEX_STRING) of the element type.
+     * This returns the class index (PATYPE_INDEX_STRING) of the element type.
      *
-     * @return the class index (CLASS_INDEX_STRING) of the element type.
+     * @return the class index (PATYPE_INDEX_STRING) of the element type.
      */
     public int elementTypeIndex() {
-        return CLASS_INDEX_STRING;
+        return PATYPE_INDEX_STRING;
     }
 
     /**
@@ -678,6 +679,16 @@ public class StringArray extends PrimitiveArray {
      */
     public void addLong(long value) {
         add(value == Long.MAX_VALUE? "" : String.valueOf(value));
+    }
+
+    /**
+     * This adds n longs to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNLongs(int n, long value) {
+        addN(n, value == Long.MAX_VALUE? "" : String.valueOf(value));
     }
 
     /**
@@ -948,6 +959,19 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * This gets a specified element.
+     *
+     * @param index 0 ... size-1
+     * @return the specified element
+     */
+    public StringHolder getStringHolder(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in StringArray.getStringHolder: index (" + 
+                index + ") >= size (" + size + ").");
+        return array[index];
+    }
+
+    /**
      * This sets a specified element.
      *
      * @param index 0 ... size-1
@@ -1003,6 +1027,28 @@ public class StringArray extends PrimitiveArray {
         set(index, i == Long.MAX_VALUE? "" : String.valueOf(i));
     }
 
+    /**
+     * Return a value from the array as a ulong.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a ulong. 
+     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     */
+    public BigInteger getULong(int index) {
+        return String2.parseULong(get(index));
+    }
+
+    /**
+     * Set a value in the array as a ulong.
+     * 
+     * @param index the index number 0 .. size-1
+     * @param i the value. For numeric PrimitiveArray's, it is narrowed 
+     *   if needed by methods like Math2.narrowToByte(long).
+     */
+    public void setULong(int index, BigInteger i) {
+        set(index, i == null? "" : i.toString());
+    }
+
 
     /**
      * Return a value from the array as a float.
@@ -1049,12 +1095,26 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * Return a value from the array as a String.
+     * Return a value from the array as a String (where the cohort missing value
+     * appears as "", not a value).
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns array[index].
+     *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
+        return get(index);
+    }
+
+    /**
+     * Return a value from the array as a String (and the cohort missing value
+     * appears as a value, not "").
+     * 
+     * @param index the index number 0 .. 
+     * @return For numeric types, this returns (String.valueOf(ar[index])).
+     *   If this PA is unsigned, this method retuns the unsigned value.
+     */
+    public String getSimpleString(int index) {
         return get(index);
     }
 
@@ -1325,42 +1385,47 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This compares the values in row1 and row2 for SortComparator,
+     * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
-     * Currently, this does not checking of the range of index1 and index2,
+     * Currently, this does not range check index1 and index2,
      * so the caller should be careful.
      * Currently this uses String.compareTo, which may not be the desired comparison,
      * but which is easy to mimic in other situations.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return returns a negative integer, zero, or a positive integer if the 
      *   value at index1 is less than, equal to, or greater than 
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, int index2) {
-        return array[index1].compareTo(array[index2]);
+    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+        StringHolder otherSH = otherPA.elementType() == PAType.STRING?
+            ((StringArray)otherPA).getStringHolder(index2) :
+            new StringHolder(otherPA.getString(index2));
+
+        return stringHolderComparator.compare(getStringHolder(index1), otherSH);
     }
 
     /**
-     * This is like compare(), except for StringArray it is caseInsensitive.
+     * This is like compare(), except for CharArray and StringArray it is fancy caseInsensitive.
      *
      * @param index1 an index number 0 ... size-1
+     * @param otherPA the other PrimitiveArray which must be the same (or close) PAType.
      * @param index2 an index number 0 ... size-1
      * @return  a negative integer, zero, or a positive integer if the 
      * value at index1 is less than, equal to, or greater than 
      * the value at index2.
      */
-    public int compareIgnoreCase(int index1, int index2) {
-        StringHolder s1 = array[index1];
-        StringHolder s2 = array[index2];
-        int c = s1.compareToIgnoreCase(s2);
-        if (c != 0) 
-            return c;
-        return s1.compareTo(s2);
+    public int compareIgnoreCase(int index1, PrimitiveArray otherPA, int index2) {
+        StringHolder sh2 = otherPA.elementType() == PAType.STRING?
+            ((StringArray)otherPA).getStringHolder(index2) :
+            new StringHolder(otherPA.getString(index2));
+
+        return array[index1].compareToIgnoreCase(sh2);
     }
 
 
@@ -2524,40 +2589,6 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(0), "", "");
         anArray.clear();
 
-        //unsignedFactory, which uses unsignedAppend
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
-        anArray.clear();        
-
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
-        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
-        anArray.clear();        
-
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
-        anArray.clear();        
-
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            // 0, 1,    2147483647,    2147483648,    4294967295
-            "0.0, 1.0, 2.147483647E9, 2.147483648E9, 4.294967295E9", ""); //precise
-        anArray.clear();        
-
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            "0.0, 1.0, 9.223372036854776E18, 9.223372036854776E18, 1.8446744073709552E19", ""); //rounded/imprecise
-        anArray.clear();        
-
-        anArray = (StringArray)unsignedFactory(PAType.STRING, 
-            new FloatArray(new float[] {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, -1}));
-        Test.ensureEqual(anArray.toString(), 
-            "0.0, 1.0, 3.4028235E38, -3.4028235E38, -1.0", ""); 
-        anArray.clear();        
 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add("1234.5");

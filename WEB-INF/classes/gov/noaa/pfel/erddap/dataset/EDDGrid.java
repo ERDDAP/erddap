@@ -11,6 +11,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -4560,7 +4561,7 @@ public abstract class EDDGrid extends EDD {
                         for (int av = 0; av < nAv - 1; av++)
                             writer.write("[" + current[av] + "]");
                     }
-                    writer.write(", " + partialGda.getDataValueAsString(0));
+                    writer.write(", " + partialGda.getDataValueAsPAOne(0, new PAOne(PAType.STRING)));
                 }
 
                 //send the axis data
@@ -5141,9 +5142,7 @@ Attributes {
                 MessageFormat.format(EDStatic.queryError1Var, ".esriAscii"));
         EDV edv = gridDataAccessor.dataVariables()[0];
         PAType edvPAType = edv.destinationDataPAType();
-        boolean isIntType = !edvPAType.equals(PAType.FLOAT) && !edvPAType.equals(PAType.DOUBLE) &&
-            !edvPAType.equals(PAType.STRING);
-        boolean isFloatType = edvPAType.equals(PAType.FLOAT);
+        PAOne  edvPAOne = new PAOne(edvPAType);
 
         //check that request meets ESRI restrictions
         PrimitiveArray lonPa = null, latPa = null;
@@ -5234,15 +5233,14 @@ Attributes {
 
             //write values from row to row, top to bottom
             Arrays.fill(current, 0);  //manipulate indices in current[]
+
             for (int tLat = 0; tLat < nLat; tLat++) {
                 current[latIndex] = flipY? tLat : nLat - tLat -1;
                 for (int tLon = 0; tLon < nLon; tLon++) {
                     current[lonIndex] = flipX? nLon - tLon - 1 : tLon;
-                    double d = gdra.getDataValueAsDouble(current, 0);
-                    if (Double.isNaN(d)) writer.write(NaNString);
-                    else if (isIntType)  writer.write("" + Math2.roundToLong(d));
-                    else if (isFloatType)writer.write("" + (float)d); //it isn't NaN
-                    else                 writer.write("" + d);
+                    gdra.getDataValueAsPAOne(current, 0, edvPAOne);
+                    String s = edvPAOne.toString();
+                    writer.write(s.equals("") || s.equals("NaN")? NaNString : s);
                     writer.write(tLon == nLon - 1? '\n' : ' ');
                 }
             }
@@ -6206,11 +6204,15 @@ Attributes {
                 table.addColumn(vars[1].destinationName(), ypa);
                 table.addColumn(vars[2].destinationName(), zpa);
                 table.addColumn(vars[3].destinationName(), tpa);
+                PAOne xPAOne = new PAOne(xpa);
+                PAOne yPAOne = new PAOne(ypa);
+                PAOne zPAOne = new PAOne(zpa);
+                PAOne tPAOne = new PAOne(tpa);
                 while (gda.increment()) {
-                    xpa.addDouble(gda.getAxisValueAsDouble(xAxisIndex));
-                    ypa.addDouble(gda.getAxisValueAsDouble(yAxisIndex));
-                    zpa.addDouble(gda.getDataValueAsDouble(0));
-                    tpa.addDouble(gda.getDataValueAsDouble(1));
+                    gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
+                    gda.getAxisValueAsPAOne(yAxisIndex, yPAOne).addTo(ypa);
+                    gda.getDataValueAsPAOne(0,          zPAOne).addTo(zpa);
+                    gda.getDataValueAsPAOne(1,          tPAOne).addTo(tpa);
                 }
                 if (Double.isNaN(vectorStandard)) {
                     double stats1[] = zpa.calculateStats();
@@ -6257,10 +6259,13 @@ Attributes {
                 table.addColumn(vars[0].destinationName(), xpa);
                 table.addColumn(vars[1].destinationName(), ypa);
                 table.addColumn(vars[2].destinationName(), zpa);
+                PAOne xPAOne = new PAOne(xpa);
+                PAOne yPAOne = new PAOne(ypa);
+                PAOne zPAOne = new PAOne(zpa);
                 while (gda.increment()) {
-                    xpa.addDouble(gda.getAxisValueAsDouble(xAxisIndex));
-                    ypa.addDouble(gda.getDataValueAsDouble(0));
-                    zpa.addDouble(gda.getDataValueAsDouble(1));
+                    gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
+                    gda.getDataValueAsPAOne(0,          yPAOne).addTo(ypa);
+                    gda.getDataValueAsPAOne(1,          zPAOne).addTo(zpa);
                 }
 
                 String varInfo =  
@@ -6442,25 +6447,28 @@ Attributes {
                     if (nSections < 0 || nSections >= 100)               nSections = -1;
                 }
 
+                PAOne xpaPAOne = new PAOne(xpa);
+                PAOne ypaPAOne = new PAOne(ypa);
+                PAOne zpaPAOne = zpa == null? null : new PAOne(zpa);
                 if (png && drawLegend.equals(LEGEND_ONLY) && 
                     (vars[2] == null ||
                      (palette.length() > 0 && !Double.isNaN(paletteMin) && !Double.isNaN(paletteMax)))) {
 
                     //legend=Only and (no color var or palette range is known), so don't need to get the data 
                     if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
-                    xpa.addDouble(Double.NaN);
-                    ypa.addDouble(Double.NaN);
+                    xpaPAOne.setDouble(Double.NaN).addTo(xpa);
+                    ypaPAOne.setDouble(Double.NaN).addTo(ypa);
                     if (vars[2] != null) 
-                        zpa.addDouble(Double.NaN);
+                        zpaPAOne.setDouble(Double.NaN).addTo(zpa);
 
                 } else {
                     //need to get the data
                     while (gda.increment()) {
-                        xpa.addDouble(gda.getAxisValueAsDouble(xAxisIndex));
-                        ypa.addDouble(yAxisIndex >= 0? gda.getAxisValueAsDouble(yAxisIndex) : 
-                            gda.getDataValueAsDouble(0));
+                        gda.getAxisValueAsPAOne(xAxisIndex, xpaPAOne).addTo(xpa);
+                        if (yAxisIndex >= 0) gda.getAxisValueAsPAOne(yAxisIndex, ypaPAOne).addTo(ypa); 
+                        else                 gda.getDataValueAsPAOne(0,          ypaPAOne).addTo(ypa);
                         if (vars[2] != null) 
-                            zpa.addDouble(gda.getDataValueAsDouble(yAxisIndex >= 0? 0 : 1)); //yAxisIndex>=0 is true if y is axisVariable
+                            gda.getDataValueAsPAOne(yAxisIndex >= 0? 0 : 1, zpaPAOne).addTo(zpa); //yAxisIndex>=0 is true if y is axisVariable
                     }
                 }
 
@@ -7863,14 +7871,25 @@ Attributes {
 
         //do the second part here 
         //note:  calling increment() on column-major gda returns data in column-major order
-        if      (elementPAType == PAType.DOUBLE) while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
-        else if (elementPAType == PAType.FLOAT)  while (gda.increment()) stream.writeFloat( gda.getDataValueAsFloat(0));
-        else if (elementPAType == PAType.LONG)   while (gda.increment()) stream.writeDouble(gda.getDataValueAsDouble(0)); 
-        else if (elementPAType == PAType.INT)    while (gda.increment()) stream.writeInt(   gda.getDataValueAsInt(0));
-        else if (elementPAType == PAType.SHORT)  while (gda.increment()) stream.writeShort( gda.getDataValueAsInt(0));
-        else if (elementPAType == PAType.BYTE)   while (gda.increment()) stream.writeByte(  gda.getDataValueAsInt(0));
-        else if (elementPAType == PAType.CHAR)   while (gda.increment()) stream.writeChar(  gda.getDataValueAsInt(0));
-        //else if (elementPAType == PAType.STRING) ...
+
+        //it is important to write the data to the stream as the correct type
+        PAOne paOne = new PAOne(
+//2020-03-20 I think Matlab fully supports all these data types as is. See my Matlab class.
+//            elementPAType == PAType.LONG    ||
+//            elementPAType == PAType.ULONG? 
+//                PAType.DOUBLE : //loss of precision: because old matlab format doesn't support longs
+//            elementPAType == PAType.CHAR    ||
+//            elementPAType == PAType.BYTE    ||
+//            elementPAType == PAType.UBYTE   ||
+//            elementPAType == PAType.SHORT   ||
+//            elementPAType == PAType.USHORT  ||
+//            elementPAType == PAType.INT     ||
+//            elementPAType == PAType.UINT? //trouble: matlab user probably doesn't want/expect UINT stored as INT
+//                PAType.INT : //trouble: is this true: old matlab format stores smaller int types as ints  ???
+                elementPAType);   
+
+        while (gda.increment()) 
+            gda.getDataValueAsPAOne(0, paOne).writeToDOS(stream); 
 
         //pad data to 8 byte boundary
         int i = nDataBytes % 8;
@@ -8778,22 +8797,21 @@ Attributes {
         boolean isDoubleDv[] = new boolean[nDv];
         boolean isFloatDv[]  = new boolean[nDv];
         int nBufferRows = tableWriterNBufferRows;
+        PAOne avPAOne[] = new PAOne[nAv];
         for (int av = 0; av < nAv; av++) {
             EDV edv = axisVariables[av];
             PAType tPAType = edv.destinationDataPAType();
-            isDoubleAv[av] = tPAType == PAType.DOUBLE || tPAType == PAType.LONG;
-            isFloatAv[av]  = tPAType == PAType.FLOAT;
+            avPAOne[av] = new PAOne(tPAType);
             avPa[av] = PrimitiveArray.factory(tPAType, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(av, edv.destinationName(), avPa[av], 
                 gridDataAccessor.axisAttributes(av)); //(Attributes)(edv.combinedAttributes().clone());
         }
+        PAOne dvPAOne[] = new PAOne[nDv];
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = queryDataVariables[dv];
             PAType tPAType = edv.destinationDataPAType();
-            isStringDv[dv] = tPAType == PAType.STRING;
-            isDoubleDv[dv] = tPAType == PAType.DOUBLE || tPAType == PAType.LONG;
-            isFloatDv[dv]  = tPAType == PAType.FLOAT;
+            dvPAOne[dv] = new PAOne(tPAType);
             dvPa[dv] = PrimitiveArray.factory(tPAType, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(nAv + dv, edv.destinationName(), dvPa[dv], 
@@ -8804,18 +8822,12 @@ Attributes {
         int tRows = 0;
         while (gridDataAccessor.increment()) {
             //add a row of data to the table
-            for (int av = 0; av < nAv; av++) {
-                if      (isDoubleAv[av]) avPa[av].addDouble(gridDataAccessor.getAxisValueAsDouble(av));
-                else if (isFloatAv[av])  avPa[av].addFloat( gridDataAccessor.getAxisValueAsFloat(av));
-                else                     avPa[av].addInt(   gridDataAccessor.getAxisValueAsInt(av));
-            }
+            for (int av = 0; av < nAv; av++) 
+                gridDataAccessor.getAxisValueAsPAOne(av, avPAOne[av]).addTo(avPa[av]);
 
-            for (int dv = 0; dv < nDv; dv++) {
-                if      (isStringDv[dv]) dvPa[dv].addString(gridDataAccessor.getDataValueAsString(dv));
-                else if (isDoubleDv[dv]) dvPa[dv].addDouble(gridDataAccessor.getDataValueAsDouble(dv));
-                else if (isFloatDv[dv])  dvPa[dv].addFloat( gridDataAccessor.getDataValueAsFloat(dv));
-                else                     dvPa[dv].addInt(   gridDataAccessor.getDataValueAsInt(dv));
-            }
+            for (int dv = 0; dv < nDv; dv++) 
+                gridDataAccessor.getDataValueAsPAOne(dv, dvPAOne[dv]).addTo(dvPa[dv]);
+
             tRows++;
 
             //write the table 
