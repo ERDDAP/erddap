@@ -58,8 +58,15 @@ public class LongArray extends PrimitiveArray {
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
-    public double missingValue() {
+    public double missingValueAsDouble() {
         return Long.MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index equals the cohort missingValue. 
+     */
+    public boolean isMissingValue(int index) {
+        return get(index) == Long.MAX_VALUE;
     }
 
     /**
@@ -105,12 +112,33 @@ public class LongArray extends PrimitiveArray {
         size = anArray.length;
     }
 
-    /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "" + Long.MIN_VALUE;}
+    /**
+     * This makes a LongArray from the comma-separated values.
+     * <br>null becomes pa.length() == 0.
+     * <br>"" becomes pa.length() == 0.
+     * <br>" " becomes pa.length() == 1.
+     * <br>See also PrimitiveArray.csvFactory(paType, csv);
+     *
+     * @param csv the comma-separated-value string
+     * @return a LongArray from the comma-separated values.
+     */
+    public static LongArray fromCSV(String csv) {
+        return (LongArray)PrimitiveArray.csvFactory(PAType.LONG, csv);
+    }
 
-    /** The maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String MAXEST_VALUE() {return "" + (Long.MAX_VALUE - 1);}
+    
+    /** This returns a new PAOne with the minimum value that can be held by this class. 
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b for ByteArray. 
+     */
+    public PAOne MINEST_VALUE() {return PAOne.fromLong(Long.MIN_VALUE);}
+
+    /** This returns a new PAOne with the maximum value that can be held by this class 
+     *   (not including the cohort missing value). 
+     *
+     * @return a new PAOne with the maximum value that can be held by this class, e.g., 126 for ByteArray. 
+     */
+    public PAOne MAXEST_VALUE() {return PAOne.fromLong(Long.MAX_VALUE - 1);}
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -122,11 +150,11 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the hashcode for this byteArray (dependent only on values,
+     * This returns the hashcode for this LongArray (dependent only on values,
      * not capacity).
      * WARNING: the algorithm used may change in future versions.
      *
-     * @return the hashcode for this byteArray (dependent only on values,
+     * @return the hashcode for this LongArray (dependent only on values,
      * not capacity)
      */
     public int hashCode() {
@@ -195,12 +223,22 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (PATYPE_INDEX_LONG) of the element type.
+     * This returns the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType.
      *
-     * @return the class index (PATYPE_INDEX_LONG) of the element type.
      */
-    public int elementTypeIndex() {
-        return PATYPE_INDEX_LONG;
+    public PAType needPAType(PAType tPAType) {
+        //if tPAType is smaller or same, return this.PAType
+        if (tPAType == PAType.BYTE ||
+            tPAType == PAType.UBYTE ||
+            tPAType == PAType.SHORT ||
+            tPAType == PAType.USHORT ||
+            tPAType == PAType.INT ||
+            tPAType == PAType.UINT ||
+            tPAType == PAType.LONG) return PAType.LONG;
+
+        //if sideways.   ULONG, FLOAT, DOUBLE, CHAR, STRING
+        return PAType.STRING;
     }
 
     /**
@@ -285,6 +323,26 @@ public class LongArray extends PrimitiveArray {
      */
     public void atInsertString(int index, String value) {
         atInsert(index, String2.parseLong(value));
+    }
+
+    /**
+     * This adds PAOne's value to the array.
+     *
+     * @param value the value, as a PAOne (or null == MISSING_VALUE).
+     */
+    public void addPAOne(PAOne value) {
+        add(value == null? Long.MAX_VALUE : value.getLong());
+    }
+
+    /**
+     * This adds n PAOne's to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a PAOne (or null).
+     */
+    public void addNPAOnes(int n, PAOne value) {
+        addN(n, value == null? Long.MAX_VALUE : value.getLong());
     }
 
     /**
@@ -547,6 +605,8 @@ public class LongArray extends PrimitiveArray {
      * This returns an array (perhaps 'array') which has 'size' elements.
      *
      * @return an array (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public long[] toArray() {
         if (array.length == size)
@@ -562,6 +622,8 @@ public class LongArray extends PrimitiveArray {
      * elements.
      *
      * @return a primitive[] (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public Object toObjectArray() {
         return toArray();
@@ -672,7 +734,7 @@ public class LongArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
      */
     public BigInteger getULong(int index) {
         long b = get(index);
@@ -748,7 +810,8 @@ public class LongArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * FloatArray converts float to double in a simplistic way.
-     * For this variant: Integer source values will be treated as unsigned.
+     * For this variant: Integer source values will be treated as unsigned
+     * (e.g., a ByteArray with -1 returns 255).
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -799,18 +862,6 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    public String getSimpleString(int index) {
-        return String.valueOf(get(index));
-    }
-
-    /**
      * Return a value from the array as a String suitable for a JSON file. 
      * char returns a String with 1 character.
      * String returns a json String with chars above 127 encoded as \\udddd.
@@ -833,8 +884,7 @@ public class LongArray extends PrimitiveArray {
      * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a double. String values are parsed
-     *   with String2.parseDouble and so may return Double.NaN.
+     * @return the value as a String. 
      */
     public String getRawString(int index) {
         return String.valueOf(get(index));
@@ -1142,7 +1192,7 @@ public class LongArray extends PrimitiveArray {
     /**
      * This appends the data in another pa to the current data.
      * WARNING: information may be lost from the incoming pa if this
-     * primitiveArray is of a simpler type.
+     * primitiveArray is of a smaller type; see needPAType().
      *
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.roundToLong.
@@ -1174,7 +1224,7 @@ public class LongArray extends PrimitiveArray {
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof LongArray) {
             System.arraycopy(((LongArray)pa).array, 0, array, size, otherSize);
-        } else if (pa instanceof StringArray) {
+        } else if (pa.elementType() == PAType.STRING) {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = pa.getLong(i); //just parses the string
         } else {
@@ -1356,16 +1406,26 @@ public class LongArray extends PrimitiveArray {
         String2.log("*** Testing LongArray");
 /* for releases, this line should have open/close comment */
 
+        //smallest long and biggest long which can round-trip to double:
+        //9007199254740992 (~9e15) see https://www.mathworks.com/help/matlab/ref/flintmax.html
+        //-9007199254740992  see https://www.mathworks.com/help/matlab/ref/flintmax.html
+
+
+        LongArray anArray = LongArray.fromCSV(      " -9223372036854775808, -1,0,  9223372036854775806,  ,                   9223372036854775807, 9999999999999999999 ");
+        Test.ensureEqual(anArray.toString(),         "-9223372036854775808, -1, 0, 9223372036854775806, 9223372036854775807, 9223372036854775807, 9223372036854775807", "");
+        Test.ensureEqual(anArray.toNccsvAttString(), "-9223372036854775808L,-1L,0L,9223372036854775806L,9223372036854775807L,9223372036854775807L,9223372036854775807L", "");
+
         //** test default constructor and many of the methods
-        LongArray anArray = new LongArray();
+        anArray = new LongArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), Long.MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue().getRawDouble(), Long.MAX_VALUE, ""); //both round to same double value
         anArray.addString("");
         Test.ensureEqual(anArray.get(0),               Long.MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawDouble(0),      (double)Long.MAX_VALUE, "");
         Test.ensureEqual(anArray.getUnsignedDouble(0), (double)Long.MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawString(0), "" + Long.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawString(0),      "9223372036854775807", "");  //MAX_VALUE
         Test.ensureEqual(anArray.getRawNiceDouble(0),  (double)Long.MAX_VALUE, "");
         Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
@@ -1720,11 +1780,12 @@ public class LongArray extends PrimitiveArray {
 
         //min max
         anArray = new LongArray();
-        anArray.addString(anArray.MINEST_VALUE());
-        anArray.addString(anArray.MAXEST_VALUE());
-        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
-        Test.ensureEqual(anArray.getString(0), "-9223372036854775808", "");
-        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
+        anArray.addPAOne(anArray.MINEST_VALUE());
+        anArray.addPAOne(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE().toString(), "");
+        Test.ensureEqual(anArray.getString(0), "" + Long.MIN_VALUE, "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE().toString(), "");
+        Test.ensureEqual(anArray.getString(1), "" + (Long.MAX_VALUE-1), "");
 
 
         //tryToFindNumericMissingValue() 

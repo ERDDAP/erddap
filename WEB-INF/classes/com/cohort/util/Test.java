@@ -5,6 +5,7 @@
 package com.cohort.util;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 
 import java.awt.Color;
@@ -116,6 +117,23 @@ public class Test {
     }  
       
     /** 
+     * If the two PAOne values aren't equal, this throws a RuntimeException 
+     * with the specified message. 
+     *
+     * @param i1
+     * @param i2 
+     * @param message
+     */
+    public static void ensureEqual(PAOne i1, PAOne i2, String message)
+        throws RuntimeException {
+        if (i1 == null && i2 == null)
+            return;
+        if (i1 == null || i2 == null || !i1.equals(i2)) 
+            error("\n" + String2.ERROR + " in Test.ensureEqual(BigInteger):\n" + 
+                message + "\nSpecifically: " + i1 + " != " + i2);
+    }  
+      
+    /** 
      * If the two long values are equal, 
      * this throws a RuntimeException with the specified message. 
      *
@@ -184,6 +202,34 @@ public class Test {
      * @param s2 
      */
     public static boolean equal(String s1, String s2) {
+        if (s1 == null && s2 == null) 
+            return true;
+        if (s1 == null || s2 == null)
+            return false;
+        return s1.equals(s2);
+    }  
+      
+    /** 
+     * This returns true if the two BigInteger values are equal (or both null). 
+     *
+     * @param s1
+     * @param s2 
+     */
+    public static boolean equal(BigInteger s1, BigInteger s2) {
+        if (s1 == null && s2 == null) 
+            return true;
+        if (s1 == null || s2 == null)
+            return false;
+        return s1.equals(s2);
+    }  
+      
+    /** 
+     * This returns true if the two PAOne values are equal (or both null). 
+     *
+     * @param s1
+     * @param s2 
+     */
+    public static boolean equal(PAOne s1, PAOne s2) {
         if (s1 == null && s2 == null) 
             return true;
         if (s1 == null || s2 == null)

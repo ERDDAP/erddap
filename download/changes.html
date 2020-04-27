@@ -122,6 +122,11 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Thanks to Aurelie Briand, et al.
     <br>&nbsp;
 
+  <li>IMPROVED: the .odvTxt option has been rewritten to support the 
+    new version of ODV .txt files and to support the proper representation
+    of trajectory, timeseries, and profile data.
+    <br>&nbsp;
+
   <li>BUG FIX: unsigned integer audio files were read slightly incorrectly. 
     Now they are read correctly.
     <br>&nbsp;
@@ -345,6 +350,8 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     but must not be in the cf_profile_variables list.
     <br>Thanks to Micah Wengren.
 
+  <li>IMPROVED: 'Simplify' is now faster, uses less memory, and may return LongArray or ULongArray.
+
   <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
     requested variable, with a file name ending in the variable's name.
     If the variable's name was also a type of compression (e.g., .Z), ERDDAP
@@ -365,6 +372,11 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     decompresses the error message.
     Thanks to Bob Simons.
     <br>&nbsp;
+
+  <li>BUG FIX: &lt;subscribeToRemoteErddapDataset&gt; wasn't being applied when the 
+     EDD...FromErddap dataset was a child dataset.
+     Now it is.
+     Thanks to Chris Romsos.
 
   <li>BUG FIX: GenerateDatasetsXml no longer thinks a source variable name 
     starting with "latin" might be latitude.

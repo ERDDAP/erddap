@@ -425,7 +425,7 @@ String expected =
 "    <dataVariable>\n" +
 "        <sourceName>aasg:BoreholeTemperature/aasg:APINo</sourceName>\n" +
 "        <destinationName>APINo</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
+"        <dataType>long</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -458,7 +458,7 @@ String expected =
 "    <dataVariable>\n" +
 "        <sourceName>aasg:BoreholeTemperature/aasg:Label</sourceName>\n" +
 "        <destinationName>Label</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
+"        <dataType>long</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -1278,18 +1278,16 @@ String expected =
 "    String long_name \"State\";\n" +
 "  }\n" +
 "  UTM_E {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"UTM E\";\n" +
 "  }\n" +
 "  UTM_N {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"UTM N\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 37.246728999, 39.982674999;\n" +
+"    Float64 actual_range 37.24672899900003, 39.98267499900004;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Lat Degree\";\n" +
@@ -1299,7 +1297,7 @@ String expected =
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -82.549986, -78.803193;\n" +
+"    Float64 actual_range -82.54998599999999, -78.80319299999996;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Long Degree\";\n" +
@@ -1316,12 +1314,11 @@ String expected =
 "    String long_name \"Location Uncertainty Statement\";\n" +
 "  }\n" +
 "  LocationUncertaintyRadius {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Location Uncertainty Radius\";\n" +
 "  }\n" +
 "  DrillerTotalDepth {\n" +
-"    Float32 actual_range 0.0, 12996.0;\n" +
+"    Float32 actual_range 1161.0, 12996.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Driller Total Depth\";\n" +
 "  }\n" +
@@ -1338,17 +1335,15 @@ String expected =
 "    String long_name \"Well Bore Shape\";\n" +
 "  }\n" +
 "  TrueVerticalDepth {\n" +
-"    Float32 actual_range 0.0, 11792.0;\n" +
+"    Float32 actual_range 1161.0, 11792.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"True Vertical Depth\";\n" +
 "  }\n" +
 "  ElevationKB {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Elevation KB\";\n" +
 "  }\n" +
 "  ElevationDF {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Elevation DF\";\n" +
 "  }\n" +
@@ -1362,12 +1357,10 @@ String expected =
 "    String long_name \"Formation TD\";\n" +
 "  }\n" +
 "  BitDiameterTD {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Bit Diameter TD\";\n" +
 "  }\n" +
 "  MaximumRecordedTemperature {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Maximum Recorded Temperature\";\n" +
 "  }\n" +
@@ -1377,7 +1370,6 @@ String expected =
 "    String long_name \"Measured Temperature\";\n" +
 "  }\n" +
 "  CorrectedTemperature {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Corrected Temperature\";\n" +
 "  }\n" +
@@ -1386,7 +1378,6 @@ String expected =
 "    String long_name \"Temperature Units\";\n" +
 "  }\n" +
 "  CirculationDuration {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Circulation Duration\";\n" +
 "  }\n" +
@@ -1421,32 +1412,26 @@ String expected =
 "    String long_name \"Related Resource\";\n" +
 "  }\n" +
 "  CasingBottomDepthDriller {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Casing Bottom Depth Driller\";\n" +
 "  }\n" +
 "  CasingTopDepth {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Casing Top Depth\";\n" +
 "  }\n" +
 "  CasingPipeDiameter {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Casing Pipe Diameter\";\n" +
 "  }\n" +
 "  CasingWeight {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Casing Weight\";\n" +
 "  }\n" +
 "  CasingThickness {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Casing Thickness\";\n" +
 "  }\n" +
 "  pH {\n" +
-"    Float32 actual_range 0.0, 0.0;\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"pH\";\n" +
 "  }\n" +
@@ -1519,13 +1504,13 @@ String expected =
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"Kentucky Geological Survey\";\n" +
 "    String creator_url \"https://www.uky.edu/KGS/\";\n" +
-"    Float64 Easternmost_Easting -78.803193;\n" +
+"    Float64 Easternmost_Easting -78.80319299999996;\n" +
 "    String featureType \"Point\";\n" +
-"    Float64 geospatial_lat_max 39.982674999;\n" +
-"    Float64 geospatial_lat_min 37.246728999;\n" +
+"    Float64 geospatial_lat_max 39.98267499900004;\n" +
+"    Float64 geospatial_lat_min 37.24672899900003;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max -78.803193;\n" +
-"    Float64 geospatial_lon_min -82.549986;\n" +
+"    Float64 geospatial_lon_max -78.80319299999996;\n" +
+"    Float64 geospatial_lon_min -82.54998599999999;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1542,17 +1527,17 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    Float64 Northernmost_Northing 39.982674999;\n" +
+"    Float64 Northernmost_Northing 39.98267499900004;\n" +
 "    String rowElementXPath \"/wfs:FeatureCollection/wfs:member\";\n" +
 "    String sourceUrl \"https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\\\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\\\"\";\n" +
-"    Float64 Southernmost_Northing 37.246728999;\n" +
+"    Float64 Southernmost_Northing 37.24672899900003;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"State, UTM_E, UTM_N, SRS, LocationUncertaintyRadius, LengthUnits, ElevationKB, ElevationDF, BitDiameterTD, MaximumRecordedTemperature, CorrectedTemperature, TemperatureUnits, CirculationDuration, MeasurementSource, CasingBottomDepthDriller, CasingTopDepth, CasingPipeDiameter, CasingWeight, CasingThickness, pH\";\n" +
 "    String summary \"The summary. Kentucky Geological Survey data from a local source.\";\n" +
 "    String time_coverage_end \"2012-08-05T00:00:00Z\";\n" +
 "    String time_coverage_start \"1899-01-31T00:00:00Z\";\n" +
 "    String title \"The Title\";\n" +
-"    Float64 Westernmost_Easting -82.549986;\n" +
+"    Float64 Westernmost_Easting -82.54998599999999;\n" +
 "  }\n" +
 "}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
@@ -1644,7 +1629,7 @@ expected =
         expected = 
 "ObservationURI,WellName,APINo,HeaderURI,OtherName,Label,Operator,time,EndedDrillingDate,WellType,StatusDate,ReleaseDate,Field,County,State,UTM_E,UTM_N,latitude,longitude,SRS,LocationUncertaintyStatement,LocationUncertaintyRadius,DrillerTotalDepth,DepthReferencePoint,LengthUnits,WellBoreShape,TrueVerticalDepth,ElevationKB,ElevationDF,ElevationGL,FormationTD,BitDiameterTD,MaximumRecordedTemperature,MeasuredTemperature,CorrectedTemperature,TemperatureUnits,CirculationDuration,MeasurementProcedure,DepthOfMeasurement,MeasurementDateTime,MeasurementFormation,MeasurementSource,RelatedResource,CasingBottomDepthDriller,CasingTopDepth,CasingPipeDiameter,CasingWeight,CasingThickness,pH,InformationSource,Shape_gml_Point_latitude,Shape_gml_Point_longitude,LeaseName,LeaseOwner,LeaseNo,TimeSinceCirculation,Status,CommodityOfInterest,Function,Production,ProducingInterval,Notes\n" +
 ",,,,,,,UTC,UTC,,UTC,UTC,,,,,,degrees_north,degrees_east,,,,,,,,,,,,,,,,,,,,,UTC,,,,,,,,,,,degrees_north,degrees_east,,,,,,,,,,\n" +
-"http://resources.usgin.org/uri-gin/wvges/bhtemp/4700102422_105/,\"Fuel Resources, Inc.  Zona Bernard 2\",4700102422,http://resources.usgin.org/uri-gin/wvges/well/api:4700102422/,Fuel Resources Inc,4700102422,\"Fuel Resources, Inc.\",1989-03-15T00:00:00Z,1989-03-21T00:00:00Z,Gas,,,Belington,Barbour,West Virginia,0.0,0.0,38.989951999,-79.964635,EPSG:4326,Location recorded as received from official permit application converted to NAD83 if required,0.0,5479.0,G.L.,ft,vertical,5479.0,0.0,0.0,2028,Fox,0.0,0.0,105.0,0.0,F,0.0,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwise used given bottom hole temperature on log header if available,4650,,Elk,Well Temperature Log,TL | GR | DEN | IL | CAL,0.0,0.0,0.0,0.0,0.0,0.0,,38.98995199900008,-79.96463499999993,,,,5,Missing,Missing,Missing,Missing,Missing,\n";
+"http://resources.usgin.org/uri-gin/wvges/bhtemp/4700102422_105/,\"Fuel Resources, Inc.  Zona Bernard 2\",4700102422,http://resources.usgin.org/uri-gin/wvges/well/api:4700102422/,Fuel Resources Inc,4700102422,\"Fuel Resources, Inc.\",1989-03-15T00:00:00Z,1989-03-21T00:00:00Z,Gas,,,Belington,Barbour,West Virginia,NaN,NaN,38.98995199900003,-79.96463499999999,EPSG:4326,Location recorded as received from official permit application converted to NAD83 if required,NaN,5479.0,G.L.,ft,vertical,5479.0,NaN,NaN,2028,Fox,NaN,NaN,105.0,NaN,F,NaN,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwise used given bottom hole temperature on log header if available,4650,,Elk,Well Temperature Log,TL | GR | DEN | IL | CAL,NaN,NaN,NaN,NaN,NaN,NaN,,38.98995199900008,-79.96463499999993,,,,5,Missing,Missing,Missing,Missing,Missing,\n";
 
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "\nresults=\n" + results);

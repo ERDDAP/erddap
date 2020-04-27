@@ -16,6 +16,7 @@ import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -1610,9 +1611,9 @@ public abstract class EDDTable extends EDD {
             //The constraint needs to be tested here. Test it now.
             //Note that Timestamp and Alt values have been converted to standardized units above.
             PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
-            //chars and strings aren't converted
+            //chars and strings aren't converted            
             int nSwitched = dataPa.convertToStandardMissingValues(
-                edv.destinationFillValue(), edv.destinationMissingValue());            
+                "" + edv.destinationFillValue(), "" + edv.destinationMissingValue());            
             //String2.log("    nSwitched=" + nSwitched);
 
             int nStillGood = dataPa.applyConstraint(edv instanceof EDVTimeStamp, 
@@ -1623,7 +1624,7 @@ public abstract class EDDTable extends EDD {
             if (nStillGood == 0)
                 break;
             if (nSwitched > 0)
-                dataPa.switchNaNToFakeMissingValue(edv.safeDestinationMissingValue());            
+                dataPa.switchNaNToFakeMissingValue(edv.safeStringMissingValue());            
 
             //if (cv == constraintVariables.size() - 1 && nStillGood > 0) String2.log(table.toString());
 
@@ -2778,7 +2779,7 @@ public abstract class EDDTable extends EDD {
                     try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
                 }
             } else {
-                throw new SimpleException(accessibleViaFGDC);
+                throw new SimpleException(EDStatic.queryError + accessibleViaFGDC);
             }
             return;
         }
@@ -2789,8 +2790,8 @@ public abstract class EDDTable extends EDD {
              fileTypeName.equals(".delete"))) {
             if (!EDStatic.developmentMode &&
                 loggedInAs == null) 
-                throw new SimpleException(String2.ERROR + 
-                    ": " + fileTypeName + " requests must be made to the https URL.");
+                throw new SimpleException(EDStatic.queryError + 
+                    fileTypeName + " requests must be made to the https URL.");
 
             EDDTableFromHttpGet etfhg = (EDDTableFromHttpGet)this;
             String jsonResponse = etfhg.insertOrDelete(  //throws exception if trouble
@@ -2798,8 +2799,8 @@ public abstract class EDDTable extends EDD {
                     EDDTableFromHttpGet.INSERT_COMMAND :
                     EDDTableFromHttpGet.DELETE_COMMAND, 
                 userDapQuery);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8)); 
+            Writer writer = String2.getBufferedOutputStreamWriterUtf8(
+                outputStreamSource.outputStream(String2.UTF_8)); 
             writer.write(jsonResponse);
             writer.flush(); //essential
 
@@ -2821,7 +2822,7 @@ public abstract class EDDTable extends EDD {
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
             //With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
             OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
             try {
                 writer.write(EDStatic.startHeadHtml(tErddapUrl,  
                     title() + " - " + EDStatic.daf));
@@ -2887,7 +2888,7 @@ public abstract class EDDTable extends EDD {
             String imageFileType = fileTypeName.substring(0, fileTypeName.length() - 4);
             Object[] pngInfo = readPngInfo(loggedInAs, userDapQuery, imageFileType);
             if (pngInfo == null) 
-                throw new SimpleException(EDStatic.errorFileNotFoundImage);
+                throw new SimpleException(EDStatic.queryError + EDStatic.errorFileNotFoundImage);
 
             //ok, copy it  (and don't close the outputStream)
             OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
@@ -2910,7 +2911,7 @@ public abstract class EDDTable extends EDD {
                     try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
                 }
             } else {
-                throw new SimpleException(accessibleViaISO19115);
+                throw new SimpleException(EDStatic.queryError + accessibleViaISO19115);
             }
             return;
         }
@@ -2941,8 +2942,8 @@ public abstract class EDDTable extends EDD {
                 table.addColumn(dvi, dv.destinationName(), 
                     PrimitiveArray.factory(tPAType, 1, false), catts);
             }        
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1)); 
+            Writer writer = String2.getBufferedOutputStreamWriter88591(
+                outputStreamSource.outputStream(String2.ISO_8859_1)); 
             table.saveAsNccsv(false, true, 0, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
@@ -2985,7 +2986,7 @@ public abstract class EDDTable extends EDD {
             if (jsonp != null) {
                 jsonp = jsonp.substring(7);
                 if (!String2.isJsonpNameSafe(jsonp))
-                    throw new SimpleException(EDStatic.errorJsonpFunctionName);
+                    throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
             }
             if (fileTypeName.equals(".geoJson"))
                 tableWriter = new TableWriterGeoJson(this, tNewHistory, outputStreamSource, jsonp);
@@ -3025,7 +3026,7 @@ public abstract class EDDTable extends EDD {
             if (resultsVariables.indexOf(EDV.LON_NAME)  < 0 ||
                 resultsVariables.indexOf(EDV.LAT_NAME)  < 0 ||
                 resultsVariables.indexOf(EDV.TIME_NAME) < 0)
-                throw new SimpleException(EDStatic.errorOdvLLTTable);
+                throw new SimpleException(EDStatic.queryError + EDStatic.errorOdvLLTTable);
             twawm = new TableWriterAllWithMetadata(this, tNewHistory, dir, fileName);  //used after getDataForDapQuery below...
             tableWriter = twawm;
         } else if (fileTypeName.equals(".tsv")) 
@@ -3122,7 +3123,7 @@ public abstract class EDDTable extends EDD {
                        fileTypeName.equals(".nc4Header")) {
 
                 if (EDStatic.accessibleViaNC4.length() > 0)  
-                    throw new SimpleException(EDStatic.accessibleViaNC4);
+                    throw new SimpleException(EDStatic.queryError + EDStatic.accessibleViaNC4);
     
                 //if .nc4Header, make sure the .nc4 file exists 
                 //(and it is the better file to cache)
@@ -3139,7 +3140,7 @@ public abstract class EDDTable extends EDD {
                        fileTypeName.equals(".ncCFMAHeader")) {
                 //quick reject?
                 if (accessibleViaNcCF().length() > 0)
-                    throw new SimpleException(accessibleViaNcCF);
+                    throw new SimpleException(EDStatic.queryError + accessibleViaNcCF);
 
                 //check that query includes required variables
                 if (userDapQuery == null) userDapQuery = "";
@@ -3727,8 +3728,8 @@ public abstract class EDDTable extends EDD {
 
         //Google Earth .kml
         //(getting the outputStream was delayed until actually needed)
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8));
 
         //collect the units
         String columnUnits[] = new String[table.nColumns()];
@@ -4487,7 +4488,7 @@ public abstract class EDDTable extends EDD {
                     double yStats[] = table.getColumn(yColN).calculateStats();
                     if (xStats[PrimitiveArray.STATS_N] == 0 ||
                         yStats[PrimitiveArray.STATS_N] == 0) 
-                        throw new SimpleException(EDStatic.noDataNoLL);
+                        throw new SimpleException(EDStatic.queryError + EDStatic.noDataNoLL);
 
                     //old way  (too tied to big round numbers like 100, 200, 300) 
                     //often had big gap on one side
@@ -4863,8 +4864,8 @@ public abstract class EDDTable extends EDD {
             PrimitiveArray pa = twawm.column(col);
             //convert missing values to NaNs  (StringArray and CharArray are unchanged)
             pa.convertToStandardMissingValues( 
-                twawm.columnAttributes(col).getDouble("_FillValue"),
-                twawm.columnAttributes(col).getDouble("missing_value"));
+                twawm.columnAttributes(col).getString("_FillValue"),
+                twawm.columnAttributes(col).getString("missing_value"));
             Matlab.writeNDimensionalArray(stream, "", //without column names (they're stored separately)
                 pa, ndIndex[col]);
         }
@@ -4952,8 +4953,8 @@ public abstract class EDDTable extends EDD {
         int nCols = twawm.nColumns();
 
         //create a writer
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8));
         try {
             if (jsonp != null) 
                 writer.write(jsonp + "(");
@@ -5008,6 +5009,8 @@ public abstract class EDDTable extends EDD {
                     tType = writeStringsAsStrings? "string": "char";
                 else if (tType.equals("long"))
                     tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                else if (tType.equals("ulong"))
+                    tType = "uint64"; 
                 writer.write(
                     "    " + String2.toJson(twawm.columnName(col)) + ": {\n" +
                     "      \"shape\": [\"row\"" + 
@@ -5080,6 +5083,7 @@ public abstract class EDDTable extends EDD {
             writer.flush(); //essential
         } finally {
             writer.close();
+            twawm.releaseResources();
         }
 
         if (reallyVerbose) String2.log("  EDDTable.saveAsNcoJson done. TIME=" + 
@@ -5179,13 +5183,14 @@ public abstract class EDDTable extends EDD {
             NcHelper.setAttributes(nc3Mode, rootGroup, globalAttributes);
             for (int col = 0; col < nColumns; col++) {
                 Attributes tAtts = new Attributes(twawm.columnAttributes(col)); //use a copy
-                if (twawm.columnType(col) == PAType.STRING)
+                PAType paType = twawm.columnType(col);
+                if (paType == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == PAType.CHAR)
+//                else if (paType == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
+                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
 
             //leave "define" mode
@@ -5198,7 +5203,6 @@ public abstract class EDDTable extends EDD {
                 int ncOffset = 0;
                 int bufferSize = EDStatic.partialRequestMaxCells;
                 PrimitiveArray pa = null;
-                DoubleArray da = new DoubleArray();
                 DataInputStream dis = twawm.dataInputStream(col);
                 try {
                     PAType colType = twawm.columnType(col);
@@ -5222,11 +5226,11 @@ public abstract class EDDTable extends EDD {
                             nc.writeStringData(newVars[col], new int[]{ncOffset}, array);
 
                         } else {
-                            if (nc3Mode && pa instanceof LongArray) {
-                                da.clear(); 
-                                da.append(pa);
-                                array = Array.factory(DataType.DOUBLE, new int[]{bufferSize}, da.toObjectArray());
-                            } else if (pa instanceof CharArray) {
+                            if (nc3Mode && 
+                                (pa instanceof LongArray || pa instanceof ULongArray)) 
+                                pa = new DoubleArray(pa);
+
+                            if (pa instanceof CharArray) {
                                 //pa is temporary, so ok to change chars
                                 array = Array.factory(DataType.CHAR, new int[]{bufferSize}, 
                                     ((CharArray)pa).toIso88591().toObjectArray());                            
@@ -5261,9 +5265,9 @@ public abstract class EDDTable extends EDD {
         } catch (Throwable t) {
             //try to close the file
             try {
-                if (nc != null) nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null) nc.abort(); //this fails, so file can't be deleted below
             } catch (Throwable t2) {
-                //don't care
+                String2.log("Caught: " + MustBe.throwableToString(t2));
             }
 
             //delete the partial file
@@ -5309,10 +5313,10 @@ public abstract class EDDTable extends EDD {
 
         //double check that this dataset supports .ncCF (but it should have been tested earlier)
         if (accessibleViaNcCF.length() > 0) 
-            throw new SimpleException(accessibleViaNcCF);
+            throw new SimpleException(EDStatic.queryError + accessibleViaNcCF);
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
         if (!CDM_POINT.equals(cdmType))   
-            throw new SimpleException( //but already checked before calling this method
+            throw new SimpleException(EDStatic.queryError +  //but already checked before calling this method
                 "cdm_data_type for convertFlatNcToNcCF0() must be Point, " +
                 "not " + cdmType + ".");
 
@@ -5388,7 +5392,7 @@ public abstract class EDDTable extends EDD {
 
         //double check that this dataset supports .ncCF (but it should have been tested earlier)
         if (accessibleViaNcCF.length() > 0) 
-            throw new SimpleException(accessibleViaNcCF);
+            throw new SimpleException(EDStatic.queryError + accessibleViaNcCF);
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
         String lcCdmType = cdmType == null? null : cdmType.toLowerCase();
 
@@ -5398,11 +5402,11 @@ public abstract class EDDTable extends EDD {
         if      (CDM_PROFILE   .equals(cdmType)) idDVI = profile_idIndex;
         else if (CDM_TIMESERIES.equals(cdmType)) idDVI = timeseries_idIndex;
         else if (CDM_TRAJECTORY.equals(cdmType)) idDVI = trajectory_idIndex;
-        else throw new SimpleException( //but already checked before calling this method
+        else throw new SimpleException(EDStatic.queryError +  //but already checked before calling this method
             "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, " +
             "not " + cdmType + ".");
         if (idDVI < 0) //but already checked by accessibleViaNcCF
-            throw new SimpleException("No variable has a cf_role=" + lcCdmType + "_id attribute.");              
+            throw new SimpleException(EDStatic.queryError + "No variable has a cf_role=" + lcCdmType + "_id attribute.");              
         String idName = dataVariableDestinationNames()[idDVI];  //var name of ..._id var
 
         //POLICY: because this procedure may be used in more than one thread,
@@ -5429,7 +5433,7 @@ public abstract class EDDTable extends EDD {
             //ensure profile_id|timeseries_id|trajectory_id variable is in flatNc file
             int idPo = String2.indexOf(ncColNames, idName);
             if (idPo < 0) //but already checked before calling this method
-                throw new SimpleException("The .nc file must have " + idName);
+                throw new SimpleException(EDStatic.queryError + "The .nc file must have " + idName);
 
             //read id PA from flatNc file
             PrimitiveArray idPA = twawm.column(idPo);
@@ -5590,13 +5594,14 @@ public abstract class EDDTable extends EDD {
                 if (!isFeatureVar[col] && !isCoordinateVar[col])
                     tAtts.add("coordinates", coordinates);
 
-                if (twawm.columnType(col) == PAType.STRING)
+                PAType paType = twawm.columnType(col);
+                if (paType == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == PAType.CHAR)
+//                else if (paType == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
+                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
 
             //set the rowSize attributes
@@ -5604,7 +5609,8 @@ public abstract class EDDTable extends EDD {
                 NcHelper.setAttributes(nc3Mode, rowSizeVar, new Attributes()
                     .add("ioos_category",    "Identifier")
                     .add("long_name",        "Number of Observations for this " + cdmType)
-                    .add("sample_dimension", "obs"));  
+                    .add("sample_dimension", "obs"),
+                    false);  //isUnsigned
             }
 
             //** leave "define" mode
@@ -5687,7 +5693,7 @@ public abstract class EDDTable extends EDD {
             //String2.log("  .ncCF File created:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { if (ncCF != null) ncCF.close(); } catch (Exception e) {}
+            try { if (ncCF != null) ncCF.abort(); } catch (Exception e) {}
             File2.delete(ncCFName + randomInt);
 
             throw t;
@@ -5725,7 +5731,7 @@ public abstract class EDDTable extends EDD {
 
         //double check that this dataset supports .ncCF (but it should have been tested earlier)
         if (accessibleViaNcCF.length() > 0) 
-            throw new SimpleException(accessibleViaNcCF);
+            throw new SimpleException(EDStatic.queryError + accessibleViaNcCF);
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
         String lcCdmType = cdmType == null? null : cdmType.toLowerCase();
 
@@ -5740,13 +5746,15 @@ public abstract class EDDTable extends EDD {
         else if (CDM_TRAJECTORYPROFILE.equals(cdmType)) {
             oidDVI = trajectory_idIndex; 
             olcCdmName = "trajectory";}
-        else throw new SimpleException( //but already checked before calling this method
+        else throw new SimpleException(EDStatic.queryError +  //but already checked before calling this method
             "For convertFlatNcToNcCF2(), cdm_data_type must be TimeSeriesProfile or TrajectoryProfile, " +
             "not " + cdmType + ".");
         if (oidDVI < 0) //but already checked by accessibleViaNcCF
-            throw new SimpleException("No variable has a cf_role=" + olcCdmName + "_id attribute.");              
+            throw new SimpleException(EDStatic.queryError + 
+                "No variable has a cf_role=" + olcCdmName + "_id attribute.");              
         if (pidDVI < 0) //but already checked by accessibleViaNcCF
-            throw new SimpleException("No variable has a cf_role=profile_id attribute.");              
+            throw new SimpleException(EDStatic.queryError + 
+                "No variable has a cf_role=profile_id attribute.");              
         String oidName = dataVariableDestinationNames()[oidDVI];  //var name of ..._id var
         String pidName = dataVariableDestinationNames()[pidDVI];  
         String indexName = olcCdmName + "Index";
@@ -5783,9 +5791,11 @@ public abstract class EDDTable extends EDD {
             int oidPo = String2.indexOf(ncColNames, oidName);
             int pidPo = String2.indexOf(ncColNames, pidName);
             if (oidPo < 0) //but already checked before calling this method
-                throw new SimpleException("The .nc file must have " + oidName);
+                throw new SimpleException(EDStatic.queryError + 
+                    "The .nc file must have " + oidName);
             if (pidPo < 0) //but already checked before calling this method
-                throw new SimpleException("The .nc file must have " + pidName);
+                throw new SimpleException(EDStatic.queryError + 
+                    "The .nc file must have " + pidName);
 
             //read oid ('feature'_id) and pid (profile_id) PA from flatNc file
             PrimitiveArray oidPA = twawm.column(oidPo);
@@ -6006,13 +6016,14 @@ public abstract class EDDTable extends EDD {
                 if (!isFeatureVar[col] && !isProfileVar[col] && !isCoordinateVar[col])
                     tAtts.add("coordinates", coordinates);
 
-                if (twawm.columnType(col) == PAType.STRING)
+                PAType paType = twawm.columnType(col);
+                if (paType == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);                
 // disabled until there is a standard
-//                else if (twawm.columnType(col) == PAType.CHAR)
+//                else if (paType == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts);
+                NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
 
             if (!nodcMode) {
@@ -6020,13 +6031,15 @@ public abstract class EDDTable extends EDD {
                 NcHelper.setAttributes(nc3Mode, indexVar, new Attributes()
                     .add("ioos_category", "Identifier")
                     .add("long_name", "The " + olcCdmName + " to which this profile is associated.")
-                    .add("instance_dimension", olcCdmName));
+                    .add("instance_dimension", olcCdmName),
+                    false); //isUnsigned
 
                 //set the rowSize attributes
                 NcHelper.setAttributes(nc3Mode, rowSizeVar, new Attributes()
                     .add("ioos_category", "Identifier")
                     .add("long_name", "Number of Observations for this Profile")
-                    .add("sample_dimension", "obs"));
+                    .add("sample_dimension", "obs"),
+                    false); //isUnsigned
             }
 
             //** leave "define" mode
@@ -6148,7 +6161,7 @@ public abstract class EDDTable extends EDD {
             //String2.log("  .ncCF File:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { if (ncCF != null) ncCF.close(); } catch (Exception e) {}
+            try { if (ncCF != null) ncCF.abort(); } catch (Exception e) {}
             File2.delete(ncCFName + randomInt);
 
             throw t;
@@ -6188,8 +6201,8 @@ public abstract class EDDTable extends EDD {
             //  so it's a programming error if they are missing
 
             //open an OutputStream   
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(Table.IgorCharset)));
+            Writer writer = String2.getBufferedOutputStreamWriter(
+                outputStreamSource.outputStream(Table.IgorCharset), Table.IgorCharset);
             try {
                 writer.write("IGOR" + Table.IgorEndOfLine);
 
@@ -6205,8 +6218,8 @@ public abstract class EDDTable extends EDD {
 
                     PrimitiveArray pa = twawm.column(col);
                     pa.convertToStandardMissingValues(
-                        atts.getDouble("_FillValue"), 
-                        atts.getDouble("missing_value"));
+                        atts.getString("_FillValue"), 
+                        atts.getString("missing_value"));
 
                     Table.writeIgorWave(writer, 
                         Table.makeUniqueIgorColumnName(twawm.columnName(col), 
@@ -6269,18 +6282,12 @@ public abstract class EDDTable extends EDD {
 
         //make sure there isn't too much data before getting outputStream
         Table table = twawm.cumulativeTable(); //it checks memory usage
+        //String2.log(">> odv after twawm:\n" + table.dataToString());
         twawm.releaseResources();
-        int nCols = table.nColumns();
-        boolean isChar[]   = new boolean[nCols];
-        boolean isString[] = new boolean[nCols];
-        PrimitiveArray pas[] = new PrimitiveArray[nCols];
-        for (int col = 0; col < nCols; col++) {
-            pas[col] = table.getColumn(col);
-            isChar[col]   = pas[col] instanceof CharArray;
-            isString[col] = pas[col] instanceof StringArray;
-        }
-        int nColsM1 = nCols - 1;
         int nRows = table.nRows();
+        Attributes globalAtts = table.globalAttributes();
+        //convert numeric missing values to NaN
+        table.convertToStandardMissingValues();
 
         //ensure there is longitude, latitude, time data in the request (else it is useless in ODV)
         if (table.findColumnNumber(EDV.LON_NAME)  < 0 ||
@@ -6289,14 +6296,122 @@ public abstract class EDDTable extends EDD {
             throw new SimpleException(EDStatic.queryError +
                 MessageFormat.format(EDStatic.queryErrorLLT, ".odvTxt"));
 
-        //convert numeric missing values to NaN
-        table.convertToStandardMissingValues();
+        //Move columns into preferred order, see table 3-1, 3-2, 3-3, 3-4
+        //This would be very complicated if you worked forwards, because some vars are in a couple of categories.
+        //Easiest way: work backwards, moving vars to col#0.
+
+        //move the "primary variable" (the first DATAVAR) into place
+        //2010-07-07 email from Stephan Heckendorff says altitude (or similar) if present MUST be primaryVar
+        String primaryVar = null;
+        int tCol = table.findColumnNumber(EDV.ALT_NAME); 
+        if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("depth"); 
+        if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("pressure"); 
+        if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("sigma"); 
+        if (tCol > 0) {
+            table.moveColumn(tCol, 0); //move it to col#0
+        } else {
+            //if it isn't altitude/depth, then it is time ("time_ISO8601")
+            tCol = table.findColumnNumber(EDV.TIME_NAME); 
+            table.moveColumn(tCol, 0); //move it to col#0
+            table.setColumnName(0, "time_ISO8601");
+        }
+        primaryVar = table.getColumnName(0);
+
+        //move METAVAR columns into preferred order (backwards)
+        //Remember all these metavariables 
+        //  The set will have a few old names, e.g., latitude, time. 
+        //  That's okay. Move them again and change names later.
+        HashSet<String> metavariables = new HashSet();
+        //start with outer table colums
+        for (int i = 2; i >= 0; i--) { //work backwards
+            String att = "cdm_" + 
+                (i == 0? "timeseries" : 
+                 i == 1? "trajectory" : "profile") +
+                "_variables";
+            String value = globalAtts.getString(att);
+            if (!String2.isSomething(value))
+                continue;
+            StringArray colNames = StringArray.fromCSVNoBlanks(value);
+            for (int i2 = colNames.size() - 1; i2 >= 0; i2--) { //work backwards
+                tCol = table.findColumnNumber(colNames.get(i2));
+                if (tCol > 0) {
+                    table.moveColumn(tCol, 0); //move it to col#0
+                    metavariables.add(table.getColumnName(0));
+                }
+            }
+        }
+
+        //ERDDAP datasets rarely have Bot. Depth [m] column, and hard to identify, 
+        //  and not required, so skip it
+
+        //now move LLT (and give them the preferred names)
+        table.moveColumn(table.findColumnNumber(EDV.LAT_NAME),  0);
+        table.setColumnName(0, "Latitude [degrees_north]");
+        metavariables.add(table.getColumnName(0));
+        table.moveColumn(table.findColumnNumber(EDV.LON_NAME),  0);
+        table.setColumnName(0, "Longitude [degrees_east]");
+        metavariables.add(table.getColumnName(0));
+        tCol = table.findColumnNumber(EDV.TIME_NAME);
+        if (tCol >= 0) { //it may have become "time_ISO8601" above)
+            table.moveColumn(tCol, 0);
+            table.setColumnName(0, "yyyy-mm-ddThh:mm:ss.sss");
+        } else { 
+            //make empty column
+            table.addColumn(0, "yyyy-mm-ddThh:mm:ss.sss", 
+                PrimitiveArray.factory(PAType.DOUBLE, nRows, ""), 
+                new Attributes());
+        }
+        metavariables.add(table.getColumnName(0));
+
+        //now add new Type column with '*' data (* means let ODV chose, see section 16.3.3)
+        tCol = table.findColumnNumber("Type");
+        if (tCol >= 0)
+            table.setColumnName(tCol, "OriginalType"); //so not 2 cols named Type
+        table.addColumn(0, "Type", PrimitiveArray.factory(PAType.CHAR, nRows, "*"), new Attributes());
+        metavariables.add(table.getColumnName(0));
+
+        //required Station column
+        tCol = table.findColumnNumberWithAttributeValue("cf_role", "timeseries_id"); 
+        if (tCol >= 0) {
+            table.moveColumn(tCol, 0);
+            int tCol2 = table.findColumnNumber("Station");
+            if (tCol2 > 0)
+                table.setColumnName(tCol, "OriginalStation"); //so not 2 cols named Station
+            table.setColumnName(0, "Station");
+        } else {
+            //make empty column since this is required
+            table.addColumn(0, "Station", new StringArray(nRows, true), new Attributes());
+        }
+        metavariables.add(table.getColumnName(0));
+
+        //required Cruise column
+        tCol = table.findColumnNumberWithAttributeValue("cf_role", "trajectory_id"); 
+        if (tCol >= 0) {
+            table.moveColumn(tCol, 0);
+            int tCol2 = table.findColumnNumber("Cruise");
+            if (tCol2 > 0)
+                table.setColumnName(tCol, "OriginalCruise"); //so not 2 cols named Cruise
+            table.setColumnName(0, "Cruise");
+        } else {
+            //make empty column since this is required
+            table.addColumn(0, "Cruise", new StringArray(nRows, true), new Attributes());
+        }
+        metavariables.add(table.getColumnName(0));
 
         //open an OutputStream   
-        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStreamSource.outputStream(
-            String2.ISO_8859_1))); //ODV User's Guide 16.3 says ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8)); //ODV User's Guide 5.2.1 allows for UTF-8
 
-        //write header
+        //figure out DataType
+        String cdm = globalAtts.getString("cdm_data_type");
+        cdm = cdm == null? "" : cdm.toLowerCase();
+        String dataType = 
+            cdm.equals("timeseries")?    "TimeSeries" :
+            cdm.equals("trajectory")?    "Trajectories" :
+            cdm.indexOf("profile") >= 0? "Profiles" :  //so also TimeseriesProfile and TrajectoryProfile
+            "GeneralType";
+
+        //write header.  see Table 16-6 in /programs/odv/odvGuide5.2.1.pdf
         //ODV says linebreaks can be \n or \r\n (see 2010-06-15 notes)
         String creator = tPublicSourceUrl; 
         if (creator.startsWith("(")) //(local files) or (local database)
@@ -6306,184 +6421,91 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "//<Creator>" + XML.encodeAsXML(creator) + "</Creator>\n" + //the way to get to the original source
             "//<CreateTime>" + Calendar2.getCurrentISODateTimeStringZulu() + "</CreateTime>\n" + //nowZ
+            "//<Encoding>UTF-8</Encoding>\n" +
             "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>\n" + //ERDDAP
-            "//<Source>" + EDStatic.erddapUrl + "/tabledap/" + tDatasetID + ".html</Source>\n" + //Data Access Form
+            "//<Source>" + EDStatic.preferredErddapUrl + "/tabledap/" + tDatasetID + ".html</Source>\n" + //Data Access Form
             //"//<SourceLastModified>???</SourceLastModified>\n" + //not available
-            "//<Version>ODV Spreadsheet V4.0</Version>\n" + //of ODV Spreadsheet file
-            //"//<MissingValueIndicators></MissingValueIndicators>\n" + //only use for non-empty cell, non-NaN, e.g., -9999
+            "//<Version>ODV Spreadsheet V4.6</Version>\n" + //of ODV Spreadsheet file       //???proper version number  4.6 is from Table 16-6
+            //"//<MissingValueIndicators></MissingValueIndicators>\n" + //only use for non-empty cell, non-NaN, e.g., -9999, but I've standardized, so ""
             "//<DataField>GeneralField</DataField>\n" + //!!! better if Ocean|Atmosphere|Land|IceSheet|SeaIce|Sediment
-            "//<DataType>GeneralType</DataType>\n"); //!!! better if GeneralType|Profiles|TimeSeries|Trajectories
+            "//<DataType>" + dataType + "</DataType>\n"); 
 
-        //try to find required columns
-        //Presence of longitude, latitude, time is checked above.
-        int cruiseCol = -1;
-        int stationCol = -1;
-        int timeCol = table.findColumnNumber(EDV.TIME_NAME);  //ODV requires it. see above
-        //2010-07-07 email from Stephan Heckendorff says altitude (or similar) if present MUST be primaryVar
-        int primaryVarCol = table.findColumnNumber(EDV.ALT_NAME); 
-        if (primaryVarCol < 0) 
-            primaryVarCol = table.findColumnNumber("depth"); 
-
-        //is a column perfectly named?
+        //write column names comment lines  (see 5.2.1)
+        //primaryVariable see 3.1.2 a data var (by default, the first data var) 
+        //  which determines sort order within station 
+        // (e.g., depth for profiles, or a decimal time var for timeseries and trajectory)
+        int nCols = table.nColumns();
+        PrimitiveArray pas[] = new PrimitiveArray[nCols];
         for (int col = 0; col < nCols; col++) {
-            String lcColName = table.getColumnName(col).toLowerCase();
-            if (lcColName.equals("cruise"))  cruiseCol = col;
-            if (lcColName.equals("station")) stationCol = col;
-            if (primaryVarCol < 0 && 
-                (lcColName.equals("altitude") ||
-                 lcColName.equals("depth")    ||
-                 lcColName.equals("position") ||
-                 lcColName.equals("pressure") ||
-                 lcColName.equals("sigma")))
-                primaryVarCol = col;
-        }
-
-        //if not found, find imperfectly named column
-        if (cruiseCol == -1 || stationCol == -1) {
-            //(use the first likely column)
-            for (int col = 0; col < nCols; col++) {
-                String lcColName = table.getColumnName(col).toLowerCase();
-                if (cruiseCol == -1 && lcColName.indexOf("cruise") >= 0)   
-                    cruiseCol = col;
-                if (stationCol == -1 && lcColName.indexOf("station") >= 0) 
-                    stationCol = col;
-                if (primaryVarCol < 0 && 
-                    (lcColName.indexOf("altitude") >= 0 ||
-                     lcColName.indexOf("depth")    >= 0 ||
-                     lcColName.indexOf("position") >= 0 ||
-                     lcColName.indexOf("pressure") >= 0 ||
-                     lcColName.indexOf("sigma")    >= 0))
-                    primaryVarCol = col;
-            }
-        }
-
-        //write column names
-        //Mandatory columns that we don't have data for are always first.
-        //ERDDAP hardly ever has "Bot. Depth"-info, so don't ever use it (it isn't madatory).
-        writer.write("Type:METAVAR:TEXT:2");         //do these need :METAVAR:TEXT:2? or ...:1? or nothing?
-        if (cruiseCol == -1)
-            writer.write("\tCruise:METAVAR:TEXT:2");
-        if (stationCol == -1)
-            writer.write("\tStation:METAVAR:TEXT:2");
-
-        //columns from selected data
-        boolean isTimeStamp[] = new boolean[nCols];  //includes time var 
-        String time_precision[] = new String[nCols]; //includes time var 
-        for (int col = 0; col < nCols; col++) {
-
-            //write tab first (since Type column comes before first table column)
-            writer.write('\t');
-
-            //prepare the units
+            Attributes atts = table.columnAttributes(col);
+            pas[col] = table.getColumn(col);
             String colName = table.getColumnName(col);
-            String colNameLC = colName.toLowerCase();
-            String units = table.columnAttributes(col).getString("units");
-            isTimeStamp[col] = EDV.TIME_UNITS.equals(units); //units may be null
-            //just keep time_precision if it includes fractional seconds 
-            String tp = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
-            if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
-                tp = null; //default
-            time_precision[col] = tp;
+            boolean isMeta = metavariables.contains(colName); //note this before adding units to name
+            String units = atts.getString("units");
 
-            if (units == null || units.length() == 0) {
-                units = "";
-            } else {
+            if (colName.indexOf('[') < 0 &&
+                String2.isSomething(units) &&
+                !colName.equals("Cruise") &&
+                !colName.equals("Station") &&
+                !colName.equals("Type") &&
+                !colName.equals("yyyy-mm-ddThh:mm:ss.sss") &&
+                !colName.equals("time_ISO8601")) {
+                //try to add units
                 //ODV doesn't care about units standards. UDUNITS or UCUM are fine
                 //ODV doesn't allow internal brackets; 2010-06-15 they say use parens
                 units = String2.replaceAll(units, '[', '(');
                 units = String2.replaceAll(units, ']', ')');
-                units = " [" + units + "]";
+                colName += " [" + units + "]";
             }
 
-            //make ODV type  BYTE, SHORT, ... , TEXT:81
+            String tag = isMeta? "MetaVariable" : "DataVariable";
+            String comment = atts.getString("comment");
+            if (comment == null)
+                comment = "";
+            //See Table 3-5 /programs/odv/odvGuide5.2.1.pdf : make ODV type  BYTE, SHORT, ... , TEXT:81
             //16.3.3 says station labels can be numeric or TEXT
-            String type = "";
-            PrimitiveArray pa = pas[col];
-            if      (pa instanceof ByteArray)   type = "BYTE";
-            else if (pa instanceof CharArray)   type = "TEXT:2"; //2017-04-21 was SHORT
-            else if (pa instanceof ShortArray)  type = "SHORT";   //!
-            else if (pa instanceof IntArray)    type = "INTEGER";
-            else if (pa instanceof LongArray)   type = "DOUBLE";  //!
-            else if (pa instanceof FloatArray)  type = "FLOAT";
-            else if (pa instanceof DoubleArray) type = "DOUBLE";
-            //maxStringLenth + 1 byte used to hold string length
-            //since 1 byte used for string length, max length must be 255
-            else if (pa instanceof StringArray) type = "TEXT:" + 
-                Math.min(255, ((StringArray)pa).maxStringLength() + 1);
+            PAType paType = table.getColumn(col).elementType();
+            String odvType = null;
+            if      (paType == PAType.BYTE)   odvType = "SIGNED_BYTE";
+            else if (paType == PAType.UBYTE)  odvType = "BYTE"; //the original byte type
+            else if (paType == PAType.CHAR)   odvType = "TEXT:2"; 
+            else if (paType == PAType.SHORT)  odvType = "SHORT";   
+            else if (paType == PAType.USHORT) odvType = "UNSIGNED_SHORT";   
+            else if (paType == PAType.INT)    odvType = "INTEGER";
+            else if (paType == PAType.UINT)   odvType = "UNSIGNED_INTEGER"; 
+            else if (paType == PAType.LONG)   odvType = "DOUBLE";  //no long!  so promote
+            else if (paType == PAType.ULONG)  odvType = "DOUBLE";  //no ulong! so promote
+            else if (paType == PAType.FLOAT)  odvType = "FLOAT";
+            else if (paType == PAType.DOUBLE) odvType = "DOUBLE";
+            else if (paType == PAType.STRING) odvType = "INDEXED_TEXT";
             else throw new SimpleException(EDStatic.errorInternal + 
-                "Unexpected data type=" + pa.elementTypeString() +
-                " for column=" + colName + ".");
+                "No odvDataType specified for type=" + pas[col].elementTypeString() + ".");
 
-            //ODV .txt files are ASCII (7 bit) only. I could use 
-            //colName = String2.modifyToBeASCII(colName);            
-            //but that isn't ideal. ODV will display correct ISO-8859-1 text
-            //on most 'Western' computers (where ODV is most commonly used).
-            //So leave high ascii characters in place and hope for best.
-            //!!! I think ERDDAP just allows A-Z a-z 0-9 _, so all are safe.
-
-            //Ensure colName name isn't "Type", which conflicts with ODV "Type" above
-            if (colName.equals("Type"))
-                colName = "Type2"; //crude
-
-            //METAVAR columns
-            //Main time must have colName=yyyy-mm-ddThh:mm:ss.SSS 
-            //  (it's okay that ERDDAP doesn't use .SSS for actual values)
-            //Secondary time (only one allowed) must have colName=time_ISO8601
-            if      (colName.equals(EDV.LON_NAME)) writer.write("Longitude [degrees_east]:METAVAR:" + type);
-            else if (colName.equals(EDV.LAT_NAME)) writer.write("Latitude [degrees_north]:METAVAR:" + type);
-            else if (col == timeCol)               writer.write("yyyy-mm-ddThh:mm:ss.SSS");
-            else if (isTimeStamp[col])             writer.write("time_ISO8601"); //after test col==timeCol
-            else if (col == cruiseCol)             writer.write("Cruise:METAVAR:" + type);
-            else if (col == stationCol)            writer.write("Station:METAVAR:" + type);
-            //all string columns are METAVARs
-            else if (type.startsWith("TEXT:"))     writer.write(colName + ":METAVAR:" + type);
-
-            //it's a data variable 
-            //!!! I don't support the ODV system of quality flag variables 
-            else {
-                //is it the one primaryVar?
-                if (primaryVarCol < 0 && 
-                    colNameLC.indexOf("ship") < 0 &&
-                    colNameLC.indexOf("station") < 0) {
-                    primaryVarCol = col;
-                }
-                String primary = primaryVarCol == col? ":PRIMARYVAR" : "";
-
-                //write the column name
-                writer.write(colName + units + primary + ":" + type);
-            }
+            writer.write("//<" + tag + ">label=" + String2.toJson65536(colName) +  
+                " value_Type=\"" + odvType + "\" " +
+                "qf_schema=\"\" " +  //!!! I don't support the ODV system of quality flag variables 
+                //"significant_digits=\"???\" " +
+                "is_primary_variable=\"" + (colName.equals(primaryVar)? "T" : "F") + "\" " +  
+                "comment=" + String2.toJson65536(comment) +  
+                " </" + tag + ">\n");
         }
-        writer.write('\n');
 
         //write data
+        int iso8601Col = table.findColumnNumber("time_ISO8601");
+        int yyyyCol    = table.findColumnNumber("yyyy-mm-ddThh:mm:ss.sss");
         for (int row = 0; row < nRows; row++) {
-            //write mandatory columns that we don't have data for
-            //Type: better if a specific type, see section 16.3.3
-            //  'B' for stations with <250 samples (e.g., bottle data) 
-            //  'C' for stations with >=250 samples (e.g., CTD, XBT, etc.). 
-            //  '*' lets ODV make the choice.
-            //  If Bot. Depth values are not available, you should leave this field empty.  (meaning '*'?)
-            writer.write('*');  
-            if (cruiseCol < 0)
-                writer.write("\t");
-            if (stationCol < 0)
-                writer.write("\t");
-            if (timeCol < 0)
-                writer.write("\t");
             for (int col = 0; col < nCols; col++) {
-                writer.write('\t');  //since Type and other columns were written above
-                if (isTimeStamp[col]) {
-                    //!!! use time_precision (may be greater seconds or decimal seconds).
+                writer.write(col == yyyyCol || col == iso8601Col?
+                    //!!!was use variable's time_precision (may be greater than seconds or may be .001 seconds).
+                    //2020-04-14 now this matches format promised above (to ensure ODV can parse it)
                     //ODV ignores time zone info, but okay to specify, e.g., Z (see 2010-06-15 notes)
-                    writer.write(Calendar2.epochSecondsToLimitedIsoStringT(
-                        time_precision[col], pas[col].getDouble(row), ""));
+                    Calendar2.epochSecondsToLimitedIsoStringT(
+                        "1970-01-01T00:00:00.000Z", pas[col].getDouble(row), "") :  
                     //missing numeric will be empty cell; that's fine
-                } else {
-                    //See comments above about ISO-8859-1. I am choosing *not* to strip high ASCII chars here.
-                    writer.write(pas[col].getTsvString(row)); //a json string
-                }
+                    //Now UTF-8, so leave all chars as is
+                    pas[col].getUtf8TsvString(row)); //a json-like string without surrounding "'s
+                writer.write(col < nCols-1? '\t' : '\n');
             }
-            writer.write('\n');
         }
 
         //done!
@@ -6492,6 +6514,7 @@ public abstract class EDDTable extends EDD {
         if (reallyVerbose) String2.log("  EDDTable.saveAsODV done. TIME=" + 
             (System.currentTimeMillis() - time) + "ms\n");
     }
+
 
 
     /**
@@ -8908,7 +8931,7 @@ public abstract class EDDTable extends EDD {
         String dir, String fileName, String fileTypeName) throws Throwable {
 
         if (accessibleViaMAG().length() > 0)
-            throw new SimpleException(accessibleViaMAG());
+            throw new SimpleException(EDStatic.queryError + accessibleViaMAG());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         if (userDapQuery == null)
@@ -8994,7 +9017,7 @@ public abstract class EDDTable extends EDD {
 
         //*** write the header
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
         try {
             HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
             writer.write(EDStatic.startHeadHtml(tErddapUrl,  
@@ -11012,7 +11035,7 @@ public abstract class EDDTable extends EDD {
         //insures that subsetVariables has been created.
         if (subsetVariables().length == 0 ||
             accessibleViaSubset().length() > 0) 
-            throw new SimpleException(accessibleViaSubset());
+            throw new SimpleException(EDStatic.queryError + accessibleViaSubset());
         String subsetVariablesCSV = String2.toSVString(subsetVariables, ",", false);
 
         //if present, the lastP parameter is not used for bigTable, but is used for smallTable
@@ -11327,7 +11350,7 @@ public abstract class EDDTable extends EDD {
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
         try {
             writer.write(EDStatic.startHeadHtml(tErddapUrl,  
                 title() + " - " + EDStatic.subset));
@@ -11426,7 +11449,7 @@ public abstract class EDDTable extends EDD {
                 pasa[0] = ANY;
                 //use NaN for numeric missing value
                 //String2.log("pName=" + pName + " last pasa value=" + pasa[pasa.length - 1]);
-                if (!(pa instanceof StringArray)) {
+                if (pa instanceof StringArray) {
                     if (pasa[pasa.length - 1].length() == 0)
                         pasa[pasa.length - 1] = "NaN";
                 }
@@ -11438,7 +11461,7 @@ public abstract class EDDTable extends EDD {
                     if (countsVariables.length() > 0) 
                         countsVariables.append(',');
                     countsVariables.append(SSR.minimalPercentEncode(pName));
-                    if ((pa instanceof StringArray) || edvTimeStamp != null) {
+                    if (pa instanceof StringArray || edvTimeStamp != null) {
                         String tq = "&" + SSR.minimalPercentEncode(pName) + "=" + 
                             SSR.minimalPercentEncode("\"" + param[p] + "\"");
                         newConstraints.append(tq);
@@ -12213,7 +12236,7 @@ public abstract class EDDTable extends EDD {
 
         //is this dataset accessibleViaSubset?
         if (accessibleViaSubset().length() > 0) 
-            throw new SimpleException(accessibleViaSubset());
+            throw new SimpleException(EDStatic.queryError + accessibleViaSubset());
 
         //Make the subsetVariablesDataTable.
         //If this fails, dataset won't load.  Locally, throws exception if failure.
@@ -12240,7 +12263,8 @@ public abstract class EDDTable extends EDD {
             for (int col = 0; col < tSubsetVars.length; col++) {
                 int tCol = table.findColumnNumber(tSubsetVars[col]);
                 if (tCol < 0)
-                    throw new SimpleException("subsetVariable=" + tSubsetVars[col] + 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "subsetVariable=" + tSubsetVars[col] + 
                         " wasn't found in " + adminSubsetFileName + ".json .");
                 if (tCol > col)
                     table.moveColumn(tCol, col);
@@ -12403,7 +12427,7 @@ public abstract class EDDTable extends EDD {
             distinctTable = new Table();
             StringArray varNames = new StringArray();
             //this fully supports all data types (including 2byte chars, longs, and Unicode Strings)
-            PrimitiveArray pas[] = NcHelper.readPAsInNc(fullDistinctFileName, loadVars, varNames);
+            PrimitiveArray pas[] = NcHelper.readPAsInNc3(fullDistinctFileName, loadVars, varNames);
             for (int v = 0; v < varNames.size(); v++) 
                 distinctTable.addColumn(v, varNames.get(v), pas[v],
                     new Attributes(findDataVariableByDestinationName(varNames.get(v)).combinedAttributes()));
@@ -12415,7 +12439,7 @@ public abstract class EDDTable extends EDD {
         String tSubsetVars[] = subsetVariables();
         if (tSubsetVars.length == 0 ||
             accessibleViaSubset().length() > 0) 
-            throw new SimpleException(accessibleViaSubset());
+            throw new SimpleException(EDStatic.queryError + accessibleViaSubset());
 
 
         //create the table and store it in the file
@@ -12440,8 +12464,8 @@ public abstract class EDDTable extends EDD {
         //store in file 
         int randomInt = Math2.random(Integer.MAX_VALUE);
         try {
-            //this fully supports all data types (including 2byte chars, long, and Unicode Strings)
-            NcHelper.writePAsInNc(fullDistinctFileName + randomInt, 
+            //this fully supports all data types (including 2byte chars, long, Unicode Strings, and unsigned types)
+            NcHelper.writePAsInNc3(fullDistinctFileName + randomInt, 
                 new StringArray(tSubsetVars), distinctPAs);
             //sway into place (atomically, in case other threads want this info)
             File2.rename(fullDistinctFileName + randomInt,
@@ -12463,7 +12487,7 @@ public abstract class EDDTable extends EDD {
         boolean datasetIdPrinted = false;
         for (int v = 0; v < tSubsetVars.length; v++) {
             PrimitiveArray pa = distinctPAs[v];
-            if (!(pa instanceof StringArray))
+            if (pa.elementType() != PAType.STRING)
                 continue;
             boolean columnNamePrinted = false;
             int nRows = pa.size();
@@ -12587,12 +12611,13 @@ public abstract class EDDTable extends EDD {
         for (int sv = 0; sv < subsetVariables.length; sv++) {
             EDV edv = findDataVariableByDestinationName(subsetVariables[sv]);
             PrimitiveArray pa = distinctTable.getColumn(sv);
+            PAType paType = pa.elementType();
 
             //avoid excess StringArray conversions (which canonicalize the Strings)
-            if (pa instanceof CharArray ||
-                pa instanceof StringArray) {
+            if (paType == PAType.CHAR ||
+                paType == PAType.STRING) {
 
-                StringArray sa = pa instanceof CharArray? new StringArray(pa) :
+                StringArray sa = paType == PAType.CHAR? new StringArray(pa) :
                     (StringArray)pa;
                 int n = sa.size();
 
@@ -13435,7 +13460,7 @@ public abstract class EDDTable extends EDD {
         String loggedInAs) throws Throwable {
 
         if (accessibleViaSOS().length() > 0)
-            throw new SimpleException(accessibleViaSOS());
+            throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         //validate section=    values are case-sensitive
         String section_ServiceIdentification = "ServiceIdentification";
@@ -13913,7 +13938,7 @@ public abstract class EDDTable extends EDD {
     public void sosPhenomenaDictionary(Writer writer) throws Throwable {
 
         //if (accessibleViaSOS().length() > 0)
-        //    throw new SimpleException(accessibleViaSOS());
+        //    throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         //String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         //String dictUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl;
@@ -14025,8 +14050,8 @@ public abstract class EDDTable extends EDD {
             int which = sosOfferings.indexOf(shortName);
             if (which < 0)
                 //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-                throw new SimpleException(EDStatic.queryError + "procedure=" + shortName + 
-                    " isn't a valid sensor name."); 
+                throw new SimpleException(EDStatic.queryError + 
+                    "procedure=" + shortName + " isn't a valid sensor name."); 
             minLon = sosMinLon.getString(which); 
             maxLon = sosMaxLon.getString(which);
             minLat = sosMinLat.getString(which);
@@ -14408,7 +14433,8 @@ public abstract class EDDTable extends EDD {
         String tabledapType = sosResponseFormatToFileTypeName(responseFormat);
         if (tabledapType == null)
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "responseFormat=" + responseFormat + " is invalid."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "responseFormat=" + responseFormat + " is invalid."); 
         //true if valid (tested above) and "ioos" is in the name
         return responseFormat.indexOf("ioos") >= 0;            
     }
@@ -14451,7 +14477,7 @@ public abstract class EDDTable extends EDD {
         String requestUrl = "/sos/" + datasetID + "/" + sosServer;
 
         if (accessibleViaSOS().length() > 0)
-            throw new SimpleException(accessibleViaSOS());
+            throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         //parse the sosQuery
         String dapQueryAr[]   = sosQueryToDapQuery(loggedInAs, sosQuery);
@@ -14500,7 +14526,7 @@ public abstract class EDDTable extends EDD {
                     //write the results
                     //all likely errors are above, so it is now ~safe to get outputstream
                     out = outputStreamSource.outputStream(String2.UTF_8);
-                    Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8));
+                    Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
                     if (isIoosSosXmlResponseFormat(responseFormat)) 
                         sosObservationsXmlInlineIoos(offeringType, offeringName, 
                             twawm, writer, loggedInAs);
@@ -14566,27 +14592,29 @@ public abstract class EDDTable extends EDD {
         String service = sosQueryMap.get("service"); //test name.toLowerCase()
         if (service == null || !service.equals("SOS"))
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "service=" + service + " should have been \"SOS\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "service=" + service + " should have been \"SOS\"."); 
 
         //version    required
         String version = sosQueryMap.get("version"); //test name.toLowerCase()
         if (version == null || !version.equals(sosVersion))
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "version=" + version + " should have been \"" + 
-                sosVersion + "\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "version=" + version + " should have been \"" + sosVersion + "\"."); 
 
         //request    required
         String request = sosQueryMap.get("request"); //test name.toLowerCase()
         if (request == null || !request.equals("GetObservation"))
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "request=" + request + " should have been \"GetObservation\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "request=" + request + " should have been \"GetObservation\"."); 
 
         //srsName  SOS required; erddap optional (default=4326, the only one supported)
         String srsName = sosQueryMap.get("srsname"); //test name.toLowerCase()
         if (srsName != null && !srsName.endsWith(":4326"))
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "srsName=" + srsName + 
-                " should have been \"urn:ogc:def:crs:epsg::4326\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "srsName=" + srsName + " should have been \"urn:ogc:def:crs:epsg::4326\"."); 
 
         //observedProperty      (spec: 1 or more required; erddap: csv list or none (default=all vars)
         //   long (phenomenaDictionary#...) or short (datasetID or edvDestinationName)   
@@ -14609,7 +14637,8 @@ public abstract class EDDTable extends EDD {
                 if (dv < 0 ||
                     dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
                     dv == timeIndex || dv == sosOfferingIndex)
-                    throw new SimpleException(EDStatic.queryError + "observedProperty=" + property + " is invalid."); 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "observedProperty=" + property + " is invalid."); 
                 requestedVars.add(property);
             }
         }
@@ -14641,7 +14670,8 @@ public abstract class EDDTable extends EDD {
             whichOffering = sosOfferings.indexOf(requestShortOfferingName);
             if (whichOffering < 0) 
                 //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-                throw new SimpleException(EDStatic.queryError + "offering=" + requestOffering + " is invalid."); 
+                throw new SimpleException(EDStatic.queryError + 
+                    "offering=" + requestOffering + " is invalid."); 
             dapQuery.append("&" + dataVariables[sosOfferingIndex].destinationName() + "=" +
                 SSR.minimalPercentEncode("\"" + requestShortOfferingName + "\""));        
         }
@@ -14649,38 +14679,42 @@ public abstract class EDDTable extends EDD {
         //procedure    forbidden
         String procedure = sosQueryMap.get("procedure"); //test name.toLowerCase()
         if (procedure != null)
-            throw new SimpleException(EDStatic.queryError + "\"procedure\" is not supported."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "\"procedure\" is not supported."); 
 
         //result    forbidden
         String result = sosQueryMap.get("result"); //test name.toLowerCase()
         if (result != null)
-            throw new SimpleException(EDStatic.queryError + "\"result\" is not supported."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "\"result\" is not supported."); 
 
         //responseMode  SOS & erddap optional (default="inline")
         //String responseMode = sosQueryMap.get("responsemode"); //test name.toLowerCase()
         //if (responseMode == null) 
         //    responseMode = "inline";
         //if (!responseMode.equals("inline") && !responseMode.equals("out-of-band"))
-        //    throw new SimpleException(EDStatic.queryError + "responseMode=" + responseMode + 
-        //        " should have been \"inline\" or \"out-of-band\"."); 
+        //    throw new SimpleException(EDStatic.queryError + 
+        //        "responseMode=" + responseMode + " should have been \"inline\" or \"out-of-band\"."); 
 
         //responseFormat
         String responseFormat = sosQueryMap.get("responseformat"); //test name.toLowerCase()
         String fileTypeName = sosResponseFormatToFileTypeName(responseFormat);
         if (fileTypeName == null)
             //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-            throw new SimpleException(EDStatic.queryError + "responseFormat=" + responseFormat + " is invalid."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "responseFormat=" + responseFormat + " is invalid."); 
         //if ((isIoosSosXmlResponseFormat(responseFormat) ||
         //     isOostethysSosXmlResponseFormat(responseFormat)) && 
         //    responseMode.equals("out-of-band")) 
-        //    throw new SimpleException(EDStatic.queryError + "for responseFormat=" + responseFormat + 
+        //    throw new SimpleException(EDStatic.queryError + 
+        //        "for responseFormat=" + responseFormat + 
         //        ", responseMode=" + responseMode + " must be \"inline\"."); 
 
         //resultModel    optional, must be om:Observation
         String resultModel = sosQueryMap.get("resultmodel"); //test name.toLowerCase()
         if (resultModel != null && !resultModel.equals("om:Observation"))
-            throw new SimpleException(EDStatic.queryError + "resultModel=" + resultModel + 
-                " should have been \"om:Observation\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "resultModel=" + resultModel + " should have been \"om:Observation\"."); 
 
         //eventTime   optional start or start/end               spec allow 0 or many
         String eventTime = sosQueryMap.get("eventtime"); //test name.toLowerCase()
@@ -14698,8 +14732,8 @@ public abstract class EDDTable extends EDD {
             else {
                 int lpo = eventTime.lastIndexOf('/');
                 if (lpo != spo)
-                    throw new SimpleException(EDStatic.queryError + "ERDDAP doesn't support '/resolution' " +
-                        "in eventTime=beginTime/endTime/resolution."); 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "ERDDAP doesn't support '/resolution' in eventTime=beginTime/endTime/resolution."); 
                 dapQuery.append("&time>=" + eventTime.substring(0, spo) +
                                 "&time<=" + eventTime.substring(spo + 1));
             }
@@ -14712,8 +14746,8 @@ public abstract class EDDTable extends EDD {
         } else if (foi.toLowerCase().startsWith("bbox:")) { //test.toLowerCase
             String bboxSA[] = String2.split(foi.substring(5), ',');
             if (bboxSA.length != 4)
-                throw new SimpleException(
-                    EDStatic.queryError + "featureOfInterest=BBOX must have 4 comma-separated values.");
+                throw new SimpleException(EDStatic.queryError + 
+                    "featureOfInterest=BBOX must have 4 comma-separated values.");
 
             double d1 = String2.parseDouble(bboxSA[0]);
             double d2 = String2.parseDouble(bboxSA[2]);
@@ -14733,8 +14767,8 @@ public abstract class EDDTable extends EDD {
                 if (!Double.isNaN(d2)) dapQuery.append("&latitude<=" + d2);
             }
         } else {
-            throw new SimpleException(
-                EDStatic.queryError + "featureOfInterest=" + foi + " is invalid. Only BBOX is allowed.");
+            throw new SimpleException(EDStatic.queryError + 
+                "featureOfInterest=" + foi + " is invalid. Only BBOX is allowed.");
         }
 
         //add dataVariables to start of dapQuery
@@ -14749,14 +14783,16 @@ public abstract class EDDTable extends EDD {
             
             //responseFormat is an image type
             if (requestedVars.size() == 0) {
-                throw new SimpleException(EDStatic.queryError + "for image responseFormats (e.g., " + responseFormat + 
+                throw new SimpleException(EDStatic.queryError + 
+                    "for image responseFormats (e.g., " + responseFormat + 
                     "), observedProperty must list one or more simple observedProperties."); 
 
             } else if (requestedVars.size() == 1) {
 
                 EDV edv1 = findDataVariableByDestinationName(requestedVars.get(0));
                 if (edv1.destinationDataPAType().equals(PAType.STRING)) 
-                    throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "for image responseFormats, observedProperty=" + 
                         requestedVars.get(0) + " can't be a String phenomena."); 
 
                 if (whichOffering == -1) {
@@ -14774,10 +14810,12 @@ public abstract class EDDTable extends EDD {
                 EDV edv1 = findDataVariableByDestinationName(requestedVars.get(0));
                 EDV edv2 = findDataVariableByDestinationName(requestedVars.get(1));
                 if (edv1.destinationDataPAType().equals(PAType.STRING)) 
-                    throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "for image responseFormats, observedProperty=" + 
                         requestedVars.get(0) + " can't be a String phenomena."); 
                 if (edv2.destinationDataPAType().equals(PAType.STRING)) 
-                    throw new SimpleException(EDStatic.queryError + "for image responseFormats, observedProperty=" + 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "for image responseFormats, observedProperty=" + 
                         requestedVars.get(1) + " can't be a String phenomena."); 
 
                 if (edv1.ucumUnits() != null && edv2.ucumUnits() != null &&
@@ -14854,7 +14892,7 @@ public abstract class EDDTable extends EDD {
         Writer writer, String loggedInAs) throws Throwable {
 
         //if (accessibleViaSOS().length() > 0)
-        //    throw new SimpleException(accessibleViaSOS());
+        //    throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
@@ -15120,7 +15158,7 @@ public abstract class EDDTable extends EDD {
         String loggedInAs) throws Throwable {
 
         //if (accessibleViaSOS().length() > 0)
-        //    throw new SimpleException(accessibleViaSOS());
+        //    throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
@@ -15450,7 +15488,8 @@ public abstract class EDDTable extends EDD {
                         } else if (tAltIndex < 0 && tDepthIndex < 0) {
                             //withinTimeIndex may not be tAltIndex or tDepthIndex, 
                             //so ensure there is an tAltIndex or tDepthIndex
-                            throw new SimpleException("This dataset is not suitable for SOS: " +
+                            throw new SimpleException(EDStatic.queryError + 
+                                "This dataset is not suitable for SOS: " +
                                 "there are multiple values for one time, " + 
                                 "but there is no altitude or depth variable.");
                         } else {
@@ -15459,7 +15498,7 @@ public abstract class EDDTable extends EDD {
                             int tAltDepthIndex = tAltIndex >= 0? tAltIndex : tDepthIndex;
                             String val = table.getStringData(tAltDepthIndex, timeRow);
                             if (val.equals(lastAltVal))
-                                throw new SimpleException(
+                                throw new SimpleException(EDStatic.queryError + 
                                     "This dataset is not suitable for SOS: " +
                                     "there are multiple values for one time, " +
                                     "but not because of the altitude or depth variable.");
@@ -15522,7 +15561,8 @@ public abstract class EDDTable extends EDD {
                             } else if (tAltIndex < 0 && tDepthIndex < 0) {
                                 //withinTimeIndex may not be tAltIndex or tDepthIndex, 
                                 //so ensure there is an tAltIndex or tDepthIndex
-                                throw new SimpleException("This dataset is not suitable for SOS: " +
+                                throw new SimpleException(EDStatic.queryError + 
+                                    "This dataset is not suitable for SOS: " +
                                     "there are multiple values for one time, " +
                                     "but there is no altitude variable.");
                             } else {
@@ -15531,7 +15571,7 @@ public abstract class EDDTable extends EDD {
                                 int tAltDepthIndex = tAltIndex >= 0? tAltIndex : tDepthIndex;
                                 String val = table.getStringData(tAltDepthIndex, timeRow);
                                 if (val.equals(lastAltVal))
-                                    throw new SimpleException(
+                                    throw new SimpleException(EDStatic.queryError + 
                                         "This dataset is not suitable for SOS: " +
                                         "there are multiple values for one time, " +
                                         "but not because of the altitude or depth variable.");
@@ -15632,7 +15672,7 @@ public abstract class EDDTable extends EDD {
         String loggedInAs) throws Throwable {
 
         //if (accessibleViaSOS().length() > 0)
-        //    throw new SimpleException(accessibleViaSOS());
+        //    throw new SimpleException(EDStatic.queryError + accessibleViaSOS());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
@@ -16871,7 +16911,7 @@ public abstract class EDDTable extends EDD {
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(EDStatic.noXxxNoLL);
+            throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -17636,7 +17676,7 @@ writer.write(
         //future: support datasets with x,y (and not longitude,latitude)?
 
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(EDStatic.noXxxNoLL);
+            throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/tabledap/" + datasetID;

@@ -71,7 +71,7 @@ public class TableWriterGeoJson extends TableWriter {
         super(tEdd, tNewHistory, tOutputStreamSource);
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
-            throw new SimpleException(EDStatic.errorJsonpFunctionName);
+            throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
     }
 
 
@@ -106,7 +106,7 @@ public class TableWriterGeoJson extends TableWriter {
             latColumn = table.findColumnNumber(EDV.LAT_NAME);
             altColumn = table.findColumnNumber(EDV.ALT_NAME); 
             if (lonColumn < 0 || latColumn < 0) 
-                throw new SimpleException("Error: " +
+                throw new SimpleException(EDStatic.queryError + 
                     "Requests for GeoJSON data must include the longitude and latitude variables.");
             //it is unclear to me if specification supports altitude in coordinates info...
             isTimeStamp = new boolean[nColumns];
@@ -126,8 +126,8 @@ public class TableWriterGeoJson extends TableWriter {
             }
 
             //write the header
-            writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+            writer = String2.getBufferedOutputStreamWriterUtf8(
+                outputStreamSource.outputStream(String2.UTF_8));
             if (jsonp != null) 
                 writer.write(jsonp + "(");
 

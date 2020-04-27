@@ -60,6 +60,28 @@ public class StringArray extends PrimitiveArray {
         return 20;
     }
 
+    /** 
+     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * expressed as a double. FloatArray and StringArray return Double.NaN. 
+     */
+    public double missingValueAsDouble() {
+        return Double.MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index equals the cohort missingValue. 
+     */
+    public boolean isMissingValue(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in StringArray.isMissingValue: index (" + 
+                index + ") >= size (" + size + ").");
+        StringHolder sh = array[index];
+        if (sh == null)
+            return true;
+        char car[] = sh.charArray();
+        return car == null || car.length == 0;
+    }
+
     /**
      * This is the main data structure.
      * This is private, because the Strings are stored as utf8 byte[].
@@ -320,8 +342,8 @@ public class StringArray extends PrimitiveArray {
             //open the file
             if (charset == null || charset.length() == 0)
                 charset = String2.ISO_8859_1;
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(
-                new BufferedOutputStream(new FileOutputStream(fileName, append)), charset));
+            bufferedWriter = String2.getBufferedOutputStreamWriter(
+                new FileOutputStream(fileName, append), charset);
                          
             //write the text to the file
             for (int i = 0; i < size; i++) {
@@ -351,12 +373,19 @@ public class StringArray extends PrimitiveArray {
     }
 
 
-    /** This returns the minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "\u0000";}
+    /** This returns a new PAOne with the minimum value that can be held by this class. 
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b for ByteArray. 
+     */
+    public PAOne MINEST_VALUE() {return PAOne.fromString("\u0000");}
 
-    /** This returns the maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String MAXEST_VALUE() {return "\uFFFE";}
+    /** This returns a new PAOne with the maximum value that can be held by this class 
+     *   (not including the cohort missing value). 
+     *
+     * @return a new PAOne with the maximum value that can be held by this class, e.g., 126 for ByteArray. 
+     */
+    public PAOne MAXEST_VALUE() {return PAOne.fromString("\uFFFE");}
+
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -440,12 +469,12 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (PATYPE_INDEX_STRING) of the element type.
+     * This returns the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType.
      *
-     * @return the class index (PATYPE_INDEX_STRING) of the element type.
      */
-    public int elementTypeIndex() {
-        return PATYPE_INDEX_STRING;
+    public PAType needPAType(PAType tPAType) {
+        return PAType.STRING;
     }
 
     /**
@@ -602,6 +631,26 @@ public class StringArray extends PrimitiveArray {
      */
     public void atInsertString(int index, String value) {
         atInsert(index, value);
+    }
+
+    /**
+     * This adds PAOne's value to the array.
+     *
+     * @param value the value, as a PAOne (or null == MISSING_VALUE).
+     */
+    public void addPAOne(PAOne value) {
+        add(value == null? "" : value.getString());
+    }
+
+    /**
+     * This adds n PAOne's to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a PAOne (or null).
+     */
+    public void addNPAOnes(int n, PAOne value) {
+        addN(n, value == null? "" : value.getString());
     }
 
     /**
@@ -903,6 +952,8 @@ public class StringArray extends PrimitiveArray {
      * This returns an array (perhaps 'array') which has 'size' elements.
      *
      * @return an array (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public String[] toArray() {
         Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); //8L is guess
@@ -917,6 +968,8 @@ public class StringArray extends PrimitiveArray {
      * elements.
      *
      * @return a primitive[] (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public Object toObjectArray() {
         return toArray();
@@ -1032,7 +1085,7 @@ public class StringArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
      */
     public BigInteger getULong(int index) {
         return String2.parseULong(get(index));
@@ -1107,18 +1160,6 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    public String getSimpleString(int index) {
-        return get(index);
-    }
-
-    /**
      * Return a value from the array as a String suitable for a JSON file. 
      * char returns a String with 1 character.
      * String returns a json String with chars above 127 encoded as \\udddd.
@@ -1144,7 +1185,7 @@ public class StringArray extends PrimitiveArray {
 
     /**
      * Return a value from the array as a String suitable for the data section 
-     * of an tsv file, e.g., z \t \u0000 , \".
+     * of an ASCII tsv file, e.g., z \t \u0000 , \".
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
@@ -1155,6 +1196,22 @@ public class StringArray extends PrimitiveArray {
         if (s == null)
             return String2.EMPTY_STRING;
         s = String2.toJson(s);
+        return s.substring(1, s.length() - 1); //remove enclosing quotes
+    }
+
+    /**
+     * Return a value from the array as a String suitable for the data section 
+     * of a UTF-8 tsv file, e.g., z \t \u0000 , \".
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getUtf8TsvString(int index) {
+        String s = get(index);
+        if (s == null)
+            return String2.EMPTY_STRING;
+        s = String2.toJson65536(s);
         return s.substring(1, s.length() - 1); //remove enclosing quotes
     }
 
@@ -1894,7 +1951,7 @@ public class StringArray extends PrimitiveArray {
      * <br>"" becomes sa.length() == 0.
      * <br>" " becomes sa.length() == 1.
      *
-     * @param searchFor
+     * @param searchFor the comma-separated-value string
      * @return a StringArray with the words and double-quoted phrases from searchFor.
      *    The items are trim'd.
      */
@@ -2576,7 +2633,7 @@ public class StringArray extends PrimitiveArray {
 
         //** test default constructor and many of the methods
         Test.ensureEqual(anArray.isIntegerType(), false, "");
-        Test.ensureEqual(anArray.missingValue(), Double.NaN, "");
+        Test.ensureEqual(anArray.missingValue().getRawDouble(), Double.NaN, "");
         anArray.addString("");
         Test.ensureEqual(anArray.get(0),               "", "");
         Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
@@ -3036,11 +3093,12 @@ public class StringArray extends PrimitiveArray {
 
         //min max
         anArray = new StringArray();
-        anArray.addString(anArray.MINEST_VALUE());
-        anArray.addString(anArray.MAXEST_VALUE());
-        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
+        anArray.addPAOne(anArray.MINEST_VALUE());
+        anArray.addPAOne(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE().getString(), "");  //trouble: toString vs getString
         Test.ensureEqual(anArray.getString(0), "\u0000", "");
-        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE().getString(), "");  //trouble: toString vs getString
+        Test.ensureEqual(anArray.getString(1), "\uFFFE", "");
 
         //sort
         anArray = fromCSV("AB, AB, Ab, Ab, ABC, ABc, AbC, aB, aB, ab, ab");

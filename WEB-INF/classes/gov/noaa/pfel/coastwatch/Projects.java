@@ -673,7 +673,7 @@ the early years I was even testing them periodically in an ice bath.
                 if (nStationsCreated == 1) {
                     Table tTable = new Table();
                     tTable.read4DNc("c:/programs/kfm200801/KFMTemperature/" + tempID + ".nc",
-                        null, 0, stationColumnName, 4); //standardizeWhat=0
+                        null, -1, stationColumnName, 4); //standardizeWhat=0
                     String2.log("\nstation0=\n" + tTable.toString(3));
                     //from site ascii file
                     //Anacapa	Admiral's Reef	34	00	200	N	119	25	520	W	16
@@ -3087,7 +3087,7 @@ variables:
 
                             //define newVar in new file
                             newVars[v] = newFile.addVariable(rootGroup, varName, dataType, dimensions); 
-                            NcHelper.setAttributes(nc3Mode, newVars[v], atts);
+                            NcHelper.setAttributes(nc3Mode, newVars[v], atts, NcHelper.isUnsigned(dataType));
                         }
 
                         //define GLOBAL metadata 
@@ -3189,7 +3189,7 @@ variables:
                             //if time
                             } else if (name.equals("time")) {
                                 //just read it and write it unchanged
-                                newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months})); 
+                                newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months}, false)); 
 
                             //if other variables
                             } else {
@@ -3205,12 +3205,15 @@ variables:
                                 newFile.write(newVars[v], array);
                             }
                         }
+                        newFile.close();
+                        newFile = null;
+
                     } finally {
                         try {oldFile.close(); } catch (Exception e) {}
                         oldFile = null;
                     }
                 } finally {
-                    try {newFile.close(); } catch (Exception e) {}
+                    try { if (newFile != null) newFile.abort(); } catch (Exception e) {}
                     newFile = null;
                 }
 
@@ -3262,7 +3265,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             atts.set("units", "count");
 
             Variable var = newFile.addVariable(rootGroup, "longs", dataType, dims); 
-            NcHelper.setAttributes(nc3Mode, var, atts);
+            NcHelper.setAttributes(nc3Mode, var, atts, NcHelper.isUnsigned(dataType));
 
             //define GLOBAL metadata 
             Attributes gatts = new Attributes();
@@ -3288,7 +3291,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             String2.log("\n*** Projects.testLongInNc3 finished successfully.");
 
         } catch (Exception e) {
-            try {if (newFile != null) newFile.close();} catch (Exception e2) {}
+            try {if (newFile != null) newFile.abort();} catch (Exception e2) {}
             String2.log(MustBe.throwableToString(e));
         }
     }
@@ -5743,7 +5746,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "calcofiBio_19840211_66.7_65_NH16.nc",
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             String2.log(table.toString());
             System.exit(0);
         }
@@ -5805,7 +5808,7 @@ project)
             Table inTable = new Table();
             inTable.readNDNc(oldDir + fileName[filei],
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             if (inTable.nRows() != 1)
                 throw new RuntimeException(fileName[filei] + " has nRows=" + inTable.nRows());
             double time = -999f;
@@ -5973,7 +5976,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "subsurface_19490228_92_39.nc",
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             String2.log(table.toString());
             System.exit(0);
         }
@@ -5991,7 +5994,7 @@ project)
         Table outTable = new Table();
         outTable.readNDNc(oldDir + fileName[0],
             null, 0,  //standardizeWhat=0
-            null, Double.NaN, Double.NaN, true);
+            null, Double.NaN, Double.NaN);
             String2.log(outTable.toString());
         String outColNames[] = outTable.getColumnNames();
         String today = Calendar2.getCurrentISODateStringLocal();
@@ -6007,7 +6010,7 @@ project)
             Table inTable = new Table();
             inTable.readNDNc(oldDir + fileName[filei],
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             String inColNames[] = inTable.getColumnNames();
             Test.ensureEqual(outColNames, inColNames, "outColNames doesn't equal inColNames");            
            
@@ -6088,7 +6091,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "surface_19490228_92_39.nc",
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             String2.log(table.toString());
             //System.exit(0);
         }
@@ -6106,7 +6109,7 @@ project)
         Table outTable = new Table();
         outTable.readNDNc(oldDir + fileName[0],
             null, 0,  //standardizeWhat=0
-            null, Double.NaN, Double.NaN, true);
+            null, Double.NaN, Double.NaN);
             String2.log(outTable.toString());
         String outColNames[] = outTable.getColumnNames();
         String today = Calendar2.getCurrentISODateStringLocal();
@@ -6122,7 +6125,7 @@ project)
             Table inTable = new Table();
             inTable.readNDNc(oldDir + fileName[filei],
                 null, 0,  //standardizeWhat=0
-                null, Double.NaN, Double.NaN, true);
+                null, Double.NaN, Double.NaN);
             String inColNames[] = inTable.getColumnNames();
             Test.ensureEqual(outColNames, inColNames, "outColNames doesn't equal inColNames");            
            
@@ -6203,7 +6206,7 @@ project)
             Table table = new Table();
             //1=unpack -- solves problem:
             // intp  first 4 files have add_offset NaN.  remainder have 273.15
-            table.readFlatNc(inDir + fileName, null, 1); //standardizeWhat=1 
+            table.readFlatNc(inDir + fileName, null, 1); //standardizeWhat=1
             int nRows = table.nRows();
 
             //*** ext: some degree_Celsius, some Kelvin (convert to degree_C)
@@ -7235,6 +7238,7 @@ project)
 
             //if close throws Throwable, it is trouble
             ncOut.close(); //it calls flush() and doesn't like flush called separately
+            ncOut = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -7246,8 +7250,7 @@ project)
 
         } catch (Throwable t) {
             //try to close the file
-            try {
-                ncOut.close(); //it calls flush() and doesn't like flush called separately
+            try {  if (ncOut != null) ncOut.abort(); 
             } catch (Throwable t2) {
                 //don't care
             }
@@ -8157,14 +8160,14 @@ towTypesDescription);
                 Dimension latDim = nc.addDimension(rootGroup, latName, nLat);
                 Variable latVar = nc.addVariable(rootGroup, latName, 
                     NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(latDim)); 
-                NcHelper.setAttributes(nc3Mode, latVar, atts);
+                NcHelper.setAttributes(nc3Mode, latVar, atts, false);  //isUnsigned
 
                 //lon
                 atts.add("units", "degrees_east");
                 Dimension lonDim = nc.addDimension(rootGroup, lonName, nLon);
                 Variable lonVar = nc.addVariable(rootGroup, lonName, 
                     NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(lonDim)); 
-                NcHelper.setAttributes(nc3Mode, lonVar, atts);
+                NcHelper.setAttributes(nc3Mode, lonVar, atts, false); //isUnsigned
 
                 //write global attributes
                 //NcHelper.setAttributes(nc3Mode, nc, "NC_GLOBAL", ada.globalAttributes());
@@ -8186,6 +8189,7 @@ towTypesDescription);
 
                 //if close throws Throwable, it is trouble
                 nc.close(); //it calls flush() and doesn't like flush called separately
+                nc = null;
 
                 //diagnostic
                 String2.log("  createViirsLatLon finished successfully\n");
@@ -8193,7 +8197,7 @@ towTypesDescription);
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             } finally {
-                nc.close();
+                if (nc != null) nc.abort();
             }
         }
 
@@ -8213,6 +8217,7 @@ towTypesDescription);
                 " [0]=" + pa.getString(0) +
                 " [1]=" + pa.getString(1) +
                 " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1));
+
 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
@@ -8814,7 +8819,7 @@ towTypesDescription);
             if (fileName != null && fileName.matches(nameRegex)) {
                 table.clear();
                 table.readNDNc(dir + fileName, null, 0,  //standardizeWhat=0
-                    null, 0, 0, true);
+                    null, 0, 0);
                 int nCols = table.nColumns();
                 PrimitiveArray pa = table.globalAttributes().get("wmo_platform_code");
                 tally.add("wmo_platform_code",
@@ -9653,6 +9658,76 @@ towTypesDescription);
         String2.log("\n*** Projects.unGz finished. nTry=" + fileNames.length + " nFail=" + nFail);
     }
 
+    /** This is a 2020-04-10 test that NetcdfFileWriter.abort() succeeds and closes the file. */
+    public static void testNcAbort() throws Exception {
+
+        String fullName = "/downloads/testNcAbort.nc";
+
+        //delete file if it already exists
+        File file = new File(fullName);
+        if (file.exists()) {
+            System.out.println("result of initial file.delete()=" + file.delete());  
+            System.out.println("file.exists=" + file.exists());  
+        }
+        file = null; //so this isn't excuse for file not being deleted later
+
+        //open the file (before 'try'); if it fails, no temp file to delete
+        System.out.println("createNew file=" + fullName);  
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName);
+        
+        try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+
+            //define the dimensions
+            int nX = 3;
+            Dimension aDimension  = nc.addDimension(rootGroup, "x", nX);
+
+            //add the variables
+            Variable var = nc.addVariable(rootGroup, "var0", DataType.BYTE, Arrays.asList(aDimension)); 
+
+            rootGroup.addAttribute(new ucar.nc2.Attribute("testAttribute", 
+                Array.factory(DataType.UBYTE, new int[]{4}, new byte[]{2,4,6,8})));
+
+            nc.create();
+
+            Array ar = Array.factory(DataType.UBYTE, new int[]{nX}, new byte[]{1,2,3});
+            nc.write(var, ar);
+
+            //if close throws exception, it is trouble
+            nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
+
+            System.out.println("shouldn't get here");
+
+        } catch (Exception e) {
+            System.out.println("caught Exception e (before abort):");
+            e.printStackTrace();
+            try {
+                if (nc != null) { 
+                    nc.abort(); 
+                    nc = null; //so this isn't excuse for file not being deleted later
+                }
+            } catch (Exception e2) {
+                System.out.println("caught Exception e2 (caused by abort):");
+                e2.printStackTrace();
+            }
+
+            //delete the partial file
+            file = new File(fullName);
+            if (file.exists())
+                System.out.println("result of file.delete()=" + file.delete());  
+
+            System.out.println("file still exists=" + file.exists());  
+
+            throw e;
+
+        }
+    }
+
+
+
     /**
      * This converts a NOAA Passive Acoustic Spectrum csv file into a .nc file.
      */
@@ -9708,7 +9783,7 @@ towTypesDescription);
             atts.add("standard_name", "time");
             atts.add("units", "seconds");
             newVars[0] = newFile.addVariable(rootGroup, "timeStamp", dataType, dimensions); 
-            NcHelper.setAttributes(nc3Mode, newVars[0], atts);
+            NcHelper.setAttributes(nc3Mode, newVars[0], atts, NcHelper.isUnsigned(dataType));
 
             //create the freq dimension
             Dimension freqDimension = newFile.addDimension(rootGroup, "frequency", nCols1);
@@ -9726,7 +9801,7 @@ towTypesDescription);
             atts.add("standard_name", "sound_frequency");
             atts.add("units", "s-1");
             newVars[1] = newFile.addVariable(rootGroup, "frequency", dataType, dimensions); 
-            NcHelper.setAttributes(nc3Mode, newVars[1], atts);
+            NcHelper.setAttributes(nc3Mode, newVars[1], atts, NcHelper.isUnsigned(dataType));
 
             //create the acoustic variable
             dimensions.clear();
@@ -9745,7 +9820,7 @@ towTypesDescription);
             atts.add("standard_name", "sound_intensity_level_in_water");
             atts.add("units", "dB");
             newVars[2] = newFile.addVariable(rootGroup, "acoustic", dataType, dimensions); 
-            NcHelper.setAttributes(nc3Mode, newVars[2], atts);
+            NcHelper.setAttributes(nc3Mode, newVars[2], atts, NcHelper.isUnsigned(dataType));
 
             //define newVar in new file
 
@@ -9808,9 +9883,11 @@ towTypesDescription);
                 Variable var = newVars[v];
                 newFile.write(newVars[v], array[v]);
             }
-        } finally {
-            try {newFile.close(); } catch (Exception e) {}
+            newFile.close();
             newFile = null;
+
+        } finally {
+            try {if (newFile != null) newFile.abort(); } catch (Exception e) {}
         }
     }
 

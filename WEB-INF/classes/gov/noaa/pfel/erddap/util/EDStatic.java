@@ -168,6 +168,7 @@ public class EDStatic {
      * <br>2.00 released on 2019-06-26
      * <br>2.01 released on 2019-07-02
      * <br>2.02 released on 2019-08-21
+     * <br>2.10 released ... (version jump because of new PATypes)
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -181,7 +182,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.03"; //see comment above
+    public static String erddapVersion = "2.10"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -2655,6 +2656,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         resetTheForm               = messages.getNotNothingString("resetTheForm",               errorInMethod);
         resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            errorInMethod);
         resourceNotFound           = messages.getNotNothingString("resourceNotFound",           errorInMethod);
+        resourceNotFound += " ";
         resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  errorInMethod);
         resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         errorInMethod);
         restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  errorInMethod);
@@ -2940,13 +2942,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 String2.log(".nc4 files can be created in this ERDDAP installation.");
 
             } finally {
-                try {if (nc != null) nc.close(); } catch (Throwable t3) {}
+                try {if (nc != null) nc.abort(); } catch (Throwable t3) {}
             }
 
         } catch (Throwable t) {
             accessibleViaNC4 = String2.canonical(
                 MessageFormat.format(noXxxBecause2, ".nc4",
-                    resourceNotFound + " netcdf-c library"));
+                    resourceNotFound + "netcdf-c library"));
             String2.log(t.toString() + "\n" + accessibleViaNC4);
         }
 //        File2.delete(testNc4Name);
@@ -5331,11 +5333,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             String fullMsg = 
                 "Error {\n" +
                 "    code=" + errorNo + ";\n" +
-                "    message=" + String2.toJson65536(msg) + ";\n" +
+                "    message=" + String2.toJson(msg, 65536, false) + ";\n" +
                 "}\n";
-            String2.log("*** lowSendError: isCommitted=" + (response == null || response.isCommitted()) + 
-                " fullMessage=\n" +
-                fullMsg); // + MustBe.getStackTrace());
+            if (msg.indexOf(blacklistMsg) < 0)
+                String2.log("*** lowSendError: isCommitted=" + (response == null || response.isCommitted()) + 
+                    " fullMessage=\n" +
+                    fullMsg); // + MustBe.getStackTrace());
 
             //if response isCommitted, nothing more can be done
             if (response == null) {
@@ -5352,7 +5355,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 OutputStream outputStream = new BufferedOutputStream(response.getOutputStream()); //after all setHeader
                 Writer writer = null;
                 try {
-                    writer = new BufferedWriter(new OutputStreamWriter(outputStream, String2.UTF_8));
+                    writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
                     //from DAP 2.0 section 7.2.4
                     writer.write(fullMsg);
 

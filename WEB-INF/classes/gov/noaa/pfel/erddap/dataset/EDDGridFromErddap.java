@@ -262,7 +262,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //  which is good because it allows quick loading of other datasets to continue.
             //This will fail (good) if dataset has changed significantly and
             //  quickRestart file has outdated information.
-            quickRestartAttributes = NcHelper.readAttributesFromNc(quickRestartFullFileName());
+            quickRestartAttributes = NcHelper.readAttributesFromNc3(quickRestartFullFileName());
 
             if (verbose)
                 String2.log("  using info from quickRestartFile");
@@ -446,7 +446,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                         axisVariables[av].sourceValues());
                 }
                 File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
-                NcHelper.writeAttributesToNc(quickRestartFullFileName(), 
+                NcHelper.writeAttributesToNc3(quickRestartFullFileName(), 
                     quickRestartAttributes);
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));

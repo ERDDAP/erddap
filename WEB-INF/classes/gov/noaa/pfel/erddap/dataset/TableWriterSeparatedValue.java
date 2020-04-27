@@ -125,8 +125,8 @@ public class TableWriterSeparatedValue extends TableWriter {
             }
 
             //write the header
-            writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1));
+            writer = String2.getBufferedOutputStreamWriter88591(
+                outputStreamSource.outputStream(String2.ISO_8859_1));
 
             //write the column names   
             isStringOrChar = new boolean[nColumns];

@@ -213,8 +213,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         table.readNDNc(decompFullName, sourceDataNames.toArray(),
             standardizeWhat,
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-            minSorted, maxSorted, 
-            getMetadata);
+            minSorted, maxSorted);
         //String2.log("  EDDTableFromNcFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
         //table.saveAsDDS(System.out, "s");
 
@@ -351,7 +350,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
         dataSourceTable.readNDNc(sampleFileName, varNames.toStringArray(), 
             tStandardizeWhat,
-            null, 0, 0, true); //getMetadata
+            null, 0, 0); 
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
@@ -520,6 +519,12 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 -1, //defaultStandardizeWhat
                 null,
                 null) + "\n";
+            results = results.replaceAll(
+                "<att name=\"actual_range\" type=\"floatList\">.*</att>", 
+                "<att name=\"actual_range\" type=\"floatList\">... ...</att>");
+            results = results.replaceAll(
+                "<att name=\"actual_range\" type=\"shortList\">.*</att>", 
+                "<att name=\"actual_range\" type=\"shortList\">... ...</att>");
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
@@ -533,6 +538,13 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 "", "", "", "",
                 "-1", ""}, //defaultStandardizeWhat
                 false); //doIt loop?
+            gdxResults = gdxResults.replaceAll(
+                "<att name=\"actual_range\" type=\"floatList\">.*</att>", 
+                "<att name=\"actual_range\" type=\"floatList\">... ...</att>");
+            gdxResults = gdxResults.replaceAll(
+                "<att name=\"actual_range\" type=\"shortList\">.*</att>",
+                "<att name=\"actual_range\" type=\"shortList\">... ...</att>");
+
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
@@ -554,7 +566,7 @@ String expected =
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
-"        <att name=\"cdm_timeseries_variables\">ID, LON, LAT</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">ID, LON, LAT, DEPTH</att>\n" +
 "        <att name=\"contributor_name\">NOAA NDBC</att>\n" +
 "        <att name=\"contributor_role\">Source of data.</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
@@ -562,8 +574,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2020-02-24</att>\n" +
-"        <att name=\"date_issued\">2020-02-24</att>\n" +
+"        <att name=\"date_created\">2020-04-20</att>\n" +  //changes
+"        <att name=\"date_issued\">2020-04-20</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -615,7 +627,7 @@ String expected =
 "        <att name=\"sourceUrl\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
-"        <att name=\"subsetVariables\">ID, LON, LAT</att>\n" +
+"        <att name=\"subsetVariables\">ID, LON, LAT, DEPTH</att>\n" +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from\n" +
 "moored buoys maintained by NDBC and others. Moored buoys are the weather\n" +
 "sentinels of the sea. They are deployed in the coastal and offshore waters\n" +
@@ -643,9 +655,9 @@ String expected =
 "\n" +
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
-"        <att name=\"testOutOfDate\">now-45minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2020-02-24T14:20:00Z</att>\n" + //changes
-"        <att name=\"time_coverage_start\">2020-02-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
+"        <att name=\"time_coverage_end\">2020-04-20T19:00:00Z</att>\n" + //changes
+"        <att name=\"time_coverage_start\">2020-04-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -698,7 +710,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.5805152E9 1.582554E9</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">1.5856992E9 1.5874092E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -707,8 +719,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.583E9</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">1.58E9</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.5875E9</att>\n" +  //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.5855E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -718,7 +730,7 @@ cdmSuggestion() +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Height</att>\n" +
 "            <att name=\"_CoordinateZisPositive\">down</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 0.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" +
 "            <att name=\"axis\">Z</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
@@ -739,7 +751,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Lat</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">32.501 32.501</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
@@ -758,7 +770,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Lon</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-79.099 -79.099</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
@@ -795,7 +807,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Average wind speed (m/s).</att>\n" +
@@ -814,7 +826,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">1.0 25.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Peak 5 or 8 second gust speed (m/s).</att>\n" +
@@ -833,7 +845,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.5 4.3</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period.</att>\n" +
@@ -852,7 +864,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">3.0 13.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Dominant wave period (seconds) is the period with the maximum wave energy.</att>\n" +
@@ -871,7 +883,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">3.6 7.5</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Average wave period (seconds) of all waves during the 20-minute period.</att>\n" +
@@ -890,7 +902,7 @@ cdmSuggestion() +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
-"            <att name=\"actual_range\" type=\"shortList\">5 352</att>\n" +
+"            <att name=\"actual_range\" type=\"shortList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Mean wave direction corresponding to energy of the dominant period (DOMPD).</att>\n" +
@@ -909,7 +921,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">995.5 1034.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" +
 "            <att name=\"comment\">Air pressure (hPa). (&#39;PRES&#39; on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>\n" +
@@ -928,6 +940,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
 "            <att name=\"comment\">Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations.</att>\n" +
@@ -946,9 +959,9 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">16.3 22.7</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">8.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Sea surface temperature (Celsius). For sensor depth, see Hull Description.</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">SST</att>\n" +
@@ -965,6 +978,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Dewpoint temperature taken at the same height as the air temperature measurement.</att>\n" +
@@ -1001,7 +1015,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-4.3 5.8</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">... ...</att>\n" + //changes
 "            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-3.0</att>\n" +
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
@@ -1090,10 +1104,12 @@ cdmSuggestion() +
 
             //2 changes to make it a valid dataset:
             String ts;
-            ts = "<att name=\"cdm_timeseries_variables\">ID, LON, LAT</att>"; //DEPTH should appear Mar ~20, 2020
-            Test.ensureTrue(results.indexOf(ts) > 0, results);
-            ts = "<att name=\"subsetVariables\">ID, LON, LAT</att>"; //DEPTH should appear Mar ~20, 2020
-            Test.ensureTrue(results.indexOf(ts) > 0, results);
+            ts = "<att name=\"cdm_timeseries_variables\">ID, LON, LAT, DEPTH</att>"; 
+            int po = results.indexOf(ts);
+            Test.ensureEqual(results.substring(po, po + ts.length()), ts, results);
+            ts = "<att name=\"subsetVariables\">ID, LON, LAT, DEPTH</att>"; 
+            po = results.indexOf(ts);
+            Test.ensureEqual(results.substring(po, po + ts.length()), ts, results);
             //but they are in sourceAtts. I need to add them to addAtts:
 //!!! This should be done by code that catches latitude, longitude
             results = String2.replaceAll(results, 
@@ -2072,18 +2088,18 @@ expected =
 
                 //write the axis variable attributes
                 atts.clear();
-                NcHelper.getVariableAttributes(timeVar, atts);
-                NcHelper.setAttributes(nc3Mode, timeVar2, atts);
-                NcHelper.setAttributes(nc3Mode, timeVar3, atts);
+                NcHelper.getVariableAttributes( timeVar,  atts);
+                NcHelper.setAttributes(nc3Mode, timeVar2, atts, NcHelper.isUnsigned(timeVar2.getDataType()));
+                NcHelper.setAttributes(nc3Mode, timeVar3, atts, NcHelper.isUnsigned(timeVar3.getDataType()));
 
                 atts.clear();
-                NcHelper.getVariableAttributes(latVar, atts);
-                NcHelper.setAttributes(nc3Mode, latVar2, atts);
-                NcHelper.setAttributes(nc3Mode, latVar3, atts);
+                NcHelper.getVariableAttributes( latVar,  atts);
+                NcHelper.setAttributes(nc3Mode, latVar2, atts, NcHelper.isUnsigned(latVar2.getDataType()));
+                NcHelper.setAttributes(nc3Mode, latVar3, atts, NcHelper.isUnsigned(latVar3.getDataType()));
 
                 atts.clear();
-                NcHelper.getVariableAttributes(lonVar, atts);
-                NcHelper.setAttributes(nc3Mode, lonVar3, atts);
+                NcHelper.getVariableAttributes( lonVar,  atts);
+                NcHelper.setAttributes(nc3Mode, lonVar3, atts, NcHelper.isUnsigned(lonVar3.getDataType()));
 
                 //create data variables
                 Variable newVars2[] = new Variable[vars.length];
@@ -2093,16 +2109,17 @@ expected =
                     Variable var = vars[col];
                     String varName = var.getFullName();
                     Array ar = var.read();
+                    DataType dataType = var.getDataType();
                     newVars2[col] = out2.addVariable(rootGroup2, varName, 
-                        var.getDataType(), Arrays.asList(tDim2, yDim2)); 
+                        dataType, Arrays.asList(tDim2, yDim2)); 
                     newVars3[col] = out3.addVariable(rootGroup3, varName, 
-                        var.getDataType(), Arrays.asList(tDim3, yDim3, xDim3)); 
+                        dataType, Arrays.asList(tDim3, yDim3, xDim3)); 
 
                     //write the data variable attributes
                     atts.clear();
                     NcHelper.getVariableAttributes(var, atts);
-                    NcHelper.setAttributes(nc3Mode, newVars2[col], atts);
-                    NcHelper.setAttributes(nc3Mode, newVars3[col], atts);
+                    NcHelper.setAttributes(nc3Mode, newVars2[col], atts, NcHelper.isUnsigned(dataType));
+                    NcHelper.setAttributes(nc3Mode, newVars3[col], atts, NcHelper.isUnsigned(dataType));
                 }
 
                 //leave "define" mode
@@ -2143,8 +2160,8 @@ expected =
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
                 try { if (in   != null) in.close();   } catch (Exception t2) {}
-                try { if (out2 != null) out2.close(); } catch (Exception t2) {}
-                try { if (out3 != null) out3.close(); } catch (Exception t2) {}
+                try { if (out2 != null) out2.abort(); } catch (Exception t2) {}
+                try { if (out3 != null) out3.abort(); } catch (Exception t2) {}
             }
         }
     }
@@ -3126,7 +3143,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         results = results.replaceAll("\\d{2}:\\d{2}:\\d{2}Z", "99:99:99Z");  //regex replaceAll
         
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_data_type,TimeSeries\n" +
 "*GLOBAL*,cdm_timeseries_variables,\"station, longitude, latitude\"\n" +
 "*GLOBAL*,contributor_name,NOAA NDBC\n" +
@@ -3223,7 +3240,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc6", ".nc"); 
         Table table = new Table();
-        table.readFlatNc(dir + tName, null, 0);
+        table.readFlatNc(dir + tName, null, 0); //standardizeWhat
         results = table.toString();
         //neuter dates that vary
         results = results.replaceAll("\\d{4}-\\d{2}-\\d{2}",  "9999-99-99"); //regex replaceAll
@@ -3622,7 +3639,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "      :actual_range = 20.1, 20.3; // double\n" +
 "      :cell_methods = \"time: mean (interval: 1 hour)\";\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
 "      :long_name = \"SST\";\n" +
@@ -3639,8 +3656,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-02-24\";\n" + //changes every month
-"  :date_issued = \"2020-02-24\";\n" +  //changes every month
+"  :date_created = \"2020-04-20\";\n" + //changes every month
+"  :date_issued = \"2020-04-20\";\n" +  //changes every month
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -3819,7 +3836,7 @@ expected =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 24.2f, 28.0f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
 "      :long_name = \"SST\";\n" +
@@ -4223,7 +4240,7 @@ expected =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 24.1f, 28.0f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
 "      :long_name = \"SST\";\n" +
@@ -4524,7 +4541,7 @@ expected =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 24.1f, 28.0f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
 "      :long_name = \"SST\";\n" +
@@ -4836,7 +4853,7 @@ expected =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 20.1f, 20.2f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
 "      :long_name = \"SST\";\n" +
@@ -4854,8 +4871,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-02-24\";\n" + //changes every month
-"  :date_issued = \"2020-02-24\";\n" +
+"  :date_created = \"2020-04-20\";\n" + //changes every month
+"  :date_issued = \"2020-04-20\";\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -6692,7 +6709,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 38096073;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 38374786;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6737,7 +6754,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.58271804e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.58556288e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6799,7 +6816,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2020-03-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6827,9 +6844,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-03-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2020-04-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2020-03-10 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
+"2020-04-10 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6847,7 +6864,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-03-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6872,7 +6889,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the February 2020 data\\) but is a subset of the " + //month changes
+    "up to and including the March 2020 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -6885,7 +6902,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-02-26T11:54:00Z\";\n" + //changes
+"    String time_coverage_end \"2020-03-30T10:08:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -7634,7 +7651,7 @@ expected =
                     if (sf % 100 == 0) 
                         String2.log("reading file #" + sf + " of " + nSourceFiles);
                     Table tTable = new Table();
-                    tTable.readFlat0Nc(tFileName, null, 0, -1);  //standardizeWhat=0  -1=read all rows
+                    tTable.readFlat0Nc(tFileName, null, -1, -1);  //standardizeWhat=-1  -1=read all rows
                     int tNRows = tTable.nRows();
 
                     //ensure expected columns
@@ -7881,7 +7898,7 @@ float z(z) ;
         for (int sf = 0; sf < nSourceFiles; sf++) {
             try {
                 table.readNDNc(sourceFiles[sf], null, 0, //standardizeWhat=0
-                    null, 0, 0, true); // getMetadata
+                    null, 0, 0); 
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
@@ -8492,7 +8509,7 @@ expected =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 9.3f, 17.0f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :coordinates = \"time latitude longitude\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
@@ -8709,7 +8726,7 @@ String expected2 =
 "      :_FillValue = -9999999.0f; // float\n" +
 "      :actual_range = 9.3f, 17.0f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
-"      :colorBarMinimum = 8.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
 "      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
 "      :coordinates = \"time latitude longitude\";\n" +
 "      :ioos_category = \"Temperature\";\n" +
@@ -11293,7 +11310,7 @@ String expected3 = expected2 +
             try {
                 table.readNDNc((String)arrayList.get(i), vars, 
                     0, //standardizeWhat=0
-                    null, Double.NaN, Double.NaN, true); //getMetadata
+                    null, Double.NaN, Double.NaN); 
                 for (int v = 0; v < table.nColumns(); v++) {
                     tally.add(table.getColumnName(v), 
                         table.columnAttributes(v).getString(attribute));
@@ -12885,31 +12902,51 @@ expected =
                 "&latitude>0&time>=2002-08-03", 
                 dir, globecBottle.className() + "_ODV", ".odvTxt"); 
             String2.log("ODV fileName=" + dir + tName);
-            results = String2.directReadFrom88591File(dir + tName);
-            //String2.log(results);
+            results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+            results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
+                                         "<CreateTime>9999-99-99T99:99:99");
             expected = 
-    "//<Creator>http://www.globec.org/</Creator>\n" +
-    "//<CreateTime>" + today;
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "\nresults=\n" + String2.annotatedString(results));
-
-
-    //T21:09:15
-            expected = 
-//"//<Creator>http://www.globec.org/</Creator>\n" +
-//"//<CreateTime>2013-03-22T17:52:05</CreateTime>\n" +
+"//<Creator>http://www.globec.org/</Creator>\n" +
+"//<CreateTime>9999-99-99T99:99:99</CreateTime>\n" +
+"//<Encoding>UTF-8</Encoding>\n" +
 "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>\n" +
-"//<Source>http://localhost:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
-"//<Version>ODV Spreadsheet V4.0</Version>\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
-"//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:7\tship:METAVAR:TEXT:12\tcast:SHORT\tLongitude [degrees_east]:METAVAR:FLOAT\tLatitude [degrees_north]:METAVAR:FLOAT\taltitude [m]:PRIMARYVAR:INTEGER\tyyyy-mm-ddThh:mm:ss.SSS\tbottle_posn:BYTE\tchl_a_total [ug L-1]:FLOAT\tchl_a_10um [ug L-1]:FLOAT\tphaeo_total [ug L-1]:FLOAT\tphaeo_10um [ug L-1]:FLOAT\tsal00 [PSU]:FLOAT\tsal11 [PSU]:FLOAT\ttemperature0 [degree_C]:FLOAT\ttemperature1 [degree_C]:FLOAT\tfluor_v [volts]:FLOAT\txmiss_v [volts]:FLOAT\tPO4 [micromoles L-1]:FLOAT\tN_N [micromoles L-1]:FLOAT\tNO3 [micromoles L-1]:FLOAT\tSi [micromoles L-1]:FLOAT\tNO2 [micromoles L-1]:FLOAT\tNH4 [micromoles L-1]:FLOAT\toxygen [mL L-1]:FLOAT\tpar [volts]:FLOAT\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
-            po = results.indexOf(expected.substring(0, 13));
-            Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-                "\nresults=\n" + String2.annotatedString(results));
+"//<DataType>Profiles</DataType>\n" +
+"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"ship\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"cast\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
+"//<DataVariable>label=\"altitude [m]\" value_Type=\"INTEGER\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"bottle_posn\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"chl_a_total [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"chl_a_10um [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"phaeo_total [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"phaeo_10um [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"sal00 [PSU]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"sal11 [PSU]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"temperature0 [degree_C]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"temperature1 [degree_C]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"fluor_v [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"xmiss_v [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"PO4 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"N_N [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"NO3 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"Si [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"NO2 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"NH4 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"oxygen [mL L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<DataVariable>label=\"par [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
+"nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
+"nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
+            Test.ensureEqual(results, expected, 
+                "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error."); 
@@ -14095,7 +14132,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2020-03-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2020-04-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14253,6 +14290,7 @@ So the changes seem good. */
 "1s167e\n" +
 //"20n117e\n" + //removed 2013-09-05
 "20n38w\n" +
+"20s10w\n" + //added 2020-04-07
 "21n23w\n" +
 "25s100e\n" + //added 2012-09-06
 "2n10w\n" +
@@ -15343,22 +15381,38 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = String2.annotatedString(String2.directReadFromUtf8File(tDir + tName));
+        results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
+                                     "<CreateTime>9999-99-99T99:99:99");
         expected = 
-////<Creator>???</Creator>
-////<CreateTime>2014-10-22T21:33:31</CreateTime>
-////<Software>ERDDAP - Version 1.53</Software>
-////<Source>http://localhost:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
-"//<Version>ODV Spreadsheet V4.0</Version>\n" +
-"//<DataField>GeneralField</DataField>\n" +
-"//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.SSS\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tints:PRIMARYVAR:INTEGER\tfloats:FLOAT\tdoubles:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
-"*\t\t\t1970-01-02T00:00:00Z\t1980-01-01T05:00:00Z\t1990-01-01T00:09:00Z\t2000-01-01T00:00:20Z\t2010-01-01T00:00:00.030Z\t40\t10000\t1000000\t0.0\t1.0E12\t0\n" +
-"*\t\t\t1970-01-03T00:00:00Z\t1980-01-01T06:00:00Z\t1990-01-01T00:10:00Z\t2000-01-01T00:00:21Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1000001\t1.1\t1.0000000000001E12\t10\n" +
-"*\t\t\t1970-01-04T00:00:00Z\t1980-01-01T07:00:00Z\t1990-01-01T00:11:00Z\t2000-01-01T00:00:22Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1000002\t2.2\t1.0000000000002E12\t20\n";
-        po = results.indexOf("//<Version>");
-        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
-        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+"//<Creator>???</Creator>[10]\n" +
+"//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.10</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>GeneralType</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"T\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"hours [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"minutes [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"seconds [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"ints\" value_Type=\"INTEGER\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"floats\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"doubles\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"Strings\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"[9][9]*[9][9]10000[9]40[9]1970-01-02T00:00:00.000Z[9]3.155508E8[9]6.3115254E8[9]9.4668482E8[9]1.26230400003E9[9]1000000[9]0.0[9]1.0E12[9]0[10]\n" +
+"[9][9]*[9][9]10001[9]41[9]1970-01-03T00:00:00.000Z[9]3.155544E8[9]6.311526E8[9]9.46684821E8[9]1.262304000031E9[9]1000001[9]1.1[9]1.0000000000001E12[9]10[10]\n" +
+"[9][9]*[9][9]10002[9]42[9]1970-01-04T00:00:00.000Z[9]3.15558E8[9]6.3115266E8[9]9.46684822E8[9]1.262304000032E9[9]1000002[9]2.2[9]1.0000000000002E12[9]20[10]\n" +
+"[end]";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
@@ -15823,21 +15877,32 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = String2.annotatedString(String2.directReadFromUtf8File(tDir + tName));
+        results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
+                                     "<CreateTime>9999-99-99T99:99:99");
         expected = 
-//<Creator>???</Creator>
-//<CreateTime>2014-10-22T22:43:55</CreateTime>
-//<Software>ERDDAP - Version 1.53</Software>
-//<Source>http://localhost:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
-"//<Version>ODV Spreadsheet V4.0</Version>\n" +
-"//<DataField>GeneralField</DataField>\n" +
-"//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.SSS\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tdoubles:PRIMARYVAR:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
-"*\t\t\t1970-01-03T00:00:00Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1.0000000000001E12\t10\n" +
-"*\t\t\t1970-01-04T00:00:00Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1.0000000000002E12\t20\n";
-        po = results.indexOf("//<Version>");
-        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
-        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+"//<Creator>???</Creator>[10]\n" +
+"//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.10</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>GeneralType</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"T\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"doubles\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"Strings\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"[9][9]*[9][9]10001[9]41[9]1970-01-03T00:00:00.000Z[9]1.262304000031E9[9]1.0000000000001E12[9]10[10]\n" +
+"[9][9]*[9][9]10002[9]42[9]1970-01-04T00:00:00.000Z[9]1.262304000032E9[9]1.0000000000002E12[9]20[10]\n" +
+"[end]";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
@@ -17150,6 +17215,11 @@ expected =
      */
     public static void testNThreads() throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testNThreads()\n");
+        String answer = String2.getStringFromSystemIn(
+            "This test is very slow. Do full test (f) or skip this (s)?");
+        if ("s".equals(answer))
+            return;
+
         Table.verbose = false;
         Table.reallyVerbose = false;
         EDD.verbose = false;
@@ -17233,6 +17303,11 @@ nThreads=1 time=67 47 69
      */
     public static void testNThreads2(String tDatasetID, int startNThreads, int endNThreads) throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testNThreads2()\n");
+        String answer = String2.getStringFromSystemIn(
+            "This test is very slow. Do full test (f) or skip this (s)?");
+        if ("s".equals(answer))
+            return;
+
         Table.verbose = false;
         Table.reallyVerbose = false;
         EDD.verbose = false;
@@ -18119,7 +18194,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 38096073;\n" + //changes
+"    Int32 actual_range 1, 38374786;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18164,7 +18239,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.58271804e+9;\n" + //changes
+"    Float64 actual_range 4.811229e+8, 1.58556288e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18226,7 +18301,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2020-03-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +

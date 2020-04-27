@@ -319,8 +319,8 @@ public class ArchiveADataset {
                 if (bagitMode) {
                     manifestFullFileName = archiveDir + "manifest-" + 
                         digestExtension1 + ".txt"; //md5 or sha256
-                    manifestFileWriter = new BufferedWriter(new OutputStreamWriter(
-                        new BufferedOutputStream(new FileOutputStream(manifestFullFileName)), String2.UTF_8));            
+                    manifestFileWriter = String2.getBufferedOutputStreamWriterUtf8(
+                        new FileOutputStream(manifestFullFileName));            
 
                     aadSettings = 
                         "ArchiveADataset_container_type: " + mode + "\n" +
@@ -518,8 +518,8 @@ public class ArchiveADataset {
                 if (bagitMode) {
                     manifestFullFileName = archiveDir + "manifest-" + 
                         digestExtension1 + ".txt"; //md5 or sha256
-                    manifestFileWriter = new BufferedWriter(new OutputStreamWriter(
-                        new BufferedOutputStream(new FileOutputStream(manifestFullFileName)), String2.UTF_8));            
+                    manifestFileWriter = String2.getBufferedOutputStreamWriterUtf8(
+                        new FileOutputStream(manifestFullFileName));            
 
                     aadSettings = 
                         "ArchiveADataset_container_type: " + mode + "\n" +
@@ -677,8 +677,8 @@ public class ArchiveADataset {
                 manifestFileWriter = null;
 
                 //create required bagit.txt
-                Writer tw = new BufferedWriter(new OutputStreamWriter(
-                    new BufferedOutputStream(new FileOutputStream(archiveDir + "bagit.txt")), String2.UTF_8));            
+                Writer tw = String2.getBufferedOutputStreamWriterUtf8(
+                    new FileOutputStream(archiveDir + "bagit.txt"));            
                 try {
                     tw.write(
                         "BagIt-Version: 0.97\n" +
@@ -688,8 +688,8 @@ public class ArchiveADataset {
                 }
 
                 //create optional bag-info.txt
-                tw = new BufferedWriter(new OutputStreamWriter(
-                    new BufferedOutputStream(new FileOutputStream(archiveDir + "bag-info.txt")), String2.UTF_8));            
+                tw = String2.getBufferedOutputStreamWriterUtf8(
+                    new FileOutputStream(archiveDir + "bag-info.txt"));            
                 try {
                     tw.write(
                         "Contact-Email: " + contactEmail + "\n" +
@@ -700,8 +700,8 @@ public class ArchiveADataset {
                 }
 
                 //create optional tagmanifest-md5.txt
-                tw = new BufferedWriter(new OutputStreamWriter(
-                    new BufferedOutputStream(new FileOutputStream(archiveDir + "tagmanifest-" + digestExtension1 + ".txt")), String2.UTF_8));            
+                tw = String2.getBufferedOutputStreamWriterUtf8(
+                    new FileOutputStream(archiveDir + "tagmanifest-" + digestExtension1 + ".txt"));            
                 try {
                     tw.write(
                         String2.fileDigest(digestType, archiveDir + "bag-info.txt")                + 

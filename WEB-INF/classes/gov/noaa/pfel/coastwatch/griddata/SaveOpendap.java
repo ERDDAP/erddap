@@ -159,10 +159,11 @@ public class SaveOpendap  {
 
                 //I care about this exception
                 out.close();
+                out = null;
 
             } catch (Exception e) {
                 try {
-                    out.close(); //explicitly close it
+                    if (out != null) out.abort(); //explicitly close it
                 } catch (Exception e2) {
                     //don't care
                 }

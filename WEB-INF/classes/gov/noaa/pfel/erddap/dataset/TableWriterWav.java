@@ -97,7 +97,7 @@ public class TableWriterWav extends TableWriter {
             boolean java8 = System.getProperty("java.version").startsWith("1.8.");
             if (java8 &&
                 (tClass.equals("float") || tClass.equals("double"))) 
-                throw new SimpleException(String2.ERROR + 
+                throw new SimpleException(EDStatic.queryError +  
                 ": Until Java 9, float and double values can't be written to .wav files.");
             for (int col = 0; col < nColumns; col++) {
                 Test.ensureEqual(tClass, 

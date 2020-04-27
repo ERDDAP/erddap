@@ -106,8 +106,8 @@ public class TableWriterEsriCsv extends TableWriter {
         //do firstTime stuff
         if (firstTime) {
             //write the header
-            writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1));
+            writer = String2.getBufferedOutputStreamWriter88591(
+                outputStreamSource.outputStream(String2.ISO_8859_1));
 
             //write the column names   
             isFloat        = new boolean[nColumns];

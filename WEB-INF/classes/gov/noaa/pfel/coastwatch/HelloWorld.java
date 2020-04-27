@@ -9,7 +9,7 @@ public class HelloWorld extends HttpServlet {
 
         res.setContentType("text/html");
         res.setEncoding(String2.UTF_8);
-        OutputStreamWriter out = new OutputStreamWriter(new BufferedOutputStream(res.getOutputStream()), String2.UTF_8);
+        OutputStreamWriter out = String2.outputStreamWriterUtf8(new BufferedOutputStream(res.getOutputStream()));
         out.write(
             "<html>\n" +
             "<head><title>Hello World</title></head>\n" +

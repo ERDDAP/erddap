@@ -352,8 +352,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         table.readNDNc(decompFullName, sourceDataNames.toArray(), 
             standardizeWhat,
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-                minSorted, maxSorted, 
-            getMetadata);
+            minSorted, maxSorted);
         //String2.log("  EDDTableFromHyraxFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
 
         return table;

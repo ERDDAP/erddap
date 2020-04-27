@@ -453,7 +453,7 @@ public class TestUtil {
         Test.ensureEqual(Math2.roundToByte(Double.NaN), Byte.MAX_VALUE, "n");
         Test.ensureEqual(Math2.roundToByte(Double.POSITIVE_INFINITY), Byte.MAX_VALUE, "o");
         Test.ensureEqual(Math2.roundToByte(Double.NEGATIVE_INFINITY), Byte.MAX_VALUE, "p");
-
+      
         //roundToChar
         String2.log("test roundToChar");
         Test.ensureEqual(Math2.roundToChar(-1.49), Character.MAX_VALUE, "a");
@@ -556,6 +556,15 @@ public class TestUtil {
         Test.ensureEqual(Math2.narrowToByte(Byte.MIN_VALUE - 1), Byte.MAX_VALUE, "b");
         Test.ensureEqual(Math2.narrowToByte(5),                  5,              "c");
 
+        //narrowToUByte
+        String2.log("test narrowToUByte");
+        Test.ensureEqual(Math2.narrowToUByte(0),   0,   "");
+        Test.ensureEqual(Math2.narrowToUByte(127), 127, "");
+        Test.ensureEqual(Math2.narrowToUByte(254), 254, "");
+        Test.ensureEqual(Math2.narrowToUByte(255), 255, "");
+        Test.ensureEqual(Math2.narrowToUByte(-1),  255, "");
+        Test.ensureEqual(Math2.narrowToUByte(256), 255, "");
+
         //narrowToChar
         String2.log("test narrowToChar");
         Test.ensureEqual(Math2.narrowToChar(Character.MAX_VALUE + 1), Character.MAX_VALUE, "a");
@@ -567,6 +576,24 @@ public class TestUtil {
         Test.ensureEqual(Math2.narrowToShort(Short.MAX_VALUE + 1), Short.MAX_VALUE, "a");
         Test.ensureEqual(Math2.narrowToShort(Short.MIN_VALUE - 1), Short.MAX_VALUE, "b");
         Test.ensureEqual(Math2.narrowToShort(5),                   5,               "c");
+
+        //narrowToUShort
+        String2.log("test narrowToUShort");
+        Test.ensureEqual(Math2.narrowToUShort(0),       0,   "");
+        Test.ensureEqual(Math2.narrowToUShort(32767), 32767, "");
+        Test.ensureEqual(Math2.narrowToUShort(65534), 65534, "");
+        Test.ensureEqual(Math2.narrowToUShort(65535), 65535, "");
+        Test.ensureEqual(Math2.narrowToUShort(-1),    65535, "");
+        Test.ensureEqual(Math2.narrowToUShort(65536), 65535, "");
+
+        //narrowToUInt
+        String2.log("test narrowToUInt");
+        Test.ensureEqual(Math2.narrowToUInt(0),                   0,   "");
+        Test.ensureEqual(Math2.narrowToUInt(2147483647),  2147483647,  "");
+        Test.ensureEqual(Math2.narrowToUInt(4294967294L), 4294967294L, "");
+        Test.ensureEqual(Math2.narrowToUInt(4294967295L), 4294967295L, "");
+        Test.ensureEqual(Math2.narrowToUInt(-1),          4294967295L, "");
+        Test.ensureEqual(Math2.narrowToUInt(4294967296L), 4294967295L, "");
 
         //floatToDouble
         String2.log("test floatToDouble");
@@ -2398,7 +2425,7 @@ public class TestUtil {
         Test.ensureEqual(String2.parseDouble("0x80000000"), 2147483648L, "");
         Test.ensureEqual(String2.parseDouble("0x80000001"), 2147483649L, "");
         Test.ensureEqual(String2.parseDouble("0xfffffffc"), 4294967292L, "");
-        Test.ensureEqual(String2.parseDouble("1e400"),     Double.POSITIVE_INFINITY, "d");
+        Test.ensureEqual(String2.parseDouble("1e400"),     Double.NaN, "d"); //2020-04-03 was Double.POSITIVE_INFINITY, but now I just want NaN
         Test.ensureEqual(String2.parseDouble("0a"),        Double.NaN, "e");
         Test.ensureEqual(String2.parseDouble(null),        Double.NaN, "e");
         //number starting with 0 is treated as decimal (not octal as Java would)
@@ -2441,7 +2468,7 @@ public class TestUtil {
         Test.ensureEqual(String2.parseFloat("12.5"),    12.5, "a"); //.5 avoids bruised number
         Test.ensureEqual(String2.parseFloat(" -12.5"),  -12.5, "b");
         Test.ensureEqual(String2.parseFloat(" 1.7e2 "), 170, "c");
-        Test.ensureEqual(String2.parseFloat("1e40"),    Float.POSITIVE_INFINITY, "d");
+        Test.ensureEqual(String2.parseFloat("1e40"),    Float.NaN, "d"); //2020-04-03 was Float.POSITIVE_INFINITY, but now I just want NaN
         Test.ensureEqual(String2.parseFloat("0a"),      Float.NaN, "e");
 
         //tokenize

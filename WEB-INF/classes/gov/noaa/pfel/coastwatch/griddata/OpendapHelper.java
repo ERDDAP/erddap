@@ -658,8 +658,8 @@ public class OpendapHelper  {
         else if (pa instanceof UIntArray)   pv = new UInt32PrimitiveVector( new DUInt32(name));
         else if (pa instanceof ShortArray)  pv = new Int16PrimitiveVector(  new DInt16(name));
         else if (pa instanceof UShortArray) pv = new UInt16PrimitiveVector( new DUInt16(name));
-        else if (pa instanceof ByteArray)   pv = new BytePrimitiveVector(   new DByte(name)); 
-        else if (pa instanceof UByteArray)  pv = new BytePrimitiveVector(   new DByte(name));
+        else if (pa instanceof ByteArray ||
+                 pa instanceof UByteArray)  pv = new BytePrimitiveVector(   new DByte(name));
         else throw new Exception(String2.ERROR + "in OpendapHelper.getPrimitiveVector: The PrimitiveArray type=" + 
             pa.elementTypeString() + " is not supported.");
 
@@ -687,7 +687,8 @@ public class OpendapHelper  {
         if (paType == PAType.UINT)   return "UInt32";
         if (paType == PAType.SHORT)  return "Int16";
         if (paType == PAType.USHORT) return "UInt16";
-        if (paType == PAType.BYTE)   return "Byte";
+        if (paType == PAType.BYTE ||
+            paType == PAType.UBYTE)  return "Byte";
         if (paType == PAType.CHAR ||    // DAP has no char, so represent it as a String
             paType == PAType.STRING) return "String";
         throw new Exception(String2.ERROR + "in OpendapHelper.getAtomicType: The classType=" + 
@@ -735,7 +736,7 @@ public class OpendapHelper  {
     public static StringBuilder dasToStringBuilder(String varName, Attributes attributes,
         boolean encodeAsHTML) throws Exception {
         StringBuilder sb = new StringBuilder();
-
+        //String2.log(">> dasToString " + varName + " attributes:\n" + attributes.toString());
         //see EOL definition for comments about it
         int firstUEncodedChar = encodeAsHTML? 65536 : 127;
         sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL); 
@@ -761,9 +762,15 @@ public class OpendapHelper  {
                 ts = "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"";
                 //String2.log(">> ts=" + ts);
                 sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
-            } else if (et == PAType.DOUBLE ||
-                       et == PAType.LONG   ||
+            } else if (et == PAType.LONG   ||
                        et == PAType.ULONG) {
+                //the spec says must be like Ansi C printf, %g format, precision=6
+                for (int pai = 0; pai < paSize; pai++) {
+                    sb.append(pa.getRawString(pai) +
+                        //String.format("%g.6", (Object)new Double(pa.getDouble(pai))) + 
+                        (pai < paSize - 1 ? ", " : ""));  
+                }
+            } else if (et == PAType.DOUBLE) {
                 //the spec says must be like Ansi C printf, %g format, precision=6
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getDouble(pai);
@@ -1322,6 +1329,7 @@ public class OpendapHelper  {
                 Attributes varAtts = new Attributes();
                 getAttributes(das, varNames[v], varAtts);
                 if (debug) String2.log(varAtts.toString());
+                PAType tPAType = null;
                 if (baseType instanceof DGrid) {
                     DGrid dGrid = (DGrid)baseType;
                     int nDims = dGrid.elementCount(true) - 1;                    
@@ -1347,7 +1355,7 @@ public class OpendapHelper  {
                     }
 
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
-                    PAType tPAType = getElementPAType(pv);
+                    tPAType = getElementPAType(pv);
                     if (debug) String2.log("  DGrid pv=" + pv.toString() + " tPAType=" + tPAType);
                     if (tPAType == PAType.STRING) {
                         //make String variable
@@ -1386,7 +1394,7 @@ public class OpendapHelper  {
                     }
 
                     PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
-                    PAType tPAType = getElementPAType(pv);
+                    tPAType = getElementPAType(pv);
                     if (debug) String2.log("  DArray pv=" + pv.toString() + " tPAType=" + tPAType);
                     if (tPAType == PAType.STRING) {
                         //make String variable
@@ -1405,7 +1413,7 @@ public class OpendapHelper  {
                 } else {
                     //it's a scalar variable
                     PrimitiveVector pv = baseType.newPrimitiveVector(); //has no data
-                    PAType tPAType = getElementPAType(pv);
+                    tPAType = getElementPAType(pv);
                     if (debug) String2.log("  scalar pv=" + pv.toString() + " tPAType=" + tPAType);
 
                     if (tPAType == PAType.STRING) {
@@ -1443,7 +1451,7 @@ public class OpendapHelper  {
                 }
 
                 //write data variable attributes in ncOut
-                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts);
+                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts, tPAType.isUnsigned());
             }
 
             //write global attributes in ncOut
@@ -1499,8 +1507,7 @@ public class OpendapHelper  {
         } catch (Throwable t) {
             //try to close the file
             try {
-                if (ncOut != null)
-                    ncOut.close(); //it calls flush() and doesn't like flush called separately
+                if (ncOut != null) ncOut.abort();
             } catch (Throwable t2) {
                 //don't care
             }
@@ -1898,11 +1905,14 @@ public class OpendapHelper  {
             int nDims = sss.length / 3;
             ArrayList<Dimension> dims = new ArrayList();
             int shape[] = new int[nDims];
+            PAType dimPAType[] = new PAType[nDims];
             boolean isDGrid = true; //change if false
 
+            PAType dataPAType[] = new PAType[nVars]; 
             boolean isStringVar[] = new boolean[nVars]; //all false
             Variable newVars[] = new Variable[nVars];
             Variable newDimVars[] = new Variable[nDims];
+            PAType dimPATypes[] = new PAType[nDims];
             for (int v = 0; v < nVars; v++) {
                 //String2.log("  create var=" + varNames[v]);
                 if (varNames[v] == null) 
@@ -1934,8 +1944,9 @@ public class OpendapHelper  {
                             dims.add(ncOut.addDimension(rootGroup, dimName, 
                                 dimSize, false, false)); //isUnlimited, isVariableLength
                             PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
+                            dimPATypes[d] = getElementPAType(pv);
                             newDimVars[d] = ncOut.addVariable(rootGroup, dimName, 
-                                NcHelper.getNc3DataType(getElementPAType(pv)), 
+                                NcHelper.getNc3DataType(dimPATypes[d]), 
                                 Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
@@ -1948,10 +1959,10 @@ public class OpendapHelper  {
 
                     //make the dataVariable
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
-                    PAType tPAType = getElementPAType(pv);
-                    //String2.log("pv=" + pv.toString() + " tPAType=" + tPAType);
+                    dataPAType[v] = getElementPAType(pv);
+                    //String2.log("v=" + v + " pv=" + pv.toString() + " dataPAType=" + dataPAType[v]);
                     newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                        NcHelper.getNc3DataType(tPAType), dims);
+                        NcHelper.getNc3DataType(dataPAType[v]), dims);
 
                 } else if (baseType instanceof DArray) {
                     //dArray is usually 1 dim, but may be multidimensional
@@ -1989,10 +2000,10 @@ public class OpendapHelper  {
 
                     //make the dataVariable
                     PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
-                    PAType tPAType = getElementPAType(pv);
-                    //String2.log("  pv tPAType=" + tPAType);
+                    dataPAType[v] = getElementPAType(pv);
+                    //String2.log("  pv dataPAType=" + dataPAType[v]);
 
-                    if (tPAType == PAType.STRING) {
+                    if (dataPAType[v] == PAType.STRING) {
                         //a String variable.  Add a dim for nchars
                         isStringVar[v] = true;
                         ArrayList tDims = new ArrayList(dims);
@@ -2013,7 +2024,7 @@ public class OpendapHelper  {
                     } else {
                         //a regular variable
                         newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
-                            NcHelper.getNc3DataType(tPAType), dims);
+                            NcHelper.getNc3DataType(dataPAType[v]), dims);
                     }
 
                 } else {
@@ -2034,7 +2045,7 @@ public class OpendapHelper  {
                     String dimName = dims.get(d).getName();               
                     tAtts.clear();
                     getAttributes(das, dimName, tAtts);
-                    NcHelper.setAttributes(nc3Mode, newDimVars[d], tAtts);
+                    NcHelper.setAttributes(nc3Mode, newDimVars[d], tAtts, dimPATypes[d].isUnsigned());
                 }
             }
 
@@ -2042,7 +2053,7 @@ public class OpendapHelper  {
             for (int v = 0; v < nVars; v++) {
                 if (varNames[v] == null)
                     continue;
-                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts[v]);
+                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts[v], dataPAType[v].isUnsigned());
             }
 
             //leave "define" mode in ncOut
@@ -2056,7 +2067,7 @@ public class OpendapHelper  {
                         "?" + dims.get(d).getName() + tProjection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     ncOut.write(newDimVars[d], 
-                        NcHelper.arrayFactory1D(pas[0].toObjectArray()));
+                        NcHelper.get1DArray(pas[0].toObjectArray(), pas[0].isUnsigned()));
                 }
             }
 
@@ -2128,8 +2139,7 @@ public class OpendapHelper  {
         } catch (Throwable t) {
             //try to close the file
             try {
-                if (ncOut != null)
-                    ncOut.close(); //it calls flush() and doesn't like flush called separately
+                if (ncOut != null) ncOut.abort(); 
             } catch (Throwable t2) {
                 //don't care
             }

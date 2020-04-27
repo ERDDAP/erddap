@@ -64,8 +64,15 @@ public class UShortArray extends PrimitiveArray {
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
-    public double missingValue() {
+    public double missingValueAsDouble() {
         return MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index equals the cohort missingValue. 
+     */
+    public boolean isMissingValue(int index) {
+        return getPacked(index) == PACKED_MAX_VALUE;
     }
 
     /**
@@ -212,12 +219,48 @@ public class UShortArray extends PrimitiveArray {
         return sa;
     }
 
-    /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "" + MIN_VALUE;}
+    /**
+     * If this is an unsigned integer type, this makes a signed variant 
+     * (e.g., PAType.UBYTE returns a PAType.BYTE).
+     * The values from pa are then treated as unsigned, e.g., 255 in UByteArray  
+     * becomes -1 in a ByteArray.
+     *
+     * @return a new unsigned PrimitiveArray, or this pa.
+     */
+    public PrimitiveArray makeSignedPA() {
+        Math2.ensureMemoryAvailable(2L * size, "UShortArray");
+        short ar[] = new short[size];
+        System.arraycopy(array, 0, ar, 0, size);
+        return new ShortArray(ar);
+    }
 
-    /** The maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String MAXEST_VALUE() {return "" + (MAX_VALUE - 1);}
+    /**
+     * This makes a UShortArray from the comma-separated values.
+     * <br>null becomes pa.length() == 0.
+     * <br>"" becomes pa.length() == 0.
+     * <br>" " becomes pa.length() == 1.
+     * <br>See also PrimitiveArray.csvFactory(paType, csv);
+     *
+     * @param csv the comma-separated-value string
+     * @return a UShortArray from the comma-separated values.
+     */
+    public static UShortArray fromCSV(String csv) {
+        return (UShortArray)PrimitiveArray.csvFactory(PAType.USHORT, csv);
+    }
+
+    /** This returns a new PAOne with the minimum value that can be held by this class. 
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b for ByteArray. 
+     */
+    public PAOne MINEST_VALUE() {return new PAOne(PAType.USHORT).setInt(MIN_VALUE);}
+
+    /** This returns a new PAOne with the maximum value that can be held by this class 
+     *   (not including the cohort missing value). 
+     *
+     * @return a new PAOne with the maximum value that can be held by this class, e.g., 126 for ByteArray. 
+     */
+    public PAOne MAXEST_VALUE() {return new PAOne(PAType.USHORT).setInt(MAX_VALUE - 1);}
+
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -229,11 +272,11 @@ public class UShortArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the hashcode for this byteArray (dependent only on values,
+     * This returns the hashcode for this UShortArray (dependent only on values,
      * not capacity).
      * WARNING: the algorithm used may change in future versions.
      *
-     * @return the hashcode for this byteArray (dependent only on values,
+     * @return the hashcode for this UShortArray (dependent only on values,
      * not capacity)
      */
     public int hashCode() {
@@ -301,12 +344,22 @@ public class UShortArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (PATYPE_INDEX_USHORT) of the element type.
+     * This returns the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType.
      *
-     * @return the class index (PATYPE_INDEX_USHORT) of the element type.
      */
-    public int elementTypeIndex() {
-        return PATYPE_INDEX_USHORT;
+    public PAType needPAType(PAType tPAType) {
+        //if tPAType is smaller or same, return this.PAType
+        if (tPAType == PAType.UBYTE ||
+            tPAType == PAType.USHORT) return PAType.USHORT;
+
+        //if sideways
+        if (tPAType == PAType.CHAR)  return PAType.STRING;
+        if (tPAType == PAType.BYTE ||
+            tPAType == PAType.SHORT) return PAType.INT;
+
+        //if tPAType is bigger. INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING
+        return tPAType;
     }
 
     /**
@@ -323,7 +376,7 @@ public class UShortArray extends PrimitiveArray {
     /**
      * This adds an already packed value to the array (increasing 'size' by 1).
      *
-     * @param value the already packed value to be added to the array
+     * @param packedValue the already packed value to be added to the array
      */
     public void addPacked(short packedValue) {
         if (size == array.length) //if we're at capacity
@@ -404,6 +457,26 @@ public class UShortArray extends PrimitiveArray {
      */
     public void atInsertString(int index, String value) {
         atInsert(index, Math2.narrowToUShort(String2.parseInt(value)));
+    }
+
+    /**
+     * This adds PAOne's value to the array.
+     *
+     * @param value the value, as a PAOne (or null == MISSING_VALUE).
+     */
+    public void addPAOne(PAOne value) {
+        add(value == null? MAX_VALUE : Math2.narrowToUShort(value.getInt()));
+    }
+
+    /**
+     * This adds n PAOne's to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a PAOne (or null).
+     */
+    public void addNPAOnes(int n, PAOne value) {
+        addN(n, value == null? MAX_VALUE : Math2.narrowToUShort(value.getInt()));
     }
 
     /**
@@ -666,6 +739,8 @@ public class UShortArray extends PrimitiveArray {
      * This returns an array (perhaps 'array') which has 'size' elements.
      *
      * @return an array (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public short[] toArray() {
         if (array.length == size)
@@ -681,6 +756,8 @@ public class UShortArray extends PrimitiveArray {
      * elements.
      *
      * @return a primitive[] (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public Object toObjectArray() {
         return toArray();
@@ -823,7 +900,7 @@ public class UShortArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
      */
     public BigInteger getULong(int index) {
         int b = get(index);
@@ -883,7 +960,8 @@ public class UShortArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * FloatArray converts float to double in a simplistic way.
-     * For this variant: Integer source values will be treated as unsigned.
+     * For this variant: Integer source values will be treated as unsigned
+     * (e.g., a ByteArray with -1 returns 255).
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -930,20 +1008,8 @@ public class UShortArray extends PrimitiveArray {
      *   If this PA is unsigned, this method retuns the unsigned value.
      */
     public String getString(int index) {
-        int s = get(index);
-        return s == MAX_VALUE? "" : String.valueOf(s);
-    }
-
-    /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    public String getSimpleString(int index) {
-        return String.valueOf(get(index));
+        short b = getPacked(index);
+        return b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
     }
 
     /**
@@ -955,8 +1021,8 @@ public class UShortArray extends PrimitiveArray {
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
     public String getJsonString(int index) {
-        int s = get(index);
-        return s == MAX_VALUE? "null" : String.valueOf(s);
+        short b = getPacked(index);
+        return b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
     }
 
     /**
@@ -968,8 +1034,7 @@ public class UShortArray extends PrimitiveArray {
      * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a double. String values are parsed
-     *   with String2.parseDouble and so may return Double.NaN.
+     * @return the value as a String. 
      */
     public String getRawString(int index) {
         return String.valueOf(get(index));
@@ -1316,7 +1381,7 @@ public class UShortArray extends PrimitiveArray {
     /**
      * This appends the data in another pa to the current data.
      * WARNING: information may be lost from the incoming pa if this
-     * primitiveArray is of a simpler type.
+     * primitiveArray is of a smaller type; see needPAType().
      *
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.narrowToChar.
@@ -1537,10 +1602,16 @@ public class UShortArray extends PrimitiveArray {
         Test.ensureEqual(unpack((short)    -2), 65534, "");
         Test.ensureEqual(unpack((short)    -1), 65535, "");
 
+        UShortArray anArray = new UShortArray(new short[]{-32768, -1, 0, 1, 32767}); //packed values
+        Test.ensureEqual(anArray.toString(),              "32768, 65535, 0, 1, 32767", "");
+        anArray = UShortArray.fromCSV(       "0, 1, 32767, 32768, 65535, -1");
+        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535, 65535", "");
+        Test.ensureEqual(anArray.toNccsvAttString(), "0us,1us,32767us,32768us,65535us,65535us", "");
+
         //** test default constructor and many of the methods
-        UShortArray anArray = new UShortArray();
+        anArray = new UShortArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue().getRawDouble(), MAX_VALUE, "");
         anArray.addString("");
         Test.ensureEqual(anArray.get(0),               MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawInt(0),         MAX_VALUE, "");
@@ -1903,11 +1974,12 @@ public class UShortArray extends PrimitiveArray {
 
         //min max
         anArray = new UShortArray();
-        anArray.addString(anArray.MINEST_VALUE());
-        anArray.addString(anArray.MAXEST_VALUE());
-        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
+        anArray.addPAOne(anArray.MINEST_VALUE());
+        anArray.addPAOne(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE().toString(), "");
         Test.ensureEqual(anArray.getString(0), "0", "");
-        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE().toString(), "");
+        Test.ensureEqual(anArray.getString(1), "65534", "");
 
         //tryToFindNumericMissingValue() 
         Test.ensureEqual((new UShortArray(new short[] {         })).tryToFindNumericMissingValue(), Double.NaN, "");

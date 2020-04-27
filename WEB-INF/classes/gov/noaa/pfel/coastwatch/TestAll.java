@@ -123,10 +123,26 @@ public class TestAll  {
 
 //      Boundaries.bobConvertAll();
 //      Boundaries.test();
-//    String2.log("" + ((double)(float)-165.0439527));
-//    String2.log(String2.fileDigest(true, "SHA-256",
+//      String2.log("" + ((double)(float)-165.0439527));
+//      String2.log(String2.fileDigest(true, "SHA-256",
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
+/*
+        ByteArray.test();
+        CharArray.test();
+        ShortArray.test();
+        IntArray.test();
+        LongArray.test();
+        FloatArray.test();
+        DoubleArray.test();
+        StringArray.test();
+        UByteArray.test();
+        UShortArray.test();
+        UIntArray.test();
+        ULongArray.test();
+        PrimitiveArray.test();
+        PAOne.test();
 
+        /* */
 //    Calendar2
 //    String2.log(Calendar2.epochSecondsToIsoStringTZ(1000* 86400L));
 //    GregorianCalendar tgc = Calendar2.parseISODateTimeZulu("0000-01-01");
@@ -162,15 +178,15 @@ public class TestAll  {
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {                
       // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/u00/data/points/AORC_ABRFC_4km/AORC_TMPR_4KM_ABRFC_197901/AORC_TMP_ABRFC_1979010500.nc4"; 
-//      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-v latitude"));  
+//      String tFileName = "/data/hunter/avian_abundance_Crustacean_eaters_normalized.nc"; 
+//      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
 //      String2.log(table.toString());
 //    }
 //    { //find file in dataset with insane min_time  
 //        Table table = new Table();
-//        table.readFlatNc("/downloads/fileTable.nc", null, false); //it logs fileName and nRows=. false=don't unpack
+//        table.readFlatNc("/downloads/fileTable.nc", null, 0); //it logs fileName and nRows=. 0=don't unpack
 //        String2.log(table.getColumnNamesCSVString());
 //      //  table.justKeepColumns(new String[]{"fileList","min"}, "");
 //        table.tryToApplyConstraintsAndKeep(0, 
@@ -183,7 +199,7 @@ public class TestAll  {
 //    Table.testReadGocdNcCF();
 //    Table.testOpendapSequence();
 
-//    Table.debugMode = false; DasDds.main(new String[]{"swfscTrinidadCTD", "-verbose"});
+//    Table.debugMode = false; DasDds.main(new String[]{"ncdcOw6hrP", "-verbose"});
 
       /*
       String c9 = //SSR.getUrlResponseStringNewline(
@@ -323,8 +339,8 @@ m Pathfinder Version 5.2 grid.";
     // https://xmlvalidation.com/
     /*{
         String dirName = "c:/downloads/test.xml";
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            new BufferedOutputStream(new FileOutputStream(dirName, false)), String2.UTF_8);
+        Writer writer = new BufferedWriter(String2.outputStreamWriterutf8(
+            new BufferedOutputStream(new FileOutputStream(dirName, false)));
         //EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeFGDC(writer, null); 
         EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeISO19115(writer, null); 
         //EDD.oneFromDatasetsXml(null, "pmelTaoDyAirt").writeFGDC(writer, null); 
@@ -595,11 +611,10 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    Projects.acousticCsvToNc(
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.csv",
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.nc");
-//    s = EDDGridFromNcFiles.generateDatasetsXml(
-//        "/u00/data/points/AORC_ABRFC_4km/", ".*\\.nc4", "", "", -1, "", null);
+//    s = EDDGridFromNcFiles.generateDatasetsXml("/data/travis/", ".*\\.nc", "", "", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
-//    DasDds.main(new String[]{"NWS_HH_AORC_ABRFC_4km", "-verbose"});
+//    DasDds.main(new String[]{"travisGrid", "-verbose"});
 
 /*
     EDDGridFromNcFiles.testFiles();         //requires nceiPH53sstn1day in localhost ERDDAP
@@ -625,6 +640,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    Projects.makePH53Ncml();
 //    Projects.makeVH20181dayNcmlFiles(2012, 2025);
 //    Projects.testLongInNc3();
+//    Projects.testNcAbort();
 //    String2.log(NcHelper.ncdump(
 //        "/u00/satellite/PH2/ssta/8day/PHA1981304_1981311_ssta.nc", "-v time"));
     /*  
@@ -1218,7 +1234,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2019, 8, 2020, 2, false);  //first/last year(1985..)/month(1..), testMode
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 1, 2020, 3, false);  //first/last year(1985..)/month(1..), testMode
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -1250,7 +1266,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    7) Create ncCF files with the same date range as 2a) above: 
 //       It takes ~20 seconds per month processed
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2019, 8, 2020, 2); //e.g., first/last year(1990..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 1, 2020, 3); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
@@ -1439,6 +1455,9 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    FileVisitorSubdir.testWAF();
       //FishBase datasets
 //    FishBase.convertHtmlToNc("ABNORM");
+
+//    GenerateDatasetsXml.main(new String[]{"-verbose"});  //interactive
+//     DasDds.main(new String[]{"-verbose"});  //interactive
 
 //    Grid.davesSaveAs
 //        String source = "c:/u00/satellite/MB/sstd/5day/MB2006301_2006305_sstd.nc"; //Xmx500 ok; 300 not ok
@@ -2040,6 +2059,7 @@ WaitThenTryAgainException wttae;
         UIntArray.test();
         ULongArray.test();
         PrimitiveArray.test();
+        PAOne.test();
         Attributes.test();
         ResourceBundle2.test();
 
