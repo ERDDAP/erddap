@@ -15,6 +15,7 @@ import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -433,7 +434,7 @@ public abstract class EDDGrid extends EDD {
             destNames.add(axisVariables[av].destinationName());
             pas[av] = axisVariables[av].sourceValues();
         }
-        NcHelper.writePAsInNc(datasetDir() + DIMENSION_VALUES_FILENAME, 
+        NcHelper.writePAsInNc3(datasetDir() + DIMENSION_VALUES_FILENAME, 
             destNames, pas);
         
         //then: set edvga sourceValues to null
@@ -2307,9 +2308,8 @@ public abstract class EDDGrid extends EDD {
             }
 
             if (fileTypeName.equals(".dds")) {
-                Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    outputStreamSource.outputStream(String2.ISO_8859_1),
-                        String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+                Writer writer = String2.getBufferedOutputStreamWriter88591(
+                    outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
                 try {
                     writeDDS(requestUrl, userDapQuery, writer);
                 } finally {
@@ -2339,7 +2339,7 @@ public abstract class EDDGrid extends EDD {
                     }
 
                 } else {
-                    throw new SimpleException(accessibleViaFGDC);
+                    throw new SimpleException(EDStatic.queryError + accessibleViaFGDC);
                 }
                 return;
             }
@@ -2355,7 +2355,7 @@ public abstract class EDDGrid extends EDD {
                 //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
                 //With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
                 OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
                 try {
                     writer.write(EDStatic.startHeadHtml(tErddapUrl,  
                         title() + " - " + EDStatic.daf));
@@ -2428,7 +2428,7 @@ public abstract class EDDGrid extends EDD {
                         try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
                     }
                 } else {
-                    throw new SimpleException(accessibleViaISO19115);
+                    throw new SimpleException(EDStatic.queryError + accessibleViaISO19115);
                 }
                 return;
             }
@@ -2486,7 +2486,8 @@ public abstract class EDDGrid extends EDD {
                 String imageFileType = fileTypeName.substring(0, fileTypeName.length() - 4);
                 Object[] pngInfo = readPngInfo(loggedInAs, userDapQuery, imageFileType);
                 if (pngInfo == null) 
-                    throw new SimpleException(EDStatic.errorFileNotFoundImage);
+                    throw new SimpleException(EDStatic.queryError + 
+                        EDStatic.errorFileNotFoundImage);
 
                 //ok, copy it  (and don't close the outputStream)
                 OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
@@ -2512,7 +2513,7 @@ public abstract class EDDGrid extends EDD {
             if (fileTypeName.equals(".timeGaps")) {
                 String ts = findTimeGaps();
                 OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
                 try {
                     writer.write(ts);
                     writer.flush(); //essential
@@ -2579,7 +2580,7 @@ public abstract class EDDGrid extends EDD {
                 } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
 
                     if (EDStatic.accessibleViaNC4.length() > 0)  
-                        throw new SimpleException(EDStatic.accessibleViaNC4);
+                        throw new SimpleException(EDStatic.queryError + EDStatic.accessibleViaNC4);
         
                     //if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
                     saveAsNc(NetcdfFileWriter.Version.netcdf4,
@@ -2695,12 +2696,12 @@ public abstract class EDDGrid extends EDD {
         if (reallyVerbose)
             String2.log("*** respondToGraphQuery");
         if (accessibleViaMAG().length() > 0)
-            throw new SimpleException(accessibleViaMAG());
+            throw new SimpleException(EDStatic.queryError + accessibleViaMAG());
       
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String formName = "f1"; //change JavaScript below if this changes
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, String2.UTF_8)); 
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
         try {
             HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
 
@@ -4469,9 +4470,8 @@ public abstract class EDDGrid extends EDD {
             int nRAV = ada.nRequestedAxisVariables();
 
             //write the dds    //OPeNDAP 2.0, 7.2.3
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1),
-                String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            Writer writer = String2.getBufferedOutputStreamWriter88591(
+                outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             try {
                 writeDDS(requestUrl, userDapQuery, writer);  
 
@@ -4513,9 +4513,8 @@ public abstract class EDDGrid extends EDD {
         EDStatic.ensureArraySizeOkay(tSize, "OPeNDAP limit");
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.ISO_8859_1),
-            String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = String2.getBufferedOutputStreamWriter88591(
+            outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
         try {
             writeDDS(requestUrl, userDapQuery, writer);  
 
@@ -4608,9 +4607,8 @@ public abstract class EDDGrid extends EDD {
         long time = System.currentTimeMillis();
 
         //get the modified outputStream
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.ISO_8859_1),
-            String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = String2.getBufferedOutputStreamWriter88591(
+            outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
         try {
             //write the DAS
             writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
@@ -4838,8 +4836,8 @@ Attributes {
         long time = System.currentTimeMillis();
 
         //get the writer
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8)); 
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8)); 
         try {
             String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
             writer.write(  //NCML
@@ -4907,10 +4905,11 @@ Attributes {
                 writer.write(">\n");
                 Attributes tAtts = new Attributes(edv.combinedAttributes()); //use a copy
 
-                if (edv.destinationDataPAType() == PAType.STRING)
+                PAType paType = edv.destinationDataPAType();
+                if (paType == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
     // disabled until there is a standard
-    //            else if (edv.destinationDataPAType() == PAType.CHAR)
+    //            else if (paType == PAType.CHAR)
     //                tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
                 writeNcmlAttributes(writer, tAtts, "    "); 
@@ -4955,8 +4954,7 @@ Attributes {
 
             //write the dds    //OPeNDAP 2.0, 7.2.3
             OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStream, String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
+            Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
             try {
                 writeDDS(requestUrl, userDapQuery, writer);  //writer is flushed
 
@@ -5003,8 +5001,7 @@ Attributes {
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
         OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            outputStream, String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
+        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
         try {
             writeDDS(requestUrl, userDapQuery, writer);  
 
@@ -5117,13 +5114,13 @@ Attributes {
 
         //does the dataset support .esriAscii?
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException( 
+            throw new SimpleException(EDStatic.queryError +  
                 MessageFormat.format(EDStatic.noXxxBecause2, 
                     ".esriAscii", EDStatic.noXxxNoLL));
 
         if (!axisVariables[latIndex].isEvenlySpaced() ||
             !axisVariables[lonIndex].isEvenlySpaced())
-            throw new SimpleException(
+            throw new SimpleException(EDStatic.queryError + 
                 MessageFormat.format(EDStatic.noXxxBecause2, 
                     ".esriAscii", EDStatic.noXxxNoLLEvenlySpaced));
 
@@ -5212,8 +5209,8 @@ Attributes {
 
         //then get the writer
         //???!!! ISO-8859-1 is a guess. I found no specification.
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1)); 
+        Writer writer = String2.getBufferedOutputStreamWriter88591(
+            outputStreamSource.outputStream(String2.ISO_8859_1)); 
         try {
             //ESRI .asc doesn't like NaN
             double dmv = edv.safeDestinationMissingValue();
@@ -5300,7 +5297,7 @@ Attributes {
 
         //Has Lon and Lat?
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException( 
+            throw new SimpleException(EDStatic.queryError +  
                 MessageFormat.format(EDStatic.noXxxBecause2, 
                     ".geotif", EDStatic.noXxxNoLL));
 
@@ -5308,7 +5305,7 @@ Attributes {
         //See 2nd test in EDDGridFromDap.testDescendingAxisGeotif()
         if (!axisVariables[latIndex].isEvenlySpaced() ||
             !axisVariables[lonIndex].isEvenlySpaced())
-            throw new SimpleException(
+            throw new SimpleException(EDStatic.queryError + 
                 MessageFormat.format(EDStatic.noXxxBecause2, 
                     ".geotif", EDStatic.noXxxNoLLEvenlySpaced));
 
@@ -5317,7 +5314,7 @@ Attributes {
         //  see test in EDDGridFromDap.testDescendingAxisGeotif
         //if (axisVariables[latIndex].averageSpacing() <= 0 ||  
         //    axisVariables[lonIndex].averageSpacing() <= 0) 
-        //    throw new SimpleException(
+        //    throw new SimpleException(EDStatic.queryError + 
         //        MessageFormat.format(EDStatic.queryErrorAscending, ".geotif")); 
 
         //can't handle axis request
@@ -5527,7 +5524,7 @@ Attributes {
         boolean png = fileTypeName.toLowerCase().endsWith("png");
         boolean transparentPng = fileTypeName.equals(".transparentPng");
         if (!pdf && !png) 
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "Unexpected image type=" + fileTypeName);
         int imageWidth, imageHeight;
         if (pdf) {
@@ -6805,7 +6802,7 @@ Attributes {
         if (jsonp != null) {
             jsonp = jsonp.substring(7);
             if (!String2.isJsonpNameSafe(jsonp))
-                throw new SimpleException(EDStatic.errorJsonpFunctionName);
+                throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
         }
 
         //get dataAccessor first, in case of error when parsing query
@@ -6856,8 +6853,8 @@ Attributes {
 
         //.nccsvMetadata?       
         if (fileTypeName.equals(".nccsvMetadata")) {
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1)); 
+            Writer writer = String2.getBufferedOutputStreamWriter88591(
+                outputStreamSource.outputStream(String2.ISO_8859_1)); 
             try {
                 Table table = new Table();
                 table.globalAttributes().add(combinedGlobalAttributes());
@@ -6962,7 +6959,7 @@ Attributes {
         if (jsonp != null) {
             jsonp = jsonp.substring(7);
             if (!String2.isJsonpNameSafe(jsonp))
-                throw new SimpleException(EDStatic.errorJsonpFunctionName);
+                throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
         }
 
         //get dataAccessor first, in case of error when parsing query
@@ -7028,7 +7025,7 @@ Attributes {
         //.kml not available for axis request
         //lon and lat are required; time is not required
         if (isAxisDapQuery(userDapQuery) || lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "The .kml format is for latitude longitude data requests only.");
 
         //parse the userDapQuery
@@ -7068,12 +7065,12 @@ Attributes {
                 timeStartd = timePa.getNiceDouble(0);
                 timeStopd  = timePa.getNiceDouble(nTimes - 1);
                 if (nTimes > 500) //arbitrary: prevents requests that would take too long to respond to
-                    throw new SimpleException("Error: " +
+                    throw new SimpleException(EDStatic.queryError + 
                         "For .kml requests, the time dimension's size must be less than 500.");
 
             } else {
                 if (tConstraints.get(av*3 + 0) != tConstraints.get(av*3 + 2))
-                    throw new SimpleException("Error: " +
+                    throw new SimpleException(EDStatic.queryError + 
                         "For .kml requests, the " + 
                         axisVariables[av].destinationName() + " dimension's size must be 1."); 
             }
@@ -7094,7 +7091,7 @@ Attributes {
         double lonStartd = lonEdv.destinationValue(lonStarti).getNiceDouble(0);
         double lonStopd  = lonEdv.destinationValue(lonStopi).getNiceDouble(0);
         if (lonStopd  <= -180 || lonStartd >= 360)
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "For .kml requests, there must be some longitude values must be between -180 and 360.");
         if (lonStartd < -180) {
             lonStarti = lonEdv.destinationToClosestSourceIndex(-180);
@@ -7114,14 +7111,14 @@ Attributes {
         double latStartd = latEdv.destinationValue(latStarti).getNiceDouble(0);
         double latStopd  = latEdv.destinationValue(latStopi).getNiceDouble(0);
         if (latStartd < -90 || latStopd > 90)
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "For .kml requests, the latitude values must be between -90 and 90.");
         int    latMidi   = (latStarti + latStopi) / 2;
         double latMidd   = latEdv.destinationValue(latMidi).getNiceDouble(0);
         double latAverageSpacing = Math.abs(latEdv.averageSpacing());
 
         if (lonStarti == lonStopi || latStarti == latStopi) 
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "For .kml requests, the lon and lat dimension sizes must be greater than 1."); 
         //request is ok and compatible with .kml request!
 
@@ -7132,7 +7129,7 @@ Attributes {
                 timeEdv.combinedAttributes().getString(EDV.TIME_PRECISION),
                 Math.min(timeStartd, timeStopd), "");
         if (nTimes >= 2) 
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "For .kml requests, the time dimension size must be 1."); 
             //timeString += " through " + limitedIsoStringT ... Math.max(timeStartd, timeStopd), "");
         String brTimeString = timeString.length() == 0? "" : "Time: " + timeString + "<br />\n"; 
@@ -7187,8 +7184,8 @@ Attributes {
         //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
         //kml docs: https://developers.google.com/kml/documentation/kmlreference
         //CDATA is necessary for url's with queries
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8));
         try {
             writer.write( //KML
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -7418,7 +7415,7 @@ Attributes {
         long time = System.currentTimeMillis();
         int randomInt = Math2.random(Integer.MAX_VALUE);
         String fullDosName = fullOutName + ".dos" + randomInt;
-        String errorWhile = String2.ERROR + " while writing .wav file: ";
+        String errorWhile = EDStatic.queryError + " while writing .wav file: ";
 
         //.kml not available for axis request
         if (isAxisDapQuery(userDapQuery)) 
@@ -7440,7 +7437,7 @@ Attributes {
         if (java8 &&
             (tPATypeString.equals("float") || tPATypeString.equals("double"))) 
             throw new SimpleException(errorWhile + 
-            "Until Java 9, float and double values can't be written to .wav files.");
+                "Until Java 9, float and double values can't be written to .wav files.");
         for (int dvi = 1; dvi < nDV; dvi++) {
             Test.ensureEqual(tPATypeString, tDataVariables[dvi].destinationDataType(),
                 errorWhile + "All data columns must be of the same data type.");
@@ -7520,8 +7517,8 @@ Attributes {
                 table.addColumn(av, ada.axisVariables(av).destinationName(),
                     ada.axisValues(av), ada.axisAttributes(av));
             }
-            table.saveAsIgor(new BufferedWriter(new OutputStreamWriter(
-                oss.outputStream(Table.IgorCharset), Table.IgorCharset)));
+            table.saveAsIgor(String2.getBufferedOutputStreamWriter(
+                oss.outputStream(Table.IgorCharset), Table.IgorCharset));
 
             //diagnostic
             if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor axis done\n");
@@ -7548,15 +7545,16 @@ Attributes {
                 (Integer.MAX_VALUE - 1) + ")");
         int nAV = axisVariables.length;
         if (nAV > 4)
-            throw new SimpleException("Igor Text Files can handle 4 dimensions, not " + nAV);
+            throw new SimpleException(EDStatic.queryError + 
+                "Igor Text Files can handle 4 dimensions, not " + nAV);
 
         //** Then get gridDataAllAccessor
         //AllAccessor so I can just request PA with a var's values.
         GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); 
 
         //write the data
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            oss.outputStream(Table.IgorCharset), Table.IgorCharset));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriter(
+            oss.outputStream(Table.IgorCharset), Table.IgorCharset);
         try {
             writer.write("IGOR" + Table.IgorEndOfLine);
 
@@ -7746,7 +7744,8 @@ Attributes {
                 //can't do String data because you need random access to all values
                 //that could be a memory nightmare
                 //so just don't allow it
-                throw new SimpleException("Error: ERDDAP doesn't support String data in Matlab grid data files.");
+                throw new SimpleException(EDStatic.queryError + 
+                    "ERDDAP doesn't support String data in Matlab grid data files.");
             //largest = Math.max(largest, 
             //    tDataVariables[dv].destinationBytesPerElement());
 
@@ -7864,7 +7863,7 @@ Attributes {
             //can't do String data because you need random access to all values
             //that could be a memory nightmare
             //so just don't allow it
-            throw new SimpleException("Error: " +
+            throw new SimpleException(EDStatic.queryError + 
                 "Matlab files can't have String data.");
         int nDataBytes = Matlab.writeNDimensionalArray1(stream, name, 
             elementPAType, ndIndex);
@@ -7954,7 +7953,8 @@ Attributes {
                 for (int av = 0; av < nRAV; av++) {
                     String destName = ada.axisVariables(av).destinationName();
                     PrimitiveArray pa = ada.axisValues(av);
-                    if (nc3Mode && pa instanceof LongArray)
+                    if (nc3Mode && 
+                        (pa instanceof LongArray || pa instanceof ULongArray))
                         pa = new DoubleArray(pa);
                     Dimension dimension = nc.addDimension(rootGroup, destName, pa.size());
                     axisArrays[av] = Array.factory(
@@ -7964,18 +7964,19 @@ Attributes {
                     if (ncVersion == NetcdfFileWriter.Version.netcdf3)
                         String2.log("HELP");
                     newAxisVars[av] = nc.addVariable(rootGroup, destName, 
-                        NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long->double done above. No Strings as axes.
+                        NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long & ulong->double done above. No Strings as axes.
                         Arrays.asList(dimension)); 
 
                     //write axis attributes
                     Attributes atts = new Attributes(ada.axisAttributes(av)); //use a copy
+                    PAType paType = pa.elementType();
                     if (pa.elementType() == PAType.STRING)  //never
                         atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                    else if (pa.elementType() == PAType.CHAR)  //never
+//                    else if (paType == PAType.CHAR)  //never
 //                        atts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                    NcHelper.setAttributes(nc3Mode, newAxisVars[av], atts);
+                    NcHelper.setAttributes(nc3Mode, newAxisVars[av], atts, paType.isUnsigned());
                 }
 
                 //write global attributes
@@ -8001,7 +8002,7 @@ Attributes {
 
             } catch (Throwable t) {
                 //try to close the file
-                try { if (nc != null) nc.close(); //it calls flush() and doesn't like flush called separately
+                try { if (nc != null) nc.abort(); 
                 } catch (Throwable t2) { }
 
                 //delete the partial file
@@ -8061,7 +8062,8 @@ Attributes {
                 String avName = axisVariables[av].destinationName();
                 PrimitiveArray pa = gda.axisValues(av);
                 //if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
-                if (nc3Mode && pa instanceof LongArray)
+                if (nc3Mode && 
+                    (pa instanceof LongArray || pa instanceof ULongArray))
                     pa = new DoubleArray(pa);
                 stdShape[a] = pa.size();
                 axisDimensionList.add(nc.addDimension(rootGroup, avName, pa.size()));
@@ -8108,27 +8110,27 @@ Attributes {
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
                 Attributes atts = new Attributes(gda.axisAttributes[av]); //use a copy
-                PAType tc = gda.axisValues[av].elementType();
-                if (tc == PAType.STRING)  //never
+                PAType paType = gda.axisValues[av].elementType();
+                if (paType == PAType.STRING)  //never
                     atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (tc == PAType.CHAR)  //never
+//                else if (paType == PAType.CHAR)  //never
 //                    atts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts);
+                NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
             }
 
             //write data attributes
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 Attributes atts = new Attributes(gda.dataAttributes[dv]); //use a copy
-                PAType tc = gda.dataVariables[dv].destinationDataPAType();
-                if (tc == PAType.STRING)  //never
+                PAType paType = gda.dataVariables[dv].destinationDataPAType();
+                if (paType == PAType.STRING)  //never
                     atts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
-//                else if (tc == PAType.CHAR)  //never
+//                else if (paType == PAType.CHAR)  //never
 //                    atts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, newVars[dv], atts);
+                NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
             }
 
             //leave "define" mode
@@ -8147,7 +8149,8 @@ Attributes {
                 String destName = edv.destinationName();
                 PAType edvPAType = edv.destinationDataPAType();
                 PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
-                if (nc3Mode && pa instanceof LongArray)
+                if (nc3Mode && 
+                    (pa instanceof LongArray || pa instanceof ULongArray))
                     pa = new DoubleArray(pa);
                 Array array = Array.factory(NcHelper.getNc3DataType(edvPAType), 
                     stdShape, pa.toObjectArray());
@@ -8172,10 +8175,8 @@ Attributes {
 
         } catch (Throwable t) {
             //try to close the file
-            if (nc != null) {
-                try {nc.close(); //it calls flush() and doesn't like flush called separately
-                } catch (Throwable t2) {}
-            }
+            try {  if (nc != null) nc.abort(); 
+            } catch (Throwable t2) {}
 
             //delete the partial file
             File2.delete(fullFileName + randomInt);
@@ -8218,7 +8219,7 @@ Attributes {
         if (jsonp != null) {
             jsonp = jsonp.substring(7);
             if (!String2.isJsonpNameSafe(jsonp))
-                throw new SimpleException(EDStatic.errorJsonpFunctionName);
+                throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
         }
 
         //handle axisDapQuery
@@ -8228,8 +8229,8 @@ Attributes {
             int nRAV = ada.nRequestedAxisVariables();
 
             //create a writer
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+            BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
+                outputStreamSource.outputStream(String2.UTF_8));
             try {
                 if (jsonp != null) 
                     writer.write(jsonp + "(");
@@ -8274,6 +8275,8 @@ Attributes {
                         tType = writeStringsAsStrings? "string" : "char"; 
                     } else if (tType.equals("long")) {
                         tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                    } else if (tType.equals("ulong")) {
+                        tType = "uint64"; 
                     }
                     writer.write(
                         "    " + String2.toJson(av.destinationName()) + ": {\n" +
@@ -8307,8 +8310,8 @@ Attributes {
         int nRDV = gda.dataVariables().length;
 
         //create a writer
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
+            outputStreamSource.outputStream(String2.UTF_8));
         try {
             if (jsonp != null) 
                 writer.write(jsonp + "(");
@@ -8373,13 +8376,14 @@ Attributes {
                 String tType = av.destinationDataType(); //never char or string
                 if (tType.equals("long")) {
                     tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                } else if (tType.equals("ulong")) {
+                    tType = "uint64"; 
                 }
                 writer.write(
                     "    " + String2.toJson(av.destinationName()) + ": {\n" +
                     "      \"shape\": [" + String2.toJson(av.destinationName()) + "],\n" + 
                     "      \"type\": \"" + tType + "\",\n");
                 writer.write(gda.axisAttributes(avi).toNcoJsonString("      "));
-
 
                 writer.write(
                     "      \"data\": [");
@@ -8417,6 +8421,8 @@ Attributes {
                     }
                 } else if (tType.equals("long")) {
                     tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                } else if (tType.equals("ulong")) {
+                    tType = "uint64"; 
                 }
                 writer.write(
                     "    " + String2.toJson(dv.destinationName()) + ": {\n" +
@@ -8648,10 +8654,11 @@ Attributes {
 
         //do quick error checking
         if (isAxisDapQuery(userDapQuery))
-            throw new SimpleException("You can't save just axis data in on ODV .txt file. " +
+            throw new SimpleException(EDStatic.queryError + 
+                "You can't save just axis data in on ODV .txt file. " +
                 "Please select a subset of a data variable.");
         if (lonIndex < 0 || latIndex < 0 || timeIndex < 0) 
-            throw new SimpleException(EDStatic.errorOdvLLTGrid);
+            throw new SimpleException(EDStatic.queryError + EDStatic.errorOdvLLTGrid);
         //lon can be +-180 or 0-360. See EDDTable.saveAsODV
 
         //get dataAccessor first, in case of error when parsing query
@@ -10607,7 +10614,7 @@ Attributes {
         throws Throwable {
 
         if (accessibleViaWCS().length() > 0)
-            throw new SimpleException(accessibleViaWCS());
+            throw new SimpleException(EDStatic.queryError + accessibleViaWCS());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
@@ -10951,7 +10958,7 @@ Attributes {
         Writer writer) throws Throwable {
 
         if (accessibleViaWCS().length() > 0)
-            throw new SimpleException(accessibleViaWCS());
+            throw new SimpleException(EDStatic.queryError + accessibleViaWCS());
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
@@ -11161,7 +11168,7 @@ Attributes {
         String requestUrl = "/wcs/" + datasetID + "/" + wcsServer;
 
         if (accessibleViaWCS().length() > 0)
-            throw new SimpleException(accessibleViaWCS);
+            throw new SimpleException(EDStatic.queryError + accessibleViaWCS);
 
         //parse the wcsQuery
         String dapQuery[] = wcsQueryToDapQuery(EDD.userQueryHashMap(wcsQuery, true));
@@ -11203,19 +11210,22 @@ Attributes {
         //service
         String service = wcsQueryMap.get("service"); //test name.toLowerCase()
         if (service == null || !service.equals("WCS"))
-            throw new SimpleException(EDStatic.queryError + "service=" + service + " should have been \"WCS\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "service=" + service + " should have been \"WCS\"."); 
 
         //version
         String version = wcsQueryMap.get("version"); //test name.toLowerCase()
         if (version == null || !wcsVersion.equals(version)) //String2.indexOf(wcsVersions, version) < 0)
-            throw new SimpleException(EDStatic.queryError + "version=" + version + " should have been \"" + wcsVersion + "\".");
+            throw new SimpleException(EDStatic.queryError + 
+                "version=" + version + " should have been \"" + wcsVersion + "\".");
             //one of \"" + String2.toCSSVString(wcsVersions) + "\"."); 
         boolean version100 = version.equals("1.0.0");
 
         //request
         String request = wcsQueryMap.get("request"); //test name.toLowerCase()
         if (request == null || !request.equals("GetCoverage"))
-            throw new SimpleException(EDStatic.queryError + "request=" + request + " should have been \"GetCoverage\"."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "request=" + request + " should have been \"GetCoverage\"."); 
 
         //format
         String requestFormat = wcsQueryMap.get("format"); //test name.toLowerCase()
@@ -11223,12 +11233,14 @@ Attributes {
         String tResponseFormats[] = wcsResponseFormats100; //version100? wcsResponseFormats100 : wcsResponseFormats112;
         int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
         if (fi < 0)
-            throw new SimpleException(EDStatic.queryError + "format=" + requestFormat + " isn't supported."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "format=" + requestFormat + " isn't supported."); 
         String responseFormat = tResponseFormats[fi];
         
         //interpolation (1.0.0)
         if (wcsQueryMap.get("interpolation") != null)  //test name.toLowerCase()
-            throw new SimpleException(EDStatic.queryError + "'interpolation' isn't supported."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "'interpolation' isn't supported."); 
         
         //GridXxx (for regridding in 1.1.2)
         if (wcsQueryMap.get("gridbasecrs") != null || //test name.toLowerCase()
@@ -11236,13 +11248,14 @@ Attributes {
             wcsQueryMap.get("gridcs")      != null || //test name.toLowerCase()
             wcsQueryMap.get("gridorigin")  != null || //test name.toLowerCase()
             wcsQueryMap.get("gridoffsets") != null)   //test name.toLowerCase()
-            throw new SimpleException(EDStatic.queryError + "regridding via 'GridXxx' parameters isn't supported."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "regridding via 'GridXxx' parameters isn't supported."); 
 
         //exceptions    optional
         String exceptions = wcsQueryMap.get("exceptions");
         if (exceptions != null && !exceptions.equals(wcsExceptions))
-            throw new SimpleException(EDStatic.queryError + "exceptions=" + exceptions + " must be " +
-                wcsExceptions + "."); 
+            throw new SimpleException(EDStatic.queryError + 
+                "exceptions=" + exceptions + " must be " + wcsExceptions + "."); 
         
         //store (1.1.2)
         //if (wcsQueryMap.get("store") != null)  //test name.toLowerCase()
@@ -11276,8 +11289,8 @@ Attributes {
         if (bbox != null) {
             String bboxSA[] = String2.split(bbox, ',');
             if (bboxSA.length < 4) 
-                throw new SimpleException(
-                    EDStatic.queryError + bboxName + " must have at least 4 comma-separated values.");
+                throw new SimpleException(EDStatic.queryError + 
+                    bboxName + " must have at least 4 comma-separated values.");
             minLon = bboxSA[0];  //note goofy ordering of options
             maxLon = bboxSA[2];            
             minLat = bboxSA[1];
@@ -11291,21 +11304,21 @@ Attributes {
         double minLonD = String2.parseDouble(minLon);
         double maxLonD = String2.parseDouble(maxLon);
         if (Double.isNaN(minLonD) || Double.isNaN(maxLonD) || minLonD > maxLonD)
-            throw new SimpleException(
-                EDStatic.queryError + bboxName + " minLongitude=" + minLonD + 
+            throw new SimpleException(EDStatic.queryError + 
+                bboxName + " minLongitude=" + minLonD + 
                 " must be <= maxLongitude=" + maxLonD + ".");
         double minLatD = String2.parseDouble(minLat);
         double maxLatD = String2.parseDouble(maxLat);
         if (Double.isNaN(minLatD) || Double.isNaN(maxLatD) || minLatD > maxLatD)
-            throw new SimpleException(
-                EDStatic.queryError + bboxName + " minLatitude=" + minLatD + 
+            throw new SimpleException(EDStatic.queryError + 
+                bboxName + " minLatitude=" + minLatD + 
                 " must be <= maxLatitude=" + maxLatD + ".");
         double minAltD = String2.parseDouble(minAlt);
         double maxAltD = String2.parseDouble(maxAlt);
         if ((altIndex >= 0 || depthIndex >= 0) && 
             (Double.isNaN(minAltD) || Double.isNaN(maxAltD) || minAltD > maxAltD))
-            throw new SimpleException(
-                EDStatic.queryError + bboxName + " minAltitude=" + minAltD + 
+            throw new SimpleException(EDStatic.queryError + 
+                bboxName + " minAltitude=" + minAltD + 
                 " must be <= maxAltitude=" + maxAltD + ".");
 
         //1.0.0 width/height/depth, resx/y/z
@@ -11324,12 +11337,14 @@ Attributes {
             if (n != null) {
                 int ni = String2.parseInt(n);
                 if (ni == Integer.MAX_VALUE || ni <= 0) 
-                    throw new SimpleException(EDStatic.queryError + "width=" + n + " must be > 0.");
+                    throw new SimpleException(EDStatic.queryError + 
+                        "width=" + n + " must be > 0.");
                 lonStride = DataHelper.findStride(stop - start + 1, ni); 
             } else if (res != null) {
                 double resD = String2.parseDouble(res);
                 if (Double.isNaN(resD) || resD <= 0)
-                    throw new SimpleException(EDStatic.queryError + "resx=" + res + " must be > 0.");
+                    throw new SimpleException(EDStatic.queryError + 
+                        "resx=" + res + " must be > 0.");
                 lonStride = Math2.minMax(1, stop - start, Math2.roundToInt((maxLonD - minLonD) / resD));
             }
 
@@ -11343,13 +11358,15 @@ Attributes {
             if (n != null) {
                 int ni = String2.parseInt(n);
                 if (ni == Integer.MAX_VALUE || ni <= 0) 
-                    throw new SimpleException(EDStatic.queryError + "height=" + n + " must be > 0.");
+                    throw new SimpleException(EDStatic.queryError + 
+                        "height=" + n + " must be > 0.");
                 latStride = DataHelper.findStride(stop - start + 1, ni); 
                 //String2.log("start=" + start + " stop=" + stop + " ni=" + ni + " latStride=" + latStride);
             } else if (res != null) {
                 double resD = String2.parseDouble(res);
                 if (Double.isNaN(resD) || resD <= 0)
-                    throw new SimpleException(EDStatic.queryError + "resy=" + res + " must be > 0.");
+                    throw new SimpleException(EDStatic.queryError + 
+                        "resy=" + res + " must be > 0.");
                 latStride = Math2.minMax(1, stop - start, Math2.roundToInt((maxLatD - minLatD) / resD));
             }
 
@@ -11364,12 +11381,14 @@ Attributes {
                 if (n != null) {
                     int ni = String2.parseInt(n);
                     if (ni == Integer.MAX_VALUE || ni <= 0) 
-                        throw new SimpleException(EDStatic.queryError + "depth=" + n + " must be > 0.");
+                        throw new SimpleException(EDStatic.queryError + 
+                            "depth=" + n + " must be > 0.");
                     altStride = DataHelper.findStride(stop - start + 1, ni); 
                 } else if (res != null) {
                     double resD = String2.parseDouble(res);
                     if (Double.isNaN(resD) || resD <= 0)
-                        throw new SimpleException(EDStatic.queryError + "resz=" + res + " must be > 0.");
+                        throw new SimpleException(EDStatic.queryError + 
+                            "resz=" + res + " must be > 0.");
                     altStride = Math2.minMax(1, stop - start, Math2.roundToInt((maxAltD - minAltD) / resD));
                 }
             }             
@@ -11413,7 +11432,8 @@ Attributes {
                     dapQuery.append("[(last)]");  //default
                 } else {
                     if (time.indexOf(',') >= 0)
-                        throw new SimpleException(EDStatic.queryError + "comma-separated lists of " + 
+                        throw new SimpleException(EDStatic.queryError + 
+                            "comma-separated lists of " + 
                             paramName + "s are not supported.");
                     String timeSA[] = String2.split(time, '/');
                     //'now', see 1.0.0 section 9.2.2.8
@@ -11422,7 +11442,8 @@ Attributes {
                             timeSA[ti] = "last";
                     }
                     if (timeSA.length == 0 || timeSA[0].length() == 0) {
-                        throw new SimpleException(EDStatic.queryError + "invalid " + paramName + "=\"\".");
+                        throw new SimpleException(EDStatic.queryError + 
+                            "invalid " + paramName + "=\"\".");
                     } else if (timeSA.length == 1) {
                         dapQuery.append("[(" + timeSA[0] + ")]");
                     } else if (timeSA.length == 2) {
@@ -11430,8 +11451,8 @@ Attributes {
                              dapQuery.append("[(" + timeSA[0] + "):(" + timeSA[1] + ")]");
                         else dapQuery.append("[(" + timeSA[1] + "):(" + timeSA[0] + ")]");
                     } else {
-                        throw new SimpleException(EDStatic.queryError + paramName + 
-                            " resolution values are not supported.");
+                        throw new SimpleException(EDStatic.queryError + 
+                            paramName + " resolution values are not supported.");
                     }
                 }
 
@@ -11446,11 +11467,12 @@ Attributes {
                     dapQuery.append("[(last)]");  //default
                 } else {
                     if (val.indexOf(',') >= 0)
-                        throw new SimpleException(EDStatic.queryError + "comma-separated lists of " + 
-                            dName + "'s are not supported.");
+                        throw new SimpleException(EDStatic.queryError + 
+                            "comma-separated lists of " + dName + "'s are not supported.");
                     String valSA[] = String2.split(val, '/');
                     if (valSA.length == 0 || valSA[0].length() == 0) {
-                        throw new SimpleException(EDStatic.queryError + "invalid " + paramName + "=\"\".");
+                        throw new SimpleException(EDStatic.queryError + 
+                            "invalid " + paramName + "=\"\".");
                     } else if (valSA.length == 1) {
                         dapQuery.append("[(" + valSA[0] + ")]");
                     } else if (valSA.length == 2) {
@@ -11462,23 +11484,24 @@ Attributes {
                         double maxD = String2.parseDouble(valSA[1]);
                         double resD = String2.parseDouble(valSA[2]);
                         if (Double.isNaN(minD) || Double.isNaN(maxD) || minD > maxD)
-                            throw new SimpleException(
-                                EDStatic.queryError + dName + " min=" + valSA[0] + 
+                            throw new SimpleException(EDStatic.queryError + 
+                                dName + " min=" + valSA[0] + 
                                 " must be <= max=" + valSA[1] + ".");
                         int start = edv.destinationToClosestSourceIndex(minD);
                         int stop  = edv.destinationToClosestSourceIndex(maxD);
                         if (start < stop) { //because !isAscending
                             int ti = start; start = stop; stop = ti; }                        
                         if (Double.isNaN(resD) || resD <= 0)
-                            throw new SimpleException(
-                                EDStatic.queryError + dName + " res=" + valSA[2] + " must be > 0.");
+                            throw new SimpleException(EDStatic.queryError + 
+                                dName + " res=" + valSA[2] + " must be > 0.");
                         int stride = Math2.minMax(1, stop - start, 
                             Math2.roundToInt((maxD - minD) / resD));
                         if (edv.isAscending())
                              dapQuery.append("[(" + valSA[0] + "):" + stride + ":(" + valSA[1] + ")]");
                         else dapQuery.append("[(" + valSA[1] + "):" + stride + ":(" + valSA[0] + ")]");
                     } else {
-                        throw new SimpleException(EDStatic.queryError + "number=" + valSA.length +
+                        throw new SimpleException(EDStatic.queryError + 
+                            "number=" + valSA.length +
                             " of values for " + dName + " must be <= 3.");
                     }
                 }
@@ -12082,7 +12105,7 @@ Attributes {
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(EDStatic.noXxxNoLL);
+            throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -12922,7 +12945,7 @@ writer.write(
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(EDStatic.noXxxNoLL);
+            throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
@@ -14249,10 +14272,12 @@ writer.write(
         } else {
             EDD edd = oneFromDatasetsXml(null, datasetID);
             if (edd instanceof EDDTable)
-                throw new SimpleException("datasetID=" + datasetID + " isn't an EDDGrid dataset.");
+                throw new SimpleException(EDStatic.queryError + 
+                    "datasetID=" + datasetID + " isn't an EDDGrid dataset.");
             EDDGrid eddGrid = (EDDGrid)edd;
             if (eddGrid.timeIndex() < 0)
-                throw new SimpleException("datasetID=" + datasetID + " has no time variable.");
+                throw new SimpleException(EDStatic.queryError + 
+                    "datasetID=" + datasetID + " has no time variable.");
             PrimitiveArray pa = eddGrid.axisVariables[eddGrid.timeIndex].destinationValues();
             times = pa instanceof DoubleArray? (DoubleArray)pa : //should be
                 new DoubleArray(pa);

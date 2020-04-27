@@ -2430,8 +2430,8 @@ public class SSR {
         con.setDoInput(true);
 
         //send the content
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            new BufferedOutputStream(con.getOutputStream()), String2.UTF_8));
+        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
+            new BufferedOutputStream(con.getOutputStream()));
         try {
             writer.write(content);  
             writer.flush();

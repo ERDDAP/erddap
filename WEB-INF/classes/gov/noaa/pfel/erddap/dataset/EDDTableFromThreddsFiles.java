@@ -612,8 +612,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         table.readNDNc(decompFullName, sourceDataNames.toArray(), 
             standardizeWhat,
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-                minSorted, maxSorted, 
-            getMetadata);
+            minSorted, maxSorted);
         //String2.log("  EDDTableFromThreddsFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
 
         return table;
@@ -697,8 +696,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
         dataSourceTable.readNDNc(dir + ncFileName, null, tStandardizeWhat,
-            "", Double.NaN, Double.NaN, //constraints
-            true); //getMetadata
+            "", Double.NaN, Double.NaN); //constraints
 
         Table dataAddTable = new Table();
         double maxTimeES = Double.NaN;
@@ -1019,7 +1017,6 @@ String expected =
 "        <destinationName>Temperature_flag</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"description\">flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data</att>\n" +
 "            <att name=\"long_name\">Temperature flag</att>\n" +
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
@@ -1055,7 +1052,6 @@ String expected =
 "        <destinationName>yearday_flag</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"description\">flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data</att>\n" +
 "            <att name=\"long_name\">Yearday flag</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -1572,7 +1568,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  relativeHumidity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 17.0, 101.0;\n" + //2018-09-15 was 23.4
+"    Float32 actual_range 13.07, 101.0;\n" + //changes
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1862,7 +1858,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
 "    String featureType \"Point\";\n" +
-"    String files_merged \"\\[WTEP_20200228v10001.nc, WTEP_20200228v10002.nc\\]\";\n" +
+"    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc\\]\";\n" + //changes, so neutered
 "    String fsu_version \"300\";\n" +
 "    Float64 geospatial_lat_max 70.05856;\n" +
 "    Float64 geospatial_lat_min -46.45;\n" +
@@ -1894,7 +1890,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String merger_version \"v001\";\n" +
 "    String Metadata_modification_date \".{19} E.T\";\n" + //changes
-"    String metadata_retrieved_from \"WTEP_20200228v10002.nc\";\n" +
+"    String metadata_retrieved_from \"WTEP_202.....v10002.nc\";\n" + //changes
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +

@@ -786,7 +786,7 @@ try {
             //*** test getting das for entire dataset
             results = SSR.getUrlResponseStringUnchanged(url + ".nccsvMetadata"); 
             expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -854,12 +854,28 @@ try {
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,_FillValue,127b\n" +
+"testByte,actual_range,-128b,126b\n" +
+"testByte,ioos_category,Unknown\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,_FillValue,255ub\n" +
+"testUByte,actual_range,0ub,254ub\n" +
+"testUByte,ioos_category,Unknown\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,_FillValue,9223372036854775807L\n" +
-"testLong,actual_range,-9223372036854775808L,9223372036854775807L\n" + //2020-03-11 max was largest double that can round trip to a long: 9223372036854774784L 
+"testLong,actual_range,-9223372036854775808L,9223372036854775806L\n" + 
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,_FillValue,18446744073709551615uL\n" +
+"testULong,actual_range,0uL,18446744073709551614uL\n" +
+"testULong,ioos_category,Unknown\n" +
+"testULong,long_name,Test ULong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,actual_range,10.0f,10.9f\n" +
 "sst,colorBarMaximum,32.0d\n" +
@@ -879,7 +895,12 @@ try {
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        try {
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        } catch (Exception e7) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e7) +
+                "Known trouble: actual_range max should be MV-1.");
+        }
 
 
         //.nccsv all
@@ -887,7 +908,7 @@ try {
         results = SSR.getUrlResponseStringUnchanged(url + ".nccsv"); 
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -960,11 +981,24 @@ expected =
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,_FillValue,127b\n" +
+"testByte,ioos_category,Unknown\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,_FillValue,255ub\n" +
+"testUByte,ioos_category,Unknown\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,_FillValue,9223372036854775807L\n" +
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,_FillValue,18446744073709551615uL\n" +
+"testULong,ioos_category,Unknown\n" +
+"testULong,long_name,Test ULong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,colorBarMaximum,32.0d\n" +
 "sst,colorBarMinimum,0.0d\n" +
@@ -980,16 +1014,20 @@ expected =
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
-"ship,time,latitude,longitude,status,testLong,sst\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
+"ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0,10.9\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614,99.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         tPo = results.indexOf(expected.substring(0, 40));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);

@@ -204,7 +204,7 @@ public class EDV {
     /** The destination minimum and maximum values (in standardized destination units) 
      * of this variable. 
      * These are set if the information is available; else they remain NaN. */
-    protected double destinationMin = Double.NaN;
+    protected double destinationMin = Double.NaN;  //trouble: use PAOne so long and ulong done exactly
     protected double destinationMax = Double.NaN;
     /** This is the value of the source's missing value stand-in. 
      * It may remain NaN.
@@ -216,9 +216,9 @@ public class EDV {
     protected double destinationMissingValue = Double.NaN;
     protected double destinationFillValue = Double.NaN;
     protected double safeDestinationMissingValue = Double.NaN;
-    protected String stringMissingValue = ""; //won't be null
-    protected String stringFillValue = ""; //won't be null
-    protected String safeStringMissingValue = ""; //won't be null. If not "", then there is probably no 1 source MV 
+    protected String stringMissingValue = "";     //destination.  won't be null  
+    protected String stringFillValue = "";        //destination.  won't be null
+    protected String safeStringMissingValue = ""; //destination.  won't be null. If not "", then there is probably no 1 source MV 
     protected boolean hasColorBarMinMax = false;
     protected byte[] sliderCsvValues = null; //stored as utf8Bytes
 
@@ -656,8 +656,6 @@ will show NaN).
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        if (reallyVerbose) String2.log("  " + destinationName + " destinationMin=" + destinationMin + 
-            " max=" + destinationMax + " paType=" + destinationDataPAType());
         if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
             combinedAttributes.remove("actual_range");
         } else {
@@ -665,6 +663,10 @@ will show NaN).
             pa.addDouble(destinationMin);
             pa.addDouble(destinationMax);
             combinedAttributes.set("actual_range", pa);
+//            if (reallyVerbose) 
+                String2.log("  setActualRange " + destinationName + 
+                " destinationMin=" + destinationMin + " max=" + destinationMax + 
+                " paType=" + destinationDataPAType() + " " + pa.toString());
         }
     }
 
@@ -692,7 +694,7 @@ will show NaN).
     public void ensureValid(String errorInMethod) throws Throwable {
         errorInMethod += "\ndatasets.xml/EDV.ensureValid error for variable destinationName=" + 
             destinationName + ":\n";
-        Test.ensureSomethingUnicode(sourceName,      errorInMethod + "sourceName");
+        Test.ensureSomethingUnicode(sourceName,   errorInMethod + "sourceName");
         Test.ensureFileNameSafe( destinationName, errorInMethod + "destinationName");
         if (destinationName.indexOf(".") >= 0 || destinationName.indexOf("-") >= 0)
             throw new IllegalArgumentException(errorInMethod + 
@@ -702,7 +704,7 @@ will show NaN).
             //so valid variable name in Matlab and ...
         } else throw new IllegalArgumentException(errorInMethod + 
             "destinationName=\"" + destinationName + "\" must start with a letter (A-Z, a-z).");
-        Test.ensureSomethingUnicode(longName,        errorInMethod + "longName");
+        Test.ensureSomethingUnicode(longName, errorInMethod + "longName");
         try {
             //should already by set, but ensure consistent and valid
             sourceDataPAType = PrimitiveArray.elementStringToPAType(sourceDataType); 
@@ -735,9 +737,9 @@ will show NaN).
                 errorInMethod + "ioos_category=\"" + ic + "\" isn't a valid category.");
         }
 
-        //Don't test Test.ensureSomethingUnicode(sourceAttributes,    errorInMethod + "sourceAttributes");
-        //Admin can't control source and addAttributes may overwrite offending characters.
-        Test.ensureSomethingUnicode(addAttributes,       errorInMethod + "addAttributes");
+        //Don't test Test.ensureSomethingUnicode(sourceAttributes, errorInMethod + "sourceAttributes");
+        //Admin can't control source. addAttributes may overwrite offending characters.
+        Test.ensureSomethingUnicode(addAttributes, errorInMethod + "addAttributes");
         EDStatic.updateUrls(null, combinedAttributes);
         Test.ensureSomethingUnicode(combinedAttributes,  
             errorInMethod + "combinedAttributes (but probably caused by the source attributes)");

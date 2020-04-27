@@ -64,7 +64,7 @@ public class TableWriterJson extends TableWriter {
         super(tEdd, tNewHistory, tOutputStreamSource);
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
-            throw new SimpleException(EDStatic.errorJsonpFunctionName);
+            throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
         writeUnits = tWriteUnits;
     }
 
@@ -115,8 +115,8 @@ public class TableWriterJson extends TableWriter {
             }
 
             //write the header
-            writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+            writer = String2.getBufferedOutputStreamWriterUtf8(
+                outputStreamSource.outputStream(String2.UTF_8));
             if (jsonp != null) 
                 writer.write(jsonp + "(");
 

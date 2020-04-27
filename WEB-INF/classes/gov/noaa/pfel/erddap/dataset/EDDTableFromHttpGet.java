@@ -977,7 +977,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     fileIsNew = true; //first
                     File2.makeDirectory(File2.getDirectory(fullFileName)); //throws exception if trouble
                 }
-                Writer writer = new BufferedWriter(new OutputStreamWriter(baos, String2.UTF_8));  
+                Writer writer = String2.getBufferedOutputStreamWriterUtf8(baos);  
 
                 if (fileIsNew) {
                     //write the column names to the writer

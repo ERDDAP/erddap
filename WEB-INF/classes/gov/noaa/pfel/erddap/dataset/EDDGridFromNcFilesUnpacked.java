@@ -1626,7 +1626,7 @@ expected =
         String2.log("\n*** EDDGridFromNcFilesUnpacked.test");
         testGenerateDatasetsXml();
         testBasic(deleteCachedDatasetInfo);
-        testUInt16File();  //trouble
+testUInt16File();  //trouble
         testMissingValue();
     }
 

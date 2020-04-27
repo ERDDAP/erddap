@@ -101,8 +101,7 @@ public class GenerateDatasetsXml {
             String2.standardHelpAboutMessage());
         String insert = null;
         boolean reallyVerbose = false;  
-        outFile = new BufferedWriter(new OutputStreamWriter(
-            new BufferedOutputStream(new FileOutputStream(outFileName)), String2.ISO_8859_1)); //charset to match datasets.xml
+        outFile = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(outFileName)); //charset to match datasets.xml
         //String2.pressEnterToContinue("stackTrace:\n" + MustBe.stackTrace() + ">> outFile is open");
 
         try {
@@ -877,8 +876,7 @@ public class GenerateDatasetsXml {
             //copy datasets.xml line-by-line to new file, 
             tempName = datasetsXmlName + localCompactTime;
             inFile = File2.getDecompressedBufferedFileReader(datasetsXmlName, String2.ISO_8859_1); //charset to match datasets.xml  
-            outFile = new BufferedWriter(new OutputStreamWriter(
-                new BufferedOutputStream(new FileOutputStream(tempName)), String2.ISO_8859_1)); //charset to match datasets.xml
+            outFile = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(tempName)); //charset to match datasets.xml
             
             //look for the beginLine  
             String line = inFile.readLine();

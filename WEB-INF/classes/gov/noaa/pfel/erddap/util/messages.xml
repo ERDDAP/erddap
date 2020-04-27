@@ -3585,7 +3585,7 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noXxxNotActive>this ERDDAP''s {0} service is not active</noXxxNotActive>
 <noXxxNoAxis1>there aren't any axis variables with more than one value</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} is not a compatible type</noXxxNoCdmDataType>
-<noXxxNoColorBar>none of variables has colorBar metadata</noXxxNoColorBar>
+<noXxxNoColorBar>none of the variables has colorBar metadata</noXxxNoColorBar>
 <noXxxNoLL>there is no longitude and/or latitude variable</noXxxNoLL>
 <noXxxNoLLGt1>the longitude and/or latitude variable has only one value</noXxxNoLLGt1>
 <noXxxNoLLEvenlySpaced>the dataset's longitude and/or latitude values aren't evenly spaced</noXxxNoLLEvenlySpaced>

@@ -1459,7 +1459,7 @@ public class Math2 {
     /**
      * This converts a ulong (stored as a BigInteger) to a double (MAX_VALUE becomes NaN).
      *
-     * @param tl
+     * @param bi a ulong stored in a BigInteger.
      * @return a double.
      *    If tl is ULongArray.MAX_VALUE, this returns Double.NaN.
      */
@@ -1470,7 +1470,7 @@ public class Math2 {
     }
 
     /**
-     * This converts an unsigned long to a double.
+     * This converts an unsigned long (packed as a long) to a double.
      * !!! Possible loss of precision!
      * This does nothing with default "cohort" NaN from Long.MAX_VALUE,
      * because that is presumably a legit number in the middle of the unsigned long range.

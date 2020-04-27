@@ -240,8 +240,8 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
                     dataAddTable.columnAttributes(c).set("ioos_category", "Other");
                 if (sourcePA.isIntegerType()) {
                     dataAddTable.columnAttributes(c)
-                        .add("colorBarMinimum", Math2.niceDouble(-sourcePA.missingValue(), 2))
-                        .add("colorBarMaximum", Math2.niceDouble( sourcePA.missingValue(), 2));
+                        .add("colorBarMinimum", Math2.niceDouble(-sourcePA.missingValueAsDouble(), 2))
+                        .add("colorBarMaximum", Math2.niceDouble( sourcePA.missingValueAsDouble(), 2));
                 }
             }
 

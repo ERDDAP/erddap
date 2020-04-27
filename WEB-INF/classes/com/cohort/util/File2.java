@@ -1050,9 +1050,6 @@ public class File2 {
      * @param destination the full file name of the destination file.
      *   If the directory doesn't exist, it will be created.
      *   It is closed at the end.
-     * @param first the first byte to be transferred (0..)
-     * @param last  the last byte to be transferred (inclusive),
-     *    or -1 to transfer to the end.
      * @return true if successful. If not successful, the destination file
      *   won't exist.
      */

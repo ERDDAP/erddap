@@ -289,7 +289,7 @@ public class EDVTimeStamp extends EDV {
                 destinationMax = d; 
             }
         }
-        //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax);
+        //String2.log(">> destMin=" + destinationMin + " max=" + destinationMax);
 
         setActualRangeFromDestinationMinMax();
         //if (reallyVerbose) String2.log("\nEDVTimeStamp created, sourceTimeFormat=" + sourceTimeFormat);  

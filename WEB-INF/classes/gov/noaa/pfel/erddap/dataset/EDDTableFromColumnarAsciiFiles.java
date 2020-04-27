@@ -3251,10 +3251,11 @@ String expected =
 "    <dataVariable>\n" +
 "        <sourceName>aLong</sourceName>\n" +
 "        <destinationName>aLong</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
+"        <dataType>long</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Long</att>\n" +
 "            <att name=\"startColumn\" type=\"int\">45</att>\n" +
@@ -3311,7 +3312,7 @@ String expected =
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,\n" +
 "abcdef,Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"short:,,,NaN,NaN,NaN,,NaN,NaN\n" +
+"short:,,,NaN,NaN,NaN,NaN,NaN,NaN\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1.0E200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3.0E200\n" +
@@ -3391,7 +3392,7 @@ String expected =
 "    String long_name \"An Int\";\n" +
 "  }\n" +
 "  aLong {\n" +
-"    Float64 actual_range 1200.0, 2.4e+11;\n" +
+"    Float64 actual_range 1200, 240000000000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Long\";\n" +
 "  }\n" +

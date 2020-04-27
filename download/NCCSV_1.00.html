@@ -12,7 +12,7 @@
 <div class="standard_width"> 
 <h1 style="text-align:center">NCCSV -
 <br>A NetCDF-Compatible ASCII CSV File Specification,
-<br>Version 1.10</h1>
+<br>Version 1.00</h1>
 
 <span style="text-align:center;">Bob Simons &lt;bob.simons at noaa.gov&gt; and Steve Hankin
 <br>"NCCSV" by Bob Simons and Steve Hankin is licensed under 
@@ -29,7 +29,6 @@
 <li><a rel="bookmark" href="#SampleFile">Sample File</a>
 <li><a rel="bookmark" href="#Spreadsheets">Spreadsheets</a>
 <li><a rel="bookmark" href="#Problems">Problems/Warnings</a>
-<li><a rel="bookmark" href="#Changes">Changes</a>
 </ul>
 
 
@@ -205,8 +204,8 @@ The first line of an NCCSV file is the first line of the metadata section and
 must have a <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>
 <kbd>Conventions</kbd> attribute listing all of the 
 conventions used in the file as a String containing a CSV list, for example:
-<br><kbd>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1"</kbd>
-<br>One of the conventions listed must be <kbd>NCCSV-1.1</kbd>, 
+<br><kbd>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0"</kbd>
+<br>One of the conventions listed must be <kbd>NCCSV-1.0</kbd>, 
 which refers to the current version of this specification.
 
 <p><a class="selfLink" id="END_METADATA" href="#END_METADATA" rel="bookmark">*END_METADATA*</a> -
@@ -273,7 +272,7 @@ same value on every row.
 <h3><a class="selfLink" id="value" href="#value" rel="bookmark">value</a></h3>
 <p><i>value</i> is the value of the metadata attribute
 and must be an array with one or more of either a 
-<kbd>byte, ubyte, short, ushort, int, uint, long, ulong, float, double, String,</kbd> or <kbd>char</kbd>. 
+<kbd>byte, short, int, long, float, double, String,</kbd> or <kbd>char</kbd>. 
 No other data types are supported. Attributes with no value will be ignored. 
 If there is more than one sub-value, the sub-values must all be of the 
 same data type and separated by commas, for example:
@@ -288,47 +287,20 @@ same data type and separated by commas, for example:
   attribute values (8-bit, signed) must be written with the 
   suffix 'b', e.g., -7b, 0b, 7b . The range of valid byte values is -128 to 127.
   A number that looks like a byte but is invalid (e.g., 128b) 
-  will be converted to a missing value or generate an error message. 
-  <br>&nbsp;
-<li><a class="selfLink" id="ubyte" href="#ubyte" rel="bookmark"><kbd><strong>ubyte</strong></kbd></a>
-  attribute values (8-bit, unsigned) must be written with the 
-  suffix 'ub', e.g., 0ub, 7ub, 250ub . The range of valid byte values is 0 to 255.
-  A number that looks like a ubyte but is invalid (e.g., 256ub) 
-  will be converted to a missing value or generate an error message. 
-  When possible, use byte instead of ubyte, because many systems don't support
-  unsigned bytes (e.g., attributes in NetCDF-3 files).
+  will generate an error message. 
   <br>&nbsp;
 <li><a class="selfLink" id="short" href="#short" rel="bookmark"><kbd><strong>short</strong></kbd></a>
   attribute values (16-bit, signed) must be written with the
   suffix 's', e.g., -30000s, 0s, 30000s. The range of valid short values is 
-  -32768 to 32767. A number that looks like a short but is invalid (e.g., 32768s)
-  will be converted to a missing value or generate an error message. 
-  <br>&nbsp;
-<li><a class="selfLink" id="ushort" href="#ushort" rel="bookmark"><kbd><strong>ushort</strong></kbd></a>
-  attribute values (16-bit, unsigned) must be written with the
-  suffix 'us', e.g., 0us, 30000us, 60000us. The range of valid short values is 
-  0 to 65535. A number that looks like a ushort but is invalid (e.g., 65536us)
-  will be converted to a missing value or generate an error message. 
-  When possible, use short instead of ushort, because many systems don't support
-  unsigned bytes (e.g., attributes in NetCDF-3 files).
+  -32768 to 32767. A number that looks like a short but is invalid 
+  (e.g., 32768s) will generate an error message. 
   <br>&nbsp;
 <li><a class="selfLink" id="int" href="#int" rel="bookmark"><kbd><strong>int</strong></kbd></a>
   attribute values (32-bit, signed) must be written as JSON ints
   without a decimal point or exponent, but with the suffix 'i', 
   e.g., -12067978i, 0i, 12067978i. The range of valid int values is 
   -2147483648 to 2147483647. A number that looks like an int but is invalid 
-  (e.g., 2147483648i) 
-  will be converted to a missing value or generate an error message. 
-  <br>&nbsp;
-<li><a class="selfLink" id="uint" href="#uint" rel="bookmark"><kbd><strong>uint</strong></kbd></a>
-  attribute values (32-bit, unsigned) must be written as JSON ints
-  without a decimal point or exponent, but with the suffix 'ui', 
-  e.g., 0ui, 12067978ui, 4123456789ui. The range of valid int values is 
-  0 to 4294967295. A number that looks like a uint but is invalid 
-  (e.g., 2147483648ui) 
-  will be converted to a missing value or generate an error message. 
-  When possible, use int instead of uint, because many systems don't support
-  unsigned bytes (e.g., attributes in NetCDF-3 files).
+  (e.g., 2147483648i) will generate an error message. 
   <br>&nbsp;
 <li><a class="selfLink" id="long" href="#long" rel="bookmark"><kbd><strong>long</strong></kbd></a>
   attribute values (64-bit, signed, currently supported by 
@@ -339,22 +311,7 @@ same data type and separated by commas, for example:
   values into a NetCDF-3 file, any long values will be converted to double values.
   The range of valid long values is -9223372036854775808 to 9223372036854775807.
   A number that looks like a long but is invalid (e.g., 9223372036854775808L)
-  will be converted to a missing value or generate an error message. 
-  When possible, use double instead of ulong, because many systems don't support
-  long (e.g., NetCDF-3 files).
-  <br>&nbsp;
-<li><a class="selfLink" id="ulong" href="#ulong" rel="bookmark"><kbd><strong>ulong</strong></kbd></a>
-  attribute values (64-bit, unsigned, currently supported by 
-  NUG and ERDDAP but not yet supported by CF) must be written without 
-  a decimal point and with the suffix 'uL',
-  e.g., 0uL, 12345678987654321uL, 9007199254740992uL . 
-  If you use the converting software to convert an NCCSV file with long 
-  values into a NetCDF-3 file, any long values will be converted to double values.
-  The range of valid long values is 0 to 18446744073709551615.
-  A number that looks like a ulong but is invalid (e.g., 18446744073709551616uL)
-  will be converted to a missing value or generate an error message. 
-  When possible, use double instead of ulong, because many systems don't support
-  signed or unsigned long (e.g., NetCDF-3 files).
+  will generate an error message. 
   <br>&nbsp;
 <li><a class="selfLink" id="float" href="#float" rel="bookmark"><kbd><strong>float</strong></kbd></a>
   attribute values (32-bit) must be written with the suffix 'f'
@@ -364,7 +321,7 @@ same data type and separated by commas, for example:
   The range of floats is approximately 
   +/-3.40282347E+38f (~7 significant decimal digits). 
   A number that looks like a float but is invalid (e.g., 1.0e39f) 
-  will be converted to a missing value or generate an error message. 
+  will generate an error message.
   <br>&nbsp;
 <li><a class="selfLink" id="double" href="#double" rel="bookmark"><kbd><strong>double</strong></kbd></a>
   attribute values (64-bit) must be written
@@ -374,7 +331,7 @@ same data type and separated by commas, for example:
   The range of doubles is approximately +/-1.79769313486231570E+308d
   (~15 significant decimal digits). 
   A number that looks like a double but is invalid (e.g., 1.0e309d) 
-  will be converted to a missing value or generate an error message. 
+  will generate an error message. 
   <br>&nbsp;
 <li><a class="selfLink" id="String" href="#String" rel="bookmark"><kbd><strong>String</strong></kbd></a>
   attribute values are a sequence of UCS-2 characters 
@@ -447,7 +404,7 @@ all numeric attribute values must have a suffix letter (e.g., 'b')
 to identify the numeric data type (e.g., byte). 
 But in the data section of an NCCSV file,
 numeric data values must never have these suffix letters 
-(with the exception of 'L' for long integers and 'uL' for ulong integers) &mdash; 
+(with the exception of 'L' for long integers) &mdash; 
 the data type is specified by the <kbd>*DATA_TYPE*</kbd> attribute for the variable.
 
 
@@ -455,7 +412,7 @@ the data type is specified by the <kbd>*DATA_TYPE*</kbd> attribute for the varia
 The data type for each non-<a rel="help" href="#SCALAR">scalar</a> 
 variable must be specified by a 
 <kbd>*DATA_TYPE*</kbd> attribute which can have a value of 
-<kbd>byte, ubyte, short, ushort, int, uint, long, ulong, float, double, String,</kbd> or <kbd>char</kbd> 
+<kbd>byte, short, int, long, float, double, String,</kbd> or <kbd>char</kbd> 
 (case insensitive). For example,
 <br><kbd>qc_flag,*DATA_TYPE*,byte</kbd>
 <br>WARNING: Specifying the correct <kbd>*DATA_TYPE*</kbd> is your responsibility.
@@ -477,27 +434,19 @@ single byte chars, so any chars greater than char #255 will be converted to
 to specify a different charset for a char variable, the ISO-8859-1 charset
 will be used.
 
-<p><a class="selfLink" id="longDiscouraged" href="#longDiscouraged" rel="bookmark"
-><kbd>long</kbd> and Unsigned Types Are Discouraged</a> -
+<p><a class="selfLink" id="longDiscouraged" href="#longDiscouraged" rel="bookmark"><kbd>long</kbd> Discouraged</a> -
 Although many file types (e.g., NetCDF-4 and json) and ERDDAP support
-<kbd>long</kbd> and unsigned (ubyte, ushort, uint, ulong) values, 
-the use of <kbd>long</kbd> and unsigned values in 
+<kbd>long</kbd> data values, the use of <kbd>long</kbd> data values in 
 NCCSV files is currently discouraged because they are currently
 not supported by Excel, CF and NetCDF-3 files. 
-If you want to specify <kbd>long</kbd> or unsigned values in an NCCSV file 
+If you want to specify <kbd>long</kbd> data values in an NCCSV file 
 (or in the corresponding Excel spreadsheet),
 you must use the suffix 'L' so that Excel doesn't treat the numbers as
 floating point numbers with lower precision. 
 Currently, if an NCCSV files is converted into a NetCDF-3 .nc file, 
-<kbd>long</kbd> and <kbd>ulong</kbd> data values will be converted into <kbd>double</kbd> values,
+<kbd>long</kbd> data values will be converted into <kbd>double</kbd> values,
 causing a loss of precision for very large values
-(less than -2^53 for long, or greater than 2^53 for long and ulong). 
-In NetCDF-3 .nc files, ubyte, ushort, and uint variables appear as
-byte, short, and int with the <kbd>_Unsigned=true</kbd> metadata attribute.
-In NetCDF-3 .nc files, ubyte, ushort, and uint attributes appear as
-byte, short, and int attributes containing the corresponding two's-compliment value
-(e.g., 255ub appears as -1b). This is obviously trouble, so signed
-data types should be used instead of unsigned data types whenever possible.
+(less than -2^53 or greater than 2^53). 
 
 <p><a class="selfLink" id="ERDDAP_Metadata" href="#ERDDAP_Metadata" rel="bookmark"><strong>CF, ACDD, and ERDDAP Metadata</strong></a> -
 Since it is envisioned that most NCCSV files, or the .nc files
@@ -569,7 +518,7 @@ See the example below.
 For example, see the second value on this data row:
 <br><kbd>Bell M. Shimada,99,123.4</kbd>
 <br>This is the recommended way to handle missing values for
-byte, ubyte, short, ushort, int, uint, long, and ulong variables.
+byte, short, int, and long variables.
 
 <p>float or double NaN values may be written as <kbd>NaN</kbd>. 
 For example, see the second value on this data row:
@@ -579,7 +528,7 @@ For example, see the second value on this data row:
 For example, see the second value on this data row:
 <br><kbd>Bell M. Shimada,,123.4</kbd>
 
-<p>For byte, ubyte, short, ushort, int, uint, long, and ulong variables,
+<p>For byte, short, int, and long variables,
 the NCCSV converter utility and ERDDAP will convert an empty field 
 into the maximum allowed value for that data type (e.g., 127 for bytes).
 If you do this, be sure to add a <kbd>missing_value</kbd> or 
@@ -699,7 +648,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm
 
 Here is a sample file which demonstrates many of the features of an NCCSV file:
 <pre>
-*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1"
+*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0"
 *GLOBAL*,cdm_trajectory_variables,"ship"
 *GLOBAL*,creator_email,bob.simons@noaa.gov
 *GLOBAL*,creator_name,Bob Simons
@@ -726,14 +675,8 @@ lon,*DATA_TYPE*,double
 "lon","units","degrees_east"
 status,*DATA_TYPE*,char
 status,comment,"From http://some.url.gov/someProjectDocument , Table C"
-testByte,*DATA_TYPE*,byte
-testByte,units,1
-testUByte,*DATA_TYPE*,ubyte
-testUByte,units,1
 testLong,*DATA_TYPE*,long
 testLong,units,1
-testULong,*DATA_TYPE*,ulong
-testULong,units,1
 sst,*DATA_TYPE*,float
 sst,standard_name,sea_surface_temperature
 sst,actual_range,0.17f,23.58f
@@ -747,18 +690,15 @@ sst,testFloats,-3.40282347e38f,0f,3.40282347E+38f
 sst,testDoubles,-1.79769313486231570e308d,0d,1.79769313486231570E+308d
 sst,testChars,"','","'""'","'\u20AC'"
 sst,testStrings," a~,\n'z""\u20AC"
-sst,testUBytes,0ub,127ub,255ub
-sst,testUInts,0ui,2147483647ui,4294967295ui
-sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL
-sst,testUShorts,0us,32767us,65535us
 
 *END_METADATA*
-ship,time,lat,lon,status,testByte,testUByte,testLong,testULong,sst
-Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128, 0,-9223372036854775808L,0uL,10.9
-Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\u20AC,0,127,-9007199254740992L,9223372036854775807uL,10.0
-"Bell M. Shimada","2017-03-23T02:45:00Z",28.0001,-130.4305,"'\t'",126,254,9223372036854775806L,18446744073709551614uL,99
-"Bell M. Shimada",2017-03-23T12:45:00Z,27.9998,-131.5578,"'""'",127,255,9223372036854775807L,18446744073709551615uL,NaN
-<!-- the lines in sample.csv with invalid values or "" for mv integers are omitted here because they aren't the recommended approach -->
+ship,time,lat,lon,status,testLong,sst
+Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9
+Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\u20AC,-1234567890123456L,
+"Bell M. Shimada","2017-03-23T02:45:00Z",28.0001,-130.4305,"'\t'",0L,10.7
+Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,"'""'",1234567890123456L,99
+Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,9223372036854775806L,10.0
+Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,,NaN
 </pre>
 
 <p>Notes:
@@ -911,17 +851,6 @@ To import an NCCSV file into Google Sheets:
   </ul>
 </ul>
 
-
-<p>&nbsp;
-
-<h2><a class="selfLink" id="Changes" href="#Changes" rel="bookmark">Changes</a></h2>
-<ul>
-<li>Changes Introduced in v1.10 (April 2020):
-  <ul>
-  <li>Added support for ubyte, ushort, uint, ulong.
-  </ul>
-</ul>
-
 <br>&nbsp;
 <hr>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2> 
@@ -930,7 +859,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.03
+<p>ERDDAP, Version 2.02
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 </div>

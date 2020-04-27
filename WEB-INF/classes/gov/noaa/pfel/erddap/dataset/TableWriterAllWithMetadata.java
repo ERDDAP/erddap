@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -136,12 +137,13 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 } else {
                     //don't use calculateStats because need to utilize 
                     //destinationMissingValue and/or destinationFillValue
+                    int precision = pa.elementType() == PAType.FLOAT? 5 : 15;
                     int n = pa.size();                
                     for (int i = 0; i < n; i++) {
                         double td = pa.getNiceDouble(i);
                         if (Double.isNaN(td) ||
-                            Math2.almostEqual(5, destinationMV, td) ||
-                            Math2.almostEqual(5, destinationFV, td)) 
+                            Math2.almostEqual(precision, destinationMV, td) ||
+                            Math2.almostEqual(precision, destinationFV, td)) 
                             continue;
                         //String2.log("TableWriterAll " + destinationMV + " " + destinationFV + " td=" + td);
                         tMin = Math.min(tMin, td);

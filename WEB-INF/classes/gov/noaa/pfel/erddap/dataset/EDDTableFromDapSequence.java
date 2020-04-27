@@ -339,7 +339,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             //  which is good because it allows quick loading of other datasets to continue.
             //This will fail (good) if dataset has changed significantly and
             //  quickRestart file has outdated information.
-            quickRestartAttributes = NcHelper.readAttributesFromNc(quickRestartFullFileName());
+            quickRestartAttributes = NcHelper.readAttributesFromNc3(quickRestartFullFileName());
 
             if (verbose)
                 String2.log("  using info from quickRestartFile");
@@ -565,7 +565,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                 quickRestartAttributes.set("dasBytes", new ByteArray(dasBytes));
                 quickRestartAttributes.set("ddsBytes", new ByteArray(ddsBytes));
                 File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
-                NcHelper.writeAttributesToNc(quickRestartFullFileName(), 
+                NcHelper.writeAttributesToNc3(quickRestartFullFileName(), 
                     quickRestartAttributes);
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
@@ -1184,7 +1184,7 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">Trajectory</att>\n" +
 "        <att name=\"cdm_trajectory_variables\">ship</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1</att>\n" +
 "        <att name=\"creator_email\">bob.simons@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Bob Simons</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -1225,8 +1225,8 @@ expected =
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"keywords\">center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testlong, testnccsvscalar, time, trajectory</att>\n" +
-"        <att name=\"subsetVariables\">ship, time, latitude, longitude, status, testLong, sst</att>\n" +
+"        <att name=\"keywords\">byte, center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testByte, testlong, testnccsvscalar, testUByte, testULong, time, trajectory, ubyte, ulong</att>\n" +
+"        <att name=\"subsetVariables\">ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst</att>\n" +
 "        <att name=\"title\">NCCSV Demonstration (testNccsvScalar)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -1306,12 +1306,41 @@ expected =
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
+"        <sourceName>testByte</sourceName>\n" +
+"        <destinationName>testByte</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"actual_range\" type=\"byteList\">-128 126</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"units\">1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">200.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n" +
+"            <att name=\"long_name\">Test Byte</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>testUByte</sourceName>\n" +
+"        <destinationName>testUByte</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"actual_range\" type=\"byteList\">0 127</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"units\">1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"long_name\">Test UByte</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
 "        <sourceName>testLong</sourceName>\n" +
 "        <destinationName>testLong</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" + //long vars appear as double vars in DAP
+"            <att name=\"_FillValue\" type=\"double\">9.223372036854776E18</att>\n" + //long vars appear as double vars in DAP
             //these are the largest longs, converted to doubles
-"            <att name=\"actual_range\" type=\"doubleList\">-9.223372036854776E18 9.2233720368547748E18</att>\n" +  //trouble
+"            <att name=\"actual_range\" type=\"doubleList\">-9.223372036854776E18 9.223372036854776E18</att>\n" + //trouble
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test of Longs</att>\n" +
 "            <att name=\"units\">1</att>\n" +
@@ -1319,6 +1348,21 @@ expected =
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">1.0E19</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-1.0E19</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>testULong</sourceName>\n" +
+"        <destinationName>testULong</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">1.8446744073709552E19</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">0.0 1.8446744073709552E19</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Test ULong</att>\n" +
+"            <att name=\"units\">1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">2.0E19</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1341,10 +1385,14 @@ expected =
 //Hence NaNs here.  This is an unfixed bug (hopefully won't ever affect anyone).
 "            <att name=\"testFloats\" type=\"floatList\">NaN 0.0 NaN</att>\n" + 
 "            <att name=\"testInts\" type=\"intList\">-2147483648 0 2147483647</att>\n" +
-"            <att name=\"testLongs\" type=\"doubleList\">-9.223372036854776E18 -9.007199254740992E15 9.007199254740992E15 9.2233720368547748E18 NaN</att>\n" +
+"            <att name=\"testLongs\" type=\"doubleList\">-9.223372036854776E18 -9.007199254740992E15 9.007199254740992E15 9.223372036854776E18 9.223372036854776E18</att>\n" +
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
 "            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
 "&#39;z&quot;?</att>\n" +
+"            <att name=\"testUBytes\" type=\"byteList\">0 127 127</att>\n" +
+"            <att name=\"testUInts\" type=\"uintList\">0 2147483647 4294967295</att>\n" +
+"            <att name=\"testULongs\" type=\"doubleList\">0.0 9.223372036854776E18 1.8446744073709552E19</att>\n" + //long atts appear as double atts
+"            <att name=\"testUShorts\" type=\"ushortList\">0 32767 65535</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -1362,7 +1410,7 @@ expected =
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(edd.title(), "NCCSV Demonstration (testNccsvScalar)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "ship, time, latitude, longitude, status, testLong, sst",
+                "ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst",
                 "");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 

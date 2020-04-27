@@ -60,10 +60,16 @@ public class ByteArray extends PrimitiveArray {
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
-    public double missingValue() {
+    public double missingValueAsDouble() {
         return Byte.MAX_VALUE;
     }
 
+    /**
+     * This tests if the value at the specified index equals the cohort missingValue. 
+     */
+    public boolean isMissingValue(int index) {
+        return get(index) == Byte.MAX_VALUE;
+    }
 
     /**
      * A constructor for a capacity of 8 elements. The initial 'size' will be 0.
@@ -108,6 +114,21 @@ public class ByteArray extends PrimitiveArray {
         array = anArray;
         size = anArray.length;
     }
+
+    /**
+     * This makes a ByteArray from the comma-separated values.
+     * <br>null becomes pa.length() == 0.
+     * <br>"" becomes pa.length() == 0.
+     * <br>" " becomes pa.length() == 1.
+     * <br>See also PrimitiveArray.csvFactory(paType, csv);
+     *
+     * @param csv the comma-separated-value string
+     * @return a ByteArray from the comma-separated values.
+     */
+    public static ByteArray fromCSV(String csv) {
+        return (ByteArray)PrimitiveArray.csvFactory(PAType.BYTE, csv);
+    }
+
     
     /**
      * A special constructor for ByteArray: first, last, with an increment of 1.
@@ -164,7 +185,7 @@ public class ByteArray extends PrimitiveArray {
         byte bar[] = ba.array;
         byte zero = 0;
         byte one = 1;
-        if (pa instanceof StringArray) {
+        if (pa.elementType() == PAType.STRING) {
             for (int i = 0; i < size; i++)
                 bar[i] = String2.parseBooleanToByte(pa.getString(i));
         } else if (pa instanceof CharArray) {
@@ -191,12 +212,18 @@ public class ByteArray extends PrimitiveArray {
         return ba;
     }
 
-    /** The minimum value that can be held by this class. */
-    public String MINEST_VALUE() {return "" + Byte.MIN_VALUE;}
+    /** This returns a new PAOne with the minimum value that can be held by this class. 
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b for ByteArray. 
+     */
+    public PAOne MINEST_VALUE() {return new PAOne(PAType.BYTE).setInt(Byte.MIN_VALUE);}
 
-    /** The maximum value that can be held by this class 
-        (not including the cohort missing value). */
-    public String MAXEST_VALUE() {return "" + (Byte.MAX_VALUE - 1);}
+    /** This returns a new PAOne with the maximum value that can be held by this class 
+     *  (not including the cohort missing value). 
+     *
+     * @return a new PAOne with the maximum value that can be held by this class, e.g., 126 for ByteArray. 
+     */
+    public PAOne MAXEST_VALUE() {return new PAOne(PAType.BYTE).setInt(Byte.MAX_VALUE - 1);}
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -280,12 +307,23 @@ public class ByteArray extends PrimitiveArray {
     }
 
     /**
-     * This returns the class index (PATYPE_INDEX_BYTE) of the element type.
+     * This returns the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType.
      *
-     * @return the class index (PATYPE_INDEX_BYTE) of the element type.
      */
-    public int elementTypeIndex() {
-        return PATYPE_INDEX_BYTE;
+    public PAType needPAType(PAType tPAType) {
+        //if tPAType is smaller or same, return this.PAType
+        if (tPAType == PAType.BYTE)   return PAType.BYTE;
+
+        //if sideways
+        if (tPAType == PAType.CHAR)   return PAType.STRING;
+        if (tPAType == PAType.UBYTE)  return PAType.SHORT;
+        if (tPAType == PAType.USHORT) return PAType.INT;
+        if (tPAType == PAType.UINT)   return PAType.LONG;
+        if (tPAType == PAType.ULONG)  return PAType.STRING;
+
+        //if tPAType is bigger.  SHORT, INT, LONG, FLOAT, DOUBLE, STRING
+        return tPAType;
     }
 
     /**
@@ -382,6 +420,26 @@ public class ByteArray extends PrimitiveArray {
      */
     public void atInsertString(int index, String value) {
         atInsert(index, Math2.narrowToByte(String2.parseInt(value)));
+    }
+
+    /**
+     * This adds PAOne's value to the array.
+     *
+     * @param value the value, as a PAOne (or null == MISSING_VALUE).
+     */
+    public void addPAOne(PAOne value) {
+        add(value == null? Byte.MAX_VALUE : Math2.narrowToByte(value.getInt()));
+    }
+
+    /**
+     * This adds n PAOne's to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a PAOne (or null).
+     */
+    public void addNPAOnes(int n, PAOne value) {
+        addN(n, value == null? Byte.MAX_VALUE : Math2.narrowToByte(value.getInt()));
     }
 
     /**
@@ -646,6 +704,8 @@ public class ByteArray extends PrimitiveArray {
      * This returns an array (perhaps 'array') which has 'size' elements.
      *
      * @return an array (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public byte[] toArray() {
         if (array.length == size)
@@ -661,6 +721,8 @@ public class ByteArray extends PrimitiveArray {
      * elements.
      *
      * @return a primitive[] (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     public Object toObjectArray() {
         return toArray();
@@ -734,8 +796,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public int getInt(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Integer.MAX_VALUE : 
-                                    b;
+        return b == Byte.MAX_VALUE? Integer.MAX_VALUE : b;
     }
 
     /**
@@ -772,8 +833,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public long getLong(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Long.MAX_VALUE : 
-                                    b;
+        return b == Byte.MAX_VALUE? Long.MAX_VALUE : b;
     }
 
     /**
@@ -792,7 +852,7 @@ public class ByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   Byte.MAX_VALUE is returned as ULong.MAX_VALUE.
+     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
      */
     public BigInteger getULong(int index) {
         byte b = get(index);
@@ -821,8 +881,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public float getFloat(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Float.NaN : 
-                                    b;
+        return b == Byte.MAX_VALUE? Float.NaN : b;
     }
 
     /**
@@ -847,8 +906,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public double getDouble(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? Double.NaN : 
-                                    b;
+        return b == Byte.MAX_VALUE? Double.NaN : b;
     }
 
     /**
@@ -870,7 +928,8 @@ public class ByteArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * FloatArray converts float to double in a simplistic way.
-     * For this variant: Integer source values will be treated as unsigned.
+     * For this variant: Integer source values will be treated as unsigned
+     * (e.g., a ByteArray with -1 returns 255).
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -922,18 +981,6 @@ public class ByteArray extends PrimitiveArray {
     }
 
     /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    public String getSimpleString(int index) {
-        return String.valueOf(get(index));
-    }
-
-    /**
      * Return a value from the array as a String suitable for a JSON file. 
      * char returns a String with 1 character.
      * String returns a json String with chars above 127 encoded as \\udddd.
@@ -944,8 +991,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public String getJsonString(int index) {
         byte b = get(index);
-        return b == Byte.MAX_VALUE? "null" : 
-                                    String.valueOf(b);
+        return b == Byte.MAX_VALUE? "null" : String.valueOf(b);
     }
 
 
@@ -958,8 +1004,7 @@ public class ByteArray extends PrimitiveArray {
      * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a double. String values are parsed
-     *   with String2.parseDouble and so may return Double.NaN.
+     * @return the value as a String. 
      */
     public String getRawString(int index) {
         return String.valueOf(get(index));
@@ -1311,7 +1356,7 @@ public class ByteArray extends PrimitiveArray {
     /**
      * This appends the data in another pa to the current data.
      * WARNING: information may be lost from the incoming pa if this
-     * primitiveArray is of a simpler type.
+     * primitiveArray is of a smaller type; see needPAType().
      *
      * @param pa pa must be the same or a narrower or the same
      *  data type, or the data will be narrowed with Math2.narrowToByte.
@@ -1503,10 +1548,14 @@ public class ByteArray extends PrimitiveArray {
         String2.log("*** Testing ByteArray");
 /* for releases, this line should have open/close comment */
 
+        ByteArray anArray = ByteArray.fromCSV(     " -128, -1, 0, 126, ,     127, 200 ");
+        Test.ensureEqual(anArray.toString(),         "-128, -1, 0, 126, 127, 127, 127", "");
+        Test.ensureEqual(anArray.toNccsvAttString(), "-128b,-1b,0b,126b,127b,127b,127b", "");
+
         //** test default constructor and many of the methods
-        ByteArray anArray = new ByteArray();
+        anArray = new ByteArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
-        Test.ensureEqual(anArray.missingValue(), Byte.MAX_VALUE, "");
+        Test.ensureEqual(anArray.missingValue().getRawDouble(), Byte.MAX_VALUE, "");
         anArray.addString("");
         Test.ensureEqual(anArray.get(0),               Byte.MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawInt(0),         Byte.MAX_VALUE, "");
@@ -1523,7 +1572,7 @@ public class ByteArray extends PrimitiveArray {
         anArray.set(0, (byte)-127); Test.ensureEqual(anArray.getUnsignedDouble(0), 129, "");
         anArray.set(0, (byte)  -1); Test.ensureEqual(anArray.getUnsignedDouble(0), 255, "");
         anArray.clear();
-
+ 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add((byte)120);
         Test.ensureEqual(anArray.size(), 1, "");
@@ -1874,11 +1923,12 @@ public class ByteArray extends PrimitiveArray {
 
         //min max
         anArray = new ByteArray();
-        anArray.addString(anArray.MINEST_VALUE());
-        anArray.addString(anArray.MAXEST_VALUE());
-        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE(), "");
+        anArray.addPAOne(anArray.MINEST_VALUE());
+        anArray.addPAOne(anArray.MAXEST_VALUE());
+        Test.ensureEqual(anArray.getString(0), anArray.MINEST_VALUE().toString(), "");
         Test.ensureEqual(anArray.getString(0), "-128", "");
-        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE(), "");
+        Test.ensureEqual(anArray.getString(1), anArray.MAXEST_VALUE().toString(), "");
+        Test.ensureEqual(anArray.getString(1), "126", "");
 
         //tryToFindNumericMissingValue() 
         Test.ensureEqual((new ByteArray(new byte[] {     })).tryToFindNumericMissingValue(), Double.NaN, "");

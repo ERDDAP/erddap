@@ -421,7 +421,7 @@ public class EDDTableCopy extends EDDTable{
             Table table = new Table();
             String2.log("!!! sourceEDD is unavailable, so getting dataVariable info from youngest file\n" + 
                 getFromName);
-            table.readFlatNc(getFromName, null, 0);  //null=allVars, standardizeWhat=0 because data is already unpacked
+            table.readFlatNc(getFromName, null, 0);  //null=allVars, standardizeWhat=0 because data is already unpacked. 
             nDataVariables = table.nColumns();
             tDataVariables = new Object[nDataVariables][];
             for (int dv = 0; dv < nDataVariables; dv++) {

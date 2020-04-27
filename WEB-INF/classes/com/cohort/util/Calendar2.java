@@ -5250,7 +5250,7 @@ public class Calendar2 {
      * This looks for a date time format which is suitable for all elements of sa
      * (other than nulls and ""'s). 
      * 
-     * @param sa a StringArray, perhaps with consistently formatted date time String values.
+     * @param sa a PrimitiveArray (usually StringArray or integer type), perhaps with consistently formatted date time String values.
      * @param evenIfPurelyNumeric lets you specify whether to try to match purely numeric formats
      * @return a date time format which is suitable for all elements of sa
      *   (other than nulls and ""'s), or "" if no suggestion.
@@ -5258,9 +5258,10 @@ public class Calendar2 {
      *   If the response starts with "yyyy-M", parse with Calendar2.parseISODateTimeZulu();
      *   else parse with java.time.format.DateTimeFormatter (was Joda). 
      */
-    public static String suggestDateTimeFormat(StringArray sa, boolean evenIfPurelyNumeric) {
+    public static String suggestDateTimeFormat(PrimitiveArray sa, boolean evenIfPurelyNumeric) {
         if (sa == null || sa.size() == 0)
             return "";
+        boolean isIntegerArray = sa.isIntegerType();
         int n = sa.size();
         String noMatch = ">> suggestDateTimeFormat(StringArray): no match because ";
  
@@ -5268,7 +5269,7 @@ public class Calendar2 {
         String startWithLetter = null;
         BitSet isSomething = new BitSet(n); //initially all false
         for (int sai = 0; sai < n; sai++) {
-            String s = sa.get(sai);
+            String s = sa.getString(sai);
             if (String2.isSomething(s))
                 isSomething.set(sai);
             else continue;
@@ -5299,7 +5300,8 @@ public class Calendar2 {
         }
 
         //restrict search to allDigits formats?
-        boolean allDigits = startWithDigit != null && String2.allDigits(sa.get(first).trim());
+        boolean allDigits = startWithDigit != null && 
+            (isIntegerArray || String2.allDigits(sa.getString(first).trim()));
         if (allDigits && evenIfPurelyNumeric == false) {
             if (debugMode) String2.log(noMatch +
                 "some strings are purely numeric but evenIfPurelyNumeric=false.");
@@ -5318,7 +5320,7 @@ public class Calendar2 {
             Pattern regexPattern = dateTimeFormatPatternHM.get(format);
             int sai = first;
             while (sai >= 0) {
-                String sample = sa.get(sai).trim();            
+                String sample = sa.getString(sai).trim();            
                 if (regexPattern.matcher(sample).matches()) {
                     sai = isSomething.nextSetBit(sai + 1);
                     continue;
@@ -5380,10 +5382,10 @@ public class Calendar2 {
      * This tries to figure out the format of someDateTimeString
      * then parse the value and convert to epochSeconds.
      *
-     * @param someDateTimeStrings  all using the same format
+     * @param someDateTimeStrings  String or integer-type array, all using the same format
      * @return epochSeconds (or all Double.NaN if trouble);
      */
-    public static DoubleArray tryToEpochSeconds(StringArray someDateTimeStrings, 
+    public static DoubleArray tryToEpochSeconds(PrimitiveArray someDateTimeStrings, 
             boolean evenIfPurelyNumeric) {
         String format = suggestDateTimeFormat(someDateTimeStrings, evenIfPurelyNumeric);
         if (format.length() == 0) {
@@ -5783,6 +5785,7 @@ public class Calendar2 {
     /**
      * This converts sa into a DoubleArray with epochSeconds.
      *
+     * @param sa is a StringArray or an integer-type array
      * @param dateTimeFormat one of the ISO8601 formats above, or a 
      *   java.time.format.DateTimeFormatter (was Joda) format.
      *   If it starts with "uuuu-M", "yyyy-M", or "YYYY-M" (Y is discouraged/incorrect),
@@ -5790,7 +5793,7 @@ public class Calendar2 {
      *   else parse with java.time.format.DateTimeFormatter (was Joda). 
      * @return a DoubleArray with the epochSeconds values (any/all will be NaN if touble)
      */
-    public static DoubleArray parseToEpochSeconds(StringArray sa, String dateTimeFormat) {
+    public static DoubleArray parseToEpochSeconds(PrimitiveArray sa, String dateTimeFormat) {
         int n = sa.size();
         DoubleArray da = new DoubleArray(n, false);
         if (dateTimeFormat == null ||
@@ -5805,14 +5808,14 @@ public class Calendar2 {
                 dateTimeFormat.startsWith("YYYY-M")) {  //Y is discouraged/incorrect
                 //use Calendar2
                 for (int i = 0; i < n; i++) 
-                    da.add(safeIsoStringToEpochSeconds(sa.get(i))); 
+                    da.add(safeIsoStringToEpochSeconds(sa.getString(i))); 
             } else {
                 //was: use java.time.format.DateTimeFormatter (was Joda)
                 boolean printError = verbose;
                 //DateTimeFormatter formatter = makeDateTimeFormatter(dateTimeFormat, zulu);
                 da.addN(n, Double.NaN);
                 for (int i = 0; i < n; i++) {
-                    String s = sa.get(i);
+                    String s = sa.getString(i);
                     if (s != null && s.length() > 0) {
                         try {
                             da.set(i, parseToEpochSeconds(s, dateTimeFormat)); //was formatter)); //thread safe
