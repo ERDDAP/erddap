@@ -644,10 +644,11 @@ public class CacheOpendapStation {
 
                     //I care about exception from this 
                     out.close();
+                    out = null;
 
                 } catch (Exception e) {
                     try {
-                        out.close();
+                        if (out != null) out.close();
                     } catch (Exception e2) {
                         //don't care
                     }

@@ -13,12 +13,13 @@ import com.cohort.util.Test;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 
 
 /**
  * This class holds a PrimitiveArray which always has 1 value. 
  * This it is like Java's Number, but for PrimitiveArrays.
- * The constructors set a specific PAType, which PAOne uses for its entire life.
+ * The constructors set a specific PAType, which the PAOne uses for its entire life.
  */
 public class PAOne {
 
@@ -30,6 +31,15 @@ public class PAOne {
      */
     public PAOne(PAType paType) {
         pa = PrimitiveArray.factory(paType, 1, true);
+        elementSize = pa.elementSize();
+    }
+
+    /**
+     * This constructs a paOne of the specified type with a value derived from parsing 'value'.
+     */
+    public PAOne(PAType paType, String value) {
+        pa = PrimitiveArray.factory(paType, 1, false);
+        pa.addString(value);
         elementSize = pa.elementSize();
     }
 
@@ -51,30 +61,57 @@ public class PAOne {
     }
 
     /**
-     * This constructs a paOne with the specified value.
+     * This constructs a String paOne with the specified value.
+     */
+    public static PAOne fromString(String s) {
+        return new PAOne(PAType.STRING).setString(s);
+    }
+
+    /**
+     * This constructs a double paOne with the specified value.
      */
     public static PAOne fromDouble(double d) {
-        PAOne paOne = new PAOne(PAType.DOUBLE);
-        paOne.setDouble(d);
-        return paOne;
+        return new PAOne(PAType.DOUBLE).setDouble(d);
     }
 
     /**
-     * This constructs a paOne with the specified value.
+     * This constructs a float paOne with the specified value.
      */
     public static PAOne fromFloat(float f) {
-        PAOne paOne = new PAOne(PAType.FLOAT);
-        paOne.setFloat(f);
-        return paOne;
+        return new PAOne(PAType.FLOAT).setFloat(f);
     }
 
     /**
-     * This constructs a paOne with the specified value.
+     * This constructs a long paOne with the specified value.
+     */
+    public static PAOne fromLong(long i) {
+        return new PAOne(PAType.LONG).setLong(i);
+    }
+
+    /**
+     * This constructs an int paOne with the specified value.
      */
     public static PAOne fromInt(int i) {
-        PAOne paOne = new PAOne(PAType.INT);
-        paOne.setInt(i);
-        return paOne;
+        return new PAOne(PAType.INT).setInt(i);
+    }
+
+    /**
+     * This makes a new object which is a copy of this object.
+     *
+     * @return a new object, with the same elements.
+     *    It will have a new backing array with a capacity equal to its size.
+     */
+    public Object clone() {
+        return new PAOne(pa, 0);
+    }
+
+    /**
+     * This returns the pa held by this PAOne. Its size must remain 1.
+     *
+     * @return the pa held by this PAOne.
+     */
+    public PrimitiveArray pa() {
+        return pa;
     }
 
     /**
@@ -88,42 +125,30 @@ public class PAOne {
      * This sets this PAOne's value.
      *
      * @param s a String
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne setString(String s) {
         pa.setString(0, s);
         return this;
     }
+
     /**
      * Return a value from the array as a String (and the cohort missing value
      * appears as "", not a value).
      * 
-     * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])) 
      *   or "" (for missing value).
      *   If this PA is unsigned, this method retuns the unsigned value.
      */
-    public String getString(int index) {
-        return pa.getString(index);
-    }
-
-    /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    public String getSimpleString(int index) {
-        return pa.getSimpleString(index);
+    public String getString() {
+        return pa.getString(0);
     }
 
     /**
      * This sets this PAOne's value.
      *
      * @param d a double
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne setDouble(double d) {
         pa.setDouble(0, d);
@@ -140,10 +165,43 @@ public class PAOne {
     }
 
     /**
+     * This gets this PAOne's value as a double.
+     * This "raw" variant leaves missingValue from smaller data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     *
+     * @return this PAOne's value as a double.
+     */
+    public double getRawDouble() {
+        return pa.getRawDouble(0);
+    }
+
+    /**
+     * This gets this PAOne's value as a double.
+     * This "unsigned" variant treats signed integer types as if they
+     * were unsigned types.
+     *
+     * @return this PAOne's value as a double.
+     */
+    public double getUnsignedDouble() {
+        return pa.getUnsignedDouble(0);
+    }
+
+    /**
+     * This gets this PAOne's value as a double.
+     * This "nice" variant tries to promote floats nicely (e.g., so they don't 
+     * end in 99999 or 00001.
+     *
+     * @return this PAOne's value as a double.
+     */
+    public double getNiceDouble() {
+        return pa.getNiceDouble(0);
+    }
+
+    /**
      * This sets this PAOne's value.
      *
      * @param f a float
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne setFloat(float f) {
         pa.setFloat(0, f);
@@ -162,8 +220,48 @@ public class PAOne {
     /**
      * This sets this PAOne's value.
      *
+     * @param i a ULong
+     * @return this PAOne, for convenience
+     */
+    public PAOne setULong(BigInteger i) {
+        pa.setULong(0, i);
+        return this;
+    }
+
+    /**
+     * This gets this PAOne's value as a ULong.
+     *
+     * @return this PAOne's value as a ULong.
+     */
+    public BigInteger getULong() {
+        return pa.getULong(0);
+    }
+
+    /**
+     * This sets this PAOne's value.
+     *
+     * @param i a long
+     * @return this PAOne, for convenience
+     */
+    public PAOne setLong(long i) {
+        pa.setLong(0, i);
+        return this;
+    }
+
+    /**
+     * This gets this PAOne's value as a long.
+     *
+     * @return this PAOne's value as a long.
+     */
+    public long getLong() {
+        return pa.getLong(0);
+    }
+
+    /**
+     * This sets this PAOne's value.
+     *
      * @param i an int
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne setInt(int i) {
         pa.setInt(0, i);
@@ -175,8 +273,19 @@ public class PAOne {
      *
      * @return this PAOne's value as an int.
      */
-    public float getInt() {
+    public int getInt() {
         return pa.getInt(0);
+    }
+
+    /**
+     * This sets this PAOne's value from the value in otherPAOne.
+     *
+     * @param otherPA the source PAOne which must be of the same (or smaller) PAType.
+     * @param this PAOne, for convenience
+     */
+    public PAOne readFrom(PAOne otherPA) {
+        pa.setFromPA(0, otherPA.pa, 0);
+        return this;
     }
 
     /**
@@ -227,8 +336,7 @@ public class PAOne {
     /**
      * This compares this object's value to the other object's value.
      *
-     * @param otherPA the other PA which must be of the same (or smaller) PAType. 
-     * @param index the index in otherPA
+     * @param otherPAOne the other PA which must be of the same (or smaller) PAType. 
      * @return a negative integer (if this is less than Other), zero (if this is
      *   same as Other), or a positive integer (if this is greater than Other).
      *   Think "this - other".
@@ -245,16 +353,18 @@ public class PAOne {
      * @return true if they are equal.
      */
     public boolean equals(PrimitiveArray otherPA, int index) {
-        return compareTo(otherPA, index) == 0; 
+        return pa.compare(0, otherPA, index) == 0; 
     }
 
     /**
      * This returns true if the values are equal.
      *
-     * @param otherPA the other PA which must be of the same (or smaller) PAType. 
-     * @return true if the values are equal.
+     * @param otherPAOne the other PA which must be of the same (or smaller) PAType. 
+     * @return true if the values are equal.  This returns false if otherPAOne is null.
      */
     public boolean equals(PAOne otherPAOne) {
+        if (otherPAOne == null)
+            return false;
         return compareTo(otherPAOne) == 0; 
     }
 
@@ -262,11 +372,14 @@ public class PAOne {
      * This returns true of the values are almost equal.
      *
      * @param precision 
-     * @param otherPA the other PA which must be of the same (or smaller) PAType. 
+     * @param otherPAOne the other PA which must be of the same (or smaller) PAType. 
      * @return true if the values are almost equal. 
      *   Only FLOAT and DOUBLE test 'almost'. Other classes do pure ==.
+     *   This returns false if otherPAOne is null.
      */
     public boolean almostEqual(int precision, PAOne otherPAOne) {
+        if (otherPAOne == null)
+            return false;
         PAType type1 = pa.elementType();
         PAType type2 = otherPAOne.paType();
         if (type1 == PAType.DOUBLE || type2 == PAType.DOUBLE)
@@ -278,6 +391,7 @@ public class PAOne {
 
     /**
      * This returns a string representation of the value.
+     * Integer types show MAX_VALUE number (not "").
      */
     public String toString() {
         return pa.toString();
@@ -371,8 +485,17 @@ public class PAOne {
         Test.ensureEqual(bo.compareTo(sa, 1), 0, "");
         Test.ensureEqual(bo.compareTo(sa, 2), -1, "");
 
+        Test.ensureEqual(ba.missingValue().getString(), "", "");
+        Test.ensureEqual(ba.missingValue().toString(), "127", "");
+
         bo.addTo(sa);
         Test.ensureEqual(sa.toString(), "-32768, 0, 32767, 0", "");
+
+        //constructors
+        PAOne paOne = new PAOne(PAType.BYTE, "-128");
+        Test.ensureEqual(paOne.paType(), PAType.BYTE, "");
+        Test.ensureEqual(paOne.getInt(), -128, "");
+
 
         //raf test
         String raf2Name = File2.getSystemTempDirectory() + "PAOneTest.bin";
@@ -381,7 +504,7 @@ public class PAOne {
         Test.ensureEqual(File2.isFile(raf2Name), false, "");
 
         RandomAccessFile raf2 = new RandomAccessFile(raf2Name, "rw");
-        PAOne paOne = new PAOne(ba);
+        paOne = new PAOne(ba);
         long bStart = raf2.getFilePointer();
         for (int i = 0; i < 3; i++) {
             paOne.readFrom(ba, i);

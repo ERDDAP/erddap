@@ -366,8 +366,8 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
                 addAtts.set("ioos_category", "Other");
             if (pa.isIntegerType()) {
                 addAtts
-                    .add("colorBarMinimum", Math2.niceDouble(-pa.missingValue(), 2))
-                    .add("colorBarMaximum", Math2.niceDouble( pa.missingValue(), 2));
+                    .add("colorBarMinimum", Math2.niceDouble(-pa.missingValueAsDouble(), 2))
+                    .add("colorBarMaximum", Math2.niceDouble( pa.missingValueAsDouble(), 2));
             }
             dataSourceTable.addColumn(col - 1, varName, pa, sourceAtts);
             dataAddTable.addColumn(   col - 1, varName, pa, addAtts);

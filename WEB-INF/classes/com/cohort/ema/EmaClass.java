@@ -1053,8 +1053,7 @@ public class EmaClass extends HttpServlet {
         //output the response html page 
         response.setContentType("text/html");
         response.setCharacterEncoding(String2.UTF_8);
-        Writer out = new BufferedWriter(new OutputStreamWriter(
-            new BufferedOutputStream(response.getOutputStream()), String2.UTF_8));
+        Writer out = String2.getBufferedOutputStreamWriterUtf8(response.getOutputStream());
         out.write(getHTMLPage(request, request.getContentLength() > 0)); //displayErrorMessages
         out.flush(); //close it???
     }

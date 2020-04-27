@@ -94,8 +94,8 @@ public class TableWriterDataTable extends TableWriter {
         //do firstTime stuff
 
         if (firstTime) {
-            writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+            writer = String2.getBufferedOutputStreamWriterUtf8(
+                outputStreamSource.outputStream(String2.UTF_8));
             writer.write("{\"cols\":[");
             isTimeStamp = new boolean[nColumns];
             isCharOrString = new boolean[nColumns];

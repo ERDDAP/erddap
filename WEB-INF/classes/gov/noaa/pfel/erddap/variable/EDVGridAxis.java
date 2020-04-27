@@ -222,7 +222,7 @@ public class EDVGridAxis extends EDV {
                 parentDatasetID + " variable=" + destinationName);
         StringArray varsRead = new StringArray();
         try {
-            PrimitiveArray pas[] = NcHelper.readPAsInNc(
+            PrimitiveArray pas[] = NcHelper.readPAsInNc3(
                 EDD.datasetDir(parentDatasetID) + EDD.DIMENSION_VALUES_FILENAME, 
                 new String[]{destinationName}, varsRead);
             if (varsRead.size() != 1 || !varsRead.get(0).equals(destinationName))

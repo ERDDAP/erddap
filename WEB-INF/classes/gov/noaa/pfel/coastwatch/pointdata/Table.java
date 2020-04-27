@@ -184,7 +184,7 @@ public class Table  {
     public static String BGCOLOR = "#ffffcc"; 
 
     //this will only change if changes are made that aren't backwards and forwards compatible
-    public final static int ENHANCED_VERSION = 3; 
+    public final static int ENHANCED_VERSION = 4; 
 
     //related to ERDDAP
     /** 
@@ -587,6 +587,63 @@ public class Table  {
     }
 
     /**
+     * This converts columns with _Unsigned=true attributes to be unsigned PA's (e.g., UByteArray).
+     * In any case, the _Unsigned attribute is removed.
+     */
+    public void convertToUnsignedPAs() {
+        String attsToCheck[] = {"_FillValue", "missing_value", "actual_range", "data_min", "data_max"};
+        int nColumns = columns.size();
+        for (int col = 0; col < nColumns; col++) {
+            Attributes atts = columnAttributes(col);
+            String unsigned = atts.getString("_Unsigned");
+            atts.remove("_Unsigned");
+            if ("true".equals(unsigned)) {
+                PrimitiveArray pa = getColumn(col);
+                PAType paType = pa.elementType();
+                if (paType == PAType.BYTE ||
+                    paType == PAType.SHORT ||
+                    paType == PAType.INT ||
+                    paType == PAType.LONG) {
+                    setColumn(col, pa.makeUnsignedPA());
+                    for (int i = 0; i < attsToCheck.length; i++) {
+                        PrimitiveArray tAtt = atts.get(attsToCheck[i]);
+                        if (tAtt != null && tAtt.elementType() == paType)
+                            atts.set(attsToCheck[i], tAtt.makeUnsignedPA());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This converts columns with unsigned PA's (e.g. UByteArray) to have _Unsigned=true attributes and signed PA's.
+     * In any case, the _Unsigned attribute is removed.
+     */
+    public void convertToUnsignedAttributes() {
+        String attsToCheck[] = {"_FillValue", "missing_value", "actual_range", "data_min", "data_max"};
+        int nColumns = columns.size();
+        for (int col = 0; col < nColumns; col++) {
+            PrimitiveArray pa = getColumn(col);
+            if (pa.isUnsigned()) {
+                PAType paType = pa.elementType();
+                if (paType == PAType.UBYTE ||
+                    paType == PAType.USHORT ||
+                    paType == PAType.UINT ||
+                    paType == PAType.ULONG) {
+                    setColumn(col, pa.makeSignedPA());
+                    Attributes atts = columnAttributes(col);
+                    atts.set("_Unsigned", true);
+                    for (int i = 0; i < attsToCheck.length; i++) {
+                        PrimitiveArray tAtt = atts.get(attsToCheck[i]);
+                        if (tAtt != null && tAtt.elementType() == paType)
+                            atts.set(attsToCheck[i], tAtt.makeSignedPA());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * This runs StringArray.convertIsSomething2 (change all e.g., "N/A" to "") 
      * on the specified column, if it is a StringArray column.
      *
@@ -834,6 +891,33 @@ public class Table  {
      */
     public int findColumnNumber(String columnName) {
         return columnNames.indexOf(columnName, 0);
+    }
+
+    /**
+     * This returns the number of the column named columnName (case-insensitive).
+     *
+     * @param columnName
+     * @return the corresponding column number (or -1 if not found).
+     */
+    public int findColumnNumberIgnoreCase(String columnName) {
+        return columnNames.indexOfIgnoreCase(columnName);
+    }
+
+    /**
+     * This returns the number of the first column with the specified attName=attValue.
+     *
+     * @param attName  e.g., cf_role       (case sensitive)
+     * @param attValue e.g., timeseries_id (case insensitive)
+     * @return the corresponding column number (or -1 if not found).
+     */
+    public int findColumnNumberWithAttributeValue(String attName, String attValue) {
+        attValue = attValue.toLowerCase();
+        int nCol = nColumns();
+        for (int col = 0; col < nCol; col++) {
+            if (attValue.equalsIgnoreCase(columnAttributes(col).getString(attName)))
+                return col;
+        }
+        return -1;
     }
 
     /**
@@ -2604,7 +2688,7 @@ public class Table  {
         for (int col = 0; col < table.nColumns(); col++) 
             sa.add(table.getColumn(col).elementTypeString());
         results = sa.toString();
-        expected = "String, String, String, byte, short, int, String, float, double";
+        expected = "String, String, String, byte, short, int, long, float, double";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //read subset 
@@ -2692,7 +2776,7 @@ public class Table  {
         for (int col = 0; col < table.nColumns(); col++) 
             sa.add(table.getColumn(col).elementTypeString());
         results = sa.toString();
-        expected = "String, String, String, byte, short, int, String, float, double";
+        expected = "String, String, String, byte, short, int, long, float, double";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //read subset 
@@ -3117,7 +3201,7 @@ public class Table  {
         for (int col = 0; col < table.nColumns(); col++) 
             sa.add(table.getColumn(col).elementTypeString());
         results = sa.toString();
-        expected = "double, String, String, String, byte, short, int, String, float";
+        expected = "double, String, String, String, byte, short, int, long, float";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //read as types 
@@ -3256,6 +3340,7 @@ public class Table  {
                             setColumn(col, PrimitiveArray.factory(
                                 PrimitiveArray.caseInsensitiveElementStringToPAType(sa.get(0)), 
                                 1024, false)); //active?
+                        //String2.log(">> " + getColumnName(col) + " " + getColumn(col).elementType());
                         expectedDCols.add(varName);
                     } else if (String2.NCCSV_SCALAR.equals(attName)) {
                         if (pa.size() != 1)
@@ -3298,6 +3383,7 @@ public class Table  {
             int nDataCol = sa.size();
             PrimitiveArray dpa[] = new PrimitiveArray[nDataCol]; //so fast below
             boolean dpaIsLongArray[]   = new boolean[nDataCol];
+            boolean dpaIsULongArray[]  = new boolean[nDataCol];
             boolean dpaIsCharArray[]   = new boolean[nDataCol];
             boolean dpaIsStringArray[] = new boolean[nDataCol];
             for (int dcol = 0; dcol < nDataCol; dcol++) {
@@ -3321,6 +3407,7 @@ public class Table  {
                     throw new SimpleException(
                         "varName=" + varName + " occurs twice in the data section.");
                 dpaIsLongArray[  dcol] = dpa[dcol] instanceof LongArray;
+                dpaIsULongArray[ dcol] = dpa[dcol] instanceof ULongArray;
                 dpaIsCharArray[  dcol] = dpa[dcol] instanceof CharArray;
                 //if (dpaIsCharArray[dcol]) String2.log(">> dcol=" + dcol + " is CharArray");
                 dpaIsStringArray[dcol] = dpa[dcol] instanceof StringArray;
@@ -3350,18 +3437,23 @@ public class Table  {
                     continue;
                 }
                 for (int dcol = 0; dcol < nDataCol; dcol++) {
+                    String ts = sa.get(dcol);
                     if (dpaIsStringArray[dcol]) {
-                        dpa[dcol].addString(String2.fromNccsvString(sa.get(dcol)));
+                        dpa[dcol].addString(String2.fromNccsvString(ts));
                     } else if (dpaIsCharArray[dcol]) {
-                        ((CharArray)dpa[dcol]).add(String2.fromNccsvChar(sa.get(dcol)));
+                        ((CharArray)dpa[dcol]).add(String2.fromNccsvChar(ts));
                     } else if (dpaIsLongArray[dcol]) {
-                        String ts = sa.get(dcol);
                         if (ts.endsWith("L"))
                             ts = ts.substring(0, ts.length() - 1);
                         dpa[dcol].addString(ts);
+                    } else if (dpaIsULongArray[dcol]) {
+                        if (ts.endsWith("uL"))
+                            ts = ts.substring(0, ts.length() - 2);
+                        dpa[dcol].addString(ts);
                     } else {
-                        dpa[dcol].addString(sa.get(dcol));
+                        dpa[dcol].addString(ts);
                     }
+                    //String2.log(">> dcol=" + dcol + " " + dpa[dcol].elementType() + " ts=" + ts + " -> " + dpa[dcol].getString(dpa[dcol].size() - 1));
                 }
             }
             //if (s == null)  //NCCSV_END_DATA now optional
@@ -3422,8 +3514,8 @@ public class Table  {
         long time = System.currentTimeMillis();
 
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(
-                 new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt)), String2.ISO_8859_1));
+            bw = String2.getBufferedOutputStreamWriter88591(
+                 new FileOutputStream(fullFileName + randomInt));
             saveAsNccsv(catchScalars, writeMetadata, firstDataRow, lastDataRow, bw);
             bw.close(); 
             bw = null;
@@ -3466,12 +3558,14 @@ public class Table  {
         int nc = nColumns();
         int nr = Integer.MAX_VALUE;  //shortest non-scalar pa (may be scalars have 1, others 0 or many)
         boolean isLong[]   = new boolean[nc];
+        boolean isULong[]  = new boolean[nc];
         boolean isScalar[] = new boolean[nc];
         boolean allScalar = true;
         int firstNonScalar = nc;
         for (int c = 0; c < nc; c++) {
             PrimitiveArray pa = columns.get(c);
-            isLong[c] = pa.elementType() == PAType.LONG;
+            isLong[c]  = pa.elementType() == PAType.LONG;
+            isULong[c] = pa.elementType() == PAType.ULONG;
             isScalar[c] = catchScalars && pa.size() > 0 && pa.allSame();
             if (!isScalar[c]) {
                 nr = Math.min(nr, pa.size());
@@ -3532,6 +3626,8 @@ public class Table  {
                     writer.write(ts);
                     if (isLong[c] && ts.length() > 0)
                         writer.write('L'); //special case not handled by getNccsvDataString
+                    else if (isULong[c] && ts.length() > 0)
+                        writer.write("uL"); //special case not handled by getNccsvDataString
                 }
                 writer.write("\n");
             }
@@ -3548,7 +3644,7 @@ public class Table  {
         String2.log("\n**** Table.testNccsv()\n");
         String dir = String2.unitTestDataDir + "nccsv/";
 
-        //scalar
+        //read/write scalar
         String fileName = dir + "testScalar.csv";
         Table table = new Table();
         table.readNccsv(fileName); 
@@ -3558,7 +3654,7 @@ public class Table  {
         }
         String results = table.saveAsNccsv(); 
         String expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3584,8 +3680,14 @@ public class Table  {
 "lon,units,degrees_east\n" +
 "status,*DATA_TYPE*,char\n" +
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,actual_range,0.17f,23.58f\n" +
 "sst,missing_value,99.0f\n" +
@@ -3598,22 +3700,26 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
-"time,lat,lon,status,testLong,sst\n" +
-"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
-"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
-"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
-"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
-"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
+"time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
+"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //don't catch scalar
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3639,8 +3745,14 @@ public class Table  {
 "lon,units,degrees_east\n" +
 "status,*DATA_TYPE*,char\n" +
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,actual_range,0.17f,23.58f\n" +
 "sst,missing_value,99.0f\n" +
@@ -3653,16 +3765,20 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
-"ship,time,lat,lon,status,testLong,sst\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
+"ship,time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -3674,9 +3790,11 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
+        //String2.log(table.toString());
+
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //don't catch scalars
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3702,8 +3820,14 @@ public class Table  {
 "lon,units,degrees_east\n" +
 "status,*DATA_TYPE*,char\n" +
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,actual_range,0.17f,23.58f\n" +
 "sst,missing_value,99.0f\n" +
@@ -3716,16 +3840,20 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
-"ship,time,lat,lon,status,testLong,sst\n" +
-"Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
-"Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
-"Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
+"ship,time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
+"Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
@@ -3739,7 +3867,7 @@ public class Table  {
         }
         results = table.saveAsNccsv(true, true, 0, 0);  //catch scalar, writeMetadata, don't write data
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3779,6 +3907,10 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
@@ -3799,7 +3931,7 @@ public class Table  {
         }
         results = table.saveAsNccsv(); 
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3825,8 +3957,14 @@ public class Table  {
 "lon,units,degrees_east\n" +
 "status,*DATA_TYPE*,char\n" +
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
+"testByte,*DATA_TYPE*,byte\n" +
+"testByte,units,\"1\"\n" +
+"testUByte,*DATA_TYPE*,ubyte\n" +
+"testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,units,\"1\"\n" +
+"testULong,*DATA_TYPE*,ulong\n" +
+"testULong,units,\"1\"\n" +
 "sst,*DATA_TYPE*,float\n" +
 "sst,actual_range,0.17f,23.58f\n" +
 "sst,missing_value,99.0f\n" +
@@ -3839,23 +3977,28 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
-"time,lat,lon,status,testLong,sst\n" +
-"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-9007199254740992L,\n" +
-"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,9007199254740992L,10.7\n" +
-"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",9223372036854775806L,99.0\n" +
+"time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
+"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
 "BAD ROW: TOO FEW ITEMS,,,?,,\n" + //this disappears if I don't actually do Excel Save As
-"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,10.0\n" +
-"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         try {
             Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nKnown problem: how to keep integer in string att as a string.");
+                "\nKnown problem: how to keep integer in string att as a string." +
+                "\nAnd if I don't actually do Excel 'Save As', the BAD ROW disappears.");
         }
     }
 
@@ -5052,9 +5195,8 @@ String stationsXml =
 
         if (reallyVerbose) String2.log("  Table.saveAsDAS"); 
         long time = System.currentTimeMillis();
-        Writer writer = new BufferedWriter(new OutputStreamWriter(
-            //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-            outputStream, String2.ISO_8859_1)); 
+        //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); 
         writeDAS(writer, sequenceName, false);
 
         //diagnostic
@@ -5121,7 +5263,6 @@ Attributes {
             globalAttributes, writer, encodeAsHtml);
         writer.write("}" + OpendapHelper.EOL); //see EOL definition for comments 
         writer.flush(); //essential
-
     }
 
 
@@ -5158,7 +5299,7 @@ Dataset {
         if (reallyVerbose) String2.log("  Table.saveAsDDS"); 
         long time = System.currentTimeMillis();
         //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, String2.ISO_8859_1_CHARSET));  
+        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream);  
 
         int nColumns = nColumns();
         writer.write("Dataset {" + OpendapHelper.EOL); //see EOL definition for comments
@@ -5201,7 +5342,7 @@ Dataset {
         saveAsDDS(outputStream, sequenceName);  
 
         //write the connector  
-        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream)); 
+        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); 
         writer.write("---------------------------------------------" + OpendapHelper.EOL); //see EOL definition for comments
 
         //write the column names
@@ -5367,8 +5508,7 @@ Dataset {
         long time = System.currentTimeMillis();
 
         //write the header
-        BufferedWriter writer = new BufferedWriter(
-            new OutputStreamWriter(outputStream, String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
         writer.write(
             "<!DOCTYPE HTML>\n" +
             "<html lang=\"en-US\">\n" +
@@ -5731,7 +5871,7 @@ Dataset {
     }
 
     /**
-     * This encodes the values of an Attributes before saveAsEnhancedFlatNc.
+     * This encodes the values of Attributes before saveAsEnhancedFlatNc.
      */
     void encodeEnhancedAttributes(Attributes atts) {
         String names[] = atts.getNames();
@@ -5742,10 +5882,32 @@ Dataset {
                 atts.remove(names[i]);
                 atts.set("_encodedCharArray_" + names[i], 
                     ShortArray.fromCharArrayBytes((CharArray)pa));
+
+            } else if (pa instanceof UByteArray) {
+                atts.remove(names[i]);
+                atts.set("_encodedUByteArray_" + names[i], 
+                    new ByteArray(((UByteArray)pa).toArray()));
+
+            } else if (pa instanceof UShortArray) {
+                atts.remove(names[i]);
+                atts.set("_encodedUShortArray_" + names[i], 
+                    new ShortArray(((UShortArray)pa).toArray()));
+
+            } else if (pa instanceof UIntArray) {
+                atts.remove(names[i]);
+                atts.set("_encodedUIntArray_" + names[i], 
+                    new IntArray(((UIntArray)pa).toArray()));
+
             } else if (pa instanceof LongArray) {
                 atts.remove(names[i]);
                 atts.set("_encodedLongArray_" + names[i], 
                     new StringArray(new String[]{pa.toString()}));
+
+            } else if (pa instanceof ULongArray) {
+                atts.remove(names[i]);
+                atts.set("_encodedULongArray_" + names[i], 
+                    new StringArray(new String[]{pa.toString()}));
+
             //Even nc3 saves attributes via utf-8
             //} else if (pa instanceof StringArray) {
             //    atts.remove(names[i]);
@@ -5758,7 +5920,7 @@ Dataset {
     /**
      * This decodes the values of an Attributes after readEnhancedFlatNc.
      */
-    void decodeEnhancedAttributes(Attributes atts) {
+    void decodeEnhancedAttributes(int sourceVersion, Attributes atts) {
         String names[] = atts.getNames();
         int n = names.length;
         for (int i = 0; i < n; i++) {
@@ -5769,11 +5931,37 @@ Dataset {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(18), 
                         CharArray.fromShortArrayBytes((ShortArray)pa));
+
+                } else if (pa instanceof ByteArray &&
+                    names[i].startsWith("_encodedUByteArray_")) {
+                    atts.remove(names[i]);
+                    atts.set(names[i].substring(19), 
+                        new UByteArray(((ByteArray)pa).toArray()));
+
+                } else if (pa instanceof ShortArray &&
+                    names[i].startsWith("_encodedUShortArray_")) {
+                    atts.remove(names[i]);
+                    atts.set(names[i].substring(20), 
+                        new UShortArray(((ShortArray)pa).toArray()));
+
+                } else if (pa instanceof IntArray &&
+                    names[i].startsWith("_encodedUIntArray_")) {
+                    atts.remove(names[i]);
+                    atts.set(names[i].substring(18), 
+                        new UIntArray(((IntArray)pa).toArray()));
+
                 } else if (pa instanceof StringArray &&
                     names[i].startsWith("_encodedLongArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(18), 
                         PrimitiveArray.csvFactory(PAType.LONG, pa.getString(0)));
+
+                } else if (pa instanceof StringArray &&
+                    names[i].startsWith("_encodedULongArray_")) {
+                    atts.remove(names[i]);
+                    atts.set(names[i].substring(19), 
+                        PrimitiveArray.csvFactory(PAType.ULONG, pa.getString(0)));
+
                 //Even nc3 saves attributes via utf-8
                 //} else if (pa instanceof StringArray &&
                 //    names[i].startsWith("_encodedStringArray_")) {
@@ -5810,12 +5998,16 @@ Dataset {
             Attributes atts = (Attributes)(columnAttributes(col).clone());
             newTable.addColumn(col, getColumnName(col), pa, atts);
 
-            if (pa instanceof CharArray) {
-                atts.set("_Unsigned", "true");  //netcdf recommendation
-                newTable.setColumn(col, ShortArray.fromCharArrayBytes((CharArray)pa));                
+            if        (pa instanceof CharArray) {
+                atts.set("_encoded_", "fromChar");
+                newTable.setColumn(col, ShortArray.fromCharArrayBytes((CharArray)pa));               
 
-            } else if (pa instanceof LongArray) {
+            } else if (pa instanceof LongArray) {  //otherwise, stored as doubles (lossy)
                 atts.set("_encoded_", "fromLong");
+                newTable.setColumn(col, new StringArray(pa));                
+
+            } else if (pa instanceof ULongArray) { //otherwise, stored as doubles (lossy)
+                atts.set("_encoded_", "fromULong");
                 newTable.setColumn(col, new StringArray(pa));                
 
             } else if (pa instanceof StringArray) {
@@ -5837,67 +6029,85 @@ Dataset {
      * into this table (replacing current contents).
      * 
      * @param loadColumns  a list of column names, or null for all
-     * @return enhancedVersion This is for informational purposes. 
+     * @return source enhancedVersion This is for informational purposes. 
      *   Normally, all the enhanced encoding/decoding is dealt with here.
      *   This returns
-     *   <br>&lt; ENHANCED_VERSION (e.g., 0, i.e. out-of-date) 
-     *     if not enhanced or not up to current standards.
-     *   <br>ENHANCED_VERSION if presumably all okay.
-     *   <br>&gt;ENHANCED_VERSION if from a future version
-     *     (with significant changes that aren't caught here). 
+     *   <br>&lt; ENHANCED_VERSION (e.g., -1, i.e. out-of-date) 
+     *     if error because not enhanced or not convertible to current standards.
+     *   <br>ENHANCED_VERSION if all okay (including if from previous version that
+     *     this was able to deal with).
+     *   <br>&gt;ENHANCED_VERSION if trouble because it's from a future version
+     *     (with implied significant changes that aren't caught here). 
      * @throws exception if trouble
      */
     public int readEnhancedFlatNc(String fullName, String loadColumns[]) throws Exception {
 
-        lowReadFlatNc(fullName, loadColumns, 0, -1); //standardizeWhat=0. Always returns standard _FillValues.
+        lowReadFlatNc(fullName, loadColumns, 0, false, -1); //standardizeWhat=0. doAltStandardization=false (rare!)
 
         //String2.log(">>After lowReadFlatNc:\n" + toString());
 
-        //decode
-        decodeEnhancedAttributes(globalAttributes);
-        int enhVersion = globalAttributes.getInt("_enhanced_version_");
-        if (enhVersion == Integer.MAX_VALUE) 
-            enhVersion = 0;
+        //check version #
+        int sourceVersion = globalAttributes.getInt("_enhanced_version_");
+        if (sourceVersion == Integer.MAX_VALUE) 
+            sourceVersion = 0;
+        if (sourceVersion < 3 || sourceVersion > ENHANCED_VERSION) //currently=4.  ver 3 is readable
+            return sourceVersion;
         globalAttributes.remove("_enhanced_version_");
+
+        //decode globalAtts
+        decodeEnhancedAttributes(sourceVersion, globalAttributes);
 
         int nCols = nColumns();
         int nRows = nRows();
         for (int col = 0; col < nCols; col++) {
             PrimitiveArray pa = getColumn(col);
             Attributes atts = columnAttributes(col);
-            decodeEnhancedAttributes(atts);
+            decodeEnhancedAttributes(sourceVersion, atts);
 
             if (pa instanceof CharArray) {
                 //trouble! significant info loss. There shouldn't be any CharArray 
-                enhVersion = 0; //trouble. must be v0 
+                String2.log(String2.ERROR + ": Table.readEnhancedFlatNc(" + fullName + ") contained a CharArray variable.");
+                return -1; //trouble
      
-            } else if (pa instanceof ShortArray) {
-                if ("true".equals(atts.getString("_Unsigned"))) { //netcdf recommendation
-                    //convert unsigned short to char
-                    atts.remove("_Unsigned");
-                    atts.remove("_FillValue");  //was standardized short=32768   remove or set to FFFF???
-                    setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
-                }
+            } else if (sourceVersion == 3 && pa instanceof ShortArray &&
+                "true".equals(atts.getString("_Unsigned"))) { //netcdf recommendation
+                //convert sourceVersion=3 unsigned short to char
+                atts.remove("_Unsigned");
+                atts.remove("_FillValue");  //was standardized short=32768   remove or set to FFFF???
+                setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
+
+            } else if (sourceVersion >= 4 && pa instanceof ShortArray &&
+                "fromChar".equals(atts.getString("_encoded_"))) {
+                atts.remove("_encoded_");
+                atts.remove("_FillValue");  //was standardized short=32768   remove or set to FFFF???
+                setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
 
             } else if (pa instanceof StringArray) {
                 String enc = atts.getString("_encoded_");
+                atts.remove("_encoded_");
                 if ("fromLong".equals(enc)) { 
-                    //convert longs encoded as doubles back to longs
-                    atts.remove("_encoded_");
-                    atts.set("_FillValue", Long.MAX_VALUE);  
+                    //convert longs encoded as Strings back to longs
                     setColumn(col, new LongArray(pa));                
+                } else if ("fromULong".equals(enc)) { 
+                    //convert ulongs encoded as Strings back to ulongs
+                    setColumn(col, new ULongArray(pa));                
                 } else if (String2.JSON.equals(enc)) { 
-                    //convert UTF-8 back to unicode
-                    atts.remove("_encoded_");
+                    //convert UTF-8 back to Java char-based strings
                     ((StringArray)pa).fromJson();                
                 } else {
-                    //significant info loss.
-                    //there shouldn't be any StringArray without that encoding
-                    enhVersion = 0; //trouble. must be v0
+                    //unexpected encoding
+                    String2.log(String2.ERROR + ": Table.readEnhancedFlatNc(" + fullName + 
+                        ") contained an unexpected _encoded_ StringArray: " + enc);
+                    return -1; //unexpected trouble
                 }
             }
         }
-        return enhVersion;
+
+        //then...
+        convertToUnsignedPAs(); //which looks for attributes like _FillValue and adjusts them
+        //convertToStandardMissingValues();
+
+        return ENHANCED_VERSION; //successfully read (and perhaps converted to current version)
     }
 
     /**
@@ -5908,35 +6118,63 @@ Dataset {
         Table table = new Table();
 
         Attributes gatts = table.globalAttributes();
-        gatts.add("tests", "a\u1f63b\nc\td\ufffez");
-        gatts.add("testc", '\u1f63');
-        gatts.add("testl", new LongArray(new long[]{Long.MIN_VALUE, Long.MAX_VALUE}));
-        gatts.add("testi", new IntArray(new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE}));
+        gatts.add("tests", "a\u00fcb\nc\td\u20acz");
+        gatts.add("testc", '\u00fc');
+        gatts.add("testub", UByteArray.fromCSV( "0, 255"));
+        gatts.add("testus", UShortArray.fromCSV("0, 65535"));
+        gatts.add("testui", UIntArray.fromCSV(  "0, 4294967295"));
+        gatts.add("testl",  new LongArray(new long[]{Long.MIN_VALUE, Long.MAX_VALUE}));
+        gatts.add("testul", ULongArray.fromCSV("0, 9223372036854775807, 18446744073709551615"));
+        gatts.add("testi",  new IntArray(new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE}));
 
         table.addColumn(0, "aString", 
-            new StringArray(new String[]{"a\u1f63b\nc\td\ufffee", "ab", ""}),
-            (new Attributes()).add("test", "a\u1f63b\nc\td\ufffee"));
+            new StringArray(new String[]{"a\u00fcb\nc\td\u20ace", "ab", "", "cd", ""}),
+            (new Attributes()).add("test", "a\u00fcb\nc\td\u20ace"));
+
         table.addColumn(1, "aChar", 
-            new CharArray(new char[]{'\u1f63', (char)0, '\ufffe'}),
-            (new Attributes()).add("test", '\u1f63'));
-        table.addColumn(2, "aByte", 
-            new ByteArray(new byte[]{Byte.MIN_VALUE, 0, Byte.MAX_VALUE}),
-            (new Attributes()).add("test", Byte.MIN_VALUE).add("_FillValue", (byte)99));
-        table.addColumn(3, "aShort", 
-            new ShortArray(new short[]{Short.MIN_VALUE, 0, Short.MAX_VALUE}),
-            (new Attributes()).add("test", Short.MIN_VALUE).add("_FillValue", (short)9999));
-        table.addColumn(4, "anInt", 
-            new IntArray(new int[]{Integer.MIN_VALUE, 0, Integer.MAX_VALUE}),
-            (new Attributes()).add("test", Integer.MIN_VALUE).add("_FillValue", 999999999));
-        table.addColumn(5, "aLong", 
-            new LongArray(new long[]{Long.MIN_VALUE, 0, Long.MAX_VALUE}),
-            (new Attributes()).add("test", Long.MIN_VALUE).add("_FillValue", 999999999999L));
-        table.addColumn(6, "aFloat", 
-            new FloatArray(new float[]{-Float.MAX_VALUE, Float.MIN_VALUE, Float.MAX_VALUE}),
-            (new Attributes()).add("test", -Float.MAX_VALUE).add("_FillValue", 1e36f));
-        table.addColumn(7, "aDouble", 
-            new DoubleArray(new double[]{-Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE}),
-            (new Attributes()).add("test", -Double.MAX_VALUE).add("_FillValue", 1e300));
+            new CharArray(new char[]{'\u00fc', (char)0, 'A', '\t', '\u20ac'}),
+            (new Attributes()).add("test", '\u00fc'));
+
+        table.addColumn(2, "aByte", //min,         med, fv, max-1,  max
+            new ByteArray(new byte[]{Byte.MIN_VALUE, 0, 99, 126, Byte.MAX_VALUE}),
+            (new Attributes()).add("_FillValue", ByteArray.fromCSV("99"))
+                              .add("test",       ByteArray.fromCSV("-128, 127")));
+        table.addColumn(3, "aUByte", 
+            new UByteArray(new short[]{0, 127, 99, 254, 255}),
+            (new Attributes()).add("_FillValue", UByteArray.fromCSV("99"))
+                              .add("test",       UByteArray.fromCSV("0, 255")));
+        table.addColumn(4, "aShort", 
+            new ShortArray(new short[]{Short.MIN_VALUE, 0, 9999, 32766, Short.MAX_VALUE}),
+            (new Attributes()).add("_FillValue", ShortArray.fromCSV("9999"))
+                              .add("test",       ShortArray.fromCSV("-32768, 32767")));
+        table.addColumn(5, "aUShort", 
+            UShortArray.fromCSV("0, 32767, 9999, 65534, 65535"),
+            (new Attributes()).add("_FillValue", UShortArray.fromCSV("9999"))
+                              .add("test",       UShortArray.fromCSV("0, 65535")));
+        table.addColumn(6, "anInt", 
+            new IntArray(new int[]{Integer.MIN_VALUE, 0, 999999999, Integer.MAX_VALUE-1, Integer.MAX_VALUE}),
+            (new Attributes()).add("_FillValue", IntArray.fromCSV("999999999"))
+                              .add("test",       IntArray.fromCSV("-2147483648, 2147483647")));
+        table.addColumn(7, "aUInt", 
+            new UIntArray(new long[]{0, 7, Integer.MAX_VALUE, Math2.UINT_MAX_VALUE-1, Math2.UINT_MAX_VALUE}),
+            (new Attributes()).add("_FillValue", UIntArray.fromCSV("999999999"))
+                              .add("test",       UIntArray.fromCSV("0, 4294967295")));
+        table.addColumn(8, "aLong", 
+            new LongArray(new long[]{Long.MIN_VALUE, 0, 8, Long.MAX_VALUE-1, Long.MAX_VALUE}),
+            (new Attributes()).add("_FillValue", LongArray.fromCSV("999999999999"))
+                              .add("test",       LongArray.fromCSV("-9223372036854775808, 9223372036854775807")));
+        table.addColumn(9, "aULong", 
+            ULongArray.fromCSV("0,  1, 9223372036854775807, 18446744073709551614, 18446744073709551615"),
+            (new Attributes()).add("_FillValue", ULongArray.fromCSV("999999999999"))
+                              .add("test",       ULongArray.fromCSV("0, 18446744073709551615")));
+        table.addColumn(10, "aFloat", 
+            new FloatArray(new float[]{-Float.MAX_VALUE, 2.2f, Float.MIN_VALUE, Float.MAX_VALUE, Float.NaN}),
+            (new Attributes()).add("_FillValue", 1e36f)
+                              .add("test",       new FloatArray(new float[]{-Float.MAX_VALUE, Float.NaN})));
+        table.addColumn(11, "aDouble", 
+            new DoubleArray(new double[]{-Double.MAX_VALUE, 3.3, Double.MIN_VALUE, Double.MAX_VALUE, Double.NaN}),
+            (new Attributes()).add("_FillValue", 1e300)
+                              .add("test",       new DoubleArray(new double[]{-Double.MAX_VALUE, Double.NaN})));
         return table;
 
     }
@@ -5958,7 +6196,7 @@ Dataset {
 
             table.saveAsEnhancedFlatNc(fileName);
             results = String2.annotatedString(table.toString());
-            Test.ensureEqual(results, expected, "a");
+            Test.ensureEqual(results, expected, "a"); //saveAsEnhancedFlatNc didn't change anything
             table.clear();
 
             table.readEnhancedFlatNc(fileName, null);
@@ -5967,42 +6205,62 @@ Dataset {
             expected = 
 "{[10]\n" +
 "dimensions:[10]\n" +
-"[9]row = 3 ;[10]\n" +
+"[9]row = 5 ;[10]\n" +
 "[9]aString_strlen = 9 ;[10]\n" +
 "variables:[10]\n" +
 "[9]char aString(row, aString_strlen) ;[10]\n" +
-"[9][9]aString:test = \"a[8035]b[10]\n" +
-"c\\td[65534]e\" ;[10]\n" +
+"[9][9]aString:test = \"a[252]b[10]\n" +
+"c\\td[8364]e\" ;[10]\n" +
 "[9]char aChar(row) ;[10]\n" +
-"[9][9]aChar:test = \"[8035]\" ;[10]\n" +
+"[9][9]aChar:test = \"[252]\" ;[10]\n" +
 "[9]byte aByte(row) ;[10]\n" +
-"[9][9]aByte:_FillValue = 127 ;[10]\n" +
-"[9][9]aByte:test = -128 ;[10]\n" +
+"[9][9]aByte:_FillValue = 99 ;[10]\n" +
+"[9][9]aByte:test = -128, 127 ;[10]\n" +
+"[9]ubyte aUByte(row) ;[10]\n" +
+"[9][9]aUByte:_FillValue = 99 ;[10]\n" +
+"[9][9]aUByte:test = 0, 255 ;[10]\n" +
 "[9]short aShort(row) ;[10]\n" +
-"[9][9]aShort:_FillValue = 32767 ;[10]\n" +
-"[9][9]aShort:test = -32768 ;[10]\n" +
+"[9][9]aShort:_FillValue = 9999 ;[10]\n" +
+"[9][9]aShort:test = -32768, 32767 ;[10]\n" +
+"[9]ushort aUShort(row) ;[10]\n" +
+"[9][9]aUShort:_FillValue = 9999 ;[10]\n" +
+"[9][9]aUShort:test = 0, 65535 ;[10]\n" +
 "[9]int anInt(row) ;[10]\n" +
-"[9][9]anInt:_FillValue = 2147483647 ;[10]\n" +
-"[9][9]anInt:test = -2147483648 ;[10]\n" +
+"[9][9]anInt:_FillValue = 999999999 ;[10]\n" +
+"[9][9]anInt:test = -2147483648, 2147483647 ;[10]\n" +
+"[9]uint aUInt(row) ;[10]\n" +
+"[9][9]aUInt:_FillValue = 999999999 ;[10]\n" +
+"[9][9]aUInt:test = 0, 4294967295 ;[10]\n" +
 "[9]long aLong(row) ;[10]\n" +
-"[9][9]aLong:_FillValue = 9223372036854775807 ;[10]\n" +
-"[9][9]aLong:test = -9223372036854775808 ;[10]\n" +
+"[9][9]aLong:_FillValue = 999999999999 ;[10]\n" +
+"[9][9]aLong:test = -9223372036854775808, 9223372036854775807 ;[10]\n" +
+"[9]ulong aULong(row) ;[10]\n" +
+"[9][9]aULong:_FillValue = 999999999999 ;[10]\n" +
+"[9][9]aULong:test = 0, 18446744073709551615 ;[10]\n" +
 "[9]float aFloat(row) ;[10]\n" +
-"[9][9]aFloat:test = -3.4028235E38f ;[10]\n" +
+"[9][9]aFloat:_FillValue = 1.0E36f ;[10]\n" +
+"[9][9]aFloat:test = -3.4028235E38f, NaNf ;[10]\n" +
 "[9]double aDouble(row) ;[10]\n" +
-"[9][9]aDouble:test = -1.7976931348623157E308 ;[10]\n" +
+"[9][9]aDouble:_FillValue = 1.0E300 ;[10]\n" +
+"[9][9]aDouble:test = -1.7976931348623157E308, NaN ;[10]\n" +
 "[10]\n" +
 "// global attributes:[10]\n" +
-"[9][9]:testc = \"[8035]\" ;[10]\n" +
+"[9][9]:testc = \"[252]\" ;[10]\n" +
 "[9][9]:testi = -2147483648, 2147483647 ;[10]\n" +
 "[9][9]:testl = -9223372036854775808, 9223372036854775807 ;[10]\n" +
-"[9][9]:tests = \"a[8035]b[10]\n" +
-"c\\td[65534]z\" ;[10]\n" +
+"[9][9]:tests = \"a[252]b[10]\n" +
+"c\\td[8364]z\" ;[10]\n" +
+"[9][9]:testub = 0, 255 ;[10]\n" +
+"[9][9]:testui = 0, 4294967295 ;[10]\n" +
+"[9][9]:testul = 0, 9223372036854775807, 18446744073709551615 ;[10]\n" +
+"[9][9]:testus = 0, 65535 ;[10]\n" +
 "}[10]\n" +
-"aString,aChar,aByte,aShort,anInt,aLong,aFloat,aDouble[10]\n" +
-"a\\u1f63b\\nc\\td\\ufffee,\\u1f63,-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308[10]\n" +
-"ab,\\u0000,0,0,0,0,1.4E-45,4.9E-324[10]\n" +
-",\\ufffe,,,,,3.4028235E38,1.7976931348623157E308[10]\n" +
+"aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble[10]\n" +
+"a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308[10]\n" +
+"ab,\\u0000,0,127,0,32767,0,7,0,1,2.2,3.3[10]\n" +
+",A,99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324[10]\n" +
+"cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308[10]\n" +
+",\\u20ac,,,,,,,,,,[10]\n" +
 "[end]";
             Test.ensureEqual(results, expected, "b");
         } catch (Exception e) {
@@ -6019,7 +6277,6 @@ Dataset {
      * or an http:<ncFile> (several 1D variables (columns), all referencing the
      * same dimension).
      * This also reads global and variable attributes.
-     * This converts fakeMissingValues to standard PrimitiveArray mv's.
      *
      * <p>If the fullName is an http address, the name needs to start with "http:\\" 
      * (upper or lower case) and the server needs to support "byte ranges"
@@ -6028,11 +6285,12 @@ Dataset {
      * @param fullName This may be a local file name, an "http:" address of a
      *    .nc file, or an opendap url.
      * @param loadColumns if null, this searches for the (pseudo)structure variables
-     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat,
+     *   or 0 to do nothing, or -1 to convertToStandardMissingValues (e.g., -999 to Int.MAX_VALUE)
      * @throws Exception if trouble
      */
     public void readFlatNc(String fullName, String loadColumns[], int standardizeWhat) throws Exception {
-        lowReadFlatNc(fullName, loadColumns, standardizeWhat, -1);
+        lowReadFlatNc(fullName, loadColumns, standardizeWhat, true, -1);
     }
 
     /**
@@ -6042,18 +6300,21 @@ Dataset {
      * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
      */
     public void readFlatNcInfo(String fullName, String loadColumns[], int standardizeWhat) throws Exception {
-        lowReadFlatNc(fullName, loadColumns, standardizeWhat, 0);
+        lowReadFlatNc(fullName, loadColumns, standardizeWhat, true, 0);
     }
 
     /**
      * The low level workhorse for readFlatNc and readFlatNcInfo.
      *
      * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+     * @param doAltStandardization If true (normally) and if standardizeWhat == 0,
+     *   this creates unsigned PAs when _Unsigned=true
+     *   and converts fakeMissingValues (e.g., -999) to standard PrimitiveArray mv's (e.g., 32767).
      * @param lastRow the last row to be read (inclusive).  
      *    If lastRow = -1, the entire var is read.
      */
     public void lowReadFlatNc(String fullName, String loadColumns[], int standardizeWhat, 
-        int lastRow) throws Exception {
+        boolean doAltStandardization, int lastRow) throws Exception {
 
         //get information
         String msg = "  Table.readFlatNc " + fullName; 
@@ -6082,9 +6343,10 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
+                convertToUnsignedPAs();
                 standardize(standardizeWhat);
-            } else {
-                //convert to standard MissingValues
+            } else if (doAltStandardization) {
+                convertToUnsignedPAs();
                 convertToStandardMissingValues();
             }
 
@@ -6168,7 +6430,8 @@ Dataset {
      * @param loadColumns The 1D variables to be loaded. 
      *    If null, this searches for the (pseudo)structure variables.
      *    (The scalar variables are always loaded.)
-     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat,
+     *   or 0 to do nothing, or -1 to convertToStandardMissingValues (e.g., -999 to Int.MAX_VALUE)
      * @param lastRow the last row to be read (inclusive).  
      *    If lastRow = -1, the entire var is read.
      * @throws Exception if trouble
@@ -6178,7 +6441,7 @@ Dataset {
 
         //read the 1D variables
         long time = System.currentTimeMillis();
-        lowReadFlatNc(fullName, loadColumns, standardizeWhat, lastRow);
+        lowReadFlatNc(fullName, loadColumns, standardizeWhat, true, lastRow); //doAltStandardization
         int tnRows = nRows();
         String msg = "  Table.readFlat0Nc " + fullName;
 
@@ -6214,11 +6477,14 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
+                convertToUnsignedPAs();
                 standardize(standardizeWhat);
+            } else if (standardizeWhat == 0) {
+                //do nothing
             } else {
-                //convert to standard MissingValues
+                convertToUnsignedPAs();
                 convertToStandardMissingValues();
-            } 
+            }
 
             if (reallyVerbose) msg +=  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
@@ -6257,8 +6523,8 @@ Dataset {
      *    If no variables are found, the table will have 0 rows and columns.
      *    All dimension columns are automatically loaded.
      *    Dimension names in loadColumns are ignored (since they will be loaded automatically).
-     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat.
-     *    If standardizeWhat &lt;= 0, this converts to standard missing values (from e.g., -9999999 to Float.NaN)
+     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat,
+     *   or 0 to do nothing, or -1 to convertToStandardMissingValues (e.g., -999 to Int.MAX_VALUE)
      * @param stringVariableName the name of the stringVariable (or null if not used)
      * @param stringVariableColumn the columnNumber for the stringVariable (or -1 for the end)
      * @throws Exception if trouble
@@ -6391,9 +6657,12 @@ Dataset {
             //unpack 
             decodeCharsAndStrings();
             if (standardizeWhat > 0) {
+                convertToUnsignedPAs();
                 standardize(standardizeWhat);
+            } else if (standardizeWhat == 0) {
+                //do nothing
             } else {
-                //convert to standard MissingValues
+                convertToUnsignedPAs();
                 convertToStandardMissingValues();
             }
 
@@ -6436,22 +6705,18 @@ Dataset {
      *      for time (e.g., seconds since 1970-01-01).
      * @param constraintMin  if variable is packed, this is packed. 
      * @param constraintMax  if variable is packed, this is packed.
-     * @param getMetadata  if true, this gets global and variable metadata.
      * @throws Exception if trouble.
      *    But if none of the specified loadVariableNames are present, 
      *    it is not an error and it returns an empty table.
      */
     public void readNDNc(String fullName, String loadVariableNames[], 
         int standardizeWhat, 
-        String constraintAxisVarName, double constraintMin, double constraintMax, 
-        boolean getMetadata) throws Exception {
+        String constraintAxisVarName, double constraintMin, double constraintMax) throws Exception {
 
         //clear the table
         clear();
         if (loadVariableNames == null)
             loadVariableNames = new String[0];
-        if (standardizeWhat > 0)
-            getMetadata = true;
         String msg = "  Table.readNDNC " + fullName;
         if (debugMode) String2.log(msg + 
             "  loadVars:" + String2.toCSSVString(loadVariableNames) +
@@ -6464,8 +6729,7 @@ Dataset {
         Attributes gridMappingAtts = null;
         try {
             //load the global metadata
-            if (getMetadata)
-                NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            NcHelper.getGlobalAttributes(ncFile, globalAttributes());
 
             //load the variables
             Variable loadVariables[] = null;
@@ -6512,6 +6776,7 @@ Dataset {
                             iaa[i].add(current[i]);
                     }
                     decodeCharsAndStrings();
+                    convertToUnsignedPAs();
                     //no metadata so no unpack
                     return;
                 } 
@@ -6565,8 +6830,7 @@ Dataset {
                                                                       new IntArray(  0, axisLengths[a]-1);
                         } else {
                             axisPAs[a] = NcHelper.getPrimitiveArray(axisVariable); 
-                            if (getMetadata)
-                                NcHelper.getVariableAttributes(axisVariable, atts);
+                            NcHelper.getVariableAttributes(axisVariable, atts);
                         }
                         columnPAs[a] = PrimitiveArray.factory(axisPAs[a].elementType(), 1, false);
                         addColumn(a, axisName, columnPAs[a], atts);
@@ -6656,16 +6920,14 @@ Dataset {
 
                 //store data
                 addColumn(variable.getName(), pa);
-                if (getMetadata) {
-                    NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
+                NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
 
-                    //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
-                    if (gridMappingAtts == null) {
-                        gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
-                            columnAttributes(nColumns() - 1).getString("grid_mapping"));
-                        if (gridMappingAtts != null)
-                            globalAttributes.add(gridMappingAtts);
-                    }
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, 
+                        columnAttributes(nColumns() - 1).getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
                 }
 
             }
@@ -6710,8 +6972,7 @@ Dataset {
                                                                       new IntArray(  0, axisLengths[a]-1);
                         } else {
                             axisPAs[a] = NcHelper.getPrimitiveArray(axisVariable); 
-                            if (getMetadata)
-                                NcHelper.getVariableAttributes(axisVariable, atts);
+                            NcHelper.getVariableAttributes(axisVariable, atts);
                         }
                         columnPAs[a] = PrimitiveArray.factory(axisPAs[a].elementType(), 1, false);
                         addColumn(a, axisName, columnPAs[a], atts);
@@ -6793,13 +7054,13 @@ Dataset {
                     }
     
                     Attributes atts = new Attributes();
-                    if (getMetadata)
-                        NcHelper.getVariableAttributes(var, atts);
+                    NcHelper.getVariableAttributes(var, atts);
                     addColumn(nColumns(), var.getShortName(), pa, atts);
                     standardizeLastColumn(standardizeWhat);
                 }
             }
             decodeCharsAndStrings();
+            convertToUnsignedPAs();
             if (reallyVerbose) msg += " finished. nRows=" + nRows() + 
                 " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms";
 
@@ -7638,6 +7899,7 @@ Dataset {
             reorderColumns(loadVarNames, false); //discardOthers=false, should be irrelevant
            
             decodeCharsAndStrings();
+            convertToUnsignedPAs();
 
             if (reallyVerbose) msg += 
                 " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
@@ -8949,7 +9211,7 @@ Dataset {
         //test  no vars specified,  4D,  only 2nd dim has >1 value,  getMetadata
         String fiName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
         table.readNDNc(fiName, null, 0,  //standardizeWhat=0
-            null, 0, 0, true);
+            null, 0, 0);
         results = table.toString();
         expected = 
 "{\n" +
@@ -9103,63 +9365,9 @@ Dataset {
 "6.3612E7,1167.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.3,34.49,-999.0,0.66,2.7,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //test same but !getMetadata
-        table.readNDNc(fiName, null, 0,  //standardizeWhat=0
-            null, 0, 0, false);
-        results = table.toString();
-        expected = 
-"{\n" +
-"dimensions:\n" +
-"\trow = 16 ;\n" +
-"variables:\n" +
-"\tdouble time(row) ;\n" +
-"\tfloat depth(row) ;\n" +
-"\tfloat lat(row) ;\n" +
-"\tfloat lon(row) ;\n" +
-"\tint stationyear(row) ;\n" +
-"\tint stationmonth(row) ;\n" +
-"\tint stationday(row) ;\n" +
-"\tint stime(row) ;\n" +
-"\tfloat stationline(row) ;\n" +
-"\tfloat stationnum(row) ;\n" +
-"\tfloat temperature(row) ;\n" +
-"\tfloat salinity(row) ;\n" +
-"\tfloat pressure(row) ;\n" +
-"\tfloat oxygen(row) ;\n" +
-"\tfloat po4(row) ;\n" +
-"\tfloat silicate(row) ;\n" +
-"\tfloat no2(row) ;\n" +
-"\tfloat no3(row) ;\n" +
-"\tfloat nh3(row) ;\n" +
-"\tfloat chl(row) ;\n" +
-"\tfloat dark(row) ;\n" +
-"\tfloat primprod(row) ;\n" +
-"\tfloat lightpercent(row) ;\n" +
-"\n" +
-"// global attributes:\n" +
-"}\n" +
-"time,depth,lat,lon,stationyear,stationmonth,stationday,stime,stationline,stationnum,temperature,salinity,pressure,oxygen,po4,silicate,no2,no3,nh3,chl,dark,primprod,lightpercent\n" +
-"6.3612E7,0.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.19,33.6,-999.0,5.3,0.42,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,22.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.18,33.6,-999.0,5.26,0.38,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,49.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.2,33.6,-999.0,5.3,0.36,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,72.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,14.95,33.58,-999.0,5.51,0.37,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,98.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,13.02,33.35,-999.0,5.35,0.45,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,147.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,11.45,33.36,-999.0,4.99,0.81,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,194.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,9.32,33.55,-999.0,4.47,1.19,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,241.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,8.51,33.85,-999.0,4.02,1.51,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,287.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,7.74,33.95,-999.0,3.48,1.76,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,384.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,6.42,33.97,-999.0,2.55,2.15,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,477.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,5.35,34.04,-999.0,1.29,2.48,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,576.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.83,34.14,-999.0,0.73,2.73,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,673.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.44,34.22,-999.0,0.48,2.9,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,768.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.15,34.31,-999.0,0.37,2.87,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,969.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.67,34.43,-999.0,0.49,2.8,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
-"6.3612E7,1167.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.3,34.49,-999.0,0.66,2.7,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
         //test specify vars (including out-of-order axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{"temperature", "lat", "salinity", "junk"}, 0,  //standardizeWhat=0
-             "depth", 100, 200, false);
+             "depth", 100, 200);
         results = table.dataToString();
         expected = 
 "time,depth,lat,lon,temperature,salinity\n" +
@@ -9170,7 +9378,7 @@ Dataset {
         //test String vars 
         fiName = "c:/data/erddapBPD/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
         table.readNDNc(fiName, null, 0,  //standardizeWhat=0
-            null, 0, 0, false);
+            null, 0, 0);
         results = table.dataToString(4);
         expected = 
 "row,unique_tag_id,PI,longitude,latitude,time,bottom_depth,common_name,date_public,line,position_on_subarray,project,riser_height,role,scientific_name,serial_number,stock,surgery_time,surgery_location,tagger\n" +
@@ -9184,7 +9392,7 @@ Dataset {
         //test 4D but request axis vars only, with constraints
         fiName = "/u00/data/points/ndbcMetOldStyle/NDBC_51001_met.nc"; //implied c:
         table.readNDNc(fiName, new String[]{"LON", "LAT", "TIME"}, 0,  //standardizeWhat=0
-            "TIME", 1.2051936e9, 1.20528e9, false);
+            "TIME", 1.2051936e9, 1.20528e9);
         results = table.dataToString(4);
         expected = 
 //"LON, LAT, TIME\n" +   //pre 2011-07-28
@@ -9218,7 +9426,7 @@ Dataset {
 
         //test  no vars specified
         table.readNDNc(fiName, null, 0,  //standardizeWhat=0
-            null, 0, 0, true);
+            null, 0, 0);
         results = table.toString();
         expected = 
 "{\n" +
@@ -9330,60 +9538,10 @@ Dataset {
 "402.0,4.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //test same but !getMetadata
-        table.readNDNc(fiName, null, 0,  //standardizeWhat=0
-            null, 0, 0, false);
-        results = table.toString();
-        expected = 
-"{\n" +
-"dimensions:\n" +
-"\trow = 11 ;\n" +
-"\tWOD_cruise_identifier_strlen = 8 ;\n" +
-"\tProject_strlen = 49 ;\n" +
-"\tdataset_strlen = 14 ;\n" +
-"variables:\n" +
-"\tfloat z(row) ;\n" +
-"\tfloat Temperature(row) ;\n" +
-"\tint Temperature_sigfigs(row) ;\n" +
-"\tint Temperature_WODflag(row) ;\n" +
-"\tchar WOD_cruise_identifier(row, WOD_cruise_identifier_strlen) ;\n" +
-"\tint wod_unique_cast(row) ;\n" +
-"\tfloat lat(row) ;\n" +
-"\tfloat lon(row) ;\n" +
-"\tdouble time(row) ;\n" +
-"\tint date(row) ;\n" +
-"\tfloat GMT_time(row) ;\n" +
-"\tint Access_no(row) ;\n" +
-"\tchar Project(row, Project_strlen) ;\n" +
-"\tchar dataset(row, dataset_strlen) ;\n" +
-"\tfloat ARGOS_last_fix(row) ;\n" +
-"\tfloat ARGOS_next_fix(row) ;\n" +
-"\tint crs(row) ;\n" +
-"\tint profile(row) ;\n" +
-"\tint WODf(row) ;\n" +
-"\tint WODfp(row) ;\n" +
-"\tint WODfd(row) ;\n" +
-"\n" +
-"// global attributes:\n" +
-"}\n" +
-"z,Temperature,Temperature_sigfigs,Temperature_WODflag,WOD_cruise_identifier,wod_unique_cast,lat,lon,time,date,GMT_time,Access_no,Project,dataset,ARGOS_last_fix,ARGOS_next_fix,crs,profile,WODf,WODfp,WODfd\n" +
-"0.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"10.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"42.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"76.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"120.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"166.0,7.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"212.0,7.0,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"260.0,6.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"308.0,5.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"354.0,5.2,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
-"402.0,4.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
         //test specify 0D and 1D data vars (out-of-order, implied axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{
             "lon", "lat", "time", "Temperature", "WOD_cruise_identifier", "junk"}, 0,  //standardizeWhat=0
-             "z", 100, 200, false);
+             "z", 100, 200);
         results = table.dataToString();
         expected = 
 "z,Temperature,WOD_cruise_identifier,lat,lon,time\n" +
@@ -9393,7 +9551,7 @@ Dataset {
 
         //request axis vars only, with constraints
         table.readNDNc(fiName, new String[]{"z"}, 0,  //standardizeWhat=0
-            "z", 100, 200, false);
+            "z", 100, 200);
         results = table.dataToString();
         expected = 
 "z\n" +
@@ -9404,7 +9562,7 @@ Dataset {
         //request 0D vars only, with constraints (ignored)
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "junk", "lon", "lat"}, 0,  //standardizeWhat=0
-            "z", 100, 200, false);
+            "z", 100, 200);
         results = table.dataToString();
         expected = 
 "WOD_cruise_identifier,lat,lon,Project\n" +
@@ -9414,7 +9572,7 @@ Dataset {
         //request axis var and 0D vars only, with constraints
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "z", "junk", "lon", "lat"}, 0,  //standardizeWhat=0
-            "z", 100, 200, false);
+            "z", 100, 200);
         results = table.dataToString();
         expected = 
 "z,WOD_cruise_identifier,lat,lon,Project\n" +
@@ -9584,7 +9742,7 @@ Dataset {
                 //readNDNc always includes scalar vars
                 readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
                     0,  //standardizeWhat=0
-                    null, 0, 0, true);
+                    null, 0, 0);
 
                 //finish up
                 tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
@@ -9597,6 +9755,7 @@ Dataset {
                     " time=" + (System.currentTimeMillis() - time) + "ms";
                 if (debugMode) ensureValid();
                 decodeCharsAndStrings();
+                convertToUnsignedPAs();
                 return;
             }
 
@@ -9894,7 +10053,7 @@ Dataset {
                     //readNDNc always includes scalar vars
                     readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
                         0,  //standardizeWhat=0
-                        null, 0, 0, true);
+                        null, 0, 0);
 
                     //finish up
                     tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
@@ -9907,6 +10066,7 @@ Dataset {
                         " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
+                    convertToUnsignedPAs();
                     return;
                 }
 
@@ -10172,6 +10332,7 @@ Dataset {
                         " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
+                    convertToUnsignedPAs();
                     return;
                 }
             } //else if no outerTable columns, all outerTable features are considered good
@@ -10459,6 +10620,7 @@ Dataset {
                                         " time=" + (System.currentTimeMillis() - time) + "ms");
                                     if (debugMode) ensureValid();
                                     decodeCharsAndStrings();
+                                    convertToUnsignedPAs();
                                     return;
                                 }                               
 
@@ -10512,6 +10674,7 @@ Dataset {
                                     " time=" + (System.currentTimeMillis() - time) + "ms");
                                 if (debugMode) ensureValid();
                                 decodeCharsAndStrings();
+                                convertToUnsignedPAs();
                                 return;
                             }
                         }  //below, innerTable may have 0 or more columns
@@ -10644,6 +10807,7 @@ Dataset {
                     " time=" + (System.currentTimeMillis() - time) + "ms");
                 if (debugMode) ensureValid();
                 decodeCharsAndStrings();
+                convertToUnsignedPAs();
                 return;
             }
 
@@ -10779,6 +10943,7 @@ Dataset {
                         " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
+                    convertToUnsignedPAs();
                     return;
                 }
                
@@ -11001,6 +11166,7 @@ Dataset {
                         " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
+                    convertToUnsignedPAs();
                     return;
                 }
 
@@ -11071,6 +11237,7 @@ Dataset {
                             " time=" + (System.currentTimeMillis() - time) + "ms");
                         if (debugMode) ensureValid();
                         decodeCharsAndStrings();
+                        convertToUnsignedPAs();
                         return;
                     }
                 }
@@ -11234,6 +11401,7 @@ Dataset {
             tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
             reorderColumns(loadVariableNames, true); //discard others
             decodeCharsAndStrings();
+            convertToUnsignedPAs();
             
             if (ncCFcc != null) ncCFcc.set(99);
             if (reallyVerbose) msg += " finished (nLevels=2, readAs=" + readAs + 
@@ -20086,6 +20254,7 @@ String2.log(table.dataToString());
                     outerTable.justKeep(keepOuter);
                     outerTable.reorderColumns(colNames, true);
                     outerTable.decodeCharsAndStrings();
+                    outerTable.convertToUnsignedPAs();
 
                     //copy outerTable to this table
                     for (int col = 0; col < outerTable.nColumns(); col++)
@@ -23801,9 +23970,10 @@ String2.log(table.dataToString());
     public void convertToStandardMissingValues(int column) {
         Attributes colAtt = columnAttributes(column);
         //double mv = colAtt.getDouble("missing_value");
+        //String2.log(">> Table.convert " + getColumnName(column) + "\n" + colAtt.toString());
         int nSwitched = getColumn(column).convertToStandardMissingValues( 
-            colAtt.getDouble("_FillValue"),
-            colAtt.getDouble("missing_value"));
+            colAtt.getString("_FillValue"),
+            colAtt.getString("missing_value"));
         //if (!Double.isNaN(mv)) String2.log("  convertToStandardMissingValues mv=" + mv + " n=" + nSwitched);
 
         //remove current attributes or define new _FillValue
@@ -23850,26 +24020,38 @@ String2.log(table.dataToString());
             pa.elementType() == PAType.CHAR) 
             return;
         //boolean removeMVF = false;  //commented out 2010-10-26 so NDBC files have consistent _FillValue
-        if      (pa instanceof ByteArray) {
-            columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
-            columnAttributes(column).set("_FillValue",    Byte.MAX_VALUE);
-            //removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof CharArray) {
+        if        (pa instanceof CharArray) {
             columnAttributes(column).set("missing_value", Character.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Character.MAX_VALUE);
             //removeMVF = ((CharArray)pa).indexOf(Character.MAX_VALUE, 0) < 0;
+        } else if (pa instanceof ByteArray) {
+            columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
+            columnAttributes(column).set("_FillValue",    Byte.MAX_VALUE);
+            //removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;
+        } else if (pa instanceof UByteArray) {
+            columnAttributes(column).set("missing_value", UByteArray.MAX_VALUE);
+            columnAttributes(column).set("_FillValue",    UByteArray.MAX_VALUE);
         } else if (pa instanceof ShortArray) {
             columnAttributes(column).set("missing_value", Short.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Short.MAX_VALUE);
             //removeMVF = ((ShortArray)pa).indexOf(Short.MAX_VALUE, 0) < 0;
+        } else if (pa instanceof UShortArray) {
+            columnAttributes(column).set("missing_value", UShortArray.MAX_VALUE);
+            columnAttributes(column).set("_FillValue",    UShortArray.MAX_VALUE);
         } else if (pa instanceof IntArray) {
             columnAttributes(column).set("missing_value", Integer.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Integer.MAX_VALUE);
             //removeMVF = ((IntArray)pa).indexOf(Integer.MAX_VALUE, 0) < 0;
+        } else if (pa instanceof UIntArray) {
+            columnAttributes(column).set("missing_value", UIntArray.MAX_VALUE);
+            columnAttributes(column).set("_FillValue",    UIntArray.MAX_VALUE);
         } else if (pa instanceof LongArray) {
             columnAttributes(column).set("missing_value", Long.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Long.MAX_VALUE);
             //removeMVF = ((LongArray)pa).indexOf(Long.MAX_VALUE, 0) < 0;
+        } else if (pa instanceof ULongArray) {
+            columnAttributes(column).set("missing_value", ULongArray.MAX_VALUE);
+            columnAttributes(column).set("_FillValue",    ULongArray.MAX_VALUE);
         } else if (pa instanceof FloatArray) {
             columnAttributes(column).set("missing_value", (float)DataHelper.FAKE_MISSING_VALUE);
             columnAttributes(column).set("_FillValue",    (float)DataHelper.FAKE_MISSING_VALUE);
@@ -25760,8 +25942,8 @@ String2.log(table.dataToString());
             return someConverted;
         Attributes colAtt = columnAttributes(col);
         if (pa.convertToStandardMissingValues( 
-            colAtt.getDouble("_FillValue"),
-            colAtt.getDouble("missing_value")) > 0)
+            colAtt.getString("_FillValue"),
+            colAtt.getString("missing_value")) > 0)
             someConverted = true;
          return someConverted;
      }
@@ -25805,18 +25987,16 @@ String2.log(table.dataToString());
      * @return true if some values were converted
      */
     public boolean temporarilySwitchNaNToFakeMissingValues(int col) { 
-        boolean someConverted = false;
         PrimitiveArray pa = getColumn(col);
         if (pa.elementType() == PAType.STRING)
-            return someConverted;
+            return false;
         Attributes colAtt = columnAttributes(col);
-        double safeMV = colAtt.getDouble("_FillValue"); //fill has precedence
-        if (Double.isNaN(safeMV))
-            safeMV = colAtt.getDouble("missing_value"); 
-        if (!Double.isNaN(safeMV))
-            if (pa.switchNaNToFakeMissingValue(safeMV) > 0)
-                someConverted = true;
-        return someConverted;
+        String safeMV = colAtt.getString("_FillValue"); //fill has precedence
+        if (safeMV == null || safeMV.equals("NaN"))
+            safeMV = colAtt.getString("missing_value"); 
+        if (safeMV == null || safeMV.equals("NaN"))
+            return false;
+        return pa.switchNaNToFakeMissingValue(safeMV) > 0;
     }
 
     /**
@@ -26103,17 +26283,20 @@ String2.log(table.dataToString());
         int n = Math.min(nColumns(), other.nColumns());
         for (int col = 0; col < n; col++) {
 
-            //beware current column is simpler than new column
-            if (      getColumn(col).elementTypeIndex() <
-                other.getColumn(col).elementTypeIndex()) {
-                PrimitiveArray newPA = PrimitiveArray.factory(
-                    other.getColumn(col).elementType(), 1, false);
-                newPA.append(getColumn(col));
-                setColumn(col, newPA);
+            //if needed, make a new wider PrimitiveArray in table1
+            PrimitiveArray pa1 =  this.getColumn(col);
+            PrimitiveArray pa2 = other.getColumn(col);
+
+            PAType needPAType = pa1.needPAType(pa2.elementType());
+            if (pa1.elementType() != needPAType) {
+                PrimitiveArray newPa1 = PrimitiveArray.factory(needPAType, pa1.size() + pa2.size(), false); //active?
+                newPa1.append(pa1);
+                pa1 = newPa1;
+                this.setColumn(col, pa1);
             }
-   
-            //append it
-            getColumn(col).append(other.getColumn(col));
+
+            //append the data from other
+            pa1.append(pa2);
         }
     }
 
@@ -28063,7 +28246,7 @@ String2.log(table.dataToString());
 //                else if (tc == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, colVars[col], tAtts);
+                NcHelper.setAttributes(nc3Mode, colVars[col], tAtts, tc.isUnsigned());
             }
 
             //leave "define" mode
@@ -28097,7 +28280,7 @@ String2.log(table.dataToString());
         } catch (Exception e) {
             //try to close the file
             try {
-                if (nc != null) nc.close(); 
+                if (nc != null) nc.abort(); 
             } catch (Exception e2) {
                 //don't care
             }
@@ -28264,24 +28447,20 @@ String2.log(table.dataToString());
                     file.write(colVars[col], origin1, Array.factory(pa.toArray()));
                 }
             }
+            file.close();
+            file = null;
 
             if (reallyVerbose) msg +=  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms";
 
         } catch (Throwable t) {
+            try {  if (file != null) file.abort(); 
+            } catch (Throwable t2) {  }
+
             if (!reallyVerbose) String2.log(msg); 
             throw t;
 
-        } finally {
-            //ensure file is closed
-            if (file != null) {
-                try {
-                    file.close(); //writes changes to file
-                } catch (Throwable t2) {
-                }
-            }
-            if (reallyVerbose) String2.log(msg);
         }
     }
 */
@@ -28526,13 +28705,14 @@ String2.log(table.dataToString());
             NcHelper.setAttributes(nc3Mode, rootGroup, globalAttributes);
             for (int col = 0; col < nColumns; col++) {
                 Attributes tAtts = new Attributes(columnAttributes(col)); //use a copy
-                if (getColumn(col).elementType() == PAType.STRING)
+                PAType paType = getColumn(col).elementType();
+                if (paType == PAType.STRING)
                     tAtts.add(String2.ENCODING, String2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (getColumn(col).elementType() == PAType.CHAR)
 //                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
 
-                NcHelper.setAttributes(nc3Mode, colVars[col], tAtts);
+                NcHelper.setAttributes(nc3Mode, colVars[col], tAtts, paType.isUnsigned());
             }
 
             //create the stringVariable
@@ -28550,7 +28730,7 @@ String2.log(table.dataToString());
                 Attributes tAtts = new Attributes(stringVariableAttributes); //use a copy
                 tAtts.add(String2.ENCODING, String2.ISO_8859_1);                
 
-                NcHelper.setAttributes(nc3Mode, stringVar, tAtts);
+                NcHelper.setAttributes(nc3Mode, stringVar, tAtts, false); //unsigned=false because it is a string var
             }
 
             //leave "define" mode
@@ -28578,6 +28758,8 @@ String2.log(table.dataToString());
                                     yIndices.array[row], xIndices.array[row], 0), sa.get(row));
                         ar = tar;
                     } else {
+                        if (pa instanceof LongArray || pa instanceof ULongArray)
+                            pa = new DoubleArray(pa);
                         ar = Array.factory(NcHelper.getNc3DataType(pa.elementType()), 
                             new int[]{nT, nZ, nY, nX}, pa.toObjectArray());
                     }
@@ -28600,7 +28782,7 @@ String2.log(table.dataToString());
                 //ArrayChar.D1 ar = new ArrayChar.D1(stringVariableValue.length());
                 //ar.setString(stringVariableValue);
                 nc.write(stringVar, 
-                    NcHelper.get1DArray(stringVariableValue));
+                    NcHelper.get1DArray(stringVariableValue, false));
             }
 
 
@@ -28620,8 +28802,7 @@ String2.log(table.dataToString());
         } catch (Exception e) {
             //try to close the file
             try {
-                if (nc != null)
-                    nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null) nc.abort(); 
             } catch (Exception e2) {
                 //don't care
             }
@@ -29622,8 +29803,7 @@ String2.log(table.dataToString());
         long time = System.currentTimeMillis();
         if (charset == null || charset.length() == 0)
             charset = String2.ISO_8859_1;
-        BufferedWriter writer = new BufferedWriter(
-            new OutputStreamWriter(outputStream, charset));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriter(outputStream, charset);
 
         //write the column names   
         boolean tabMode = separator.equals("\t");
@@ -29732,7 +29912,7 @@ String2.log(table.dataToString());
     public void saveAsJson(OutputStream outputStream, int timeColumn, 
         boolean writeUnits) throws Exception {
 
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, String2.UTF_8));
+        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
         saveAsJson(writer, timeColumn, writeUnits);
     }
 
@@ -30220,9 +30400,8 @@ String2.log(table.dataToString());
         boolean writeColumnNames = !append || !File2.isFile(fullFileName);
 
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(
-                 new BufferedOutputStream(new FileOutputStream(
-                fullFileName + (append? "" : randomInt), append)), String2.UTF_8));
+            bw = String2.getBufferedOutputStreamWriterUtf8(
+                new FileOutputStream(fullFileName + (append? "" : randomInt), append));
 
             //write the col names
             int nc = nColumns();
@@ -30342,16 +30521,31 @@ String2.log(table.dataToString());
         table = makeToughTestTable();
         results = table.dataToString();
         String expected = 
-"aString,aChar,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
-"a\\u1f63b\\nc\\td\\ufffee,\\u1f63,-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308\n" +
-"ab,\\u0000,0,0,0,0,1.4E-45,4.9E-324\n" +
-",\\ufffe,,,,,3.4028235E38,1.7976931348623157E308\n";
-        Test.ensureEqual(results, expected, "");
+"aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n" +
+"a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308\n" +
+"ab,\\u0000,0,127,0,32767,0,7,0,1,2.2,3.3\n" +
+",A,99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324\n" +
+"cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308\n" +
+",\\u20ac,,,,,,,,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
         table.writeJsonlCSV(fullName);
         table.clear(); //doubly sure
-        table.readJsonlCSV(fullName, null, null, true); //simpify
+        table.readJsonlCSV(fullName, null, null, true); //simplify
         results = table.dataToString();
+        expected =  //differs in that aULong is now a double column (because simplify doesn't catch unsigned types)
+"aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n" +
+"a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0.0,-3.4028235E38,-1.7976931348623157E308\n" +
+"ab,\\u0000,0,127,0,32767,0,7,0,1.0,2.2,3.3\n" +
+",A,99,99,9999,9999,999999999,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n" +
+"cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,1.8446744073709552E19,3.4028235E38,1.7976931348623157E308\n" +
+",\\u20ac,,,,,,,,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
+        PAType tTypes[] = {
+            PAType.STRING, PAType.STRING, PAType.BYTE,  PAType.SHORT, PAType.SHORT, //char->String, unsigned -> larger signed
+            PAType.INT,    PAType.INT,    PAType.LONG,  PAType.LONG,  PAType.DOUBLE, //ULong -> Double
+            PAType.DOUBLE, PAType.DOUBLE}; //float->double because lots of decimal digits
+        for (int col = 0; col < 12; col++) 
+            Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
 
         //another hard test
         fullName = String2.unitTestDataDir + "jsonl/sampleCSV.jsonl";
@@ -30373,10 +30567,12 @@ String2.log(table.dataToString());
         table.writeJsonlCSV(fullName);
         results = String2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
-"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
-"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
-"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
-"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+"[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,127,0,32767,0,7,0,1,2.2,3.3]\n" +
+"[\"\",\"A\",99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324]\n" +
+"[\"cd\",\"\\t\",126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308]\n" +
+"[\"\",\"\\u20ac\",null,null,null,null,null,null,null,null,null,null]\n",
             "results=\n" + results);        
 
         //*** write/append new file
@@ -30385,23 +30581,29 @@ String2.log(table.dataToString());
         table.writeJsonlCSV(fullName, true);
         results = String2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
-"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
-"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
-"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
-"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+"[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,127,0,32767,0,7,0,1,2.2,3.3]\n" +
+"[\"\",\"A\",99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324]\n" +
+"[\"cd\",\"\\t\",126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308]\n" +
+"[\"\",\"\\u20ac\",null,null,null,null,null,null,null,null,null,null]\n",
             "results=\n" + results);        
 
         //then append
         table.writeJsonlCSV(fullName, true);
         results = String2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
-"[\"aString\",\"aChar\",\"aByte\",\"aShort\",\"anInt\",\"aLong\",\"aFloat\",\"aDouble\"]\n" +
-"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
-"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
-"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n" + 
-"[\"a\\u1f63b\\nc\\td\\ufffee\",\"\\u1f63\",-128,-32768,-2147483648,-9223372036854775808,-3.4028235E38,-1.7976931348623157E308]\n" +
-"[\"ab\",\"\\u0000\",0,0,0,0,1.4E-45,4.9E-324]\n" +
-"[\"\",\"\\ufffe\",null,null,null,null,3.4028235E38,1.7976931348623157E308]\n", 
+"[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
+"[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,127,0,32767,0,7,0,1,2.2,3.3]\n" +
+"[\"\",\"A\",99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324]\n" +
+"[\"cd\",\"\\t\",126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308]\n" +
+"[\"\",\"\\u20ac\",null,null,null,null,null,null,null,null,null,null]\n" +
+"[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
+"[\"ab\",\"\\u0000\",0,127,0,32767,0,7,0,1,2.2,3.3]\n" +
+"[\"\",\"A\",99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324]\n" +
+"[\"cd\",\"\\t\",126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308]\n" +
+"[\"\",\"\\u20ac\",null,null,null,null,null,null,null,null,null,null]\n",
             "results=\n" + results);        
 
     }
@@ -30454,23 +30656,34 @@ String2.log(table.dataToString());
         double colMin = stats[PrimitiveArray.STATS_MIN]; //may be NaN       
         double colMax = stats[PrimitiveArray.STATS_MAX]; //may be NaN       
 
-        boolean isCharOrString = pa instanceof CharArray ||
-                                 pa instanceof StringArray; 
+        PAType paType = pa.elementType();
         String safeColName = String2.encodeMatlabNameSafe(colName);
         if (dimInfo == null)
             dimInfo = "";
+        String it = //igor data type    //see page II-159 in File Reference document
+            paType == PAType.BYTE?   "B" :
+            paType == PAType.SHORT?  "W" :
+            paType == PAType.INT?    "I" :
+            paType == PAType.LONG?   "T" : //-> text. Not good, but no loss of precision.
+            paType == PAType.FLOAT?  "S" :
+            paType == PAType.DOUBLE? "D" :
+            paType == PAType.UBYTE?  "B/U" : //U=unsigned
+            paType == PAType.USHORT? "W/U" :
+            paType == PAType.UINT?   "I/U" :
+            paType == PAType.ULONG?  "T" : //-> text. Not good, but no loss of precision. 
+            paType == PAType.CHAR?   "T" :
+                                     "T";  //String and unexpected
+        boolean asString = it.equals("T");
+            
         writer.write(
-            "WAVES/" + 
-                //byte short char int long float double string
-                //promote char to string, long to double, 
-                "BWTIDSDT".charAt(pa.elementTypeIndex()) + 
+            "WAVES/" + it +
                 dimInfo +
                 //don't use /O to overwrite existing waves. If conflict, user will be asked.                
                 " " + safeColName + IgorEndOfLine + 
             "BEGIN" + IgorEndOfLine);
 
         //write the data
-        if (isCharOrString) {
+        if (asString) {
             for (int row = 0; row < nRows; row++) {
                 //String data written as json strings (in double quotes with \ encoded chars)
                 writer.write(String2.toJson(pa.getString(row)));
@@ -30501,7 +30714,7 @@ String2.log(table.dataToString());
         writer.write("END" + IgorEndOfLine);
 
         //SetScale
-        if (!isCharOrString) {
+        if (!asString) {
             if (units == null) units = "";
             if (isTimeStamp) {
                 units = "dat"; //special case in igor
@@ -30570,8 +30783,8 @@ String2.log(table.dataToString());
 
                 PrimitiveArray pa = getColumn(col);
                 pa.convertToStandardMissingValues(
-                    atts.getDouble("_FillValue"), 
-                    atts.getDouble("missing_value"));
+                    atts.getString("_FillValue"), 
+                    atts.getString("missing_value"));
 
                 writeIgorWave(writer, 
                     makeUniqueIgorColumnName(getColumnName(col), colNamesHashset), 
@@ -31183,7 +31396,7 @@ String2.log(table.dataToString());
         String2.log("\ntesting Table.convert \n url=" + url);
         fileName = testDir + "convertOriginal.nc";
         convert(url, READ_OPENDAP_SEQUENCE, fileName, SAVE_AS_FLAT_NC, "row", false);
-        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked
+        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked. 
         String2.log(table.toString(3));
         Test.ensureEqual(table.nColumns(), 2, "");
         Test.ensureEqual(table.nRows(), 190, "");
@@ -31208,7 +31421,7 @@ String2.log(table.dataToString());
         String2.log("\ntesting Table.convert \n url=" + url);
         fileName = testDir + "convertOSU.nc";
         convert(url, READ_OPENDAP_SEQUENCE, fileName, SAVE_AS_FLAT_NC, "row", false);
-        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked
+        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked. 
         String2.log(table.toString(3));
         Test.ensureEqual(table.nColumns(), 5, "");
         Test.ensureEqual(table.nRows(), 446, "");
@@ -31241,7 +31454,7 @@ String2.log(table.dataToString());
         String2.log("\ntesting Table.convert \n url=" + url);
         fileName = testDir + "convertCIMT.nc";
         convert(url, READ_OPENDAP_SEQUENCE, fileName, SAVE_AS_FLAT_NC, "row", false);
-        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked
+        table.readFlatNc(fileName, null, 0); //standardizeWhat=0, should be already unpacked. 
         String2.log(table.toString(3));
         Test.ensureEqual(table.nColumns(), 5, "");
         //Test.ensureEqual(table.nRows(), 1407, "");  //this changes; file is growing
@@ -32023,7 +32236,7 @@ String2.log(table.dataToString());
 
         //read it from the file
         Table table2 = new Table();
-        table2.readFlatNc(fileName, null, 0); //standardizeWhat=0,   
+        table2.readFlatNc(fileName, null, 0); //standardizeWhat=0
         String2.log("*********table2=" + table2.toString());
 
         //replace ' ' with '_' in column names
@@ -32040,6 +32253,10 @@ String2.log(table.dataToString());
         if (table2.columns.get(7).getString(3).equals("?"))
             table2.columns.get(7).setString(3, "");
         try {
+            String t1 = table.dataToString();
+            String t2 = table.dataToString();
+            String2.log("\nt1=\n" + t1 + "\nt2=\n" + t2);
+            Test.ensureEqual(t1, t2, "");
             Test.ensureTrue(table.equals(table2), "Test table equality");
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e));
@@ -32068,7 +32285,7 @@ String2.log(table.dataToString());
         double testMax[] = {seconds};
 
         //don't unpack
-        table.readFlatNc(testDir + "41015.nc", new String[]{"time", "BAR"}, 0); //standardizeWhat=0,  
+        table.readFlatNc(testDir + "41015.nc", new String[]{"time", "BAR"}, 0); //standardizeWhat=0
         //String2.log(table.toString(100));
         table.subset(testColumns, testMin, testMax);
         Test.ensureEqual(table.nColumns(), 2, "");
@@ -32187,7 +32404,7 @@ String2.log(table.dataToString());
 
         //read from file
         Table table2 = new Table();
-        table2.read4DNc(fileName, null, 1, "ID", 4); //unpack=1
+        table2.read4DNc(fileName, null, 1, "ID", 4); //standarizeWhat=1
         //String2.log("col6=" + table2.getColumn(6));
         //String2.log("\ntable2 after read4DNc: " + table2.toString("obs", 1000000));
          
@@ -33186,7 +33403,7 @@ expected =
                 long fileLength = File2.length(fileName); //was 20580000
                 Test.ensureTrue(fileLength > 20570000, "fileName=" + fileName + " length=" + fileLength); 
                 table = new Table();
-                table.readNDNc(fileName, null, 0, null, 0, 0, true); //standardizeWhat=0   getMetadata?
+                table.readNDNc(fileName, null, 0, null, 0, 0); //standardizeWhat=0   
 
                 String results = table.dataToString(3);
                 String expected =  //before 2011-06-14 was 32.31, -75.35,
@@ -34293,7 +34510,7 @@ readAsNcCF?
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //catchScalars, writeMetadata, firstDataRow, lastDataRow
 
         expected = //many vars are scalar because they're constant in last 6 rows
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "cruise_name,*DATA_TYPE*,String\n" +
 "station,*DATA_TYPE*,byte\n" +
 "cast,*DATA_TYPE*,byte\n" +

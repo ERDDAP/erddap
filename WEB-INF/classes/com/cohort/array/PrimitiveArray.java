@@ -57,8 +57,7 @@ public abstract class PrimitiveArray {
      */
     public final static int STATS_N = 0, STATS_MIN = 1, STATS_MAX = 2, STATS_SUM = 3; 
 
-    //these are carefully ordered from smallest to largest data class
-    //DON'T CHANGE THESE: NCCSV BINARY depends on them.
+    /* DON'T CHANGE THESE: NCCSV BINARY depends on them (but NCCSV Binary was never created).
     public final static int PATYPE_INDEX_BYTE = 0;
     public final static int PATYPE_INDEX_SHORT = 1;
     public final static int PATYPE_INDEX_CHAR = 2;
@@ -72,6 +71,7 @@ public abstract class PrimitiveArray {
     public final static int PATYPE_INDEX_USHORT = 9;
     public final static int PATYPE_INDEX_UINT = 10;
     public final static int PATYPE_INDEX_ULONG = 11;
+    */
 
     /** The regular expression operator. The OPeNDAP spec says =~, so that is the ERDDAP standard.
      * But some implementations use ~=, so see sourceRegexOp. 
@@ -170,14 +170,16 @@ public abstract class PrimitiveArray {
     }
 
 
-    /** The minimum value that can be held by this class, e.g., "128". 
+    /** This returns a new PAOne with the minimum value that can be held by this class, e.g., -128b. 
      * This must be a non-static method to work with inheritence.
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b. 
      */
-    abstract public String MINEST_VALUE();
+    abstract public PAOne MINEST_VALUE();
 
-    /** The maximum value that can be held by this class 
+    /** This returns a new PAOne with the maximum value that can be held by this class, e.g., 126b
         (not including the cohort missing value). */
-    abstract public String MAXEST_VALUE();
+    abstract public PAOne MAXEST_VALUE();
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -200,7 +202,7 @@ public abstract class PrimitiveArray {
      * This returns a PrimitiveArray of a specified type and capacity.
      *
      * @param elementType e.g., PAType.FLOAT
-     * @param capacity
+     * @param capacity The maximum size available before the internal data structure needs to be enlarged.
      * @param active if true, size will be set to capacity (filled with 0's), else size = 0.
      * @return a PrimitiveArray
      */
@@ -279,6 +281,18 @@ public abstract class PrimitiveArray {
         return this;
     }
 
+    /**
+     * If this is an unsigned integer type, this makes a signed variant 
+     * (e.g., PAType.UBYTE returns a PAType.BYTE).
+     * The values from pa are then treated as unsigned, e.g., 255 in UByteArray  
+     * becomes -1 in a ByteArray.
+     *
+     * @return a new unsigned PrimitiveArray, or this pa.
+     */
+    public PrimitiveArray makeSignedPA() {
+        return this;
+    }
+
     /** 
      * This returns a PrimitiveArray with size constantValues.
      *
@@ -310,7 +324,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray csvFactory(PAType elementType, String csv) {
 
         String[] sa = StringArray.arrayFromCSV(csv);
-        //String2.log(">> csvFactory " + (new StringArray(sa)));
+        //String2.log(">> csvFactory " + elementType + " " + (new StringArray(sa)).toNccsvAttString());
         if (elementType == PAType.STRING) 
             return new StringArray(sa);
         int n = sa.length;
@@ -510,25 +524,16 @@ public abstract class PrimitiveArray {
      */
     abstract public int elementSize();
 
-    /**
-     * This returns the number of the specified value in this PrimitiveArray.
-     * This is notably useful for counting CoHort missing values (e.g., "" for StringArray, 
-     * NaN for DoubleArray and FloatArray, 127 for bytes) in this PrimitiveArray
-     * by looking for "".
-     *
-     * @return the returns the number of the specified value (when expressed via
-     *   getRawString(index)) in this PrimitiveArray. E.g., so use "127" to look for 127 in ByteArray.
+    /** 
+     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
-    public int specificValueCount(String value) {
-        if (value == null)
-            return 0;
-        int count = 0;
-        for (int i = 0; i < size; i++) {
-            if (value.equals(getRawString(i)))
-                count++;
-        }
-        return count;
-    }
+    abstract public double missingValueAsDouble();
+
+    /**
+     * This tests if the value at the specified index equals the cohort missingValue. 
+     */
+    abstract public boolean isMissingValue(int index);
 
 
     /** 
@@ -689,17 +694,9 @@ public abstract class PrimitiveArray {
 
     /** 
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
-     * expressed as a double. FloatArray and StringArray return Double.NaN. 
+     * as a new PAOne.  
      */
-    public double missingValue() {
-        return Double.NaN;
-    }
-
-    /** 
-     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
-     * as a PAOne. FloatArray and StringArray return Double.NaN. 
-     */
-    public PAOne missingValueAsPAOne() {
+    public PAOne missingValue() {
         PAOne paOne = new PAOne(elementType());
         paOne.setString("");
         return paOne;
@@ -733,11 +730,11 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This returns the class index (e.g., PATYPE_INDEX_INT) of the element type.
+     * This returns the minimum PAType needed to completely and precisely contain 
+     * the values in this PA's PAType and tPAType.
      *
-     * @return the class index (e.g., PATYPE_INDEX_INT) of the element type.
      */
-    abstract public int elementTypeIndex();
+    abstract public PAType needPAType(PAType tPAType);
 
     /**
      * This inserts an item into the array at the specified index, 
@@ -747,6 +744,22 @@ public abstract class PrimitiveArray {
      * @param value the value, as a String.
      */
     abstract public void atInsertString(int index, String value);
+
+    /**
+     * This adds PAOne's value to the array.
+     *
+     * @param value the value, as a PAOne (or null).
+     */
+    abstract public void addPAOne(PAOne value);
+
+    /**
+     * This adds n PAOne's to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a PAOne (or null).
+     */
+    abstract public void addNPAOnes(int n, PAOne value);
 
     /**
      * This adds an element to the array.
@@ -900,6 +913,8 @@ public abstract class PrimitiveArray {
      * elements.
      *
      * @return a primitive[] (perhaps 'array') which has 'size' elements.
+     *   Unsigned integer types will return an array with their storage type
+     *   e.g., ULongArray returns a long[].
      */
     abstract public Object toObjectArray();
 
@@ -1031,7 +1046,7 @@ public abstract class PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getUnsignedDouble(int index) {
+    public double getUnsignedDouble(int index) {  //trouble: use PAOne instead
         return getDouble(index); 
     }
 
@@ -1096,16 +1111,6 @@ public abstract class PrimitiveArray {
     abstract public String getString(int index);
 
     /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as a value, not "").
-     * 
-     * @param index the index number 0 .. 
-     * @return For numeric types, this returns (String.valueOf(ar[index])).
-     *   If this PA is unsigned, this method retuns the unsigned value.
-     */
-    abstract String getSimpleString(int index);
-
-    /**
      * Return a value from the array as a String suitable for a JSON file. 
      * char returns a String with 1 character.
      * String returns a json String with chars above 127 encoded as \\udddd.
@@ -1135,7 +1140,7 @@ public abstract class PrimitiveArray {
 
     /**
      * Return a value from the array as a String suitable for the data section 
-     * of a tsv file. This is close to a json string.
+     * of an ASCII tsv file. This is close to a json string.
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
@@ -1146,19 +1151,46 @@ public abstract class PrimitiveArray {
     }
 
     /**
+     * Return a value from the array as a String suitable for the data section 
+     * of a UTF-8 tsv file. This is close to a json string.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getUtf8TsvString(int index) {
+        return getString(index);
+    }
+
+    /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
-     * <p>All integerTypes overwrite this.
+     * <p>All integer types overwrite this.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a double. String values are parsed
-     *   with String2.parseDouble and so may return Double.NaN.
+     * @return the value as a String. 
      */
     public String getRawString(int index) {
         return getString(index);
+    }
+
+    /**
+     * Return a value from the array as a String.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * FloatArray and DoubleArray return "NaN" if the stored value is NaN.  
+     * That's different than getRawString!!!
+     *
+     * <p>Float and DoubleArray overwrite this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a String. 
+     */
+    public String getRawestString(int index) {
+        return getRawString(index);
     }
 
     /**
@@ -1266,7 +1298,7 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
-            String s = getString(i);
+            String s = getRawString(i);
             sb.append(s.length() == 0? "null" : s); //number missing values -> null
         }
         return sb.toString();
@@ -1290,7 +1322,7 @@ public abstract class PrimitiveArray {
         sort();
     }
 
-    /** A variant of calculateStats that doesnt use Attributes. */
+    /** A variant of calculateStats that doesn't use Attributes. */
     public double[] calculateStats() {
         return calculateStats(null);
     }
@@ -1319,7 +1351,35 @@ public abstract class PrimitiveArray {
         double max = -Double.MAX_VALUE; //not Double.MIN_VALUE
         double sum = 0;
 
-        if (isIntegerType() || elementType() == PAType.CHAR) { //includes LongArray
+        if (elementType() == PAType.ULONG) { 
+            BigInteger mv = ULongArray.MAX_VALUE;
+            BigInteger fv = ULongArray.MAX_VALUE;
+            BigInteger tMin = ULongArray.MAX_VALUE;
+            BigInteger tMax = ULongArray.MIN_VALUE;
+            BigInteger tSum = BigInteger.ZERO;
+            if (atts != null) {
+                fv = atts.getULong("_FillValue");    
+                mv = atts.getULong("missing_value"); 
+            }
+
+            for (int i = 0; i < size; i++) {
+                BigInteger d = getULong(i);
+                if (d.equals(ULongArray.MAX_VALUE) || d.equals(fv) || d.equals(fv)) {
+                } else { 
+                    n++;
+                    tMin = tMin.min(d);
+                    tMax = tMax.max(d);
+                    tSum = tSum.add(d);
+                }
+            }
+            if (n > 0) {
+                min = tMin.doubleValue();
+                max = tMax.doubleValue();
+                sum = tSum.doubleValue();
+                //String2.log(">> PrimitiveArray.calculateStats ULong min=" + tMin + "=" + min + " max=" + tMax + "=" + max);
+            }
+
+        } else if (isIntegerType() || elementType() == PAType.CHAR) { //includes LongArray
             long mv = Long.MAX_VALUE;
             long fv = Long.MAX_VALUE;
             if (atts != null) {
@@ -2364,24 +2424,20 @@ public abstract class PrimitiveArray {
      *     (because long ints are often used as String-like identifiers and .nc files don't support longs).
      */
     public PrimitiveArray simplify(String colName) {
-        int type = 0; //the current, simplest possible type
+        PAType type = PAType.BYTE; //the current, simplest possible type
         int n = size();
         boolean isStringArray = this instanceof StringArray;
-        double dar[] = new double[n];
-        boolean hasNaN = false;
+        boolean hasNaN = false;        
         boolean hasSomething = false;
+        DoubleArray newDoubleArray = isStringArray? new DoubleArray(n, false) : null; 
         for (int i = 0; i < n; i++) {
             double d = getDouble(i);
-            dar[i] = d; //set this before s.equals tests
             if (isStringArray) {
+                newDoubleArray.add(d);
                 String s = getString(i);
 
                 if (!String2.isSomething2(s)) //this catches a large number of string and numeric missing value stand-ins, but not NaN
                     continue;
-                /* 2019-07-30 was
-                if (s == null || s.equals(".") || s.equals("")) 
-                    //non-specific, skip this row
-                    continue; */
 
                 if (s.toLowerCase().equals("nan")) { //signifies a numeric missing value
                     //non-specific, skip this row
@@ -2397,7 +2453,7 @@ public abstract class PrimitiveArray {
                 //But if first 2 chars are "0.", this is a number, e.g., 0.14
                 if ((s.length() >= 2 && s.charAt(0) == '0' && s.charAt(1) >= '0' && s.charAt(1) <= '9') ||
                      Double.isNaN(d)) {  //it evaluates to NaN (even though common missing value 
-                    if (reallyVerbose) String2.log("PrimitiveArray.simplify says column=" + 
+                    if (reallyVerbose) String2.log("  PrimitiveArray.simplify says column=" + 
                         colName + " is type=String because of value=" + s);
                     return this; //it's already a StringArray
                 }
@@ -2405,8 +2461,10 @@ public abstract class PrimitiveArray {
                 //if string source column with an internal '.', don't let it be an integer type;
                 //always treat as at least a float
                 if (s.indexOf('.') >= 0) 
-                    type = Math.max(type, 4);
-                    //and fall through to code below
+                    type = type == PAType.DOUBLE? PAType.DOUBLE : PAType.FLOAT;
+                    if (elementType() == type)
+                        return this; //it's already a DoubleArraay or FloatArray
+                    //else fall through to code below
 
                 //else fall through to code below
             }
@@ -2417,37 +2475,50 @@ public abstract class PrimitiveArray {
 
             //assume column contains only bytes
             //if not true, work way up: short -> int -> long -> float -> double -> String
-            if (type == 0) { //byte
+            if (type == PAType.BYTE) { 
                 if (d != Math.rint(d) || d < Byte.MIN_VALUE || d > Byte.MAX_VALUE) {
-                    type++;
+                    type = PAType.SHORT;
                     if (this instanceof CharArray || this instanceof ShortArray)
                         return this; //don't continue; it would just check that a ShortArray contains shorts
                 }
             }
-            if (type == 1) { //short
+            if (type == PAType.SHORT) { 
                 if (d != Math.rint(d) || d < Short.MIN_VALUE || d > Short.MAX_VALUE) {
-                    type++;
+                    type = PAType.INT;
                     if (this instanceof IntArray)
                         return this;  //don't continue; it would just check that an IntArray contains ints
                 }
             }
-            if (type == 2) { //int
+            if (type == PAType.INT) { 
                 if (d != Math.rint(d) || d < Integer.MIN_VALUE || d > Integer.MAX_VALUE) {
-                    type++;
+                    type = PAType.LONG;
                     if (this instanceof LongArray)
                         return this; //don't continue; it would just check that a LongArray contains longs
                 }
             }
-            if (type == 3) { //long
-                if (d != Math.round(d) || d < Long.MIN_VALUE || d > Long.MAX_VALUE) {
-                    type++;
-                    if (this instanceof FloatArray)
-                        return this;  //don't continue; it would just check that a FloatArray contains floats
+            if (type == PAType.LONG) {                
+                if (d != Math.rint(d) || d < Long.MIN_VALUE || d > Long.MAX_VALUE) {  //good (checks range) but imperfect: Long.MAX_VALUE is imprecise as a double
+                    //String2.log(">> simplify -> LONG because d=" + d);
+                    type = PAType.FLOAT;  //not ULONG
+                    if (this instanceof FloatArray)  //not ULongArray
+                        return this;  //don't continue; it would just check that a ULongArray contains ulongs
                 }
             }
-            if (type == 4) { //float
+            //Don't do this because:
+            //  1) ULONG is poorly supported in file types
+            //  2) ULONG isn't a superset of the previous types (which allow negative values). So -1 earlier won't be caught now.
+            //if (type == PAType.ULONG) {
+            //    if (d != Math.rint(d) || d < 0 || d > Math2.ULONG_MAX_VALUE_AS_DOUBLE) {  //good (checks range) but imperfect: ULONG_MAX_VALUE_AS_DOUBLE is imprecise
+            //        //String2.log(">> simplify -> FLOAT because d=" + d);
+            //        type = PAType.FLOAT;
+            //        if (this instanceof FloatArray)
+            //            return this;  //don't continue; it would just check that a FloatArray contains floats
+            //    }
+            //}
+            if (type == PAType.FLOAT) { 
                 if (d < -Float.MAX_VALUE || d > Float.MAX_VALUE || d != Math2.niceDouble(d, 7)) {
-                    type++;
+                    //String2.log(">> simplify -> DOUBLE because d=" + d);
+                    type = PAType.DOUBLE;
                     if (this instanceof DoubleArray)
                         return this;  //don't continue; it would just check that a DoubletArray contains doubles
                 }
@@ -2462,93 +2533,28 @@ public abstract class PrimitiveArray {
         }
 
         //make array of simplified type
-        if (type == 0) {
-            byte[] array = new byte[n];
-            for (int i = 0; i < n; i++) 
-                array[i] = Math2.roundToByte(dar[i]);
-            return new ByteArray(array);
-        }
-        if (type == 1) {
-            short[] array = new short[n];
-            for (int i = 0; i < n; i++)
-                array[i] = Math2.roundToShort(dar[i]);
-            return new ShortArray(array);
-        }
-        if (type == 2) {
-            int[] array = new int[n];
-            for (int i = 0; i < n; i++)
-                array[i] = Math2.roundToInt(dar[i]);
-            return new IntArray(array);
-        }
-        if (type == 3) {
-            //A LongArray may return a LongArray (above),
-            //but a StringArray with longs will return a StringArray
-            //(because long ints are often used as String-like identifiers
-            //and .nc files don't support longs).
-            if (isStringArray)
-                return this;
-            return new StringArray(this);
-            //was:
-            //long[] array = new long[n];
-            //for (int i = 0; i < n; i++)
-            //    array[i] = Math2.roundToLong(dar[i]);
-            //return new LongArray(array);
-        }
-        if (type == 4) {
-            float[] array = new float[n];
-            for (int i = 0; i < n; i++)
-                array[i] = (float)dar[i];
-            return new FloatArray(array);
-        }
-        if (type == 5) {
-            return new DoubleArray(dar);
-        }
+        PrimitiveArray tSourcePA = newDoubleArray == null? this : newDoubleArray; 
+        if (type == PAType.BYTE)    return new ByteArray(tSourcePA);
+        if (type == PAType.SHORT)   return new ShortArray(tSourcePA);
+        if (type == PAType.INT)     return new IntArray(tSourcePA);
+        if (type == PAType.LONG)    return new LongArray( this); //for full precision, use real sourcePA
+        if (type == PAType.ULONG)   return new ULongArray(this); //for full precision, use real sourcePA
+        if (type == PAType.FLOAT)   return new FloatArray(tSourcePA);
+        if (type == PAType.DOUBLE)  return new DoubleArray(tSourcePA);
         throw new IllegalArgumentException(String2.ERROR + 
-            " in PrimitiveArray.simplify: unknown type (" + type + ").");
+            " in PrimitiveArray.simplify: unknown new type=" + type + ".");
     }
 
     /**
      * This appends the data in another primitiveArray to the current data.
      * WARNING: information may be lost from the incoming primitiveArray if this
-     * primitiveArray is of a simpler type.
+     * primitiveArray is of a smaller type; see needPAType().
      *
      * @param primitiveArray primitiveArray must be the same or a narrower data type,
      *  or the data will be rounded.
      */
     abstract public void append(PrimitiveArray primitiveArray);
     
-    /**
-     * This appends the data in another pa to the current data.
-     * This "unsigned" variant treats incoming integer types as unsigned values
-     * (e.g., ByteArray -1 is interpreted as 255,
-     * IntArray -1 is interpreted as 4294967295).
-     * WARNING: information may be lost from the incoming pa if this
-     * primitiveArray is of a simpler type.
-     * Also, MAX_VALUE isn't converted to NaN.
-     *
-     * @param pa pa must be the same or a narrower 
-     *  data type, or the data will be narrowed with Math2.narrowToByte.
-     */
-    public void unsignedAppend(PrimitiveArray pa) {
-        //this code is used by all subclasses; it isn't over-ridden
-
-        if (pa.isIntegerType() || pa.elementType() == PAType.CHAR) {
-            int otherSize = pa.size(); 
-            ensureCapacity(size + (long)otherSize);
-            if (pa.elementType() == elementType()) { //both are the same integer type
-                for (int i = 0; i < otherSize; i++) {
-                    long tl = pa.getLong(i);
-                    addLong(tl >= 0? tl : Long.MAX_VALUE);
-                }
-            } else {
-                for (int i = 0; i < otherSize; i++)
-                    addDouble(pa.getUnsignedDouble(i)); 
-            }
-        } else {
-            append(pa);
-        }
-    }    
-
     /**
      * This appends the data in another primitiveArray to the current data.
      * This "raw" variant leaves missingValue from smaller data types 
@@ -2923,17 +2929,19 @@ public abstract class PrimitiveArray {
         //append table2 to the end of table1
         for (int col = 0; col < table1.size(); col++) {
             //if needed, make a new wider PrimitiveArray in table1
-            if (((PrimitiveArray)table2.get(col)).elementTypeIndex() > 
-                ((PrimitiveArray)table1.get(col)).elementTypeIndex()) {
-                PrimitiveArray oldTable1Col = ((PrimitiveArray)table1.get(col));
-                PrimitiveArray newTable1Col = factory(((PrimitiveArray)table2.get(col)).elementType(), 
-                    oldTable1Col.size() + ((PrimitiveArray)table2.get(col)).size(), false);
-                newTable1Col.append(oldTable1Col);
-                table1.set(col, newTable1Col);
+            PrimitiveArray pa1 = (PrimitiveArray)(table1.get(col));
+            PrimitiveArray pa2 = (PrimitiveArray)(table2.get(col));
+
+            PAType needPAType = pa1.needPAType(pa2.elementType());
+            if (pa1.elementType() != needPAType) {
+                PrimitiveArray newPa1 = PrimitiveArray.factory(needPAType, pa1.size() + pa2.size(), false); //active?
+                newPa1.append(pa1);
+                pa1 = newPa1;
+                table1.set(col, pa1);
             }
 
             //append the data from table2 to table1
-            ((PrimitiveArray)table1.get(col)).append(((PrimitiveArray)table2.get(col)));
+            pa1.append(pa2);
         }
 
     }
@@ -3080,26 +3088,27 @@ public abstract class PrimitiveArray {
      * those values are converted to PrimitiveArray-style missing values 
      * (NaN, or MAX_VALUE for integer types).
      *
-     * @param fakeFillValue (e.g., -9999999) from colAttributes.getDouble("_FillValue"); use NaN if none
-     * @param fakeMissingValue (e.g., -9999999) from colAttributes.getDouble("missing_value"); use NaN if none
+     * @param fakeFillValue (e.g., -9999999) from colAttributes.getDouble("_FillValue"); or null if none
+     * @param fakeMissingValue (e.g., -9999999) from colAttributes.getDouble("missing_value"); or null if none
      * @return the number of missing values converted
      */
-    public int convertToStandardMissingValues(double fakeFillValue, double fakeMissingValue) {
+    public int convertToStandardMissingValues(String fakeFillValue, String fakeMissingValue) { //or use PAOne's?
         //do nothing to String or char columns
         if (elementType() == PAType.STRING ||
             elementType() == PAType.CHAR)
             return 0;
 
         //is _FillValue used?    switch data to standard mv
-        //String2.log(">> Table.convertToStandardMissingValues fillValue=" + fakeFillValue + " missingValue=" + fakeMissingValue);
+        //String2.log(">> PrimitiveArray.convertToStandardMissingValues " + elementType() + " fakeFillValue=" + fakeFillValue + " fakeMissingValue=" + fakeMissingValue);
         int nSwitched = 0;
-        if (!Double.isNaN(fakeFillValue))
-            nSwitched += switchFromTo("" + fakeFillValue, "");
+        if (fakeFillValue != null)
+            nSwitched += switchFromTo(fakeFillValue, "");
 
         //is missing_value used?    switch data to standard mv
         //String2.log ...
-        if (!Double.isNaN(fakeMissingValue) && fakeMissingValue != fakeFillValue) //if fakeFillValue==NaN   2nd clause always true (good)
-            nSwitched += switchFromTo("" + fakeMissingValue, "");
+        if (fakeMissingValue != null && !fakeMissingValue.equals(fakeFillValue))   
+            nSwitched += switchFromTo(
+            fakeMissingValue, "");
 
         return nSwitched;
     }
@@ -3111,12 +3120,13 @@ public abstract class PrimitiveArray {
      * @param fakeMissingValue
      * @return the number of values switched
      */
-    public int switchNaNToFakeMissingValue(double fakeMissingValue) {
-        if (Double.isFinite(fakeMissingValue) && 
-            elementType() != PAType.STRING ||
-            elementType() != PAType.CHAR)
-            return switchFromTo("", "" + fakeMissingValue);
-        return 0;
+    public int switchNaNToFakeMissingValue(String fakeMissingValue) {
+        if (elementType() == PAType.STRING || 
+            elementType() == PAType.CHAR ||
+            !String2.isSomething(fakeMissingValue) ||
+            fakeMissingValue.equals("NaN"))
+            return 0;
+        return switchFromTo("", fakeMissingValue);
     }
 
     /**
@@ -3151,10 +3161,10 @@ public abstract class PrimitiveArray {
         for (int i = 1; i < size; i++) {
             if (compare(i - 1, i) > 0) {
                 return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
-                    "[" + (i-1) + "]=" + getSimpleString(i-1) + " > [" + i + "]=" + getSimpleString(i));
+                    "[" + (i-1) + "]=" + getRawestString(i-1) + " > [" + i + "]=" + getRawestString(i));
             }
         }
-        if (missingValueAsPAOne().equals(this, size-1))  //[size-1] = mv
+        if (missingValue().equals(this, size-1))  //[size-1] = mv
             return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                 "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
         return "";
@@ -3171,14 +3181,14 @@ public abstract class PrimitiveArray {
     public String isDescending() {
         if (size == 0)
             return "";
-        if (missingValueAsPAOne().equals(this, 0)) //[0] = mv 
+        if (missingValue().equals(this, 0)) //[0] = mv 
             return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                 "[0]=(" + ArrayMissingValue + ")");
         for (int i = 1; i < size; i++) {
             if (compare(i - 1, i) < 0) {
                 return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
-                    "[" + (i-1) + "]=" + getSimpleString(i-1) + 
-                     " < [" + i + "]=" + getSimpleString(i));
+                    "[" + (i-1) + "]=" + getRawestString(i-1) + 
+                     " < [" + i + "]=" + getRawestString(i));
             }
         }
         return "";
@@ -3797,18 +3807,24 @@ public abstract class PrimitiveArray {
 
         //are first and lastChar all the same? e.g., 7b, -12b
         int saSize = sa.size();
-        boolean firstCharSame = sa.get(0).length() > 0;  //initially just first value
-        boolean lastCharSame  = sa.get(0).length() > 0;  //initially just first value
+        boolean firstCharSame = sa.get(0).length() >= 1;  //initially just first value
+        boolean lastCharSame  = sa.get(0).length() >= 1;  //initially just first value
+        boolean last2CharSame = sa.get(0).length() >= 2;  //initially just first value
         char firstChar = ' '; //junk for now
         char lastChar  = ' '; //junk for now
+        String last2Char = ""; 
         if (lastCharSame) { 
-            String s = sa.get(0); //it will be length() > 0 (tested above)
+            String s = sa.get(0); //it will be length() >= 1 (tested above)
             firstChar = s.charAt(0);  
             lastChar  = s.charAt(s.length() - 1);
+            if (last2CharSame) //it will be length() >= 2 (tested above)
+                last2Char = s.substring(s.length() - 2);
             for (int i = 1; i < saSize; i++) {
                 s = sa.get(i);
                 if (s.length() == 0 || s.charAt(0) != firstChar) 
                     firstCharSame = false;
+                if (last2CharSame && !s.endsWith(last2Char)) 
+                    last2CharSame = false;
                 if (s.length() == 0 || s.charAt(s.length() - 1) != lastChar) {
                     lastCharSame = false;
                     break;
@@ -3817,14 +3833,62 @@ public abstract class PrimitiveArray {
         }
 
         //what type is it?
+        if (last2CharSame) {
+            if (last2Char.equals("ub")) {
+                if (sa.firstNonMatch(String2.NCCSV_UBYTE_ATT_PATTERN) < 0) {
+                    UByteArray uba = new UByteArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        uba.addString(s.substring(0, s.length() - 2));
+                        if (uba.isMissingValue(i) && !"255ub".equals(s))
+                            throw new SimpleException("Invalid ubyte value: " + s);
+                    }
+                    return uba;
+                } 
+            } else if (last2Char.equals("us")) {
+                if (sa.firstNonMatch(String2.NCCSV_USHORT_ATT_PATTERN) < 0) {
+                    UShortArray uba = new UShortArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        uba.addString(s.substring(0, s.length() - 2));
+                        if (uba.isMissingValue(i) && !"65535us".equals(s))
+                            throw new SimpleException("Invalid ushort value: " + s);
+                    }
+                    return uba;
+                }
+            } else if (last2Char.equals("ui")) {
+                if (sa.firstNonMatch(String2.NCCSV_UINT_ATT_PATTERN) < 0) {
+                    UIntArray uia = new UIntArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        uia.addString(s.substring(0, s.length() - 2));
+                        if (uia.isMissingValue(i) && !"4294967295ui".equals(s))
+                            throw new SimpleException("Invalid uint value: " + s);
+                    }
+                    return uia;
+                }
+            } else if (last2Char.equals("uL")) {
+                if (sa.firstNonMatch(String2.NCCSV_ULONG_ATT_PATTERN) < 0) {
+                    ULongArray ula = new ULongArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        ula.addString(s.substring(0, s.length() - 2));
+                        if (ula.isMissingValue(i) && !"18446744073709551615uL".equals(s))
+                            throw new SimpleException("Invalid ulong value: " + s);
+                    }
+                    return ula;
+                }
+            }
+        }
+
         if (lastCharSame) {
             if (lastChar == 'b') {
                 if (sa.firstNonMatch(String2.NCCSV_BYTE_ATT_PATTERN) < 0) {
                     ByteArray ba = new ByteArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
-                        ba.addInt(String2.parseInt(s.substring(0, s.length() - 1)));
-                        if (ba.get(i) == Byte.MAX_VALUE && !"127b".equals(s))
+                        ba.addString(s.substring(0, s.length() - 1));
+                        if (ba.isMissingValue(i) && !"127b".equals(s))
                             throw new SimpleException("Invalid byte value: " + s);
                     }
                     return ba;
@@ -3834,7 +3898,7 @@ public abstract class PrimitiveArray {
                     ShortArray ba = new ShortArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
-                        ba.addInt(String2.parseInt(s.substring(0, s.length() - 1)));
+                        ba.addString(s.substring(0, s.length() - 1));
                         if (ba.get(i) == Short.MAX_VALUE && !"32767s".equals(s))
                             throw new SimpleException("Invalid short value: " + s);
                     }
@@ -3845,7 +3909,7 @@ public abstract class PrimitiveArray {
                     LongArray la = new LongArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
-                        la.add(String2.parseLong(s.substring(0, s.length() - 1)));
+                        la.addString(s.substring(0, s.length() - 1));
                         if (la.get(i) == Long.MAX_VALUE && !"9223372036854775807L".equals(s))
                             throw new SimpleException("Invalid long value: " + s);
                     }
@@ -3856,8 +3920,8 @@ public abstract class PrimitiveArray {
                     FloatArray fa = new FloatArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
-                        float f = String2.parseFloat(s.substring(0, s.length() - 1));
-                        fa.add(Float.isFinite(f)? f : Float.NaN); //Infinity -> NaN
+                        fa.addString(s.substring(0, s.length() - 1)); //Infinity -> NaN
+                        //String2.log(">> float " + fa.get(i) + " from " + s);
                         if (Float.isNaN(fa.get(i)) && !"NaNf".equals(s)) 
                             throw new SimpleException("Invalid float value: " + s);
                     }
@@ -3869,8 +3933,7 @@ public abstract class PrimitiveArray {
                     DoubleArray da = new DoubleArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
-                        double d = String2.parseDouble(s);
-                        da.add(Double.isFinite(d)? d : Double.NaN); //Infinity -> NaN
+                        da.addString(s); //Infinity -> NaN
                         if (Double.isNaN(da.get(i)) && !"NaNd".equals(s))
                             throw new SimpleException("Invalid double value: " + s);
                     }
@@ -3884,7 +3947,7 @@ public abstract class PrimitiveArray {
             IntArray ia = new IntArray(saSize, false);
             for (int i = 0; i < saSize; i++) {
                 String s = sa.get(i);
-                ia.add(String2.parseInt(s.substring(0, s.length() - 1)));
+                ia.addString(s.substring(0, s.length() - 1));
                 if (ia.get(i) == Integer.MAX_VALUE && !"2147483647i".equals(s))
                     throw new SimpleException("Invalid int value: " + s);
             }
@@ -3962,7 +4025,7 @@ public abstract class PrimitiveArray {
         if (mmi[0] == 0) {  //mmi[0] is number of non mv values
             if (hasCoHortMV) {
                 //pa is only CoHortMV
-                return missingValue(); //cohort mv
+                return missingValue().getRawDouble(); //cohort mv
             }
             return Double.NaN;
         }
@@ -4000,14 +4063,14 @@ public abstract class PrimitiveArray {
 
         } else if (isUnsigned()) {
             if (hasCoHortMV)
-                return missingValue(); //cohort mv
+                return missingValue().getRawDouble(); //cohort mv
 
         } else {
             //signed integer types
-            if (String2.parseDouble(MINEST_VALUE()) == min)  
+            if (MINEST_VALUE().getDouble() == min)  
                 return min;
             if (hasCoHortMV)
-                return missingValue(); //cohort mv
+                return missingValue().getRawDouble(); //cohort mv
         }
         return Double.NaN;        
     }
@@ -4372,17 +4435,17 @@ public abstract class PrimitiveArray {
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", ""});
         pa = pa.simplify("test4");
-        Test.ensureEqual(pa.elementTypeString(), "String", "elementType");
+        Test.ensureEqual(pa.elementTypeString(), "long", "elementType");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "", "");
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", "NaN"});
         pa = pa.simplify("test5");
-        Test.ensureEqual(pa.elementTypeString(), "String", "elementType");
+        Test.ensureEqual(pa.elementTypeString(), "long", "elementType");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
-        Test.ensureEqual(pa.getString(2), "NaN", "");
+        Test.ensureEqual(pa.getString(2), "", "");
 
         pa = new StringArray(new String[]{"-1e33", "1e33", "."});
         pa = pa.simplify("test6");

@@ -82,6 +82,8 @@ public class TableWriterAll extends TableWriter {
         //  but my testing environment (2+ things running) may have removed it.
         File2.makeDirectory(dir); 
         fileNameNoExt = tFileNameNoExt;
+        //String2.pressEnterToContinue(">> TableWriterAll random=" + randomInt + "\n" + MustBe.stackTrace());
+
     }
 
 
@@ -326,7 +328,7 @@ public class TableWriterAll extends TableWriter {
                 File2.simpleDelete(columnFileName(col));
             }
         } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+            String2.log("TableWriterAll.releaseResources caught:\n" + MustBe.throwableToString(t));
         }
     }
     

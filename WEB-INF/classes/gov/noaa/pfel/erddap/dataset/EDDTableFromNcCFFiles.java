@@ -1527,7 +1527,7 @@ String expected =
             dir, eddTable.className() + "_testKevin20160519_2", ".nc"); 
         table = new Table();
         table.readNDNc(dir + tName, null, 0, //standardizeWhat
-            null, 0, 0, true);
+            null, 0, 0);
         //expected is same except there's an additional 'row' column, remove it
         table.removeColumn(table.findColumnNumber("row"));
         expected = //then same except for order depth/time 
@@ -2356,7 +2356,7 @@ expected =
 "\n" +
 "    double Temp(time=101);\n" +
 "      :long_name = \"Temperatura\";\n" +
-"      :units = \"\uFFFDC\";\n" + //65533
+"      :units = \"\uFFFDC\";\n" + //65533 which is "unknown character". Not right!!!???
 "\n" +
 "    double TiranteDiseno(one=1);\n" +
 "      :long_name = \"Tirante diseno\";\n" +

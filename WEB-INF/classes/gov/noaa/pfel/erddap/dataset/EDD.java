@@ -1123,6 +1123,9 @@ public abstract class EDD {
                     " successfully subscribed directly to local datasetID=" + underlyingID);
                 return; //success
 
+            } else if (!EDStatic.subscribeToRemoteErddapDataset) {
+                cause = "\nCause: <subscribeToRemoteErddapDataset> is set to 'false'.";
+
             } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
                 cause = "\nCause: This ERDDAP isn't publicly accessible.";
 
@@ -1777,7 +1780,7 @@ public abstract class EDD {
                         } else {  
                             //file doesn't exist
                             throw new SimpleException(
-                                EDStatic.resourceNotFound + " the <fgdcFile> specified in datasets.xml.");
+                                EDStatic.resourceNotFound + "the <fgdcFile> specified in datasets.xml.");
                         }
                             
                     } else {
@@ -1850,7 +1853,7 @@ public abstract class EDD {
                         } else {  
                             //file doesn't exist
                             throw new SimpleException(
-                                EDStatic.resourceNotFound + " the <iso19115File> specified in datasets.xml.");
+                                EDStatic.resourceNotFound + "the <iso19115File> specified in datasets.xml.");
                         }
                             
                     } else {
@@ -4628,8 +4631,8 @@ public abstract class EDD {
 
         if (ePAType == PAType.CHAR) {
 
-            int ti = (int)pa.missingValue(); //cohort mv is MAX_VALUE, e.g., 65536
-            String ts = "" + ti;                   //as String, e.g., "65536"
+            int ti = (int)pa.missingValueAsDouble(); //cohort mv is MAX_VALUE, e.g., 65536
+            String ts = "" + ti;             //as String, e.g., "65536"
             if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
                 if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
                 else if (smv == null && !ts.equals(sfv)) smv = ts; 
@@ -4661,7 +4664,7 @@ public abstract class EDD {
                     else if (smv == null && !ts.equals(sfv)) smv = ts; 
                 }
 
-                ts = pa.MINEST_VALUE();  //e.g., "-128"
+                ts = pa.MINEST_VALUE().toString();  //e.g., "-128"
                 if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
                     if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
                     else if (smv == null && !ts.equals(sfv)) smv = ts; 

@@ -90,12 +90,11 @@ public class TableWriterDodsAscii extends TableWriter {
         if (firstTime) {
 
             //write the dds    //DAP 2.0, 7.2.3
-            OutputStream outputStream = outputStreamSource.outputStream("");
+            OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
             table.saveAsDDS(outputStream, sequenceName);  
 
             //see OpendapHelper.EOL for comments
-            writer = new BufferedWriter(new OutputStreamWriter(outputStream,
-                String2.ISO_8859_1)); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            writer = String2.getBufferedOutputStreamWriter88591(outputStream); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             writer.write("---------------------------------------------" + 
                 OpendapHelper.EOL); //this exactly mimics the example
 
@@ -121,11 +120,11 @@ public class TableWriterDodsAscii extends TableWriter {
         //write elements of the sequence, in dds order
         for (int row = 0; row < nRows; row++) {
             for (int col = 0; col < nColumns; col++) {
-                String s = pas[col].getString(row);
+                String s = pas[col].getRawestString(row);  //so Int.MAX_VALUE appears as the value and Double.NaN appears as NaN
                 if (isCharOrString[col]) {
                     //see DODS Appendix A, quoted-string, with \\ and \"
-                    s = String2.replaceAll(s, "\\", "\\\\");
-                    s = "\"" + String2.replaceAll(s, "\"", "\\\"") + "\"";
+                    //2020-03-26 was just those 2 encoded chars. Now, I assume it implies json-like encoding of special chars.
+                    s = String2.toJson(s);
                 }
                 writer.write(s);
                 writer.write(col == nColumns - 1? OpendapHelper.EOL : ", ");

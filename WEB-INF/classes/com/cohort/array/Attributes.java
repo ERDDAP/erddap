@@ -8,6 +8,7 @@ package com.cohort.array;
 import com.cohort.util.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
@@ -128,7 +129,8 @@ public class Attributes {
      *
      * @param name the name of an attribute
      * @return the String attribute or null if trouble (e.g., not found).
-     *   This uses pa.getRawString(0) so e.g., 127 in ByteArray will appear as "127".
+     *   This uses pa.getRawString(0) so e.g., 127 in ByteArray will appear as "127",
+     *   and NaN in DoubleArray will appear as "NaN".
      */
     public String getString(String name) {
         try {
@@ -155,6 +157,40 @@ public class Attributes {
                 return null;
             String csv = pa.getRawString(0);
             return StringArray.arrayFromCSV(csv);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * This is like the similar set() method, but returns 'this'.
+     * add() lets you string several set commands together,
+     * e.g., (new Attributes()).add("name", "Abe").add("height", 197);
+     *
+     * @param name the name of the attribute
+     * @param value a PAOne which has the value associated with the 'name'.
+     *    If value isn't null, this adds value.pa().clone().
+     *    If value is null, name is removed from attributes.
+     * @return 'this'
+     */
+    public Attributes add(String name, PAOne value) {
+        set(name, value == null? null : value.pa().clone());
+        return this;
+    }
+
+    /**
+     * A convenience method which returns the first element of the attribute's 
+     * value PrimitiveArray as a PAOne.
+     *
+     * @param name the name of an attribute
+     * @return the attribute as a PAOne (or null if trouble (e.g., not found))
+     */
+    public PAOne getPAOne(String name) {
+        try {
+            PrimitiveArray pa = get(name);
+            if (pa == null || pa.size() == 0)
+                return null;
+            return new PAOne(pa, 0);
         } catch (Exception e) {
             return null;
         }
@@ -279,6 +315,24 @@ public class Attributes {
 
     /**
      * A convenience method which returns the first element of the attribute's 
+     * value PrimitiveArray as a ulong, regardless of the type used to store it.
+     *
+     * @param name the name of an attribute
+     * @return the attribute as a ulong or ULongArray.MAX_VALUE if trouble (e.g., not found)
+     */
+    public BigInteger getULong(String name) {
+        try {
+            PrimitiveArray pa = get(name);
+            if (pa == null || pa.size() == 0)
+                return ULongArray.MAX_VALUE;
+            return pa.getULong(0);
+        } catch (Exception e) {
+            return ULongArray.MAX_VALUE;
+        }
+    }
+
+    /**
+     * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as an int, regardless of the type used to store it.
      *
      * @param name the name of an attribute
@@ -332,13 +386,13 @@ public class Attributes {
      * (PrimitiveArray)null).
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'.
+     * @param value a PrimitiveArray which is the value associated with the 'name'.
      *    If value is null or size==0 or it is one String="", name is removed from attributes.
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, PrimitiveArray value) {
         if (value == null || value.size() == 0 || 
-            (value.size() == 1 && value instanceof StringArray && value.getRawString(0).trim().length() == 0)) 
+            (value.size() == 1 && value.elementType() == PAType.STRING && value.getRawString(0).trim().length() == 0)) 
             return hashmap.remove(name);
         return hashmap.put(String2.canonical(name), value);
     }
@@ -347,7 +401,7 @@ public class Attributes {
      * Like set, but only sets the value if there is no current value.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'.
+     * @param value a PrimitiveArray which is the value associated with the 'name'.
      *    If value is null or "", name is removed from attributes.
      * @return the previous value stored for attributeName, or null if none
      */
@@ -364,7 +418,8 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'.
+     *    If value is null, name is removed from attributes.
      * @return 'this'
      */
     public Attributes add(String name, PrimitiveArray value) {
@@ -419,7 +474,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a String which is the value associate with the 'name'
+     * @param value a String which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, Object value) {
@@ -431,7 +486,7 @@ public class Attributes {
      * A convenience method which stores the String in a StringArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'.
+     * @param value a PrimitiveArray which is the value associated with the 'name'.
      *    If value is null or "", name is removed from attributes.
      * @return the previous value stored for attributeName, or null if none
      */
@@ -446,7 +501,7 @@ public class Attributes {
      * Like set, but only sets the value if there is no current value.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'.
+     * @param value a PrimitiveArray which is the value associated with the 'name'.
      *    If value is null or "", name is removed from attributes.
      * @return the previous value stored for attributeName, or null if none
      */
@@ -463,7 +518,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a String which is the value associate with the 'name'
+     * @param value a String which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, String value) {
@@ -474,7 +529,7 @@ public class Attributes {
     /** A convenience method which stores the double in a DoubleArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, double value) {
@@ -487,7 +542,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a double which is the value associate with the 'name'
+     * @param value a double which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, double value) {
@@ -498,7 +553,7 @@ public class Attributes {
     /** A convenience method which stores the float in a FloatArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, float value) {
@@ -511,7 +566,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a float which is the value associate with the 'name'
+     * @param value a float which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, float value) {
@@ -522,7 +577,7 @@ public class Attributes {
     /** A convenience method which stores the long in an LongArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, long value) {
@@ -535,7 +590,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a long which is the value associate with the 'name'
+     * @param value a long which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, long value) {
@@ -546,7 +601,7 @@ public class Attributes {
     /** A convenience method which stores the int in an IntArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, int value) {
@@ -559,7 +614,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value an int which is the value associate with the 'name'
+     * @param value an int which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, int value) {
@@ -570,7 +625,7 @@ public class Attributes {
     /** A convenience method which stores the short in an ShortArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, short value) {
@@ -597,7 +652,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a short which is the value associate with the 'name'
+     * @param value a short which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, short value) {
@@ -608,7 +663,7 @@ public class Attributes {
     /** A convenience method which stores the char in an CharArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, char value) {
@@ -621,7 +676,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a char which is the value associate with the 'name'
+     * @param value a char which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, char value) {
@@ -632,7 +687,7 @@ public class Attributes {
     /** A convenience method which stores the byte in an ByteArray then stores the attribute.
      * 
      * @param name the name of the attribute
-     * @param value a PrimitiveArray which is the value associate with the 'name'
+     * @param value a PrimitiveArray which is the value associated with the 'name'
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray set(String name, byte value) {
@@ -645,7 +700,7 @@ public class Attributes {
      * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
      *
      * @param name the name of the attribute
-     * @param value a byte which is the value associate with the 'name'
+     * @param value a byte which is the value associated with the 'name'
      * @return 'this'
      */
     public Attributes add(String name, byte value) {
@@ -704,7 +759,7 @@ public class Attributes {
             PrimitiveArray pa = hashmap.get(names[index]);
             String connect = "";
             boolean isCharArray = pa instanceof CharArray;
-            if (pa instanceof StringArray || isCharArray) {
+            if (pa.elementType() == PAType.STRING || isCharArray) {
                 int n = pa.size();
                 for (int i = 0; i < n; i++) {
                     sb.append(connect);
@@ -778,7 +833,7 @@ public class Attributes {
      * @return a String representation of a value PrimitiveArray.
      */
     public static String valueToNcString(PrimitiveArray pa) {
-        if (pa instanceof StringArray)
+        if (pa.elementType() == PAType.STRING)
             return String2.toSVString(((StringArray)pa).toStringArray(), "\n", false); //false=no trailing newline
         return pa.toString();
     }
@@ -868,7 +923,7 @@ public class Attributes {
             }
 
             //trim value?
-            if (pa instanceof StringArray && pa.size() > 0) {
+            if (pa.elementType() == PAType.STRING && pa.size() > 0) {
                 pa.setString(0, String2.trimStart(pa.getRawString(0)));
                 pa.setString(pa.size() - 1, String2.trimEnd(pa.getRawString(pa.size() - 1)));
             }
@@ -896,7 +951,7 @@ public class Attributes {
             }
 
             //trim/makeValid the value?
-            if (pa instanceof StringArray && pa.size() > 0) {
+            if (pa.elementType() == PAType.STRING && pa.size() > 0) {
                 int tSize = pa.size();
                 pa.setString(0, String2.trimStart(pa.getRawString(0)));
                 pa.setString(tSize - 1, String2.trimEnd(pa.getRawString(tSize - 1)));
@@ -1104,6 +1159,8 @@ public class Attributes {
                 tType = "char";
             } else if (tType.equals("long")) {
                 tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+            } else if (tType.equals("ulong")) {
+                tType = "uint64"; 
             }
             sb.append(
                 (somethingWritten? ",\n" : "") +
@@ -1251,6 +1308,7 @@ public class Attributes {
                 oldAtts.getDouble(        "missing_value");                              
             newAtts.remove("missing_value");
             newAtts.remove("_FillValue");
+            double dataPaMV = dataPa.missingValue().getRawDouble();
 
             if (unsigned || scalePA != null || addPA != null) {
                 if (debugMode && unsigned) String2.log(
@@ -1275,8 +1333,8 @@ public class Attributes {
                     unsigned? 
                         dataPa.makeUnsignedPA() : //unsigned 
                         dataPa.isIntegerType() &&
-                            (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
-                             dFillValue    == dataPa.missingValue())?
+                            (dMissingValue == dataPaMV ||  //e.g., 127 == 127
+                             dFillValue    == dataPaMV)?
                             PrimitiveArray.factory(        destPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
                             PrimitiveArray.rawFactory(     destPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
                 //so unsigned values are now properly unsigned
@@ -1285,9 +1343,9 @@ public class Attributes {
                 //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
                 //after changing class (so unsigned is applied) but before applying scaleAddOffset
                 //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
-                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) 
+                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) 
                     dataPa.switchFromTo(       "" + dMissingValue, "");
-                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) 
+                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) 
                     dataPa.switchFromTo(       "" + dFillValue,    "");
 
                 //apply scaleAddOffset
@@ -1324,12 +1382,12 @@ public class Attributes {
 
             } else {  //if not unsigned or packed, still need to convert missing values
 
-                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
                     dataPa.switchFromTo(       "" + dMissingValue, "");
                     if (debugMode) String2.log(
                         ">> #1: converted from missing_value=" + dMissingValue);
                 }
-                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
                     dataPa.switchFromTo(       "" + dFillValue,    "");
                     if (debugMode) String2.log(
                         ">> #1: converted from _FillValue=" + dFillValue);
@@ -1397,14 +1455,14 @@ public class Attributes {
         }
 
         //string dateTimes
-        if ((standardizeWhat & (1024 + 2048)) != 0 && dataPa.elementType() == PAType.STRING) {
+        if ((standardizeWhat & (1024 + 2048)) != 0 && 
+            (dataPa.isIntegerType() || dataPa.elementType() == PAType.STRING)) {
 
-            StringArray sa = (StringArray)dataPa;
-            int n = sa.size();
+            int n = dataPa.size();
             String firstS = null;
             for (int i = 0; i < n; i++) {
-                if (String2.isSomething(sa.get(i))) {
-                    firstS = sa.get(i);
+                if (String2.isSomething(dataPa.getString(i))) {
+                    firstS = dataPa.getString(i);
                     break;
                 }
             }
@@ -1414,7 +1472,8 @@ public class Attributes {
             if (firstS == null) {
             } else {
                 allDigits = String2.allDigits(firstS);
-                format = Calendar2.suggestDateTimeFormat(sa, true); //evenIfPurelyNumeric
+                format = Calendar2.suggestDateTimeFormat(dataPa, true); //evenIfPurelyNumeric
+                //String2.log(">> standardize 2048 firstS=" + firstS + " format=" + format);
                 //format will be "" if no match
             }
 
@@ -1423,57 +1482,63 @@ public class Attributes {
             //  (e.g., "Jan 2, 2018") to ISO 8601 String dateTimes.
             if ((standardizeWhat & 1024) == 1024 && format.length() > 0 && !allDigits) {
 
-                DoubleArray da = Calendar2.parseToEpochSeconds(sa, format); //NaN's if trouble
-                sa.clear();
+                DoubleArray da = Calendar2.parseToEpochSeconds(dataPa, format); //NaN's if trouble
+                if (dataPa.elementType() == PAType.STRING)
+                     dataPa.clear();
+                else dataPa = new StringArray();
+
                 //if source format has time, keep time in iso 8601 format (even if 00:00:00)
                 if (format.indexOf('S') >= 0) {
                     //if source format has millis, keep time.millis in iso format (even if 00:00:00.000)
                     for (int i = 0; i < n; i++) 
-                        sa.add(Calendar2.safeEpochSecondsToIsoStringT3Z(da.get(i), ""));
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoStringT3Z(da.get(i), ""));
                     newAtts.set("units", Calendar2.ISO8601T3Z_FORMAT);
                 } else if (format.indexOf('H') >= 0) {
                     //if source format has time, keep time in iso 8601 format (even if 00:00:00)
                     for (int i = 0; i < n; i++) 
-                        sa.add(Calendar2.safeEpochSecondsToIsoStringTZ(da.get(i), ""));
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoStringTZ(da.get(i), ""));
                     newAtts.set("units", Calendar2.ISO8601TZ_FORMAT);
                 } else {
                     //else just date
                     for (int i = 0; i < n; i++)
-                        sa.add(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), "")); 
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), "")); 
                     newAtts.set("units", Calendar2.ISO8601DATE_FORMAT);
                 }
-                dataPa = sa;
 
                 if (debugMode) String2.log(
-                    ">> #1024: converted not-purely-numeric String dateTimes (e.g., \"Jan 2, 2018\") to ISO 8601 String dateTimes.");
+                    ">> #1024: converted not-purely-numeric String dateTimes (e.g., \"" + 
+                    firstS + "\") to ISO 8601 String dateTimes.");
             }
 
-            //if standardizeWhat & 2048, try to convert purely-numeric String dateTimes 
+            //if standardizeWhat & 2048, try to convert purely-numeric String or integer dateTimes 
             //  (e.g., "20180102") to ISO 8601 String dateTimes.
             if ((standardizeWhat & 2048) == 2048 && format.length() > 0 && allDigits) {
 
-                DoubleArray da = Calendar2.parseToEpochSeconds(sa, format); //NaN's if trouble
-                sa.clear();
+                DoubleArray da = Calendar2.parseToEpochSeconds(dataPa, format); //NaN's if trouble
+                if (dataPa.elementType() == PAType.STRING)
+                     dataPa.clear();
+                else dataPa = new StringArray();
+
                 if (format.indexOf('S') >= 0) {
                     //if source format has millis, keep time.millis in iso 8601 format (even if 00:00:00.000)
                     for (int i = 0; i < n; i++) 
-                        sa.add(Calendar2.safeEpochSecondsToIsoStringT3Z(da.get(i), ""));
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoStringT3Z(da.get(i), ""));
                     newAtts.set("units", Calendar2.ISO8601T3Z_FORMAT);
                 } else if (format.indexOf('H') >= 0) {
                     //if source format has time, keep time in iso 8601 format (even if 00:00:00)
                     for (int i = 0; i < n; i++) 
-                        sa.add(Calendar2.safeEpochSecondsToIsoStringTZ(da.get(i), ""));
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoStringTZ(da.get(i), ""));
                     newAtts.set("units", Calendar2.ISO8601TZ_FORMAT);
                 } else {
                     //else just date
                     for (int i = 0; i < n; i++)
-                        sa.add(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), "")); 
+                        dataPa.addString(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), "")); 
                     newAtts.set("units", Calendar2.ISO8601DATE_FORMAT);
                 }
-                dataPa = sa;
 
-                if (debugMode) String2.log(
-                    ">> #2048, converted purely-numeric String dateTimes (e.g., \"20180102\") to ISO 8601 String dateTimes.");
+                if (debugMode) 
+                    String2.log(">> #2048, converted purely-numeric String dateTimes (e.g., " + 
+                        firstS + ") to ISO 8601 String dateTimes.");
             }
         }
 
@@ -1633,16 +1698,17 @@ public class Attributes {
         PrimitiveArray addPA   = sourceAtts.get("add_offset");
         String tUnits          = sourceAtts.getString("units");         
         boolean unsigned       = lookForUnsigned && "true".equals(sourceAtts.getString("_Unsigned"));         
+        double dataPaMV        = dataPa.missingValue().getRawDouble();
         //_FillValue and missing_value should be unsigned if _Unsigned=true, 
         //  but in practice sometimes aren't
         //and they should be packed if var is packed.
         //see EDDGridFromNcFilesUnpacked.testUInt16File()
         double dFillValue      = unsigned?
             sourceAtts.getUnsignedDouble("_FillValue") :   //so -1b becomes 255
-            sourceAtts.getDouble(        "_FillValue");    //so e.g., 127 stays as 127
+            sourceAtts.getDouble(        "_FillValue");    
         double dMissingValue   = unsigned?
             sourceAtts.getUnsignedDouble("missing_value") ://so -1b becomes 255
-            sourceAtts.getDouble(        "missing_value"); //so e.g., 127 stays as 127
+            sourceAtts.getDouble(        "missing_value"); 
         if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
 
         //scale and add_offset -- done first, before check for numeric time
@@ -1669,10 +1735,10 @@ public class Attributes {
                 tPAType = dataPaPAType;
             //or data type needed by '_Unsigned'      //same code above
             if (unsigned && tPAType == dataPaPAType) {
-                if      (tPAType == PAType.BYTE)  tPAType = PAType.SHORT;
-                else if (tPAType == PAType.SHORT) tPAType = PAType.INT;
-                else if (tPAType == PAType.INT)   tPAType = PAType.DOUBLE; //ints are converted to doubles because nc3 doesn't support longs
-                else if (tPAType == PAType.LONG)  tPAType = PAType.DOUBLE; //longs are converted to doubles (not ideal)  //trouble (not), but don't do this???
+                if      (tPAType == PAType.BYTE)  tPAType = PAType.UBYTE;
+                else if (tPAType == PAType.SHORT) tPAType = PAType.USHORT;
+                else if (tPAType == PAType.INT)   tPAType = PAType.UINT; 
+                else if (tPAType == PAType.LONG)  tPAType = PAType.ULONG; 
             }
 
             //switch data type
@@ -1681,8 +1747,8 @@ public class Attributes {
                 unsigned? 
                     dataPa.makeUnsignedPA() : //unsigned 
                     dataPa.isIntegerType() &&
-                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
-                         dFillValue    == dataPa.missingValue())?
+                        (dMissingValue == dataPaMV ||  //e.g., 127 == 127
+                         dFillValue    == dataPaMV)?
                         PrimitiveArray.factory(        tPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
                         PrimitiveArray.rawFactory(     tPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
             if (debugMode) String2.log(
@@ -1695,11 +1761,11 @@ public class Attributes {
             //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
             //and apply before scaleAddOffset
             //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
-            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
                 dataPa2.switchFromTo(      "" + dMissingValue, "");
                 dMissingValue = Double.NaN;  //it's done
             }
-            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
                 dataPa2.switchFromTo(      "" + dFillValue,    "");
                 dFillValue = Double.NaN;     //it's done
             }
@@ -1732,18 +1798,18 @@ public class Attributes {
                 unsigned?
                     dataPa.makeUnsignedPA() :
                     dataPa.isIntegerType() &&
-                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
-                         dFillValue    == dataPa.missingValue())?
+                        (dMissingValue == dataPaMV ||  //e.g., 127 == 127
+                         dFillValue    == dataPaMV)?
                         PrimitiveArray.factory(        PAType.DOUBLE, dataPa) : //missingValues (e.g., 127) are    changed
                         PrimitiveArray.rawFactory(     PAType.DOUBLE, dataPa);  //missingValues (e.g., 127) AREN'T changed
 
             //convert other dMissingValue and dFillValue (e.g., -128)
             // before scaleAddOffset to epochSeconds
-            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
                 dataPa2.switchFromTo(      "" + dMissingValue, "");
                 dMissingValue = Double.NaN;  //it's done
             }
-            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
                 dataPa2.switchFromTo(      "" + dFillValue,    "");
                 dFillValue = Double.NaN;     //it's done
             }
@@ -1770,11 +1836,11 @@ public class Attributes {
         //none of the above situations apply 
         //  (i.e., not unsigned, and no scale_factor or add_offset, not numeric or string time)
         //still need to convert missingValue to dataPa missing value
-        if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+        if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
             dataPa.switchFromTo(       "" + dMissingValue, "");
             dMissingValue = Double.NaN;  //it's done
         }
-        if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+        if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
             dataPa.switchFromTo(       "" + dFillValue,    "");
             dFillValue = Double.NaN;     //it's done
         }

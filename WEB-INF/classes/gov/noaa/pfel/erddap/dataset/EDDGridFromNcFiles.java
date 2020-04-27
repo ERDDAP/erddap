@@ -2332,7 +2332,7 @@ expected =
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -2470,7 +2470,7 @@ expected =
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -2577,7 +2577,7 @@ expected =
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -4748,7 +4748,7 @@ expected =
             31827797, 28198736, 28198830, 54118736, 2085800, 
             2090600, 5285, 
             25961828, 5244, 5877820,
-            24337084, 58,
+            26929890, 58,
             23734053, 23734063, 23733974, 
             69372795, 
             523113, 3601, 
@@ -9220,6 +9220,11 @@ expected =
             "\n nTimePoints=" + nTimePoints +
             " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 4320 * 8640, EDStatic.partialRequestMaxBytes));
+        String s = String2.getStringFromSystemIn(
+            "This test is very slow. Continue ('c') or skip ('s')?");
+        if (s.equals("s"))
+            return;
+
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "nceiPH53sstd1day"); 
         String query = "sea_surface_temperature[0:" + (nTimePoints - 1) + "][][]";
         String dir = EDStatic.fullTestCacheDirectory;
@@ -11783,6 +11788,11 @@ expected =
      */
     public static void testNThreads(int maxNThreads) throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
+        String s = String2.getStringFromSystemIn(
+            "This test is very slow. Continue ('c') or skip ('s')?");
+        if (s.equals("s"))
+            return;
+
         testVerboseOn();
         String tName, results,  expected, userDapQuery, tQuery;
         String error = "";

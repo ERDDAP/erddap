@@ -3265,8 +3265,7 @@ try {
 
         } catch (Exception e) {
             try {
-                if (grd != null)
-                    grd.close(); //make sure it is explicitly closed
+                if (grd != null) grd.abort(); //make sure it is explicitly closed
             } catch (Exception e2) {
                 //don't care
             }
@@ -4284,7 +4283,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                     // lat = b*row + d*col + f
                     double matrix[] = {0, latSpacing, lonSpacing, 0, lon[0], lat[0]}; //right side up
                     rootGroup.addAttribute(new Attribute("et_affine", 
-                        NcHelper.get1DArray(matrix))); //float64[] {a, b, c, d, e, f}
+                        NcHelper.get1DArray(matrix, false))); //float64[] {a, b, c, d, e, f}
                 } else {
                     rootGroup.addAttribute(NcHelper.createAttribute(nc3Mode, names[i], globalAttributes.get(names[i])));
                 }
@@ -4293,7 +4292,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             //time attributes
             if (hasTime) 
                 timeVar.addAttribute(new Attribute("actual_range", 
-                    NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble})));     
+                    NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble}, false)));     
             timeVar.addAttribute(new Attribute("fraction_digits",     new Integer(0)));     
             timeVar.addAttribute(new Attribute("long_name", hasTime? "Centered Time" : "Place Holder for Time"));
             timeVar.addAttribute(new Attribute("units",               centeredTimeUnits));
@@ -4305,7 +4304,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
             //altitude attributes
             altitudeVar.addAttribute(new Attribute("actual_range",    
-                NcHelper.get1DArray(new double[]{0, 0})));     
+                NcHelper.get1DArray(new double[]{0, 0}, false)));     
             altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
             altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
             altitudeVar.addAttribute(new Attribute("positive",               "up"));
@@ -4316,15 +4315,15 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             altitudeVar.addAttribute(new Attribute("_CoordinateZisPositive", "up"));
 
             //lat
-            NcHelper.setAttributes(nc3Mode, latVar, latAttributes);
+            NcHelper.setAttributes(nc3Mode, latVar, latAttributes, false);  //unsigned=false because it is a float
             latVar.addAttribute(new Attribute("axis", "Y"));
 
             //lon
-            NcHelper.setAttributes(nc3Mode, lonVar, lonAttributes);
+            NcHelper.setAttributes(nc3Mode, lonVar, lonAttributes, false);  //unsigned=false because it is a float
             lonVar.addAttribute(new Attribute("axis", "X"));
 
             //data
-            NcHelper.setAttributes(nc3Mode, dataVar, dataAttributes);
+            NcHelper.setAttributes(nc3Mode, dataVar, dataAttributes, false);  //unsigned=false because it is a float
 
             //leave "define" mode
             nc.create();
@@ -4351,8 +4350,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         } catch (Exception e) {
             //try to close the file
             try {
-                if (nc != null)
-                    nc.close(); //it calls flush() and doesn't like flush called separately
+                if (nc != null) nc.abort(); 
             } catch (Exception e2) {
                 //don't care
             }

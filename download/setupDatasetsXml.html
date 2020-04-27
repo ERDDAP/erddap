@@ -7393,12 +7393,12 @@ try to apply. The changes are the sum of some combination of:
     they will be converted to ISO 8601 String dateTimes.
   <br>&nbsp;
 <li value="2048">Standardize Compact DateTimes To ISO 8601 DateTimes
-  <br>For each String column, try to convert purely-numeric String dateTimes
+  <br>For each String or integer-type column, try to convert purely-numeric String dateTimes
     (e.g., "20180102") to ISO 8601 String dateTimes ("2018-01-02").
     <br><strong>Note</strong> that all data values for the column must use the same format,
     otherwise, this option won't make any changes to a given column.
     <br><strong>This option has a risk:</strong> If there is a column with 
-    string values that just happen to look like compact dateTimes,
+    values that aren't compact dateTimes but look like compact dateTimes,
     they will be converted to ISO 8601 String dateTimes.
   <br>&nbsp;
 <li value="4096">Standardize Units
@@ -10286,9 +10286,10 @@ Here are detailed descriptions of common tags and attributes.
       The IP address for every request is listed on the lines starting with 
       "{{{{#" and is 4 numbers separated by periods, for example, 123.45.67.8 .
       Searching for "ERROR" will help you find problems such as invalid requests.
-  <li>You can also replace the last number in an IP address with * (for example, 123.45.67.*) to block a range of IP address, 0-255.
+  <li>You can also replace the last number in an IP address with * (for example, 202.109.200.*) to block a range of IP address, 0-255.
+  <li>You can also replace the last 2 numbers in an IP address with *.* (for example, 121.204.*.*) to block a wider range of IP address, 0-255.0-255.
   <li>For example, 
-    <br><kbd>&lt;requestBlacklist&gt;98.76.54.321, 123.45.68.*&lt;/requestBlacklist&gt;</kbd>
+    <br><kbd>&lt;requestBlacklist&gt;98.76.54.321, 202.109.200.*, 121.204.*.*&lt;/requestBlacklist&gt;</kbd>
   <li>You don't need to restart ERDDAP for the changes to <kbd>&lt;requestBlacklist&gt;</kbd> to take effect.
     The changes will be detected the next time ERDDAP checks if any datasets need to be reloaded.
     Or, you can speed up the process by visiting a 

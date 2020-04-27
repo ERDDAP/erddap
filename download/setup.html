@@ -401,9 +401,9 @@ or Mac server instead.
       &lt;Connector&gt; tags (one for '&lt;Connector port="8080" ' 
       and one for '&lt;Connector port="8443" '):
       <ol>
-      <li>Increase the <kbd>connectionTimeout</kbd> parameter value, perhaps to 
+      <li>(Recommended) Increase the <kbd>connectionTimeout</kbd> parameter value, perhaps to 
         300000 (milliseconds) (which is 5 minutes).
-      <li><!-- Until v2.03 release: Consider adding --> Add 
+      <li><!-- After v2.10 release: (Recommended) --> (Required) Add 
         a new parameter: <kbd>relaxedQueryChars="[]|"</kbd> 
         <!-- br>
         This is optional and slightly less secure, but removes the need for users to 
@@ -900,14 +900,27 @@ And in the nginx config file, you need to set these headers:
   </ul>
 
 <li><a class="selfLink" id="isErddapRunning" href="#isErddapRunning" rel="bookmark">Is ERDDAP running?</a>
-  <br>Use a browser to try to view http://<i>www.YourServer.org</i>/erddap/ 
+  <br>Use a browser to try to view http://<i>www.YourServer.org</i>/erddap/status.html 
   <br>ERDDAP starts up without any datasets loaded. 
   Datasets are loaded in a background thread and so become available one-by-one.
 
   <p><a class="selfLink" id="LookInLogFiles" href="#LookInLogFiles" rel="bookmark">Trouble? Look in the log files.</a>
-  <br>If ERDDAP won't run or some datasets won't load, look for error messages in 
-  <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out) and
-  <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt).
+  <ul>
+  <li>When a request from a user comes in, it goes to Apache (on Linux and Mac OS computers), then Tomcat, then ERDDAP.
+  <li>You can see what comes to Apache (and related errors) in the Apache log files.
+  <li><a rel="help" href="#tomcatLogs">You</a> can see what comes to Tomcat (and related errors) 
+    in the Tomcat log files (<i>tomcat</i>/logs/catalina.out and other files in that directory).
+  <li><a rel="help" href="#log">You</a> can see what comes to ERDDAP,
+    diagnostic messages from ERDDAP, and error meessages from ERDDAP,
+    in the ERDDAP &lt;bigParentDirectory&gt;logs/log.txt file.
+  <li>Tomcat doesn't start ERDDAP until Tomcat gets a request for ERDDAP. 
+    So you can see in the Tomcat log files if it started ERDDAP or if there is an error message related to that attempt.
+  <li>When ERDDAP starts up, it renames the old ERDDAP log.txt file 
+    (<kbd>logArchivedAt<i>CurrentTime</i>.txt</kbd>) and creates a new log.txt file. 
+    So if the log.txt file is old, it is a sign that ERDDAP hasn't recently restarted.
+    ERDDAP writes log info to a buffer and only writes the buffer to the log file periodically,
+    but you can force ERDDAP to write the buffer to the log file by visiting .../erddap/status.html.
+  </ul>
 
   <p><a class="selfLink" id="OldVersionOfJava" href="#OldVersionOfJava" rel="bookmark">Trouble: Old Version of Java</a>
   <br>If you are using a version of Java that is too old for ERDDAP,
@@ -919,14 +932,14 @@ And in the nginx config file, you need to set these headers:
 
   <p><a class="selfLink" id="SlowStartup" href="#SlowStartup" rel="bookmark">Trouble: Slow Startup First Time</a>
   <br>Tomcat has to do a lot of work the first time an application like 
-  ERDDAP is started.
+  ERDDAP is started; notably, it has to unpack the erddap.war file (which is like a .zip file).
   On some servers, the first attempt to view ERDDAP stalls (30 seconds?) until 
   this work is finished.
   On other servers, the first attempt will fail immediately. But if you wait 
   30 seconds and try again,
   it will succeed if ERDDAP was installed correctly.
-  <br>There is no fix for this, but it usually only occurs the first time after 
-  you install a new version of ERDDAP.
+  <br>There is no fix for this. This is simply how Tomcat works. 
+  But it only occurs the first time after you install a new version of ERDDAP.
 
 <li>In the future, to shut down (and restart) ERDDAP, see 
   <br><a rel="help" href="#shutdown">How to Shut Down and Restart Tomcat and ERDDAP</a>.
@@ -1332,7 +1345,8 @@ Our plan to avoid problems is:
         requirement will be much, much larger. It is probably better to just
         accept that such datasets will be slow in certain circumstances.
       <li>The configuration of the 
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables"><kbd>&lt;subsetVariables&gt;</kbd></a> tag has a huge influence on how ERDDAP handles EDDTable datasets.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables"
+ ><kbd>&lt;subsetVariables&gt;</kbd></a> tag has a huge influence on how ERDDAP handles EDDTable datasets.
       <li>You may be able to increase the 
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#databaseSpeed"
         >speed of an EDDTableFromDatabase</a> dataset.
@@ -3209,7 +3223,7 @@ These are details that you don't need to know until a need arises.
     <li>In <a rel="help" href="#setup.xml">setup.xml</a>, set <kbd>baseUrl</kbd> 
       to <kbd>http://127.0.0.1:8080</kbd> 
     <li>After you start up this ERDDAP, you should be able to see it at 
-      <br><a rel="help" href="http://127.0.0.1:8080/erddap">http://127.0.0.1:8080/erddap</a> 
+      <br><a rel="help" href="http://127.0.0.1:8080/erddap/status.html">http://127.0.0.1:8080/erddap/status.html</a> 
     </ol>
   <li> <a class="selfLink" id="secondTomcat" href="#secondTomcat" rel="bookmark">(Second Best) Install another Tomcat on the same computer as your public ERDDAP.</a>
     <ol>
@@ -3225,7 +3239,7 @@ These are details that you don't need to know until a need arises.
     <li>In <a rel="help" href="#setup.xml">setup.xml</a>, set <kbd>baseUrl</kbd> 
       to <kbd>http://www.<i>yourDomainName</i>:8081</kbd> 
     <li>After you start up this ERDDAP, you should be able to see it at 
-      <br><kbd>http://www.<i>yourDomainName</i>:8081/erddap</kbd>
+      <br><kbd>http://www.<i>yourDomainName</i>:8081/erddap/status.html</kbd>
       <br>&nbsp;
     </ol>
   </ul>

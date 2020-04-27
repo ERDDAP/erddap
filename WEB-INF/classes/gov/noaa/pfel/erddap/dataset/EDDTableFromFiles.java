@@ -594,7 +594,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 Attributes qrAtts = new Attributes();
                 qrAtts.add("datasetID", tDatasetID);
                 File2.makeDirectory(File2.getDirectory(qrName));
-                NcHelper.writeAttributesToNc(qrName, qrAtts);
+                NcHelper.writeAttributesToNc3(qrName, qrAtts);
             }
 
             EDDTableFromFiles tEDDTable = new EDDTableFromHyraxFiles(tDatasetID,
@@ -643,7 +643,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 Attributes qrAtts = new Attributes();
                 qrAtts.add("datasetID", tDatasetID);
                 File2.makeDirectory(File2.getDirectory(qrName));
-                NcHelper.writeAttributesToNc(qrName, qrAtts);
+                NcHelper.writeAttributesToNc3(qrName, qrAtts);
             }
 
             EDDTableFromFiles tEDDTable = new EDDTableFromThreddsFiles(tDatasetID, 
@@ -1690,7 +1690,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                           minMaxTable.getStringData(dv, 0);
             String sMax = tSourceType.equals("String")? "" : 
                           minMaxTable.getStringData(dv, 1);
-            //String2.log(">> tSourceName=" + tSourceName + " sMin=" + sMin + " sMax=" + sMax + " paMinest=" + minMaxTable.getColumn(dv).minestValue() + " paMaxest=" + minMaxTable.getColumn(dv).maxestValue());
+            //String2.log(">> tSourceName=" + tSourceName + " sMin=" + sMin + " sMax=" + sMax + " paMinest=" + minMaxTable.getColumn(dv).MINEST_VALUE() + " paMaxest=" + minMaxTable.getColumn(dv).MAXEST_VALUE());
             if (sMin.length() > 0 &&
                 minMaxTable.getColumn(dv).MINEST_VALUE().equals(sMin) && //minest is min for the PA type
                 minMaxTable.getColumn(dv).MAXEST_VALUE().equals(sMax)) { //maxext is max for the PA type
@@ -2243,7 +2243,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             PAType tPaPAType = pa.elementType();
             if (tPaPAType == PAType.STRING ||
                 tPaPAType == PAType.CHAR ||
-                tPaPAType == PAType.LONG) {   //so long is set exactly
+                tPaPAType == PAType.LONG ||
+                tPaPAType == PAType.ULONG) {   //so long and ulong are set exactly
                 //get [0]=n,[1]=min,[2]=max (of non-null and non-"") as Strings
                 String nMinMax[] = pa.getNMinMax(); 
                 int tn = String2.parseInt(nMinMax[0]);
