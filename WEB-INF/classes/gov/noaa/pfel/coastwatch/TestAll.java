@@ -1142,6 +1142,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromNcCFFiles.testNoAttName(); 
 //    EDDTableFromNcCFFiles.testKevin20160519();
 //    EDDTableFromNccsvFiles.testChar();
+//    EDDTableFromNccsvFiles.testBasic(false);
 //
 //    Table.debugMode = true;
 //    Table tTable = new Table();
@@ -2243,7 +2244,6 @@ WaitThenTryAgainException wttae;
         EDDTableFromInvalidCRAFiles.test();
         EDDTableFromJsonlCSVFiles.test();
         EDDTableFromAudioFiles.test();
-
         EDDTableFromFileNames.test(); 
         EDDTableFromEDDGrid.test();
         EDDTableFromDapSequence.test(); 

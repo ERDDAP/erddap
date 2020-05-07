@@ -625,7 +625,7 @@ String expected =
 "  }\n" +
 "  testLong {\n" +
 "    Float64 _FillValue 9223372036854775807;\n" +
-"    Float64 actual_range -9223372036854775808, 9223372036854775806;\n" +  //trouble: should be ...806, but appears as ...807
+"    Float64 actual_range -9223372036854775808, 9223372036854775806;\n" +  
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Test Long\";\n" +
 "  }\n" +
@@ -654,7 +654,7 @@ String expected =
             Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         } catch (Exception e7) {
             String2.pressEnterToContinue(MustBe.throwableToString(e7) + 
-                "Known problem with long actual_range (...806 vs ...807).");  //trouble
+                "Unexpected error."); 
         }
 
 expected =

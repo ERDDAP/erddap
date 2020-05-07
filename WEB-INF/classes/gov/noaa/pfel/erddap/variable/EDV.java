@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -201,11 +202,11 @@ public class EDV {
      *   a single number or a single, JSON-encoded String.
      */ 
     protected String fixedValue = null;
-    /** The destination minimum and maximum values (in standardized destination units) 
+    /** The destination numeric minimum and maximum values (in standardized destination units) 
      * of this variable. 
      * These are set if the information is available; else they remain NaN. */
-    protected double destinationMin = Double.NaN;  //trouble: use PAOne so long and ulong done exactly
-    protected double destinationMax = Double.NaN;
+    protected PAOne destinationMin = PAOne.fromDouble(Double.NaN);  
+    protected PAOne destinationMax = PAOne.fromDouble(Double.NaN);
     /** This is the value of the source's missing value stand-in. 
      * It may remain NaN.
      * It is pre-scaleFactor and addOffset.
@@ -284,7 +285,7 @@ public class EDV {
      */
     public EDV(String tSourceName, String tDestinationName,
         Attributes tSourceAttributes, Attributes tAddAttributes, 
-        String tSourceDataType, double tSourceMin, double tSourceMax) 
+        String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
         //String2.log("*EDV " + tDestinationName);        
@@ -344,14 +345,10 @@ public class EDV {
         extractScaleAddOffset(); 
 
         if (isFixedValue()) {
-            destinationMin = String2.parseDouble(fixedValue); //if String, will be NaN (as it should be)
+            destinationMin = new PAOne(sourceDataPAType, fixedValue); //if String, will be NaN (as it should be)
             destinationMax = destinationMin;
         } else {
             setDestinationMinMaxFromSource(tSourceMin, tSourceMax);
-            if (sourceDataType.equals("float")) {  //destinationDataType not known yet
-                destinationMin = Math2.floatToDouble(destinationMin);  //unbruise them
-                destinationMax = Math2.floatToDouble(destinationMax);
-            }            
         }
         //String2.log(">> EDV destinationMin=" + destinationMin + " max=" + destinationMax);
 
@@ -466,10 +463,11 @@ public class EDV {
 
         this(tSourceName, tDestinationName, 
             tSourceAttributes, tAddAttributes, tSourceDataType,
-            Double.NaN, Double.NaN);
+            PAOne.fromDouble(Double.NaN),  //it's NaN, so type doesn't matter
+            PAOne.fromDouble(Double.NaN));
 
         //min max  from actual_range, actual_min, actual_max, data_min, or data_max
-        double mm[] = extractActualRange();  //may be low,high or high,low
+        PAOne mm[] = extractActualRange();  //may be low,high or high,low,   or nulls
         setDestinationMinMax(mm[0], mm[1]); 
     }
 
@@ -570,11 +568,11 @@ public class EDV {
      * data_min, or data_max attribute values from combinedAttributes.
      * This removes the actual_range, data_min, or data_max attribute from source- add- and combinedAttributes.
      *
-     * @return a double[2] (always) with sourceMin and sourceMax values from 
-     *    actual_range, data_min, or data_max metadata (or NaNs).
+     * @return a PAOne[2] (always) with sourceMin and sourceMax values from 
+     *    actual_range, data_min, or data_max metadata (or null's).
      *    NOTE: for EDVGridAxis this indicates order or storage, so may be low,high or high,low.
      */
-    protected double[] extractActualRange() {
+    protected PAOne[] extractActualRange() {
 
         //if any are specified, they must be the same data type as destinationClass.
         PAType destPAType = destinationDataPAType();
@@ -588,8 +586,8 @@ public class EDV {
         boolean willChange = sourceIsUnsigned || scaleAddOffset;
 
         //always remove
-        double amm[] = {combinedAttributes.getNiceDouble("actual_min"),   //NaN if not found
-                        combinedAttributes.getNiceDouble("actual_max")};
+        PAOne amm[] = {combinedAttributes.getPAOne("actual_min"),   //null if not found
+                       combinedAttributes.getPAOne("actual_max")};
         pa = combinedAttributes.remove("actual_min");
         if (pa != null && pa.elementType() != destPAType &&
             willChange && !pa.isFloatingPointType())
@@ -600,8 +598,8 @@ public class EDV {
             throw new RuntimeException(msg); 
 
         //always remove
-        double dmm[] = {combinedAttributes.getNiceDouble("data_min"),   //NaN if not found
-                        combinedAttributes.getNiceDouble("data_max")};
+        PAOne dmm[] = {combinedAttributes.getPAOne("data_min"),   //NaN if not found
+                       combinedAttributes.getPAOne("data_max")};
         pa = combinedAttributes.remove("data_min");
         if (pa != null && pa.elementType() != destPAType &&
             willChange && !pa.isFloatingPointType())
@@ -618,13 +616,12 @@ public class EDV {
             throw new RuntimeException(msg); 
         if (pa != null && pa.size() == 2) {
             if (reallyVerbose) String2.log("  actual_range metadata for " + destinationName + ": " + pa);
-            return new double[] {pa.getNiceDouble(0),
-                                 pa.getNiceDouble(1)};
+            return new PAOne[] {new PAOne(pa, 0), new PAOne(pa, 1)};
         }
 
         //2nd priority to actual_min actual_max
-        if (Double.isFinite(amm[0]) ||
-            Double.isFinite(amm[1]))
+        if (amm[0] != null ||
+            amm[1] != null)
             return amm;
 
         //3rd to data_min data_max
@@ -656,14 +653,14 @@ will show NaN).
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
+        if (destinationMin.isNaN() && destinationMax.isNaN()) {
             combinedAttributes.remove("actual_range");
         } else {
             PrimitiveArray pa = PrimitiveArray.factory(destinationDataPAType(), 2, false);
-            pa.addDouble(destinationMin);
-            pa.addDouble(destinationMax);
+            pa.addPAOne(destinationMin);
+            pa.addPAOne(destinationMax);
             combinedAttributes.set("actual_range", pa);
-//            if (reallyVerbose) 
+            if (reallyVerbose) 
                 String2.log("  setActualRange " + destinationName + 
                 " destinationMin=" + destinationMin + " max=" + destinationMax + 
                 " paType=" + destinationDataPAType() + " " + pa.toString());
@@ -676,7 +673,7 @@ will show NaN).
      * This must be done after scaleFactor and addOffset have be determined.
      */
     public void extractAndSetActualRange() {
-        double mm[] = extractActualRange(); 
+        PAOne mm[] = extractActualRange(); 
         setDestinationMinMax(mm[0], mm[1]);
         setActualRangeFromDestinationMinMax();
     }
@@ -1090,10 +1087,42 @@ will show NaN).
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01T00:00:00Z).
      * scaleFactor() and addOffset() have been applied.
+     * !DON'T CHANGE THE VALUE!
      * 
      * @return the cleaned up destinationMin value for this axis.
      */
-    public double destinationMin() {return destinationMin;}
+    public PAOne destinationMin() {
+        //if (destinationName.equals("status"))
+        //    String2.pressEnterToContinue(">> destinationMin for " + destinationName + " = " + destinationMin.paType() + " " + destinationMin.toString());
+        return destinationMin;
+    }
+
+    /** 
+     * This returns the destinationMax value (in standardized units) for this axis (e.g., 
+     * altitude values are in meters, positive=up 
+     * and time values are in seconds since 1970-01-01).
+     * scaleFactor() and addOffset() have been applied.
+     * !DON'T CHANGE THE VALUE!
+     *
+     * <p>For time in near-real-time EDDTable datasets, destinationMax should be NaN 
+     * to indicate that the roughly NOW.  For example, see cwwcNDBCMet: data is from files,
+     * but presumption is data in files may change before next time file is read.
+     * 
+     * @return the cleaned up destinationMax value for this axis.
+     */
+    public PAOne destinationMax() {
+        return destinationMax;
+    }
+
+    /** 
+     * This returns the destinationMin value (in standardized units) for this axis (e.g., 
+     * altitude values are in meters, positive=up 
+     * and time values are in seconds since 1970-01-01T00:00:00Z).
+     * scaleFactor() and addOffset() have been applied.
+     * 
+     * @return the "nice" destinationMin value for this axis.
+     */
+    public double destinationMinDouble() {return destinationMin.getNiceDouble();}
 
     /** 
      * This returns the destinationMax value (in standardized units) for this axis (e.g., 
@@ -1107,16 +1136,16 @@ will show NaN).
      * 
      * @return the cleaned up destinationMax value for this axis.
      */
-    public double destinationMax() {return destinationMax;}
+    public double destinationMaxDouble() {return destinationMax.getNiceDouble();}
 
     /** This is used with the actual (possibly unpacked) source values are known,
      * e.g., from the data files. 
      */
-    public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
+    public void setDestinationMinMaxFromSource(PAOne sourceMin, PAOne sourceMax) {
         if (scaleAddOffset) 
             setDestinationMinMax(
-                sourceMin * scaleFactor + addOffset,
-                sourceMax * scaleFactor + addOffset);
+                PAOne.fromDouble(sourceMin.getDouble() * scaleFactor + addOffset),
+                PAOne.fromDouble(sourceMax.getDouble() * scaleFactor + addOffset));
         else setDestinationMinMax(sourceMin, sourceMax);
     }
 
@@ -1124,39 +1153,38 @@ will show NaN).
      * This lets you setDestinationMin and setDestinationMax in one step.
      * If tMin &gt; tMax, this will swap them.
      */
-    public void setDestinationMinMax(double tMin, double tMax) {
-        if (!Double.isFinite(tMin) &&
-            !Double.isFinite(tMax))
+    public void setDestinationMinMax(PAOne tMin, PAOne tMax) {
+        if (tMin == null && tMax == null) 
             return;
-        if (tMin > tMax) { //if either is NaN, result in Java is false
-            double d = tMin; tMin = tMax; tMax = d;}
+        if (tMin == null)
+            tMin = new PAOne(tMax.paType(), "");  //same type, but mv
+        if (tMax == null)
+            tMax = new PAOne(tMin.paType(), "");
+        if (tMin.isNaN() && tMax.isNaN())
+            return;
+        if (tMin.compareTo(tMax) > 0) { //if either is NaN, result in Java is false
+            PAOne d = tMin; tMin = tMax; tMax = d;}
         setDestinationMin(tMin);
         setDestinationMax(tMax);
     }
 
-    public void setDestinationMin(double tMin) {
-        destinationMin = destinationDataPAType() == PAType.FLOAT?
-            Math2.floatToDouble(tMin) : tMin;  //store unbruised
+    public void setDestinationMin(PAOne tMin) {
+        if (tMin != null)
+            destinationMin = tMin;
     }
 
-    public void setDestinationMax(double tMax) {
-        destinationMax = destinationDataPAType() == PAType.FLOAT?
-            Math2.floatToDouble(tMax) : tMax;  //store unbruised
+    public void setDestinationMax(PAOne tMax) {
+        if (tMax != null)
+            destinationMax = tMax;
     }
 
     /** 
      * This is the destinationMin value (time overwrites this to format as ISO string).  
      *
-     * @return the destinationMin (or "" if unknown)
+     * @return the destinationMin (or "" if unknown, NaN, or CoHort mv)
      */
     public String destinationMinString() {
-        return Double.isNaN(destinationMin)? "" : 
-            destinationDataPAType == PAType.FLOAT? "" + (float)destinationMin :
-            destinationDataPAType == PAType.DOUBLE?
-                "" + Math2.niceDouble(destinationMin, 15) :  //was "" + destinationMin
-            destinationDataPAType == PAType.CHAR?
-                String2.toJson("" + Math2.roundToChar(destinationMin), 65536) :
-                "" + Math2.roundToLong(destinationMin);  //ints are nicer without trailing ".0"
+        return destinationMin.getString();
     }
 
     /** 
@@ -1165,13 +1193,7 @@ will show NaN).
      * @return the destinationMax  (or "" if unknown or time=~now)
      */
     public String destinationMaxString() {
-        return Double.isNaN(destinationMax)? "" : 
-            destinationDataPAType == PAType.FLOAT? "" + (float)destinationMax :
-            destinationDataPAType == PAType.DOUBLE?
-                "" + Math2.niceDouble(destinationMax, 15) :
-            destinationDataPAType == PAType.CHAR?
-                String2.toJson("" + Math2.roundToChar(destinationMax), 65536) :
-                "" + Math2.roundToLong(destinationMax);  //ints are nicer without trailing ".0"
+        return destinationMax.getString();
     }
 
     /** 
@@ -1305,8 +1327,8 @@ will show NaN).
         //else make it
         try {
             boolean isTimeStamp = false; //EDVTimeStamp overwrites this method
-            double tMin = destinationMin;
-            double tMax = destinationMax;
+            double tMin = destinationMinDouble();
+            double tMax = destinationMaxDouble();
             if (!Double.isFinite(tMin)) return null;  //quick rejection is important
             if (!Double.isFinite(tMax)) return null;
             boolean isFloat = destinationDataPAType == PAType.FLOAT;
@@ -1403,8 +1425,8 @@ will show NaN).
      */
     public int closestSliderPosition(double destinationValue) {
 
-        double tMin = destinationMin;
-        double tMax = destinationMax;
+        double tMin = destinationMinDouble();
+        double tMax = destinationMaxDouble();
         if (!Double.isFinite(destinationValue)) return -1;
         if (!Double.isFinite(tMin)) return -1;
         if (!Double.isFinite(tMax)) {

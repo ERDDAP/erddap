@@ -33,7 +33,7 @@ public class ULongArray extends PrimitiveArray {
     public final static BigInteger MIN_VALUE = Math2.ULONG_MIN_VALUE;
 
     /** 
-     * This is the maximum unsigned value, stored as a signed long.
+     * This is the maximum unsigned value, stored/packed as a signed long.
      */
     public final static long PACKED_MAX_VALUE = -1;
 

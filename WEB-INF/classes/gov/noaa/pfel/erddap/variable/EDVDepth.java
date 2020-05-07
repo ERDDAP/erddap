@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
@@ -35,7 +36,7 @@ public class EDVDepth extends EDV {
      */
     public EDVDepth(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
-        String tSourceDataType, double tSourceMin, double tSourceMax) 
+        String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
         super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes,
@@ -62,7 +63,7 @@ public class EDVDepth extends EDV {
         combinedAttributes.set("units", units);        
 
         //set destinationMin max  if not set by tSourceMin,Max
-        double mm[] = extractActualRange(); //always extract 
+        PAOne mm[] = extractActualRange(); //always extract 
         setDestinationMinMax(mm[0], mm[1]);
         setActualRangeFromDestinationMinMax();
 

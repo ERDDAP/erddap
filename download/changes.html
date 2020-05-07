@@ -127,6 +127,13 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     of trajectory, timeseries, and profile data.
     <br>&nbsp;
 
+  <li>IMPROVED: Now, search terms in double quotes are interpreted as a json string,
+    so they can have \ encoded characters.
+    Among other things, this lets you search for an exact match for an attribute,
+    e.g., "institution=NOAA\n" won't match a dataset with institution=NOAA NMFS.
+    Thanks to Dan Nowacki.
+    <br>&nbsp;
+
   <li>BUG FIX: unsigned integer audio files were read slightly incorrectly. 
     Now they are read correctly.
     <br>&nbsp;

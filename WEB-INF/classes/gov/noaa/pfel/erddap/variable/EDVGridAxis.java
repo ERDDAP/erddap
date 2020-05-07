@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -78,8 +79,8 @@ public class EDVGridAxis extends EDV {
         super(tSourceName, tDestinationName,
             tSourceAttributes, tAddAttributes, 
             tSourceValues.elementTypeString(), 
-            Math.min(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)),
-            Math.max(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)));
+            new PAOne(tSourceValues, 0).min(new PAOne(tSourceValues, tSourceValues.size() - 1)),
+            new PAOne(tSourceValues, 0).max(new PAOne(tSourceValues, tSourceValues.size() - 1)));
         
         parentDatasetID = tParentDatasetID;
         sourceValues = tSourceValues;  //but continue to work with stable tSourceValues
@@ -136,10 +137,10 @@ public class EDVGridAxis extends EDV {
             rough = Math.abs(averageSpacing) / 2;
         } else {
             //avoid single value e.g., .01, fails to match .01000000001
-            rough = Math.max(Math.abs(destinationMin) / 100, 0.01); //very arbitrary
+            rough = Math.max(Math.abs(destinationMinDouble()) / 100, 0.01); //very arbitrary
         }
-        destinationCoarseMin = destinationMin - rough;   
-        destinationCoarseMax = destinationMax + rough;
+        destinationCoarseMin = destinationMinDouble() - rough;   
+        destinationCoarseMax = destinationMaxDouble() + rough;
     }
 
     /** 
@@ -353,8 +354,8 @@ public class EDVGridAxis extends EDV {
                 //make evenly spaced nice numbers (like EDV.sliderCsvValues()), 
                 //  then find closest actual values.
                 //Dealing with indices (later sorted) works regardless of isAscending.
-                double values[] = Calendar2.getNEvenlySpaced(destinationMin, 
-                    destinationMax, SLIDER_MAX_NVALUES);
+                double values[] = Calendar2.getNEvenlySpaced(destinationMinDouble(), 
+                    destinationMaxDouble(), SLIDER_MAX_NVALUES);
                 for (int i = 0; i < values.length; i++) 
                     sliderIndices.add(destinationToClosestSourceIndex(values[i]));
 
@@ -366,10 +367,11 @@ public class EDVGridAxis extends EDV {
                 //  then find closest actual values.
                 //Work from destMin to destMax.  
                 //  Dealing with indices (later sorted) works regardless of isAscending.
-                double stride = Math2.suggestMaxDivisions(destinationMax - destinationMin,
+                double stride = Math2.suggestMaxDivisions(destinationMaxDouble() - destinationMinDouble(),
                     SLIDER_MAX_NVALUES);    
-                int nDiv = Math2.roundToInt(Math.abs((destinationMax - destinationMin) / stride));
-                double base = Math.floor(destinationMin / stride) * stride;
+                int nDiv = Math2.roundToInt(Math.abs(
+                    (destinationMaxDouble() - destinationMinDouble()) / stride));
+                double base = Math.floor(destinationMinDouble() / stride) * stride;
                 for (int i = 0; i < nDiv; i++) 
                     sliderIndices.add(destinationToClosestSourceIndex(base + i * stride));
 

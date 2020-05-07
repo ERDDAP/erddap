@@ -766,6 +766,18 @@ public class Test {
             if (err.length() > 0)
                 error(err);
         }
+        if (a instanceof PAOne) {
+            String s = a.toString();
+            if (s.endsWith(".0")) //so a double can be compared to an int
+                s = s.substring(0, s.length() - 2);
+            a = s;
+        }
+        if (b instanceof PAOne) {
+            String s = b.toString();
+            if (s.endsWith(".0"))
+                s = s.substring(0, s.length() - 2);
+            b = s;
+        }
 
         //fall through to most general case
         if (!a.toString().equals(b.toString()))

@@ -20,6 +20,10 @@ import java.math.BigInteger;
  * This class holds a PrimitiveArray which always has 1 value. 
  * This it is like Java's Number, but for PrimitiveArrays.
  * The constructors set a specific PAType, which the PAOne uses for its entire life.
+ *
+ * <p>Yes, you could use BigDecimal instead of this. The advantage is: 
+ * using a PAOne to transfer the values from one pa to another can be very efficient
+ * (one fast operation vs two slow operations). 
  */
 public class PAOne {
 
@@ -61,10 +65,30 @@ public class PAOne {
     }
 
     /**
+     * This makes a new PAOne which is a copy of the other PAOne.
+     *
+     * @return a new PAOne which is a copy of the other PAOne.
+     */
+    public PAOne(PAOne tPAOne) {
+        pa = PrimitiveArray.factory(tPAOne.pa.elementType(), 1, true);
+        pa.setFromPA(0, tPAOne.pa, 0);
+        elementSize = pa.elementSize();
+    }
+
+    /**
      * This constructs a String paOne with the specified value.
      */
     public static PAOne fromString(String s) {
         return new PAOne(PAType.STRING).setString(s);
+    }
+
+    /**
+     * This constructs a char paOne with the specified value.
+     */
+    public static PAOne fromChar(char c) {
+        PAOne paOne = new PAOne(PAType.CHAR);
+        ((CharArray)paOne.pa()).set(0, c);
+        return paOne;
     }
 
     /**
@@ -86,6 +110,13 @@ public class PAOne {
      */
     public static PAOne fromLong(long i) {
         return new PAOne(PAType.LONG).setLong(i);
+    }
+
+    /**
+     * This constructs a ulong paOne with the specified value.
+     */
+    public static PAOne fromULong(BigInteger bi) {
+        return new PAOne(PAType.ULONG).setULong(bi);
     }
 
     /**
@@ -115,6 +146,13 @@ public class PAOne {
     }
 
     /**
+     * This indicates if the PAOne is an integer type.
+     */
+    public boolean isIntegerType() {
+        return pa.isIntegerType();
+    }
+
+    /**
      * This returns the PAType of this PAOne.
      */
     public PAType paType() {
@@ -133,8 +171,8 @@ public class PAOne {
     }
 
     /**
-     * Return a value from the array as a String (and the cohort missing value
-     * appears as "", not a value).
+     * Return a value from the array as a String (NaN and the cohort missing values
+     * appear as "", not a value).
      * 
      * @return For numeric types, this returns (String.valueOf(ar[index])) 
      *   or "" (for missing value).
@@ -319,7 +357,13 @@ public class PAOne {
         otherPA.addFromPA(pa, 0);
     }
 
-    
+    /**
+     * This indicates if the PAOne's value is NaN (or the cohort missing value).
+     */
+    public boolean isNaN() {
+        return Double.isNaN(getDouble());
+    }
+
     /**
      * This compares this object's value to the specified object's value.
      *
@@ -343,6 +387,29 @@ public class PAOne {
      */
     public int compareTo(PAOne otherPAOne) {
         return pa.compare(0, otherPAOne.pa, 0); 
+    }
+
+    /**
+     * This returns the lesser of this or otherPA.
+     * If this or other isNaN, this returns the other.
+     */
+    public PAOne min(PAOne otherPAOne) {
+        if (isNaN())
+            return otherPAOne;
+        if (otherPAOne.isNaN())
+            return this;
+        return this.compareTo(otherPAOne) <= 0? this : otherPAOne;
+    }
+
+    /**
+     * This returns the max of this or otherPA.
+     */
+    public PAOne max(PAOne otherPAOne) {
+        if (isNaN())
+            return otherPAOne;
+        if (otherPAOne.isNaN())
+            return this;
+        return this.compareTo(otherPAOne) > 0? this : otherPAOne;
     }
 
     /**
@@ -387,6 +454,56 @@ public class PAOne {
         else if (type1 == PAType.FLOAT || type2 == PAType.FLOAT)
             return Math2.almostEqual(precision, pa.getFloat(0), otherPAOne.pa.getFloat(0));
         else return compareTo(otherPAOne) == 0;
+    }
+
+    /**
+     * For numeric types, this multiplies the value by value.
+     *
+     * @param value some value
+     * @returns this PAOne for convenience.
+     */
+    public PAOne multiply(PAOne value) {
+        PAType paType = paType();
+        if (paType == PAType.ULONG)
+            setULong(getULong().multiply(value.getULong()));
+
+        else if (isIntegerType())
+            setLong(getLong() * value.getLong());
+
+        else if (paType == PAType.FLOAT)
+            setFloat(getFloat() * value.getFloat());
+
+        else if (paType == PAType.DOUBLE)
+            setDouble(getDouble() * value.getDouble());
+
+        //skip String and char
+
+        return this;
+    }
+
+    /**
+     * For numeric types, this adds the value by value.
+     *
+     * @param value some value
+     * @returns this PAOne for convenience.
+     */
+    public PAOne add(PAOne value) {
+        PAType paType = paType();
+        if (paType == PAType.ULONG)
+            setULong(getULong().multiply(value.getULong()));
+
+        else if (isIntegerType())
+            setLong(getLong() * value.getLong());
+
+        else if (paType == PAType.FLOAT)
+            setFloat(getFloat() * value.getFloat());
+
+        else if (paType == PAType.DOUBLE)
+            setDouble(getDouble() * value.getDouble());
+
+        //skip String and char
+
+        return this;
     }
 
     /**
@@ -465,6 +582,22 @@ public class PAOne {
      */
     public void writeToDOS(DataOutputStream dos) throws Exception {
         pa.writeDos(dos, 0);
+    }
+
+    /** 
+     * This converts a PAOne[] into a double[].
+     * MAX_VALUE values are converted to Double.NaN values.
+     *
+     * @param paOneAr a BigDecimal array
+     */
+    public static double[] toDoubleArray(PAOne paOneAr[]) {
+        if (paOneAr == null)
+            return null;
+        int n = paOneAr.length;
+        double dar[] = new double[n];
+        for (int i = 0; i < n; i++) 
+            dar[i] = paOneAr[i].getDouble();
+        return dar;
     }
 
 

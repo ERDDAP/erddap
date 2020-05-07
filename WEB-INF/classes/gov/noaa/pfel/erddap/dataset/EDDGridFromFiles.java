@@ -1169,9 +1169,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (timeIndex == 0) {
             EDVTimeGridAxis tga = (EDVTimeGridAxis)axisVariables[0];
             combinedGlobalAttributes.add("time_coverage_start", 
-                tga.destinationToString(tga.destinationMin()));
+                tga.destinationToString(tga.destinationMinDouble()));
             combinedGlobalAttributes.add("time_coverage_end", 
-                tga.destinationToString(tga.destinationMax()));
+                tga.destinationToString(tga.destinationMaxDouble()));
         }
 
         //make the dataVariables[]
@@ -1195,7 +1195,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName,
                     tSourceAtt, tAddAtt, tSourceType);  
             else dataVariables[dv] = new EDV(tSourceName, tDestName, 
-                tSourceAtt, tAddAtt, tSourceType, Double.NaN, Double.NaN); 
+                tSourceAtt, tAddAtt, tSourceType, 
+                PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             dataVariables[dv].setActualRangeFromDestinationMinMax();
         }
 

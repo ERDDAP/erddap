@@ -607,8 +607,9 @@ expected =
         String fileDir = EDStatic.unitTestDataDir + "unsigned/";
         String fileName = "9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc";
         boolean oDebugMode = NcHelper.debugMode;
-NcHelper.debugMode = true;
+        NcHelper.debugMode = true;
 
+        try {
         //DumpString
         results = NcHelper.ncdump(fileDir + fileName, "-h");
         expected = 
@@ -927,6 +928,9 @@ expected =
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
+        } catch (Exception e) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + "//trouble in testUInt16File");
+        }
         NcHelper.debugMode = oDebugMode;
     }
 

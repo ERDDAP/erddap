@@ -10,6 +10,7 @@ import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -5305,8 +5306,8 @@ expected =
 
         //min max
         edv = csub.findDataVariableByDestinationName("longitude");
-        Test.ensureEqual(edv.destinationMin(), -164.0833, "");
-        Test.ensureEqual(edv.destinationMax(), -106.1167, "");
+        Test.ensureEqual(edv.destinationMin(), -164.08333, "");
+        Test.ensureEqual(edv.destinationMax(), -106.11667, "");
 
         tName = csub.makeNewFileForDapQuery(null, null, csubDapQuery, dir, baseName, ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -12902,7 +12903,7 @@ expected =
                 "&latitude>0&time>=2002-08-03", 
                 dir, globecBottle.className() + "_ODV", ".odvTxt"); 
             String2.log("ODV fileName=" + dir + tName);
-            results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+            results = String2.directReadFromUtf8File(dir + tName);
             results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
                                          "<CreateTime>9999-99-99T99:99:99");
             expected = 
@@ -12945,7 +12946,7 @@ expected =
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
-            Test.ensureEqual(results, expected, 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -13768,8 +13769,8 @@ expected =
         //ISO 19115 should deal with depth correctly
         String2.log("!!timeIndex=" + tableDataset.timeIndex);
         EDVTime timeEdv = (EDVTime)tableDataset.dataVariables[tableDataset.timeIndex];
-        String2.log("!!time destinationMin=" + timeEdv.destinationMin() + "=" + timeEdv.destinationMinString() +
-                          " destinationMax=" + timeEdv.destinationMax() + "=" + timeEdv.destinationMaxString());
+        String2.log("!!time destinationMin=" + timeEdv.destinationMinDouble() + "=" + timeEdv.destinationMinString() +
+                          " destinationMax=" + timeEdv.destinationMaxDouble() + "=" + timeEdv.destinationMaxString());
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             dir, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
         results = String2.directReadFromUtf8File(dir + tName);
@@ -14542,13 +14543,13 @@ So the changes seem good. */
         StringArray co  = new StringArray();
         StringArray cv2 = new StringArray();
         EDV pVar = tedd.findDataVariableByDestinationName("pressure");
-        double minP = pVar.destinationMin();
-        double maxP = pVar.destinationMax();
-        Test.ensureEqual(minP, 912.4, "");
-        Test.ensureEqual(maxP, 2759, "");
+        Test.ensureEqual(pVar.destinationMin(), 912.4, ""); //test exactly  (it's a float)
+        Test.ensureEqual(pVar.destinationMax(), 2759, "");
+        float minP = (float)pVar.destinationMinDouble(); //work with it as float below
+        float maxP = (float)pVar.destinationMaxDouble();
         EDV timeVar = tedd.findDataVariableByDestinationName("time");
-        double minT = timeVar.destinationMin();
-        double maxT = timeVar.destinationMax();
+        double minT = timeVar.destinationMinDouble();
+        double maxT = timeVar.destinationMaxDouble();
         Test.ensureEqual(minT, 1432151400, ""); //2015-05-20T19:50:00Z
         Test.ensureEqual(maxT, 1446664200, ""); //2015-11-04T19:10:00Z
 
@@ -14560,8 +14561,8 @@ So the changes seem good. */
             rv, cv, co, cv2, false); //repair?  
         Test.ensureEqual(EDDTable.formatAsDapQuery(rv, cv, co, cv2), 
             "pressure" +
-            "&pressure<" + (maxP) + "&pressure<" + (maxP-1.5) +  
-            "&pressure>" + (minP) + "&pressure>" + (minP+2.5) +  
+            "&pressure<" + (maxP) + "&pressure<" + (maxP-1.5f) +  
+            "&pressure>" + (minP) + "&pressure>" + (minP+2.5f) +  
             "&time<" + (maxT) + "&time<" + (maxT-1.5) + "&time<" + (maxT-120) +  
             "&time>" + (minT) + "&time>" + (minT+2.5) + "&time>" + (minT+0.003),  
             "");
@@ -16921,8 +16922,8 @@ expected =
         String tDir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected;
 
-        double destMinD = timeEdv.destinationMin();
-        double destMaxD = timeEdv.destinationMax();
+        double destMinD = timeEdv.destinationMinDouble();
+        double destMaxD = timeEdv.destinationMaxDouble();
         String destMinS = Calendar2.safeEpochSecondsToIsoStringTZ(destMinD, "");
         String destMaxS = Calendar2.safeEpochSecondsToIsoStringTZ(destMaxD, "");
 
@@ -18765,9 +18766,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
-    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to ";
-//2019-07-27T20:00:00Z, and hasNaN=false.)\";\n" + //end date changes
-//"})", 
+    "(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=";
+//2020-05-04T19:50:00Z, and hasNaN=false.)\n"; //end date changes
         Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);
 

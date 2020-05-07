@@ -702,13 +702,13 @@ public abstract class EDDGrid extends EDD {
                 //must have more than one value for lat and lon axes
                 EDVGridAxis lonVar = axisVariables[lonIndex];
                 EDVGridAxis latVar = axisVariables[latIndex];
-                if (lonVar.destinationMin() == lonVar.destinationMax() || //only 1 value
-                    latVar.destinationMin() == latVar.destinationMax())
+                if (lonVar.destinationMinDouble() == lonVar.destinationMaxDouble() || //only 1 value
+                    latVar.destinationMinDouble() == latVar.destinationMaxDouble())
                     accessibleViaGeoServicesRest = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
                             EDStatic.noXxxNoLLGt1));
-                else if (lonVar.destinationMin() >= 360 ||  //unlikely
-                         lonVar.destinationMax() <= -180)   //unlikely
+                else if (lonVar.destinationMinDouble() >= 360 ||  //unlikely
+                         lonVar.destinationMaxDouble() <= -180)   //unlikely
                     accessibleViaGeoServicesRest = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
                             EDStatic.noXxxNoLonIn180));
@@ -766,13 +766,13 @@ public abstract class EDDGrid extends EDD {
                 //must have more than one value for lat and lon axes
                 EDVGridAxis lonVar = axisVariables[lonIndex];
                 EDVGridAxis latVar = axisVariables[latIndex];
-                if (lonVar.destinationMin() == lonVar.destinationMax() || //only 1 value
-                    latVar.destinationMin() == latVar.destinationMax())
+                if (lonVar.destinationMinDouble() == lonVar.destinationMaxDouble() || //only 1 value
+                    latVar.destinationMinDouble() == latVar.destinationMaxDouble())
                     accessibleViaWCS = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "WCS", 
                             EDStatic.noXxxNoLLGt1));
-                else if (lonVar.destinationMin() >= 360 ||  //unlikely
-                         lonVar.destinationMax() <= -180)   //unlikely
+                else if (lonVar.destinationMinDouble() >= 360 ||  //unlikely
+                         lonVar.destinationMaxDouble() <= -180)   //unlikely
                     accessibleViaWCS = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "WCS", 
                             EDStatic.noXxxNoLonIn180));
@@ -809,13 +809,13 @@ public abstract class EDDGrid extends EDD {
             else {
                 EDVGridAxis lonVar = axisVariables[lonIndex];
                 EDVGridAxis latVar = axisVariables[latIndex];
-                if (lonVar.destinationMin() == lonVar.destinationMax() || //only 1 value
-                    latVar.destinationMin() == latVar.destinationMax())
+                if (lonVar.destinationMinDouble() == lonVar.destinationMaxDouble() || //only 1 value
+                    latVar.destinationMinDouble() == latVar.destinationMaxDouble())
                     accessibleViaWMS = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "WMS", 
                             EDStatic.noXxxNoLLGt1));
-                else if (lonVar.destinationMin() >= 360 ||  //unlikely
-                         lonVar.destinationMax() <= -180)   //unlikely
+                else if (lonVar.destinationMinDouble() >= 360 ||  //unlikely
+                         lonVar.destinationMaxDouble() <= -180)   //unlikely
                     accessibleViaWMS = String2.canonical(
                         MessageFormat.format(EDStatic.noXxxBecause, "WMS", 
                             EDStatic.noXxxNoLonIn180));
@@ -1732,7 +1732,7 @@ public abstract class EDDGrid extends EDD {
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(startDestD)) {
                     if (repair)
-                        startDestD = av.destinationMin();
+                        startDestD = av.destinationMinDouble();
                     else throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.notAllowed,
                             EDStatic.EDDGridStart + "=NaN (invalid format?)"));
@@ -1804,7 +1804,7 @@ public abstract class EDDGrid extends EDD {
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(stopDestD)) {
                     if (repair)
-                        stopDestD = av.destinationMax();
+                        stopDestD = av.destinationMaxDouble();
                     else throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.notAllowed,
                             EDStatic.EDDGridStop + "=NaN (invalid format?)"));
@@ -2982,10 +2982,10 @@ public abstract class EDDGrid extends EDD {
             for (int av = 0; av < nAv; av++) {
                 EDVGridAxis edvga = axisVariables[av];
                 double defStart = av == timeIndex?  //note max vs first
-                    Math.max(edvga.destinationMax() - 7 * Calendar2.SECONDS_PER_DAY, edvga.destinationMin()) :
+                    Math.max(edvga.destinationMaxDouble() - 7 * Calendar2.SECONDS_PER_DAY, edvga.destinationMinDouble()) :
                     edvga.firstDestinationValue();
                 double defStop = av == timeIndex?
-                    edvga.destinationMax():
+                    edvga.destinationMaxDouble():
                     edvga.lastDestinationValue();
                 sourceSize[av] = edvga.sourceValues().size();
                 boolean isTimeStamp = edvga instanceof EDVTimeStampGridAxis;
@@ -3120,10 +3120,10 @@ public abstract class EDDGrid extends EDD {
                         
                         //get current radius, and shrink if clickLonLat is closer to data limits
                         double radius = Math.max(Math.abs(lonStop - lonStart), Math.abs(latStart - latStop)) / 2;
-                        radius = Math.min(radius, clickLonLat[0] - lonEdvga.destinationMin());
-                        radius = Math.min(radius, lonEdvga.destinationMax() - clickLonLat[0]);
-                        radius = Math.min(radius, clickLonLat[1] - latEdvga.destinationMin());
-                        radius = Math.min(radius, latEdvga.destinationMax() - clickLonLat[1]);
+                        radius = Math.min(radius, clickLonLat[0] - lonEdvga.destinationMinDouble());
+                        radius = Math.min(radius, lonEdvga.destinationMaxDouble() - clickLonLat[0]);
+                        radius = Math.min(radius, clickLonLat[1] - latEdvga.destinationMinDouble());
+                        radius = Math.min(radius, latEdvga.destinationMaxDouble() - clickLonLat[1]);
 
                         //if not too close to data's limits...  success
                         if (radius >= 0.01) {
@@ -8971,11 +8971,11 @@ Attributes {
             //set default start, stride, stop                       
             int tStarti = av == timeIndex? sourceSize - 1 : 0;
             int tStopi  = sourceSize - 1;
-            double tdv = av == timeIndex? edvga.destinationMax() : //yes, time max, to limit time
+            double tdv = av == timeIndex? edvga.destinationMaxDouble() : //yes, time max, to limit time
                                           edvga.firstDestinationValue();
             String tStart = edvga.destinationToString(tdv);
             String tStride = "1";
-            tdv = av == timeIndex? edvga.destinationMax() : 
+            tdv = av == timeIndex? edvga.destinationMaxDouble() : 
                                    edvga.lastDestinationValue();
             String tStop = edvga.destinationToString(tdv);
  
@@ -11558,8 +11558,8 @@ Attributes {
         }
         //make height=200 and width proportional
         int width = Math.min(2000, Math2.roundToInt(
-            ((lonEdv.destinationMax() - lonEdv.destinationMin()) * 200) /
-             (latEdv.destinationMax() - latEdv.destinationMin()) ));
+            ((lonEdv.destinationMaxDouble() - lonEdv.destinationMinDouble()) * 200) /
+             (latEdv.destinationMaxDouble() - latEdv.destinationMinDouble()) ));
         getCovSB.append("&height=200&width=" + width + "&format=PNG");
         String getCov = XML.encodeAsHTMLAttribute(getCovSB.toString());
 
@@ -12524,17 +12524,17 @@ writer.write(
 //so just deal with some of the options
 // and use (float) to avoid float->double bruising
 //default: just the lon part already in -180 to 180.
-float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin());
-float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax());
+float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble());
+float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble());
 // 0 to 360  -> -180 to 180
-if (lonEdv.destinationMin() >=   0 && lonEdv.destinationMin() <= 20 &&
-    lonEdv.destinationMax() >= 340) {
+if (lonEdv.destinationMinDouble() >=   0 && lonEdv.destinationMinDouble() <= 20 &&
+    lonEdv.destinationMaxDouble() >= 340) {
     lonMin = -180;
     lonMax = 180;
 //all lon >=180, so shift down 360
-} else if (lonEdv.destinationMin() >= 180) { 
-    lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin() - 360);
-    lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax() - 360);
+} else if (lonEdv.destinationMinDouble() >= 180) { 
+    lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble() - 360);
+    lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble() - 360);
 }
 writer.write(
 "    <status>\n" +
@@ -12545,8 +12545,8 @@ writer.write(
 "      <bounding>\n" +
 "        <westbc>"  + lonMin + "</westbc>\n" +
 "        <eastbc>"  + lonMax + "</eastbc>\n" +
-"        <northbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMax()) + "</northbc>\n" +
-"        <southbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMin()) + "</southbc>\n" +
+"        <northbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMaxDouble()) + "</northbc>\n" +
+"        <southbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMinDouble()) + "</southbc>\n" +
 "      </bounding>\n" +
 "    </spdom>\n");
 
@@ -13034,11 +13034,11 @@ writer.write(
         double minVert = Double.NaN; //in destination units (may be positive = up[I use] or down!? any units)
         double maxVert = Double.NaN;
         if (altEdv != null) {
-            minVert = altEdv.destinationMin();
-            maxVert = altEdv.destinationMax();
+            minVert = altEdv.destinationMinDouble();
+            maxVert = altEdv.destinationMaxDouble();
         } else if (depthEdv != null) { 
-            minVert = -depthEdv.destinationMax(); //make into altitude
-            maxVert = -depthEdv.destinationMin();
+            minVert = -depthEdv.destinationMaxDouble(); //make into altitude
+            maxVert = -depthEdv.destinationMinDouble();
         }
         String minTime = ""; //iso string with Z, may be ""
         String maxTime = "";
@@ -13070,20 +13070,20 @@ writer.write(
         //so just deal with some of the options
         // and use (float) to avoid float->double bruising
         //default: just the lon part already in -180 to 180.
-        float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin());
-        float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax());
+        float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble());
+        float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble());
         // 0 to 360  -> -180 to 180
-        if (lonEdv.destinationMin() >=   0 && lonEdv.destinationMin() <= 20 &&
-            lonEdv.destinationMax() >= 340) {
+        if (lonEdv.destinationMinDouble() >=   0 && lonEdv.destinationMinDouble() <= 20 &&
+            lonEdv.destinationMaxDouble() >= 340) {
             lonMin = -180;
             lonMax = 180;
         //all lon >=180, so shift down 360
-        } else if (lonEdv.destinationMin() >= 180) { 
-            lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin() - 360);
-            lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax() - 360);
+        } else if (lonEdv.destinationMinDouble() >= 180) { 
+            lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble() - 360);
+            lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble() - 360);
         }
-        float latMin = (float)Math2.minMax(-90, 90, latEdv.destinationMin());
-        float latMax = (float)Math2.minMax(-90, 90, latEdv.destinationMax());
+        float latMin = (float)Math2.minMax(-90, 90, latEdv.destinationMinDouble());
+        float latMax = (float)Math2.minMax(-90, 90, latEdv.destinationMaxDouble());
 
 //write the xml       
 //see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_Namespaces

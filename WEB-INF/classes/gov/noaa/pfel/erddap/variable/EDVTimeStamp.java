@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -96,7 +97,7 @@ public class EDVTimeStamp extends EDV {
 
         super(tSourceName, tDestinationName, tSourceAttributes, tAddAttributes,
             tSourceDataType, 
-            Double.NaN, Double.NaN); //destinationMin and max are set below (via actual_range)
+            PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); //destinationMin and max are set below (via actual_range)
 
         //time_precision e.g., 1970-01-01T00:00:00Z
         time_precision = combinedAttributes.getString(EDV.TIME_PRECISION);
@@ -263,28 +264,28 @@ public class EDVTimeStamp extends EDV {
                 if (actualRange.elementType() == PAType.STRING && actualRange.size() == 1) 
                     actualRange = new StringArray(String2.split(actualRange.getString(0), '\n'));                  
                 if (actualRange.size() == 2) {
-                    if (Double.isNaN(destinationMin)) destinationMin = sourceTimeToEpochSeconds(actualRange.getString(0));
-                    if (Double.isNaN(destinationMax)) destinationMax = sourceTimeToEpochSeconds(actualRange.getString(1));
+                    if (destinationMin.isNaN()) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(0)));
+                    if (destinationMax.isNaN()) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(1)));
                 }
             }
 
             //2nd priority: actual_min actual_max
             String tMin = combinedAttributes.getString("actual_min");
             String tMax = combinedAttributes.getString("actual_max");
-            if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
-            if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
+            if (destinationMin.isNaN() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
+            if (destinationMax.isNaN() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
 
             //3rd priority: data_min data_max
             tMin = combinedAttributes.getString("data_min");
             tMax = combinedAttributes.getString("data_max");
-            if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
-            if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
+            if (destinationMin.isNaN() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
+            if (destinationMax.isNaN() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
 
             //swap if wrong order
-            if (!Double.isNaN(destinationMin) && 
-                !Double.isNaN(destinationMax) &&
-                destinationMin > destinationMax) {
-                double d = destinationMin; 
+            if (!destinationMin.isNaN() && 
+                !destinationMax.isNaN() &&
+                destinationMin.compareTo(destinationMax) > 0) {
+                PAOne d = destinationMin; 
                 destinationMin = destinationMax; 
                 destinationMax = d; 
             }
@@ -302,8 +303,8 @@ public class EDVTimeStamp extends EDV {
     public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
         //this works because scaleAddOffset is always false (guaranteed in constructor)
         setDestinationMinMax(
-            sourceTimeToEpochSeconds(sourceMin),
-            sourceTimeToEpochSeconds(sourceMax));
+            PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMin)),
+            PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMax)));
     }
 
     /**
@@ -363,7 +364,7 @@ public class EDVTimeStamp extends EDV {
      * @return the destinationMin time (or "" if unknown)
      */
     public String destinationMinString() {
-        return destinationToString(destinationMin); 
+        return destinationToString(destinationMin.getDouble());  //time always full precision, not "niceDouble", but it is already a double
     }
 
     /** 
@@ -373,7 +374,7 @@ public class EDVTimeStamp extends EDV {
      * @return the destinationMax time (or "" if unknown (and sometimes if ~now))
      */
     public String destinationMaxString() {
-        return destinationToString(destinationMax); 
+        return destinationToString(destinationMax.getDouble()); //time always full precision, not "niceDouble", but it is already a double
     }
 
     /**
@@ -635,8 +636,8 @@ public class EDVTimeStamp extends EDV {
 
         try {
             boolean isTime = true;        
-            double tMin = destinationMin;
-            double tMax = destinationMax;
+            double tMin = destinationMinDouble();
+            double tMax = destinationMaxDouble();
             if (!Double.isFinite(tMin)) return null;
             if (!Double.isFinite(tMax)) {
                 //next midnight Z

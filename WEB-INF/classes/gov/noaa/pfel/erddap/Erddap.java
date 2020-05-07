@@ -6842,8 +6842,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 for (int avi = 0; avi < ava.length; avi++) {
                     EDVGridAxis av = ava[avi];
                     if (avi == eddGrid.lonIndex()) {
-                        if (maxx <= av.destinationMin() ||
-                            minx >= av.destinationMax()) {
+                        if (maxx <= av.destinationMinDouble() ||
+                            minx >= av.destinationMaxDouble()) {
                             if (reallyVerbose) String2.log("  layer=" + layeri + 
                                 " rejected because request is out of lon range.");
                             continue LAYER;
@@ -6857,8 +6857,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     }
 
                     if (avi == eddGrid.latIndex()) {
-                        if (maxy <= av.destinationMin() ||
-                            miny >= av.destinationMax()) {
+                        if (maxy <= av.destinationMinDouble() ||
+                            miny >= av.destinationMaxDouble()) {
                             if (reallyVerbose) String2.log("  layer=" + layeri + 
                                 " rejected because request is out of lat range.");
                             continue LAYER;
@@ -7264,10 +7264,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //EEEEK!!!! CRS:84 and EPSG:4326 want lon -180 to 180, but many erddap datasets are 0 to 360.
             //That seems to be ok.   But still limit x to -180 to 360.
             //pre 2009-02-11 was limit x to +/-180.
-            double safeMinX = Math.max(-180, avs[loni].destinationMin());
-            double safeMinY = Math.max( -90, avs[lati].destinationMin());
-            double safeMaxX = Math.min( 360, avs[loni].destinationMax());
-            double safeMaxY = Math.min(  90, avs[lati].destinationMax());
+            double safeMinX = Math.max(-180, avs[loni].destinationMinDouble());
+            double safeMinY = Math.max( -90, avs[lati].destinationMinDouble());
+            double safeMaxX = Math.min( 360, avs[loni].destinationMaxDouble());
+            double safeMaxY = Math.min(  90, avs[lati].destinationMaxDouble());
 
             //*** firstDataset, describe the LandMask non-data layer 
             if (firstDataset) {
@@ -7713,10 +7713,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         boolean thisWmsClientActive = wmsClientActive && 
             varNamesWCB.size() > 0;
 
-        double minX = gaa[loni].destinationMin();
-        double maxX = gaa[loni].destinationMax();
-        double minY = gaa[lati].destinationMin();
-        double maxY = gaa[lati].destinationMax();
+        double minX = gaa[loni].destinationMinDouble();
+        double maxX = gaa[loni].destinationMaxDouble();
+        double minY = gaa[lati].destinationMinDouble();
+        double maxY = gaa[lati].destinationMaxDouble();
         double xRange = Math.abs(maxX - minX);
         double yRange = Math.abs(maxY - minY);
         //https://leafletjs.com/examples/zoom-levels/
@@ -8689,8 +8689,8 @@ breadCrumbs + endBreadCrumbs +
 "  }, \n" +
 (tEdvTime == null? "" :
   "  \"timeInfo\" : {\"timeExtent\" : [" + 
-  Math.round(tEdvTime.destinationMin() * 1000) + "," +
-  Math.round(tEdvTime.destinationMax() * 1000) + "]},\n") +  //"timeReference" : null
+  Math.round(tEdvTime.destinationMinDouble() * 1000) + "," +
+  Math.round(tEdvTime.destinationMaxDouble() * 1000) + "]},\n") +  //"timeReference" : null
 "  \"pixelSizeX\" : " + (tEdvLon.averageSpacing()) + ", \n" +
 "  \"pixelSizeY\" : " + (tEdvLat.averageSpacing()) + ", \n" +
 "  \"bandCount\" : 1, \n" +
@@ -8847,8 +8847,8 @@ breadCrumbs + endBreadCrumbs +
 //??? sample server doesn't use <li> !!!
 "  <li>TimeExtent: " + 
     (tEdvTime == null? "null" : "[" + 
-    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMin())) + ", " + 
-    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMax())) + "]") +
+    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMinDouble())) + ", " + 
+    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMaxDouble())) + "]") +
 "<br/>\n" +   
 "</ul>\n" +
 "<strong>Pixel Size X:</strong> " + (tEdvLon.averageSpacing()) + "<br/>\n" +
@@ -8940,10 +8940,10 @@ breadCrumbs + endBreadCrumbs +
 
                 //bbox
                 String bboxParam = queryMap.get("bbox");  
-                double xMin = tEdvLon.destinationMin();
-                double yMin = tEdvLat.destinationMin();
-                double xMax = tEdvLon.destinationMax();
-                double yMax = tEdvLat.destinationMax();
+                double xMin = tEdvLon.destinationMinDouble();
+                double yMin = tEdvLat.destinationMinDouble();
+                double xMax = tEdvLon.destinationMaxDouble();
+                double yMax = tEdvLat.destinationMaxDouble();
                 if (bboxParam != null && bboxParam.length() > 0) {
                     //use specified bbox and ensure all valid
                     String bboxParts[] = String2.split(bboxParam, ',');
@@ -9000,7 +9000,7 @@ breadCrumbs + endBreadCrumbs +
                     //no time variable, so ignore user-specified time= (if any)
                 } else {
                     String timeParam = queryMap.get("time");  
-                    double tEpochSeconds = tEdvTime.destinationMax();  //spec doesn't say default
+                    double tEpochSeconds = tEdvTime.destinationMaxDouble();  //spec doesn't say default
                     if (timeParam != null && timeParam.length() > 0) {
                         //use specified time and ensure all valid
                         String timeParts[] = String2.split(timeParam, ',');
@@ -9010,9 +9010,9 @@ breadCrumbs + endBreadCrumbs +
                             double tMinTime = String2.parseDouble(timeParts[0]);
                             double tMaxTime = String2.parseDouble(timeParts[1]);
                             if (!Double.isFinite(tMinTime))
-                                tMinTime = tEdvTime.destinationMin(); //spec says "infinity"; I interpret as destMin/Max
+                                tMinTime = tEdvTime.destinationMinDouble(); //spec says "infinity"; I interpret as destMin/Max
                             if (!Double.isFinite(tMaxTime))
-                                tMaxTime = tEdvTime.destinationMax();
+                                tMaxTime = tEdvTime.destinationMaxDouble();
                             tEpochSeconds = (tMinTime + tMaxTime) / 2000.0; //2 to average
                         } else {
                             sendGeoServicesRestError(request, response, 
@@ -11351,14 +11351,14 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         keep.clear(dsi);
                     } else {
                         if (!Double.isNaN(minLon)) {
-                            if (Double.isNaN(lonEdv.destinationMax()) ||
-                                minLon > lonEdv.destinationMax()) {
+                            if (Double.isNaN(lonEdv.destinationMaxDouble()) ||
+                                minLon > lonEdv.destinationMaxDouble()) {
                                 keep.clear(dsi);
                             }
                         }
                         if (!Double.isNaN(maxLon)) {
-                            if (Double.isNaN(lonEdv.destinationMin()) ||
-                                maxLon < lonEdv.destinationMin()) {
+                            if (Double.isNaN(lonEdv.destinationMinDouble()) ||
+                                maxLon < lonEdv.destinationMinDouble()) {
                                 keep.clear(dsi);
                             }
                         }
@@ -11371,14 +11371,14 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         keep.clear(dsi);
                     } else {
                         if (!Double.isNaN(minLat)) {
-                            if (Double.isNaN(latEdv.destinationMax()) ||
-                                minLat > latEdv.destinationMax()) {
+                            if (Double.isNaN(latEdv.destinationMaxDouble()) ||
+                                minLat > latEdv.destinationMaxDouble()) {
                                 keep.clear(dsi);
                             }
                         }
                         if (!Double.isNaN(maxLat)) {
-                            if (Double.isNaN(latEdv.destinationMin()) ||
-                                maxLat < latEdv.destinationMin()) {
+                            if (Double.isNaN(latEdv.destinationMinDouble()) ||
+                                maxLat < latEdv.destinationMinDouble()) {
                                 keep.clear(dsi);
                             }
                         }
@@ -11391,15 +11391,15 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         keep.clear(dsi);
                     } else {
                         if (!Double.isNaN(minTimeD)) {
-                            if (Double.isNaN(timeEdv.destinationMax())) {
+                            if (Double.isNaN(timeEdv.destinationMaxDouble())) {
                                 //test is ambiguous, since destMax=NaN may mean current time
-                            } else if (minTimeD > timeEdv.destinationMax()) {
+                            } else if (minTimeD > timeEdv.destinationMaxDouble()) {
                                 keep.clear(dsi);
                             }
                         }
                         if (!Double.isNaN(maxTimeD)) {
-                            if (Double.isNaN(timeEdv.destinationMin()) ||
-                                maxTimeD < timeEdv.destinationMin()) {
+                            if (Double.isNaN(timeEdv.destinationMinDouble()) ||
+                                maxTimeD < timeEdv.destinationMinDouble()) {
                                 keep.clear(dsi);
                             }
                         }
@@ -11811,9 +11811,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         sw = sw.substring(1); 
 
                     //remove enclosing double quotes
-                    if (sw.length() >= 2 && 
-                        sw.charAt(0) == '\"' && sw.charAt(sw.length() - 1) == '\"')
-                        sw = String2.replaceAll(sw.substring(1, sw.length() - 1), "\"\"", "\"");
+                    sw = String2.fromJson(sw);
+                    //2020-04-30 was 
+                    //if (sw.length() >= 2 && 
+                    //    sw.charAt(0) == '\"' && sw.charAt(sw.length() - 1) == '\"')
+                    //    sw = String2.replaceAll(sw.substring(1, sw.length() - 1), "\"\"", "\"");
 
                     searchWordsB[w] = String2.stringToUtf8Bytes(sw);
                     jumpB[w] = String2.makeJumpTable(searchWordsB[w]);
@@ -12950,13 +12952,13 @@ writer.write(
                     "      \"propertyID\": \"time\"");
 
              } else {
-                double maxValue = edv.get(i).destinationMax();
+                double maxValue = edv.get(i).destinationMaxDouble();
                 if (!Double.isNaN(maxValue)) 
                     writer.write(
                     ",\n" +
                     "      \"maxValue\": " + String2.toJson(maxValue));
      
-                double minValue = edv.get(i).destinationMin();
+                double minValue = edv.get(i).destinationMinDouble();
                 if (!Double.isNaN(minValue)) 
                     writer.write(
                     ",\n" +
@@ -13039,10 +13041,10 @@ writer.write(
             ilon = ((EDDTable)edd).lonIndex();
         }
         if (ilat >= 0 && ilon >= 0) {
-            double west  = edv.get(ilon).destinationMin();
-            double east  = edv.get(ilon).destinationMax();
-            double south = edv.get(ilat).destinationMin();
-            double north = edv.get(ilat).destinationMax();
+            double west  = edv.get(ilon).destinationMinDouble();
+            double east  = edv.get(ilon).destinationMaxDouble();
+            double south = edv.get(ilat).destinationMinDouble();
+            double north = edv.get(ilat).destinationMaxDouble();
             if (!Double.isNaN(west)  && !Double.isNaN(east) && 
                 !Double.isNaN(north) && !Double.isNaN(south)) {
                 if (west >= 180) {

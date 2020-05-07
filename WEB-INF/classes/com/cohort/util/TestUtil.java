@@ -1251,6 +1251,7 @@ public class TestUtil {
         s = ".5";       Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
         s = "-.5";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
         s = "9e0";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "0e0";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
         s = "9e05";     Test.ensureEqual(String2.isNumber(s), true,  "s=" + s); //valid? 
 
         s = null;       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
@@ -1263,6 +1264,10 @@ public class TestUtil {
         s = "-12.";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "0x";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "0x12x";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "012";      Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "0k";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "0.";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "0e";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "NaN4";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "-1.0f+5";  Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "99+8";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);

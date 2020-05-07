@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -497,22 +498,22 @@ public class EDDTableFromFileNames extends EDDTable{
             if (EDV.LON_NAME.equals(destName)) {
                 dataVariables[dv] = new EDVLon(sourceName,
                     sourceAtt, addAtt, 
-                    sourceType, Double.NaN, Double.NaN); 
+                    sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(destName)) {
                 dataVariables[dv] = new EDVLat(sourceName,
                     sourceAtt, addAtt, 
-                    sourceType, Double.NaN, Double.NaN); 
+                    sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(destName)) {
                 dataVariables[dv] = new EDVAlt(sourceName,
                     sourceAtt, addAtt, 
-                    sourceType, Double.NaN, Double.NaN);
+                    sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(destName)) {
                 dataVariables[dv] = new EDVDepth(sourceName,
                     sourceAtt, addAtt, 
-                    sourceType, Double.NaN, Double.NaN);
+                    sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(destName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(sourceName,
@@ -1978,16 +1979,16 @@ String expected =
         Test.ensureEqual(edv.destinationMaxString(), "2015-01-05T09:00:00Z", "max");
 
         edv = tedd.findVariableByDestinationName("day");
-        Test.ensureEqual(edv.destinationMin(), 3, "min");
-        Test.ensureEqual(edv.destinationMax(), 5, "max");
+        Test.ensureEqual(edv.destinationMinDouble(), 3, "min");
+        Test.ensureEqual(edv.destinationMaxDouble(), 5, "max");
 
         edv = tedd.findVariableByDestinationName("lastModified");
         Test.ensureEqual(edv.destinationMinString(), "2015-01-07T21:21:44Z", "min"); //2018-08-09 these changed by 1 hr with switch to lenovo
         Test.ensureEqual(edv.destinationMaxString(), "2015-01-14T21:54:04Z", "max");
 
         edv = tedd.findVariableByDestinationName("size");
-        Test.ensureEqual(edv.destinationMin(), 46482, "min");
-        Test.ensureEqual(edv.destinationMax(), 46586, "max");
+        Test.ensureEqual(edv.destinationMinDouble(), 46482, "min");
+        Test.ensureEqual(edv.destinationMaxDouble(), 46586, "max");
 
         /*
         actual_range and =NaN fixedValue variables:
@@ -2001,16 +2002,16 @@ String expected =
         will show NaN).
         */
         edv = tedd.findVariableByDestinationName("fixedTime");
-//        Test.ensureEqual(edv.destinationMin(), 946684800, "min");
-//        Test.ensureEqual(edv.destinationMax(), 978307200, "max");
+//        Test.ensureEqual(edv.destinationMinDouble(), 946684800, "min");
+//        Test.ensureEqual(edv.destinationMaxDouble(), 978307200, "max");
 
         edv = tedd.findVariableByDestinationName("latitude");
-        Test.ensureEqual(edv.destinationMin(), 20, "min");
-        Test.ensureEqual(edv.destinationMax(), 40, "max");
+        Test.ensureEqual(edv.destinationMinDouble(), 20, "min");
+        Test.ensureEqual(edv.destinationMaxDouble(), 40, "max");
 
         edv = tedd.findVariableByDestinationName("longitude");
-        Test.ensureEqual(edv.destinationMin(), 0, "min");
-        Test.ensureEqual(edv.destinationMax(), 45, "max");
+        Test.ensureEqual(edv.destinationMinDouble(), 0, "min");
+        Test.ensureEqual(edv.destinationMaxDouble(), 45, "max");
 
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(null, null, "name,day,size&day=4", dir, 
@@ -2172,8 +2173,8 @@ String expected =
         Test.ensureEqual(edv.destinationMaxString(), "2013-10-25T20:54:20Z", "max");
 
         edv = tedd.findVariableByDestinationName("size");
-        Test.ensureEqual(""+edv.destinationMin(), "1.098815646E9", "min"); //exact test
-        Test.ensureEqual(""+edv.destinationMax(), "1.373941204E9", "max");
+        Test.ensureEqual(""+edv.destinationMinDouble(), "1.098815646E9", "min"); //exact test
+        Test.ensureEqual(""+edv.destinationMaxDouble(), "1.373941204E9", "max");
 
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(null, null, "name,startMonth,size&size=1098815646", dir, 
@@ -2564,7 +2565,11 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "");
+            try {
+                Test.ensureTrue(time < expTime * 2, "too slow!");
+            } catch (Exception e7) {
+                String2.pressEnterToContinue(MustBe.throwableToString(e7));
+            }
         }
 
         if (true) {
@@ -2587,7 +2592,11 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
             String2.log("get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "");
+            try {
+                Test.ensureTrue(time < expTime * 2, "too slow");
+            } catch (Exception e7) {
+                String2.pressEnterToContinue(MustBe.throwableToString(e7));
+            }
         }
 
         if (true) {
@@ -2615,7 +2624,11 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 693; //ms
             String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "Too slow!");
+            try {
+                Test.ensureTrue(time < expTime * 2, "too slow");
+            } catch (Exception e7) {
+                String2.pressEnterToContinue(MustBe.throwableToString(e7));
+            }
         }
 
         
