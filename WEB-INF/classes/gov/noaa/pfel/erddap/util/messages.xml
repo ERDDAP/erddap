@@ -3825,6 +3825,7 @@ The results will include only the datasets that have all of the specified
 words and phrases (and none of the excluded words and phrases) in the
 dataset's metadata (data about the dataset).
 <li>Searches are not case-sensitive.
+<li>To search for specific attribute values, use <kbd><i>attName</i>=<i>attValue</i></kbd> .
 <li>To find just grid or just table datasets, include <kbd>protocol=griddap</kbd>
 or <kbd>protocol=tabledap</kbd> in your search.
 ]]></searchHintsTooltip>

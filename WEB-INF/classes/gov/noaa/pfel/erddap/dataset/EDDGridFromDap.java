@@ -491,7 +491,7 @@ public class EDDGridFromDap extends EDDGrid {
             else dataVariables[dv] = new EDV(
                 tDataSourceName, tDataDestName, 
                 tDataSourceAtts, tDataAddAtts, dvSourceDataType, 
-                Double.NaN, Double.NaN);  //hard to get min and max
+                PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));  //hard to get min and max
             dataVariables[dv].extractAndSetActualRange();
 
         }
@@ -634,22 +634,22 @@ public class EDDGridFromDap extends EDDGrid {
                           " != new=" + newValues.getDouble(0)); 
 
         //prepare changes to update the dataset
-        double newMin = oldValues.getDouble(0);
-        double newMax = newValues.getDouble(newValues.size() - 1);
+        PAOne newMin = new PAOne(oldValues, 0);
+        PAOne newMax = new PAOne(newValues, newValues.size() - 1);
         if (edvtsga != null) {
-            newMin = edvtsga.sourceTimeToEpochSeconds(newMin);
-            newMax = edvtsga.sourceTimeToEpochSeconds(newMax);
+            newMin = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMin.getDouble()));
+            newMax = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMax.getDouble()));
         } else if (edvga.scaleAddOffset()) {
-            newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
-            newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
+            newMin = PAOne.fromDouble(newMin.getDouble() * edvga.scaleFactor() + edvga.addOffset());
+            newMax = PAOne.fromDouble(newMax.getDouble() * edvga.scaleFactor() + edvga.addOffset());
         }
 
         //first, calculate newAverageSpacing (destination units, will be negative if isDescending)
-        double newAverageSpacing = (newMax - newMin) / (newSize - 1);
+        double newAverageSpacing = (newMax.getDouble() - newMin.getDouble()) / (newSize - 1);
 
         //second, test for min>max after extractScaleAddOffset, since order may have changed
-        if (newMin > newMax) { 
-            double d = newMin; newMin = newMax; newMax = d;
+        if (newMin.compareTo(newMax) > 0) { 
+            PAOne d = newMin; newMin = newMax; newMax = d;
         }
 
         //test isAscending  (having last old value is essential)
@@ -705,7 +705,7 @@ public class EDDGridFromDap extends EDDGrid {
         if (edvga instanceof EDVTimeGridAxis) 
             combinedGlobalAttributes.set("time_coverage_end",   
                 Calendar2.epochSecondsToLimitedIsoStringT(
-                    edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax, ""));
+                    edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax.getDouble(), ""));
         edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
 
         updateCount++;

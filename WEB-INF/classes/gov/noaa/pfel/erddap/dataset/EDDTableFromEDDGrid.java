@@ -278,8 +278,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
             Attributes tSourceAtts = gridVar.combinedAttributes(); 
             Attributes tAddAtts    = new Attributes();
             String tDataType       = gridVar.destinationDataType();
-            double tMin            = gridVar.destinationMin(); 
-            double tMax            = gridVar.destinationMax();
+            PAOne tMin             = new PAOne(gridVar.destinationMin());  //make/use a copy
+            PAOne tMax             = new PAOne(gridVar.destinationMax());
             EDV newVar = null;
             if (tSourceName.equals(EDV.LON_NAME)) {
                 newVar = new EDVLon(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
@@ -412,8 +412,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
         double avMin[] = new double[childDatasetNAV];  
         double avMax[] = new double[childDatasetNAV];
         for (int av = 0; av < childDatasetNAV; av++) {
-            avMin[av] = childDatasetAV[av].destinationMin();  //time is epochSeconds
-            avMax[av] = childDatasetAV[av].destinationMax();
+            avMin[av] = childDatasetAV[av].destinationMinDouble();  //time is epochSeconds
+            avMax[av] = childDatasetAV[av].destinationMaxDouble();
         }
         boolean hasAvConstraints = false; //only true if constraints are more than av min max
         StringArray constraintsDvNames = new StringArray();  //unique

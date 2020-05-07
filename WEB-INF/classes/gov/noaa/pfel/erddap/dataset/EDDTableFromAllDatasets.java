@@ -480,15 +480,15 @@ public class EDDTableFromAllDatasets extends EDDTable{
             EDV tedv;
             tedv = isGrid &&  eddGrid.lonIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.lonIndex()] :
                   !isGrid && eddTable.lonIndex() >= 0 ? eddTable.dataVariables[eddTable.lonIndex()] : null;
-            minLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
-            maxLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            minLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMinDouble());
+            maxLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMaxDouble());
             longitudeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 
             //lat
             tedv = isGrid &&  eddGrid.latIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.latIndex()] :
                   !isGrid && eddTable.latIndex() >= 0 ? eddTable.dataVariables[eddTable.latIndex()] : null;
-            minLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
-            maxLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            minLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMinDouble());
+            maxLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMaxDouble());
             latitudeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 
             //alt or depth
@@ -498,19 +498,19 @@ public class EDDTableFromAllDatasets extends EDDTable{
                 //depth?
                 tedv = isGrid &&  eddGrid.depthIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.depthIndex()] :
                       !isGrid && eddTable.depthIndex() >= 0 ? eddTable.dataVariables[eddTable.depthIndex()] : null;
-                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMin());
-                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMax());
+                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMinDouble());
+                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMaxDouble());
             } else {
                 //alt
-                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
-                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMinDouble());
+                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMaxDouble());
             }
 
             //time
             tedv = isGrid &&  eddGrid.timeIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.timeIndex()] :
                   !isGrid && eddTable.timeIndex() >= 0 ? eddTable.dataVariables[eddTable.timeIndex()] : null;
-            minTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
-            double tMaxTime = !graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax();
+            minTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMinDouble());
+            double tMaxTime = !graphsAccessible || tedv == null? Double.NaN : tedv.destinationMaxDouble();
             maxTime.add(tMaxTime);
             timeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 

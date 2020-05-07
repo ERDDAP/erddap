@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -46,8 +47,8 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     //TableWriter has Attributes globalAttributes;
     //TableWriter has Attributes[] columnAttributes;
     protected volatile int[] columnMaxStringLength;
-    protected volatile double[] columnMinValue;  //min of finite values, NaN if no valid values
-    protected volatile double[] columnMaxValue;  //max of finite values, NaN if no valid values
+    protected volatile PAOne[] columnMinValue;  //min of finite values, NaN if no valid values
+    protected volatile PAOne[] columnMaxValue;  //max of finite values, NaN if no valid values
 
     /**
      * The constructor.
@@ -111,55 +112,35 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
         boolean firstTime = columnMinValue == null;
         if (firstTime) {
             columnMaxStringLength = new int[nColumns]; //initially 0's
-            columnMinValue = new double[nColumns]; //initially 0's
-            columnMaxValue = new double[nColumns]; //initially 0's
-            Arrays.fill(columnMinValue, Double.NaN);
-            Arrays.fill(columnMaxValue, Double.NaN);
+            columnMinValue = new PAOne[nColumns];
+            columnMaxValue = new PAOne[nColumns];
         }
 
         for (int col = 0; col < nColumns; col++) {
             PrimitiveArray pa = table.getColumn(col);
-            if (pa instanceof StringArray)
+            if (firstTime) {
+                columnMinValue[col] = new PAOne(pa.elementType(), "");
+                columnMaxValue[col] = new PAOne(pa.elementType(), "");
+            }
+
+            if (pa instanceof StringArray) {
                 columnMaxStringLength[col] = Math.max(columnMaxStringLength[col], ((StringArray)pa).maxStringLength());
 
-            //update columnMinValue and columnMaxValue
-            if (!(pa instanceof StringArray)) {
-                //deal with missingValues
-                double destinationMV = columnAttributes[col].getDouble("missing_value");
-                double destinationFV = columnAttributes[col].getDouble("_FillValue");
-                double tMin = Double.MAX_VALUE, tMax = -Double.MAX_VALUE;
-                if (Double.isNaN(destinationMV) && Double.isNaN(destinationFV)) {
-                    double stats[] = pa.calculateStats();
-                    if (stats[PrimitiveArray.STATS_N] > 0) {
-                        tMin = stats[PrimitiveArray.STATS_MIN];
-                        tMax = stats[PrimitiveArray.STATS_MAX];
-                    }
-                } else {
-                    //don't use calculateStats because need to utilize 
-                    //destinationMissingValue and/or destinationFillValue
-                    int precision = pa.elementType() == PAType.FLOAT? 5 : 15;
-                    int n = pa.size();                
-                    for (int i = 0; i < n; i++) {
-                        double td = pa.getNiceDouble(i);
-                        if (Double.isNaN(td) ||
-                            Math2.almostEqual(precision, destinationMV, td) ||
-                            Math2.almostEqual(precision, destinationFV, td)) 
-                            continue;
-                        //String2.log("TableWriterAll " + destinationMV + " " + destinationFV + " td=" + td);
-                        tMin = Math.min(tMin, td);
-                        tMax = Math.max(tMax, td);
-                    }
-                }
-                if (tMin != Double.MAX_VALUE) {
+            } else {
+                //update columnMinValue and columnMaxValue
+                PAOne stats[] = pa.calculatePAOneStats(columnAttributes[col]);
+                //String2.log(">> twawm " + String2.left(columnNames[col], 12) + " " + PrimitiveArray.displayPAOneStats(stats) + "\n    " + pa.toString());
+                if (stats[PrimitiveArray.STATS_N].getInt() > 0) {
                     //there were some valid values
-                    if (Double.isNaN(columnMinValue[col])) {
-                        columnMinValue[col] = tMin;
-                        columnMaxValue[col] = tMax;
+                    if (columnMinValue[col].isNaN()) { //first valid values?
+                        columnMinValue[col] = stats[PrimitiveArray.STATS_MIN];
+                        columnMaxValue[col] = stats[PrimitiveArray.STATS_MAX];
                     } else {
-                        columnMinValue[col] = Math.min(columnMinValue[col], tMin);
-                        columnMaxValue[col] = Math.max(columnMaxValue[col], tMax);
+                        columnMinValue[col] = columnMinValue[col].min(stats[PrimitiveArray.STATS_MIN]);
+                        columnMaxValue[col] = columnMaxValue[col].max(stats[PrimitiveArray.STATS_MAX]);
                     }
                 }
+                //String2.log(">> twawm " + columnNames[col] + " min=" + columnMinValue[col] + " max=" + columnMaxValue[col]);
             }
         }
     }
@@ -198,24 +179,26 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
             //*** FIX UP THE FILE-SPECIFIC METADATA
             //setActualRangeAndBoundingBox  (see comments in method javadocs above)
             //if no data, don't specify range
-            double dMin = columnMinValue[col];
-            double dMax = columnMaxValue[col];
+            PAOne tMin = columnMinValue[col];
+            PAOne tMax = columnMaxValue[col];
             //actual_range is type-specific
             PrimitiveArray minMax = PrimitiveArray.factory(columnTypes[col], 2, false);
-            minMax.addDouble(dMin);
-            minMax.addDouble(dMax);
+            minMax.addPAOne(tMin);
+            minMax.addPAOne(tMax);
 
-            if (Double.isNaN(dMin)) 
+            if (tMin.isNaN()) 
                  columnAttributes(col).remove("actual_range");
             else columnAttributes(col).set("actual_range", minMax);
 
             //set acdd-style and google-style bounding box
-            float fMin = Math2.doubleToFloatNaN(dMin);
-            float fMax = Math2.doubleToFloatNaN(dMax);
-            int   iMin = Math2.roundToInt(dMin);
-            int   iMax = Math2.roundToInt(dMax);
+            double dMin = tMin.getDouble();
+            double dMax = tMax.getDouble();
+            float  fMin = tMin.getFloat();
+            float  fMax = tMax.getFloat();
+            int    iMin = tMin.getInt();
+            int    iMax = tMax.getInt();
             if (col == lonCol) {
-                if (Double.isNaN(dMin)) {
+                if (tMin.isNaN()) {
                     //"geospatial_lon_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_lon_min",  fMin);
@@ -229,16 +212,16 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                     globalAttributes.set("Easternmost_Easting", dMax);
                 }
             } else if (col == latCol) {
-                if (Double.isNaN(dMin)) {
+                if (tMin.isNaN()) {
                     //"geospatial_lat_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
-                    globalAttributes.set("geospatial_lat_min", fMin);
-                    globalAttributes.set("geospatial_lat_max", fMax);
+                    globalAttributes.set("geospatial_lat_min",    fMin);
+                    globalAttributes.set("geospatial_lat_max",    fMax);
                     globalAttributes.set("Southernmost_Northing", fMin);
                     globalAttributes.set("Northernmost_Northing", fMax);
                 } else {
-                    globalAttributes.set("geospatial_lat_min", dMin);
-                    globalAttributes.set("geospatial_lat_max", dMax);
+                    globalAttributes.set("geospatial_lat_min",    dMin);
+                    globalAttributes.set("geospatial_lat_max",    dMax);
                     globalAttributes.set("Southernmost_Northing", dMin);
                     globalAttributes.set("Northernmost_Northing", dMax);
                 } 
@@ -248,8 +231,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", fMax);
-                } else if (minMax instanceof IntArray ||
-                           minMax instanceof ShortArray) {
+                } else if (minMax.isIntegerType()) {
                     globalAttributes.set("geospatial_vertical_min", iMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", iMax);
                 } else {
@@ -288,7 +270,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
      * @param col   0..
      * @return the minimum value in a column (or NaN if no values or a StringArray).
      */
-    public double columnMinValue(int col) {return columnMinValue[col];}
+    public PAOne columnMinValue(int col) {return columnMinValue[col];}
 
     /**
      * This returns the maximum value in a column (or NaN if no values or a StringArray).
@@ -297,7 +279,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
      * @param col   0..
      * @return the maximum value in a column (or NaN if no values or a StringArray).
      */
-    public double columnMaxValue(int col) {return columnMaxValue[col];}
+    public PAOne columnMaxValue(int col) {return columnMaxValue[col];}
 
 
 

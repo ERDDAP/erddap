@@ -1374,6 +1374,26 @@ public class ByteArray extends PrimitiveArray {
         size += otherSize; //do last to minimize concurrency problems
     }    
 
+    /** 
+     * This appends the values from a BigDecimal[] to this PrimitiveArray.
+     * null values are converted to cohort missing values.
+     *
+     * @param bdar a BigDecimal array
+     * @return this for convenience
+     */
+/*    public ByteArray append(BigDecimal bdar[]) {
+        if (bdar == null)
+            return;
+        int n = bdar.length;
+        ensureCapacity(size + (long)n);
+        for (int i = 0; i < n; i++) 
+            array[size + i] = bdar[i] == null? Byte.MAX_VALUE : 
+                Math2.roundToByte(bdar[i]); //going through double deals with infinity
+        size += otherSize; //do last to minimize concurrency problems
+        return this;
+    }
+*/
+
     /**
      * This appends the data in another pa to the current data.
      * This "raw" variant leaves missingValue from smaller data types

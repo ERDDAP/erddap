@@ -429,7 +429,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
             else dataVariables[dv] = new EDV(
                 tSourceName, tDestName, 
                 tSourceAtts, tAddAtts, dvSourceDataType, 
-                Double.NaN, Double.NaN);  //hard to get min and max
+                PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));  //hard to get min and max
             dataVariables[dv].extractAndSetActualRange();
         }
 

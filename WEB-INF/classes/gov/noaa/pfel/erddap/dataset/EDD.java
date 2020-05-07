@@ -11350,8 +11350,8 @@ sb.append(
 if ((isGrid? eddGrid.timeIndex() : eddTable.timeIndex()) >= 0) {
     EDV edv = isGrid? eddGrid.axisVariables()[eddGrid.timeIndex()] : 
                       eddTable.dataVariables()[eddTable.timeIndex()];
-    double start = edv.destinationMin();
-    double stop = edv.destinationMax();
+    double start = edv.destinationMinDouble();
+    double stop  = edv.destinationMaxDouble();
     if (Double.isFinite(start)) {
         String startS = String2.replaceAll(String2.replaceAll(
             edv.destinationMinString(), "-", ""), ":", "");
@@ -11385,12 +11385,12 @@ if (isGrid? eddGrid.lonIndex()  >= 0 && eddGrid.latIndex()  >= 0 :
             eddTable.lonIndex() >= 0 && eddTable.latIndex() >= 0) {
     EDV edv = isGrid? eddGrid.axisVariables()[eddGrid.lonIndex()] : 
                       eddTable.dataVariables()[eddTable.lonIndex()];
-    double west = edv.destinationMin();
-    double east = edv.destinationMax();
+    double west = edv.destinationMinDouble();
+    double east = edv.destinationMaxDouble();
     edv = isGrid? eddGrid.axisVariables()[eddGrid.latIndex()] : 
                   eddTable.dataVariables()[eddTable.latIndex()];
-    double south = edv.destinationMin();
-    double north = edv.destinationMax();
+    double south = edv.destinationMinDouble();
+    double north = edv.destinationMaxDouble();
     boolean global = (west <= -179 && east >= 179) || //test before modifying west and east
                      (west <= 0    && east >= 359);        
     if (Double.isFinite(west) && Double.isFinite(east)) {
@@ -11430,8 +11430,8 @@ boolean hasDepth = isGrid? eddGrid.depthIndex() >= 0 : eddTable.depthIndex() >= 
 if (hasAlt || hasDepth) {
     EDV edv = isGrid? eddGrid.axisVariables( )[hasAlt? eddGrid.altIndex( ) : eddGrid.depthIndex()] : 
                       eddTable.dataVariables()[hasAlt? eddTable.altIndex() : eddTable.depthIndex()];
-    double min = edv.destinationMin();
-    double max = edv.destinationMax();
+    double min = edv.destinationMinDouble();
+    double max = edv.destinationMaxDouble();
 sb.append(
 "      <vertical-extents>\n" +
 "        <vertical-extent>\n" +

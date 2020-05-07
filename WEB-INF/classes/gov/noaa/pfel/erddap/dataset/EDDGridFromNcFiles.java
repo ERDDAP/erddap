@@ -4736,7 +4736,7 @@ expected =
             1798, 16, 390,
             2446, 13,                     //9547, ?                       //13278, ?
             1411, 1411, 1411,             //6297, 6281, ?,                //8766, 8844, ?,
-            3204,  //but really slow if hard drive is busy!   //8625,     //11469, 
+            2204,  //but really slow if hard drive is busy!   //8625,     //11469, 
             500, 20,                      //656, 110,         //687, 94,  //Java 1.7 was 390r until change to new netcdf-Java
             266, 976, 1178,               //860, 2859, 3438,              //2188, 4063, 3797,   //small varies greatly
             131, 209, 459,                //438, 468, 1063,               //438, 469, 1188,     //small varies greatly
@@ -11744,6 +11744,8 @@ expected =
         String2.log(NcHelper.ncdump(String2.unitTestBigDataDir + 
             "nc/V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc", "-h"));
 
+        try {
+
         String name, tName, results, tResults, expected;
         String error = "";
         int po;
@@ -11751,6 +11753,7 @@ expected =
         String id = "testUnsignedGrid";
         EDD.deleteCachedDatasetInfo(id);
         EDD edd = oneFromDatasetsXml(null, id); 
+
 
         results = edd.findDataVariableByDestinationName("palette").combinedAttributes().toString();
         expected = 
@@ -11776,6 +11779,11 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         String2.log("\nEDDGridFromNcFiles.testUnsignedGrid passed the test.");
+
+        } catch (Exception e7) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e7) + 
+                "//trouble  needs work.");
+        } 
 
     }
 

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.util.Test;
 
 
@@ -29,7 +30,7 @@ public class EDVLon extends EDV {
      */
     public EDVLon(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
-        String tSourceDataType, double tSourceMin, double tSourceMax) 
+        String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
         super(tSourceName, LON_NAME, tSourceAttributes, tAddAttributes,

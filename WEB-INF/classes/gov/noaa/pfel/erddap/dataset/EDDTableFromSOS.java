@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -955,12 +956,12 @@ public class EDDTableFromSOS extends EDDTable{
         dataVariables = new EDV[nFixedVariables + tDataVariables.length];
 
         lonIndex = 0;
-        double stats[] = stationTable.getColumn(stationLonCol).calculateStats();
+        PAOne stats[] = stationTable.getColumn(stationLonCol).calculatePAOneStats();
         dataVariables[lonIndex] = new EDVLon(tLonSourceName, null, null,
             "double", stats[PrimitiveArray.STATS_MIN], stats[PrimitiveArray.STATS_MAX]);  
 
         latIndex = 1;
-        stats = stationTable.getColumn(stationLatCol).calculateStats();
+        stats = stationTable.getColumn(stationLatCol).calculatePAOneStats();
         dataVariables[latIndex] = new EDVLat(tLatSourceName, null, null,
             "double", stats[PrimitiveArray.STATS_MIN], stats[PrimitiveArray.STATS_MAX]);  
 
@@ -983,14 +984,14 @@ public class EDDTableFromSOS extends EDDTable{
         if (tAltMetersPerSourceUnit != 1)
             altAddAtts.set("scale_factor", tAltMetersPerSourceUnit);
         dataVariables[altIndex] = new EDVAlt(tAltSourceName, null, altAddAtts,
-            "double", tSourceMinAlt, tSourceMaxAlt);
+            "double", PAOne.fromDouble(tSourceMinAlt), PAOne.fromDouble(tSourceMaxAlt));
 
         timeIndex = 4;  //times in epochSeconds
-        stats = stationTable.getColumn(stationBeginTimeCol).calculateStats();         //to get the minimum begin value
-        double stats2[] = stationTable.getColumn(stationEndTimeCol).calculateStats(); //to get the maximum end value
-        double tTimeMin = stats[PrimitiveArray.STATS_MIN];
-        double tTimeMax = stats2[PrimitiveArray.STATS_N] < stationTable.getColumn(stationEndTimeCol).size()? //some indeterminant
-            Double.NaN : stats2[PrimitiveArray.STATS_MAX]; 
+        stats = stationTable.getColumn(stationBeginTimeCol).calculatePAOneStats();        //to get the minimum begin value
+        PAOne stats2[] = stationTable.getColumn(stationEndTimeCol).calculatePAOneStats(); //to get the maximum end value
+        PAOne tTimeMin = stats[PrimitiveArray.STATS_MIN];
+        PAOne tTimeMax = stats2[PrimitiveArray.STATS_N].getInt() < stationTable.getColumn(stationEndTimeCol).size()? //some indeterminant
+            PAOne.fromDouble(Double.NaN) : stats2[PrimitiveArray.STATS_MAX]; 
         tAtts = (new Attributes())
             .add("units", tTimeSourceFormat);
         if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType)) 
@@ -1219,14 +1220,14 @@ public class EDDTableFromSOS extends EDDTable{
             //fill in missing bbox bounds with known dataset lon,lat bounds
             double fudge = 0.001;
             if (Double.isNaN(requestedDestinationMin[0]))
-                             requestedDestinationMin[0] = dataVariables[lonIndex].destinationMin() - fudge;
+                             requestedDestinationMin[0] = dataVariables[lonIndex].destinationMinDouble() - fudge;
             if (Double.isNaN(requestedDestinationMax[0]))
-                             requestedDestinationMax[0] = dataVariables[lonIndex].destinationMax() + fudge;
+                             requestedDestinationMax[0] = dataVariables[lonIndex].destinationMaxDouble() + fudge;
                 
             if (Double.isNaN(requestedDestinationMin[1]))
-                             requestedDestinationMin[1] = dataVariables[latIndex].destinationMin() - fudge;
+                             requestedDestinationMin[1] = dataVariables[latIndex].destinationMinDouble() - fudge;
             if (Double.isNaN(requestedDestinationMax[1]))
-                             requestedDestinationMax[1] = dataVariables[latIndex].destinationMax() + fudge;
+                             requestedDestinationMax[1] = dataVariables[latIndex].destinationMaxDouble() + fudge;
 
             //ndbc objects if min=max
             if (requestedDestinationMin[0] == requestedDestinationMax[0]) {
@@ -6394,7 +6395,7 @@ So I will make ERDDAP able to read
 "-69.3578,43.7148\n" + //2015-07-31 was -69.3550033569336,43.7163009643555\n" + //2014-09-22 was -69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
 "-68.9982,44.0555\n" +
-"-68.8249619164502,44.3871537467378\n" +
+"-68.82308,44.3878\n" + //2020-05-06 was "-68.8249619164502,44.3871537467378\n" +
 "-68.1121,44.1028\n" + //2015-07-31 was -68.1084442138672,44.1057103474935\n" +
 "-67.8798,43.4907\n" +
 "-65.907,42.3303\n"; //2014-09-22 was -65.9061666666667,42.3336666666667\n";

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -349,22 +350,22 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             if (EDV.LON_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVLon(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN); 
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVLat(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN); 
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN);
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVDepth(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN);
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,

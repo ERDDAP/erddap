@@ -34,7 +34,7 @@ public class UByteArray extends PrimitiveArray {
     public final static short MIN_VALUE = Math2.UBYTE_MIN_VALUE;
 
     /** 
-     * This is the maximum unsigned value (the cohort missing value), stored as a signed byte.
+     * This is the maximum unsigned value (the cohort missing value), stored/packed as a signed byte.
      */
     public final static byte PACKED_MAX_VALUE = (byte)-1;
 

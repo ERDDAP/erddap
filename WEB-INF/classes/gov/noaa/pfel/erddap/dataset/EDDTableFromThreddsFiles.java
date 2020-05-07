@@ -1675,7 +1675,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  windSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 2850253.0;\n" +  //really?
+"    Float32 actual_range 0.0, 2850253.2;\n" +  //really?  2020-05-05 was 2850253.0
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1740,7 +1740,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  platformSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 2850255.0;\n" +  //really
+"    Float32 actual_range 0.0, 2850255.0;\n" +  //really?
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +

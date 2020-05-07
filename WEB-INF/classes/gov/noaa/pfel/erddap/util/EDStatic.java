@@ -189,7 +189,7 @@ public class EDStatic {
      * During development, Bob sets this to true. No one else needs to. 
      * If true, ERDDAP uses setup2.xml and datasets2.xml (and messages2.xml if it exists). 
      */
-public static boolean developmentMode = true;
+public static boolean developmentMode = false;
 
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   

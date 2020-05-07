@@ -1426,14 +1426,22 @@ public class String2 {
             return false;
         char ch0 = s.charAt(0);
 
-        //hexadecimal? e.g., 0x2AFF            //octal not supported
-        if (ch0 == '0' && sLength >= 3 && Character.toUpperCase(s.charAt(1)) == 'X') {
-            //ensure all remaining chars are hexadecimal
-            for (int po = 2; po < sLength; po++) {
-                if ("0123456789abcdefABCDEF".indexOf(s.charAt(po)) < 0) 
-                    return false;
+        if (ch0 == '0') {
+            //hexadecimal? e.g., 0x2AFF            //octal not supported
+            if (sLength >= 3 && Character.toUpperCase(s.charAt(1)) == 'X') {
+                //ensure all remaining chars are hexadecimal
+                for (int po = 2; po < sLength; po++) {
+                    if ("0123456789abcdefABCDEF".indexOf(s.charAt(po)) < 0) 
+                        return false;
+                }
+                return true;
             }
-            return true;
+
+            //otherwise it must be 0.[something] or 0e[something]
+            //Values like 0123 are string identifiers, not numbers
+            if (sLength >= 3 && ".eE".indexOf(s.charAt(1)) < 0)
+                return false;
+            //else fall through to checks below
         }
 
         //NaN?

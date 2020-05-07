@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -1686,47 +1687,31 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
             //dMin and dMax are raw source values -- scale_factor and add_offset haven't been applied
             String tSourceType = sourceDataTypes[dv];
-            String sMin = tSourceType.equals("String")? "" : 
-                          minMaxTable.getStringData(dv, 0);
-            String sMax = tSourceType.equals("String")? "" : 
-                          minMaxTable.getStringData(dv, 1);
+            PAOne tMin = tSourceType.equals("String")? PAOne.fromString("") : minMaxTable.getPAOneData(dv, 0);
+            PAOne tMax = tSourceType.equals("String")? PAOne.fromString("") : minMaxTable.getPAOneData(dv, 1);
             //String2.log(">> tSourceName=" + tSourceName + " sMin=" + sMin + " sMax=" + sMax + " paMinest=" + minMaxTable.getColumn(dv).MINEST_VALUE() + " paMaxest=" + minMaxTable.getColumn(dv).MAXEST_VALUE());
-            if (sMin.length() > 0 &&
-                minMaxTable.getColumn(dv).MINEST_VALUE().equals(sMin) && //minest is min for the PA type
-                minMaxTable.getColumn(dv).MAXEST_VALUE().equals(sMax)) { //maxext is max for the PA type
-                //these are placeholder min and max, so don't use for actual_range
-                sMin = "";
-                sMax = "";
-            }
-            double dMin = String2.parseDouble(sMin);
-            double dMax = String2.parseDouble(sMax);
-            if (tSourceType.equals("char")) {
-                dMin = sMin.length() == 0? Double.NaN : (double)sMin.charAt(0);
-                dMax = sMax.length() == 0? Double.NaN : (double)sMax.charAt(0);
-            }
 
-
-            if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType + " dMin=" + dMin + " dMax=" + dMax);
+            if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType + " tMin=" + tMin + " tMax=" + tMax);
 
             if (EDV.LON_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVLon(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, dMin, dMax); 
+                    tSourceType, tMin, tMax); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVLat(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, dMin, dMax); 
+                    tSourceType, tMin, tMax); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType,  dMin, dMax);
+                    tSourceType, tMin, tMax);
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVDepth(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType,  dMin, dMax);
+                    tSourceType, tMin, tMax);
                 depthIndex = dv;
 
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
@@ -1750,8 +1735,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 } else if (!tSourceType.equals("String")) {  //numeric times sort correctly                          
                     PrimitiveArray actualRange = PrimitiveArray.factory(
                         PrimitiveArray.elementStringToPAType(sourceDataTypes[dv]), 2, false);
-                    actualRange.addDouble(minMaxTable.getDoubleData(dv, 0));
-                    actualRange.addDouble(minMaxTable.getDoubleData(dv, 1));
+                    actualRange.addPAOne(minMaxTable.getPAOneData(dv, 0));
+                    actualRange.addPAOne(minMaxTable.getPAOneData(dv, 1));
                     tAddAtt.set("actual_range", actualRange);
                     //String2.log(">> timestamp actual_range=" + actualRange);
                 }
@@ -1771,12 +1756,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 }
             } else {
                 dataVariables[dv] = new EDV(tSourceName, tDestName, 
-                    tSourceAtt, tAddAtt, tSourceType, dMin, dMax); 
+                    tSourceAtt, tAddAtt, tSourceType, tMin, tMax); 
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
             }
 
         //String2.pressEnterToContinue("!!!sourceName=" + dataVariables[dv].sourceName() + 
-        //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMin());
+        //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMinDouble());
         }
 
         //Try to gather information to serve this dataset via ERDDAP's SOS server.
@@ -1908,7 +1893,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //EDV edv = findDataVariableByDestinationName("longitude");
         //String2.pressEnterToContinue("!!!end of EDDTableFromFiles constructor: sourceName=" + edv.sourceName() + 
-        //    " type=" + edv.sourceDataType() + " min=" + edv.destinationMin());
+        //    " type=" + edv.sourceDataType() + " min=" + edv.destinationMinDouble());
 
         //dirTable and fileTable InMemory?
         if (!fileTableInMemory) {
@@ -2682,27 +2667,27 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (edv instanceof EDVTimeStamp) {
                     EDVTimeStamp edvts = (EDVTimeStamp)edv;
                     edvts.setDestinationMinMax(
-                        edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0)),
-                        edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1)));
+                        PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0))),
+                        PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1))));
                     edvts.setActualRangeFromDestinationMinMax();
                 }
             } else { //minMaxPa is numeric 
                 edv.setDestinationMinMaxFromSource(
-                    minMaxPa.getDouble(0), 
-                    minMaxPa.getDouble(1));
+                    minMaxPa.getPAOne(0), 
+                    minMaxPa.getPAOne(1));
                 edv.setActualRangeFromDestinationMinMax();
             }
 
             if (dv == lonIndex) {
-                combinedGlobalAttributes().set("geospatial_lon_min", edv.destinationMin());
-                combinedGlobalAttributes().set("geospatial_lon_max", edv.destinationMax());
+                combinedGlobalAttributes().set("geospatial_lon_min", edv.destinationMinDouble());
+                combinedGlobalAttributes().set("geospatial_lon_max", edv.destinationMaxDouble());
             } else if (dv == latIndex) {
-                combinedGlobalAttributes().set("geospatial_lat_min", edv.destinationMin());
-                combinedGlobalAttributes().set("geospatial_lat_max", edv.destinationMax());
+                combinedGlobalAttributes().set("geospatial_lat_min", edv.destinationMinDouble());
+                combinedGlobalAttributes().set("geospatial_lat_max", edv.destinationMaxDouble());
             } else if (dv == altIndex || dv == depthIndex) {
                 //this works with alt and depth because positive=up|down deals with meaning
-                combinedGlobalAttributes().set("geospatial_vertical_min", edv.destinationMin());
-                combinedGlobalAttributes().set("geospatial_vertical_max", edv.destinationMax());
+                combinedGlobalAttributes().set("geospatial_vertical_min", edv.destinationMinDouble());
+                combinedGlobalAttributes().set("geospatial_vertical_max", edv.destinationMaxDouble());
             } else if (dv == timeIndex) {
                 combinedGlobalAttributes().set("time_coverage_start", edv.destinationMinString());
                 combinedGlobalAttributes().set("time_coverage_end",   edv.destinationMaxString());
