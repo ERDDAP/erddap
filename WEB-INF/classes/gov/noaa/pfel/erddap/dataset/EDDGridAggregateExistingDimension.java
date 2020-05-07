@@ -1235,8 +1235,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         //min max
         EDV edv = gridDataset.findAxisVariableByDestinationName("longitude");
-        Test.ensureEqual(edv.destinationMin(), -75.42, "");
-        Test.ensureEqual(edv.destinationMax(), -75.42, "");
+        Test.ensureEqual(edv.destinationMinDouble(), -75.42, "");
+        Test.ensureEqual(edv.destinationMaxDouble(), -75.42, "");
 
         String ndbcDapQuery = "wind_speed[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, 

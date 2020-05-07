@@ -173,53 +173,6 @@ public class NcHelper  {
 
 
     /**
-     * This is a shim for the old Array.factory(Object javaArray).
-     *
-     * @param javaArray e.g., double[]
-     * @return a netcdf Array using the javaArray for storage.
-     * @throws RuntimeException if unexpected type or dimensions
-     */
-/*    public static Array arrayFactory1D(Object javaArray) {
-        if (javaArray instanceof double[]) {
-            double ar[] = (double[])javaArray;
-            return Array.factory(DataType.DOUBLE, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof float[]) {
-            float ar[] = (float[])javaArray;
-            return Array.factory(DataType.FLOAT, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof ulong[]) ...  //deal with unsigned pa's in this method
-
-        if (javaArray instanceof long[]) {
-            long ar[] = (long[])javaArray;
-            return Array.factory(DataType.LONG, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof int[]) {
-            int ar[] = (int[])javaArray;
-            return Array.factory(DataType.INT, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof short[]) {
-            short ar[] = (short[])javaArray;
-            return Array.factory(DataType.SHORT, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof byte[]) {
-            byte ar[] = (byte[])javaArray;
-            return Array.factory(DataType.BYTE, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof String[]) {
-            String ar[] = (String[])javaArray;
-            return Array.factory(DataType.STRING, new int[]{ar.length}, ar);
-        }
-        if (javaArray instanceof char[]) {
-            char ar[] = (char[])javaArray;
-            return Array.factory(DataType.CHAR, new int[]{ar.length}, ar);
-        }
-        throw new RuntimeException("Unexpected data type: " + javaArray.getClass().toString());
-    }
-*/
-
-
-    /**
      * This is like fromJson, but specifically designed to 
      * decode an attribute, starting with netcdf-java 4.0 
      * (which returns them in a backslash encoded form).
@@ -296,14 +249,14 @@ public class NcHelper  {
         }
         Array ar = null;
         if (pa instanceof CharArray) //pass all (Unicode) chars through unchanged (not limited to ISO_8859_1)
-            ar = Array.factory(DataType.CHAR, new int[]{pa.size()}, pa.toObjectArray());
-        else if (nc3Mode && (pa.elementType() == PAType.ULONG || pa.elementType() == PAType.ULONG))
-            ar = get1DArray(PrimitiveArray.rawFactory(PAType.DOUBLE, pa));
+             ar = Array.factory(DataType.CHAR, new int[]{pa.size()}, pa.toObjectArray());
+        else if (nc3Mode && (pa.elementType() == PAType.LONG || pa.elementType() == PAType.ULONG))
+             ar = get1DArray(PrimitiveArray.rawFactory(PAType.DOUBLE, pa));
         else if (nc3Mode && pa.isUnsigned())
-            ar =  get1DArray(pa.toObjectArray(), false);  //2020-04-10 attributes in nc3 can't be unsigned
+             ar = get1DArray(pa.toObjectArray(), false);  //2020-04-10 attributes in nc3 can't be unsigned
         else ar = get1DArray(pa);
         Attribute att = new Attribute(name, ar);
-        //String2.log(">> NcHelper.createAttribute(" + name + ", " + pa + ") -> " + att.toString());
+        //String2.log(">> NcHelper.createAttribute(" + name + ", " + pa.elementType() + ", " + pa + ") -> " + att.toString());
         return att;
     }
 

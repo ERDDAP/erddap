@@ -312,10 +312,10 @@ if (lonIndex < nAv - 1)
         if (!childLon.isAscending())
             throw new RuntimeException(errorInMethod + 
                 "The child longitude axis has descending values!");
-        if (childLon.destinationMax() <= 180)
+        if (childLon.destinationMaxDouble() <= 180)
             throw new RuntimeException(errorInMethod + 
                 "The child longitude axis has no values >180 (max=" + 
-                childLon.destinationMax() + ")!");
+                childLon.destinationMaxDouble() + ")!");
         PrimitiveArray childLonValues = childLon.destinationValues();
         int nChildLonValues = childLonValues.size();
 
@@ -324,7 +324,7 @@ if (lonIndex < nAv - 1)
 // new:                                      -180, -90,   -1 insert359 || insert0,  0, 90, 179 
         //all of the searches use EXACT math 
         PAOne clvPAOne = new PAOne(childLonValues);
-        if (childLon.destinationMin() < 180) {
+        if (childLon.destinationMinDouble() < 180) {
             sloni0   = childLonValues.binaryFindFirstGE(0,     nChildLonValues - 1, clvPAOne.setDouble(  0)); //first index >=0
             sloni179 = childLonValues.binaryFindLastLE(sloni0, nChildLonValues - 1, clvPAOne.setDouble(180)); //last index <180
             if (childLonValues.getDouble(sloni179) == 180)
@@ -361,7 +361,7 @@ if (lonIndex < nAv - 1)
 
                 //throw new RuntimeException(errorInMethod + 
                 //    "The child longitude axis has no values >180 (max=" + 
-                //    childLon.destinationMax() + ")!");
+                //    childLon.destinationMaxDouble() + ")!");
 
                 insert359i = newLonValues.size();
                 for (int i = 1; i <= insertN; i++) {
@@ -1480,15 +1480,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 137];\n" + //changes
+"  Float64 time[time = 138];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 137][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 138][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 137];\n" +  //changes
+"      Float64 time[time = 138];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +

@@ -33,7 +33,7 @@ public class UIntArray extends PrimitiveArray {
     public final static long MIN_VALUE = Math2.UINT_MIN_VALUE;
 
     /** 
-     * This is the maximum unsigned value (the CoHort missing value), stored as a signed int.
+     * This is the maximum unsigned value (the CoHort missing value), stored/packed as a signed int.
      */
     public final static int PACKED_MAX_VALUE = -1;
 

@@ -131,8 +131,8 @@ public class AxisDataAccessor {
             //setActualRangeAndBoundingBox  (see comments in method javadocs above)
             //if no data, don't specify range
             //actual_range is type-specific
-            double dMin = rAxisValues[av].getDouble(0);
-            double dMax = rAxisValues[av].getDouble(rAxisValues[av].size() - 1);
+            double dMin = rAxisValues[av].getNiceDouble(0);
+            double dMax = rAxisValues[av].getNiceDouble(rAxisValues[av].size() - 1);
             if (dMin > dMax) {
                 double d = dMin; dMin = dMax; dMax = d;
             }

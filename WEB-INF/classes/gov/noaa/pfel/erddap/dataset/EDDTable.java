@@ -12,6 +12,7 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
@@ -746,7 +747,7 @@ public abstract class EDDTable extends EDD {
                 int nMinMax[] = pa.getNMinMaxIndex();
                 if (nMinMax[0] == 0)
                     continue;
-                edv.setDestinationMinMax(pa.getDouble(nMinMax[1]), pa.getDouble(nMinMax[2]));
+                edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
                 edv.setActualRangeFromDestinationMinMax();
             }
         }
@@ -2270,8 +2271,8 @@ public abstract class EDDTable extends EDD {
                     String mVarName = tValue.substring(4, cpo);
                     EDV mVar = findDataVariableByDestinationName(mVarName); //throws Exception
                     conValueD = tValue.startsWith("min(")?
-                        mVar.destinationMin() : //time will be epochSeconds
-                        mVar.destinationMax(); 
+                        mVar.destinationMinDouble() : //time will be epochSeconds
+                        mVar.destinationMaxDouble(); 
                     if (Double.isNaN(conValueD))
                         throw new SimpleException(EDStatic.queryError +
                             "\"" + mmString + "(" + mVarName + ")\" is not allowed because the " + 
@@ -2427,8 +2428,8 @@ public abstract class EDDTable extends EDD {
             //  destMin and destMax values (e.g., atemp in cwwcNDBCMet).
             if (Double.isFinite(conValueD)) {
                 boolean tPassed = true;
-                double destMin = conEdv.destinationMin();
-                double destMax = conEdv.destinationMax();
+                double destMin = conEdv.destinationMinDouble();
+                double destMax = conEdv.destinationMaxDouble();
                 //if edvTimeStamp and destMax is recent, treat destMax as NaN
                 if (conEdvIsTimeStamp && //destMax is epochSeconds
                     destMax > System.currentTimeMillis()/1000.0 - 2.0 * Calendar2.SECONDS_PER_DAY) {
@@ -2585,14 +2586,14 @@ public abstract class EDDTable extends EDD {
 
         for (int i = 0; i < 4; i++) {
             if (edv[i] != null) {
-                double tMin = edv[i].destinationMin();
+                double tMin = edv[i].destinationMinDouble();
                 if (Double.isNaN(tMin)) {
                 } else {
                     if (Double.isNaN(requestedMin[i]))
                         requestedMin[i] = tMin;
                     else requestedMin[i] = Math.max(tMin, requestedMin[i]);
                 }
-                double tMax = edv[i].destinationMax();
+                double tMax = edv[i].destinationMaxDouble();
                 if (Double.isNaN(tMax)) {
                 } else {
                     if (Double.isNaN(requestedMax[i]))
@@ -4507,8 +4508,8 @@ public abstract class EDDTable extends EDD {
                     xLH[0] -= sd[1]; //tight range
                     xLH[1] += sd[1];
                     if (xStats[PrimitiveArray.STATS_N] == 0) {
-                        xLH[0] = xVar.destinationMin(); 
-                        xLH[1] = xVar.destinationMax();
+                        xLH[0] = xVar.destinationMinDouble(); 
+                        xLH[1] = xVar.destinationMaxDouble();
                     }
 
                     double yLH[] = {
@@ -4518,8 +4519,8 @@ public abstract class EDDTable extends EDD {
                     yLH[0] -= sd[1]; //tight range
                     yLH[1] += sd[1];
                     if (yStats[PrimitiveArray.STATS_N] == 0) {
-                        yLH[0] = yVar.destinationMin(); 
-                        yLH[1] = yVar.destinationMax();
+                        yLH[0] = yVar.destinationMinDouble(); 
+                        yLH[1] = yVar.destinationMaxDouble();
                     }
 
                     //ensure default range at least 1x1 degree
@@ -6572,16 +6573,11 @@ public abstract class EDDTable extends EDD {
                 String2.log("  " + destName + ": is String variable; maxStringLength found = " +
                     twawm.columnMaxStringLength(col) + "\n");
             } else {
-                String tMin, tMax; 
-                if (PrimitiveArray.isIntegerType(edv.destinationDataPAType())) {
-                    tMin = "" + Math2.roundToLong(twawm.columnMinValue[col]); 
-                    tMax = "" + Math2.roundToLong(twawm.columnMaxValue[col]); 
-                } else {
-                    tMin = "" + twawm.columnMinValue[col]; 
-                    tMax = "" + twawm.columnMaxValue[col]; 
-                }
+                String tMin = twawm.columnMinValue[col].getString(); 
+                String tMax = twawm.columnMaxValue[col].getString(); 
                 if (verbose) {
-                    double loHi[] = Math2.suggestLowHigh(twawm.columnMinValue[col], twawm.columnMaxValue[col]);
+                    double loHi[] = Math2.suggestLowHigh(twawm.columnMinValue[col].getDouble(),
+                                                         twawm.columnMaxValue[col].getDouble());
                     String2.log("  " + destName + ":\n" +
                     "                <att name=\"actual_range\" type=\"" + edv.destinationDataType().toLowerCase() + 
                         "List\">" + tMin + " " + tMax + "</att>\n" +
@@ -6589,12 +6585,12 @@ public abstract class EDDTable extends EDD {
                     "                <att name=\"colorBarMaximum\" type=\"double\">" + loHi[1] + "</att>\n");
                 }
                 if (makeChanges && 
-                    Double.isNaN(edv.destinationMin()) &&
-                    Double.isNaN(edv.destinationMax())) {
+                    edv.destinationMin().isNaN() &&
+                    edv.destinationMax().isNaN()) {
 
                     edv.setDestinationMinMax(
-                        twawm.columnMinValue[col] * edv.scaleFactor() + edv.addOffset(),
-                        twawm.columnMaxValue[col] * edv.scaleFactor() + edv.addOffset());
+                        PAOne.fromDouble(twawm.columnMinValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()),
+                        PAOne.fromDouble(twawm.columnMaxValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()));
                     edv.setActualRangeFromDestinationMinMax();
                 }
             }
@@ -6634,12 +6630,12 @@ public abstract class EDDTable extends EDD {
         Table table = twawm.makeEmptyTable(); //no need for twawm.cumulativeTable();
         twawm.releaseResources();
         int timeCol = table.findColumnNumber(EDV.TIME_NAME);
-        double tMin = twawm.columnMinValue(timeCol); 
-        double tMax = twawm.columnMaxValue(timeCol);
+        PAOne tMin = twawm.columnMinValue(timeCol); 
+        PAOne tMax = twawm.columnMaxValue(timeCol);
         if (verbose) String2.log("  found time min=" + tMin + "=" +
-            (Double.isNaN(tMin)? "" : Calendar2.epochSecondsToIsoStringTZ(tMin)) + 
+            (tMin.isNaN()? "" : Calendar2.epochSecondsToIsoStringTZ(tMin.getDouble())) + 
             " max=" + tMax + "=" +
-            (Double.isNaN(tMax)? "" : Calendar2.epochSecondsToIsoStringTZ(tMax)));
+            (tMax.isNaN()? "" : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
         dataVariables[timeIndex].setDestinationMinMax(tMin, tMax); //scaleFactor,addOffset not supported
         dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
     }
@@ -6761,8 +6757,8 @@ public abstract class EDDTable extends EDD {
         Table tMinMaxTable = minMaxTable;
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = dataVariables[dv];
-            double tMin = edv.destinationMin();
-            double tMax = edv.destinationMax();
+            double tMin = edv.destinationMinDouble();
+            double tMax = edv.destinationMaxDouble();
             boolean isTime = dv == timeIndex;
             boolean isTimeStamp = edv instanceof EDVTimeStamp;
             boolean isChar = edv.destinationDataPAType() == PAType.CHAR;
@@ -6968,8 +6964,8 @@ public abstract class EDDTable extends EDD {
 
             // *** and a slider for this dataVariable    (Data Access Form)
             if ((dv != lonIndex && dv != latIndex && dv != altIndex && dv != depthIndex && !isTime) ||
-                !Double.isFinite(edv.destinationMin()) ||
-                (!Double.isFinite(edv.destinationMax()) && !isTime)) {
+                !Double.isFinite(edv.destinationMinDouble()) ||
+                (!Double.isFinite(edv.destinationMaxDouble()) && !isTime)) {
 
                 //no slider
                 sliderNThumbs[dv] = 0;
@@ -8993,14 +8989,14 @@ public abstract class EDDTable extends EDD {
             if (dv < 0) 
                 continue;
             EDV edv = dataVariables[dv];
-            if (Double.isNaN(edv.destinationMin()) && Double.isNaN(edv.destinationMax())) {
+            if (Double.isNaN(edv.destinationMinDouble()) && Double.isNaN(edv.destinationMaxDouble())) {
             } else {
-                String tMin = Double.isNaN(edv.destinationMin())? "(?)" : 
-                    llati == 3? edv.destinationMinString() : ""+((float)edv.destinationMin());
-                String tMax = Double.isNaN(edv.destinationMax())? 
+                String tMin = Double.isNaN(edv.destinationMinDouble())? "(?)" : 
+                    llati == 3? edv.destinationMinString() : ""+((float)edv.destinationMinDouble());
+                String tMax = Double.isNaN(edv.destinationMaxDouble())? 
                     (llati == 3? "(now?)" : "(?)") : 
                     llati == 3? edv.destinationMaxString() : 
-                        ""+((float)edv.destinationMax());
+                        ""+((float)edv.destinationMaxDouble());
                 llatRange.append(edv.destinationName() + "&nbsp;=&nbsp;" + 
                     tMin + "&nbsp;" + EDStatic.magRangeTo +"&nbsp;" + tMax + 
                     (llati == 0? "&deg;E" : llati == 1? "&deg;N" : llati == 2? "m" : "") +
@@ -9114,8 +9110,8 @@ public abstract class EDDTable extends EDD {
             //if lon min max is known, use it to adjust maxExtentWESN[0,1]
             if (lonIndex >= 0) {
                 EDV edv = dataVariables[lonIndex];
-                double dMin = edv.destinationMin();
-                double dMax = edv.destinationMax();
+                double dMin = edv.destinationMinDouble();
+                double dMax = edv.destinationMaxDouble();
                 if (!Double.isNaN(dMin) && !Double.isNaN(dMax)) {
                     if (dMax > 360) {
                         double lh[] = Math2.suggestLowHigh(Math.min(dMin, 0), dMax);
@@ -9725,7 +9721,7 @@ public abstract class EDDTable extends EDD {
                         //suggest a time constraint: last week's worth of data
                         conVar[cv] = timeIndex + 1; // +1 since option 0=""
                         conEdv = dataVariables()[conVar[cv] - 1];
-                        double d = Calendar2.backNDays(-1, conEdv.destinationMax()); //coming midnight
+                        double d = Calendar2.backNDays(-1, conEdv.destinationMaxDouble()); //coming midnight
                         if (con == 0) 
                             d = Calendar2.backNDays(7, d); 
                         conVal[cv][con] = Calendar2.epochSecondsToLimitedIsoStringT(
@@ -10573,8 +10569,8 @@ public abstract class EDDTable extends EDD {
             if (zoomX) {
 
                 //does var have known min and max?
-                double zoomXEdvMin = zoomXEdv.destinationMin(); //may be NaN
-                double zoomXEdvMax = zoomXEdv.destinationMax();
+                double zoomXEdvMin = zoomXEdv.destinationMinDouble(); //may be NaN
+                double zoomXEdvMax = zoomXEdv.destinationMaxDouble();
                 double zoomXEdvCenter = (zoomXEdvMin + zoomXEdvMax) / 2; //may be NaN
                 double zoomXEdvRange = zoomXEdvMax - zoomXEdvMin; //may be NaN
                 double zoomXCenter = (zoomXMin + zoomXMax ) / 2;
@@ -10674,8 +10670,8 @@ public abstract class EDDTable extends EDD {
             if (zoomTime) {
 
                 EDVTimeStamp edvTime = (EDVTimeStamp)dataVariables[timeIndex];
-                double edvTimeMin = edvTime.destinationMin();  //may be NaN
-                double edvTimeMax = edvTime.destinationMax();  //may be NaN
+                double edvTimeMin = edvTime.destinationMinDouble();  //may be NaN
+                double edvTimeMax = edvTime.destinationMaxDouble();  //may be NaN
                 String tTime_precision = edvTime.time_precision();
                 if (!Double.isNaN(edvTimeMin) && Double.isNaN(edvTimeMax))
                     edvTimeMax = Calendar2.backNDays(-1, edvTimeMax);
@@ -13761,11 +13757,11 @@ public abstract class EDDTable extends EDD {
 "        <gml:boundedBy>\n" +
 "          <gml:Envelope srsName=\"http://www.opengis.net/def/crs/EPSG/0/4326\">\n" +
 "            <gml:lowerCorner>" + //!!! This assumes unknown lon range is still +/-180, not 0 - 360!!!
-                (Double.isFinite(edvLon.destinationMin())? edvLon.destinationMinString() :  -90) + " " + 
-                (Double.isFinite(edvLat.destinationMin())? edvLat.destinationMinString() : -180) + "</gml:lowerCorner>\n" +
+                (Double.isFinite(edvLon.destinationMinDouble())? edvLon.destinationMinString() :  -90) + " " + 
+                (Double.isFinite(edvLat.destinationMinDouble())? edvLat.destinationMinString() : -180) + "</gml:lowerCorner>\n" +
 "            <gml:upperCorner>" + 
-                (Double.isFinite(edvLon.destinationMax())? edvLon.destinationMaxString() :  90) + " " + 
-                (Double.isFinite(edvLat.destinationMax())? edvLat.destinationMaxString() : 180) + "</gml:upperCorner>\n" +
+                (Double.isFinite(edvLon.destinationMaxDouble())? edvLon.destinationMaxString() :  90) + " " + 
+                (Double.isFinite(edvLat.destinationMaxDouble())? edvLat.destinationMaxString() : 180) + "</gml:upperCorner>\n" +
 "          </gml:Envelope>\n" +
 "        </gml:boundedBy>\n" +
 "        <sos:time>\n" +
@@ -13819,10 +13815,10 @@ public abstract class EDDTable extends EDD {
                    minLat  = Double.NaN, maxLat  = Double.NaN, 
                    minTime = Double.NaN, maxTime = Double.NaN;
             if (offering == -1) {       
-                minLon  = dataVariables[lonIndex].destinationMin();
-                maxLon  = dataVariables[lonIndex].destinationMax();
-                minLat  = dataVariables[latIndex].destinationMin();
-                maxLat  = dataVariables[latIndex].destinationMax();
+                minLon  = dataVariables[lonIndex].destinationMinDouble();
+                maxLon  = dataVariables[lonIndex].destinationMaxDouble();
+                minLat  = dataVariables[latIndex].destinationMinDouble();
+                maxLat  = dataVariables[latIndex].destinationMaxDouble();
             } else {
                 minLon  = sosMinLon.getNiceDouble(offering);
                 maxLon  = sosMaxLon.getNiceDouble(offering);
@@ -13831,8 +13827,8 @@ public abstract class EDDTable extends EDD {
                 minTime = sosMinTime.getDouble(offering);
                 maxTime = sosMaxTime.getDouble(offering);
             }
-            if (Double.isNaN(minTime)) minTime = dataVariables[timeIndex].destinationMin();
-            if (Double.isNaN(maxTime)) maxTime = dataVariables[timeIndex].destinationMax();
+            if (Double.isNaN(minTime)) minTime = dataVariables[timeIndex].destinationMinDouble();
+            if (Double.isNaN(maxTime)) maxTime = dataVariables[timeIndex].destinationMaxDouble();
 
             String minTimeString = Double.isNaN(minTime)?  
                 " indeterminatePosition=\"unknown\">" :
@@ -14059,8 +14055,8 @@ public abstract class EDDTable extends EDD {
             minTimeD = sosMinTime.getDouble(which);
             maxTimeD = sosMaxTime.getDouble(which);
         }
-        if (Double.isNaN(minTimeD)) minTimeD = dataVariables[timeIndex].destinationMin();
-        if (Double.isNaN(maxTimeD)) maxTimeD = dataVariables[timeIndex].destinationMax();
+        if (Double.isNaN(minTimeD)) minTimeD = dataVariables[timeIndex].destinationMinDouble();
+        if (Double.isNaN(maxTimeD)) maxTimeD = dataVariables[timeIndex].destinationMaxDouble();
         String minTimeString = Double.isNaN(minTimeD)?  
             " indeterminatePosition=\"unknown\">" :
             ">" + Calendar2.epochSecondsToIsoStringTZ(minTimeD);
@@ -14720,7 +14716,7 @@ public abstract class EDDTable extends EDD {
         String eventTime = sosQueryMap.get("eventtime"); //test name.toLowerCase()
         if (eventTime == null) {  
             //if not specified, get latest time's data (within last week)
-            double maxTime = whichOffering == -1? dataVariables[timeIndex].destinationMax() : 
+            double maxTime = whichOffering == -1? dataVariables[timeIndex].destinationMaxDouble() : 
                 sosMaxTime.getDouble(whichOffering);
             double minTime = Calendar2.backNDays(7, maxTime);
             dapQuery.append("&time>=" + Calendar2.epochSecondsToIsoStringTZ(minTime) +
@@ -15200,20 +15196,12 @@ public abstract class EDDTable extends EDD {
         PrimitiveArray tTimePA = table.getColumn(tTimeIndex);
         PrimitiveArray tLatPA = table.getColumn(tLatIndex);
         PrimitiveArray tLonPA = table.getColumn(tLonIndex);
-        double minLon = tw.columnMinValue(tLonIndex);
-        double maxLon = tw.columnMaxValue(tLonIndex);
-        double minLat = tw.columnMinValue(tLatIndex);
-        double maxLat = tw.columnMaxValue(tLatIndex);
-        double minTime = tw.columnMinValue(tTimeIndex);
-        double maxTime = tw.columnMaxValue(tTimeIndex);
-        if (tLonPA instanceof FloatArray) {
-            minLon = Math2.floatToDouble(minLon);
-            maxLon = Math2.floatToDouble(maxLon);
-        }
-        if (tLatPA instanceof FloatArray) {
-            minLat = Math2.floatToDouble(minLat);
-            maxLat = Math2.floatToDouble(maxLat);
-        }
+        PAOne minLon = tw.columnMinValue(tLonIndex);
+        PAOne maxLon = tw.columnMaxValue(tLonIndex);
+        PAOne minLat = tw.columnMinValue(tLatIndex);
+        PAOne maxLat = tw.columnMaxValue(tLatIndex);
+        PAOne minTime = tw.columnMinValue(tTimeIndex);
+        PAOne maxTime = tw.columnMaxValue(tTimeIndex);
         int nRows = tIdPA.size();
         int nCols = table.nColumns();
 
@@ -15263,14 +15251,14 @@ public abstract class EDDTable extends EDD {
   "</gml:name>\n" +
 "  <gml:boundedBy>\n" +
 "    <gml:Envelope srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
-"      <gml:lowerCorner>" + minLat + " " + minLon + "</gml:lowerCorner>\n" + //lat lon
-"      <gml:upperCorner>" + maxLat + " " + maxLon + "</gml:upperCorner>\n" +
+"      <gml:lowerCorner>" + minLat.getString() + " " + minLon.getString() + "</gml:lowerCorner>\n" + //lat lon
+"      <gml:upperCorner>" + maxLat.getString() + " " + maxLon.getString() + "</gml:upperCorner>\n" +
 "    </gml:Envelope>\n" +
 "  </gml:boundedBy>\n" +
 "  <om:samplingTime>\n" +
 "    <gml:TimePeriod gml:id=\"ST\">\n" +
-"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(tw.columnMinValue(tTimeIndex)) + "</gml:beginPosition>\n" +
-"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(tw.columnMaxValue(tTimeIndex)) + "</gml:endPosition>\n" +
+"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(tw.columnMinValue(tTimeIndex).getDouble()) + "</gml:beginPosition>\n" +
+"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(tw.columnMaxValue(tTimeIndex).getDouble()) + "</gml:endPosition>\n" +
 "    </gml:TimePeriod>\n" +
 "  </om:samplingTime>\n" +
 "  <om:procedure>\n" +
@@ -15748,20 +15736,12 @@ public abstract class EDDTable extends EDD {
         }
         int nSensors = nCols - 4 - (tAltIndex >= 0 || tDepthIndex >= 0? 1 : 0); //4=LLTI
         boolean compositeSensor = nCols == dataVariables.length;
-        double minLon = tw.columnMinValue(tLonIndex);
-        double maxLon = tw.columnMaxValue(tLonIndex);
-        double minLat = tw.columnMinValue(tLatIndex);
-        double maxLat = tw.columnMaxValue(tLatIndex);
-        double minTime = tw.columnMinValue(tTimeIndex);
-        double maxTime = tw.columnMaxValue(tTimeIndex);
-        if (tLonPA instanceof FloatArray) {
-            minLon = Math2.floatToDouble(minLon);
-            maxLon = Math2.floatToDouble(maxLon);
-        }
-        if (tLatPA instanceof FloatArray) {
-            minLat = Math2.floatToDouble(minLat);
-            maxLat = Math2.floatToDouble(maxLat);
-        }
+        PAOne minLon = tw.columnMinValue(tLonIndex);
+        PAOne maxLon = tw.columnMaxValue(tLonIndex);
+        PAOne minLat = tw.columnMinValue(tLatIndex);
+        PAOne maxLat = tw.columnMaxValue(tLatIndex);
+        PAOne minTime = tw.columnMinValue(tTimeIndex);
+        PAOne maxTime = tw.columnMaxValue(tTimeIndex);
 
         //write start of xml content for Oostethys response
         writer.write( //sosObservationsXmlInlineOostethys
@@ -15781,31 +15761,31 @@ public abstract class EDDTable extends EDD {
   ", " + requestOfferingType + " " + requestShortOfferingName + 
   "</gml:name>\n" +
 "  <gml:location>\n");
-        if (minLon == maxLon && minLat == maxLat)
+        if (minLon.compareTo(maxLon) == 0 && minLat.compareTo(maxLat) == 0)
             writer.write(
 "    <gml:Point gml:id=\"OBSERVATION_LOCATION\" srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
 //"            <!-- use lat lon depth in deg deg m -->\n" +    //Oostethys had depth, too
-"      <gml:coordinates>" + minLat + " " + minLon + "</gml:coordinates>\n" +
+"      <gml:coordinates>" + minLat.getString() + " " + minLon.getString() + "</gml:coordinates>\n" +
 "    </gml:Point>\n");
         else writer.write(
 "    <gml:Envelope srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
-"      <gml:lowerCorner>" + minLat + " " + minLon + "</gml:lowerCorner>\n" + //lat lon
-"      <gml:upperCorner>" + maxLat + " " + maxLon + "</gml:upperCorner>\n" +
+"      <gml:lowerCorner>" + minLat.getString() + " " + minLon.getString() + "</gml:lowerCorner>\n" + //lat lon
+"      <gml:upperCorner>" + maxLat.getString() + " " + maxLon.getString() + "</gml:upperCorner>\n" +
 "    </gml:Envelope>\n");
         writer.write(
 "  </gml:location>\n" +
 "  <om:time>\n");
-        if (minTime == maxTime)
+        if (minTime.compareTo(maxTime) == 0)
             writer.write(
             //use TimeInstant for a single measurement
 "    <gml:TimeInstant gml:id=\"DATA_TIME\">\n" +
-"      <gml:timePosition" + Calendar2.epochSecondsToIsoStringTZ(minTime) + "</gml:timePosition>\n" +
+"      <gml:timePosition" + Calendar2.epochSecondsToIsoStringTZ(minTime.getDouble()) + "</gml:timePosition>\n" +
 "    </gml:TimeInstant>\n");
         else writer.write(
             //use TimePeriod for a series of data 
 "    <gml:TimePeriod gml:id=\"DATA_TIME\">\n" +
-"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(minTime) + "</gml:beginPosition>\n" +
-"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(maxTime) + "</gml:endPosition>\n" +
+"      <gml:beginPosition>" + Calendar2.epochSecondsToIsoStringTZ(minTime.getDouble()) + "</gml:beginPosition>\n" +
+"      <gml:endPosition>"   + Calendar2.epochSecondsToIsoStringTZ(maxTime.getDouble()) + "</gml:endPosition>\n" +
 "    </gml:TimePeriod>\n");
         writer.write(
 "  </om:time>\n");
@@ -17262,17 +17242,17 @@ writer.write(
 //so just deal with some of the options
 // and use (float) to avoid float->double bruising
 //default: just the lon part already in -180 to 180.
-float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin());
-float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax());
+float lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble());
+float lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble());
 // 0 to 360  -> -180 to 180
-if (lonEdv.destinationMin() >=   0 && lonEdv.destinationMin() <= 20 &&
-    lonEdv.destinationMax() >= 340) {
+if (lonEdv.destinationMinDouble() >=   0 && lonEdv.destinationMinDouble() <= 20 &&
+    lonEdv.destinationMaxDouble() >= 340) {
     lonMin = -180;
     lonMax = 180;
 //all lon >=180, so shift down 360
-} else if (lonEdv.destinationMin() >= 180) { 
-    lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin() - 360);
-    lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax() - 360);
+} else if (lonEdv.destinationMinDouble() >= 180) { 
+    lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble() - 360);
+    lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble() - 360);
 }
 writer.write(
 "    <status>\n" +
@@ -17283,8 +17263,8 @@ writer.write(
 "      <bounding>\n" +
 "        <westbc>"  + lonMin + "</westbc>\n" +
 "        <eastbc>"  + lonMax + "</eastbc>\n" +
-"        <northbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMax()) + "</northbc>\n" +
-"        <southbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMin()) + "</southbc>\n" +
+"        <northbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMaxDouble()) + "</northbc>\n" +
+"        <southbc>" + (float)Math2.minMax(-90, 90, latEdv.destinationMinDouble()) + "</southbc>\n" +
 "      </bounding>\n" +
 "    </spdom>\n");
 
@@ -17776,11 +17756,11 @@ writer.write(
         double minVert = Double.NaN; //in destination units (may be positive = up[I use] or down?! any units)
         double maxVert = Double.NaN;
         if (altEdv != null) {
-            minVert = altEdv.destinationMin();
-            maxVert = altEdv.destinationMax();
+            minVert = altEdv.destinationMinDouble();
+            maxVert = altEdv.destinationMaxDouble();
         } else if (depthEdv != null) {
-            minVert = -depthEdv.destinationMax(); //make into alt
-            maxVert = -depthEdv.destinationMin();
+            minVert = -depthEdv.destinationMaxDouble(); //make into alt
+            maxVert = -depthEdv.destinationMinDouble();
         }
 
         StringArray standardNames = new StringArray();
@@ -17799,24 +17779,24 @@ writer.write(
         // and use (float) to avoid float->double bruising
         //default: just the lon part already in -180 to 180.
         //EDDGrid doesn't allow for NaN
-        float lonMin = (float)lonEdv.destinationMin();
-        float lonMax = (float)lonEdv.destinationMax();
+        float lonMin = (float)lonEdv.destinationMinDouble();
+        float lonMax = (float)lonEdv.destinationMaxDouble();
         if (!Float.isNaN(lonMin) && !Float.isNaN(lonMax)) {
             lonMin = (float)Math2.minMax(-180, 180, lonMin);
             lonMax = (float)Math2.minMax(-180, 180, lonMax);
             // 0 to 360  -> -180 to 180
-            if (lonEdv.destinationMin() >=   0 && lonEdv.destinationMin() <= 20 &&
-                lonEdv.destinationMax() >= 340) {
+            if (lonEdv.destinationMinDouble() >=   0 && lonEdv.destinationMinDouble() <= 20 &&
+                lonEdv.destinationMaxDouble() >= 340) {
                 lonMin = -180;
                 lonMax = 180;
             //all lon >=180, so shift down 360
-            } else if (lonEdv.destinationMin() >= 180) { 
-                lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMin() - 360);
-                lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMax() - 360);
+            } else if (lonEdv.destinationMinDouble() >= 180) { 
+                lonMin = (float)Math2.minMax(-180, 180, lonEdv.destinationMinDouble() - 360);
+                lonMax = (float)Math2.minMax(-180, 180, lonEdv.destinationMaxDouble() - 360);
             }
         }
-        float latMin = (float)latEdv.destinationMin();
-        float latMax = (float)latEdv.destinationMax();
+        float latMin = (float)latEdv.destinationMinDouble();
+        float latMax = (float)latEdv.destinationMaxDouble();
         if (!Float.isNaN(latMin)) latMin = (float)Math2.minMax(-90, 90, latMin);
         if (!Float.isNaN(latMax)) latMax = (float)Math2.minMax(-90, 90, latMax);
 

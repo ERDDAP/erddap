@@ -1286,6 +1286,18 @@ public class Table  {
     }
 
     /**
+     * This returns the value of one datum as a PAOne.
+     *
+     * @param col the column number (0 ... nColumns-1 )
+     * @param row the row number (0 ... nRows-1 )
+     * @return the value of one datum as a PAOne.
+     * @throws Exception if trouble (e.g., row or col out of range)
+     */
+    public PAOne getPAOneData(int col, int row) {
+        return getColumn(col).getPAOne(row);
+    }
+
+    /**
      * This returns the value of one datum as a float.
      *
      * @param col the column number (0 ... nColumns-1 )

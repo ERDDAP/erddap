@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Types;
 import java.text.MessageFormat;
@@ -1101,6 +1102,26 @@ public abstract class PrimitiveArray {
     abstract public void setDouble(int index, double d);
 
     /**
+     * Return a value from the array as a PAOne.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return a PAOne.
+     */
+    public PAOne getPAOne(int index) {
+        return new PAOne(this, index);
+    }
+
+    /**
+     * Set a value in the array as a PAOne.
+     * 
+     * @param index the index number 0 ... size-1
+     * @param paOne the value.
+     */
+    public void setPAOne(int index, PAOne paOne) {
+        setFromPA(index, paOne.pa(), 0);
+    }
+
+    /**
      * Return a value from the array as a String (where the cohort missing value
      * appears as "", not a value).
      * 
@@ -1328,14 +1349,9 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This calculates min, max, and nValid for the values in this 
-     * PrimitiveArray.
-     * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
-     * be converted to Double.NaN.
+     * This is a variant of calculateStats that returns the results
+     * as a double[].
      *
-     * @param atts The related attributes. If they have _FillValue and/or missing_value,
-     *   those will be temporarily applied so the stats don't include them.
-     *   !!! THESE SHOULD BE NOT PACKED _FillValue and/or missing_value ATTRIBUTES.
      * @return a double[] with 
      *    dar[STATS_N] containing the number of valid values.
      *    dar[STATS_MIN] containing the minimum value, and
@@ -1344,13 +1360,107 @@ public abstract class PrimitiveArray {
      *    If n is 0, min and max will be Double.NaN, and sum will be 0.
      */
     public double[] calculateStats(Attributes atts) {
+        return PAOne.toDoubleArray(calculatePAOneStats(atts));
+    }
+
+    /** A variant of calculatePAOneStats that doesn't use Attributes. */
+    public PAOne[] calculatePAOneStats() {
+        return calculatePAOneStats(null);
+    }
+
+    /**
+     * This calculates min, max, and nValid for the values in this 
+     * PrimitiveArray.
+     * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
+     * be converted to NaN.
+     *
+     * @param atts The related attributes. If they have _FillValue and/or missing_value,
+     *   those will be temporarily applied so the stats don't include them.
+     *   !!! THESE SHOULD BE NOT-PACKED _FillValue and/or missing_value ATTRIBUTES.
+     *   CharArray's calculate min and max as chars (eg 'a' sorts before 'b').
+     *   StringArray's calculate min and max via String2.parseDouble(s).
+     * @return a PAOne[] with 
+     *    dar[STATS_N] containing the number of valid values.
+     *    dar[STATS_MIN] containing the minimum value, and
+     *    dar[STATS_MAX] containing the maximum value.
+     *    dar[STATS_SUM] containing the sum of the values.
+     *    If n is 0, min and max will be NaN (or e.g., Long.MAX_VALUE), and sum will be 0.
+     */
+    public PAOne[] calculatePAOneStats(Attributes atts) {
         long time = System.currentTimeMillis();
 
         int n = 0;
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE; //not Double.MIN_VALUE
-        double sum = 0;
 
+        //strings?
+        /*if (elementType() == PAType.STRING) { 
+            String mv   = "";
+            String fv   = "";
+            String tMin = "\u0000";
+            String tMax = "\uFFFF";
+            int tSum = 0;
+            if (atts != null) {
+                String s = atts.getString("_FillValue");   
+                if (s != null)
+                    fv = s;
+                s = atts.getString("missing_value");    
+                if (s != null)
+                    mv = s;
+            }
+
+            for (int i = 0; i < size; i++) {
+                String s = getString(i);
+                if ("".equals(s) || fv.equals(s) || mv.equals(s)) {
+                } else { 
+                    n++;
+                    if (s.compareTo(tMin) <  0) tMin = s;
+                    if (s.compareTo(tMax) >= 0) tMax = s;
+                }
+            }
+            //if (debugMode) String2.log(">> PrimitiveArray.calculateStats long n=" + n + " min=" + tMin " max=" + tMax);
+            return new PAOne[]{
+                PAOne.fromInt(n),
+                PAOne.fromString(n == 0? "" : tMin),
+                PAOne.fromString(n == 0? "" : tMax),
+                PAOne.fromInt(tSum)};
+        } */
+
+        //chars?
+        if (elementType() == PAType.CHAR) { 
+            char mv   = Character.MAX_VALUE;
+            char fv   = Character.MAX_VALUE;
+            char tMin = Character.MAX_VALUE;
+            char tMax = Character.MIN_VALUE;
+            int tSum = 0;
+            if (atts != null) {
+                String s = atts.getString("_FillValue");   
+                if (s != null && s.length() > 0)
+                    fv = s.charAt(0);
+                s = atts.getString("missing_value");    
+                if (s != null && s.length() > 0)
+                    mv = s.charAt(0);
+            }
+
+            CharArray car = (CharArray)this;
+            for (int i = 0; i < size; i++) {
+                char c = car.get(i);
+                //String2.log(">> calculateStats i=" + i + " n=" + n + " char=" + String2.annotatedString("" + c));
+                if (c == Character.MAX_VALUE || c == fv || c == mv) {
+                } else { 
+                    n++;
+                    tMin = (char)Math.min(tMin, c);
+                    tMax = (char)Math.max(tMax, c);
+                    tSum += c;
+                }
+            }
+            //if (debugMode) String2.log(">> PrimitiveArray.calculateStats long n=" + n + " min=" + tMin " max=" + tMax);
+            return new PAOne[]{
+                PAOne.fromInt(n),
+                PAOne.fromChar(n == 0? Character.MAX_VALUE : tMin),
+                PAOne.fromChar(n == 0? Character.MAX_VALUE : tMax),
+                PAOne.fromInt(tSum)};
+        } 
+
+        //ULONGs? calculate as BigIntegers
         if (elementType() == PAType.ULONG) { 
             BigInteger mv = ULongArray.MAX_VALUE;
             BigInteger fv = ULongArray.MAX_VALUE;
@@ -1372,16 +1482,21 @@ public abstract class PrimitiveArray {
                     tSum = tSum.add(d);
                 }
             }
-            if (n > 0) {
-                min = tMin.doubleValue();
-                max = tMax.doubleValue();
-                sum = tSum.doubleValue();
-                //String2.log(">> PrimitiveArray.calculateStats ULong min=" + tMin + "=" + min + " max=" + tMax + "=" + max);
-            }
-
-        } else if (isIntegerType() || elementType() == PAType.CHAR) { //includes LongArray
+            //if (debugMode) String2.log(">> PrimitiveArray.calculateStats ULong n=" + n + " min=" + tMin + " max=" + tMax);
+            return new PAOne[]{
+                PAOne.fromInt(n),
+                PAOne.fromULong(n == 0? ULongArray.MAX_VALUE : tMin),
+                PAOne.fromULong(n == 0? ULongArray.MAX_VALUE : tMax),
+                PAOne.fromULong(tSum)};
+        } 
+            
+        //integer type? calculate as longs
+        if (isIntegerType()) { //includes LongArray
             long mv = Long.MAX_VALUE;
             long fv = Long.MAX_VALUE;
+            long tMin = Long.MAX_VALUE;
+            long tMax = Long.MIN_VALUE;
+            long tSum = 0;
             if (atts != null) {
                 fv = atts.getLong("_FillValue");    //eg byte 127 -> Long.MAX_VALUE
                 mv = atts.getLong("missing_value"); //eg byte 127 -> Long.MAX_VALUE
@@ -1389,38 +1504,50 @@ public abstract class PrimitiveArray {
 
             for (int i = 0; i < size; i++) {
                 long d = getLong(i); //converts local missingValue to Long.MAX_VALUE
+                //String2.log(">> calculateStats i=" + i + " n=" + n + " long=" + d);
                 if (d == Long.MAX_VALUE || d == fv || d == mv) {
                 } else { 
                     n++;
-                    min = Math.min(min, d);
-                    max = Math.max(max, d);
-                    sum += d;
+                    tMin = Math.min(tMin, d);
+                    tMax = Math.max(tMax, d);
+                    tSum += d;
                 }
             }
-        } else { 
-            //is float, double or String                   
-            boolean isFloat = elementType() == PAType.FLOAT;
-            double mv = Double.NaN;
-            double fv = Double.NaN;
-            if (atts != null) {
-                fv = atts.getNiceDouble("_FillValue");    
-                mv = atts.getNiceDouble("missing_value"); 
-            }
-            boolean fvIsFinite = Double.isFinite(fv);
-            boolean mvIsFinite = Double.isFinite(mv);
-            int precision = isFloat? 5 : 14;
+            //if (debugMode) String2.log(">> PrimitiveArray.calculateStats long n=" + n + " min=" + tMin " max=" + tMax);
+            return new PAOne[]{
+                PAOne.fromInt(n),
+                PAOne.fromLong(n == 0? Long.MAX_VALUE : tMin),
+                PAOne.fromLong(n == 0? Long.MAX_VALUE : tMax),
+                PAOne.fromLong(tSum)};
+        } 
 
-            for (int i = 0; i < size; i++) {
-                double d = getNiceDouble(i); //converts local missingValue to Double.NaN
-                if (!Double.isFinite(d) || 
-                    (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
-                    (mvIsFinite && Math2.almostEqual(precision, mv, d))) {
-                } else { 
-                    n++;
-                    min = Math.min(min, d);
-                    max = Math.max(max, d);
-                    sum += d;
-                }
+
+        //float, double, string? calculate as double
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE; //not Double.MIN_VALUE
+        double sum = 0;
+
+        boolean isFloat = elementType() == PAType.FLOAT;
+        double mv = Double.NaN;
+        double fv = Double.NaN;
+        if (atts != null) {
+            fv = atts.getNiceDouble("_FillValue");    
+            mv = atts.getNiceDouble("missing_value"); 
+        }
+        boolean fvIsFinite = Double.isFinite(fv);
+        boolean mvIsFinite = Double.isFinite(mv);
+        int precision = isFloat? 5 : 14;
+
+        for (int i = 0; i < size; i++) {
+            double d = getNiceDouble(i); //converts local missingValue to Double.NaN
+            if (!Double.isFinite(d) || 
+                (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
+                (mvIsFinite && Math2.almostEqual(precision, mv, d))) {
+            } else { 
+                n++;
+                min = Math.min(min, d);
+                max = Math.max(max, d);
+                sum += d;
             }
         }
 
@@ -1428,7 +1555,21 @@ public abstract class PrimitiveArray {
             min = Double.NaN;
             max = Double.NaN;
         }
-        return new double[]{n, min, max, sum};
+        //if (debugMode) String2.log(">> PrimitiveArray.calculateStats double n=" + n + " min=" + tMin " max=" + tMax);
+        return new PAOne[]{
+            PAOne.fromInt(n),
+            PAOne.fromDouble(isFloat? Math2.floatToDouble(min) : min),
+            PAOne.fromDouble(isFloat? Math2.floatToDouble(max) : max),
+            PAOne.fromDouble(sum)};
+    }
+
+    /**
+     * This returns a string with the stats from calculateStats in a consistent way.
+     */
+    public static String displayPAOneStats(PAOne[] stats) {
+        return "n=" + String2.right("" + stats[STATS_N], 7) +              
+            " min=" + String2.right("" + stats[STATS_MIN], 20) + 
+            " max=" + String2.right("" + stats[STATS_MAX], 20);
     }
 
     /**
@@ -1451,7 +1592,6 @@ public abstract class PrimitiveArray {
             " " + displayStats(stats);
     }
     
-
     /**
      * This compares the values in this.row1 and otherPA.row2
      * and returns a negative integer, zero, or a positive integer if the 

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Test;
 
@@ -58,8 +59,8 @@ public class EDVAltGridAxis extends EDVGridAxis {
         EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "altitude" , "up");
         combinedAttributes.set("units", units);        
 
-        if (destinationMin > destinationMax) {
-            double d1 = destinationMin; destinationMin = destinationMax; destinationMax = d1; 
+        if (destinationMin.compareTo(destinationMax) > 0) {
+            PAOne d1 = destinationMin; destinationMin = destinationMax; destinationMax = d1; 
         }
         setActualRangeFromDestinationMinMax();
         initializeAverageSpacingAndCoarseMinMax();

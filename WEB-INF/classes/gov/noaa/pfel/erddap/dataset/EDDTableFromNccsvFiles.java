@@ -719,14 +719,14 @@ String expected =
 "  testLong {\n" +
 "    Float64 _FillValue 9223372036854775807;\n" + //long MAX_VALUE is written out as long (not converted to double or NaN)
           //long MIN_VALUE and MAX_VALUE written as longs to preserve full precision
-"    Float64 actual_range -9223372036854775808, 9223372036854775807;\n" + //trouble: max should be ...806, but destinationMax is double so loss of precision
+"    Float64 actual_range -9223372036854775808, 9223372036854775806;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Test of Longs\";\n" +
 "    String units \"1\";\n" +
 "  }\n" +
 "  testULong {\n" +
 "    Float64 _FillValue 18446744073709551615;\n" + //ulong MAX_VALUE is written out as ulong (not converted to double or NaN)
-"    Float64 actual_range 0, 18446744073709551615;\n" + //trouble: max should be ...614, but destinationMax is double so loss of precision
+"    Float64 actual_range 0, 18446744073709551614;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Test ULong\";\n" +
 "    String units \"1\";\n" +
@@ -779,7 +779,7 @@ String expected =
             Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "Known trouble: destinationMin and Max should be PAOne's, not doubles, so long and ulong are exact.");
+                "Unexpected error.");
         }
 
 expected =
@@ -1046,13 +1046,13 @@ expected =
 "testUByte,units,\"1\"\n" +
 "testLong,*DATA_TYPE*,long\n" +
 "testLong,_FillValue,9223372036854775807L\n" +
-"testLong,actual_range,-9223372036854775808L,9223372036854775807L\n" + //max should be ...806
+"testLong,actual_range,-9223372036854775808L,9223372036854775806L\n" + //max should be ...806
 "testLong,ioos_category,Unknown\n" +
 "testLong,long_name,Test of Longs\n" +
 "testLong,units,\"1\"\n" +
 "testULong,*DATA_TYPE*,ulong\n" +
 "testULong,_FillValue,18446744073709551615uL\n" +
-"testULong,actual_range,0uL,18446744073709551615uL\n" + //max should be ...614
+"testULong,actual_range,0uL,18446744073709551614uL\n" + //max should be ...614
 "testULong,ioos_category,Unknown\n" +
 "testULong,long_name,Test ULong\n" +
 "testULong,units,\"1\"\n" +
@@ -1079,10 +1079,12 @@ expected =
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        String2.pressEnterToContinue(
-            "\nKnown trouble: max of actual_range for testLong and testULong isn't exactly correct.\n" +
-            "Solution is destinationMin and Max should be PAOne, not double.");
+        try {
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        } catch (Exception e7) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e7) +
+                "Unexpected error.");
+        }
 
         //.nccsv all
         userDapQuery = "";
@@ -1351,21 +1353,21 @@ expected =
 "\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", 1.4902731E9, 27.9998, -131.5578, \"\\\"\", 127, 255, 9223372036854775807, 18446744073709551615, NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", 1.4903055E9, 28.0003, -132.0014, \"\\u00fc\", 127, 255, 9223372036854775807, 18446744073709551615, NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", 1.4903127E9, 28.0002, -132.1591, \"?\", 127, 255, 9223372036854775807, 18446744073709551615, NaN\n";   
-/* 2020-04-08 I changed to using \-encoded strings (which was implied by stated support for \" )
-was (was results.annotatedString()) :
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902299E9, 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9[10]\n" +
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902335E9, 28.0003, -130.3472, \"?\", -9007199254740992, [10]\n" +
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902371E9, 28.0001, -130.4305, \"[9]\", 9007199254740992, 10.7[10]\n" +
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4902731E9, 27.9998, -131.5578, \"\\\"\", 9223372036854775806, 99.0[10]\n" +
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4903055E9, 28.0003, -132.0014, \"[252]\", , 10.0[10]\n" +
-"\" a[9]~[252],[10]\n" +
-"'z\\\"?\", 1.4903127E9, 28.0002, -132.1591, \"?\", , [10]\n" +
-"[end]";   */
+// 2020-04-08 I changed to using \-encoded strings (which was implied by stated support for \" )
+//was (was results.annotatedString()) :
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4902299E9, 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9[10]\n" +
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4902335E9, 28.0003, -130.3472, \"?\", -9007199254740992, [10]\n" +
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4902371E9, 28.0001, -130.4305, \"[9]\", 9007199254740992, 10.7[10]\n" +
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4902731E9, 27.9998, -131.5578, \"\\\"\", 9223372036854775806, 99.0[10]\n" +
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4903055E9, 28.0003, -132.0014, \"[252]\", , 10.0[10]\n" +
+//"\" a[9]~[252],[10]\n" +
+//"'z\\\"?\", 1.4903127E9, 28.0002, -132.1591, \"?\", , [10]\n" +
+//"[end]";   
 //ship is " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
         Test.ensureEqual(results, expected, "results=\n" + results);        
@@ -1895,6 +1897,10 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 */
         //*** getting nc   and ncHeader
+        edv = eddTable.findDataVariableByDestinationName("status");
+        PrimitiveArray pa = edv.combinedAttributes().get("actual_range");
+        String2.log("  status actual_range " + pa.elementType() + " " + pa.toString());
+
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".nc"); 
         results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
@@ -1965,9 +1971,9 @@ results=
 "[10]\n" +
 "    double testLong(row=6);[10]\n" +
 "      :_FillValue = 9.223372036854776E18; // double[10]\n" +
-                  //trouble: these are largest consecutive longs that can round trip to doubles
-                  //2019-04-05 max was 9.2233720368547748E18, now NaN   why???
-"      :actual_range = -9.223372036854776E18, 9.223372036854776E18; // double[10]\n" + //min/max should be -...854775808L ...854775806L
+      //trouble: these are largest consecutive longs that can round trip to doubles
+      //2019-04-05 max was 9.2233720368547748E18, now NaN   why???
+"      :actual_range = -9.223372036854776E18, 9.223372036854776E18; // double[10]\n" + //trouble: min/max should be -...854775808L ...854775806L
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :long_name = \"Test of Longs\";[10]\n" +
 "      :units = \"1\";[10]\n" +
@@ -2624,7 +2630,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"type\": \"int64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
 "        \"_FillValue\": {\"type\": \"int64\", \"data\": 9223372036854775807},[10]\n" +
-"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775807]},[10]\n" + //trouble: max should be ...806, but calculated as double
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806]},[10]\n" + 
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
@@ -2636,7 +2642,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"type\": \"uint64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
 "        \"_FillValue\": {\"type\": \"uint64\", \"data\": 18446744073709551615},[10]\n" +
-"        \"actual_range\": {\"type\": \"uint64\", \"data\": [0, 18446744073709551615]},[10]\n" + //trouble: max should be ...614, but calculated as double
+"        \"actual_range\": {\"type\": \"uint64\", \"data\": [0, 18446744073709551614]},[10]\n" + 
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test ULong\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
@@ -2822,7 +2828,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"type\": \"int64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
 "        \"_FillValue\": {\"type\": \"int64\", \"data\": 9223372036854775807},[10]\n" +
-"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775807]},[10]\n" + //trouble: max should be ...806, but calculated as double
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806]},[10]\n" + 
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
@@ -2834,7 +2840,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "      \"type\": \"uint64\",[10]\n" +
 "      \"attributes\": {[10]\n" +
 "        \"_FillValue\": {\"type\": \"uint64\", \"data\": 18446744073709551615},[10]\n" +
-"        \"actual_range\": {\"type\": \"uint64\", \"data\": [0, 18446744073709551615]},[10]\n" + //trouble: max should be ...614, but calculated as double
+"        \"actual_range\": {\"type\": \"uint64\", \"data\": [0, 18446744073709551614]},[10]\n" +
 "        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
 "        \"long_name\": {\"type\": \"char\", \"data\": \"Test ULong\"},[10]\n" +
 "        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +

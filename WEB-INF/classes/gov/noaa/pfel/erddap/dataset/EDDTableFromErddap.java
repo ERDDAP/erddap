@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -379,22 +380,22 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 lonIndex = tDataVariables.size();
                 edv = new EDVLon(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN); 
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.LAT_NAME.equals(tSourceName)) {
                 latIndex = tDataVariables.size();
                 edv = new EDVLat(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN); 
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.ALT_NAME.equals(tSourceName)) {
                 altIndex = tDataVariables.size();
                 edv = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN);
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
             } else if (EDV.DEPTH_NAME.equals(tSourceName)) {
                 depthIndex = tDataVariables.size();
                 edv = new EDVDepth(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN); 
+                    tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.TIME_NAME.equals(tSourceName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = tDataVariables.size();
                 edv = new EDVTime(tSourceName,
@@ -892,6 +893,10 @@ try {
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testUBytes,0ub,127ub,255ub\n" +
+"sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
+"sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
+"sst,testUShorts,0us,32767us,65535us\n" +
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";

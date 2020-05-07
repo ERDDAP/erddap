@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -208,10 +209,10 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         setDestinationMinMaxFromSource(
             tSourceValues.getNiceDouble(0), 
             tSourceValues.getNiceDouble(n - 1));
-        if (Double.isNaN(destinationMin))
+        if (destinationMin.isNaN())
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
                 "[0]=" + tSourceValues.getString(0) + " => NaN epochSeconds.");
-        if (Double.isNaN(destinationMax))
+        if (destinationMax.isNaN())
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
                 "[n-1]=" + tSourceValues.getString(n-1) + " => NaN epochSeconds.");
 
@@ -230,8 +231,8 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //scaleAddOffset is allowed!! and applied by superclass' setDestinationMinMax!
         //   ??? I that correct order???
         setDestinationMinMax(
-            sourceTimeToEpochSeconds(sourceMin),
-            sourceTimeToEpochSeconds(sourceMax));
+            PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMin)),
+            PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMax)));
     }
 
     /**
@@ -334,7 +335,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * @return the destinationMin time
      */
     public String destinationMinString() {
-        return destinationToString(destinationMin); 
+        return destinationToString(destinationMin.getDouble());  //time always full precision, not "niceDouble", but it is already a double
     }
 
     /** 
@@ -344,7 +345,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * @return the destinationMax time
      */
     public String destinationMaxString() {
-        return destinationToString(destinationMax); 
+        return destinationToString(destinationMax.getDouble());  //time always full precision, not "niceDouble", but it is already a double
     }
 
 

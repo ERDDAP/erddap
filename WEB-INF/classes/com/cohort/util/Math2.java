@@ -2195,5 +2195,40 @@ public class Math2 {
                (Float.isNaN(a) && Float.isNaN(b));
     }
 
+    /** 
+     * This converts a BigDecimal[] into a double[].
+     * null values are converted to Double.NaN values.
+     *
+     * @param bdar a BigDecimal array
+     */
+    public static double[] toDoubleArray(BigDecimal bdar[]) {
+        if (bdar == null)
+            return null;
+        int n = bdar.length;
+        double dar[] = new double[n];
+        for (int i = 0; i < n; i++) 
+            dar[i] = bdar[i] == null? Double.NaN : bdar[i].doubleValue();
+        return dar;
+    }
+
+
+    /** 
+     * This converts a BigDecimal[] into a double[].
+     * null values are converted to Double.NaN values.
+     *
+     * @param dar a double array
+     *
+     */
+    public static BigDecimal[] toBigDecimalArray(double dar[]) {
+        if (dar == null)
+            return null;
+        int n = dar.length;
+        BigDecimal bdar[] = new BigDecimal[n];
+        for (int i = 0; i < n; i++) 
+            bdar[i] = Double.isFinite(dar[i])? new BigDecimal(dar[i]) : null;
+        return bdar;
+    }
+
+
 
 } //End of Math2 class.

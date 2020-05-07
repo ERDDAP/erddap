@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -462,20 +463,20 @@ public class EDDTableFromOBIS extends EDDTable{
         lonIndex = 0;
         dataVariables[lonIndex] = new EDVLon("darwin:Longitude",
             null, null, "double", 
-            Double.isNaN(tLonMin)? -180 : tLonMin, 
-            Double.isNaN(tLonMax)?  180 : tLonMax);
+            PAOne.fromDouble(Double.isNaN(tLonMin)? -180 : tLonMin), 
+            PAOne.fromDouble(Double.isNaN(tLonMax)?  180 : tLonMax));
         latIndex = 1;
         dataVariables[latIndex] = new EDVLat("darwin:Latitude",
             null, null, "double",
-            Double.isNaN(tLatMin)? -90 : tLatMin, 
-            Double.isNaN(tLatMax)?  90 : tLatMax);
+            PAOne.fromDouble(Double.isNaN(tLatMin)? -90 : tLatMin), 
+            PAOne.fromDouble(Double.isNaN(tLatMax)?  90 : tLatMax));
         altIndex = 2;  depthIndex = -1;  //2012-12-20 consider using depth, not altitude!!!
         Attributes altAtts = new Attributes();
         altAtts.add("comment", "Created from the darwin:MinimumDepth variable.");
         altAtts.add("scale_factor", -1.0);
         altAtts.add("units", "m");
         dataVariables[altIndex] = new EDVAlt("darwin:MinimumDepth", altAtts,
-            null, "double", -tAltMin, -tAltMax);
+            null, "double", PAOne.fromDouble(-tAltMin), PAOne.fromDouble(-tAltMax));
         timeIndex = 3;
         dataVariables[timeIndex] = new EDVTime("TIME",
             (new Attributes())

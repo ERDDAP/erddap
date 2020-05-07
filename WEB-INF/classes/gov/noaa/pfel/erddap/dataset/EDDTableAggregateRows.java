@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -284,8 +285,8 @@ public class EDDTableAggregateRows extends EDDTable{
             String tUnits          = childVar.units();
             double tMV             = childVar.destinationMissingValue();
             double tFV             = childVar.destinationFillValue();
-            double tMin            = childVar.destinationMin(); 
-            double tMax            = childVar.destinationMax();
+            PAOne tMin             = childVar.destinationMin(); 
+            PAOne tMax             = childVar.destinationMax();
 
             //ensure all tChildren are consistent
             for (int c = 1; c < nChildren; c++) {
@@ -326,8 +327,8 @@ public class EDDTableAggregateRows extends EDDTable{
                         "_FillValue=" + tFV + ".");
 
                 //and get the minimum min and maximum max
-                tMin = Math.min(tMin, cEdv.destinationMin()); //if either is NaN -> NaN
-                tMax = Math.max(tMax, cEdv.destinationMax()); //if either is NaN -> NaN
+                tMin = tMin.min(cEdv.destinationMin()); 
+                tMax = tMax.max(cEdv.destinationMax()); 
             }
 
             //make the variable
@@ -407,8 +408,12 @@ public class EDDTableAggregateRows extends EDDTable{
         //update the children
         boolean anyChange = false;
         int ndv = dataVariables.length;
-        double tMin[] = new double[ndv]; Arrays.fill(tMin, Double.NaN);
-        double tMax[] = new double[ndv]; Arrays.fill(tMax, Double.NaN);
+        PAOne tMin[] = new PAOne[ndv]; 
+        PAOne tMax[] = new PAOne[ndv]; 
+        for (int dvi = 0; dvi < ndv; dvi++) {
+            tMin[dvi] = PAOne.fromDouble(Double.NaN);
+            tMax[dvi] = PAOne.fromDouble(Double.NaN);
+        }
         for (int c = 0; c < nChildren; c++) {
             EDDTable tChild = getChild(c);
             if (tChild.lowUpdate(msg, startUpdateMillis))
@@ -421,8 +426,8 @@ public class EDDTableAggregateRows extends EDDTable{
                     tMin[dvi] = cEdv.destinationMin();
                     tMax[dvi] = cEdv.destinationMax();
                 } else {
-                    tMin[dvi] = Math.min(tMin[dvi], cEdv.destinationMin()); //if either is NaN -> NaN
-                    tMax[dvi] = Math.max(tMax[dvi], cEdv.destinationMax()); //if either is NaN -> NaN
+                    tMin[dvi] = tMin[dvi].min(cEdv.destinationMin()); 
+                    tMax[dvi] = tMax[dvi].max(cEdv.destinationMax()); 
                 }
             }
         }
@@ -625,6 +630,7 @@ public class EDDTableAggregateRows extends EDDTable{
 "  }\n" +
 "  wtmp {\n" +
 "    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 4.3, 32.6;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
