@@ -2024,25 +2024,32 @@ public class StringArray extends PrimitiveArray {
      * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or
      * ",;") and whether to trim the strings, and whether to keep "" elements.
      *
+     * <p>The double-quoted phrases can have internal double quotes encoded as "" or \".
+     * <br>null becomes sa.length() == 0.
+     * <br>"" becomes sa.length() == 0.
+     * <br>" " becomes sa.length() == 1.
+     *
      * @param trim If true, each results string is trimmed.
      */
     public static String[] arrayFromCSV(String searchFor, String separatorChars,
         boolean trim, boolean keepNothing) {
-        if (searchFor == null)
+        if (searchFor == null || searchFor.length() == 0)
             return new String[0];
         //String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
         ArrayList<String> al = new ArrayList();
         int po = 0; //next char to be looked at
         StringBuilder word = new StringBuilder();
         int n = searchFor.length();
-        while (po < n) {
+        boolean isQuoted = false; //is this item quoted?
+        while (po <= n) {  //==n closes things out
             //String2.log(">> arrayFrom po=" + po + " al.size=" + al.size() + " word=" + word);
-            char ch = searchFor.charAt(po++);
+            char ch = po == n? '\uffff' : searchFor.charAt(po);  //n char doesn't matter as long as it isn't "
+            po++;
 
             if (ch == '"') {
-                //a quoted string
-                if (word.length() == 0)
-                    word.append('\u0000'); //indicate there is something; it will be trimmed later
+                //it is a quoted string
+                isQuoted = true;
+                word.setLength(0); //throw out any previous char (hopefully just whitespace)
 
                 int start = po;
                 if (po < n) {
@@ -2095,32 +2102,21 @@ public class StringArray extends PrimitiveArray {
                 }
 
             //end of word?
-            } else if (separatorChars.indexOf(ch) >= 0) { //e.g., comma or semicolon
+            } else if (po == n+1 || separatorChars.indexOf(ch) >= 0) { //e.g., comma or semicolon
                 String s = word.toString();
-                if (trim) {
+                if (trim && !isQuoted) 
                     s = s.trim();  //trim gets rid of all whitespace, including \n and \\u0000
-                } else {
-                    s = String2.replaceAll(s, "\u0000", "");
-                }
-                if (s.length() > 0 || keepNothing)
+                if (s.length() > 0 || keepNothing || isQuoted)
                     al.add(s); 
                 word.setLength(0);
-                word.append('\u0000'); //indicate there is something
+                isQuoted = false;
+                if (po == n+1)
+                    break;
 
             //a character
-            } else {
+            } else if (!isQuoted) {
                 word.append(ch);
             }
-        }
-        if (word.length() > 0) {
-            String s = word.toString();
-            if (trim) {
-                s = s.trim();  //trim gets rid of all whitespace, including \n and \\u0000
-            } else {
-                s = String2.replaceAll(s, "\u0000", "");
-            }
-            if (s.length() > 0 || keepNothing)
-                al.add(s); 
         }
         return al.toArray(new String[0]);
     }
@@ -2619,8 +2615,8 @@ public class StringArray extends PrimitiveArray {
      *
      * @throws Throwable if trouble.
      */
-    public static void test() throws Throwable{
-        String2.log("*** Testing StringArray");
+    public static void basicTest() throws Throwable{
+        String2.log("*** StringArray.basicTest");
 /* for releases, this line should have open/close comment */
         String sar[];
         StringArray anArray = new StringArray();
@@ -2767,7 +2763,8 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.compare(3, 1),  4, "");
 
         //test compareIgnoreCase
-        StringArray cic = fromCSV("A, a, ABE, abe");
+        StringArray cic = fromCSV(       "A, a, ABE, abe");
+        Test.ensureEqual(cic.toString(), "A, a, ABE, abe", "");
         Test.ensureEqual(cic.compare(0, 1), -32, "");
         Test.ensureEqual(cic.compare(1, 2), 32, "");
         Test.ensureEqual(cic.compare(2, 3), -32, "");
@@ -2992,11 +2989,11 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(fromCSV(" , ").toString(), ", ", "");
         anArray = fromCSV(" a,\"b\"\"b\",c "); Test.ensureEqual(anArray.get(1), "b\"b", ""); //internal quotes
         anArray = fromCSV(" a,\"b\\\"b\",c "); Test.ensureEqual(anArray.get(1), "b\"b", ""); //internal quotes
-        anArray = fromCSV(" a,\"b\\tb\",c ");  Test.ensureEqual(anArray.get(1), "b\tb", ""); //internal quotes
+        anArray = fromCSV(" a, \"b\\tb\" ,c ");  Test.ensureEqual(anArray.get(1), "b\tb", ""); //internal quotes
         anArray = fromCSV(" a,\"b\\nb\",c ");  Test.ensureEqual(anArray.get(1), "b\nb", ""); //internal quotes
         anArray = fromCSV(" a,\"b\\'b\",c ");  Test.ensureEqual(anArray.get(1), "b\'b", ""); //internal quotes
         anArray = fromCSV(" a,\"b\\\"b\",c "); Test.ensureEqual(anArray.get(1), "b\"b", ""); //internal quotes
-        anArray = fromCSV(" a \"b\"\"b\" c "); Test.ensureEqual(anArray.get(0), "a b\"b c", ""); //internal quotes
+        anArray = fromCSV(" a \"b\"\"b\" c "); Test.ensureEqual(anArray.get(0), "b\"b", ""); //internal quotes, only the quoted string is saved
 
         //evenlySpaced
         anArray = new StringArray(new String[] {"10","20","30"});
@@ -3020,9 +3017,10 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(fromCSV(",a,bb, c ,").toString(), ", a, bb, c, ", "");
         Test.ensureEqual(fromCSV(" a,\"b b\",c ").toString(), "a, b b, c", "");
         Test.ensureEqual(fromCSV(" a,\"b b").toString(), "a, b b", ""); //no error for missing "
-        Test.ensureEqual(fromCSV(" a,\"b \"\"\"\"b\"junk,c ").toString(), "a, \"b \"\"\"\"bjunk\", c", "");
-        Test.ensureEqual(fromCSV(" a,\"b \"\"\"\"b\"junk,c ").get(1), "b \"\"bjunk", "");
-        Test.ensureEqual(fromCSV(" a,\"b,b\"junk").toString(), "a, \"b,bjunk\"", "");
+         //only the part in quotes is saved
+        Test.ensureEqual(fromCSV(" a,junk\"b \"\"\"\"b\"junk,c ").toString(), "a, \"b \"\"\"\"b\", c", "");
+        Test.ensureEqual(fromCSV(" a,junk\"b \"\"\"\"b\"junk,c ").get(1), "b \"\"b", ""); 
+        Test.ensureEqual(fromCSV(" a,junk\"b,b\"junk").toString(), "a, \"b,b\"", "");   
 
         //isAscending
         anArray = new StringArray(new String[] {"go","go","hi"});
@@ -3120,21 +3118,21 @@ public class StringArray extends PrimitiveArray {
 
         //arrayFromCSV, test with unquoted internal strings
         //outside of a quoted string \\u20ac is backslash+...
-        sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \\n\\u20ac , ",                   ",", true); //trim?
+        sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ",                 ",", true);  //trim?
         Test.ensureEqual(String2.annotatedString(String2.toCSVString(sar)), 
-            "ab,\\[195][8364],\\n\\u20ac,[end]", "");
-        sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \\n\\u20ac , ",                   ",", false); //trim?
-        Test.ensureEqual(String2.annotatedString(String2.toCSVString(sar)), 
-            " ab , [10]\n[9]\\[195][8364] , \\n\\u20ac , [end]", "");
+            "ab,\"\\\\\\u00c3\\u20ac\",[8364],[end]", "");  //spaces, \n, \\t are trimmed
+        sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ",                 ",", false); //trim?
+        Test.ensureEqual(String2.toCSVString(sar), 
+            "\" ab \",\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",\" \"", "");
 
         //arrayFromCSV, test with quoted internal strings
         //inside of a quoted string \\u20ac is Euro
-        sar = arrayFromCSV("\" ab \",\" \n\t\\\u00c3\u20ac \",\" \\n\\u20ac \",\" \"",   ",", true); //trim?
-        Test.ensureEqual(String2.annotatedString(String2.toCSVString(sar)), 
-            "ab,\\[195][8364],[8364],[end]", "");
-        sar = arrayFromCSV("\" ab \",\" \n\t\\\u00c3\u20ac \",\" \\n\\u20ac \",\" \"",   ",", false); //trim?
-        Test.ensureEqual(String2.annotatedString(String2.toCSVString(sar)),
-            " ab , [10]\n[9]\\[195][8364] , [10]\n[8364] , [end]", "");
+        sar = arrayFromCSV(" ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \" , ",      ",", true);  //trim?
+        Test.ensureEqual(String2.toCSVString(sar), 
+            "ab,\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",", "");
+        sar = arrayFromCSV(" ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \", \" \"",  ",", false); //trim?
+        Test.ensureEqual(String2.toCSVString(sar),
+            "\" ab \",\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",\" \"", "");
 
         //inCommon
         anArray  = fromCSV("a, b, d");
@@ -3314,6 +3312,47 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "2" })).tryToFindNumericMissingValue(), Double.NaN, "");
         Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "99"})).tryToFindNumericMissingValue(), Double.NaN, ""); //doesn't catch 99, would be nice if it did?
 
+    }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ StringArray.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

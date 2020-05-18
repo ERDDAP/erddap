@@ -1130,8 +1130,14 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 //<tr><td valign="top">&nbsp;</td><td><a href="doc/">doc/</a></td>
 //  <td align="right">14-Mar-2017 08:34  </td><td align="right">  - </td><td>&nbsp;</td></tr>
     public final static Pattern wafDirPattern2 = Pattern.compile(
-        ".*href=\"(.*?/)\">" +
+        ".*href=\"(.*?/)\">" +  // '/' indicates directory
         ".*>\\d{2}-[a-zA-Z]{3}-\\d{4} \\d{2}:\\d{2}(|:\\d{2})" + //date, note internal ()
+        ".*");
+//https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/
+//<tr><td><a href="access/">access/</a></td><td align="right">2020-04-11 11:57  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+    public final static Pattern wafDirPattern3 = Pattern.compile(
+        ".*href=\"(.*?/)\">" +  // '/' indicates directory
+        ".*>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}(|:\\d{2})" + //closer to iso date, note internal ()
         ".*");
 
 //inport:
@@ -1152,6 +1158,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public final static Pattern wafFilePattern2 = Pattern.compile(
         ".* href=\"(.*?)\">" + //name
         ".*>(\\d{2}-[a-zA-Z]{3}-\\d{4} \\d{2}:\\d{2}(|:\\d{2}))" + //date, note internal ()
+        ".*>(\\d{1,15}\\.?\\d{0,10}[KMGTP]?)</td>.*"); //size
+//https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/
+//<tr><td><a href="gpcp_v01r03_daily_d20000103_c20170530.nc">gpcp_v01r03_daily_d20000103_c20170530.nc</a>
+//  </td><td align="right">2017-05-30 16:57  </td><td align="right">283K</td><td>&nbsp;</td></tr>
+    public final static Pattern wafFilePattern3 = Pattern.compile(
+        ".* href=\"(.*?)\">" + //name
+        ".*>(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}(|:\\d{2}))" + //date is closer to ISO 8601, note internal ()
         ".*>(\\d{1,15}\\.?\\d{0,10}[KMGTP]?)</td>.*"); //size
 //
 //https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/
@@ -1259,6 +1272,10 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                         matcher = wafDirPattern2.matcher(s);
                         matched = matcher.matches();
                     }
+                    if (!matched) {
+                        matcher = wafDirPattern3.matcher(s);
+                        matched = matcher.matches();
+                    }
                     if (matched) {
                         String name = XML.decodeEntities(matcher.group(1));
                         String tUrl = File2.addSlash(url + name);
@@ -1282,21 +1299,39 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                     //look for files 
                     matcher = wafFilePattern.matcher(s); 
                     matched = matcher.matches();
+                    long millis = Long.MAX_VALUE;
+                    if (matched) {
+                        try {
+                            millis = Calendar2.parseDDMonYYYYZulu(matcher.group(2)).getTimeInMillis();
+                        } catch (Throwable t2) {
+                            String2.log(t2.getMessage());
+                        }
+                    }
                     if (!matched) {
                         matcher = wafFilePattern2.matcher(s);
                         matched = matcher.matches();
-                    }
-                    if (matched) {
-                        String name = XML.decodeEntities(matcher.group(1));
-                        if (name.matches(fileNameRegex)) {
-
-                            //interpret last modified
-                            long millis = Long.MAX_VALUE;
+                        if (matched) {
                             try {
                                 millis = Calendar2.parseDDMonYYYYZulu(matcher.group(2)).getTimeInMillis();
                             } catch (Throwable t2) {
                                 String2.log(t2.getMessage());
                             }
+                        }
+                    }
+                    if (!matched) {
+                        matcher = wafFilePattern3.matcher(s);
+                        matched = matcher.matches();
+                        if (matched) {
+                            try {
+                                millis = Calendar2.parseISODateTimeZulu(matcher.group(2)).getTimeInMillis();
+                            } catch (Throwable t2) {
+                                String2.log(t2.getMessage());
+                            }
+                        }
+                    }
+                    if (matched) {
+                        String name = XML.decodeEntities(matcher.group(1));
+                        if (name.matches(fileNameRegex)) {
 
                             //convert size to bytes
                             String tSize = matcher.group(4);
@@ -1426,6 +1461,58 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
     }
 
 
+    /**
+     * This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files" directory.
+     */
+    public static void testInteractiveErddapFilesWAF() throws Throwable {
+        String2.log("\n*** FileVisitorDNLS.testInteractiveErddapFilesWAF()\n");
+        //test with trailing /
+        //This also tests redirect to https!
+        String url = "https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/"; 
+        String tFileNameRegex = "194\\d\\.nc";
+        boolean tRecursive = true;
+        String tPathRegex = ".*/(3|4)/.*";   
+        boolean tDirsToo = true;
+        Table table = makeEmptyTable();
+        StringArray dirs        = (StringArray)table.getColumn(0);
+        StringArray names       = (StringArray)table.getColumn(1);
+        LongArray lastModifieds = (LongArray)table.getColumn(2);
+        LongArray sizes         = (LongArray)table.getColumn(3);
+        String results, expected;
+
+        //** Test InPort WAF        
+        table.removeAllRows();
+        try {
+            Test.ensureTrue( //completelySuccessful
+                addToWAFUrlList("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
+                    "22...\\.xml",   
+                    //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
+                    true, ".*/NMFS/(|NEFSC/(|inport-xml/(|xml/)))", //tricky! 
+                    true, //tDirsToo, 
+                    dirs, names, lastModifieds, sizes),
+                "");
+            results = table.dataToString();
+            expected = 
+"directory,name,lastModified,size\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1580850460000,142029\n" + //added 2020-03-03
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22561.xml,1554803918000,214016\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22562.xml,1554803940000,211046\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22563.xml,1554803962000,213504\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22564.xml,1554803984000,213094\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22565.xml,1554804006000,214323\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1557568922000,213709\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+      } catch (Throwable t) {
+          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+              "\nThis changes periodically. If reasonable, just continue." +
+              "\n(there no more subtests in this test).");
+      }
+      }
+
 
     /**
      * This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files" directory.
@@ -1435,7 +1522,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         boolean oDebugMode = debugMode;
         //debugMode=true;        
 
-        try {
         //test with trailing /
         //This also tests redirect to https!
         String url = "https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/"; 
@@ -1623,37 +1709,14 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
-        //** Test InPort WAF        
-        table.removeAllRows();
-        Test.ensureTrue( //completelySuccessful
-            addToWAFUrlList("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
-                "22...\\.xml",   
-                //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
-                true, ".*/NMFS/(|NEFSC/(|inport-xml/(|xml/)))", //tricky! 
-                true, //tDirsToo, 
-                dirs, names, lastModifieds, sizes),
-            "");
-        results = table.dataToString();
-        expected = 
-"directory,name,lastModified,size\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1580850460000,142029\n" + //added 2020-03-03
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22561.xml,1554803918000,214016\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22562.xml,1554803940000,211046\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22563.xml,1554803962000,213504\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22564.xml,1554803984000,213094\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22565.xml,1554804006000,214323\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1557568922000,213709\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
         //* Test ncei WAF        
         table.removeAllRows();
+        //debugMode = true;
         tTable = oneStep(
             "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/",
-            "gpcp_1dd_v1\\.2_p1d\\.1997[0-9]{2}",   
+            "gpcp_v01r03_daily_d2000010.*\\.nc",   
             true, ".*", true); //tDirsToo, 
+        //debugMode = false;
         results = tTable.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
@@ -1663,6 +1726,15 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/1998/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/1999/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,,,\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000101_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000102_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000103_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000104_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000105_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000106_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000107_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000108_c20170530.nc,1496163420000,289792\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2000/,gpcp_v01r03_daily_d20000109_c20170530.nc,1496163420000,289792\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2001/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2002/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2003/,,,\n" +
@@ -1682,6 +1754,7 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2017/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2018/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2019/,,,\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2020/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/doc/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/src/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1711,11 +1784,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nThis changes periodically. If reasonable, just continue." +
-              "\n(there no more subtests in this test).");
-      }
       debugMode = oDebugMode;
     }
 
@@ -1971,7 +2039,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         //reallyVerbose = true;
         //debugMode=true;
 
-        try {
         //before 2018-08-17 podaac-opendap caused  
         //  "javax.net.ssl.SSLProtocolException: handshake alert: unrecognized_name" error
         //String url = "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"; //contents.html
@@ -2142,10 +2209,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871201_v11l35flk.nc.gz,1336705731000,4432696\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
     }
 
     /**
@@ -2156,7 +2219,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 reallyVerbose = true;
 debugMode=true;
 
-        try {
         String url = "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/"; //contents.html
         String fileNameRegex = "[0-9]{14}-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02\\.0-fv04\\.1\\.nc";
         boolean recursive = true;
@@ -2183,10 +2245,6 @@ debugMode=true;
 "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/019/,20180119090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc,1526428852000,390892954\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
 debugMode=false;
     }
 
@@ -2405,7 +2463,6 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = true;
 
-      try {
         String url =  "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"; //catalog.html
         String fileNameRegex = "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc";
         boolean recursive = true;
@@ -2481,10 +2538,6 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
 "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2015.nc,1429867829000,1635779\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
         reallyVerbose = oReallyVerbose;
         String2.log("\n*** FileVisitorDNLS.testThredds finished successfully");
     }
@@ -2688,7 +2741,6 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      */
     public static void testAWSS3() throws Throwable {
         String2.log("\n*** FileVisitorDNLS.testAWSS3");
-        try {
 
         verbose = true;
         String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
@@ -2840,10 +2892,6 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
         String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error.  (Did you create your AWS S3 credentials file?)"); 
-        }
     }
 
     /** 
@@ -3532,31 +3580,60 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         System.exit(0);
     }
 
+
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean doBigTest) throws Throwable {
-        String2.log("\n****************** FileVisitorDNLS.test() *****************\n");
-/* for releases, this line should have open/close comment */
-        //always done        
-        testLocal(doBigTest);
-        testAWSS3(); 
-        testHyrax();
-        testHyraxMUR();
-        testThredds();
-        testErddapFilesWAF();  
-        testSync();
-        testMakeTgz();
-        testOneStepToString();
-        testPathRegex();
-        testReduceDnlsTableToOneDir();
-        /* */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 2 : 10;
+        String msg = "\n^^^ FileVisitorDNLS.test(" + interactive + ") test=";
 
-        //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testInteractiveErddapFilesWAF();  
+                    if (test ==  1) testSync();
+                    if (test ==  2) testMakeTgz();
 
-        //future: FTP? ftp://ftp.unidata.ucar.edu/pub/
+                } else {
+                    if (test ==  0) testLocal(doSlowTestsToo); 
+                    if (test ==  1) testAWSS3(); 
+                    if (test ==  2) testHyrax();
+                    if (test ==  3) testHyraxMUR();
+                    if (test ==  4) testThredds();
+                    if (test ==  5) testErddapFilesWAF();  
+                    if (test ==  6) testOneStepToString();
+                    if (test ==  7) testPathRegex();
+                    if (test ==  8) testReduceDnlsTableToOneDir();
+                   
+                    //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
+
+                    //future: FTP? ftp://ftp.unidata.ucar.edu/pub/
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

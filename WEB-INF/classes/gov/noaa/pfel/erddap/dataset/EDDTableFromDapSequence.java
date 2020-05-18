@@ -1491,135 +1491,102 @@ expected =
      */
     public static void testPsdac() throws Throwable {
         testVerboseOn();
-        try {
-            String results, query, tName;
-            String baseQuery = "time,longitude,latitude,depth,station,waterTemperature,salinity" +
-                "&latitude=36.692"; 
-            EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cimtPsdac");
-            String expected = 
-    "time,longitude,latitude,depth,station,waterTemperature,salinity\n" +
-    "UTC,degrees_east,degrees_north,m,,degree_C,Presumed Salinity Units\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,1.0,T402,12.8887,33.8966\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,2.0,T402,12.8272,33.8937\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,3.0,T402,12.8125,33.8898\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,4.0,T402,12.7125,33.8487\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,5.0,T402,12.4326,33.8241\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,6.0,T402,12.1666,33.8349\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,7.0,T402,11.9364,33.8159\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,8.0,T402,11.7206,33.8039\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,9.0,T402,11.511,33.8271\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,10.0,T402,11.4064,33.853\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,11.0,T402,11.3552,33.8502\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,12.0,T402,11.2519,33.8607\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,13.0,T402,11.1777,33.8655\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,14.0,T402,11.1381,33.8785\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,15.0,T402,11.0643,33.8768\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,16.0,T402,10.9416,33.8537\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,17.0,T402,10.809,33.8379\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,18.0,T402,10.7034,33.8593\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,19.0,T402,10.6502,33.8476\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,20.0,T402,10.5257,33.8174\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,21.0,T402,10.2857,33.831\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,22.0,T402,10.0717,33.8511\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,23.0,T402,9.9577,33.8557\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,24.0,T402,9.8876,33.8614\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,25.0,T402,9.842,33.8757\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,26.0,T402,9.7788,33.8904\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,27.0,T402,9.7224,33.8982\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,28.0,T402,9.695,33.9038\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,29.0,T402,9.6751,33.9013\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,30.0,T402,9.6462,33.9061\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,31.0,T402,9.6088,33.9069\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,32.0,T402,9.5447,33.9145\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,33.0,T402,9.4887,33.9263\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,34.0,T402,9.4514,33.9333\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,35.0,T402,9.4253,33.9358\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,36.0,T402,9.397,33.9387\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,37.0,T402,9.3795,33.9479\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,38.0,T402,9.3437,33.9475\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,39.0,T402,9.2946,33.9494\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,40.0,T402,9.2339,33.9458\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,41.0,T402,9.1812,33.9468\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,42.0,T402,9.153,33.9548\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,43.0,T402,9.1294,33.9615\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,44.0,T402,9.1048,33.9652\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,45.0,T402,9.0566,33.9762\n";
+        String results, query, tName;
+        String baseQuery = "time,longitude,latitude,depth,station,waterTemperature,salinity" +
+            "&latitude=36.692"; 
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cimtPsdac");
+        String expected = 
+"time,longitude,latitude,depth,station,waterTemperature,salinity\n" +
+"UTC,degrees_east,degrees_north,m,,degree_C,Presumed Salinity Units\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,1.0,T402,12.8887,33.8966\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,2.0,T402,12.8272,33.8937\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,3.0,T402,12.8125,33.8898\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,4.0,T402,12.7125,33.8487\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,5.0,T402,12.4326,33.8241\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,6.0,T402,12.1666,33.8349\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,7.0,T402,11.9364,33.8159\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,8.0,T402,11.7206,33.8039\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,9.0,T402,11.511,33.8271\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,10.0,T402,11.4064,33.853\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,11.0,T402,11.3552,33.8502\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,12.0,T402,11.2519,33.8607\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,13.0,T402,11.1777,33.8655\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,14.0,T402,11.1381,33.8785\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,15.0,T402,11.0643,33.8768\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,16.0,T402,10.9416,33.8537\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,17.0,T402,10.809,33.8379\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,18.0,T402,10.7034,33.8593\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,19.0,T402,10.6502,33.8476\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,20.0,T402,10.5257,33.8174\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,21.0,T402,10.2857,33.831\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,22.0,T402,10.0717,33.8511\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,23.0,T402,9.9577,33.8557\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,24.0,T402,9.8876,33.8614\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,25.0,T402,9.842,33.8757\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,26.0,T402,9.7788,33.8904\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,27.0,T402,9.7224,33.8982\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,28.0,T402,9.695,33.9038\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,29.0,T402,9.6751,33.9013\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,30.0,T402,9.6462,33.9061\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,31.0,T402,9.6088,33.9069\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,32.0,T402,9.5447,33.9145\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,33.0,T402,9.4887,33.9263\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,34.0,T402,9.4514,33.9333\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,35.0,T402,9.4253,33.9358\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,36.0,T402,9.397,33.9387\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,37.0,T402,9.3795,33.9479\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,38.0,T402,9.3437,33.9475\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,39.0,T402,9.2946,33.9494\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,40.0,T402,9.2339,33.9458\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,41.0,T402,9.1812,33.9468\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,42.0,T402,9.153,33.9548\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,43.0,T402,9.1294,33.9615\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,44.0,T402,9.1048,33.9652\n" +
+"2002-06-25T14:55:00Z,-121.845,36.692,45.0,T402,9.0566,33.9762\n";
 
-            //the basicQuery
-            try {
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
-                    tedd.className() + "_psdac", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                //String2.log(results);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac numeric constraint."); 
-            }
+        //the basicQuery
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_psdac", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
 
-            //basicQuery + String= constraint that shouldn't change the results
-            try {            
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=\"T402\"", 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacNonTime", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String= constraint."); 
-            }
-            
-            //basicQuery + String> String< constraints that shouldn't change the results
-            try {            
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacGTLT", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String> String< constraints."); 
-            }
-           
-            //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS WORKS SO SOURCE REGEX PARTLY WORKS 
-            //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
-            //This succeeds with source not handling regex, so leave test active.
-            try {              //always =~ (regardless of what source needs) because this is an erddap request
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"T40.\"", 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String regex constraints."); 
-            }
+        //basicQuery + String= constraint that shouldn't change the results
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=\"T402\"", 
+            EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacNonTime", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+        
+        //basicQuery + String> String< constraints that shouldn't change the results
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
+            EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacGTLT", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+       
+        //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS WORKS SO SOURCE REGEX PARTLY WORKS 
+        //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
+        //This succeeds with source not handling regex, so leave test active.
+            //always =~ (regardless of what source needs) because this is an erddap request
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"T40.\"", 
+            EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
 
-            //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS DOESN'T WORK.
-            //SO SOURCE REGEX SUPPORT IS LIMITED, SO DON'T RELY ON SOURCE HANDLING REGEX
-            //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
-            //This succeeds with source not handling regex, so leave test active.
-            try {              //always =~ (regardless of what source needs) because this is an erddap request
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"(T402|t403)\"", 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String regex constraints."); 
-            }
+        //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS DOESN'T WORK.
+        //SO SOURCE REGEX SUPPORT IS LIMITED, SO DON'T RELY ON SOURCE HANDLING REGEX
+        //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
+        //This succeeds with source not handling regex, so leave test active.
+            //always =~ (regardless of what source needs) because this is an erddap request
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"(T402|t403)\"", 
+            EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
 
-            //basicQuery + time= (a string= test) constraint that shouldn't change the results
-            try {
-                tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacTime", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-                Test.ensureEqual(results, expected, "results=\n" + results);      
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with time String= constraint."); 
-            }
-        } catch (Throwable t2) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
-                "\nUnexpected error for psdac."); 
-        }
+        //basicQuery + time= (a string= test) constraint that shouldn't change the results
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
+            EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacTime", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        Test.ensureEqual(results, expected, "results=\n" + results);      
     }
 
 
@@ -1632,18 +1599,12 @@ expected =
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdlasNewportCtd");
 
         //the basicQuery
-        try {
-            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
-                tedd.className() + "_newport", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            expected = 
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_newport", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
 "\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-           
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdlasNewportCtd."); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);      
 
     }
 
@@ -1739,18 +1700,12 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 "1976-11-01", "Central California", 623, -9999, "Sole, unspecified", "N", 200, "UFLT", "302", 6, "Santa Barbara - Morro Bay", "FLAT"
 "1976-08-01", "Central California", 600, -9999, "Turbot", "N", 240, "UFLT", "40", 6, "Santa Barbara - Morro Bay", "FLAT"
 */
-try {
-            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
-                tedd.className() + "_CalCaltch", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            expected = 
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_CalCaltch", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
 "\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-           
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdlasCalCatch"); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);      
 
     }
 
@@ -1837,27 +1792,22 @@ try {
         String today     = Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(1, Double.NaN));
         String yesterday = Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(2, Double.NaN));
 
-        try {
-            EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsRWL"); 
+        EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsRWL"); 
 
-            //*** test a TableWriter that doesn't convert time to iso format
-            query = "&station=\"1612340\"&datum=\"MLLW\"&beginTime=" + yesterday + "&endTime=" + today;             
+        //*** test a TableWriter that doesn't convert time to iso format
+        query = "&station=\"1612340\"&datum=\"MLLW\"&beginTime=" + yesterday + "&endTime=" + today;             
 //https://opendap.co-ops.nos.noaa.gov/dods/IOOS/SixMin_Verified_Water_Level.ascii?
 //&WATERLEVEL_6MIN_VFD_PX._STATION_ID="1612340"&WATERLEVEL_6MIN_VFD_PX._DATUM="MLLW"
 //&WATERLEVEL_6MIN_VFD_PX._BEGIN_DATE="20100825"&WATERLEVEL_6MIN_VFD_PX._END_DATE="20100826"            
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
-                edd.className() + "_RWL", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_RWL", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
 //trouble: java.time (was Joda) doesn't like space-padded hour values
 
-            expected = 
+        expected = 
 "zztop\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-           
-        } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testNosCoopsRWL."); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+       
     }
 
     /** Test reading .das */
@@ -1869,10 +1819,9 @@ try {
             DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
             DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testReadDas." +
+            throw new RuntimeException("Unexpected error for testReadDas." +
                 "\nNote: this test requires erdGtsppBest on coastwatch's ERDDAP:" +
-                "\nurl=" + url); 
+                "\nurl=" + url, t); 
         }
     }
 
@@ -1890,9 +1839,7 @@ try {
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n2016-01-16 THE DATA SOURCE IS GONE."); 
-                //"\nUnexpected error for testSubsetVariablesGraph.");
+            throw new RuntimeException("2016-01-16 THE DATA SOURCE IS GONE.", t); 
         }
     }
 
@@ -2089,45 +2036,69 @@ expected =
             expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) + 
-                "\n2016-01-16 THE DATA SOURCE IS GONE."); 
-                //"\nUnexpected error:");
+            throw new RuntimeException("2016-01-16 THE DATA SOURCE IS GONE.", t); 
         }
     }
 
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDDTableFromDapSequence.test()\n");
-        testVerboseOn();
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 4;
+        String msg = "\n^^^ EDDTableFromDapSequence.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //always done        
-        testGenerateDatasetsXml();
-        testGenerateDatasetsXml2();  //trouble: unsigned: needs work
-        testPsdac();
-        //testSourceNeedsExpandedFP_EQ(); 2016-01-16 source is gone
-        testReadDas();
-        //testSubsetVariablesGraph(); 2016-01-16 source is gone
-        //testSubsetVariablesRange();  2016-01-16 source is gone
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-   //     testErdlasNewportCtd();   //not yet working
-   //     testErdlasCalCatch();     //not yet working
-   //testReadPngInfo();  //needs work
-   
-        //not usually done
-        //testOneTime();
-        //testMemory();  important but very slow
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testGenerateDatasetsXml2();  //trouble: unsigned: needs work
+                    if (test ==  2) testPsdac();
+                    if (test ==  3) testReadDas();
+                    if (test ==  4 && doSlowTestsToo) testMemory();
 
-        //not done
-        //Tests of DAPPER were removed 2012-10-10. DAPPER was shut down recently.
-        //  https://www.pmel.noaa.gov/epic/dapper_dchart/unsupported.html
+                    //if (test ==  7) testSourceNeedsExpandedFP_EQ(); 2016-01-16 source is gone
+                    //if (test ==  8) testSubsetVariablesGraph(); 2016-01-16 source is gone
+                    //if (test ==  9) testSubsetVariablesRange();  2016-01-16 source is gone
 
+                    //if (test == 10) testErdlasNewportCtd();   //not yet working
+                    //if (test == 11) testErdlasCalCatch();     //not yet working
+                    //if (test == 12) testReadPngInfo();        //needs work
+               
+
+                    //not usually done
+                    //if (test == 1000) testOneTime();
+
+                    //not done
+                    //Tests of DAPPER were removed 2012-10-10. DAPPER was shut down recently.
+                    //  https://www.pmel.noaa.gov/epic/dapper_dchart/unsupported.html
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

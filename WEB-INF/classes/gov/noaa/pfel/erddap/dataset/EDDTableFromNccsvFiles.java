@@ -698,7 +698,7 @@ String expected =
 "    String units \"degrees_east\";\n" +
 "  }\n" +
 "  status {\n" +
-"    String actual_range \"\t\n" +
+"    String actual_range \"\\t\n" +
 "?\";\n" +  //important test of \\u20ac
 "    String comment \"From http://some.url.gov/someProjectDocument , Table C\";\n" +
 "    String ioos_category \"Unknown\";\n" +
@@ -748,7 +748,7 @@ String expected =
 "    Int32 testInts -2147483648, 0, 2147483647;\n" +
 "    Float64 testLongs -9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, 9223372036854775807;\n" + //longs written as psuedo doubles
 "    Int16 testShorts -32768, 0, 32767;\n" +
-"    String testStrings \" a\t~\u00fc,\n" + //important tests
+"    String testStrings \" a\\t~\u00fc,\n" + //important tests
 "'z\\\"?\";\n" + //important test of \\u20ac
 "    Byte testUBytes 0, 127, 255;\n" +  //no UByte    ??? is 255 okay?  Are negative values okay for ByteArray?
 "    UInt32 testUInts 0, 2147483647, 4294967295;\n" +
@@ -775,12 +775,7 @@ String expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
-        try {
-            Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "Unexpected error.");
-        }
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 expected =
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
@@ -1079,12 +1074,7 @@ expected =
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
-        try {
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Exception e7) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e7) +
-                "Unexpected error.");
-        }
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.nccsv all
         userDapQuery = "";
@@ -3136,7 +3126,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2020-04-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2020-05-07 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3151,7 +3141,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2020-04-01T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2020-05-06T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3438,52 +3428,80 @@ expected2 =
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
-                //"\nUnexpected error for testSubsetVariablesGraph.");
+            throw new RuntimeException("2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS.", t); 
         } */
     }
 
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDDTableFromNccsvFiles.test()");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 5;
+        String msg = "\n^^^ EDDTableFromNccsvFiles.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //long MIN_VALUE=-9223372036854775808  MAX_VALUE=9223372036854775807
-        //9007199254740992 (~9e15) see https://www.mathworks.com/help/matlab/ref/flintmax.html
-        for (long tl = 9007199254000000L; tl < Long.MAX_VALUE; tl++) {
-            double d = tl;
-            if (Math.round(d) != tl) {
-                String2.log("tl=" + tl + " d=" + d + " is the first large long that can't round trip to/from double");
-                break;
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testBasic(true); //deleteCachedDatasetInfo 
+                    if (test ==  2) testBasic(false); //deleteCachedDatasetInfo   
+                    if (test ==  3) testChar();
+                    if (test ==  4) testDap();
+                    if (test ==  5) testActualRange();
+
+                    if (test == 1000) {
+                        //long MIN_VALUE=-9223372036854775808  MAX_VALUE=9223372036854775807
+                        //9007199254740992 (~9e15) see https://www.mathworks.com/help/matlab/ref/flintmax.html
+                        for (long tl = 9007199254000000L; tl < Long.MAX_VALUE; tl++) {
+                            double d = tl;
+                            if (Math.round(d) != tl) {
+                                String2.log("tl=" + tl + " d=" + d + " is the first large long that can't round trip to/from double");
+                                break;
+                            }
+                        }
+                        Test.ensureEqual(9007199254740992L, Math.round((double)9007199254740992L), "");
+                    }
+                    if (test == 1001) {
+                        //-9007199254740992  see https://www.mathworks.com/help/matlab/ref/flintmax.html
+                        for (long tl = -9007199254000000L; tl > Long.MIN_VALUE; tl--) {
+                            double d = tl;
+                            if (Math.round(d) != tl) {
+                                String2.log("tl=" + tl + " d=" + d + "  is the first small long that can't round trip to/from double");
+                                break;
+                            }
+                        }
+                        Test.ensureEqual(-9007199254740992L, Math.round((double)-9007199254740992L), "");
+                    }
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
             }
         }
-        Test.ensureEqual(9007199254740992L, Math.round((double)9007199254740992L), "");
-
-        //-9007199254740992  see https://www.mathworks.com/help/matlab/ref/flintmax.html
-        for (long tl = -9007199254000000L; tl > Long.MIN_VALUE; tl--) {
-            double d = tl;
-            if (Math.round(d) != tl) {
-                String2.log("tl=" + tl + " d=" + d + "  is the first small long that can't round trip to/from double");
-                break;
-            }
-        }
-        Test.ensureEqual(-9007199254740992L, Math.round((double)-9007199254740992L), "");
-        //String2.pressEnterToContinue();
-
-        testGenerateDatasetsXml();
-        testBasic(true); //deleteCachedDatasetInfo 
-        testBasic(false); //deleteCachedDatasetInfo   
-        testChar();
-        testDap();
-        testActualRange();
-
-        /* */
     }
+
 }
 

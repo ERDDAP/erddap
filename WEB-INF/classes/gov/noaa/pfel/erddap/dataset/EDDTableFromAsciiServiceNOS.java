@@ -1083,7 +1083,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t)); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1115,8 +1115,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsLR1"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1152,8 +1151,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLV6"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1189,8 +1187,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLV60"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1222,8 +1219,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLVHL"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1257,9 +1253,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLTPHL results change every day (5-7 days ahead)." +
-                "\nIs the response reasonable?"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1300,8 +1294,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLTP6"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1342,8 +1335,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLTP60"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1381,9 +1373,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMAT" +
-                "\nCOMMON PROBLEM - one row is missing in the results."); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1421,9 +1411,7 @@ These datasets were hard to work with:
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMBP" +
-                "\nCOMMON PROBLEM - one row is missing in the results."); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1466,9 +1454,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMC" +
-                "\nSometimes a row is missing from source. Otherwise: Unexpected error."); 
+            throw new RuntimeException("Unexpected error. Sometimes a row is missing from source. Otherwise: Unexpected error.", t); 
         }
         }
 
@@ -1505,9 +1491,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMRF" +
-                "\nCOMMON PROBLEM - one row is missing in the results."); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1544,8 +1528,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMRH"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1584,9 +1567,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMWT" +
-                "\nCOMMON PROBLEM - one row is missing in the results."); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1624,9 +1605,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMW" +
-                "\nCOMMON PROBLEM - one row is missing in the results."); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1660,8 +1639,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMV"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1697,8 +1675,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsCA"); 
+            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
         }
         }
   
@@ -1740,42 +1717,74 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
      *
      * @throws Throwable if trouble
      */
-    public static void test(boolean makeSubsetFiles, boolean reloadSF) throws Throwable {
-        String2.log("\n****************** EDDTableFromAsciiServiceNOS.test() *****************\n");
+    public static void makeSubsetFiles(boolean reloadSF) throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiServiceNOS.makeSubsetFiles()\n");
         testVerboseOn();
-
-/* for releases, this line should have open/close comment */
 
         //update nosCoops datasets every 3 months
         //then copy [tomcat]/content/erddap/subset/nosCoops*.json files 
         //  to coastwatch ERDDAP /subset
         //  and UAF       ERDDAP /subset
         //then flag all the nosCoops datasets on coastwatch (use the list of flags)
-        if (makeSubsetFiles) {
-            if (reloadSF) reloadStationsFile();
-            makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
-            makeNosCoopsMetSubsetFiles(false); //re-download the stations file
-            makeNosActiveCurrentsSubsetFile(reloadSF); //re-download the currents stations file (a different file)
+        if (reloadSF) reloadStationsFile();
+        makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
+        makeNosCoopsMetSubsetFiles(false); //re-download the stations file
+        makeNosActiveCurrentsSubsetFile(reloadSF); //re-download the currents stations file (a different file)
+    }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 14;
+        String msg = "\n^^^ EDDTableFromAsciiServiceNOS.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testNosCoops("nosCoopsWLR1");
+                    if (test ==  1) testNosCoops("nosCoopsWLV6");
+                    if (test ==  2) testNosCoops("nosCoopsWLR60");
+                    if (test ==  3) testNosCoops("nosCoopsWLVHL");
+                    if (test ==  4) testNosCoops("nosCoopsWLTPHL");
+                    if (test ==  5) testNosCoops("nosCoopsWLTP60");
+                    if (test ==  6) testNosCoops("nosCoopsMAT");
+                    if (test ==  7) testNosCoops("nosCoopsMBP");
+                    if (test ==  8) testNosCoops("nosCoopsMC");  //not working 2019-05-20
+                    if (test ==  9) testNosCoops("nosCoopsMRF");
+                    if (test == 10) testNosCoops("nosCoopsMRH");
+                    if (test == 11) testNosCoops("nosCoopsMWT");
+                    if (test == 12) testNosCoops("nosCoopsMW");
+                    if (test == 13) testNosCoops("nosCoopsMV");
+                    if (test == 14) testNosCoops("nosCoopsCA");
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
         }
-
-        //always done   could test all with testNosCoops(".*"); but troublesome to debug
-        testNosCoops("nosCoopsWLR1");
-        testNosCoops("nosCoopsWLV6");
-        testNosCoops("nosCoopsWLR60");
-        testNosCoops("nosCoopsWLVHL");
-        testNosCoops("nosCoopsWLTPHL");
-        testNosCoops("nosCoopsWLTP60");
-        testNosCoops("nosCoopsMAT");
-        testNosCoops("nosCoopsMBP");
-        testNosCoops("nosCoopsMC");  //not working 2019-05-20
-        testNosCoops("nosCoopsMRF");
-        testNosCoops("nosCoopsMRH");
-        testNosCoops("nosCoopsMWT");
-        testNosCoops("nosCoopsMW");
-        testNosCoops("nosCoopsMV");
-        testNosCoops("nosCoopsCA");
-  
-
     }
 
 }

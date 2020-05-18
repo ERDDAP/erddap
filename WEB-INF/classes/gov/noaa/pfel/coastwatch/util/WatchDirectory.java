@@ -174,8 +174,8 @@ public class WatchDirectory {
     /** 
      * This tests this class. 
      */
-    public static void test(boolean doInteractiveTest) throws Throwable {
-        String2.log("\n*** WatchDirectory.test");
+    public static void basicTest() throws Throwable {
+        String2.log("\n*** WatchDirectory.basicTest");
         verbose = true;
         ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
         StringArray contexts  = new StringArray();
@@ -236,11 +236,7 @@ public class WatchDirectory {
             Test.ensureTrue(kind == CREATE || kind == MODIFY || kind == DELETE, 
                 "kind=" + kind);
         }
-        try {
-            Test.ensureBetween(n, 1, 3, "Sometimes nEvents=0 because the dir events weren't caught (because computer busy?).");
-        } catch (Exception e) {
-            String2.pressEnterToContinue("");
-        }
+        Test.ensureBetween(n, 1, 3, "Sometimes nEvents=0 because the dir events weren't caught (because computer busy?).");
 
 
         //*** test recursive
@@ -318,13 +314,32 @@ public class WatchDirectory {
 //            if (i % 10 == 0) Math2.gc(100); //does gc make the error go away?
         //    wdar[i] = watchDirectoryAll(watchDir, true);
         //}         
+    }
 
+        /** 
+     * This tests this class. 
+     */
+    public static void interactiveTest() throws Throwable {
+        String2.log("\n*** WatchDirectory.interactiveTest");
+        verbose = true;
+        ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
+        StringArray contexts  = new StringArray();
+        String sourceDir = String2.unitTestDataDir;
+        String watchDir  = String2.unitTestDataDir + "watchService/";
+        //String subDir    = String2.unitTestDataDir + "watchService/watchSub/";
+        //String subDirNS  = String2.unitTestDataDir + "watchService/watchSub";
+        //String file1     = "columnarAscii.txt";
+        //String file2     = "csvAscii.txt";
+        //String results;
+        int n;
+        //On Bob's M4700, even 2000 isn't sufficient to reliably catch all events
+        int sleep = 2000; 
 
         //*** interactive test
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
         Math2.sleep(sleep);
-        wd = watchDirectoryAll(watchDir, true, ""); //recursive, pathRegex
-        while (doInteractiveTest) {  
+        WatchDirectory wd = watchDirectoryAll(watchDir, true, ""); //recursive, pathRegex
+        while (true) {  
             String s = String2.getStringFromSystemIn(
                 "WatchDirectory interactive test (recursive):\n" +
                 "  Enter '' to see events in " + watchDir + 
@@ -342,7 +357,48 @@ public class WatchDirectory {
         }
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
 
-        String2.log("\n*** WatchDirectory.test finished.");
+        String2.log("\n*** WatchDirectory.interactiveTest finished.");
+    }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 0: 0;
+        String msg = "\n^^^ WatchDirectory.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) interactiveTest(); 
+
+                } else {
+                    if (test ==  0) basicTest(); 
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

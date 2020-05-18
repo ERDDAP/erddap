@@ -1198,11 +1198,27 @@ public class TestUtil {
     }
         
 
-    
+
+    /**
+     * This runs the interactive tests of the methods in String2.
+     */
+    public static void interactiveTestString2() throws Exception {
+        String2.log("\n*** TestUtil.interactiveTestString2");
+        //getPasswordFromConsole
+        String s = String2.getPasswordFromSystemIn(//String2.beep(1) +
+            "test getPasswordFromSystemIn: Enter a string (it won't be echoed): ");
+        String2.log("You entered: " + s);
+
+        //getStringFromConsole
+        s = String2.getStringFromSystemIn(//String2.beep(1) +
+            "test getStringFromSystemIn: Enter a string (it will be echoed): ");
+        String2.log("You entered: " + s);
+    }
+
     /**
      * Test the methods in String2.
      */
-    public static void testString2() throws Exception {
+    public static void testString2() throws Throwable {
         String2.log("\n*** TestUtil.testString2");
         String sar[];
         StringBuilder sb;
@@ -1451,15 +1467,6 @@ public class TestUtil {
             //if (test == 10) System.exit(0);
         }
 
-        //getPasswordFromConsole
-        s = String2.getPasswordFromSystemIn(String2.beep(1) +
-            "test getPasswordFromSystemIn: Enter a string (it won't be echoed): ");
-        String2.log("You entered: " + s);
-
-        //getStringFromConsole
-        s = String2.getStringFromSystemIn(String2.beep(1) +
-            "test getStringFromSystemIn: Enter a string (it will be echoed): ");
-        String2.log("You entered: " + s);
         Math2.incgc(3000);
 
         //binaryFindLastLE
@@ -1683,18 +1690,16 @@ public class TestUtil {
             bar = String2.stringToUtf8Bytes(os);
         }
         time = System.currentTimeMillis() - time;
-        String2.log("time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
-        if (time > 250)
-            String2.pressEnterToContinue();
+        Test.ensureTrue(time <= 250, 
+            "time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
 
         time = System.currentTimeMillis();
         for (i = 0; i < 1000000; i++) {
             s = String2.utf8BytesToString(bar);
         }
         time = System.currentTimeMillis() - time;
-        String2.log("time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
-        if (time > 200)
-            String2.pressEnterToContinue();
+        Test.ensureTrue(time <= 200, 
+            "time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
 
         s = String2.stringToUtf8String(os);
         Test.ensureEqual(String2.annotatedString(s), 
@@ -1714,9 +1719,8 @@ public class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        String2.log("time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
-        if (time > 70)
-            String2.pressEnterToContinue();
+        Test.ensureTrue(time <= 70, 
+            "time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
 
         //compareTo times
         time = System.currentTimeMillis();
@@ -1728,9 +1732,8 @@ public class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        String2.log("time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
-        if (time > 70)
-            String2.pressEnterToContinue();
+        Test.ensureTrue(time <= 70, 
+            "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
 
         //compareTo times
         time = System.currentTimeMillis();
@@ -1740,10 +1743,8 @@ public class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        String2.log("time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
-        if (time > 200)
-            String2.pressEnterToContinue();
-
+        Test.ensureTrue(time <= 200, 
+            "time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
         
 
         //indexOfIgnoreCase(s)
@@ -2879,19 +2880,34 @@ public class TestUtil {
         Test.ensureEqual(s, eis, "via my parseDateTime: " + dts + "  " + dtf + "  " + tzs); 
     }
 
+    /**
+     * Do the interactive tests of the methods in Calendar2.
+     */
+    public static void interactiveTestCalendar2() throws Exception {
+        String2.log("\n*** TestUtil.interactiveTestCalendar2");
+
+        String2.log("current time local: " + Calendar2.getCurrentISODateTimeStringLocalTZ());
+        String2.pressEnterToContinue(); 
+
+        try {
+            Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
+                "yyyy-MMM-dd")), "1970-Jan-01", "");  //MMM -> Jan   !  Really should be done by LLL?
+        } catch (Exception e) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nOracle Java versus AdoptOpenJDK may be slightly different for these."); 
+        }
+
+    }
 
     /**
      * Test the methods in Calendar2.
      */
-    public static void testCalendar2() throws Exception {
+    public static void testCalendar2() throws Throwable {
         String2.log("\n*** TestUtil.testCalendar2");
         String s, expected;
         double d;
         GregorianCalendar gc;
         DateTimeFormatter dtfr; 
-
-        String2.log("current time local: " + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        String2.pressEnterToContinue(); 
 
         testDateTimeFormatters("20151012", "yyyyMMdd", "Zulu", "2015-10-12T00:00:00.000Z"); 
         testDateTimeFormatters("2015",     "yyyy",     "Zulu", "2015-01-01T00:00:00.000Z"); 
@@ -3167,21 +3183,17 @@ public class TestUtil {
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ")), "1970-01-01T00:00:00.000+0000", "");  //!
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
             "yyyy-MM-dd")), "1970-01-01", "");  
-        try {
-        Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
-            "yyyy-MMM-dd")), "1970-Jan-01", "");  //MMM -> Jan   !  Really should be done by LLL?
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
             "yyyy-MMMM-dd")), "1970-January-01", "");  //MMMM -> January   !  Really should be done by LLLL?
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern( 
             "yyyy-LL-dd")),  "1970-01-01", "");   //LL -> 01     !  Really should be done by MM
+//2020-05-12 known difference between Oracle and AdoptOpenJDK. Doesn't really affect me.
+//        Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
+//            "yyyy-LLL-dd")), "1970-Jan-01", "");   //oracle java LLL->Jan  adoptOpenJDK8->1 !
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
-            "yyyy-LLL-dd")), "1970-Jan-01", "");   //oracle java LLL->Jan  adoptOpenJDK8->1 !
-        Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
-            "yyyy-LLLL-dd")), "1970-January-01", ""); 
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nOracle Java versus AdoptOpenJDK may be slightly different for these."); 
-        }
+            "yyyy-LLLL-dd")), "1970-January-01", 
+            "This is a KNOWN DIFFERENCE between Oracle and AdoptOpenJDK. It doesn't affect ERDDAP."); 
+
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
             "yyyy QQQQ")), "1970 1st quarter", ""); 
         Test.ensureEqual(Calendar2.format(0, DateTimeFormatter.ofPattern(
@@ -4332,7 +4344,7 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.factorToGetSeconds("years"), 360*86400, "p");
         try {
             Calendar2.factorToGetSeconds("zzz");
-            String2.log("Shouldn't get here.1"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.1");
         } catch (Exception e) {
         }
 
@@ -4512,7 +4524,7 @@ expected =
         Test.ensureEqual(Calendar2.getMonthName3(12), "Dec", "b");
         try {
             Calendar2.getMonthName3(0);
-            String2.log("Shouldn't get here.2"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.2"); 
         } catch (Exception e) {
         }
 
@@ -4521,7 +4533,7 @@ expected =
         Test.ensureEqual(Calendar2.getMonthName(12), "December", "b");
         try {
             Calendar2.getMonthName(0);
-            String2.log("Shouldn't get here.3"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.3");
         } catch (Exception e) {
         }
 
@@ -4553,7 +4565,7 @@ expected =
         Test.ensureEqual(Calendar2.newGCalendarZulu(1125504062003L).getTimeInMillis(), 1125504062003L, "a9");
         try {
             Calendar2.newGCalendarZulu(Long.MAX_VALUE);
-            String2.log("Shouldn't get here.4"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.4");
         } catch (Exception e) {
         }
 
@@ -4628,27 +4640,27 @@ expected =
         
         try {
             Calendar2.formatAsISODateTimeT(null); 
-            String2.log("Shouldn't get here.5"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.5"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTime( zuluGC, null); 
-            String2.log("Shouldn't get here.6"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.6"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTime( zuluGC, ""); 
-            String2.log("Shouldn't get here.7"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.7");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTime( zuluGC, "a"); 
-            String2.log("Shouldn't get here.8"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.8");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTime( null, s); 
-            String2.log("Shouldn't get here.9"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.9"); 
         } catch (Exception e) {
         }
         s = "2004-03-02 14:35:08"; //space
@@ -4663,7 +4675,7 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeZulu(s2)), s2, "n2 -0001");
         try {
             Calendar2.formatAsISODateTimeSpace(null); 
-            String2.log("Shouldn't get here.10"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.10");
         } catch (Exception e) {
         }
         s = "2003-05-16";
@@ -4671,14 +4683,14 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.parseISODateTime( zuluGC, s)), s, "oZ");
         try {
             Calendar2.formatAsISODate(null);
-            String2.log("Shouldn't get here.11"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.11"); 
         } catch (Exception e) {
         }
 
         Test.ensureEqual(Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu( 2003, 1, 2, 17, 4, 5, 6)), "02-Jan-2003 17:04:05", "DDMonYYYY");
         try {
             Calendar2.formatAsDDMonYYYY(null);
-            String2.log("Shouldn't get here.12"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.12");
         } catch (Exception e) {
         }
 
@@ -4707,37 +4719,37 @@ expected =
         //bad
         try {
             Calendar2.parseISODateTimeZulu("1998/03");
-            String2.log("Shouldn't get here.13"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.13");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu("1990a");
-            String2.log("Shouldn't get here.14"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.14"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu("1998::01");
-            String2.log("Shouldn't get here.15"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.15"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu("1990:a");
-            String2.log("Shouldn't get here.16"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.16"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu("a");
-            String2.log("Shouldn't get here.17"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.17");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu("");
-            String2.log("Shouldn't get here.18"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.18"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseISODateTimeZulu(null);
-            String2.log("Shouldn't get here.19"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.19"); 
         } catch (Exception e) {
         }
 
@@ -4750,42 +4762,42 @@ expected =
         Test.ensureEqual(Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDDZulu("-0001004")), "-0001004", "pL-0001");
         try {
             Calendar2.formatAsYYYYDDD(null);
-            String2.log("Shouldn't get here.20"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.20");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDD( zuluGC, null);
-            String2.log("Shouldn't get here.21"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.21");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDD( zuluGC, "a");
-            String2.log("Shouldn't get here.22"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.22"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDD( zuluGC, "200600");
-            String2.log("Shouldn't get here.23"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.23"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDD( zuluGC, "200600a");
-            String2.log("Shouldn't get here.24"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.24");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDD( zuluGC, "20060011");
-            String2.log("Shouldn't get here.25"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.25");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDDZulu(null);
-            String2.log("Shouldn't get here.26"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.26");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseYYYYDDDZulu( "a");
-            String2.log("Shouldn't get here.27"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.27");
         } catch (Exception e) {
         }
 
@@ -4793,7 +4805,7 @@ expected =
         Test.ensureEqual(Calendar2.formatAsYYYYMM(Calendar2.parseISODateTimeZulu(s)), "200602", "pL");
         try {
             Calendar2.formatAsYYYYMM(null);
-            String2.log("Shouldn't get here.28"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.28");
         } catch (Exception e) {
         }
 
@@ -4806,24 +4818,24 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(   -1,  34)), "-0001-02-03", "dZ-1");
         try {
             Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 365);
-            String2.log("Shouldn't get here.30"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.30"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.newGCalendarZulu( Integer.MAX_VALUE, 365);
-            String2.log("Shouldn't get here.31"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.31");
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2003, 1, 2)), "2003-01-02", "fL");
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarZulu( 2003, 1, 2)), "2003-01-02", "fZ");
         try {
             Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 1, 2);
-            String2.log("Shouldn't get here.32"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.32");
         } catch (Exception e) {
         }
         try {
             Calendar2.newGCalendarZulu( Integer.MAX_VALUE, 1, 2);
-            String2.log("Shouldn't get here.33"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.33");
         } catch (Exception e) {
         }
 
@@ -4834,17 +4846,17 @@ expected =
         Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(   -1, 1, 2, 3, 4, 5, 6)), "-00010102030405", "hZ");
         try {
             Calendar2.formatAsCompactDateTime(null);
-            String2.log("Shouldn't get here.34"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.34");
         } catch (Exception e) {
         }
         try {
             Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 1, 2, 3, 4, 5, 6);
-            String2.log("Shouldn't get here.35"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.35"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.newGCalendarZulu( Integer.MAX_VALUE, 1, 2, 3, 4, 5, 6);
-            String2.log("Shouldn't get here.36"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.36"); 
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarLocal(2003, 1, 2)), "2003002", "mL");
@@ -4861,38 +4873,38 @@ expected =
         Test.ensureEqual(Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "12/31/99")), "12/31/1999 00:00:00", "qe6");
         try {
             Calendar2.formatAsUSSlash24(null);
-            String2.log("Shouldn't get here.37"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.37"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseUSSlash24(null, "12/31/99");
-            String2.log("Shouldn't get here.38"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.38");
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24Zulu(    "12/31/99")), "12/31/1999 00:00:00", "qe7");
         try {
             Calendar2.parseUSSlash24Zulu(null);
-            String2.log("Shouldn't get here.39"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.39");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseUSSlash24Zulu("12");
-            String2.log("Shouldn't get here.40"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.40"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseUSSlash24Zulu("12/31");
-            String2.log("Shouldn't get here.41"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.41"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseUSSlash24Zulu("12/31/a");
-            String2.log("Shouldn't get here.42"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.42");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseUSSlash24Zulu("12-31-99");
-            String2.log("Shouldn't get here.43"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.43"); 
         } catch (Exception e) {
         }
 
@@ -4905,7 +4917,7 @@ expected =
         Test.ensureEqual(Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("-0001-01-02 14:00:00")), "1/2/-0001 2:00:00 pm", "");
         try {
             Calendar2.formatAsUSSlashAmPm(null);
-            String2.log("Shouldn't get here.44"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.44"); 
         } catch (Exception e) {
         }
 
@@ -4917,43 +4929,43 @@ expected =
         Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime( zuluGC, "-00011231235904")), "-00011231235904", "rZ");
         try {
             Calendar2.formatAsCompactDateTime(null);
-            String2.log("Shouldn't get here.45"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.45");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTime( null, s);
-            String2.log("Shouldn't get here.46"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.46");
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTime( zuluGC, null);
-            String2.log("Shouldn't get here.47"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.47"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTime( zuluGC, "");
-            String2.log("Shouldn't get here.48"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.48"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTime( zuluGC, "1999123");
-            String2.log("Shouldn't get here.49"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.49"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTime( zuluGC, "1999123a");
-            String2.log("Shouldn't get here.50"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.50"); 
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTimeZulu(s)), s, "rL1");
         try {
             Calendar2.parseCompactDateTimeZulu(null);
-            String2.log("Shouldn't get here.51"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.51"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseCompactDateTimeZulu("");
-            String2.log("Shouldn't get here.52"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.52"); 
         } catch (Exception e) {
         }
 
@@ -4965,22 +4977,22 @@ expected =
         Test.ensureEqual(Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(   -1, 1, 2, 3, 4, 5, 6)), "02-Jan--0001 03:04:05", "hZ");
         try {
             Calendar2.parseDDMonYYYYZulu(null);
-            String2.log("Shouldn't get here.53"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.53"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseDDMonYYYYZulu("02-Jan-200");
-            String2.log("Shouldn't get here.54"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.54"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseDDMonYYYYZulu("02-Jan-200a 04:05:06");
-            String2.log("Shouldn't get here.55"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.55"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.parseDDMonYYYYZulu("02-Jab-2003 04:05:06");
-            String2.log("Shouldn't get here.56"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.56");
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.formatAsDDMonYYYY(Calendar2.parseDDMonYYYYZulu("02-Jan-2003")),          "02-Jan-2003 00:00:00", "");
@@ -4992,12 +5004,12 @@ expected =
         Test.ensureEqual(Calendar2.yyyydddToIsoDate("2003365"), "2003-12-31", "tL");
         try {
             Calendar2.yyyydddToIsoDate("200336a");
-            String2.log("Shouldn't get here.57"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.57");
         } catch (Exception e) {
         }
         try {
             Calendar2.yyyydddToIsoDate(null);
-            String2.log("Shouldn't get here.58"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.58");
         } catch (Exception e) {
         }
         String2.log("getCurrentISODateTimeString = " + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarLocal()));
@@ -5039,18 +5051,18 @@ expected =
         Test.ensureEqual(Calendar2.isoStringToMillis("2005-08-31T16:01:02"), 1125504062000L, "w1");
         try {
             Calendar2.isoStringToMillis(null);
-            String2.log("Shouldn't get here.59"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.59"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.isoStringToMillis("");
-            String2.log("Shouldn't get here.60"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.60"); 
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.millisToIsoStringTZ(1125504062000L), "2005-08-31T16:01:02Z", "w2");
         try {
             Calendar2.millisToIsoStringTZ(Long.MAX_VALUE);
-            String2.log("Shouldn't get here.61"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.61");
         } catch (Exception e) {
         }
  
@@ -5061,18 +5073,18 @@ expected =
         Test.ensureEqual(Calendar2.isoStringToEpochSeconds("-0001-01-01"), m0001/1000 + (-365-366)*spd, "x1");
         try {
             Calendar2.isoStringToEpochSeconds("");
-            String2.log("Shouldn't get here.62"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.62");
         } catch (Exception e) {
         }
         try {
             Calendar2.isoStringToEpochSeconds(null);
-            String2.log("Shouldn't get here.63"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.63"); 
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1125504062.0), "2005-08-31T16:01:02Z", "x2");
         try {
             Calendar2.epochSecondsToIsoStringTZ(Double.NaN);
-            String2.log("Shouldn't get here.64"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.64"); 
         } catch (Exception e) {
         }
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1125504062.0), "2005-08-31T16:01:02Z", "x3");
@@ -5087,12 +5099,12 @@ expected =
         Test.ensureEqual(Calendar2.isoStringToEpochHours("-0001-01-01"), h0001 + (-365-366) * 24, "xa1");
         try {
             Calendar2.isoStringToEpochHours("");
-            String2.log("Shouldn't get here.66"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.66"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.isoStringToEpochHours(null);
-            String2.log("Shouldn't get here.67"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.67");
         } catch (Exception e) {
         }
 
@@ -5107,7 +5119,7 @@ expected =
         Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000 + (-365-366) * 24 * 3600, "");
         try {
             Calendar2.gcToEpochSeconds(null);
-            String2.log("Shouldn't get here.69"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.69");
         } catch (Exception e) {
         }
 
@@ -5123,7 +5135,7 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "-0001-01-01T00:00:00", "");
         try {
             Calendar2.epochSecondsToGc(Double.NaN);
-            String2.log("Shouldn't get here.70"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.70");
         } catch (Exception e) {
         }
 
@@ -5252,22 +5264,22 @@ expected =
 
         try {
             Calendar2.getTimeBaseAndFactor(null);
-            String2.log("Shouldn't get here.71"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.71"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.getTimeBaseAndFactor("days 1970-01-04");  //no since
-            String2.log("Shouldn't get here.72"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.72"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.getTimeBaseAndFactor("nanos since 1970-01-04"); //nanos not supported
-            String2.log("Shouldn't get here.73"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.73"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.getTimeBaseAndFactor("seconds since a"); //'a' isn't a valid iso datetime
-            String2.log("Shouldn't get here.74"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.74"); 
         } catch (Exception e) {
         }
 
@@ -5278,7 +5290,7 @@ expected =
         Test.ensureEqual(Calendar2.removeSpacesDashesColons(""), "", "");
         try {
             Calendar2.removeSpacesDashesColons(null);
-            String2.log("Shouldn't get here.75"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.75");
         } catch (Exception e) {
         }
 
@@ -5297,17 +5309,17 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(Calendar2.isoDateTimeAdd("-0001-02-03", -3, Calendar2.MONTH)),  "-0002-11-03 00:00:00", "");
         try {
             Calendar2.isoDateTimeAdd(null, -2, Calendar2.YEAR);
-            String2.log("Shouldn't get here.76"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.76");
         } catch (Exception e) {
         }
         try {
             Calendar2.isoDateTimeAdd("2001-02-03", Integer.MAX_VALUE, Calendar2.YEAR);
-            String2.log("Shouldn't get here.77"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.77"); 
         } catch (Exception e) {
         }
         try {
             Calendar2.isoDateTimeAdd("2001-02-03", -2, Integer.MAX_VALUE);
-            String2.log("Shouldn't get here.78"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.78");
         } catch (Exception e) {
         }
 
@@ -5523,7 +5535,7 @@ expected =
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "-0001-08-31T16:01:00", "");
         try {
             Calendar2.clearSmallerFields(gc, Calendar2.AM_PM);    
-            String2.log("Shouldn't get here.79"); Math2.sleep(60000);
+            throw new Throwable("Shouldn't get here.79");
         } catch (Exception e) {
         }
 
@@ -5761,13 +5773,13 @@ expected =
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
         long time1 = System.currentTimeMillis();
-        Test.ensureEqual(time1 >= fileTime + 10,  true, "a1 " + time1 + " " + fileTime);
-        Test.ensureEqual(time1 <= fileTime + 100, true, "a2 " + time1 + " " + fileTime);
-        Test.ensureEqual(File2.touch(utilDir + "temp.txt"), true,  "a"); //touch the file
+        Test.ensureTrue(time1 >= fileTime + 10,  "a1 " + time1 + " " + fileTime);
+        Test.ensureTrue(time1 <= fileTime + 100, "a2 " + time1 + " " + fileTime + "\nThis fails when the computer is busy.");
+        Test.ensureTrue(File2.touch(utilDir + "temp.txt"), "a"); //touch the file
         long time2 = System.currentTimeMillis();
         fileTime = File2.getLastModified(utilDir + "temp.txt");
-        Test.ensureEqual(fileTime >= time1, true, "b");
-        Test.ensureEqual(fileTime <= time2, true, "c");
+        Test.ensureTrue(fileTime >= time1, "b");
+        Test.ensureTrue(fileTime <= time2, "c");
         Test.ensureEqual(File2.touch(utilDir + "temp.gibberish"), false, "d");
 
         //test boolean delete(String dirName) {
@@ -6101,89 +6113,82 @@ expected =
      */
     public static void testString2canonical() throws Exception {
         String2.log("\n*** TestUtil.testString2canonical()");
-        try {
-            //find a way to make != strings (for tests below)
-            String a = "" + 1;
-            int i = 1;
-            String b = "" + i;
-            Test.ensureTrue(a != b, "");
+        //find a way to make != strings (for tests below)
+        String a = "" + 1;
+        int i = 1;
+        String b = "" + i;
+        Test.ensureTrue(a != b, "");
 
-            //ensure that new string makes a new String
-            a = "This is a test";
-            b = a.substring(10, 14);
-            String c = new String(b);
-            Test.ensureTrue(b != c, "");
+        //ensure that new string makes a new String
+        a = "This is a test";
+        b = a.substring(10, 14);
+        String c = new String(b);
+        Test.ensureTrue(b != c, "");
 
-            String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            int n = 1000;
-            String sa[] = new String[95*95];
-            long oMemoryInUse = -1;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
-            String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
-                String2.canonicalStatistics());
-            int canSize = -1;
-            int canSHSize = -1;
+        String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+        int n = 1000;
+        String sa[] = new String[95*95];
+        long oMemoryInUse = -1;
+        Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+        String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
+            String2.canonicalStatistics());
+        int canSize = -1;
+        int canSHSize = -1;
 
-            //for each outer loop, create a different group of 95*95 canonical strings 
-            for (int outer = 0; outer < 10; outer++) {
+        //for each outer loop, create a different group of 95*95 canonical strings 
+        for (int outer = 0; outer < 10; outer++) {
 
-                //create 1000000 strings, but only 1000 different strings per outer loop
-                //With each outer loop, sa values are overwritten. 
-                //  So previous values should be garbage collected.
-                //  If not, memory use and count of nStrings in canonical system
-                //    (tested below) will increase with each outer loop.
-                long time = System.currentTimeMillis();
-                for (int inner = 0; inner < n; inner++) {
-                    for (int inner2 = 0; inner2 < n; inner2++) {
-                        int j = (inner % 95) * 95 + (inner2 % 95);
-                        sa[j] = String2.canonical(
-                            //makes 95*95 different strings, dispersed to different canonical maps
-                            ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
-                            ((char)(32 + (inner2 % 95))) + "" + 
-                            //make this string unique to this outer loop iteration
-                            ((char)(65 + outer)) + "" + 
-                             //make it a long string
-                            filler100);
-                        //String2.log(">[" + j + "]=" + sa[j]);
-                    }
+            //create 1000000 strings, but only 1000 different strings per outer loop
+            //With each outer loop, sa values are overwritten. 
+            //  So previous values should be garbage collected.
+            //  If not, memory use and count of nStrings in canonical system
+            //    (tested below) will increase with each outer loop.
+            long time = System.currentTimeMillis();
+            for (int inner = 0; inner < n; inner++) {
+                for (int inner2 = 0; inner2 < n; inner2++) {
+                    int j = (inner % 95) * 95 + (inner2 % 95);
+                    sa[j] = String2.canonical(
+                        //makes 95*95 different strings, dispersed to different canonical maps
+                        ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
+                        ((char)(32 + (inner2 % 95))) + "" + 
+                        //make this string unique to this outer loop iteration
+                        ((char)(65 + outer)) + "" + 
+                         //make it a long string
+                        filler100);
+                    //String2.log(">[" + j + "]=" + sa[j]);
                 }
+            }
 
-                //ensure that memory use and nStrings in maps don't grow unexpectedly
-                time = System.currentTimeMillis() - time;
-                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
-                long memoryInUse = Math2.getMemoryInUse();
-                int shouldBe = outer == 0? 415 : 260;
-                String2.log(String2.canonicalStatistics() + 
-                    "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
-                    "ms [1st pass is slower]) " + 
-                    Math2.memoryString());
-                Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
-                if (oMemoryInUse == -1) {
-                    //initial sizes
-                    oMemoryInUse = memoryInUse; 
-                    canSize   = String2.canonicalSize();             //added strings should be gc'd after each iteration
-                    canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
-                } else {
-                    //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));  too inaccurate to be useful
-                    Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                    Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
-                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
-                }
-                Test.ensureEqual(String2.canonicalSize(),             canSize,            
-                     "Unexpected String2.canonicalSize!");
-                Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
-                     "Unexpected String2.canonicalStringHolderSize!");
+            //ensure that memory use and nStrings in maps don't grow unexpectedly
+            time = System.currentTimeMillis() - time;
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
+            long memoryInUse = Math2.getMemoryInUse();
+            int shouldBe = outer == 0? 415 : 260;
+            String2.log(String2.canonicalStatistics() + 
+                "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
+                "ms [1st pass is slower]) " + 
+                Math2.memoryString());
+            Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
+            if (oMemoryInUse == -1) {
+                //initial sizes
+                oMemoryInUse = memoryInUse; 
+                canSize   = String2.canonicalSize();             //added strings should be gc'd after each iteration
+                canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
+            } else {
+                //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));  too inaccurate to be useful
+                Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
+                Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                    "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
+            }
+            Test.ensureEqual(String2.canonicalSize(),             canSize,            
+                 "Unexpected String2.canonicalSize!");
+            Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
+                 "Unexpected String2.canonicalStringHolderSize!");
 
-            }   
-            //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-            String2.log(
-                "\n2019-07 memory use is constant at ~45MB"); 
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\nUnexpected TestUtil.testString2canonical() error:\n" +
-                MustBe.throwableToString(t)); 
-        }
+        }   
+        //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
+        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 50, 
+            "Unexpected memoryInUse=" + Math2.getMemoryInUse() + "MB (usually 46MB)");
     }
 
     /**
@@ -6191,82 +6196,76 @@ expected =
      */
     public static void testString2canonicalStringHolder() throws Exception {
         String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
-        try {
-            //find a way to make != strings (for tests below)
-            byte[] a = String2.stringToUtf8Bytes("" + 1);
-            int i = 1;
-            byte[] b = String2.stringToUtf8Bytes("" + i);
-            Test.ensureTrue(a != b, "");
+        //find a way to make != strings (for tests below)
+        byte[] a = String2.stringToUtf8Bytes("" + 1);
+        int i = 1;
+        byte[] b = String2.stringToUtf8Bytes("" + i);
+        Test.ensureTrue(a != b, "");
 
-            String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            int n = 1000;
-            StringHolder sa[] = new StringHolder[95*95];
-            long oMemoryInUse = -1;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
-            String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
-                String2.canonicalStatistics());
-            int canSize = -1;
-            int canSHSize = -1;
+        String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+        int n = 1000;
+        StringHolder sa[] = new StringHolder[95*95];
+        long oMemoryInUse = -1;
+        Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+        String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
+            String2.canonicalStatistics());
+        int canSize = -1;
+        int canSHSize = -1;
 
-            //for each outer loop, create a different group of 95*95 canonical strings 
-            for (int outer = 0; outer < 10; outer++) {
+        //for each outer loop, create a different group of 95*95 canonical strings 
+        for (int outer = 0; outer < 10; outer++) {
 
-                //create 1000000 strings, but only 1000 different strings per outer loop
-                //With each outer loop, sa values are overwritten. 
-                //  So previous values should be garbage collected.
-                //  If not, memory use and count of nStrings in canonical system
-                //    (tested below) will increase with each outer loop.
-                long time = System.currentTimeMillis();
-                for (int inner = 0; inner < n; inner++) {
-                    for (int inner2 = 0; inner2 < n; inner2++) {
-                        int j = (inner % 95) * 95 + (inner2 % 95);
-                        sa[j] = String2.canonicalStringHolder(new StringHolder(
-                            //makes 95*95 different strings, dispersed to different canonical maps
-                            ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
-                            ((char)(32 + (inner2 % 95))) + "" + 
-                            //make this string unique to this outer loop iteration
-                            ((char)(65 + outer)) + "" + 
-                             //make it a long string
-                            filler100));
-                        //String2.log(">[" + j + "]=" + sa[j]);
-                    }
+            //create 1000000 strings, but only 1000 different strings per outer loop
+            //With each outer loop, sa values are overwritten. 
+            //  So previous values should be garbage collected.
+            //  If not, memory use and count of nStrings in canonical system
+            //    (tested below) will increase with each outer loop.
+            long time = System.currentTimeMillis();
+            for (int inner = 0; inner < n; inner++) {
+                for (int inner2 = 0; inner2 < n; inner2++) {
+                    int j = (inner % 95) * 95 + (inner2 % 95);
+                    sa[j] = String2.canonicalStringHolder(new StringHolder(
+                        //makes 95*95 different strings, dispersed to different canonical maps
+                        ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
+                        ((char)(32 + (inner2 % 95))) + "" + 
+                        //make this string unique to this outer loop iteration
+                        ((char)(65 + outer)) + "" + 
+                         //make it a long string
+                        filler100));
+                    //String2.log(">[" + j + "]=" + sa[j]);
                 }
+            }
 
-                //ensure that memory use and nStrings in maps don't grow unexpectedly
-                time = System.currentTimeMillis() - time;
-                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
-                long memoryInUse = Math2.getMemoryInUse();
-                int shouldBe = outer == 0? 415 : 260; //ms
-                String2.log(String2.canonicalStatistics() + 
-                    "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
-                    "ms [1st pass is slower]) " + 
-                    Math2.memoryString());
-                Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
-                if (oMemoryInUse == -1) {
-                    oMemoryInUse = memoryInUse; 
-                    canSize = String2.canonicalSize();           //added strings should be gc'd after each iteration
-                    canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
-                } else {
-                    //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));   too inaccurate to be useful
-                    Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                    Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
-                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
-                }
-                Test.ensureEqual(String2.canonicalSize(),             canSize, 
-                    "Unexpected String2.canonicalSize!");
-                Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
-                    "Unexpected String2.canonicalStringHolderSize!");
-            }   
-            //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-            String2.pressEnterToContinue(
-                "\n2019-07 memory use is constant at ~44MB\n" +
-                "No error. I'm just pausing so you can read these diagnostics."); 
+            //ensure that memory use and nStrings in maps don't grow unexpectedly
+            time = System.currentTimeMillis() - time;
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
+            long memoryInUse = Math2.getMemoryInUse();
+            int shouldBe = outer == 0? 415 : 260; //ms
+            String2.log(String2.canonicalStatistics() + 
+                "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
+                "ms [1st pass is slower]) " + 
+                Math2.memoryString());
+            Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
+            if (oMemoryInUse == -1) {
+                oMemoryInUse = memoryInUse; 
+                canSize = String2.canonicalSize();           //added strings should be gc'd after each iteration
+                canSHSize = String2.canonicalStringHolderSize(); //added strings should be gc'd after each iteration
+            } else {
+                //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));   too inaccurate to be useful
+                Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
+                Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                    "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
+            }
+            Test.ensureEqual(String2.canonicalSize(),             canSize, 
+                "Unexpected String2.canonicalSize!");
+            Test.ensureEqual(String2.canonicalStringHolderSize(), canSHSize, 
+                "Unexpected String2.canonicalStringHolderSize!");
+        }   
+        //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\nUnexpected TestUtil.testString2canonicalStringHolder() error:\n" +
-                MustBe.throwableToString(t)); 
-        }
+        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 50, 
+            "Unexpected memoryInUse=" + Math2.getMemoryInUse() + "MB (usually 46MB)");
+
     }
 
     /**
@@ -6347,50 +6346,70 @@ expected =
 
 
     /**
-     * Run all of the tests  (and print messages to the console).
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Exception if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void main(String args[]) throws Exception {
-        long time = System.currentTimeMillis();
-        String2.log("time=" + time);
-        //storeLongsInDoubles(); //one time
-/* for releases, this line should have open/close comment */
-        testTest();
-        testMath2();
-        testString2();
-        testString2canonical();
-        testString2canonicalStringHolder();
-        testString2canonical2();
-        testString2LogOutputStream();
-        testByteIndexOf();
-        testFile2();
-        XML.test();
-        testMustBe();
-        testResourceBundle2();
-        testCalendar2();
-        LRUCache.test();
-        timeCurrentTimeMillis();
-        timeString2Log();
-        String2.log("\nAll TestUtil tests successfully completed in " +
-            (System.currentTimeMillis() - time) + " ms.");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 1 : 17;
+        String msg = "\n^^^ TestUtil.test(" + interactive + ") test=";
 
-        //not usually run
-        //testString2utf8()
-        //testFileWriteSpeed();
-        //testWriteToFileSpeed();
-        //testReadFromFileSpeed();
-    }
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) interactiveTestString2();
+                    if (test ==  1) interactiveTestCalendar2();
 
-/*
-test harness for expected exception:
-        try {
-            String2.log("Shouldn't get here.80"); Math2.sleep(60000);
-        } catch (Exception e) {
+                } else {
+                    if (test ==  0) testTest();
+                    if (test ==  1) testMath2();
+                    if (test ==  2) testString2();
+                    if (test ==  3) testString2canonical();
+                    if (test ==  4) testString2canonicalStringHolder();
+                    if (test ==  5) testString2canonical2();
+                    if (test ==  6) testString2LogOutputStream();
+                    if (test ==  7) testByteIndexOf();
+
+                    if (test == 10) testFile2();
+                    if (test == 12) testMustBe();
+                    if (test == 13) testResourceBundle2();
+                    if (test == 14) testCalendar2();
+                    if (test == 16) timeCurrentTimeMillis();
+                    if (test == 17) timeString2Log();
+
+                    //not usually run
+                    if (test == 1001) testString2utf8();
+                    if (test == 1002) testFileWriteSpeed();
+                    if (test == 1003) testWriteToFileSpeed();
+                    if (test == 1004) testReadFromFileSpeed();
+
+                    if (test == 1005) storeLongsInDoubles(); //one time
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
         }
-
-*/
-
+    }
 }
+
 
 

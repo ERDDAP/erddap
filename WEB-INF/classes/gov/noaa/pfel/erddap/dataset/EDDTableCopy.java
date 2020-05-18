@@ -1457,25 +1457,49 @@ reallyVerbose=false;
 
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableCopy.test() *****************\n");
-        testVerboseOn();
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 1;
+        String msg = "\n^^^ EDDTableCopy.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //always done
-        testBasic();    //tests testTableCopy dataset on local erddap
-        testFiles();    
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        //no longer active?
-        //testRepPostDet(true);  //checkSourceData 
-        //testRepPostDet(false); //checkSourceData (faster)
-        
-        //not usually done
+                } else {
+                    if (test ==  0) testBasic();    //tests testTableCopy dataset on local erddap
+                    if (test ==  1) testFiles();    
 
+                    //no longer active
+                    //if (test == 1000) testRepPostDet(true);  //checkSourceData 
+                    //if (test == 1001) testRepPostDet(false); //checkSourceData (faster)
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

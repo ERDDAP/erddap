@@ -855,16 +855,27 @@ public class Test {
      *
      * @param title usually all caps
      * @param msg
+     * @param t  MustBe.throwableToString is appended to the msg
+     */
+    public static void knownProblem(String title, String msg, Throwable t) throws Exception {
+        knownProblem(title, msg + "/n" + MustBe.throwableToString(t));
+    }
+
+    /** 
+     * This is the standard way to display (during the unit tests) information 
+     * about a known problem that won't be fixed soon.
+     *
+     * @param title usually all caps
+     * @param msg
      */
     public static void knownProblem(String title, String msg) throws Exception {
-        String2.log( 
-            "\n\n*********\n" + 
-            msg + String2.beep(1) + "\n" +
+        throw new RuntimeException( 
+            msg + /* String2.beep(1) + */ "\n" +
             (msg.endsWith("\n")? "" : "\n") + 
             "*** KNOWN PROBLEM: " + title); // + "\n" +
             //"Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
         //Math2.sleep(10000);
-        String2.pressEnterToContinue(); 
+        //String2.pressEnterToContinue(); 
     }
 
 

@@ -2063,135 +2063,130 @@ String2.log("inventoryTable:\n" + table.toString());
         Table.reallyVerbose = true;
         verbose = true;
         reallyVerbose = true;
+
+        //these invalid queries are caught locally
+        String2.log("\n*** DigirHelper.testOpendapStyleObis test of unknown op");
         try {
+            searchObisOpendapStyle(
+                new String[]{"GHMP"},
+                RUTGERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus!Macrocystis&darwin:Latitude>53&darwin:Latitude<54",
+                table);
+            String2.log("Shouldn't get here."); Math2.sleep(60000);
+        } catch (Exception e) {
+            String2.log(e.toString());
+            String2.log("\n*** diagnostic error (above) correctly caught\n");
+        }
+        
+        String2.log("\n*** DigirHelper.testOpendapStyleObis test of empty filter at beginning");
+        try {
+            searchObisOpendapStyle(
+                new String[]{"GHMP"},
+                RUTGERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54",
+                table);
+            String2.log("Shouldn't get here."); Math2.sleep(60000);
+        } catch (Exception e) {
+            String2.log(e.toString());
+            String2.log("\n*** diagnostic error (above) correctly caught\n");
+        }
+        
+        String2.log("\n*** DigirHelper.testOpendapStyleObis test of empty filter at end");
+        try {
+            searchObisOpendapStyle(
+                new String[]{"GHMP"},
+                RUTGERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54&",
+                table);
+            String2.log("Shouldn't get here."); Math2.sleep(60000);
+        } catch (Exception e) {
+            String2.log(e.toString());
+            String2.log("\n*** diagnostic error (above) correctly caught\n");
+        }
+        
+        String2.log("\n*** DigirHelper.testOpendapStyleObis test of invalid var name");
+        try {
+            searchObisOpendapStyle(
+                new String[]{"GHMP"},
+                RUTGERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Laatitude<54",
+                table);
+            String2.log("Shouldn't get here."); Math2.sleep(60000);
+        } catch (Exception e) {
+            String2.log(e.toString());
+            String2.log("\n*** diagnostic error (above) correctly caught\n");
+        }
+        
+        //experiment (not normally run)
+        if (false) {
+            table.clear();
+            String2.log("\n*** DigirHelper.testOpendapStyleObis test of experiment");
+            searchObisOpendapStyle(
+                new String[]{"OBIS-SEAMAP"},
+                RUTGERS_OBIS_URL,
+                "obis:Temperature,darwin:ScientificName" +
+                "&darwin:ScientificName=Caretta caretta" +
+                "&darwin:YearCollected=2005",
+                table);
 
-            //these invalid queries are caught locally
-            String2.log("\n*** DigirHelper.testOpendapStyleObis test of unknown op");
-            try {
-                searchObisOpendapStyle(
-                    new String[]{"GHMP"},
-                    RUTGERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus!Macrocystis&darwin:Latitude>53&darwin:Latitude<54",
-                    table);
-                String2.log("Shouldn't get here."); Math2.sleep(60000);
-            } catch (Exception e) {
-                String2.log(e.toString());
-                String2.log("\n*** diagnostic error (above) correctly caught\n");
-            }
-            
-            String2.log("\n*** DigirHelper.testOpendapStyleObis test of empty filter at beginning");
-            try {
-                searchObisOpendapStyle(
-                    new String[]{"GHMP"},
-                    RUTGERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54",
-                    table);
-                String2.log("Shouldn't get here."); Math2.sleep(60000);
-            } catch (Exception e) {
-                String2.log(e.toString());
-                String2.log("\n*** diagnostic error (above) correctly caught\n");
-            }
-            
-            String2.log("\n*** DigirHelper.testOpendapStyleObis test of empty filter at end");
-            try {
-                searchObisOpendapStyle(
-                    new String[]{"GHMP"},
-                    RUTGERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54&",
-                    table);
-                String2.log("Shouldn't get here."); Math2.sleep(60000);
-            } catch (Exception e) {
-                String2.log(e.toString());
-                String2.log("\n*** diagnostic error (above) correctly caught\n");
-            }
-            
-            String2.log("\n*** DigirHelper.testOpendapStyleObis test of invalid var name");
-            try {
-                searchObisOpendapStyle(
-                    new String[]{"GHMP"},
-                    RUTGERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Laatitude<54",
-                    table);
-                String2.log("Shouldn't get here."); Math2.sleep(60000);
-            } catch (Exception e) {
-                String2.log(e.toString());
-                String2.log("\n*** diagnostic error (above) correctly caught\n");
-            }
-            
-            //experiment (not normally run)
-            if (false) {
-                table.clear();
-                String2.log("\n*** DigirHelper.testOpendapStyleObis test of experiment");
-                searchObisOpendapStyle(
-                    new String[]{"OBIS-SEAMAP"},
-                    RUTGERS_OBIS_URL,
-                    "obis:Temperature,darwin:ScientificName" +
-                    "&darwin:ScientificName=Caretta caretta" +
-                    "&darwin:YearCollected=2005",
-                    table);
+            String2.log("\nresulting table is: " + table);
+            table.testObis5354Table();
+        }
 
-                String2.log("\nresulting table is: " + table);
-                table.testObis5354Table();
-            }
+        //valid request,   standard test
+        //but I have stopped testing rutgers because it is down so often
+        if (false) {
+            table.clear();
+            String2.log("\n*** DigirHelper.testOpendapStyleObis test of valid request");
+            searchObisOpendapStyle(
+                new String[]{"GHMP"},
+                RUTGERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54" +
+                "&darwin:YearCollected>=1970&darwin:YearCollected<=2100",
+                table);
 
-            //valid request,   standard test
-            //but I have stopped testing rutgers because it is down so often
-            if (false) {
-                table.clear();
-                String2.log("\n*** DigirHelper.testOpendapStyleObis test of valid request");
-                searchObisOpendapStyle(
-                    new String[]{"GHMP"},
-                    RUTGERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus=Macrocystis&darwin:Latitude>53&darwin:Latitude<54" +
-                    "&darwin:YearCollected>=1970&darwin:YearCollected<=2100",
-                    table);
+            String2.log("\nresulting table is: " + table);
+            table.testObis5354Table();
+        }
 
-                String2.log("\nresulting table is: " + table);
-                table.testObis5354Table();
-            }
+        //valid request of indobis   but indobis treats lat lon queries as strings!
+        if (false) {
+            table.clear();
+            String2.log("\n*** DigirHelper.testOpendapStyleObis test of valid request");
+            searchObisOpendapStyle(
+                new String[]{"indobis"},
+                IND_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus=Carcharodon"
+                + "&darwin:Latitude>=-10&darwin:Latitude<=0" //ERROR: QUERY_TERM_TOO_SHORT
+                ,
+                table);
 
-            //valid request of indobis   but indobis treats lat lon queries as strings!
-            if (false) {
-                table.clear();
-                String2.log("\n*** DigirHelper.testOpendapStyleObis test of valid request");
-                searchObisOpendapStyle(
-                    new String[]{"indobis"},
-                    IND_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus=Carcharodon"
-                    + "&darwin:Latitude>=-10&darwin:Latitude<=0" //ERROR: QUERY_TERM_TOO_SHORT
-                    ,
-                    table);
+            String2.log("\nresulting table is: " + table);
+            //testObisCarcharodonTable(table);
+        }
 
-                String2.log("\nresulting table is: " + table);
-                //testObisCarcharodonTable(table);
-            }
+        //test flanders   This is a reliable test that I normally use.
+        try {
+            table.clear();
+            String2.log("\n*** DigirHelper.testOpendapStyleObis test flanders");
+            searchObisOpendapStyle(
+                new String[]{"tisbe"},
+                FLANDERS_OBIS_URL,
+                "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
+                "&darwin:Genus=Abietinaria&darwin:Longitude<2",
+                table);
 
-            //test flanders   This is a reliable test that I normally use.
-            try {
-                table.clear();
-                String2.log("\n*** DigirHelper.testOpendapStyleObis test flanders");
-                searchObisOpendapStyle(
-                    new String[]{"tisbe"},
-                    FLANDERS_OBIS_URL,
-                    "darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature" +
-                    "&darwin:Genus=Abietinaria&darwin:Longitude<2",
-                    table);
-
-                testObisAbietinariaTable(table);
-            } catch (Exception e) {
-                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                    "\nUnexpected DigirHelper error"); 
-
-            }
+            testObisAbietinariaTable(table);
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nUnexpected error."); 
+                "\nUnexpected DigirHelper error"); 
+
         }
     }
 
@@ -2256,9 +2251,9 @@ String2.log("inventoryTable:\n" + table.toString());
      *
      * @throws Exception if trouble
      */
-    public static void test() throws Exception {
+    public static void basicTest() throws Exception {
 
-        String2.log("\n***** DigirHelper.test");
+        String2.log("\n***** DigirHelper.basicTest");
         Table.verbose = true;
         Table.reallyVerbose = true;
         verbose = true;
@@ -2312,6 +2307,47 @@ String2.log("inventoryTable:\n" + table.toString());
         //done
         String2.log("\n***** DigirHelper.test finished successfully");
 
+    }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ DigirHelper.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

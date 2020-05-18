@@ -738,7 +738,7 @@ public class OpendapHelper  {
         StringBuilder sb = new StringBuilder();
         //String2.log(">> dasToString " + varName + " attributes:\n" + attributes.toString());
         //see EOL definition for comments about it
-        int firstUEncodedChar = encodeAsHTML? 65536 : 127;
+        int firstUEncodedChar = encodeAsHTML? 65536 : 65536;
         sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL); 
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) {
@@ -747,19 +747,20 @@ public class OpendapHelper  {
             sb.append(XML.encodeAsHTML("    " + getAtomicType(et) + " " + names[ni] + " ", encodeAsHTML));
             int paSize = pa.size();
             if (et == PAType.CHAR || et == PAType.STRING) {
-                //enquote, and replace internal quotes with \"
                 String ts = String2.toSVString(pa.toStringArray(), "\n", false);
                 if (encodeAsHTML) {
                     //was ts = String2.noLongLinesAtSpace(ts, 78, "");
                     if (ts.indexOf('\n') >= 0)
                         sb.append('\n'); //start on new line, so first line isn't super long
                 }
+                //enquote, and replace internal quotes with \"
                 //DAP 2.0 appendix A says \ becomes \\ and " becomes \"
                 //2017-05-05 I considered toJson, but DASParser doesn't like e.g., \\uhhhh
-                //ts = String2.toJson(ts, firstUEncodedChar, false),
-                //    encodeAsHTML));
-                ts = String2.replaceAll(ts, "\\", "\\\\");
-                ts = "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"";
+                //2020-05-12 Json is the logical extension of DAP spec. 
+                //    So do it but don't use \\u notation (firstUEncodedchar was 127, now 65536)
+                ts = String2.toJson(ts, firstUEncodedChar, false);
+                //ts = String2.replaceAll(ts, "\\", "\\\\");
+                //ts = "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"";
                 //String2.log(">> ts=" + ts);
                 sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
             } else if (et == PAType.LONG   ||
@@ -1102,11 +1103,10 @@ public class OpendapHelper  {
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) +
-                "Fix this someday:\n" +
+            Test.knownProblem(
                 "Known problem with https://tds.coaps.fsu.edu: \"unable to find valid certification path\"\n" +
-                "then 2019-11-25 'Connection cannot be opened'."); 
+                "then 2019-11-25 'Connection cannot be opened'.",
+                "Fix this someday:", t);
         }
 
 
@@ -2466,10 +2466,10 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
 //        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+            throw new Exception(
                 "\nUnexpected error." +
                 "\nOutOfMememoryError from TDS bug was expected." + 
-                "\n(server timed out 2013-10-24)"); 
+                "\n(server timed out 2013-10-24)", t); 
         }
 
 
@@ -2989,24 +2989,50 @@ expected2 =
     }
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable{
-        String2.log("\n*** OpendapHelper.test()");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 6;
+        String msg = "\n^^^ OpendapHelper.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        testGetAttributes();
-        testParseStartStrideStop();
-        testFindVarsWithSharedDimensions();
-        testFindAllScalarOrMultiDimVars();
-        testDapToNcDArray();
-        testDapToNcDGrid();
-        testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
 
-        String2.log("\n***** OpendapHelper.test finished successfully");
-        Math2.incgc(2000); //in a test
-        /* */
-    } 
+                } else {
+                    if (test ==  0) testGetAttributes();
+                    if (test ==  1) testParseStartStrideStop();
+                    if (test ==  2) testDapToNcDArray();
+                    if (test ==  3) testFindVarsWithSharedDimensions();
+                    if (test ==  4) testFindAllScalarOrMultiDimVars();
+                    if (test ==  5) testDapToNcDGrid();
+                    if (test ==  6) testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
 
 
 

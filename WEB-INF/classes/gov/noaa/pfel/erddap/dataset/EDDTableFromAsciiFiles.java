@@ -470,29 +470,28 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml()");
         String dir = EDStatic.unitTestDataDir + "ascii/";
 
-        try {
-            Attributes externalAddAttributes = new Attributes();
-            externalAddAttributes.add("title", "New Title!");
-            String suggDatasetID = suggestDatasetID(dir + "31201_2009_NoComments\\.csv");
-            String results = generateDatasetsXml(
-                dir,  "31201_2009_NoComments\\.csv", "",
-                String2.ISO_8859_1, 1, 3, "", -1,
-                "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
-                "time", "station time", 
-                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
-                -1, "", externalAddAttributes) + "\n";
+        Attributes externalAddAttributes = new Attributes();
+        externalAddAttributes.add("title", "New Title!");
+        String suggDatasetID = suggestDatasetID(dir + "31201_2009_NoComments\\.csv");
+        String results = generateDatasetsXml(
+            dir,  "31201_2009_NoComments\\.csv", "",
+            String2.ISO_8859_1, 1, 3, "", -1,
+            "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
+            "time", "station time", 
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+            -1, "", externalAddAttributes) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromAsciiFiles",
-                dir,  "31201_2009_NoComments\\.csv", "",
-                String2.ISO_8859_1, "1", "3", "", "-1",
-                "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
-                "time", "station time", 
-                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromAsciiFiles",
+            dir,  "31201_2009_NoComments\\.csv", "",
+            String2.ISO_8859_1, "1", "3", "", "-1",
+            "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
+            "time", "station time", 
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
@@ -676,23 +675,21 @@ String expected =
 "</dataset>\n" +
 "\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            //ensure it is ready-to-use by making a dataset from it
-            //2014-12-24 no longer: this will fail with a specific error which is caught below
-            String tDatasetID = suggDatasetID;
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "The Newer Title!", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp",
-                "");
+        //ensure it is ready-to-use by making a dataset from it
+        //2014-12-24 no longer: this will fail with a specific error which is caught below
+        String tDatasetID = suggDatasetID;
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "The Newer Title!", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp",
+            "");
 
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
 //2014-12-24 no longer occurs
 //            if (msg.indexOf(
 //"When a variable's destinationName is \"altitude\", the sourceAttributes or addAttributes " +
@@ -701,9 +698,6 @@ String expected =
 //"use a different destinationName for this variable.") >= 0) {
 //                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
 //            } else 
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXml."); 
-        }
 
     }
 
@@ -713,36 +707,35 @@ String expected =
     public static void testGenerateDatasetsXml2() throws Throwable {
         testVerboseOn();
 
-        try {
-            String sourceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-1year";
-            String destDir = File2.getSystemTempDirectory();
-            String destName = "latest41004.csv";
-            String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml2()\n" +
-                "downloading test file from:\n" + sourceUrl + "\nto: " + destName);        
-            SSR.downloadFile(sourceUrl, destDir + destName, true); //tryToUseCompression
+        String sourceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-1year";
+        String destDir = File2.getSystemTempDirectory();
+        String destName = "latest41004.csv";
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml2()\n" +
+            "downloading test file from:\n" + sourceUrl + "\nto: " + destName);        
+        SSR.downloadFile(sourceUrl, destDir + destName, true); //tryToUseCompression
 
-            Attributes externalAddAttributes = new Attributes();
-            externalAddAttributes.add("title", "New Title!");
-            String suggDatasetID = suggestDatasetID(destDir + destName);
-            String results = generateDatasetsXml(
-                destDir, destName, "",
-                String2.ISO_8859_1, 1, 3, "", -1,
-                "", "", "", "",
-                "", "", 
-                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
-                -1, "", externalAddAttributes) + "\n";
+        Attributes externalAddAttributes = new Attributes();
+        externalAddAttributes.add("title", "New Title!");
+        String suggDatasetID = suggestDatasetID(destDir + destName);
+        String results = generateDatasetsXml(
+            destDir, destName, "",
+            String2.ISO_8859_1, 1, 3, "", -1,
+            "", "", "", "",
+            "", "", 
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+            -1, "", externalAddAttributes) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromAsciiFiles",
-                destDir, destName, "",
-                String2.ISO_8859_1, "1", "3", "", "-1",
-                "", "", "", "",
-                "", "", 
-                "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromAsciiFiles",
+            destDir, destName, "",
+            String2.ISO_8859_1, "1", "3", "", "-1",
+            "", "", "", "",
+            "", "", 
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
@@ -839,25 +832,19 @@ String expected =
 "</dataset>\n" +
 "\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = suggDatasetID;
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "The Newer Title!", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "station, time, atmp, wtmp",
-                "");
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-            String2.pressEnterToContinue(msg + 
-                "\nUnexpected error in generateDatasetsXml2."); 
-        }
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = suggDatasetID;
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "The Newer Title!", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "station, time, atmp, wtmp",
+            "");
 
     }
 
@@ -869,18 +856,17 @@ String expected =
 
         String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlWithMV()");
 
-        try {
-            Attributes externalAddAttributes = new Attributes();
-            externalAddAttributes.add("title", "New Title!");
-            String suggDatasetID = suggestDatasetID(
-                EDStatic.unitTestDataDir + "ascii/mvTest\\.csv");
-            String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "ascii/",  "mvTest\\.csv", "",
-                String2.ISO_8859_1, 1, 2, "", -1,
-                "", "", "", "",  //extract
-                "", "", 
-                "https://www.bco-dmo.org/", "BCO-DMO", "The new summary!", "The Newer Title!",
-                -1, "", externalAddAttributes) + "\n";
+        Attributes externalAddAttributes = new Attributes();
+        externalAddAttributes.add("title", "New Title!");
+        String suggDatasetID = suggestDatasetID(
+            EDStatic.unitTestDataDir + "ascii/mvTest\\.csv");
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "ascii/",  "mvTest\\.csv", "",
+            String2.ISO_8859_1, 1, 2, "", -1,
+            "", "", "", "",  //extract
+            "", "", 
+            "https://www.bco-dmo.org/", "BCO-DMO", "The new summary!", "The Newer Title!",
+            -1, "", externalAddAttributes) + "\n";
 
 String expected = 
 "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
@@ -1033,25 +1019,19 @@ String expected =
 "</dataset>\n" +
 "\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = suggDatasetID;
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "The Newer Title!", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "aString, aFloat, aFloat_with_NaN, aFloat_with_nd, aDouble, aLong, anInt, aShort, aByte",
-                "");
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-            String2.pressEnterToContinue(msg + 
-                "\nUnexpected error using generateDatasetsXml."); 
-        }
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = suggDatasetID;
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "The Newer Title!", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "aString, aFloat, aFloat_with_NaN, aFloat_with_nd, aDouble, aLong, anInt, aShort, aByte",
+            "");
 
     }
 
@@ -1572,7 +1552,7 @@ expected=
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,,,\n" +
-"csvAscii,5.0,\"b,d\",A,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"csvAscii,5.0,\" b,d \",A,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
 "csvAscii,5.0,needs,1,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
 "csvAscii,5.0,fg,F,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
 "csvAscii,5.0,h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
@@ -3496,21 +3476,20 @@ expected =
         testVerboseOn();
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-        try {
-            String xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
-            String xmlFile = xmlDir + "27377.xml";
-            int whichChild = 0;
-            String dataDir = "/u00/data/points/inportData/";
+        String xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
+        String xmlFile = xmlDir + "27377.xml";
+        int whichChild = 0;
+        String dataDir = "/u00/data/points/inportData/";
 
 
-            String results = generateDatasetsXmlFromInPort(
-                xmlFile, xmlDir, ".*", whichChild, dataDir, "", -1) + "\n";
+        String results = generateDatasetsXmlFromInPort(
+            xmlFile, xmlDir, ".*", whichChild, dataDir, "", -1) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromInPort",
-                xmlFile, xmlDir, "" + whichChild, dataDir, "", "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromInPort",
+            xmlFile, xmlDir, "" + whichChild, dataDir, "", "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
 
 String expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377\" active=\"true\">\n" +
@@ -3656,36 +3635,29 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "    </dataVariable>\n" +
 "</dataset>\n\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXmlFromInPort."); 
-        }
+        Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
 
 
-        try {
-            String xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
-            String xmlFile = xmlDir + "27377.xml";
-            int whichChild = 1;
-            String dataDir = "/u00/data/points/inportData/";
-            //This file isn't from this dataset.
-            //This shows that there needn't be any entity-attribute info in the xmlFile .
-            String dataFile = "dummy.csv";  
+        xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
+        xmlFile = xmlDir + "27377.xml";
+        whichChild = 1;
+        dataDir = "/u00/data/points/inportData/";
+        //This file isn't from this dataset.
+        //This shows that there needn't be any entity-attribute info in the xmlFile .
+        String dataFile = "dummy.csv";  
 
-            String results = generateDatasetsXmlFromInPort(
-                xmlFile, xmlDir, ".*", whichChild, dataDir, dataFile, -1) + "\n";
+        results = generateDatasetsXmlFromInPort(
+            xmlFile, xmlDir, ".*", whichChild, dataDir, dataFile, -1) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromInPort",
-                xmlFile, xmlDir, "" + whichChild, dataDir, dataFile, "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
+        //GenerateDatasetsXml
+        gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromInPort",
+            xmlFile, xmlDir, "" + whichChild, dataDir, dataFile, "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
 
-String expected = 
+expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377c1\" active=\"true\">\n" +
 "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
 "    <fileDir>/u00/data/points/inportData/27377/</fileDir>\n" +
@@ -4053,15 +4025,9 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "    </dataVariable>\n" +
 "</dataset>\n\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXmlFromInPort."); 
-        }
+        Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
 
     }
 
@@ -4077,18 +4043,17 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
         String xmlFile = "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml";
         String dataDir = "/u00/data/points/inportData/";
 
-        try {
-            String fileName = "";
-            int whichChild = 0;
+        String fileName = "";
+        int whichChild = 0;
 
-            String results = generateDatasetsXmlFromInPort(
-                xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
+        String results = generateDatasetsXmlFromInPort(
+            xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromInPort",
-                xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromInPort",
+            xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
 
 String expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938\" active=\"true\">\n" +
@@ -4202,30 +4167,24 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "</dataset>\n" +
 "\n\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
+        Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
 
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXmlFromInPort2."); 
-        }
 
-        try {
-            String fileName = "AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions.csv";
-            int whichChild = 1;
+        fileName = "AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions.csv";
+        whichChild = 1;
 
-            String results = generateDatasetsXmlFromInPort(
-                xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
+        results = generateDatasetsXmlFromInPort(
+            xmlFile, "", ".*", whichChild, dataDir, fileName, -1) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromInPort",
-                xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
+        //GenerateDatasetsXml
+        gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromInPort",
+            xmlFile, "", "" + whichChild, dataDir, fileName, "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
 
-String expected = 
+expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938ce26939\" active=\"true\">\n" +
 "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
 "    <fileDir>/u00/data/points/inportData/26938/</fileDir>\n" +
@@ -4574,16 +4533,9 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXmlFromInPort2."); 
-        }
-
+        Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
     }
 
     /** 
@@ -5434,20 +5386,19 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
         testVerboseOn();
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-        try {
-            boolean useLocal = true;
-            String catalogUrl = "https://www.bco-dmo.org/erddap/datasets";
-            String dataDir = "/u00/data/points/bcodmo/";
-            String numberRegex = "(549122)";
+        boolean useLocal = true;
+        String catalogUrl = "https://www.bco-dmo.org/erddap/datasets";
+        String dataDir = "/u00/data/points/bcodmo/";
+        String numberRegex = "(549122)";
 
-            String results = generateDatasetsXmlFromBCODMO(
-                useLocal, catalogUrl, dataDir, numberRegex, -1) + "\n";
+        String results = generateDatasetsXmlFromBCODMO(
+            useLocal, catalogUrl, dataDir, numberRegex, -1) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromBCODMO",
-                useLocal + "", catalogUrl, dataDir, numberRegex, "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromBCODMO",
+            useLocal + "", catalogUrl, dataDir, numberRegex, "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
 
 String expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo549122v20150217\" active=\"true\">\n" +
@@ -6137,17 +6088,11 @@ String expected =
 "</dataset>\n" +
 "\n\n";
 
-            String tResults = results.substring(0, Math.min(results.length(), expected.length()));
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
 
-            tResults = gdxResults.substring(0, Math.min(results.length(), expected.length()));
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
-
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.pressEnterToContinue(msg + 
-                    "\nUnexpected error using generateDatasetsXmlFromBCODMO."); 
-        }
+        tResults = gdxResults.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
 
     }
 
@@ -6509,43 +6454,70 @@ String expected =
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires testTableAscii in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("Unexpected error. This test requires testTableAscii in the localhost ERDDAP.", t); 
         } 
     }
 
 
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n*** EDDTableFromAsciiFiles.test()");
-/* for releases, this line should have open/close comment */
-        testBasic(deleteCachedDatasetInfo);
-        testGenerateDatasetsXml();
-        testGenerateDatasetsXml2();
-        testGenerateDatasetsXmlFromInPort();
-        testGenerateDatasetsXmlFromInPort2();
-        testGenerateDatasetsXmlFromBCODMO();
-        testGenerateDatasetsXmlWithMV();
-        testFixedValueAndScripts();
-        testBasic2();
-        testTimeZone();
-        testTimeZone2();
-        testTimeMV();
-        testTimeRange();
-        testTimeRange2();
-        testStandardizeWhat();
-        testFiles();
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 15;
+        String msg = "\n^^^ EDDTableFromAsciiFiles.test(" + interactive + ") test=";
 
-        /* */
+        boolean deleteCachedDatasetInfo = false; //usually false, rarely true
 
-        //not usually run
-        //testQuickRestart();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testBasic(deleteCachedDatasetInfo);
+                    if (test ==  1) testGenerateDatasetsXml();
+                    if (test ==  2) testGenerateDatasetsXml2();
+                    if (test ==  3) testGenerateDatasetsXmlFromInPort();
+                    if (test ==  4) testGenerateDatasetsXmlFromInPort2();
+                    if (test ==  5) testGenerateDatasetsXmlFromBCODMO();
+                    if (test ==  6) testGenerateDatasetsXmlWithMV();
+                    if (test ==  7) testFixedValueAndScripts();
+                    if (test ==  8) testBasic2();
+                    if (test ==  9) testTimeZone();
+                    if (test == 10) testTimeZone2();
+                    if (test == 11) testTimeMV();
+                    if (test == 12) testTimeRange();
+                    if (test == 13) testTimeRange2();
+                    if (test == 14) testStandardizeWhat();
+                    if (test == 15) testFiles();
+
+                    //not usually run
+                    if (test == 1000) testQuickRestart();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

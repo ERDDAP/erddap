@@ -5978,65 +5978,74 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
     }
 
 
+
     /**
-     * A main method -- used to test the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @param args is ignored  (use null)
-     * @throws Exception if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void main(String args[]) throws Exception {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 13; //inclusive
+        String msg = "\n^^^ Grid.test(" + interactive + ") test=";
 
-        FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
 
-/* for releases, this line should have open/close comment */
-        Grid.verbose = true;
+                FileNameUtility fileNameUtility = null;
+                if (test == 5 || test == 6 || test == 7 || test == 12)
+                    fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
 
-        //test readGrd speed
-        if (false) {
-            Grid grid = new Grid();
-            grid.readGrd("c:/temp/AT2005344_2005344_ssta_westus.grd", 
-                -180, 180, 22, 50, Integer.MAX_VALUE, Integer.MAX_VALUE);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    //testLittleMethods
+                    if (test ==  0) testLittleMethods();
+                    if (test ==  1) testSubtract();
+                    if (test ==  2) testInterpolate();
+                    
+                    //readWrite tests
+                    if (test ==  3) testGrd(); //test first since others rely on it
+                    if (test ==  4) testReadGrdSubset();
+                    if (test ==  5) testNetCDF(fileNameUtility);
+                    if (test ==  6) testHDF(fileNameUtility, true);
+
+                    //saveAs tests
+                    if (test ==  7) testSaveAsGeotiff(fileNameUtility);
+                    if (test ==  8) testSaveAsASCII();
+                    if (test ==  9) testSaveAsEsriASCII();
+                    if (test == 10) testSaveAsMatlab();
+                    if (test == 11) testSaveAsXYZ();
+
+                    //testPM180
+                    if (test == 12) testPM180(fileNameUtility);
+
+                    //testForMemoryLeak();//not necessary to run unless trouble suspected
+                    if (test == 13) testSaveAs();
+
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
         }
-
-        //one-time thing for Cindy Bessey
-        //lsmask variable name: mask
-        //NorthAtlantic variable name: sst
-        //ncXYTtoAsciiXYT("c:/temp/temp/NorthAtlantic.nc", "c:/temp/temp/NorthAtlantic.xyz",
-        //    "lon", "lat", "time", "sst");
-
-        //maskAsciiXYT("c:/temp/temp/lsmask.xyz", "c:/temp/temp/NorthAtlantic.xyz", 
-        //    "c:/temp/temp/NorthAtlanticMasked.xyz");
-
-        //testLittleMethods
-        testLittleMethods();
-        testSubtract();
-        testInterpolate();
-        
-        //readWrite tests
-        testGrd(); //test first since others rely on it
-        testReadGrdSubset();
-        testNetCDF(fileNameUtility);
-        testHDF(fileNameUtility, true);
-
-        //saveAs tests
-        testSaveAsGeotiff(fileNameUtility);
-        testSaveAsASCII();
-        testSaveAsEsriASCII();
-        testSaveAsMatlab();
-        testSaveAsXYZ();
-
-        //testPM180
-        testPM180(fileNameUtility);
-
-        //testForMemoryLeak();//not necessary to run unless trouble suspected
-        testSaveAs();
-
-        /* */
-
-        //done
-        String2.log("\n***** Grid.main finished successfully");
-        Math2.incgc(2000); //in a test
-
     }
 
 
