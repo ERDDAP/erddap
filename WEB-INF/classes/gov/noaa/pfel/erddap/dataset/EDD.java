@@ -12521,22 +12521,49 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         addAtts    = (new Attributes()).add("_FillValue",    new DoubleArray(new double[]{9999}));
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{-99.9}), "");
-
-
-
     }
 
-    /** This tests some of the static methods in this class.
-     * Almost all of the testing of this class is done by subclasses.
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDD.testEDD");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 2;
+        String msg = "\n^^^ EDD.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        testSuggestInstitutionParts();
-        testSparqlP01toP02();
-        testAddMvFvAttsIfNeeded();
-        /* */
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
+                } else {
+                    if (test ==  0) testSuggestInstitutionParts();
+                    if (test ==  1) testSparqlP01toP02();
+                    if (test ==  2) testAddMvFvAttsIfNeeded();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }

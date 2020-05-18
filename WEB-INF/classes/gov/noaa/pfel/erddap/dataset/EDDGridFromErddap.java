@@ -1334,13 +1334,8 @@ expected2 =
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
-                    Test.ensureEqual(results, expected, "\nresults=\n" + results);
-                } catch (Throwable t) {
-                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.");
-                }
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
+                Test.ensureEqual(results, expected, "\nresults=\n" + results);
             }
 
             //.csv  test of gridName.axisName notation
@@ -1360,13 +1355,8 @@ expected2 =
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
-                    Test.ensureEqual(results, expected, "\nresults=\n" + results);
-                } catch (Throwable t) {
-                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.");
-                }
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
+                Test.ensureEqual(results, expected, "\nresults=\n" + results);
             }
 
             //.dods
@@ -1529,14 +1519,9 @@ expected2 =
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + userDapQuery);
-                    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
-                } catch (Throwable t) {
-                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.");
-                }
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + userDapQuery);
+                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
             }
 
             //.csv   test gridName.gridName notation
@@ -1573,14 +1558,9 @@ expected2 =
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
-                    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
-                } catch (Throwable t) {
-                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.");
-                }
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
+                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
             }
 
             //.nc
@@ -1758,15 +1738,10 @@ expected2 =
 
     public static void testDataVarOrder() throws Throwable {
         String2.log("\n*** EDDGridFromErddap.testDataVarOrder()");
-        try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDataVarOrder"); 
-            String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
-            String expected = "SST, mask, analysis_error";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error"); 
-        }
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDataVarOrder"); 
+        String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
+        String expected = "SST, mask, analysis_error";
+        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
     }
 
 
@@ -2001,36 +1976,55 @@ expected2 =
 
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires nceiPH53sstn1day and testGridFromErddap in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("Unexpected error. This test requires nceiPH53sstn1day and testGridFromErddap in the localhost ERDDAP.", t); 
         } 
     }
 
 
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 5;
+        String msg = "\n^^^ EDDGridFromErddap.test(" + interactive + ") test=";
 
-        String2.log("\n****************** EDDGridFromErddap.test() *****************\n");
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        //standard tests 
-/* for releases, this line should have open/close comment */
-        testBasic(false);
-        testBasic(true);
-        testGenerateDatasetsXml();
-        testDataVarOrder();
-        testGridNoIoosCat();
-        testFiles();
+                } else {
+                    if (test ==  0) testBasic(false);
+                    if (test ==  1) testBasic(true);
+                    if (test ==  2) testGenerateDatasetsXml();
+                    if (test ==  3) testDataVarOrder();
+                    if (test ==  4) testGridNoIoosCat();
+                    if (test ==  5) testFiles();
+                }
 
-        //not regularly done
-
-        String2.log("\n*** EDDGridFromErddap.test finished.");
-
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

@@ -2487,10 +2487,9 @@ expected =
             //String2.log(results);
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nThis test requires Cassandra running on Bob's laptop."); 
-            }
+        } catch (Throwable t) {
+            throw new RuntimeException("This test requires Cassandra running on Bob's laptop.", t); 
+        }
 
     }
 
@@ -3044,8 +3043,7 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testBasic error:"); 
+            throw new RuntimeException("This test requires Cassandra running on Bob's laptop.", t); 
         }
     }
 
@@ -3141,8 +3139,7 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testMaxRequestFraction error."); 
+            throw new RuntimeException("This test requires Cassandra running on Bob's laptop.", t); 
         }
     }
 
@@ -3535,8 +3532,7 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testCass1Device error."); 
+            throw new RuntimeException("This test requires Cassandra running on Bob's laptop.", t); 
         }
     }
 
@@ -3797,33 +3793,55 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testStatic error."); 
+            throw new RuntimeException("This test requires Cassandra running on Bob's laptop.", t); 
         }
         debugMode = oDebugMode;
     }
 
-    /**
-     * This tests the methods in this class.
-     *
-     * @throws Throwable if trouble
-     */
-    public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableFromCassandra.test() *****************\n");
 
-        //tests usually run       
-/* for releases, this line should have open/close comment */
-        String s = String2.getStringFromSystemIn(
-            "\nThe tests of Cassandra require that Cassandra be running.\n" +
-            "Continue (y or Enter) or skip (s)? ");
-        if (s.startsWith("s"))
-            return;
-        testGenerateDatasetsXml();
-        testBasic(false); //pauseBetweenTests
-        testMaxRequestFraction(false);  //pauseBetweenTests
-        testCass1Device(false); //pauseBetweenTests
-        testStatic(false); //pauseBetweenTests
-        /* */
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 4;
+        String msg = "\n^^^ EDDTableFromCassandra.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testBasic(false); //pauseBetweenTests
+                    if (test ==  2) testMaxRequestFraction(false);  //pauseBetweenTests
+                    if (test ==  3) testCass1Device(false); //pauseBetweenTests
+                    if (test ==  4) testStatic(false); //pauseBetweenTests
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

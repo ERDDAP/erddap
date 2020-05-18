@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.griddata;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -1270,13 +1271,12 @@ public class FileNameUtility  {
 */
 
     /**
-     * A main method -- used to test the methods in this class.
+     * This tests the methods in this class.
      *
-     * @param args is ignored  (use null)
      * @throws Throwable if trouble
      */
-    public static void main(String args[]) throws Throwable {
-        String2.log("\nTest FileNameUtility...");
+    public static void basicTest() throws Throwable {
+        String2.log("\nFileNameUtility.testBasic");
 
         //test is25hour is33hour
         Test.ensureEqual(fourNameIs25Hour("t24h"), true, "");
@@ -1539,6 +1539,47 @@ public class FileNameUtility  {
         Test.ensureEqual(fnu.getStartTime(name4), new double[]{0}, "getStartTime 4");
 
         String2.log("All tests passed successfully.");
+    }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ FileNameUtility.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

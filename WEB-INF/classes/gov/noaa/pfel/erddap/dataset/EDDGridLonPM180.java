@@ -1063,9 +1063,7 @@ expected =
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
-        EDDGrid eddGrid;
-      try {
-        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdRWdhws1day_LonPM180");       
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdRWdhws1day_LonPM180");       
  
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
             eddGrid.className() + "_1to359_Entire", ".dds"); 
@@ -1229,10 +1227,6 @@ expected =
 
         String2.log("\n*** EDDGridLonPM180.test1to359 finished.");
 
-      } catch (Throwable t) {
-          String2.pressEnterToContinue("\nUnexpected error:\n" +
-              MustBe.throwableToString(t));
-      }
 
     }
 
@@ -1903,39 +1897,61 @@ expected =
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires local_erdMWchlamday_LonPM180 in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("Unexpected error. This test requires local_erdMWchlamday_LonPM180 in the localhost ERDDAP.", t); 
         } 
     }
 
 
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 3 : 2;
+        String msg = "\n^^^ EDDGridLonPM180.test(" + interactive + ") test=";
 
-        String2.log("\n****************** EDDGridLonPM180.test() *****************\n");
-/* for releases, this line should have open/close comment */
-        testGenerateDatasetsXmlFromErddapCatalog(); 
-        testGT180();  //this also tests /files/ working for fromErddap localhost dataset
-        test1to359(); //NEEDS UPDATE.   this also tests /files/ working for fromNcFiles dataset
-        test0to360();
-        test120to320(); //if fails, try again
-        testHardFlag(); //if fails, try again
-        testFiles();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testGT180();  //this also tests /files/ working for fromErddap localhost dataset
+                    if (test ==  1) test1to359(); //NEEDS UPDATE.   this also tests /files/ working for fromNcFiles dataset
+                    if (test ==  2) test0to360();
+                    if (test ==  3) test120to320(); //if fails, try again
 
-        //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
-        //so there is a test for that in the constructor, 
-        //which asks admin to send me an example for testing.
-        /*  */
+                } else {
+                    if (test ==  0) testGenerateDatasetsXmlFromErddapCatalog(); 
+                    if (test ==  1) testHardFlag(); //if fails, try again
+                    if (test ==  2) testFiles();
 
-        //not usually run
+                    //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
+                    //so there is a test for that in the constructor, 
+                    //which asks admin to send me an example for testing.
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
-
 
 
 }

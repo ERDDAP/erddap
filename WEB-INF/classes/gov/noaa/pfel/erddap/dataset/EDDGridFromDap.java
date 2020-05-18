@@ -4268,22 +4268,17 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
             "RESULTS=\n" + results.substring(results.length() - expected.length()));
 
         //test " in attributes
-        try {
-            EDDGrid tedg = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSGchla8day");
-            String2.log("\n***raw references=" + tedg.addGlobalAttributes.getString("references"));
-            tName = tedg.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-                tedg.className() + "Quotes", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            int po9 = results.indexOf("The 4th Pacific");
-            String2.log("*** in results: " + results.substring(po9 - 10, po9 + 15));
-            expected = " Proceedings of \"\"The 4th Pacific";
-            Test.ensureTrue(results.indexOf(expected) < 0, "\nresults=\n" + results);
-            expected = " Proceedings of \\\"The 4th Pacific";
-            Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        EDDGrid tedg = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSGchla8day");
+        String2.log("\n***raw references=" + tedg.addGlobalAttributes.getString("references"));
+        tName = tedg.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tedg.className() + "Quotes", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        int po9 = results.indexOf("The 4th Pacific");
+        String2.log("*** in results: " + results.substring(po9 - 10, po9 + 15));
+        expected = " Proceedings of \"\"The 4th Pacific";
+        Test.ensureTrue(results.indexOf(expected) < 0, "\nresults=\n" + results);
+        expected = " Proceedings of \\\"The 4th Pacific";
+        Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
 
 
         //test loading other datasets
@@ -4578,7 +4573,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
                 results = nc.toString();
                 results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
                 String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
-                expected = 
+                expected = //these are regex lines
 "netcdf erdMHchla8day \\{\n" +
 "  dimensions:\n" +
 "    time = \\d{3};\n" +   // (has coord.var)\n" +  //changes sometimes  \\d{3} was 500
@@ -4675,6 +4670,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"NASA GSFC \\(OBPG\\)\n";  //important test   re netcdf 4.0
                 int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
+                Test.ensureTrue(po > 0, "RESULTS=\n" + results);
                 Test.repeatedlyTestLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
 
                 expected = 
@@ -5532,7 +5528,6 @@ String expected2 =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-        try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "pmelOscar"); 
         EDVGridAxis edvga;
 
@@ -5952,10 +5947,6 @@ expected =
         //Test.ensureTrue(results.indexOf("-0.00983669") > 0, "\nresults=\n" + results);
         //Test.ensureTrue(results.indexOf("-0.0477982") > 0, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error accessing " + EDStatic.erddapUrl); //in tests, always non-https url
-        }
 
     }
 
@@ -5968,7 +5959,6 @@ expected =
         String2.log("\n*** EDDGridFromDap.testDescendinglat");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
         // if need a different test dataset in the future: 
         EDVGridAxis edvga;
@@ -6244,10 +6234,6 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error accessing " + EDStatic.erddapUrl); //in tests, always non-https url
-        }
 
     }
 
@@ -6591,7 +6577,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
      */
     public static void testScaleFactor() throws Throwable {
         testVerboseOn();         
-      try {
         //soda 2.2.4
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb"); 
         String query = 
@@ -6843,10 +6828,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
                 expected, "fileType=" + fileType + " results=\n" + results);
         }
-      } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-      }
 
     }
 
@@ -6861,19 +6842,16 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //time
         results = gridDataset.axisVariables[0].sliderCsvValues();
-        expected = "\"2002-07-06T12:00:00Z\", \"2002-08-01T12:00:00Z\", \"2002-09-01T12:00:00Z\", \"2002-10-01T12:00:00Z\", \"2002-11-01T12:00:00Z\", \"2002-12-01T12:00:00Z\", \"2003-01-03T12:00:00Z\", \"2003-02-01T12:00:00Z\", \"2003-03-01T12:00:00Z\", \"2003-04-01T12:00:00Z\", \"2003-05-01T12:00:00Z\",";
+        expected = "\"2002-07-06T12:00:00Z\", \"2002-08-01T12:00:00Z\", \"2002-09-01T12:00:00Z\",";
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "results=\n" + results + "\n\nThese expected values should rarely (never?) change.\n");
-                   //changes frequently:
-        expected = ", \"201\\d-\\d\\d-01T12:00:00Z\"";
-        expected = expected + expected + expected + ", \"201\\d-\\d\\d-\\d\\dT12:00:00Z\"";
-        if (!results.endsWith(expected)) 
-            String2.pressEnterToContinue(
-                "results=\n" + results + "\n" +
-                "\nexpected=" + expected + 
-                "\nThis changes often.\n" +
-                "Normally, the penultimate 3 are YYYY-MM-01 and last is most recent date.\n" +
-                "But sometimes there is no data for -01 so nearby dates are used instead."); 
+        expected = "\"2013-12-29T12:00:00Z\", \"2014-02-01T12:00:00Z\", \"2014-03-02T12:00:00Z\", \"2014-03-05T12:00:00Z\"";
+        Test.ensureTrue(results.endsWith(expected), 
+            "results=\n" + results + "\n" +
+            "\nexpected=" + expected + 
+            "\nThis changes often.\n" +
+            "Normally, the penultimate 3 are YYYY-MM-01 and last is most recent date.\n" +
+            "But sometimes there is no data for -01 so nearby dates are used instead."); 
 
         //alt
         results = gridDataset.axisVariables[1].sliderCsvValues();
@@ -7228,7 +7206,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testGridWithDepth2");
         String results, expected, tName;
         int po;
-      try{
 
         //test generateDatasetsXml -- It should catch z variable and convert to altitude.
         //!!! I don't have a test dataset with real altitude data that isn't already called altitude!
@@ -7331,12 +7308,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            </gmd:EX_VerticalExtent>";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
-
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
-        
+       
     }
 
     /** This tests a depth axis variable. This requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP. */
@@ -7344,7 +7316,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testGridWithDepth2_LonPM180");
         String results, expected, tName;
         int po;
-      try{
 
         //test generateDatasetsXml -- It should catch z variable and convert to altitude.
         //!!! I don't have a test dataset with real altitude data that isn't already called altitude!
@@ -7569,10 +7540,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
         
     }
 
@@ -7585,7 +7552,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         int po;
 
         //test generateDatasetsXml -- It should catch z variable and convert to depth.
-        try {
         String url = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
         results = generateDatasetsXml(true, url, 
             null, null, null, DEFAULT_RELOAD_EVERY_N_MINUTES, null);
@@ -7781,10 +7747,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             tName, false);
         SSR.displayInBrowser("file://" + tName);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
     */
 
@@ -7948,7 +7910,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
-        try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); 
         userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
@@ -7959,9 +7920,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
 "0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-05-17 was 12-15, 2018-01-25 was 12-13?!
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
     }
 
 
@@ -8157,8 +8115,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
                 EDStatic.fullTestCacheDirectory, fileName, ".graph");
             Test.ensureTrue(File2.delete(dir + fileName), "");
         }
-        String2.pressEnterToContinue("EDDGridFromDap.testSpeedMAG time per .graph = " +
-            ((System.currentTimeMillis() - time2) / (double)n) + "ms (avg=18ms)");
+        time2 = System.currentTimeMillis() - time2;
+        Test.ensureTrue(time2 > 27, "Slow! EDDGridFromDap.testSpeedMAG time per .graph = " +
+            (time2 / (double)n) + "ms (avg=18ms)");
 
         EDD.testVerbose(true);
     }
@@ -8212,92 +8171,86 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         EDDGrid gridDataset; 
         String tName; 
 /* */
+
+        //descending Lat axis
+        gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
+            EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //NOT FINISHED ADDING FEATURE
+        //descending Lat axis AND &.size=width|height
+        //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
+        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
+        //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
+        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //Mercator Lat axis
+        //2013-10-21 this still fails. Bizarre error is
+        //  Exception in thread "main" java.lang.IllegalArgumentException: Must have 1D x and y axes for heatFlux
+        //  at ucar.nc2.geotiff.GeotiffWriter.writeGrid(GeotiffWriter.java:80)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.saveAsGeotiff(EDDGrid.java:4497)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.respondToDapQuery(EDDGrid.java:2242)
+        //  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2511)
+        //  at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2430)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGridFromDap.testDescendingAxisGeotif(EDDGridFromDap.java:7846)
+        //  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:180)
+
+        //test lon can't be below and above 180
+        String error = "shoudn't happen";
         try {
-
-            //descending Lat axis
-            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
+            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
             tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
-                EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
+                "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
+                "&.draw=surface&.vars=longitude|latitude|tos", 
+                EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-
-            //NOT FINISHED ADDING FEATURE
-            //descending Lat axis AND &.size=width|height
-            //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
-            //tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
-            //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-
-            //Mercator Lat axis
-            //2013-10-21 this still fails. Bizarre error is
-            //  Exception in thread "main" java.lang.IllegalArgumentException: Must have 1D x and y axes for heatFlux
-            //  at ucar.nc2.geotiff.GeotiffWriter.writeGrid(GeotiffWriter.java:80)
-            //  at gov.noaa.pfel.erddap.dataset.EDDGrid.saveAsGeotiff(EDDGrid.java:4497)
-            //  at gov.noaa.pfel.erddap.dataset.EDDGrid.respondToDapQuery(EDDGrid.java:2242)
-            //  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2511)
-            //  at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2430)
-            //  at gov.noaa.pfel.erddap.dataset.EDDGridFromDap.testDescendingAxisGeotif(EDDGridFromDap.java:7846)
-            //  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:180)
-
-            //test lon can't be below and above 180
-            String error = "shoudn't happen";
-            try {
-                gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
-                tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                    "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
-                    "&.draw=surface&.vars=longitude|latitude|tos", 
-                    EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
-                SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            } catch (Throwable t) {
-                error = t.toString();
-            }
-
-            try {
-                String expected = "com.cohort.util.SimpleException: " +
-                    "Query error: For .geotif requests, the longitude values can't be " +
-                    "below and above 180.";
-                Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
-
-            //test unevenly spaced lat not allowed  (wierd! regular 29.5 to 81.5 but irregular (mercator?) in middle)
-            //(2014-08-07 I verified it is still a requirement by removing check in EDDGrid.saveAsGeotiff,
-            //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
-            error = "shouldn't happen";
-            try {
-                gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
-                tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                    "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
-                    "&.draw=surface&.vars=longitude|latitude|tos", 
-                    EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
-                SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            } catch (Throwable t) {
-                error = t.toString();
-            }
-
-            try {
-                String expected = "com.cohort.util.SimpleException: " +
-                    ".geotif isn't available for this dataset because the dataset's " +
-                    "longitude and/or latitude values aren't evenly spaced.";
-                Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) +
-                    "And now, source dataset is gone."); 
-            }
-
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
+            error = t.toString();
         }
+
+        try {
+            String expected = "com.cohort.util.SimpleException: " +
+                "Query error: For .geotif requests, the longitude values can't be " +
+                "below and above 180.";
+            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+        }
+
+        //test unevenly spaced lat not allowed  (wierd! regular 29.5 to 81.5 but irregular (mercator?) in middle)
+        //(2014-08-07 I verified it is still a requirement by removing check in EDDGrid.saveAsGeotiff,
+        //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
+        error = "shouldn't happen";
+        try {
+            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
+                "&.draw=surface&.vars=longitude|latitude|tos", 
+                EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        } catch (Throwable t) {
+            error = t.toString();
+        }
+
+        try {
+            String expected = "com.cohort.util.SimpleException: " +
+                ".geotif isn't available for this dataset because the dataset's " +
+                "longitude and/or latitude values aren't evenly spaced.";
+            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) +
+                "And now, source dataset is gone."); 
+        }
+
 
     }
 
     /** This tests saveAsNcml. */
     public static void testNcml() throws Throwable {
         testVerboseOn();
-        try {
 
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String name, tName, results, expected;
@@ -8459,10 +8412,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "</netcdf>\n";
         Test.repeatedlyTestLinesMatch(results, expected, "RESULTS=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
     public static void testNetcdfJava() throws Throwable {
@@ -8802,83 +8751,78 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
     public static void testSurfaceGraph() throws Throwable {
         testVerboseOn();
-        try {
 
-            //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
-            EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
-            String tName, result, dir = EDStatic.fullTestCacheDirectory;
+        //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
+        String tName, result, dir = EDStatic.fullTestCacheDirectory;
 
-            //minimal request
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500][][]", 
-                dir, gridDataset.className() + "_surfaceGraphA0", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //minimal request
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500][][]", 
+            dir, gridDataset.className() + "_surfaceGraphA0", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //.draw specified
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500][][]&.draw=surface", 
-                dir, gridDataset.className() + "_surfaceGraphA1", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //.draw specified
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500][][]&.draw=surface", 
+            dir, gridDataset.className() + "_surfaceGraphA1", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //.vars specified
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500][][]&.vars=Y|X|qtot", //intentionally flipped x/y 
-                dir, gridDataset.className() + "_surfaceGraphA2", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //.vars specified
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500][][]&.vars=Y|X|qtot", //intentionally flipped x/y 
+            dir, gridDataset.className() + "_surfaceGraphA2", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //.draw specified
-            tName = gridDataset.makeNewFileForDapQuery(null, null,         //min|max|nDiv
-                "qtot[1500][][]&.draw=surface&.vars=X|Y|qtot&.colorBar=LightRainbow|||||", 
-                dir, gridDataset.className() + "_surfaceGraphA3", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //.draw specified
+        tName = gridDataset.makeNewFileForDapQuery(null, null,         //min|max|nDiv
+            "qtot[1500][][]&.draw=surface&.vars=X|Y|qtot&.colorBar=LightRainbow|||||", 
+            dir, gridDataset.className() + "_surfaceGraphA3", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //time on x axis
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500:1510][1200][]&.draw=surface&.vars=time|X|qtot", //1200 is through Australia
-                dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //time on x axis
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500:1510][1200][]&.draw=surface&.vars=time|X|qtot", //1200 is through Australia
+            dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //time on y axis
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500:1510][1200][]&.draw=surface&.vars=X|time|qtot", //1200 is through Australia
-                dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //time on y axis
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500:1510][1200][]&.draw=surface&.vars=X|time|qtot", //1200 is through Australia
+            dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //2 x&y axis values
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "qtot[1500:1501][1200][313:314]&.draw=surface&.vars=time|X|qtot", 
-                dir, gridDataset.className() + "_surfaceGraph2Values", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //2 x&y axis values
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "qtot[1500:1501][1200][313:314]&.draw=surface&.vars=time|X|qtot", 
+            dir, gridDataset.className() + "_surfaceGraph2Values", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //1 x&y axis values 
-            //fails in EDDGrid.saveAsImage at test:  if (nAAv < 1 || nAAv > 2)
-            //  because all axes have just 1 value.
-            //This could probably be made to work because .vars is specified (so activeAxis are known)
-            //  and x,y axis range could be made +/- avgSpacing/2.
-            //tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            //    "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot", 
-            //    dir, gridDataset.className() + "_surfaceGraph1Value", ".png"); 
-            //SSR.displayInBrowser("file://" + dir + tName);
+        //1 x&y axis values 
+        //fails in EDDGrid.saveAsImage at test:  if (nAAv < 1 || nAAv > 2)
+        //  because all axes have just 1 value.
+        //This could probably be made to work because .vars is specified (so activeAxis are known)
+        //  and x,y axis range could be made +/- avgSpacing/2.
+        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        //    "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot", 
+        //    dir, gridDataset.className() + "_surfaceGraph1Value", ".png"); 
+        //SSR.displayInBrowser("file://" + dir + tName);
 
-         
-            //*** 
-            gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
-            // depth on Y axis
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
-                dir, gridDataset.className() + "_surfaceGraphB0", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+     
+        //*** 
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
+        // depth on Y axis
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
+            dir, gridDataset.className() + "_surfaceGraphB0", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-            //Hovmoeller Diagram x=time, y=depth    
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "temp[(2009-12-15):(2010-12-15)][][(-30.75)][(225)]&.draw=surface&.vars=time|depth|temp", 
-                dir, gridDataset.className() + "_surfaceGraphB1", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+        //Hovmoeller Diagram x=time, y=depth    
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "temp[(2009-12-15):(2010-12-15)][][(-30.75)][(225)]&.draw=surface&.vars=time|depth|temp", 
+            dir, gridDataset.className() + "_surfaceGraphB1", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
     }
 
@@ -9881,12 +9825,7 @@ String2.log(String2.annotatedString(results));
 "    String geospatial_lon_units \"degrees_east\";\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
 
-        try {
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
@@ -9958,7 +9897,6 @@ String2.log(String2.annotatedString(results));
         String2.log("\n*** EDDGridFromDap.testScale1Offset0");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        try {
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); 
 
@@ -10013,10 +9951,6 @@ String2.log(String2.annotatedString(results));
         int po = results.indexOf(expected.substring(0, 40));
         Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
 
-        } catch (Throwable t2) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
-                "\nUnexpected error."); 
-        }
 
     }
 
@@ -11143,12 +11077,7 @@ String expected =
 "</dataset>\n" +
 "\n";
         //String2.setClipboardString(results);
-        try {
-            Test.ensureEqual(results, expected, "results=\n" + results);
-        } catch (Exception e) {            
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "2018-09-15 currently, there are differences in metadata. FIX THIS.");
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);
     }
 
     
@@ -11164,95 +11093,95 @@ String expected =
         String tDir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
-        try {
 
             EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange"); //should work
 
             tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
                 edd.className() + "_actual_range", ".dds"); 
+            int nTime = edd.axisVariables[0].sourceValues().size();
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "Dataset {\n" +
-"  Float64 time[time = 1450];\n" +   //time=# changes here and below
+"  Float64 time[time = " + nTime + "];\n" +   //time=# changes here and below
 "  Float64 latitude[latitude = 62];\n" +
 "  Float64 longitude[longitude = 122];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SST[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 SST[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SST;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSS[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 SSS[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSS;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pCO2sw[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 pCO2sw[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pCO2sw;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TA[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 TA[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 TC[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 TC[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } TC;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 pH[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 pH[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } pH;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 SSA[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 SSA[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } SSA;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 HCO3[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 HCO3[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } HCO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 CO3[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 CO3[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } CO3;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 surface_flag[time = 1450][latitude = 62][longitude = 122];\n" +
+"      Float32 surface_flag[time = " + nTime + "][latitude = 62][longitude = 122];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1450];\n" +
+"      Float64 time[time = " + nTime + "];\n" +
 "      Float64 latitude[latitude = 62];\n" +
 "      Float64 longitude[longitude = 122];\n" +
 "  } surface_flag;\n" +
@@ -11418,15 +11347,15 @@ String expected =
 "    Float64 geospatial_lon_min -90.125;\n" +
 "    Float64 geospatial_lon_resolution 0.25;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";            
-            int po = results.indexOf(expected.substring(0, 30));
-            Test.ensureEqual(results.substring(po, po+expected.length()), expected,
-                "results=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n2018-06-20 I think actual_ranges change with every new timepoint.\n" +
-                "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?"); 
-        }
+            try {
+                int po = results.indexOf(expected.substring(0, 30));
+                Test.ensureEqual(results.substring(po, po+expected.length()), expected,
+                    "results=\n" + results);
+            } catch (Exception e) {
+                Test.knownProblem(
+                    "2018-06-20 I think actual_ranges change with every new timepoint.",
+                    "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?", e);
+            }
     }
 
     /**
@@ -11441,7 +11370,6 @@ String expected =
         String tDir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
-        try {
 
             EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
  
@@ -11536,83 +11464,103 @@ String expected =
             Test.ensureEqual(results.substring(po, po+expected.length()), expected,
                 "results=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
 
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 15 : 42;
+        String msg = "\n^^^ EDDGridFromDap.test(" + interactive + ") test=";
 
-        String2.log("\n*** EDDGridFromDap.test()\n");
         EDDGrid.tableWriterNBufferRows = 100;  //for testing, to make problems visible in small tests
 
-/* for releases, this line should have open/close comment */
-        // standard tests 
-        testBasic1();
-        testBasic2();
-        testBasic3();
-        testAccessibleTo();
-        testGraphics(true);
-        testOpendap();
-        testScaleAddOffset();
-        testNcml();
-        //testPmelOscar(true); DAPPER IS NO LONGER ACTIVE!
-        testGenerateDatasetsXml(); 
-        testGenerateDatasetsXml2();
-        testGenerateDatasetsXml3();
-        testGenerateDatasetsXml4();
-        testGenerateDatasetsXml5();
-        testCrawlThreddsCatalog();
-        testGenerateDatasetsXmlFromThreddsCatalog();
-        testGetUrlsFromThreddsCatalog();  
-        testScaleFactor();
-        testSliderCsv();
-        testKml();
-        testNoAxisVariable();
-        testClimatologyTime();
-        //testGridWithDepth(); //test dataset no longer available
-        testGridWithDepth2(); 
-        testGridWithDepth2_LonPM180(); 
-        testBigRequest(2); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
-        testBigRequest(4); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
-        testBigRequest(6); //use 6 partial requests  (time axis is now driver for multiple requests)
-        testSpeedDAF();
-        testSpeedMAG();
-        testQuickRestart();
-        testNetcdfJava();
-        testGeotif();
-        testDescendingLat(true);  //testGraphics?
-        testDescendingAxisGeotif(); // 2019 switch to https, 2016-02-23 stalled response from http://data1.gfdl.noaa.gov:9192
-        testMap74to434();
-        testMapAntialiasing();
-        testTimeErrorMessage();
-        testSurfaceGraph();
-        testValidMinMax();
-        //testUInt16Dap();  //2019-11-21 THIS DATASET IS GONE, but I have other testUInt16 tests. 2016-12-06 trouble with syntax.  
-         testScale1Offset0();
-        testFromNccsv();
-        testActualRange();
-        testActualRange2();
-        /* */
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testGraphics(true);
+                    if (test ==  1) testDescendingLat(true);  //testGraphics?
+                    if (test ==  2) testGeotif();
+                    if (test ==  3) testMapAntialiasing();
+                    if (test ==  4) testDescendingAxisGeotif(); // 2019 switch to https, 2016-02-23 stalled response from http://data1.gfdl.noaa.gov:9192
+                    if (test ==  5) testMap74to434();
+                    if (test ==  6) testSurfaceGraph();
+                    if (test ==  7) testScaleAddOffset(); //needs new dataset
+                    if (test ==  8) testGenerateDatasetsXml2(); //reloadEveryNMinutes varies
+                    if (test ==  9) testGenerateDatasetsXml3(); //data source is gone
+                    if (test == 10) testGenerateDatasetsXml4(); //date_created bounces around
+                    if (test == 11) testGenerateDatasetsXml5(); //testOutOfDate nDays varies
+                    if (test == 12) testKml();
+                    //if (test == 13) testGridWithDepth(); //test dataset no longer available
+                    if (test == 14) testGridWithDepth2(); 
+                    if (test == 15) testGridWithDepth2_LonPM180(); 
 
-        //not regularly done
-        //testForCarleton();
-        //testForDave();
-        //testForEllyn();
-        //testOneTime();
-        //testBigRequest(96); //96=~2070000000 Bytes
-        //testBigRequest(110); //should fail -- too much data
+                } else {
+                    if (test ==  0) testBasic1();
+                    if (test ==  1) testBasic2();
+                    if (test ==  2) testBasic3();
+                    if (test ==  3) testAccessibleTo();
+                    if (test ==  4) testOpendap();
+                    if (test ==  6) testNcml();
+                    //if (test ==  7) testPmelOscar(true); DAPPER IS NO LONGER ACTIVE!
 
-        String2.log("\n*** EDDGridFromDap.test finished.");
+                    if (test == 10) testGenerateDatasetsXml(); 
+                    if (test == 15) testCrawlThreddsCatalog();
+                    if (test == 16) testGenerateDatasetsXmlFromThreddsCatalog();
+                    if (test == 17) testGetUrlsFromThreddsCatalog();  
+                    if (test == 18) testScaleFactor();
+                    if (test == 19) testSliderCsv();
+                    if (test == 21) testNoAxisVariable();
+                    if (test == 22) testClimatologyTime();
+                    if (test == 26) testBigRequest(2); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
+                    if (test == 27) testBigRequest(4); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
+                    if (test == 28) testBigRequest(6); //use 6 partial requests  (time axis is now driver for multiple requests)
+                    if (test == 29) testSpeedDAF();
+                    if (test == 30) testSpeedMAG();
+                    if (test == 31) testQuickRestart();
+                    if (test == 32) testNetcdfJava();
+                    if (test == 35) testTimeErrorMessage();
+                    if (test == 37) testValidMinMax();
+                    //if (test == 38) testUInt16Dap();  //2019-11-21 THIS DATASET IS GONE, but I have other testUInt16 tests. 2016-12-06 trouble with syntax.  
+                     if (test == 39) testScale1Offset0();
+                    if (test == 40) testFromNccsv();
+                    if (test == 41) testActualRange();
+                    if (test == 42) testActualRange2();
 
+                    //not regularly done
+                    //if (test == 1000) testForCarleton();
+                    //if (test == 1001) testForDave();
+                    //if (test == 1002) testForEllyn();
+                    //if (test == 1003) testOneTime();
+                    //if (test == 1004) testBigRequest(96); //96=~2070000000 Bytes
+                    //if (test == 1005) testBigRequest(110); //should fail -- too much data
+
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 

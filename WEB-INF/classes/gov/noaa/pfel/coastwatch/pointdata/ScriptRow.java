@@ -140,8 +140,8 @@ public class ScriptRow  {
      * This tests Jexl scripts, including working with a table.
      * Only the controller (ERDDAP) should call this. Scripts shouldn't call this. 
      */
-    public static void test() throws Exception {
-        String2.log("\n*** ScriptRow.test()");
+    public static void basicTest() throws Exception {
+        String2.log("\n*** ScriptRow.basicTest()");
 
         //silent=false, strict=true is most like Java (not e.g., JavaScript).
         //if !silent, it throws exception if trouble
@@ -210,7 +210,7 @@ public class ScriptRow  {
             results = e.toString();
         }
         Test.ensureEqual(results, 
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.test@1:1 undefined variable String2", 
+            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 
 
@@ -268,7 +268,7 @@ public class ScriptRow  {
         }
         Test.ensureEqual(results,
             "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.test@1:37 unsolvable function/method 'getProperty'",
+            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:37 unsolvable function/method 'getProperty'",
             "");
 
         //test a user can instantiate any class: now it fails (as desired)
@@ -401,5 +401,47 @@ public class ScriptRow  {
         }
         String2.log("jexl   time for 1,000,000,000 evaluations=" + (System.currentTimeMillis() - time) + "ms (expected: 137)");
     }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ ScriptRow.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 
 }

@@ -2656,7 +2656,7 @@ public class Table  {
         results = table.dataToString();
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
-"\"b,d\",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"\" b,d \",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
 "needs,1comma:,,,,,,,\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1e200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2e200\n" +
@@ -2685,7 +2685,7 @@ public class Table  {
         results = table.dataToString();
         expected =   //bad lines are removed 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
-"\"b,d\",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"\" b,d \",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1.0E200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3.0E200\n" +
@@ -3927,22 +3927,27 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
+    }
+
+    public static void testNccsvInteractive() throws Exception {
+
+        String dir = String2.unitTestDataDir + "nccsv/";
 
         //test round trip to spreadsheet and back
         //make a copy of sampleScalar
-        fileName = dir + "sampleExcel.csv";
+        String fileName = dir + "sampleExcel.csv";
         String2.writeToFile(fileName, 
             String2.directReadFrom88591File(dir + "testScalar.csv"));
         SSR.displayInBrowser("file://" + fileName);
         String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel.csv : yes : yes.");
-        table = new Table();
+        Table table = new Table();
         table.readNccsv(fileName); 
         for (int c = 0; c < table.nColumns(); c++) {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
-        results = table.saveAsNccsv(); 
-        expected = 
+        String results = table.saveAsNccsv(); 
+        String expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -4008,9 +4013,9 @@ public class Table  {
         try {
             Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nKnown problem: how to keep integer in string att as a string." +
-                "\nAnd if I don't actually do Excel 'Save As', the BAD ROW disappears.");
+            Test.knownProblem(
+                "How to keep integer in string att as a string?!", 
+                "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
         }
     }
 
@@ -6197,24 +6202,23 @@ Dataset {
      */
     public static void testEnhancedFlatNcFile() throws Exception {
 
-        try {
-            String2.log("\n*** Table.testEnhancedFlatNcFile()");
-            String results, expected;
-            String fileName = File2.getSystemTempDirectory() + "enhancedFlatNcFile.nc";
+        String2.log("\n*** Table.testEnhancedFlatNcFile()");
+        String results, expected;
+        String fileName = File2.getSystemTempDirectory() + "enhancedFlatNcFile.nc";
 
-            Table table = makeToughTestTable();
-            expected = String2.annotatedString(table.toString());
-            String2.log("expected=\n" + expected);
+        Table table = makeToughTestTable();
+        expected = String2.annotatedString(table.toString());
+        String2.log("expected=\n" + expected);
 
-            table.saveAsEnhancedFlatNc(fileName);
-            results = String2.annotatedString(table.toString());
-            Test.ensureEqual(results, expected, "a"); //saveAsEnhancedFlatNc didn't change anything
-            table.clear();
+        table.saveAsEnhancedFlatNc(fileName);
+        results = String2.annotatedString(table.toString());
+        Test.ensureEqual(results, expected, "a"); //saveAsEnhancedFlatNc didn't change anything
+        table.clear();
 
-            table.readEnhancedFlatNc(fileName, null);
-            table.globalAttributes().remove("id");
-            results = String2.annotatedString(table.toString());
-            expected = 
+        table.readEnhancedFlatNc(fileName, null);
+        table.globalAttributes().remove("id");
+        results = String2.annotatedString(table.toString());
+        expected = 
 "{[10]\n" +
 "dimensions:[10]\n" +
 "[9]row = 5 ;[10]\n" +
@@ -6274,12 +6278,7 @@ Dataset {
 "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308[10]\n" +
 ",\\u20ac,,,,,,,,,,[10]\n" +
 "[end]";
-            Test.ensureEqual(results, expected, "b");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nUnexpected problem."); 
-        }
-
+        Test.ensureEqual(results, expected, "b");
     }
 
 
@@ -9675,8 +9674,8 @@ Dataset {
             for (int c = 0; c < conNames.size(); c++) {
                 if (!loadVarHS.contains(conNames.get(c)))
                     throw new RuntimeException(errorInMethod +
-                        "All constraint varNames must be in loadVariableNames. " + 
-                        conNames.get(c) + " isn't in " + loadVariableNames.toString() + ".");
+                        "All constraint varNames must be in loadVariableNames. \"" + 
+                        conNames.get(c) + "\" isn't in " + loadVariableNames.toString() + ".");
             }
         }
 
@@ -15864,316 +15863,6 @@ String2.log(table.dataToString());
 
 
 
-        //***************  trajectory multiple multidimensional --- 
-   try {
-
-        fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
-            "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
-            "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
-        String2.log("\n\n** Testing multiple multidimensional file\n" +
-            "  " + fileName);
-        String2.log(NcHelper.ncdump(fileName, "-h"));
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("trajectory_name"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("lat"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("z"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("lat"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("z"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("z"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("z,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("lat"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("lat"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("trajectory_name"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("z,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("z"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("z,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("trajectory_name"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("temperature,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("temperature,trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("trajectory_name"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            //
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("trajectory_name"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("trajectory_name"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("lat"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("lat"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("temperature"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("temperature"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-            table.readNcCF(fileName, 
-                StringArray.fromCSV("z"), 
-                0,  //standardizeWhat=0
-                StringArray.fromCSV("z"), 
-                StringArray.fromCSV("="),
-                StringArray.fromCSV("-12345"));
-            Test.ensureEqual(table.nRows(), 0, "");
-            Test.ensureEqual(table.nColumns(), 0, "");
-
-
-        table.readNcCF(fileName, null, 0,  //standardizeWhat=0
-                null, null, null);
-        results = table.dataToString(55);
-        expected = 
-//rows that a human thinks should be rejected are kept
-//probably because trajectory_info and trajectory_name aren't missing values 
-//  AND because lat,lon have missing values but there is no missing_value attribute.
-"lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n" +
-"2.152863,-35.078842,0,Trajectory0,0,0.0,13.466983,65.38418\n" +
-"33.60481,-44.12696,0,Trajectory0,3600,1.0,23.050304,7.0401154\n" +
-"22.562508,-18.115444,0,Trajectory0,7200,2.0,15.112072,45.15019\n" +
-"13.432817,-21.772585,0,Trajectory0,10800,3.0,22.97767,12.618799\n" +
-"43.011986,-28.655304,0,Trajectory0,14400,4.0,21.318092,4.788235\n" +
-"18.84832,-25.418892,0,Trajectory0,18000,5.0,27.496708,66.337166\n" +
-"18.040411,-30.469133,0,Trajectory0,21600,6.0,30.678926,31.57974\n" +
-"32.34516,-75.79432,0,Trajectory0,25200,7.0,12.096431,11.228316\n" +
-"8.652234,-69.01581,0,Trajectory0,28800,8.0,12.523737,47.003998\n" +
-"18.905367,-18.362652,0,Trajectory0,32400,9.0,22.805552,8.789174\n" +
-"12.184539,-42.194824,0,Trajectory0,36000,10.0,17.411797,40.25377\n" +
-"16.498188,-74.44906,0,Trajectory0,39600,11.0,27.783548,20.712833\n" +
-"1.5479256,-53.522717,0,Trajectory0,43200,12.0,11.809888,5.6157913\n" +
-"22.033587,-28.557417,0,Trajectory0,46800,13.0,13.730549,2.8293543\n" +
-"5.997217,-35.043163,0,Trajectory0,50400,14.0,6.549969,30.482803\n" +
-"8.580469,-45.364418,0,Trajectory0,54000,15.0,11.789269,2.303839\n" +
-"6.253441,-9.302229,0,Trajectory0,57600,16.0,24.03656,56.802467\n" +
-"12.948677,-20.07699,0,Trajectory0,61200,17.0,17.980707,66.24162\n" +
-"41.49208,-19.628315,0,Trajectory0,64800,18.0,0.44739303,25.76894\n" +
-"25.784758,-65.65333,0,Trajectory0,68400,19.0,13.147206,1.4286463\n" +
-"25.884523,-64.92309,0,Trajectory0,72000,20.0,21.278152,72.43937\n" +
-"7.5993505,-33.58001,0,Trajectory0,75600,21.0,14.465093,74.04942\n" +
-"23.801714,-8.210893,0,Trajectory0,79200,22.0,17.250273,43.468597\n" +
-"24.086273,-16.376455,0,Trajectory0,82800,23.0,36.73325,56.15435\n" +
-"8.838917,-65.32871,0,Trajectory0,86400,24.0,21.714993,32.324383\n" +
-"3.049409,-50.187355,0,Trajectory0,90000,25.0,17.755543,7.7604437\n" +
-"32.699135,-13.603052,0,Trajectory0,93600,26.0,21.764454,68.36558\n" +
-"28.82149,-4.238066,0,Trajectory0,97200,27.0,4.18221,75.262665\n" +
-"4.573595,-15.691054,0,Trajectory0,100800,28.0,36.230297,74.156654\n" +
-"30.231867,-29.110548,0,Trajectory0,104400,29.0,10.372004,8.0368805\n" +
-"26.295082,-24.224209,0,Trajectory0,108000,30.0,7.0729938,31.468176\n" +
-"26.146648,-35.461746,0,Trajectory0,111600,31.0,12.3075285,71.35397\n" +
-"18.875525,-11.409157,0,Trajectory0,115200,32.0,30.241188,45.14291\n" +
-"44.57873,-29.37942,0,Trajectory0,118800,33.0,21.847982,61.776512\n" +
-"40.911667,-31.65526,0,Trajectory0,122400,34.0,30.369759,29.810774\n" +
-"9.5415745,-57.1067,0,Trajectory0,126000,35.0,15.864324,33.90924\n" +
-//these aren't rejected because
-//* trajectory_info has the attribute missing_value=-999,
-//  but the data above has trajectory_info=0, which isn't a missing value.
-//* trajectory_name is a string, so my reader doesn't expect a
-//  missing_value attribute, but my reader does treat a data
-//  value of "" (nothing) as a missing value.  Unfortunately, this
-//  file has other values (e.g., "Trajectory0"), so my reader
-//  treats those as not missing values.
-//* lat and lon have data values of -999.9 which is probably
-//  intended to be a missing value marker, but those variables
-//  have no missing_value attributes, so my program treats them as
-//  valid values.
-//I reported to Kyle 2012-10-03 and hope he'll make changes
-
-//"36,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" + 
-//"37,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"38,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"39,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"40,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"41,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"42,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"43,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"44,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"45,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"46,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"47,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"48,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-//"49,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
-"36,13.633951,-61.779095,1,Trajectory1,0,0.0,31.081379,7.8967414\n" +
-"37,41.583824,-52.047775,1,Trajectory1,3600,1.0,23.026224,25.034555\n" +
-"38,14.176689,-15.26571,1,Trajectory1,7200,2.0,21.750353,61.35738\n" +
-"39,23.482225,-69.246284,1,Trajectory1,10800,3.0,25.214777,70.63098\n" +
-"40,8.910114,-12.47847,1,Trajectory1,14400,4.0,29.234118,53.387733\n" +
-"...\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 200, "");
-        results = table.columnAttributes(5).toString();  //temperature
-        expected = 
-"    axis=Z\n" +
-"    long_name=height above mean sea level\n" +
-"    missing_value=-999.9f\n" +
-"    positive=up\n" +
-"    standard_name=altitude\n" +
-"    units=m\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-        if (pauseAfterEach) 
-            String2.pressEnterToContinue("#8b " + pauseMessage); 
-
-
-    
-    } catch (Exception e) {
-        //String2.pressEnterToContinue(
-        Test.knownProblem(
-            "KYLE WILCOX'S DSG TEST FILE.",
-            MustBe.throwableToString(e) + 
-            "\nI reported this problem to Kyle 2012-10-03" +
-            "\n2013-10-30 Since Kyle changed jobs, it is unlikely he will ever fix this.");
-    }
 
         //***************  trajectory single multidimensional --- 
         fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
@@ -16635,7 +16324,324 @@ String2.log(table.dataToString());
         /* */
         debugMode = oDebug;        
     }
-       
+
+
+    public static void testInteractiveNcCFMA(boolean pauseAfterEach) throws Exception {
+        //***************  trajectory multiple multidimensional --- 
+       try {
+
+            Table table = new Table();
+            String results, expected;
+            String pauseMessage = "\nOK?";
+            String fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
+                "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
+                "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
+            String2.log("\n\n** Testing multiple multidimensional file\n" +
+                "  " + fileName);
+            String2.log(NcHelper.ncdump(fileName, "-h"));
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("trajectory_name"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("trajectory_name,lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("z,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("trajectory_name"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("z,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("z,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("trajectory_name"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("temperature,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("temperature,trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("trajectory_name"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("trajectory_name"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("trajectory_name"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("lat"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("temperature"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, 
+                    StringArray.fromCSV("z"), 
+                    0,  //standardizeWhat=0
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+            table.readNcCF(fileName, null, 0,  //standardizeWhat=0
+                    null, null, null);
+            results = table.dataToString(55);
+            expected = 
+    //rows that a human thinks should be rejected are kept
+    //probably because trajectory_info and trajectory_name aren't missing values 
+    //  AND because lat,lon have missing values but there is no missing_value attribute.
+    "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n" +
+    "2.152863,-35.078842,0,Trajectory0,0,0.0,13.466983,65.38418\n" +
+    "33.60481,-44.12696,0,Trajectory0,3600,1.0,23.050304,7.0401154\n" +
+    "22.562508,-18.115444,0,Trajectory0,7200,2.0,15.112072,45.15019\n" +
+    "13.432817,-21.772585,0,Trajectory0,10800,3.0,22.97767,12.618799\n" +
+    "43.011986,-28.655304,0,Trajectory0,14400,4.0,21.318092,4.788235\n" +
+    "18.84832,-25.418892,0,Trajectory0,18000,5.0,27.496708,66.337166\n" +
+    "18.040411,-30.469133,0,Trajectory0,21600,6.0,30.678926,31.57974\n" +
+    "32.34516,-75.79432,0,Trajectory0,25200,7.0,12.096431,11.228316\n" +
+    "8.652234,-69.01581,0,Trajectory0,28800,8.0,12.523737,47.003998\n" +
+    "18.905367,-18.362652,0,Trajectory0,32400,9.0,22.805552,8.789174\n" +
+    "12.184539,-42.194824,0,Trajectory0,36000,10.0,17.411797,40.25377\n" +
+    "16.498188,-74.44906,0,Trajectory0,39600,11.0,27.783548,20.712833\n" +
+    "1.5479256,-53.522717,0,Trajectory0,43200,12.0,11.809888,5.6157913\n" +
+    "22.033587,-28.557417,0,Trajectory0,46800,13.0,13.730549,2.8293543\n" +
+    "5.997217,-35.043163,0,Trajectory0,50400,14.0,6.549969,30.482803\n" +
+    "8.580469,-45.364418,0,Trajectory0,54000,15.0,11.789269,2.303839\n" +
+    "6.253441,-9.302229,0,Trajectory0,57600,16.0,24.03656,56.802467\n" +
+    "12.948677,-20.07699,0,Trajectory0,61200,17.0,17.980707,66.24162\n" +
+    "41.49208,-19.628315,0,Trajectory0,64800,18.0,0.44739303,25.76894\n" +
+    "25.784758,-65.65333,0,Trajectory0,68400,19.0,13.147206,1.4286463\n" +
+    "25.884523,-64.92309,0,Trajectory0,72000,20.0,21.278152,72.43937\n" +
+    "7.5993505,-33.58001,0,Trajectory0,75600,21.0,14.465093,74.04942\n" +
+    "23.801714,-8.210893,0,Trajectory0,79200,22.0,17.250273,43.468597\n" +
+    "24.086273,-16.376455,0,Trajectory0,82800,23.0,36.73325,56.15435\n" +
+    "8.838917,-65.32871,0,Trajectory0,86400,24.0,21.714993,32.324383\n" +
+    "3.049409,-50.187355,0,Trajectory0,90000,25.0,17.755543,7.7604437\n" +
+    "32.699135,-13.603052,0,Trajectory0,93600,26.0,21.764454,68.36558\n" +
+    "28.82149,-4.238066,0,Trajectory0,97200,27.0,4.18221,75.262665\n" +
+    "4.573595,-15.691054,0,Trajectory0,100800,28.0,36.230297,74.156654\n" +
+    "30.231867,-29.110548,0,Trajectory0,104400,29.0,10.372004,8.0368805\n" +
+    "26.295082,-24.224209,0,Trajectory0,108000,30.0,7.0729938,31.468176\n" +
+    "26.146648,-35.461746,0,Trajectory0,111600,31.0,12.3075285,71.35397\n" +
+    "18.875525,-11.409157,0,Trajectory0,115200,32.0,30.241188,45.14291\n" +
+    "44.57873,-29.37942,0,Trajectory0,118800,33.0,21.847982,61.776512\n" +
+    "40.911667,-31.65526,0,Trajectory0,122400,34.0,30.369759,29.810774\n" +
+    "9.5415745,-57.1067,0,Trajectory0,126000,35.0,15.864324,33.90924\n" +
+    //these aren't rejected because
+    //* trajectory_info has the attribute missing_value=-999,
+    //  but the data above has trajectory_info=0, which isn't a missing value.
+    //* trajectory_name is a string, so my reader doesn't expect a
+    //  missing_value attribute, but my reader does treat a data
+    //  value of "" (nothing) as a missing value.  Unfortunately, this
+    //  file has other values (e.g., "Trajectory0"), so my reader
+    //  treats those as not missing values.
+    //* lat and lon have data values of -999.9 which is probably
+    //  intended to be a missing value marker, but those variables
+    //  have no missing_value attributes, so my program treats them as
+    //  valid values.
+    //I reported to Kyle 2012-10-03 and hope he'll make changes
+
+    //"36,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" + 
+    //"37,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"38,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"39,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"40,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"41,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"42,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"43,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"44,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"45,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"46,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"47,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"48,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    //"49,-999.9,-999.9,0,Trajectory0,-999,-999.9,-999.9,-999.9\n" +
+    "36,13.633951,-61.779095,1,Trajectory1,0,0.0,31.081379,7.8967414\n" +
+    "37,41.583824,-52.047775,1,Trajectory1,3600,1.0,23.026224,25.034555\n" +
+    "38,14.176689,-15.26571,1,Trajectory1,7200,2.0,21.750353,61.35738\n" +
+    "39,23.482225,-69.246284,1,Trajectory1,10800,3.0,25.214777,70.63098\n" +
+    "40,8.910114,-12.47847,1,Trajectory1,14400,4.0,29.234118,53.387733\n" +
+    "...\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(table.nRows(), 200, "");
+            results = table.columnAttributes(5).toString();  //temperature
+            expected = 
+    "    axis=Z\n" +
+    "    long_name=height above mean sea level\n" +
+    "    missing_value=-999.9f\n" +
+    "    positive=up\n" +
+    "    standard_name=altitude\n" +
+    "    units=m\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            if (pauseAfterEach) 
+                String2.pressEnterToContinue("#8b " + pauseMessage); 
+
+
+        
+        } catch (Exception e) {
+            //String2.pressEnterToContinue(
+            Test.knownProblem(
+                "KYLE WILCOX'S DSG TEST FILE.",
+                MustBe.throwableToString(e) + 
+                "\nI reported this problem to Kyle 2012-10-03" +
+                "\n2013-10-30 Since Kyle changed jobs, it is unlikely he will ever fix this.");
+        }
+    }
+
     /** This tests readNcCF timeSeriesProfile files from ASA
      * via https://github.com/asascience-open/CFPointConventions
      * stored in unitTestDataDir/CFPointConventions.
@@ -20449,9 +20455,9 @@ String2.log(table.dataToString());
         table.debugMode = true;
         String dir = String2.unitTestBigDataDir + "nccf/wod/";
         String fullName, results, expected;
-        String doAllString = String2.getStringFromSystemIn(
-            "Do all the tests, including ones that are slow and take lots of memory (y/n)?");
-        boolean doAll = doAllString.startsWith("y");
+        //String doAllString = String2.getStringFromSystemIn(
+        //    "Do all the tests, including ones that are slow and take lots of memory (y/n)?");
+        boolean doAll = true; //doAllString.startsWith("y");
 /* */
         //read all
         fullName = dir + "wod_apb_2005.nc";
@@ -31227,38 +31233,32 @@ String2.log(table.dataToString());
         //String tUrl = "https://coastwatch.pfeg.noaa.gov/erddap2";
         //http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json
         String tUrl = "http://localhost:8080/cwexperimental";
-        try {
-            table.readErddapInfo(tUrl + "/info/pmelTaoDySst/index.json");
-            String ncHeader = table.getNCHeader("row");
-            Test.ensureEqual(table.globalAttributes.getString("cdm_data_type"), "TimeSeries", ncHeader);
-            Test.ensureEqual(table.globalAttributes.getString("title"), 
-                "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature", 
-                ncHeader);
-            Test.ensureEqual(table.globalAttributes.get("history").size(), 3,  ncHeader);
-            Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.", 
-                ncHeader);
-            Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
-                "This dataset is a product of the TAO Project Office at NOAA/PMEL.", 
-                ncHeader);
-            Test.repeatedlyTestLinesMatch(table.globalAttributes.get("history").getString(2), 
-                "20\\d{2}-\\d{2}-\\d{2} Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) " +
-                "fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  " +
-                "Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.", 
-                ncHeader);
-            Test.ensureEqual(table.nColumns(), 10, ncHeader);
-            Test.ensureEqual(table.findColumnNumber("longitude"), 3, ncHeader);
-            Test.ensureEqual(table.columnAttributes(3).getString("units"), "degrees_east", ncHeader);
-            int t25Col = table.findColumnNumber("T_25");
-            Test.ensureTrue(t25Col > 0, ncHeader);
-            Test.ensureEqual(table.columnAttributes(t25Col).getString("ioos_category"), "Temperature", ncHeader);
-            Test.ensureEqual(table.columnAttributes(t25Col).getString("units"), "degree_C", ncHeader);
+        table.readErddapInfo(tUrl + "/info/pmelTaoDySst/index.json");
+        String ncHeader = table.getNCHeader("row");
+        Test.ensureEqual(table.globalAttributes.getString("cdm_data_type"), "TimeSeries", ncHeader);
+        Test.ensureEqual(table.globalAttributes.getString("title"), 
+            "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature", 
+            ncHeader);
+        Test.ensureEqual(table.globalAttributes.get("history").size(), 3,  ncHeader);
+        Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
+            "This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.", 
+            ncHeader);
+        Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
+            "This dataset is a product of the TAO Project Office at NOAA/PMEL.", 
+            ncHeader);
+        Test.repeatedlyTestLinesMatch(table.globalAttributes.get("history").getString(2), 
+            "20\\d{2}-\\d{2}-\\d{2} Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) " +
+            "fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  " +
+            "Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.", 
+            ncHeader);
+        Test.ensureEqual(table.nColumns(), 10, ncHeader);
+        Test.ensureEqual(table.findColumnNumber("longitude"), 3, ncHeader);
+        Test.ensureEqual(table.columnAttributes(3).getString("units"), "degrees_east", ncHeader);
+        int t25Col = table.findColumnNumber("T_25");
+        Test.ensureTrue(t25Col > 0, ncHeader);
+        Test.ensureEqual(table.columnAttributes(t25Col).getString("ioos_category"), "Temperature", ncHeader);
+        Test.ensureEqual(table.columnAttributes(t25Col).getString("units"), "degree_C", ncHeader);
 
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nERROR while testing " + tUrl); 
-
-        }
     }
 
     /**
@@ -32459,12 +32459,11 @@ String2.log(table.dataToString());
         String results, expected;
 
         //2016-07-25 test for Kevin's dataset: from remote erddap
-        try {    
-            url = "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
-                "prof,id,cast,cruise,time,longitude,lon360,latitude&time%3E=2012-09-04&time%3C=2012-09-07&distinct()"; 
-            table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
-            results = table.toString(3);
-            expected = 
+        url = "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
+            "prof,id,cast,cruise,time,longitude,lon360,latitude&time%3E=2012-09-04&time%3C=2012-09-07&distinct()"; 
+        table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
+        results = table.toString(3);
+        expected = 
 "{\n" +
 "dimensions:\n" +
 "\trow = 2 ;\n" +
@@ -32558,8 +32557,8 @@ String2.log(table.dataToString());
 "\t\t:history = \"FERRET V7  13-Jun-16\n";
 //2016-10-03T22:25:01Z (local files)
 //2016-10-03T22:25:01Z 
-  Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-      
+Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+  
 expected = 
 "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
 "\t\t:infoUrl = \"www.ecofoci.noaa.gov\" ;\n" +
@@ -32593,21 +32592,14 @@ expected =
 "prof,id,cast,cruise,time,longitude,lon360,latitude\n" +
 "1.0,aq1201c069,069,aq1201,1.34697456E9,-164.0447,195.9553,56.866\n" +
 "1.0,aq1201c070,070,aq1201,1.34697582E9,-164.049,195.951,56.864\n";
-            int po = results.indexOf(expected.substring(0, 60));
-            Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue(
-                "\n2018-06-18 FIX THIS!!! new error related to nullPointer for serverVersion in header" +
-                "\nRecover from opendapSequence failure?");
-        }
+        int po = results.indexOf(expected.substring(0, 60));
+        Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
 
-        try {    
-            url = "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
-                "prof,id,cast,cruise,time,longitude,lon360,latitude&time%3E=2012-09-04&time%3C=2012-09-07"; 
-            table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
-            results = table.toString(3);
-            expected = 
+        url = "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
+            "prof,id,cast,cruise,time,longitude,lon360,latitude&time%3E=2012-09-04&time%3C=2012-09-07"; 
+        table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
+        results = table.toString(3);
+        expected = 
 "{\n" +
 "dimensions:\n" +
 "\trow = 2 ;\n" +
@@ -32701,7 +32693,7 @@ expected =
 "\t\t:history = \"FERRET V7  13-Jun-16\n";
 //2016-10-03T22:32:26Z (local files)
 //2016-10-03T22:32:26Z 
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 
 expected = 
@@ -32737,27 +32729,22 @@ expected =
 "prof,id,cast,cruise,time,longitude,lon360,latitude\n" +
 "1.0,aq1201c069,069,aq1201,1.34697456E9,-164.0447,195.9553,56.866\n" +
 "1.0,aq1201c070,070,aq1201,1.34697582E9,-164.049,195.951,56.864\n";
-            int po = results.indexOf(expected.substring(0, 60));
-            Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        po = results.indexOf(expected.substring(0, 60));
+        Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
 
 
         //************* SINGLE SEQUENCE *****************************
-        try {
-            //read data from opendap
-            table.readOpendapSequence(
-                "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude", false);
-            results = table.toString(5);
-            String2.log(results);
+        //read data from opendap
+        table.readOpendapSequence(
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude", false);
+        results = table.toString(5);
+        String2.log(results);
 
-            nRows = 3763; //2013-0620 was 3779;
-            Test.ensureEqual(table.nColumns(), 3, "");
-            Test.ensureEqual(table.nRows(), nRows, "");
+        nRows = 3763; //2013-0620 was 3779;
+        Test.ensureEqual(table.nColumns(), 3, "");
+        Test.ensureEqual(table.nRows(), nRows, "");
 
-            expected = 
+        expected = 
 "{\n" +
 "dimensions:\n" +
 "\trow = 3763 ;\n" +
@@ -32805,9 +32792,9 @@ expected =
 "\t\t:geospatial_lon_max = -124.175 ;\n" +
 "\t\t:geospatial_lon_min = -125.1167 ;\n" +
 "\t\t:geospatial_lon_units = \"degrees_east\" ;\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            expected =
+        expected =
 "\t\t:time_coverage_end = \"2002-05-30T15:22:00Z\" ;\n" +
 "\t\t:time_coverage_start = \"2000-04-12T04:00:00Z\" ;\n" +
 "\t\t:title = \"GLOBEC NEP MOCNESS Plankton (MOC1) Data, 2000-2002\" ;\n" +
@@ -32826,8 +32813,8 @@ expected =
 "0.014754703,44.6517,-124.65\n" +
 "0.014754703,44.6517,-124.65\n" +
 "...\n";
-            int po = results.indexOf(expected.substring(0, 19));
-            Test.ensureEqual(results.substring(Math.max(po, 0)), expected, "results=\n" + results);
+        po = results.indexOf(expected.substring(0, 19));
+        Test.ensureEqual(results.substring(Math.max(po, 0)), expected, "results=\n" + results);
 /* on oceanwatch, was          
 "{\n" +
 "dimensions:\n" +
@@ -32850,69 +32837,49 @@ expected =
 "      4         42.5033    -124.845001        3.41646\n";
 */
 
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
 
 
-        try {    
-            url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?station_id&distinct()"; 
-            table.readOpendapSequence(url, false);
-            String2.log(table.toString(3));
-            //source has no global metadata 
-            Test.ensureEqual(table.nColumns(), 1, "");
-            Test.ensureEqual(table.nRows(), 77, "");
-            Test.ensureEqual(table.getColumnName(0), "station_id", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Station ID", "");
-            Test.ensureEqual(table.getStringData(0, 0), "BO01", "");
-            Test.ensureEqual(table.getStringData(0, 1), "BO02", "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?station_id&distinct()"; 
+        table.readOpendapSequence(url, false);
+        String2.log(table.toString(3));
+        //source has no global metadata 
+        Test.ensureEqual(table.nColumns(), 1, "");
+        Test.ensureEqual(table.nRows(), 77, "");
+        Test.ensureEqual(table.getColumnName(0), "station_id", "");
+        Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Station ID", "");
+        Test.ensureEqual(table.getStringData(0, 0), "BO01", "");
+        Test.ensureEqual(table.getStringData(0, 1), "BO02", "");
 
 
-        try {
-            url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?abund_m3&station_id=%22NH05%22"; 
-            table.readOpendapSequence(url, false);
-            String2.log(table.toString(3));
-            //source has no global metadata 
-            Test.ensureEqual(table.nColumns(), 1, "");
-            Test.ensureEqual(table.nRows(), 2400, "");
-            Test.ensureEqual(table.getColumnName(0), "abund_m3", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance", "");
-            Test.ensureEqual(table.getFloatData(0, 0), 11.49f, "");
-            Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?abund_m3&station_id=%22NH05%22"; 
+        table.readOpendapSequence(url, false);
+        String2.log(table.toString(3));
+        //source has no global metadata 
+        Test.ensureEqual(table.nColumns(), 1, "");
+        Test.ensureEqual(table.nRows(), 2400, "");
+        Test.ensureEqual(table.getColumnName(0), "abund_m3", "");
+        Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance", "");
+        Test.ensureEqual(table.getFloatData(0, 0), 11.49f, "");
+        Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
 
 
-        try {
-            url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?cruise_id&distinct()"; 
-            table.readOpendapSequence(url, false);
-            String2.log(table.toString(1000000));
-            //source has no global metadata 
-            Test.ensureEqual(table.nColumns(), 1, "");
-            Test.ensureEqual(table.nRows(), 2, "");
-            Test.ensureEqual(table.getColumnName(0), "cruise_id", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Cruise ID", "");
-            Test.ensureEqual(table.getStringData(0, 0), "nh0207", "");
-            Test.ensureEqual(table.getStringData(0, 1), "w0205", "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?cruise_id&distinct()"; 
+        table.readOpendapSequence(url, false);
+        String2.log(table.toString(1000000));
+        //source has no global metadata 
+        Test.ensureEqual(table.nColumns(), 1, "");
+        Test.ensureEqual(table.nRows(), 2, "");
+        Test.ensureEqual(table.getColumnName(0), "cruise_id", "");
+        Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Cruise ID", "");
+        Test.ensureEqual(table.getStringData(0, 0), "nh0207", "");
+        Test.ensureEqual(table.getStringData(0, 1), "w0205", "");
 
 
-        try {
-            url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=%22MESO_1%22";
-            table.readOpendapSequence(url, false);
-            results = table.dataToString();
-            String2.log(results);
-            expected =
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=%22MESO_1%22";
+        table.readOpendapSequence(url, false);
+        results = table.dataToString();
+        String2.log(results);
+        expected =
 /* oceanwatch was 
 ...
 "    Row             lat           long       abund_m3\n" +
@@ -32927,20 +32894,15 @@ expected =
 "0.003688676,44.6517,-124.65\n" +
 "0.003688676,44.6517,-124.65\n" +
 "0.011066027,44.6517,-124.65\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        try {
-            //test getting all data
-            //modified from above so it returns lots of data 
-            //nRows=16507 nColumns=28  readTime=5219 ms  processTime=94 ms
-            url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt";
-            table.readOpendapSequence(url, false);
-            results = table.dataToString(5);
-            //on oceanwatch, was
+        //test getting all data
+        //modified from above so it returns lots of data 
+        //nRows=16507 nColumns=28  readTime=5219 ms  processTime=94 ms
+        url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt";
+        table.readOpendapSequence(url, false);
+        results = table.dataToString(5);
+        //on oceanwatch, was
 //    Row        datetime   datetime_utc datetime_utc_e           year        program      cruise_id        cast_no         stn_id
 //lat           long        lat1000        lon1000    water_depth      sample_id min_sample_dep max_sample_dep    month_local      day_local
 //   time_local       d_n_flag      gear_type   gear_area_m2      gear_mesh       vol_filt     counter_id       comments   perc_counted     lo
@@ -32949,305 +32911,276 @@ expected =
 //002    -124.169998          44650        -124170             60              1              0             55              4             25
 //        -9999          -9999            VPT        0.19635          0.202          14.46            WTP          -9999            1.1    611
 //8010204#     6118010204 CALANUS_MARSHA        3;_CIII          11.49
-            expected = 
+        expected = 
 "cruise_id,longitude,latitude,time,cast_no,station_id,abund_m3,comments,counter_id,d_n_flag,gear_area,gear_mesh,gear_type,genus_species,life_stage,local_code,max_sample_depth,min_sample_depth,nodc_code,perc_counted,program,sample_id,vol_filt,water_depth\n" +
 "EL010403,-124.17,44.65,9.88261731E8,0,NH05,11.49,-9999,WTP,-9999,0.19635,0.202,VPT,CALANUS_MARSHALLAE,3;_CIII,6118010204#,55,0,6118010204,1.1,NH,0,14.46,60\n" +
 "EL010403,-124.17,44.65,9.88261731E8,0,NH05,74.72,-9999,WTP,-9999,0.19635,0.202,VPT,BIVALVIA,Veliger,55V,55,0,55,1.1,NH,0,14.46,60\n" +
 "EL010403,-124.17,44.65,9.88261731E8,0,NH05,57.48,-9999,WTP,-9999,0.19635,0.202,VPT,POLYCHAETA,Larva,5001LV,55,0,5001,1.1,NH,0,14.46,60\n" +
 "EL010403,-124.17,44.65,9.88261731E8,0,NH05,74.72,-9999,WTP,-9999,0.19635,0.202,VPT,GASTROPODA,Veliger,51V,55,0,51,1.1,NH,0,14.46,60\n" +
 "EL010403,-124.17,44.65,9.88261731E8,0,NH05,11.49,-9999,WTP,-9999,0.19635,0.202,VPT,CALANUS_MARSHALLAE,1;_CI,6118010204!,55,0,6118010204,1.1,NH,0,14.46,60\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 
-        try {
 
-            //*************
-            String2.log("\n*** Table.testOpendapSequence subset data via tests");
+        //*************
+        String2.log("\n*** Table.testOpendapSequence subset data via tests");
 
-            //read data from opendap
-            table = new Table();
-            table.readOpendapSequence(
-                //resulting url (for asc) is: 
-                // https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1.asc?abund_m3,lat,long&abund_m3>=0.248962651&abund_m3<=0.248962653
-                //  Opera browser changes > to %3E and < to %3C
-                "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1",
-                new String[]{"abund_m3"}, 
-                new double[]{0.24896}, //new double[]{0.248962651}, //the last 2 rows only
-                new double[]{0.24897}, //new double[]{0.248962653}, 
-                new String[]{"abund_m3","latitude","longitude"},
-                false); 
+        //read data from opendap
+        table = new Table();
+        table.readOpendapSequence(
+            //resulting url (for asc) is: 
+            // https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1.asc?abund_m3,lat,long&abund_m3>=0.248962651&abund_m3<=0.248962653
+            //  Opera browser changes > to %3E and < to %3C
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1",
+            new String[]{"abund_m3"}, 
+            new double[]{0.24896}, //new double[]{0.248962651}, //the last 2 rows only
+            new double[]{0.24897}, //new double[]{0.248962653}, 
+            new String[]{"abund_m3","latitude","longitude"},
+            false); 
 
-            results = table.dataToString();
-            expected = 
+        results = table.dataToString();
+        expected = 
 "abund_m3,latitude,longitude\n" +
 "0.24896266,44.6517,-124.65\n" +
 "0.24896266,44.6517,-124.65\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
 
 
         //************* TWO-LEVEL SEQUENCE *****************************
         /* 2014-08-06 TEST REMOVED BECAUSE dataset is gone
 
-        try {
 
-            //note that I was UNABLE to get .asc responses for these dapper urls while poking around.
-            //but straight dods request (without ".dods") works.
-            //I'm testing Lynn's old ndbc data because I can independently generate test info
-            //  from my ndbc files.
-            //Starting url from Roy: http://las.pfeg.noaa.gov/dods/
-            //See in DChart: http://las.pfeg.noaa.gov/dchart
-            //Test info from my cached ndbc file /u00/data/points/ndbcMet2HistoricalTxt/46022h2004.txt
-            //YYYY MM DD hh  WD  WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS  TIDE
-            //2004 01 01 00 270  2.0  3.1  3.11 16.67  9.80 999 1010.7 999.0 999.0 999.0 99.0 99.00
-            //2004 01 01 01 120  5.9  7.3  3.29 16.67 10.12 999 1010.4 999.0 999.0 999.0 99.0 99.00
-            //test attributes are from "http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp.das"
-            //http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp?location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD1,location.profile.BAR1&location.LON>=235.3&location.LON<=235.5&location.LAT>=40.7&location.LAT<=40.8&location.profile.TIME>=1072915200000&location.profile.TIME<=1072920000000
-            lon = 235.460007f; //exact values from just get LON and LAT values available
-            lat = 40.779999f;
-            long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
-            long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
-            //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp 
-            //was http://las.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
-            url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
-                "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
-                "&location.LON>=" + (lon - .01f) + "&location.LON<=" + (lon + .01f) + //I couldn't catch lon with "="
-                "&location.LAT>=" + (lat - .01f) + "&location.LAT<=" + (lat + .01f) + //I couldn't catch lat with "="
-                "&location.profile.TIME>=" + (time1 - 1) + 
-                "&location.profile.TIME<=" + (time2 + 1);
-            String2.log("url=" + url);
-            table.readOpendapSequence(url, false);
-            String2.log(table.toString());
-            Test.ensureEqual(table.nColumns(), 6, "");
-            Test.ensureEqual(table.nRows(), 2, "");
-            int latCol = table.findColumnNumber("LAT");
-            int lonCol = table.findColumnNumber("LON");
-            Test.ensureTrue(latCol >= 0 && latCol < 2, "latCol=" + latCol); 
-            Test.ensureTrue(lonCol >= 0 && lonCol < 2, "lonCol=" + lonCol);  
-            Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
-            Test.ensureEqual(table.getColumnName(3), "TIME", "");
-            int barCol = table.findColumnNumber("BAR");
-            int wspdCol = table.findColumnNumber("WSPD");
-            Test.ensureEqual(table.getColumn(latCol).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(3).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(wspdCol).elementTypeString(), "float", "");
-            Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
-            Test.ensureEqual(table.globalAttributes().get("lat_range").toString(), "-27.7000007629395, 70.4000015258789", "");
-            Test.ensureEqual(table.getFloatData(latCol, 0), lat, "");
-            Test.ensureEqual(table.getFloatData(latCol, 1), lat, "");
-            Test.ensureEqual(table.getFloatData(lonCol, 0), lon, ""); 
-            Test.ensureEqual(table.getFloatData(lonCol, 1), lon, "");
-            //outer attributes...
-            Test.ensureEqual(table.columnAttributes(latCol).getString("units"), "degrees_north", ""); 
-            Test.ensureEqual(table.columnAttributes(latCol).getString("long_name"), "latitude", "");
-            Test.ensureEqual(table.columnAttributes(latCol).getDouble("missing_value"), Double.NaN, "");
-            Test.ensureEqual(table.columnAttributes(latCol).getString("axis"), "Y", "");
-            Test.ensureEqual(table.getDoubleData(3, 0), time1, "");
-            Test.ensureEqual(table.getDoubleData(3, 1), time2, "");
-            //inner attributes...
-            Test.ensureEqual(table.columnAttributes(3).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
-            Test.ensureEqual(table.columnAttributes(3).getString("long_name"), "time", "");
-            Test.ensureEqual(table.columnAttributes(3).getDouble("missing_value"), Double.NaN, "");
-            Test.ensureEqual(table.columnAttributes(3).getString("axis"), "T", "");
-            Test.ensureEqual(table.getFloatData(barCol, 0), 1010.7f, ""); //bar
-            Test.ensureEqual(table.getFloatData(barCol, 1), 1010.4f, "");
-            Test.ensureEqual(table.getFloatData(wspdCol, 0), 2.0f, ""); //wspd
-            Test.ensureEqual(table.getFloatData(wspdCol, 1), 5.9f, "");
+        //note that I was UNABLE to get .asc responses for these dapper urls while poking around.
+        //but straight dods request (without ".dods") works.
+        //I'm testing Lynn's old ndbc data because I can independently generate test info
+        //  from my ndbc files.
+        //Starting url from Roy: http://las.pfeg.noaa.gov/dods/
+        //See in DChart: http://las.pfeg.noaa.gov/dchart
+        //Test info from my cached ndbc file /u00/data/points/ndbcMet2HistoricalTxt/46022h2004.txt
+        //YYYY MM DD hh  WD  WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS  TIDE
+        //2004 01 01 00 270  2.0  3.1  3.11 16.67  9.80 999 1010.7 999.0 999.0 999.0 99.0 99.00
+        //2004 01 01 01 120  5.9  7.3  3.29 16.67 10.12 999 1010.4 999.0 999.0 999.0 99.0 99.00
+        //test attributes are from "http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp.das"
+        //http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp?location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD1,location.profile.BAR1&location.LON>=235.3&location.LON<=235.5&location.LAT>=40.7&location.LAT<=40.8&location.profile.TIME>=1072915200000&location.profile.TIME<=1072920000000
+        lon = 235.460007f; //exact values from just get LON and LAT values available
+        lat = 40.779999f;
+        long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
+        long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
+        //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp 
+        //was http://las.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+        url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+            "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
+            "&location.LON>=" + (lon - .01f) + "&location.LON<=" + (lon + .01f) + //I couldn't catch lon with "="
+            "&location.LAT>=" + (lat - .01f) + "&location.LAT<=" + (lat + .01f) + //I couldn't catch lat with "="
+            "&location.profile.TIME>=" + (time1 - 1) + 
+            "&location.profile.TIME<=" + (time2 + 1);
+        String2.log("url=" + url);
+        table.readOpendapSequence(url, false);
+        String2.log(table.toString());
+        Test.ensureEqual(table.nColumns(), 6, "");
+        Test.ensureEqual(table.nRows(), 2, "");
+        int latCol = table.findColumnNumber("LAT");
+        int lonCol = table.findColumnNumber("LON");
+        Test.ensureTrue(latCol >= 0 && latCol < 2, "latCol=" + latCol); 
+        Test.ensureTrue(lonCol >= 0 && lonCol < 2, "lonCol=" + lonCol);  
+        Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
+        Test.ensureEqual(table.getColumnName(3), "TIME", "");
+        int barCol = table.findColumnNumber("BAR");
+        int wspdCol = table.findColumnNumber("WSPD");
+        Test.ensureEqual(table.getColumn(latCol).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(3).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(wspdCol).elementTypeString(), "float", "");
+        Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
+        Test.ensureEqual(table.globalAttributes().get("lat_range").toString(), "-27.7000007629395, 70.4000015258789", "");
+        Test.ensureEqual(table.getFloatData(latCol, 0), lat, "");
+        Test.ensureEqual(table.getFloatData(latCol, 1), lat, "");
+        Test.ensureEqual(table.getFloatData(lonCol, 0), lon, ""); 
+        Test.ensureEqual(table.getFloatData(lonCol, 1), lon, "");
+        //outer attributes...
+        Test.ensureEqual(table.columnAttributes(latCol).getString("units"), "degrees_north", ""); 
+        Test.ensureEqual(table.columnAttributes(latCol).getString("long_name"), "latitude", "");
+        Test.ensureEqual(table.columnAttributes(latCol).getDouble("missing_value"), Double.NaN, "");
+        Test.ensureEqual(table.columnAttributes(latCol).getString("axis"), "Y", "");
+        Test.ensureEqual(table.getDoubleData(3, 0), time1, "");
+        Test.ensureEqual(table.getDoubleData(3, 1), time2, "");
+        //inner attributes...
+        Test.ensureEqual(table.columnAttributes(3).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
+        Test.ensureEqual(table.columnAttributes(3).getString("long_name"), "time", "");
+        Test.ensureEqual(table.columnAttributes(3).getDouble("missing_value"), Double.NaN, "");
+        Test.ensureEqual(table.columnAttributes(3).getString("axis"), "T", "");
+        Test.ensureEqual(table.getFloatData(barCol, 0), 1010.7f, ""); //bar
+        Test.ensureEqual(table.getFloatData(barCol, 1), 1010.4f, "");
+        Test.ensureEqual(table.getFloatData(wspdCol, 0), 2.0f, ""); //wspd
+        Test.ensureEqual(table.getFloatData(wspdCol, 1), 5.9f, "");
 
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }    
         */
 
 
         /* 2014-08-06 INACTIVE BECAUSE DATASET NO LONGER AVAILABLE
-        try {
-            //This Calcofi test simply verifies that the results now are as they were when
-            //  I wrote the test (circular logic).
-            //I hope this test is better than ndbc test above,
-            //  since hopefully longer lived (since ndbc data may not be around forever).
-            //target data
-            //    Row            time            lat            lon          depth English_sole_LarvaeCount
-            //     10    947320140000      32.341667     241.445007     203.800003        NaN
-            //     11    947320140000      32.341667     241.445007            NaN        NaN
-            lat = 32.341667f;
-            lon = 241.445f;
-            long time = 947320140000L;
-            //Starting url from roy: http://las.pfeg.noaa.gov/dods/
-            //see info via url without query, but plus .dds or .das
-            //was las.pfeg.noaa.gov
-            url = "http://oceanview.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
-                "location.lon,location.lat,location.time,location.profile.depth,location.profile.Line,location.profile.Disintegrated_fish_larvae_LarvaeCount" +
-                "&location.lon>=" + (lon - .01f) + "&location.lon<=" + (lon + .01f) + //I couldn't catch lon with "="
-                "&location.lat>=" + (lat - .01f) + "&location.lat<=" + (lat + .01f) + //I couldn't catch lat with "="
-                "&location.time>=" + (time - 1);
-            table.readOpendapSequence(url, false);
+        //This Calcofi test simply verifies that the results now are as they were when
+        //  I wrote the test (circular logic).
+        //I hope this test is better than ndbc test above,
+        //  since hopefully longer lived (since ndbc data may not be around forever).
+        //target data
+        //    Row            time            lat            lon          depth English_sole_LarvaeCount
+        //     10    947320140000      32.341667     241.445007     203.800003        NaN
+        //     11    947320140000      32.341667     241.445007            NaN        NaN
+        lat = 32.341667f;
+        lon = 241.445f;
+        long time = 947320140000L;
+        //Starting url from roy: http://las.pfeg.noaa.gov/dods/
+        //see info via url without query, but plus .dds or .das
+        //was las.pfeg.noaa.gov
+        url = "http://oceanview.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
+            "location.lon,location.lat,location.time,location.profile.depth,location.profile.Line,location.profile.Disintegrated_fish_larvae_LarvaeCount" +
+            "&location.lon>=" + (lon - .01f) + "&location.lon<=" + (lon + .01f) + //I couldn't catch lon with "="
+            "&location.lat>=" + (lat - .01f) + "&location.lat<=" + (lat + .01f) + //I couldn't catch lat with "="
+            "&location.time>=" + (time - 1);
+        table.readOpendapSequence(url, false);
 
-            String2.log(table.toString());
-            int latCol = table.findColumnNumber("lat");
-            int lonCol = table.findColumnNumber("lon");
-            Test.ensureTrue(latCol >= 0, "latCol=" + latCol); 
-            Test.ensureTrue(lonCol >= 0, "lonCol=" + lonCol);  
-            Test.ensureEqual(table.nColumns(), 6, "");
-            Test.ensureEqual(table.nRows(), 31, "");
-            Test.ensureEqual(table.getColumnName(0), "time", ""); //not in order I requested!   they are in dataset order
-            Test.ensureEqual(table.getColumnName(latCol), "lat", "");  
-            Test.ensureEqual(table.getColumnName(lonCol), "lon", "");  
-            Test.ensureEqual(table.getColumnName(3), "Line", "");
-            Test.ensureEqual(table.getColumnName(4), "Disintegrated_fish_larvae_LarvaeCount", "");
-            Test.ensureEqual(table.getColumnName(5), "depth", "");
-            Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(latCol).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(lonCol).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(3).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(4).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(5).elementTypeString(), "float", "");
-            //global attributes
-            Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
-            Test.ensureEqual(table.globalAttributes().getInt("total_profiles_in_dataset"),  6407, "");
-            //test of outer attributes
-            Test.ensureEqual(table.columnAttributes(0).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "time", "");
-            Test.ensureEqual(table.columnAttributes(0).getDouble("missing_value"), Double.NaN, "");
-            Test.ensureEqual(table.columnAttributes(0).getString("axis"), "T", "");
-            //test of inner attributes
-            Test.ensureEqual(table.columnAttributes(4).getString("long_name"), "disintegrated fish larvae larvae count", "");
-            Test.ensureEqual(table.columnAttributes(4).getFloat("missing_value"), Float.NaN, "");
-            Test.ensureEqual(table.columnAttributes(4).getString("units"), "number of larvae", "");
+        String2.log(table.toString());
+        int latCol = table.findColumnNumber("lat");
+        int lonCol = table.findColumnNumber("lon");
+        Test.ensureTrue(latCol >= 0, "latCol=" + latCol); 
+        Test.ensureTrue(lonCol >= 0, "lonCol=" + lonCol);  
+        Test.ensureEqual(table.nColumns(), 6, "");
+        Test.ensureEqual(table.nRows(), 31, "");
+        Test.ensureEqual(table.getColumnName(0), "time", ""); //not in order I requested!   they are in dataset order
+        Test.ensureEqual(table.getColumnName(latCol), "lat", "");  
+        Test.ensureEqual(table.getColumnName(lonCol), "lon", "");  
+        Test.ensureEqual(table.getColumnName(3), "Line", "");
+        Test.ensureEqual(table.getColumnName(4), "Disintegrated_fish_larvae_LarvaeCount", "");
+        Test.ensureEqual(table.getColumnName(5), "depth", "");
+        Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(latCol).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(lonCol).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(3).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(4).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(5).elementTypeString(), "float", "");
+        //global attributes
+        Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
+        Test.ensureEqual(table.globalAttributes().getInt("total_profiles_in_dataset"),  6407, "");
+        //test of outer attributes
+        Test.ensureEqual(table.columnAttributes(0).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
+        Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "time", "");
+        Test.ensureEqual(table.columnAttributes(0).getDouble("missing_value"), Double.NaN, "");
+        Test.ensureEqual(table.columnAttributes(0).getString("axis"), "T", "");
+        //test of inner attributes
+        Test.ensureEqual(table.columnAttributes(4).getString("long_name"), "disintegrated fish larvae larvae count", "");
+        Test.ensureEqual(table.columnAttributes(4).getFloat("missing_value"), Float.NaN, "");
+        Test.ensureEqual(table.columnAttributes(4).getString("units"), "number of larvae", "");
 
-            //test of results
-            //NOTE that data from different inner sequences is always separated by a row of NaNs 
-            //  in the ending inner sequence's info.
-            //  I believe Dapper is doing this. See more comments below.
-            //    Row            time            lat            lon Disintegrated_           Line          depth
-            //      0    947320140000      32.341667     241.445007            NaN      93.300003     203.800003
-            //      1    947320140000      32.341667     241.445007            NaN            NaN            NaN
-            //      2    955184100000      32.348331     241.448334            NaN      93.300003     215.800003
-            //     30   1099482480000      32.345001     241.445007            NaN      93.300003     198.899994
-             Test.ensureEqual(table.getDoubleData(0, 0), 947320140000L, "");
-            Test.ensureEqual(table.getFloatData(latCol, 0), 32.341667f, "");
-            Test.ensureEqual(table.getFloatData(lonCol, 0), 241.445007f, "");
-            Test.ensureEqual(table.getFloatData(3, 0), 93.300003f, "");
-            Test.ensureEqual(table.getFloatData(4, 0), Float.NaN, "");
-            Test.ensureEqual(table.getFloatData(5, 0), 203.800003f, "");
+        //test of results
+        //NOTE that data from different inner sequences is always separated by a row of NaNs 
+        //  in the ending inner sequence's info.
+        //  I believe Dapper is doing this. See more comments below.
+        //    Row            time            lat            lon Disintegrated_           Line          depth
+        //      0    947320140000      32.341667     241.445007            NaN      93.300003     203.800003
+        //      1    947320140000      32.341667     241.445007            NaN            NaN            NaN
+        //      2    955184100000      32.348331     241.448334            NaN      93.300003     215.800003
+        //     30   1099482480000      32.345001     241.445007            NaN      93.300003     198.899994
+         Test.ensureEqual(table.getDoubleData(0, 0), 947320140000L, "");
+        Test.ensureEqual(table.getFloatData(latCol, 0), 32.341667f, "");
+        Test.ensureEqual(table.getFloatData(lonCol, 0), 241.445007f, "");
+        Test.ensureEqual(table.getFloatData(3, 0), 93.300003f, "");
+        Test.ensureEqual(table.getFloatData(4, 0), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(5, 0), 203.800003f, "");
 
-            Test.ensureEqual(table.getDoubleData(0, 1), 947320140000L, "");
-            Test.ensureEqual(table.getFloatData(latCol, 1), 32.341667f, "");
-            Test.ensureEqual(table.getFloatData(lonCol, 1), 241.445007f, "");
-            Test.ensureEqual(table.getFloatData(3, 1), Float.NaN, "");
-            Test.ensureEqual(table.getFloatData(4, 1), Float.NaN, "");
-            Test.ensureEqual(table.getFloatData(5, 1), Float.NaN, "");
+        Test.ensureEqual(table.getDoubleData(0, 1), 947320140000L, "");
+        Test.ensureEqual(table.getFloatData(latCol, 1), 32.341667f, "");
+        Test.ensureEqual(table.getFloatData(lonCol, 1), 241.445007f, "");
+        Test.ensureEqual(table.getFloatData(3, 1), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(4, 1), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(5, 1), Float.NaN, "");
 
-            Test.ensureEqual(table.getDoubleData(0, 30), 1099482480000L, "");
-            Test.ensureEqual(table.getFloatData(latCol, 30), 32.345001f, "");
-            Test.ensureEqual(table.getFloatData(lonCol, 30), 241.445007f, "");
-            Test.ensureEqual(table.getFloatData(3, 30), 93.300003f, "");
-            Test.ensureEqual(table.getFloatData(4, 30), Float.NaN, "");
-            Test.ensureEqual(table.getFloatData(5, 30), 198.899994f, "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        Test.ensureEqual(table.getDoubleData(0, 30), 1099482480000L, "");
+        Test.ensureEqual(table.getFloatData(latCol, 30), 32.345001f, "");
+        Test.ensureEqual(table.getFloatData(lonCol, 30), 241.445007f, "");
+        Test.ensureEqual(table.getFloatData(3, 30), 93.300003f, "");
+        Test.ensureEqual(table.getFloatData(4, 30), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(5, 30), 198.899994f, "");
 
 
-        try {
-            //*** visual test: is dapper returning the NAN row at the end of every innerSequence (true)
-            //  or is that the way it is in the files?  (false)
-            lon = 235.460007f; //exact values from just get LON and LAT values available
-            lat = 40.779999f;
-            long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
-            long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
-            //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp
-            url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
-                "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
-                "&location.LON>=" + (lon - 5f) + "&location.LON<=" + (lon + 5f) + 
-                "&location.LAT>=" + (lat - 5f) + "&location.LAT<=" + (lat + 5f) + 
-                "&location.profile.TIME>=" + (time1 - 1) + 
-                "&location.profile.TIME<=" + (time2 + 1);
-            table.readOpendapSequence(url, false);
-            String2.log(table.toString());
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        //*** visual test: is dapper returning the NAN row at the end of every innerSequence (true)
+        //  or is that the way it is in the files?  (false)
+        lon = 235.460007f; //exact values from just get LON and LAT values available
+        lat = 40.779999f;
+        long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
+        long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
+        //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp
+        url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+            "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
+            "&location.LON>=" + (lon - 5f) + "&location.LON<=" + (lon + 5f) + 
+            "&location.LAT>=" + (lat - 5f) + "&location.LAT<=" + (lat + 5f) + 
+            "&location.profile.TIME>=" + (time1 - 1) + 
+            "&location.profile.TIME<=" + (time2 + 1);
+        table.readOpendapSequence(url, false);
+        String2.log(table.toString());
         */
 
     /*
-        try{
-            //THIS WORKS, BUT TAKES ~40 SECONDS!!!  so don't do all the time
-            //see questions below.
-            //This gets all the valid English_sole_LarvaeCount data.
-            //UNFORTUNATELY, you can't put constraint on non-axis variable,
-            //  so I have to get all data and then filter the results.
-            //This test simply verifies that the results now are as they were when
-            //  I wrote the test (circular logic).
-            //I had hoped this test would be better than ndbc test above,
-            //  since hopefully longer lived (since ndbc data may not be around forever).
-            //Starting url from roy: http://las.pfeg.noaa.gov/dods/
-            url = "http://las.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
-                "location.lon,location.lat,location.time,location.profile.depth,location.profile.English_sole_LarvaeCount";
-            table.readOpendapSequence(url);
-            String2.log("raw results nRows=" + table.nRows());
-            //just keep rows with larvaeCounts >= 0
-            table.subset(new int[]{4}, new double[]{0}, new double[]{1e300}); 
+        //THIS WORKS, BUT TAKES ~40 SECONDS!!!  so don't do all the time
+        //see questions below.
+        //This gets all the valid English_sole_LarvaeCount data.
+        //UNFORTUNATELY, you can't put constraint on non-axis variable,
+        //  so I have to get all data and then filter the results.
+        //This test simply verifies that the results now are as they were when
+        //  I wrote the test (circular logic).
+        //I had hoped this test would be better than ndbc test above,
+        //  since hopefully longer lived (since ndbc data may not be around forever).
+        //Starting url from roy: http://las.pfeg.noaa.gov/dods/
+        url = "http://las.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
+            "location.lon,location.lat,location.time,location.profile.depth,location.profile.English_sole_LarvaeCount";
+        table.readOpendapSequence(url);
+        String2.log("raw results nRows=" + table.nRows());
+        //just keep rows with larvaeCounts >= 0
+        table.subset(new int[]{4}, new double[]{0}, new double[]{1e300}); 
 
-            String2.log(table.toString());
-            Test.ensureEqual(table.nColumns(), 5, "");
-            Test.ensureEqual(table.nRows(), 98, "");
-            Test.ensureEqual(table.getColumnName(0), "time", ""); //not in order I requested!   they are in dataset order
-            Test.ensureEqual(table.getColumnName(1), "lat", "");  
-            Test.ensureEqual(table.getColumnName(2), "lon", "");  
-            Test.ensureEqual(table.getColumnName(3), "depth", "");
-            Test.ensureEqual(table.getColumnName(4), "English_sole_LarvaeCount", "");
-            Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(1).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(2).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(3).elementTypeString(), "float", "");
-            Test.ensureEqual(table.getColumn(4).elementTypeString(), "float", "");
-            //global attributes
-            Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
-            Test.ensureEqual(table.globalAttributes().getInt("total_profiles_in_dataset"),  6407, "");
-            //test of outer attributes
-            Test.ensureEqual(table.columnAttributes(0).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "time", "");
-            Test.ensureEqual(table.columnAttributes(0).getDouble("missing_value"), Double.NaN, "");
-            Test.ensureEqual(table.columnAttributes(0).getString("axis"), "T", "");
-            //test of inner attributes
-            Test.ensureEqual(table.columnAttributes(4).getString("long_name"), "parophrys vetulus larvae count", "");
-            Test.ensureEqual(table.columnAttributes(4).getFloat("missing_value"), Float.NaN, "");
-            Test.ensureEqual(table.columnAttributes(4).getString("units"), "number of larvae", "");
+        String2.log(table.toString());
+        Test.ensureEqual(table.nColumns(), 5, "");
+        Test.ensureEqual(table.nRows(), 98, "");
+        Test.ensureEqual(table.getColumnName(0), "time", ""); //not in order I requested!   they are in dataset order
+        Test.ensureEqual(table.getColumnName(1), "lat", "");  
+        Test.ensureEqual(table.getColumnName(2), "lon", "");  
+        Test.ensureEqual(table.getColumnName(3), "depth", "");
+        Test.ensureEqual(table.getColumnName(4), "English_sole_LarvaeCount", "");
+        Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(1).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(2).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(3).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getColumn(4).elementTypeString(), "float", "");
+        //global attributes
+        Test.ensureEqual(table.globalAttributes().getString("Conventions"), "epic-insitu-1.0", "");
+        Test.ensureEqual(table.globalAttributes().getInt("total_profiles_in_dataset"),  6407, "");
+        //test of outer attributes
+        Test.ensureEqual(table.columnAttributes(0).getString("units"), "msec since 1970-01-01 00:00:00 GMT", "");
+        Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "time", "");
+        Test.ensureEqual(table.columnAttributes(0).getDouble("missing_value"), Double.NaN, "");
+        Test.ensureEqual(table.columnAttributes(0).getString("axis"), "T", "");
+        //test of inner attributes
+        Test.ensureEqual(table.columnAttributes(4).getString("long_name"), "parophrys vetulus larvae count", "");
+        Test.ensureEqual(table.columnAttributes(4).getFloat("missing_value"), Float.NaN, "");
+        Test.ensureEqual(table.columnAttributes(4).getString("units"), "number of larvae", "");
 
-            //test of results
-            Test.ensureEqual(table.getDoubleData(0, 0), 955657380000L, "");
-            Test.ensureEqual(table.getFloatData(1, 0), 33.485001f, "");
-            Test.ensureEqual(table.getFloatData(2, 0), 242.231659f, "");
-            Test.ensureEqual(table.getFloatData(3, 0), 210.800003f, "");
-            Test.ensureEqual(table.getFloatData(4, 0), 1, "");
+        //test of results
+        Test.ensureEqual(table.getDoubleData(0, 0), 955657380000L, "");
+        Test.ensureEqual(table.getFloatData(1, 0), 33.485001f, "");
+        Test.ensureEqual(table.getFloatData(2, 0), 242.231659f, "");
+        Test.ensureEqual(table.getFloatData(3, 0), 210.800003f, "");
+        Test.ensureEqual(table.getFloatData(4, 0), 1, "");
 
-            Test.ensureEqual(table.getDoubleData(0, 1), 955691700000L, "");
-            Test.ensureEqual(table.getFloatData(1, 1), 33.825001f, "");
-            Test.ensureEqual(table.getFloatData(2, 1), 241.366669f, "");
-            Test.ensureEqual(table.getFloatData(3, 1), 208.5f, "");
-            Test.ensureEqual(table.getFloatData(4, 1), 6, "");
+        Test.ensureEqual(table.getDoubleData(0, 1), 955691700000L, "");
+        Test.ensureEqual(table.getFloatData(1, 1), 33.825001f, "");
+        Test.ensureEqual(table.getFloatData(2, 1), 241.366669f, "");
+        Test.ensureEqual(table.getFloatData(3, 1), 208.5f, "");
+        Test.ensureEqual(table.getFloatData(4, 1), 6, "");
 
-            Test.ensureEqual(table.getDoubleData(0, 97), 923900040000L, "");
-            Test.ensureEqual(table.getFloatData(1, 97), 34.976665f, "");
-            Test.ensureEqual(table.getFloatData(2, 97), 237.334991f, "");
-            Test.ensureEqual(table.getFloatData(3, 97), 24.1f, "");
-            Test.ensureEqual(table.getFloatData(4, 97), 4, "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
-        }
+        Test.ensureEqual(table.getDoubleData(0, 97), 923900040000L, "");
+        Test.ensureEqual(table.getFloatData(1, 97), 34.976665f, "");
+        Test.ensureEqual(table.getFloatData(2, 97), 237.334991f, "");
+        Test.ensureEqual(table.getFloatData(3, 97), 24.1f, "");
+        Test.ensureEqual(table.getFloatData(4, 97), 4, "");
 
 /* */
 /**
@@ -33354,47 +33287,43 @@ expected =
     /** Test the speed of readJson */
     public static void testReadJsonSpeed() throws Exception {
 
-        try {
-            //warmup
-            String fileName = String2.unitTestDataDir + "cPostDet3.files.json"; 
-            long time = 0;
+        //warmup
+        String fileName = String2.unitTestDataDir + "cPostDet3.files.json"; 
+        long time = 0;
+        String msg = "";
 
-            for (int attempt = 0; attempt < 3; attempt++) {
-                String2.log("\n*** Table.testReadJsonSpeed attempt#" + attempt + "\n");
-                Math2.gcAndWait(); //in a test
+        for (int attempt = 0; attempt < 3; attempt++) {
+            String2.log("\n*** Table.testReadJsonSpeed attempt#" + attempt + "\n");
+            Math2.gcAndWait(); //in a test
 
-                //time it
-                time = System.currentTimeMillis();
-                long fileLength = File2.length(fileName); //was 10,166KB
-                Test.ensureTrue(fileLength > 9000000, "fileName=" + fileName + " length=" + fileLength); 
-                Table table=new Table();
-                table.readJson(fileName);
+            //time it
+            time = System.currentTimeMillis();
+            long fileLength = File2.length(fileName); //was 10,166KB
+            Test.ensureTrue(fileLength > 9000000, "fileName=" + fileName + " length=" + fileLength); 
+            Table table=new Table();
+            table.readJson(fileName);
 
-                String results = table.dataToString(3);
-                String2.log("results=\n" + results);
-    //row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
-    //atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
-    //_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
-    //n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
-    // stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
-                Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
-                Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
-                Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
-                Test.ensureTrue(table.nRows() > 15000, "nRows=" + table.nRows()); //was 15024
+            String results = table.dataToString(3);
+            String2.log("results=\n" + results);
+//row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
+//atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
+//_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
+//n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
+// stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
+            Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
+            Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
+            Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
+            Test.ensureTrue(table.nRows() > 15000, "nRows=" + table.nRows()); //was 15024
 
-                time = System.currentTimeMillis() - time;
-                String2.log("********* Done. cells/ms=" + 
-                    (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
-                    "\ntime=" + time + "ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
-                if (time <= 400)
-                    break;
-            }
-            if (time > 400)
-                throw new SimpleException("readJson took too long.");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nUnexpected ERROR."); 
+            time = System.currentTimeMillis() - time;
+            msg = "*** Done. cells/ms=" + 
+                (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
+                "\ntime=" + time + "ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"; 
+            String2.log(msg);
+            if (time <= 400)
+                break;
         }
+        Test.ensureTrue(time < 400, msg + "\nreadJson took too long.");
     }
 
 
@@ -34568,128 +34497,130 @@ readAsNcCF?
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         Math2.gcAndWait(); 
-        String2.log(Math2.memoryString() + "\n" + 
+        String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 
-            "ms. file read time should be ~36s (but longer when computer is busy)");
-
-        if (time > 41000) 
-             String2.pressEnterToContinue();
-        else Math2.sleep(5000);
-
+            "ms. file read time should be ~36s (but longer when computer is busy)";
+        String2.log(msg);
+        Test.ensureTrue(time < 41000, "Too slow! " + msg); 
     }
 
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Exception if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Exception {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 2 : 67;
+        String msg = "\n^^^ Table.test(" + interactive + ") test=";
 
         verbose = true;
         reallyVerbose = true;
 
-/* for releases, this line should have open/close comment */
-        testLittleMethods();
-        testReorderColumns();
-        testSortColumnsByName();
-        testLastRowWithData();
-        testEnhancedFlatNcFile();
-        testOrderByMinMax(); //tests orderByMin Max MinMax
-        testOrderByClosest();
-        testOrderByCount();
-        testOrderByLimit();
-        testGetDapQueryParts();
-        testParseDapQuery();
-        testSubsetViaDapQuery();
-        testAddIndexColumns();
-        
-        //readWrite tests
-        testASCII();
-        testReadAsciiCsvFile();
-        testReadAsciiSsvFile();
-        testReadColumnarASCIIFile();
-        testNccsv();
-        testHtml();
-        testJson();
-        testJsonlCSV();
-        testFlatNc();
-        test4DNc();
-        testSaveAsMatlab();
-        testOpendapSequence(); 
-        testReadAwsXmlFile();
-        //testOpendap(); //not done yet, see opendapSequence
-        testReadNDNc();
-        testReadNDNc2();
-        testJoin();
-        testReadStandardTabbedASCII();
-        testReadMultidimNc();
-        testHardReadMultidimNc();
-        testReadInvalidCRA();
-        testUnpack();
-
-        //readNcCF tests
         ncCFcc = new BitSet();  //turn on test of readNcCF code coverage
-        testReadNcCFPoint(false);  //pauseAfterEachTest
-        testReadNcCF1(false);  //pauseAfterEachTest
-        testReadNcCF2(false);
-        testReadNcCFASAProfile(false);
-        testReadNcCFASATimeSeries(false);
-        testReadNcCFASATrajectory(false);
-        testReadNcCFASATimeSeriesProfile(false);
-        testReadNcCFASATrajectoryProfile(false);
-        testReadNcCFMATimeSeriesReversed(true); //read as ncCF
-        testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
-        testReadGocdNcCF();
-        testReadNcCF7SampleDims();
-        if (ncCFcc != null) {
-            ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests
-            String2.pressEnterToContinue("\nTable.readNcCF code coverage: notTested=" + ncCFcc.toString());
-            ncCFcc = null; //turn off test of readNcCF code coverage
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testNccsvInteractive();
+                    if (test ==  1) testInteractiveNcCFMA(false); //pauseAfterEach?
+                    if (test ==  2) testReadAudioWriteWaveFiles(0, 1000);
+
+                } else {
+                    if (test ==  0) testLittleMethods();
+                    if (test ==  1) testReorderColumns();
+                    if (test ==  2) testSortColumnsByName();
+                    if (test ==  3) testLastRowWithData();
+                    if (test ==  4) testEnhancedFlatNcFile();
+                    if (test ==  5) testOrderByMinMax(); //tests orderByMin Max MinMax
+                    if (test ==  6) testOrderByClosest();
+                    if (test ==  7) testOrderByCount();
+                    if (test ==  8) testOrderByLimit();
+                    if (test ==  9) testGetDapQueryParts();
+                    if (test == 10) testParseDapQuery();
+                    if (test == 11) testSubsetViaDapQuery();
+                    if (test == 12) testAddIndexColumns();
+                    
+                    //readWrite tests
+                    if (test == 20) testASCII();
+                    if (test == 21) testReadAsciiCsvFile();
+                    if (test == 22) testReadAsciiSsvFile();
+                    if (test == 23) testReadColumnarASCIIFile();
+                    if (test == 24) testNccsv();
+                    if (test == 25) testHtml();
+                    if (test == 26) testJson();
+                    if (test == 27) testJsonlCSV();
+                    if (test == 28) testFlatNc();
+                    if (test == 29) test4DNc();
+                    if (test == 30) testSaveAsMatlab();
+                    if (test == 31) testOpendapSequence(); 
+                    if (test == 32) testReadAwsXmlFile();
+                    if (test == 33) testReadNDNc();
+                    if (test == 34) testReadNDNc2();
+                    if (test == 35) testJoin();
+                    if (test == 36) testReadStandardTabbedASCII();
+                    if (test == 37) testReadMultidimNc();
+                    if (test == 38) testHardReadMultidimNc();
+                    if (test == 39) testUnpack();
+
+                    if (test == 40 && doSlowTestsToo) testReadInvalidCRA(); //very slow
+
+                    //readNcCF tests
+                    if (test == 45) testReadNcCFPoint(false);  //pauseAfterEachTest
+                    if (test == 46) testReadNcCF1(false);  //pauseAfterEachTest
+                    if (test == 47) testReadNcCF2(false);
+                    if (test == 48) testReadNcCFASAProfile(false);
+                    if (test == 49) testReadNcCFASATimeSeries(false);
+                    if (test == 50) testReadNcCFASATrajectory(false);
+                    if (test == 51) testReadNcCFASATimeSeriesProfile(false);
+                    if (test == 52) testReadNcCFASATrajectoryProfile(false);
+                    if (test == 53) testReadNcCFMATimeSeriesReversed(true); //read as ncCF
+                    if (test == 54) testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
+                    if (test == 55) testReadGocdNcCF();
+                    if (test == 56) testReadNcCF7SampleDims();
+                    if (test == 57) {
+                        ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests
+                        Test.ensureEqual(ncCFcc.toString(), "{}", "Table.readNcCF code coverage");
+                        ncCFcc = null; //turn off test of readNcCF code coverage
+                    }
+
+                    if (test == 60) testReadASCIISpeed();
+                    if (test == 61) testBigAscii();
+                    if (test == 62) testReadJsonSpeed();
+                    if (test == 63) testReadNDNcSpeed();
+                    if (test == 64) testReadOpendapSequenceSpeed();
+                    if (test == 65) testSaveAsSpeed();
+                    if (test == 66) testUpdate();
+                    if (test == 67) testXml();
+
+                    //if (test == 1000) testConvert(); //2013-04-03 Needs work. Not active. This test needs to be updated to test a new source DAP server
+                    //if (test == 1001) testSql();     //Needs work. Not active.
+                    //if (test == 1002) testIobis();   // Needs work. Not active. It needs work to deal with sessions.
+                    //if (test == 1003) testOpendap(); //not done yet, see opendapSequence
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
         }
-
-        testReadASCIISpeed();
-        testBigAscii();
-        testReadJsonSpeed();
-        testReadNDNcSpeed();
-        testReadOpendapSequenceSpeed();
-        testSaveAsSpeed();
-        testUpdate();
-        testReadAudioWriteWaveFiles(0, 1000);
-
-        try {
-// Needs work. Not active.
-            //testConvert(); //2013-04-03 this test needs to be updated to test a new source DAP server
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from failure?");
-        }
-
-        try {
-// Needs work. Not active.
-           //testSql();
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from testSql failure?");
-        }
-        
-        testXml();
-
-        
-        try {
-// Needs work. Not active. It needs work to deal with sessions
-            //testIobis();
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue(
-                "\nRecover from testIobis failure (1007-09-10: it needs work to deal with sessions)?");
-        }
-        /* */
-
-        //done
-        String2.log("\n***** Table.test finished successfully");
-
     }
 
 

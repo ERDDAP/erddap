@@ -609,7 +609,6 @@ expected =
         boolean oDebugMode = NcHelper.debugMode;
         NcHelper.debugMode = true;
 
-        try {
         //DumpString
         results = NcHelper.ncdump(fileDir + fileName, "-h");
         expected = 
@@ -920,7 +919,8 @@ expected =
 "2002-07-04T00:00:00Z,-68.375,-134.95833,NaN\n" +
 "2002-07-04T00:00:00Z,-76.708336,-134.95833,NaN\n" +
 "2002-07-04T00:00:00Z,-85.04167,-134.95833,NaN\n"; 
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results + 
+            "\nFIX THIS problem with unsigned values.");
 
         //display the image
         String2.log("\n\n* PNG ");
@@ -928,9 +928,6 @@ expected =
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + "//trouble in testUInt16File");
-        }
         NcHelper.debugMode = oDebugMode;
     }
 
@@ -1618,22 +1615,51 @@ expected =
     }
 
 
-
     /**
-     * This tests this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 3;
+        String msg = "\n^^^ EDDGridFromNcFilesUnpacked.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        String2.log("\n*** EDDGridFromNcFilesUnpacked.test");
-        testGenerateDatasetsXml();
-        testBasic(deleteCachedDatasetInfo);
-testUInt16File();  //trouble
-        testMissingValue();
+        boolean deleteCachedDatasetInfo = true;
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testBasic(deleteCachedDatasetInfo);
+if (test ==  2) testUInt16File();  //trouble
+                    if (test ==  3) testMissingValue();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
-
 
 }
 

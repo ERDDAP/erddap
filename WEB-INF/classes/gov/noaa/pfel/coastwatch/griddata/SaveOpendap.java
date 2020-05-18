@@ -221,21 +221,20 @@ public class SaveOpendap  {
     /**
      * This tests the methods in this class.
      */
-    public static void test() throws Exception {
-        String2.log("\n*** SaveOpendap.asNc...");
+    public static void basicTest() throws Exception {
+        String2.log("\n*** SaveOpendap.basicTest...");
         verbose = true;
-        try {
-            //String dir = "c:/temp/"; 
-            String dir = File2.getSystemTempDirectory();
-            String name;
+        //String dir = "c:/temp/"; 
+        String dir = File2.getSystemTempDirectory();
+        String name;
 
-            //test ndbc       It would be better test if it actually tested the data.
-            name = "SaveOpendapAsNcNDBC.nc";
-            asNc("http://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/31201/31201h2005.nc", dir + name);
-            String info = NcHelper.ncdump(dir + name, "-h");
-            int po = info.indexOf("{");
-            info = info.substring(po);
-    String shouldBe =         
+        //test ndbc       It would be better test if it actually tested the data.
+        name = "SaveOpendapAsNcNDBC.nc";
+        asNc("http://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/31201/31201h2005.nc", dir + name);
+        String info = NcHelper.ncdump(dir + name, "-h");
+        int po = info.indexOf("{");
+        info = info.substring(po);
+String shouldBe =         
 "{\n" +
 "  dimensions:\n" +
 "    time = UNLIMITED;   // (803 currently)\n" +
@@ -378,51 +377,89 @@ public class SaveOpendap  {
 "  :location = \"27.70 S 48.13 W \";\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
 "}\n";
-            Test.ensureEqual(info, shouldBe, "info=" + info);
-            File2.delete(dir + name);
+        Test.ensureEqual(info, shouldBe, "info=" + info);
+        File2.delete(dir + name);
 
-            /* 
-            //THIS WORKS BUT ITS TOO MUCH DATA FROM SOMEONE ELSE TO TEST ROUTINELY.
-            //test MBARI M0: it has no structures, a unlimited dimension, global metadata,
-            //  and 1D and 4D variables with metadata
-            //in browser, see http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc.html
-            name = "SaveOpendapAsNcMBARI.nc";
-            //asNc("dods://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);  //doesn't solve problem
-            asNc("http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);
-            String2.log(NcHelper.ncdump(dir + name, "-h"));
-            File2.delete(dir + name);
-            */
+        /* 
+        //THIS WORKS BUT ITS TOO MUCH DATA FROM SOMEONE ELSE TO TEST ROUTINELY.
+        //test MBARI M0: it has no structures, a unlimited dimension, global metadata,
+        //  and 1D and 4D variables with metadata
+        //in browser, see http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc.html
+        name = "SaveOpendapAsNcMBARI.nc";
+        //asNc("dods://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);  //doesn't solve problem
+        asNc("http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc", dir + name);
+        String2.log(NcHelper.ncdump(dir + name, "-h"));
+        File2.delete(dir + name);
+        */
 
-            /* doesn't work yet
-            //test an opendap sequence (see Table.testConvert)
-            name = "sequence.nc";
-            asNc("https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"", 
-                dir + name);
-            //String outName = testDir + "convert.nc";
-            //convert(inName, READ_OPENDAP_SEQUENCE, outName, SAVE_AS_NC, "row", false);
-            //Table table = new Table();
-            //table.readFlatNc(outName, null, 0); //standardizeWhat=0; it should be already unpacked
-            //String2.log(table.toString(3));
-            //Test.ensureEqual(table.nColumns(), 2, "");
-            //Test.ensureEqual(table.nRows(), 190, "");
-            //Test.ensureEqual(table.getColumnName(0), "t0", "");
-            //Test.ensureEqual(table.getColumnName(1), "oxygen", "");
-            //Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Temperature T0", "");
-            //Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Oxygen", "");
-            //Test.ensureEqual(table.getDoubleData(0, 0), 12.1185, "");
-            //Test.ensureEqual(table.getDoubleData(0, 1), 12.1977, "");
-            //Test.ensureEqual(table.getDoubleData(1, 0), 6.56105, "");
-            //Test.ensureEqual(table.getDoubleData(1, 1), 6.95252, "");
-            //File2.delete(outName);
-            String2.log(NcHelper.ncdump(dir + name, ""));
-            //File2.delete(dir + name);
-            */
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nUnexpected error.");
-        }
+        /* doesn't work yet
+        //test an opendap sequence (see Table.testConvert)
+        name = "sequence.nc";
+        asNc("https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"", 
+            dir + name);
+        //String outName = testDir + "convert.nc";
+        //convert(inName, READ_OPENDAP_SEQUENCE, outName, SAVE_AS_NC, "row", false);
+        //Table table = new Table();
+        //table.readFlatNc(outName, null, 0); //standardizeWhat=0; it should be already unpacked
+        //String2.log(table.toString(3));
+        //Test.ensureEqual(table.nColumns(), 2, "");
+        //Test.ensureEqual(table.nRows(), 190, "");
+        //Test.ensureEqual(table.getColumnName(0), "t0", "");
+        //Test.ensureEqual(table.getColumnName(1), "oxygen", "");
+        //Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Temperature T0", "");
+        //Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Oxygen", "");
+        //Test.ensureEqual(table.getDoubleData(0, 0), 12.1185, "");
+        //Test.ensureEqual(table.getDoubleData(0, 1), 12.1977, "");
+        //Test.ensureEqual(table.getDoubleData(1, 0), 6.56105, "");
+        //Test.ensureEqual(table.getDoubleData(1, 1), 6.95252, "");
+        //File2.delete(outName);
+        String2.log(NcHelper.ncdump(dir + name, ""));
+        //File2.delete(dir + name);
+        */
        
     } 
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ SaveOpendap.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 
     /**
      * NOT YET FINISHED. A method to get data from an opendap source

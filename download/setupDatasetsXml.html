@@ -2202,7 +2202,7 @@ currently recommend
     <i>bigParentDirectory</i>/logs/log.txt .
 
     <p>A few subclasses have additional restrictions (notably, 
-    EDDGridAggregateExistingDimension requires that the outer (leftmost) dimension
+    EDDGridAggregateExistingDimension requires that the outer (leftmost, first) dimension
     be ascending.
     <p>Unsorted dimension values almost always indicate a problem with the source dataset.
     This most commonly occurs when a misnamed or inappropriate file is 
@@ -2428,7 +2428,7 @@ currently recommend
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. 
     For EDDGridFromDap, this gets the remote .dds and then gets the new
-    leftmost dimension values. --&gt;
+    leftmost (first) dimension values. --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#nThreads">&lt;nThreads&gt;</a>...&lt;/nThreads&gt; &lt;!-- 0 or 1 --&gt;
@@ -2677,8 +2677,8 @@ currently recommend
       to EDDTable, corresponding to each requested combination of the 
       leftmost nOuterAxes. For example, if the dataset has 4 axisVariables and
       dataVariables like
-      eastward[time][latitude][longitude][depth], the leftmost 1 axis
-      is the time axis.
+      eastward[time][latitude][longitude][depth], the leftmost (first) axis variable
+      is time.
   <li>If <kbd>&lt;logLevel&gt;</kbd> in datasets.xml is set to <kbd>all</kbd>, 
     additional information is written to the log.txt file.
     <br>&nbsp;
@@ -2929,7 +2929,7 @@ allowing those would lead to inconsistencies:
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1.  
     For EDDGridFromErddap, this gets the remote .dds and then gets
-    the new leftmost dimension values. --&gt;
+    the new leftmost (first) dimension values. --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#nThreads">&lt;nThreads&gt;</a>...&lt;/nThreads&gt; &lt;!-- 0 or 1 --&gt;
@@ -3033,7 +3033,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
 <li><a class="selfLink" id="EDDGridFromFiles_Aggregation" href="#EDDGridFromFiles_Aggregation" rel="bookmark"><strong>Aggregation of an Existing Dimension</strong></a> -- 
   <br>All variations of EDDGridFromFiles can 
   aggregate data from local files, where each file has 1 (or more)
-  different values for the leftmost dimension, usually [time], which will be aggregated. 
+  different values for the leftmost (first) dimension, usually [time], which will be aggregated. 
   For example, the dimensions might be [time][altitude][latitude][longitude], 
     and the files might have the data for one (or a few) time value(s) per file.
   The resulting dataset appears as if all of the file's data had been combined.
@@ -3074,7 +3074,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
 <li><a class="selfLink" id="EDDGridFromFiles_AggregationViaFileNames" href="#EDDGridFromFiles_AggregationViaFileNames" rel="bookmark"
 ><strong>Aggregation via File Names or Global Metadata</strong></a> -- 
   <br>All variations of EDDGridFromFiles can also aggregate a group of files 
-    by adding a new leftmost
+    by adding a new leftmost (first)
     dimension, usually time, based on a value derived from each filename
     or from the value of a global attribute that is in each file.
     For example, the filename might include the time value for the data
@@ -3104,7 +3104,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <li>The format for the pseudo sourceName which gets the value from a global attribute is
       <br><kbd>***global:<i>attributeName</i>,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
     <li>This pseudo sourceName option works differently from the others: instead of creating a 
-      new leftmost axisVariable, this replaces the value of the current axisVariable
+      new leftmost (first) axisVariable, this replaces the value of the current axisVariable
       with a value extracted the filename (just filename.ext). The format is
       <br><kbd>***replaceFromFileName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
       <br>&nbsp;
@@ -4074,7 +4074,7 @@ with the 0-360 dataset to forcibly disable the WMS service for that dataset.
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For
     EDDGridFromDap, this gets the remote .dds and then gets the new 
-    leftmost dimension values. --&gt;
+    leftmost (first) dimension values. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
@@ -4299,7 +4299,7 @@ of another EDDGrid's data and serves data from the local copy.
 
 <li>Chunks of Data -- EDDGridCopy makes the local copy of the data by requesting 
   chunks of data from the remote <kbd>&lt;dataset&gt;</kbd> .
-  There will be a chunk for each value of the leftmost axis variable.
+  There will be a chunk for each value of the leftmost (first) axis variable.
   EDDGridCopy doesn't rely on the remote dataset's index numbers 
   for the axis -- those may change.
 
@@ -4365,7 +4365,7 @@ of another EDDGrid's data and serves data from the local copy.
     handles the problem, even though their system
   has lots of bandwidth.)
 
-  <p>WARNING: If a given value for the leftmost axis variable disappears from 
+  <p>WARNING: If a given value for the leftmost (first) axis variable disappears from 
   the remote dataset, EDDGridCopy does NOT delete the local copied file. 
   If you want to, you can delete it yourself.
 
@@ -4459,7 +4459,7 @@ check the source dataset to see if there is additional data available.
   <br>&nbsp;
 
 <li>All axis values must be equal.
-  <br>For each of the axes except the leftmost, all of the values must be equal for all children.
+  <br>For each of the axes except the leftmost (first), all of the values must be equal for all children.
   The precision of the testing is determined by  
   <a rel="help" href="#matchAxisNDigits"><kbd>matchAxisNDigits</kbd></a>.
   <br>&nbsp;
@@ -5927,7 +5927,7 @@ handles data from one relational database table or
     every query sent to the database (unless the user's request
     includes an &amp;orderBy() filter, in which case the user's 
     orderBy is used).  The order of the sourceNames is important. 
-    The leftmost sourceName is most important; subsequent 
+    The leftmost (first) sourceName is most important; subsequent 
     sourceNames are only used to break ties.  Only relevant 
     sourceNames are included in the ORDER BY clause for a given user 
     request.  If this is not specified, the order of the returned 
@@ -7623,7 +7623,7 @@ for example, "#" at the start of the file.
     suitable. It is ok if not all files are sorted by this column.
     If present, this can greatly speed up some data requests. 
     For EDDTableFromHyraxFiles, EDDTableFromNcFiles and 
-    EDDTableFromThreddsFiles, this must be the leftmost axis variable. 
+    EDDTableFromThreddsFiles, this must be the leftmost (first) axis variable. 
     EDDTableFromMultidimNcFiles ignores this because it has a better 
     system. --&gt;
   &lt;sortFilesBySourceNames&gt;...&lt;/sortFilesBySourceNames&gt;
@@ -8911,7 +8911,7 @@ UCAR/NCAR -- Earth Observing Laboratory.
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
-<li>In most cases, each file has multiple values for the leftmost dimension, for example, time.
+<li>In most cases, each file has multiple values for the leftmost (first) dimension, for example, time.
 <li>The files often (but don't have to) have a single value for the other dimensions 
   (for example, altitude (or depth), latitude, longitude).
 <li>The files may have character variables with an additional dimension (for example, nCharacters).
@@ -9575,7 +9575,7 @@ Sensor Observation Service
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
-<li>In most cases, each file has multiple values for the leftmost dimension, for example, time.
+<li>In most cases, each file has multiple values for the leftmost (first) dimension, for example, time.
 <li>The files often (but don't have to) have a single value for the other dimensions 
   (for example, altitude (or depth), latitude, longitude).
 <li>The files may have character variables with an additional dimension (for example, nCharacters).
@@ -11381,7 +11381,7 @@ while processing each request.
   (just updating the information that needs to be updated).
   For example, if a request to an EDDGridFromDap dataset occurs more than
   the specified number of milliseconds since the last update,
-  ERDDAP will see if there are any new values for the leftmost (usually "time") dimension
+  ERDDAP will see if there are any new values for the leftmost (first, usually "time") dimension
   and, if so, just download those new values before handling the user's request.
   This system is very good at keeping a rapidly changing dataset up-to-date 
   with minimal demands on the data source,
@@ -11404,7 +11404,7 @@ while processing each request.
     <a rel="help" href="#logLevel"><kbd>&lt;logLevel&gt;</kbd></a> in datasets.xml
     is set to "all".
   <li>If you use incremental updates and especially if the
-    leftmost, for example, time, axis is large, you may want to set 
+    leftmost (first), for example, time, axis is large, you may want to set 
     <kbd>&lt;reloadEveryNMinutes&gt;</kbd> to a larger number (1440?),
     so that updates do most of the work to keep the dataset up-to-date,
     and full reloads are done infrequently. 

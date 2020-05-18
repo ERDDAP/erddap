@@ -2832,7 +2832,7 @@ String2.log("err: " + errCatcher.getString());
 
 
     /** This tests SgtMap. */ 
-    public static void test(boolean allSizes, boolean showInBrowser) throws Exception {
+    public static void basicTest(boolean allSizes, boolean showInBrowser) throws Exception {
         verbose = true;
         reallyVerbose = true;
         String2.log("*** test SgtMap");
@@ -3436,5 +3436,54 @@ landMaskStrokeColor = new Color(0, 0, 0, 0);
                 colorMap.getRange().end + " delta=" + colorMap.getRange().delta);
             layer.addChild(colorKey);
             */
+
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 6 : -1;
+        String msg = "\n^^^ SgtMap.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0)  testCreateTopographyGrid();
+                    if (test ==  1)  testBathymetry(0, 12);   //0, 12   9 is imperfect but unreasonable request
+                    if (test ==  2)  testTopography(0, 12);   //0, 12   9 is imperfect but unreasonable request
+                    if (test ==  3)  testRegionsMap(-180, 180, -90, 90);
+                    if (test ==  4)  testRegionsMap(0, 360, -90, 90);
+                    if (test ==  5)  basicTest(true, true); 
+                    if (test ==  6)  testMakeCleanMap(0, 5); //5=all
+
+                } else {
+                    //if (test ==  0) ...;
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 
 }

@@ -4011,8 +4011,9 @@ expected =
         Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
 
 */
-      //make nc4 
-      try {
+        //make nc4 
+        Test.ensureTrue(String2.indexOf(dataFileTypeNames, ".nc4") >= 0, "Enable .nc4?");
+
         userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Longnc4", ".nc4"); 
@@ -4021,10 +4022,6 @@ expected =
         expected = 
 "zztop\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nENABLE .nc4?"); 
-      }
 
     }
 
@@ -4863,31 +4860,62 @@ expected=
     }
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDDTableFromMultidimNcFiles.test()");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 12;
+        String msg = "\n^^^ EDDTableFromMultidimNcFiles.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        testGenerateDatasetsXml();
-        testGenerateDatasetsXmlSeaDataNet();
-        testGenerateDatasetsXmlDimensions();
-        
-        //String2.log(NcHelper.ncdump(String2.unitTestDataDir + "nc/1900081_prof.nc", "PRES_QC"));
-        testBasic(true);
-        testBasic(false);
-        testLongAndNetcdf4();
-        testTreatDimensionsAs(true);   //deleteCachedInfo
-        testTreatDimensionsAs(false);  //deleteCachedInfo
-        testTreatDimensionsAs2(true);  //deleteCachedInfo
-        testTreatDimensionsAs2(false); //deleteCachedInfo
-        testCharAsString(true);
-        testCharAsString(false);
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        /* */
-        //testW1M3A(boolean deleteCachedInfo);
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testGenerateDatasetsXmlSeaDataNet();
+                    if (test ==  2) testGenerateDatasetsXmlDimensions();
+                    
+                    //String2.log(NcHelper.ncdump(String2.unitTestDataDir + "nc/1900081_prof.nc", "PRES_QC"));
+                    if (test ==  4) testBasic(true);
+                    if (test ==  5) testBasic(false);
+                    if (test ==  6) testLongAndNetcdf4();
+                    if (test ==  7) testTreatDimensionsAs(true);   //deleteCachedInfo
+                    if (test ==  8) testTreatDimensionsAs(false);  //deleteCachedInfo
+                    if (test ==  9) testTreatDimensionsAs2(true);  //deleteCachedInfo
+                    if (test == 10) testTreatDimensionsAs2(false); //deleteCachedInfo
+                    if (test == 11) testCharAsString(true);
+                    if (test == 12) testCharAsString(false);
+
+                    /* */
+                    if (test == 1000) testW1M3A(true); //deleteCachedInfo
+                    if (test == 1001) testW1M3A(false); //deleteCachedInfo
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }
 

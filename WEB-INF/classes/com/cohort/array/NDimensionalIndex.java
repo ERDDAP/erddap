@@ -5,6 +5,7 @@
  */
 package com.cohort.array;
 
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -297,9 +298,8 @@ public class NDimensionalIndex {
      * This tests this class.
      * @throws Exception if trouble
      */
-    public static void test() throws Exception {
-        String2.log("*** NDimensionalIndex.test");
-/* for releases, this line should have open/close comment */
+    public static void basicTest() throws Exception {
+        String2.log("*** NDimensionalIndex.basicTest");
 
         //test increment
         NDimensionalIndex a = new NDimensionalIndex(new int[]{2,2,3});
@@ -457,10 +457,48 @@ public class NDimensionalIndex {
         Test.ensureEqual(a.getIndex(), 11, "");
         Test.ensureEqual(a.setIndex(9), new int[]{1,1,0}, "");
         Test.ensureEqual(a.getCurrent(), new int[]{1,1,0}, "");
-        
-
+     
     }
 
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ NDimensionalIndex.test(" + interactive + ") test=";
 
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
 
 }

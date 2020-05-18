@@ -1455,25 +1455,52 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
     }
 
     /**
-     * This runs all the tests of this class.
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ EDDTableFromOBIS.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //usually done
-        testGenerateDatasetsXml();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        //not usually done
-        //testSeamap();  //doesn't work
-        //testArgos();   //doesn't work
-        //EDD.testDasDds("rutgersGhmp");
-        //EDD.testDasDds("rutgersSeamap");
-        //EDD.testDasDds("rutgersGombis");
-        //EDD.testDasDds("aadcArgos");
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
 
-        //testFishbase();  //failing since 2009-01
-        //testRutgers();   //failing since ~2011-01
+                    //not usually done
+                    // if (test == 1000) testSeamap();  //doesn't work
+                    // if (test == 1001) testArgos();   //doesn't work
+                    // if (test == 1002) testFishbase();  //failing since 2009-01
+                    // if (test == 1003) testRutgers();   //failing since ~2011-01
 
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 
 }
