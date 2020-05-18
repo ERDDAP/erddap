@@ -385,38 +385,37 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
         testVerboseOn();
         //debugMode = true;
 
-        try {
-            //public static String generateDatasetsXml(
-            //    String tFileDir, String tFileNameRegex, String sampleFileName, 
-            //    int tReloadEveryNMinutes,
-            //    String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
-            //    String tColumnNameForExtract, 
-            //    String tSortFilesBySourceNames, 
-            //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
-            //    Attributes externalAddGlobalAttributes) throws Throwable {
+        //public static String generateDatasetsXml(
+        //    String tFileDir, String tFileNameRegex, String sampleFileName, 
+        //    int tReloadEveryNMinutes,
+        //    String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
+        //    String tColumnNameForExtract, 
+        //    String tSortFilesBySourceNames, 
+        //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        //    Attributes externalAddGlobalAttributes) throws Throwable {
 
-            String results = generateDatasetsXml(
-                EDStatic.unitTestBigDataDir + "nccf/wod/", "wod_drb_.*\\.nc",
-                "",
-                1440,
-                "", "", "", "", //just for test purposes; station is already a column in the file
-                "time", 
-                "", "", "", "", 
-                -1, null, //defaultStandardizeWhat
-                null) + "\n";
+        String results = generateDatasetsXml(
+            EDStatic.unitTestBigDataDir + "nccf/wod/", "wod_drb_.*\\.nc",
+            "",
+            1440,
+            "", "", "", "", //just for test purposes; station is already a column in the file
+            "time", 
+            "", "", "", "", 
+            -1, null, //defaultStandardizeWhat
+            null) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromInvalidCRAFiles",
-                EDStatic.unitTestBigDataDir + "nccf/wod/", "wod_drb_.*\\.nc",
-                "",
-                "1440",
-                "", "", "", "", //just for test purposes; station is already a column in the file
-                "time", 
-                "", "", "", "", "", 
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromInvalidCRAFiles",
+            EDStatic.unitTestBigDataDir + "nccf/wod/", "wod_drb_.*\\.nc",
+            "",
+            "1440",
+            "", "", "", "", //just for test purposes; station is already a column in the file
+            "time", 
+            "", "", "", "", "", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<dataset type=\"EDDTableFromInvalidCRAFiles\" datasetID=\"wod_d3d4_46bc_cdfa\" active=\"true\">\n" +
@@ -1053,23 +1052,19 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            String tDatasetID = "wod_d3d4_46bc_cdfa";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "World Ocean Database, Multi-cast file", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+        String tDatasetID = "wod_d3d4_46bc_cdfa";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "World Ocean Database, Multi-cast file", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, latitude, longitude, time, date, GMT_time, Access_no, Platform, Institute, Orig_Stat_Num, dataset, real_time, Ocean_Vehicle, Temperature_WODprofileflag, Temperature_Instrument, Salinity_WODprofileflag, Salinity_Instrument, Oxygen_WODprofileflag, Oxygen_Original_units, Primary_Investigator, Primary_Investigator_VAR, depth, z_WODflag, z_sigfigs, Temperature, Temperature_sigfigs, Temperature_WODflag, Salinity, Salinity_sigfigs, Salinity_WODflag, Pressure, Pressure_sigfigs, Oxygen, Oxygen_sigfigs, Oxygen_WODflag", 
-                "");
+            "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
 
     }
 
@@ -1093,13 +1088,12 @@ String expected =
         deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
-        try {
-            //.dds    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                testCacheDir, eddTable.className() + "_wod", ".dds"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.dds    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            testCacheDir, eddTable.className() + "_wod", ".dds"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
 "    String country;\n" +
@@ -1142,14 +1136,14 @@ String expected =
 "    Byte Oxygen_WODflag;\n" +
 "  } s;\n" +
 "} s;\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            //.das    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                testCacheDir, eddTable.className() + "_wod", ".das"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.das    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            testCacheDir, eddTable.className() + "_wod", ".das"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "Attributes {\n" +
 " s {\n" +
 "  country {\n" +
@@ -1479,13 +1473,13 @@ String expected =
 "    String grid_mapping_name \"latitude_longitude\";\n" +
 "    Float32 grid_mapping_semi_major_axis 6378137.0;\n" +
 "    String history \"World Ocean Database";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
 //        "2018-05-08T21:27:53Z (local files)
 //2018-05-08T21:27:53Z http://localhost:8080/cwexperimental/tabledap/testInvalidCRAFiles.das";
 expected =
-   "String id \"/nodc/data/oc5.clim.0/wod_update_nc/2006/wod_drb_2006.nc\";\n" +
+"String id \"/nodc/data/oc5.clim.0/wod_update_nc/2006/wod_drb_2006.nc\";\n" +
 "    String infoUrl \"https://www.nodc.noaa.gov\";\n" +
 "    String institution \"NCEI, NOAA\";\n" +
 "    String keywords \"Access_no, accession, below, cast, center, centers, chemistry, country, cruise, data, database, dataset, date, density, depth, depth status_flag, dissolved, dissolved o2, earth, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Pressure > Water Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, environmental, figures, file, flag, fraction, GMT_time, identifier, information, institute, instrument, investigator, latitude, level, longitude, multi, multi-cast, name, national, ncei, nesdis, noaa, nodc, number, O2, observation, ocean, Ocean_Vehicle, oceanographic, oceans, Orig_Stat_Num, original, originators, originators_cruise_identifier, oxygen, Oxygen_Original_units, Oxygen_sigfigs, Oxygen_WODflag, Oxygen_WODprofileflag, platform, practical, pressure, Pressure_sigfigs, primary, Primary_Investigator, Primary_Investigator_VAR, profile, quality, real, real_time, responsible, salinity, Salinity_Instrument, Salinity_sigfigs, Salinity_WODflag, Salinity_WODprofileflag, science, sea, sea_water_practical_salinity, sea_water_pressure, sea_water_salinity status_flag, sea_water_temperature, sea_water_temperature status_flag, seawater, significant, station, statistics, status, surface, temperature, Temperature_Instrument, Temperature_sigfigs, Temperature_WODflag, Temperature_WODprofileflag, time, unique, units, vehicle, volume, volume_fraction_of_oxygen_in_sea_water, volume_fraction_of_oxygen_in_sea_water status_flag, water, wod, WOD_cruise_identifier, wod_unique_cast, world, z_sigfigs, z_WODflag\";\n" +
@@ -1517,16 +1511,16 @@ expected =
 "    Float64 Westernmost_Easting -165.4138;\n" +
 "  }\n" +
 "}\n";
-            int po = Math.max(0, results.indexOf(expected.substring(0, 20)));
-            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+        int po = Math.max(0, results.indexOf(expected.substring(0, 20)));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
-            //.csv     all vars
-            userDapQuery = "&time>2005-06-11T06&time<2005-06-11T07";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_wod_all", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv     all vars
+        userDapQuery = "&time>2005-06-11T06&time<2005-06-11T07";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_wod_all", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "country,WOD_cruise_identifier,originators_cruise_identifier,wod_unique_cast,latitude,longitude,time,date,GMT_time,Access_no,Platform,Institute,Orig_Stat_Num,dataset,real_time,Ocean_Vehicle,Temperature_WODprofileflag,Temperature_Instrument,Salinity_WODprofileflag,Salinity_Instrument,Oxygen_WODprofileflag,Oxygen_Original_units,Primary_Investigator,Primary_Investigator_VAR,depth,z_WODflag,z_sigfigs,Temperature,Temperature_sigfigs,Temperature_WODflag,Salinity,Salinity_sigfigs,Salinity_WODflag,Pressure,Pressure_sigfigs,Oxygen,Oxygen_sigfigs,Oxygen_WODflag\n" +
 ",,,,degrees_north,degrees_east,UTC,,hours,,,,,,,,,,,PSU,,,,,m,,,degree_C,,,PSU,PSU,,dbar,,ml/l,,\n" +
 "JAPAN,JP033440,,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,20050611,7.0,-504834352,,JAPAN AGENCY FOR MARINE-EARTH SCIENCE AND TECHNOLOGY (JAMSTEC),-504847942,drifting buoy,,J-CAD (JAMSTEC Compact Arctic Drifter),0,,0,,NaN,,,,24.215,0,6,-1.728,5,0,31.7409,6,0,NaN,NaN,NaN,NaN,NaN\n" +
@@ -1535,29 +1529,29 @@ expected =
 "JAPAN,JP033440,,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,20050611,7.0,-504834352,,JAPAN AGENCY FOR MARINE-EARTH SCIENCE AND TECHNOLOGY (JAMSTEC),-504847942,drifting buoy,,J-CAD (JAMSTEC Compact Arctic Drifter),0,,0,,NaN,,,,116.205,0,7,-1.198,5,0,34.2219,6,0,NaN,NaN,NaN,NaN,NaN\n" +
 "JAPAN,JP033440,,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,20050611,7.0,-504834352,,JAPAN AGENCY FOR MARINE-EARTH SCIENCE AND TECHNOLOGY (JAMSTEC),-504847942,drifting buoy,,J-CAD (JAMSTEC Compact Arctic Drifter),0,,0,,NaN,,,,195.751,0,7,0.224,4,0,34.6426,6,0,NaN,NaN,NaN,NaN,NaN\n" +
 "JAPAN,JP033440,,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,20050611,7.0,-504834352,,JAPAN AGENCY FOR MARINE-EARTH SCIENCE AND TECHNOLOGY (JAMSTEC),-504847942,drifting buoy,,J-CAD (JAMSTEC Compact Arctic Drifter),0,,0,,NaN,,,,285.203,0,7,0.99,4,0,34.8372,6,0,NaN,NaN,NaN,NaN,NaN\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv    outer vars only,   constrain time, but don't include time in results
-            userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude&time>2005-06-11T06&time<2005-06-11T07";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_wod_outer", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv    outer vars only,   constrain time, but don't include time in results
+        userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude&time>2005-06-11T06&time<2005-06-11T07";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_wod_outer", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "WOD_cruise_identifier,wod_unique_cast,latitude,longitude\n" +
 ",,degrees_north,degrees_east\n" +
 "JP033440,10901522,89.0668,6.2756\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv     outer and inner vars
-            userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity&time>2005-06-11T06&time<2005-06-11T07";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_wod_outerInner", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv     outer and inner vars
+        userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity&time>2005-06-11T06&time<2005-06-11T07";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_wod_outerInner", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity\n" +
 ",,degrees_north,degrees_east,UTC,m,degree_C,PSU\n" +
 "JP033440,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,24.215,-1.728,31.7409\n" +
@@ -1566,16 +1560,16 @@ expected =
 "JP033440,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,116.205,-1.198,34.2219\n" +
 "JP033440,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,195.751,0.224,34.6426\n" +
 "JP033440,10901522,89.0668,6.2756,2005-06-11T06:59:59Z,285.203,0.99,34.8372\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv   inner vars vars only   based on outer constraint
-            userDapQuery = "depth,Temperature,Salinity&wod_unique_cast=10901522";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
-                testCacheDir, eddTable.className() + "_wod_inner", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv   inner vars vars only   based on outer constraint
+        userDapQuery = "depth,Temperature,Salinity&wod_unique_cast=10901522";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+            testCacheDir, eddTable.className() + "_wod_inner", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "depth,Temperature,Salinity\n" +
 "m,degree_C,PSU\n" +
 "24.215,-1.728,31.7409\n" +
@@ -1584,28 +1578,53 @@ expected =
 "116.205,-1.198,34.2219\n" +
 "195.751,0.224,34.6426\n" +
 "285.203,0.99,34.8372\n"; 
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromInvalidCRAFiles.test7SampleDimensions() finished.");
     }
     
-    
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-/* for releases, this line should have open/close comment */
-        testGenerateDatasetsXml();
-        testBasic();
-        /* */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 1;
+        String msg = "\n^^^ EDDTableFromInvalidCRAFiles.test(" + interactive + ") test=";
 
-        //not usually run
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testBasic();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }
 

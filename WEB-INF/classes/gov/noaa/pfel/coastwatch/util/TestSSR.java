@@ -96,7 +96,7 @@ public class TestSSR {
         /* 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
         //sftp
         String2.log("test sftp");
-        String password = String2.getPasswordFromSystemIn(String2.beep(1) +
+        String password = String2.getPasswordFromSystemIn(//String2.beep(1) +
             "cwatch password for coastwatch computer (enter \"\" to skip the test)? ");
         if (password.length() > 0) {
             try {
@@ -281,14 +281,9 @@ public class TestSSR {
         //note there is no continuity (session cookie isn't being sent)
         //but you can put as many params on one line as needed (from any screen)
         //and put edit=... to determine which screen gets returned
-        try {
-            sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
-            String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
-            Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                "\nUnexpected error."); 
-        }
+        sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
+        String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
+        Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
 
         //postHTMLForm     (always right after contact the website above)
         //I NEVER GOT THIS WORKING. JUST USE 'GET' TESTS ABOVE
@@ -468,13 +463,56 @@ public class TestSSR {
     }
 
     /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 1 : -1;
+        String msg = "\n^^^ TestSSR.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) runNonUnixTests();
+                    if (test ==  1) testPostFormGetResponseString();
+
+                    if (test == 1000) runUnixTests();
+
+                } else {
+                    //if (test ==  0) ...;
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
+
+    /**
      * Run all of the tests
      */
     public static void main(String args[]) throws Throwable {
         SSR.verbose = true;
 /* for releases, this line should have open/close comment */
-        runNonUnixTests();
-        testPostFormGetResponseString();
         
 //        runUnixTests();
     }

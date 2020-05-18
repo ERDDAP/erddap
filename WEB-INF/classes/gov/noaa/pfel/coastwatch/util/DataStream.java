@@ -5,6 +5,7 @@
 package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.util.File2;
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.io.BufferedInputStream;
@@ -672,7 +673,7 @@ public class DataStream  {
     /**
      * This runs a small test of the methods in this class.
      */
-    public static void main(String args[]) throws Exception {
+    public static void basicTest() throws Exception {
         //write bytes to a file
         String fileName = String2.getClassPath() + //with / separator and / at the end
             "TestDataStream";
@@ -772,4 +773,47 @@ public class DataStream  {
             "error while deleting " + fileName);
 
     }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ DataStream.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
+
 }

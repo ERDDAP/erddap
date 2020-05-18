@@ -774,7 +774,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String results, expected;
 
         //******* test thredds -- lame test: the datasets can't actually be aggregated
-        try {
         results = generateDatasetsXml("thredds",
             "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
             ".*", 1440); //recursive
@@ -979,15 +978,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "</dataset>\n" +
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
 
 
         //****** test HYRAX
-        try {
         results = generateDatasetsXml("hyrax",
             "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html", 
             "month_[0-9]{8}_v11l35flk\\.nc\\.gz", //note: v one one L
@@ -1183,10 +1177,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "</dataset>\n" +
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
 
         String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml() finished successfully.\n");
@@ -1210,8 +1200,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         Test.ensureEqual(sourceUrls.get(740), dir + "20061227.bodas_ts.nc", "");
         String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nKnown problem: CSIRO bodas now requires authorization. No known examples now."); 
+            Test.knownProblem("CSIRO bodas now requires authorization.", 
+                "No known examples now.", t); 
         }
     }
 
@@ -1226,9 +1216,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
 
-        //one time
-
-        try {
 
         //*** NDBC  is also IMPORTANT UNIQUE TEST of >1 variable in a file
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "ndbcCWind41002");       
@@ -1244,13 +1231,13 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_speed\n" +
-"UTC, degrees_north, degrees_east, m s-1\n" +
-"1989-06-13T16:10:00Z, 32.27, -75.42, 15.7\n" +
-"1989-06-13T16:20:00Z, 32.27, -75.42, 15.0\n" +
-"1989-06-13T16:30:00Z, 32.27, -75.42, 14.4\n" +
-"1989-06-13T16:40:00Z, 32.27, -75.42, 14.0\n" +
-"1989-06-13T16:50:00Z, 32.27, -75.42, 13.6\n";
+"time,latitude,longitude,wind_speed\n"+
+"UTC,degrees_north,degrees_east,m s-1\n"+
+"1989-06-13T16:10:00Z,32.27,-75.42,15.7\n"+
+"1989-06-13T16:20:00Z,32.27,-75.42,15.0\n"+
+"1989-06-13T16:30:00Z,32.27,-75.42,14.4\n"+
+"1989-06-13T16:40:00Z,32.27,-75.42,14.0\n"+
+"1989-06-13T16:50:00Z,32.27,-75.42,13.6\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_speed[1:5][0][0]";
@@ -1516,10 +1503,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "2007-12-31T22:40:00Z, 32.27, -75.42, 36, 4.0\n" +
 "2007-12-31T22:50:00Z, 32.27, -75.42, 37, 4.3\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         String2.log("\n*** EDDGridAggregateExistingDimension.test finished.");
 
@@ -1531,7 +1514,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
      */
     public static void testRtofs() throws Throwable {
         String2.log("\n****************** EDDGridAggregateExistingDimension.testRtofs() *****************\n");
-        try {
         testVerboseOn();
         String tName, results, expected;
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "RTOFSWOC1");
@@ -1545,10 +1527,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "2009-07-01T00:00:00Z\n" +
 "2009-07-02T00:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }        
     }
 
     /**
@@ -1659,30 +1637,55 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires nceiOisst2Agg in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new Exception("Unexpected error. This test requires nceiOisst2Agg in the localhost ERDDAP.", t); 
         } 
     }
 
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 2;
+        String msg = "\n^^^ EDDGridAggregateExistingDimensione.test(" + interactive + ") test=";
 
-        String2.log("\n****************** EDDGridAggregateExistingDimension.test() *****************\n");
-/* for releases, this line should have open/close comment */       
-        testGenerateDatasetsXml();
-        testBasic();
-        testFiles();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        //not usually run
-        //testRtofs();  //worked but needs to be updated; datasets are removed after ~1 month
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testBasic();  //slow!
+                    if (test ==  2) testFiles();  //slow!
+
+                    //not usually run
+                    //if (test == 1000) testRtofs();  //worked but needs to be updated; datasets are removed after ~1 month
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
-
-
 
 }

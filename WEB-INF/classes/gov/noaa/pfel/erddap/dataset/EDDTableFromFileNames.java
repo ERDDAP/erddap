@@ -1494,7 +1494,6 @@ String expected =
      */
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
-        try {
 
         testVerboseOn();
 
@@ -1642,10 +1641,6 @@ String expected =
 
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3() finished successfully.");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error.  (Did you create your AWS S3 credentials file?)"); 
-        }
     }
 
     /**
@@ -1653,7 +1648,6 @@ String expected =
      */
     public static void testGenerateDatasetsXmlFromFiles() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles()");
-        try {
 
         testVerboseOn();
 
@@ -1802,10 +1796,6 @@ String expected =
 
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
     /**
@@ -2048,7 +2038,6 @@ String expected =
      * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
      */
     public static void testAwsS3() throws Throwable {
-        try {
         String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
         testVerboseOn();
         String dir = EDStatic.fullTestCacheDirectory;
@@ -2188,11 +2177,6 @@ String expected =
 
         String2.log("\n EDDTableFromFileNames.testAwsS3 finished successfully");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error.  (Did you create your AWS S3 credentials file?)"); 
-        }
-
     }
 
     /**
@@ -2303,7 +2287,6 @@ String expected =
      */
     public static void testGenerateDatasetsXmlFromOnTheFly() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
-        try {
 
         testVerboseOn();
 
@@ -2457,10 +2440,6 @@ String expected =
 
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
     /**
@@ -2558,15 +2537,15 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1586896572000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
-            Test.ensureEqual(results, expected, "results=\n" + results);
+"index.html,1589392146000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+            Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
             expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe13, SUVI-L1b-Fe131, SUVI-L1b-Fe17, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
             try {
-                Test.ensureTrue(time < expTime * 2, "too slow!");
+                Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy)");
             } catch (Exception e7) {
                 String2.pressEnterToContinue(MustBe.throwableToString(e7));
             }
@@ -2732,32 +2711,59 @@ String expected =
 
     }
      
+
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableFromFileNames.test() *****************\n");
-        testVerboseOn();
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 9;
+        String msg = "\n^^^ EDDTableFromFileNames.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //always done        
-        testGenerateDatasetsXml();
-        testLocal();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        testGenerateDatasetsXmlAwsS3();
-        testAwsS3();
-        testAwsS3local();
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testLocal();
 
-        testGenerateDatasetsXmlFromFiles();
-        testAccessibleViaFilesFileTable(true,  false);  //deleteCachedInfo, bigTest
-        testAccessibleViaFilesFileTable(false, false);
+                    if (test ==  2) testGenerateDatasetsXmlAwsS3();
+                    if (test ==  3) testAwsS3();
+                    if (test ==  4) testAwsS3local();
 
-        testGenerateDatasetsXmlFromOnTheFly();
-        testOnTheFly();
+                    if (test ==  5) testGenerateDatasetsXmlFromFiles();
+                    if (test ==  6) testAccessibleViaFilesFileTable(true,  false);  //deleteCachedInfo, bigTest
+                    if (test ==  7) testAccessibleViaFilesFileTable(false, false);
 
-        /* */
+                    if (test ==  8) testGenerateDatasetsXmlFromOnTheFly();
+                    if (test ==  9) testOnTheFly();
+
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

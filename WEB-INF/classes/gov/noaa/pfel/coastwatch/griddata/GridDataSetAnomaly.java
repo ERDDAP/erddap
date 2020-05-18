@@ -340,96 +340,131 @@ public class GridDataSetAnomaly extends GridDataSet {
     /**
      * This tests this class.
      */
-    public static void test() throws Exception {
-        try {
-            String2.log("\n*** GridDataSetAnomaly.test   NOTE: this requires data in C:/u00/data/QC/mday/grd/ ");
-            FileNameUtility.verbose = true;
-            FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
-            Grid.verbose = true;
-            GridDataSet.verbose = true;
-            Opendap.verbose = true;
-            String dir = SSR.getTempDirectory();
-            File2.deleteAllFiles(dir);
+    public static void basicTest() throws Exception {
+        String2.log("\n*** GridDataSetAnomaly.basicTest   NOTE: this requires data in C:/u00/data/QC/mday/grd/ ");
+        FileNameUtility.verbose = true;
+        FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+        Grid.verbose = true;
+        GridDataSet.verbose = true;
+        Opendap.verbose = true;
+        String dir = SSR.getTempDirectory();
+        File2.deleteAllFiles(dir);
 
-            //make the regular, climatology and anomaly datasets
-            GridDataSet gridDataSet = new GridDataSetThredds(fnu, "TQSux10",
-                //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/", //was :8081
-                "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/",
-                "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null, "S", 1, 1, "", 1, 1);
-            GridDataSetCWLocalClimatology climatologyDataSet = new GridDataSetCWLocalClimatology(
-                fnu, "CQCux10", "c:/u00/data/", dir); 
-            GridDataSetAnomaly anomalyDataSet = new GridDataSetAnomaly(
-                "AQSuxan", fnu, gridDataSet, climatologyDataSet,  
-                "Wind Anomaly, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal",
-                "*", "1");
+        //make the regular, climatology and anomaly datasets
+        GridDataSet gridDataSet = new GridDataSetThredds(fnu, "TQSux10",
+            //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/", //was :8081
+            "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/",
+            "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null, "S", 1, 1, "", 1, 1);
+        GridDataSetCWLocalClimatology climatologyDataSet = new GridDataSetCWLocalClimatology(
+            fnu, "CQCux10", "c:/u00/data/", dir); 
+        GridDataSetAnomaly anomalyDataSet = new GridDataSetAnomaly(
+            "AQSuxan", fnu, gridDataSet, climatologyDataSet,  
+            "Wind Anomaly, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal",
+            "*", "1");
 
-            //get data from each dataset
-            String timePeriod = "1 month";
-            String centeredTime = "2006-01-16 12:00:00";
-            String climatologyCenteredTime = "0001-01-16 12:00:00";
+        //get data from each dataset
+        String timePeriod = "1 month";
+        String centeredTime = "2006-01-16 12:00:00";
+        String climatologyCenteredTime = "0001-01-16 12:00:00";
 
-            Grid gdsGrid = gridDataSet.makeGrid(timePeriod, centeredTime,           
-                -135, -135, 22, 51, 1, 29);
-            String2.log("\ngdsGrid lon(" + gdsGrid.lon.length + ")=" + String2.toCSSVString(gdsGrid.lon) +
-                "\n  lat(" + gdsGrid.lat.length + ")=" + String2.toCSSVString(gdsGrid.lat) +
-                "\n  data(" + gdsGrid.data.length + ")=" + String2.toCSSVString(gdsGrid.data));
+        Grid gdsGrid = gridDataSet.makeGrid(timePeriod, centeredTime,           
+            -135, -135, 22, 51, 1, 29);
+        String2.log("\ngdsGrid lon(" + gdsGrid.lon.length + ")=" + String2.toCSSVString(gdsGrid.lon) +
+            "\n  lat(" + gdsGrid.lat.length + ")=" + String2.toCSSVString(gdsGrid.lat) +
+            "\n  data(" + gdsGrid.data.length + ")=" + String2.toCSSVString(gdsGrid.data));
 
-            Grid climatologyGrid = climatologyDataSet.makeGrid("monthly", climatologyCenteredTime,           
-                -135, -135, 22, 51, 1, 29);
-            String2.log("\nclimatologyGrid lon(" + climatologyGrid.lon.length + ")=" + String2.toCSSVString(climatologyGrid.lon) +
-                "\n  lat(" + climatologyGrid.lat.length + ")=" + String2.toCSSVString(climatologyGrid.lat) +
-                "\n  data(" + climatologyGrid.data.length + ")=" + String2.toCSSVString(climatologyGrid.data));
+        Grid climatologyGrid = climatologyDataSet.makeGrid("monthly", climatologyCenteredTime,           
+            -135, -135, 22, 51, 1, 29);
+        String2.log("\nclimatologyGrid lon(" + climatologyGrid.lon.length + ")=" + String2.toCSSVString(climatologyGrid.lon) +
+            "\n  lat(" + climatologyGrid.lat.length + ")=" + String2.toCSSVString(climatologyGrid.lat) +
+            "\n  data(" + climatologyGrid.data.length + ")=" + String2.toCSSVString(climatologyGrid.data));
 
-            Grid anomalyGrid = anomalyDataSet.makeGrid(timePeriod, centeredTime,           
-                -135, -135, 22, 51, 1, 29);
-            String2.log("\nanomalyGrid lon(" + anomalyGrid.lon.length + ")=" + String2.toCSSVString(anomalyGrid.lon) +
-                "\n  lat(" + anomalyGrid.lat.length + ")=" + String2.toCSSVString(anomalyGrid.lat) +
-                "\n  data(" + anomalyGrid.data.length + ")=" + String2.toCSSVString(anomalyGrid.data));
+        Grid anomalyGrid = anomalyDataSet.makeGrid(timePeriod, centeredTime,           
+            -135, -135, 22, 51, 1, 29);
+        String2.log("\nanomalyGrid lon(" + anomalyGrid.lon.length + ")=" + String2.toCSSVString(anomalyGrid.lon) +
+            "\n  lat(" + anomalyGrid.lat.length + ")=" + String2.toCSSVString(anomalyGrid.lat) +
+            "\n  data(" + anomalyGrid.data.length + ")=" + String2.toCSSVString(anomalyGrid.data));
 
-            Test.ensureEqual(anomalyGrid.lon.length, 1, "");
-            Test.ensureEqual(anomalyGrid.lon[0], -135, "");
-            Test.ensureEqual(gdsGrid.lon, anomalyGrid.lon, "");
-            Test.ensureEqual(climatologyGrid.lon, anomalyGrid.lon, "");
+        Test.ensureEqual(anomalyGrid.lon.length, 1, "");
+        Test.ensureEqual(anomalyGrid.lon[0], -135, "");
+        Test.ensureEqual(gdsGrid.lon, anomalyGrid.lon, "");
+        Test.ensureEqual(climatologyGrid.lon, anomalyGrid.lon, "");
 
-            Test.ensureEqual(anomalyGrid.lat.length, 30, "");
-            Test.ensureEqual(anomalyGrid.lat[0], 22, "");
-            Test.ensureEqual(anomalyGrid.lat[29], 51, "");
-            Test.ensureEqual(gdsGrid.lat, anomalyGrid.lat, "");
-            Test.ensureEqual(climatologyGrid.lat, anomalyGrid.lat, "");
+        Test.ensureEqual(anomalyGrid.lat.length, 30, "");
+        Test.ensureEqual(anomalyGrid.lat[0], 22, "");
+        Test.ensureEqual(anomalyGrid.lat[29], 51, "");
+        Test.ensureEqual(gdsGrid.lat, anomalyGrid.lat, "");
+        Test.ensureEqual(climatologyGrid.lat, anomalyGrid.lat, "");
 
-            for (int i = 0; i < 29; i++) {
-                //I had some problems, so as additional test, 
-                //get the climatology points 1 by 1 (which avoids possible stride-related problems)
-                //and ensure they match 
-                Grid cGrid1 = climatologyDataSet.makeGrid("monthly", climatologyCenteredTime,           
-                    -135, -135, 22 + i, 22 + i, 1, 1);
-                Test.ensureEqual(climatologyGrid.data[i], cGrid1.data[0], "i=" + i);
-            }
-            
-            for (int i = 0; i < 29; i++) {
-                String2.log("data[" + i + "] gds=" + gdsGrid.data[i] + 
-                    " cli=" + climatologyGrid.data[i] + " ano=" + anomalyGrid.data[i]);
-                Test.ensureEqual((float)(gdsGrid.data[i] - climatologyGrid.data[i]), (float)anomalyGrid.data[i], "i=" + i);
-            }
+        for (int i = 0; i < 29; i++) {
+            //I had some problems, so as additional test, 
+            //get the climatology points 1 by 1 (which avoids possible stride-related problems)
+            //and ensure they match 
+            Grid cGrid1 = climatologyDataSet.makeGrid("monthly", climatologyCenteredTime,           
+                -135, -135, 22 + i, 22 + i, 1, 1);
+            Test.ensureEqual(climatologyGrid.data[i], cGrid1.data[0], "i=" + i);
+        }
+        
+        for (int i = 0; i < 29; i++) {
+            String2.log("data[" + i + "] gds=" + gdsGrid.data[i] + 
+                " cli=" + climatologyGrid.data[i] + " ano=" + anomalyGrid.data[i]);
+            Test.ensureEqual((float)(gdsGrid.data[i] - climatologyGrid.data[i]), (float)anomalyGrid.data[i], "i=" + i);
+        }
 
 /*
 data[0] gds=-6.918294429779053 cli=-6.036570072174072 ano=-0.8817243576049805
 data[28] gds=3.990844964981079 cli=1.5286099910736084 ano=2.4622349739074707 */
 
-            Test.ensureEqual(gdsGrid.data[0], -6.918294429779053, "");
-            Test.ensureEqual(climatologyGrid.data[0], -6.036570072174072, "");
-            Test.ensureEqual(anomalyGrid.data[0], -0.8817243576049805, "");
+        Test.ensureEqual(gdsGrid.data[0], -6.918294429779053, "");
+        Test.ensureEqual(climatologyGrid.data[0], -6.036570072174072, "");
+        Test.ensureEqual(anomalyGrid.data[0], -0.8817243576049805, "");
 
-            Test.ensureEqual(gdsGrid.data[28], 3.990844964981079, "");
-            Test.ensureEqual(climatologyGrid.data[28], 1.5286099910736084, ""); 
-            Test.ensureEqual(anomalyGrid.data[28], 2.4622349739074707, ""); 
-
-
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
-        }
-
+        Test.ensureEqual(gdsGrid.data[28], 3.990844964981079, "");
+        Test.ensureEqual(climatologyGrid.data[28], 1.5286099910736084, ""); 
+        Test.ensureEqual(anomalyGrid.data[28], 2.4622349739074707, ""); 
 
     }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ GridDataSetAnomaly.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 
 }

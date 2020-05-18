@@ -845,30 +845,29 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
-        try {
-            String results = generateDatasetsXml(
-                //I could do wcos/catalog.xml but very slow because lots of files
-                "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
-                ".*MTBD.*\\.nc",   // ADCP files have different vars and diff metadata, e.g., _FillValue
-                "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
-                1440, 
-                "", "_.*$", ".*", "stationID",
-                "Time", "stationID Time",
-                -1, //defaultStandardizeWhat
-                null) + "\n"; //externalAddGlobalAttributes
+        String results = generateDatasetsXml(
+            //I could do wcos/catalog.xml but very slow because lots of files
+            "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
+            ".*MTBD.*\\.nc",   // ADCP files have different vars and diff metadata, e.g., _FillValue
+            "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
+            1440, 
+            "", "_.*$", ".*", "stationID",
+            "Time", "stationID Time",
+            -1, //defaultStandardizeWhat
+            null) + "\n"; //externalAddGlobalAttributes
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromThreddsFiles",
-                "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
-                ".*MTBD.*\\.nc",  
-                "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
-                "1440", 
-                "", "_.*$", ".*", "stationID",
-                "Time", "stationID Time", 
-                "-1"}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromThreddsFiles",
+            "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
+            ".*MTBD.*\\.nc",  
+            "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
+            "1440", 
+            "", "_.*$", ".*", "stationID",
+            "Time", "stationID Time", 
+            "-1"}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_d91a_eb5f_b55f\" active=\"true\">\n" +
@@ -1063,26 +1062,21 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            /* This won't work because sample file is in testCacheDir (not regular cache dir)
-            //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = "noaa_nodc_8fcf_be37_cbe4";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "WES001 2008", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "stationID, yearday, latitude, time, Depth, longitude, Temperature_flag, " +
-                "Temperature, yearday_flag", "");
-            */
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
+        /* This won't work because sample file is in testCacheDir (not regular cache dir)
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "noaa_nodc_8fcf_be37_cbe4";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "WES001 2008", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "stationID, yearday, latitude, time, Depth, longitude, Temperature_flag, " +
+            "Temperature, yearday_flag", "");
+        */
 
     }
 
@@ -1099,10 +1093,7 @@ String expected =
         int po;
         EDV edv;
 
-        try {
-
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
 
         String id = "nmspWcosTemp";
         if (deleteCachedInfo) 
@@ -1111,7 +1102,6 @@ String expected =
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** EDDTableFromThreddsFiles testWcosTemp das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
@@ -1238,18 +1228,13 @@ expected =
 "    Float64 Westernmost_Easting -124.932;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1267,16 +1252,11 @@ expected =
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** EDDTableFromThreddsFiles.testWcosTemp make DATA FILES\n");       
 
         //.csv    for one lat,lon,time
-        try {
         userDapQuery = "station&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_stationList", ".csv"); 
@@ -1321,10 +1301,6 @@ expected =
 "WES001\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv    for one lat,lon,time, many depths (from different files)      via lon > <
         userDapQuery = "&station=\"ANO001\"&time=1122592440";
@@ -1343,10 +1319,6 @@ expected =
 "ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,20.0,10.51,0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         /* */
     }
@@ -1396,7 +1368,6 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         int po;
         EDV edv;
 
-        try {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 11); //[10]='T'
 
@@ -1928,12 +1899,10 @@ expected =
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.repeatedlyTestLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nThis often has small metadata changes."); 
+            throw new RuntimeException("This often has small metadata changes.", t); 
         }
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipEntire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1969,16 +1938,11 @@ expected =
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP make DATA FILES\n");       
 
         //.csv    for one lat,lon,time
-        try {
         userDapQuery = "cruise_id&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipCruiseList", ".csv"); 
@@ -1990,10 +1954,6 @@ expected =
 "Cruise_id undefined for now\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv    
         userDapQuery = "time,latitude,longitude,airPressure,airTemperature,flag&time%3E=2012-01-29T19:30:00Z&time%3C=2012-01-29T19:34:00Z";
@@ -2010,11 +1970,6 @@ expected =
 "2012-01-29T19:33:00Z,48.47,235.12,1009.03,8.93,ZZZZZZZZZZZZBZZZ\n" +
 "2012-01-29T19:34:00Z,48.47,235.13,1009.02,8.96,ZZZZZZZZZZZZBZZZ\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
     }
 
@@ -2151,26 +2106,51 @@ expected =
     }
 
 
-
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean deleteCachedInfo) throws Throwable {
-        String2.log("\n*** EDDTableFromThreddsFiles()");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 3;
+        String msg = "\n^^^ EDDTableFromThreddsFiles.test(" + interactive + ") test=";
 
-        //usually run
-/* for releases, this line should have open/close comment */
-        testGetThreddsFileInfo();
-        testGenerateDatasetsXml();
-        testWcosTemp(deleteCachedInfo);  
-        testShipWTEP(deleteCachedInfo);
-        /* */
+        boolean deleteCachedInfo = false; //usually false, rarely true
 
-        //not usually run
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
+                } else {
+                    if (test ==  0) testGetThreddsFileInfo();
+                    if (test ==  1) testGenerateDatasetsXml();
+                    if (test ==  2) testWcosTemp(deleteCachedInfo);  
+                    if (test ==  3) testShipWTEP(deleteCachedInfo);
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }
 

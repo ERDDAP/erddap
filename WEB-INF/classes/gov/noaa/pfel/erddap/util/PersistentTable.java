@@ -472,8 +472,8 @@ public class PersistentTable {
      *
      * @throws Throwable if trouble.
      */
-    public static void test() throws Throwable {
-        String2.log("\nPersistentTable.test()");
+    public static void basicTest() throws Throwable {
+        String2.log("\nPersistentTable.basicTest()");
         verbose = true;
         reallyVerbose = true;
         int n;
@@ -621,121 +621,156 @@ public class PersistentTable {
         String modes[] = {"rw", "rw", "rws", "rwd"}; 
         n = 1000;
         for (int mode = 0; mode < modes.length; mode++) {
-            try {
-                File2.delete(name);
-                pt = new PersistentTable(name, modes[mode], 
-                    new int[]{80, BINARY_DOUBLE_LENGTH, DOUBLE_LENGTH, BINARY_INT_LENGTH, INT_LENGTH});
-                pt.addRows(n);
-                if (mode == 1) String2.log("*** Note: 2nd rw test uses flush()");
-                //2018-09-13 times adjusted for Lenovo and Java 1.8
+            File2.delete(name);
+            pt = new PersistentTable(name, modes[mode], 
+                new int[]{80, BINARY_DOUBLE_LENGTH, DOUBLE_LENGTH, BINARY_INT_LENGTH, INT_LENGTH});
+            pt.addRows(n);
+            if (mode == 1) String2.log("*** Note: 2nd rw test uses flush()");
+            //2018-09-13 times adjusted for Lenovo and Java 1.8
 
-                //string speed test
-                time = System.currentTimeMillis();
-                long modeTime = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) 
-                    pt.writeString(0, i, testS + i);
-                if (mode == 1) pt.flush();
-                time = System.currentTimeMillis();
-                String2.log("\n" + modes[mode] + " time to write " + n + " Strings=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{0,0,0,0}[mode] + "ms)");  //java 1.6 0,0,0,0
+            //string speed test
+            time = System.currentTimeMillis();
+            long modeTime = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) 
+                pt.writeString(0, i, testS + i);
+            if (mode == 1) pt.flush();
+            time = System.currentTimeMillis();
+            String2.log("\n" + modes[mode] + " time to write " + n + " Strings=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{0,0,0,0}[mode] + "ms)");  //java 1.6 0,0,0,0
 
-                for (int i = 0; i < n; i++) {
-                    int tRow = Math2.random(n);
-                    Test.ensureEqual(pt.readString(0, tRow), testS + tRow, "");
-                }
-                String2.log(modes[mode] + " time to read " + n + " Strings=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,16,15,15}[mode] + "ms)");  //java 1.6 15,16,47,15
-
-                //double speed test
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) 
-                    pt.writeDouble(2, i, i);
-                if (mode == 1) pt.flush();
-                String2.log(modes[mode] + " time to write " + n + " doubles=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,130,96,109}[mode] + "ms)"); //java 1.6 16,15,219,188
-
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) {
-                    int tRow = Math2.random(n);
-                    Test.ensureEqual(pt.readDouble(2, tRow), tRow, "");
-                }
-                String2.log(modes[mode] + " time to read " + n + " doubles=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,32,0,16}[mode] + "ms)");  //java 1.6 15,32,16,0
-
-                //binary double speed test
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) 
-                    pt.writeBinaryDouble(1, i, i);
-                if (mode == 1) pt.flush();
-                String2.log(modes[mode] + " time to write " + n + " binary doubles=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{31,125,770,772}[mode] + "ms)");  //java 1.6 16,31,1968,1687
-
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) {
-                    int tRow = Math2.random(n);
-                    Test.ensureEqual(pt.readBinaryDouble(1, tRow), tRow, "");
-                }
-                String2.log(modes[mode] + " time to read " + n + " binary doubles=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,16,16,16}[mode] + "ms)"); //java 1.6 16,31,16,16
-
-                //int speed test
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) 
-                    pt.writeInt(4, i, i);
-                if (mode == 1) pt.flush();
-                String2.log(modes[mode] + " time to write " + n + " ints=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,110,109,106}[mode] + "ms)"); //java 1.6 16,0,219,219
-
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) {
-                    int tRow = Math2.random(n);
-                    Test.ensureEqual(pt.readInt(4, tRow), tRow, "");
-                }
-                String2.log(modes[mode] + " time to read " + n + " ints=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{0,16,0,4}[mode] + "ms)"); //java 1.6 0,16,0,0
-
-                //binary int speed test
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) 
-                    pt.writeBinaryInt(3, i, i);
-                if (mode == 1) pt.flush();
-                String2.log(modes[mode] + " time to write " + n + " binary int=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{15,125,360,402}[mode] + "ms)"); //java 1.6 15,1531,922
-
-                time = System.currentTimeMillis();
-                for (int i = 0; i < n; i++) {
-                    int tRow = Math2.random(n);
-                    Test.ensureEqual(pt.readBinaryInt(3, tRow), tRow, "");
-                }
-                String2.log(modes[mode] + " time to read " + n + " binary int=" + 
-                    (System.currentTimeMillis() - time) + "   (" + 
-                    new int[]{16,16,16,3}[mode] + "ms)");  //java 1.6 16,16,0
-
-
-                int expected[] = {141,693,1491,1615};
-                modeTime = System.currentTimeMillis() - modeTime;
-                String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
-                    modeTime + "   (" + expected[mode] + "ms)"); 
-                Test.ensureTrue(modeTime < 2 * expected[mode], "That is too slow!"); 
-
-                pt.close();
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error?\n"); 
+            for (int i = 0; i < n; i++) {
+                int tRow = Math2.random(n);
+                Test.ensureEqual(pt.readString(0, tRow), testS + tRow, "");
             }
+            String2.log(modes[mode] + " time to read " + n + " Strings=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,16,15,15}[mode] + "ms)");  //java 1.6 15,16,47,15
+
+            //double speed test
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) 
+                pt.writeDouble(2, i, i);
+            if (mode == 1) pt.flush();
+            String2.log(modes[mode] + " time to write " + n + " doubles=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,130,96,109}[mode] + "ms)"); //java 1.6 16,15,219,188
+
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) {
+                int tRow = Math2.random(n);
+                Test.ensureEqual(pt.readDouble(2, tRow), tRow, "");
+            }
+            String2.log(modes[mode] + " time to read " + n + " doubles=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,32,0,16}[mode] + "ms)");  //java 1.6 15,32,16,0
+
+            //binary double speed test
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) 
+                pt.writeBinaryDouble(1, i, i);
+            if (mode == 1) pt.flush();
+            String2.log(modes[mode] + " time to write " + n + " binary doubles=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{31,125,770,772}[mode] + "ms)");  //java 1.6 16,31,1968,1687
+
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) {
+                int tRow = Math2.random(n);
+                Test.ensureEqual(pt.readBinaryDouble(1, tRow), tRow, "");
+            }
+            String2.log(modes[mode] + " time to read " + n + " binary doubles=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,16,16,16}[mode] + "ms)"); //java 1.6 16,31,16,16
+
+            //int speed test
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) 
+                pt.writeInt(4, i, i);
+            if (mode == 1) pt.flush();
+            String2.log(modes[mode] + " time to write " + n + " ints=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,110,109,106}[mode] + "ms)"); //java 1.6 16,0,219,219
+
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) {
+                int tRow = Math2.random(n);
+                Test.ensureEqual(pt.readInt(4, tRow), tRow, "");
+            }
+            String2.log(modes[mode] + " time to read " + n + " ints=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{0,16,0,4}[mode] + "ms)"); //java 1.6 0,16,0,0
+
+            //binary int speed test
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) 
+                pt.writeBinaryInt(3, i, i);
+            if (mode == 1) pt.flush();
+            String2.log(modes[mode] + " time to write " + n + " binary int=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,125,360,402}[mode] + "ms)"); //java 1.6 15,1531,922
+
+            time = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) {
+                int tRow = Math2.random(n);
+                Test.ensureEqual(pt.readBinaryInt(3, tRow), tRow, "");
+            }
+            String2.log(modes[mode] + " time to read " + n + " binary int=" + 
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,16,16,3}[mode] + "ms)");  //java 1.6 16,16,0
+
+
+            int expected[] = {141,693,1491,1615};
+            modeTime = System.currentTimeMillis() - modeTime;
+            String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
+                modeTime + "   (" + expected[mode] + "ms)"); 
+            Test.ensureTrue(modeTime < 2 * expected[mode], "That is too slow!"); 
+
+            pt.close();
         }
         //String2.pressEnterToContinue("\n(considerable variation) Okay?"); 
     }
 
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ PersistentTable.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
 
 }
 

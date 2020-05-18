@@ -1115,15 +1115,12 @@ expected =
                 expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) +
-                "\n2019-05 This fails because source was .gz so created local files were called .gz\n" +
+            throw new RuntimeException("2019-05 This fails because source was .gz so created local files were called .gz\n" +
                 "even though they aren't .gz compressed.\n" +
-                "Solve this, or better: stop using EDDTableFromHyraxfiles");
-            return;
+                "Solve this, or better: stop using EDDTableFromHyraxfiles", t);
         }
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1143,16 +1140,11 @@ expected =
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** EDDTableFromHyraxFiles.testWcosTemp make DATA FILES\n");       
 
         //.csv    for one lat,lon,time
-        try {
         userDapQuery = "longitude,latitude,time,uwnd,vwnd,wspd,upstr,vpstr,nobs&longitude>=220&longitude<=220.5&latitude>=40&latitude<=40.5&time>=1987-09-03&time<=1987-09-28";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_stationList", ".csv"); 
@@ -1187,12 +1179,7 @@ expected =
 "220.375,40.375,1987-09-28T00:00:00Z,1.2406152,8.798755,10.894297,9.003235,100.80571,6.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
-        try {
         //.csv    few variables,  for small lat,lon range,  one time
         userDapQuery = "longitude,latitude,time,upstr,vpstr&longitude>=220&longitude<=221&latitude>=40&latitude<=41&time>=1987-09-28&time<=1987-09-28";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1219,33 +1206,58 @@ expected =
 "220.875,40.875,1987-09-28T00:00:00Z,17.4266,90.368065\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
         /* */
     }
        
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDDTableFromHyraxFiles.test");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ EDDTableFromHyraxFiles.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        //usually run
-        testGenerateDatasetsXml();
-        //2019-05-17 testJpl fails because remote source is named ...nc.gz
-        //  so local files are named .nc.gz even though they are .nc files.
-        //  This class should force .nc as local file type.
-        //  Or just get rid of it.
-        testJpl(true);   //deleteCachedInfoAndOneFile
-        testJpl(false);  
-        /* */
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testGenerateDatasetsXml();
+
+
+                    //2019-05-17 testJpl fails because remote source is named ...nc.gz
+                    //  so local files are named .nc.gz even though they are .nc files.
+                    //  This class should force .nc as local file type.
+                    //  Or just get rid of it.
+                    if (test == 1000) testJpl(true);   //deleteCachedInfoAndOneFile
+                    if (test == 1001) testJpl(false);  
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }
 

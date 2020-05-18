@@ -11380,7 +11380,7 @@ public abstract class EDDTable extends EDD {
                 true, diQuery.toString(), "");
             writer.write(HtmlWidgets.ifJavaScriptDisabled);
             
-            //if noData/invalid request tell user and reset all
+            //if noData/invalid request, tell user and reset all
             if (nRows == 0) {
                 //notably, this happens if a selected value has a leading or trailing space
                 //because the <option> on the html form trims the values when submitting the form (or before).
@@ -21166,214 +21166,209 @@ writer.write(
      * Test SOS server using ndbcSosCurrents.
      */
     public static void testSosCurrents() throws Throwable {
-        try {
-            String2.log("\n*** EDDTable.testSosCurrents()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "ndbcSosCurrents"); 
-            String dir = EDStatic.fullTestCacheDirectory;
-            String sosQuery, fileName, results, expected;
-            java.io.StringWriter writer;
-            ByteArrayOutputStream baos;
-            OutputStreamSourceSimple osss;
+        String2.log("\n*** EDDTable.testSosCurrents()");
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "ndbcSosCurrents"); 
+        String dir = EDStatic.fullTestCacheDirectory;
+        String sosQuery, fileName, results, expected;
+        java.io.StringWriter writer;
+        ByteArrayOutputStream baos;
+        OutputStreamSourceSimple osss;
 
-            //GetCapabilities
-            String2.log("\n+++ GetCapabilities");
-            writer = new java.io.StringWriter();
-            HashMap<String, String> queryMap = EDD.userQueryHashMap(
-                "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All", true); //true=names toLowerCase
-            eddTable.sosGetCapabilities(queryMap, writer, null);
-            results = writer.toString();
-            String2.log(results.substring(0, 7000));        
-            String2.log("\n...\n");
-            String2.log(results.substring(45000, 55000));        
-            String2.log("\n...\n");
-            String2.log(results.substring(results.length() - 3000));        
+        //GetCapabilities
+        String2.log("\n+++ GetCapabilities");
+        writer = new java.io.StringWriter();
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(
+            "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All", true); //true=names toLowerCase
+        eddTable.sosGetCapabilities(queryMap, writer, null);
+        results = writer.toString();
+        String2.log(results.substring(0, 7000));        
+        String2.log("\n...\n");
+        String2.log(results.substring(45000, 55000));        
+        String2.log("\n...\n");
+        String2.log(results.substring(results.length() - 3000));        
 
-            //*** observations for 1 station (via bbox), 2 times   
-            String sosQuery1 = 
-                "service=SOS&version=1.0.0&request=GetObservation" +
-                "&offering=urn:ioos:network:1.0.0.127.ndbcSosCurrents:ndbcSosCurrents" +
-                "&observedProperty=ndbcSosCurrents" +
-                "&responseFormat=text/csv" +
-                "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z" +
-                "&featureOfInterest=BBOX:-88,29.1,-87.9,29.2"; //<min_lon>,<min_lat>,<max_lon>,<max_lat>
+        //*** observations for 1 station (via bbox), 2 times   
+        String sosQuery1 = 
+            "service=SOS&version=1.0.0&request=GetObservation" +
+            "&offering=urn:ioos:network:1.0.0.127.ndbcSosCurrents:ndbcSosCurrents" +
+            "&observedProperty=ndbcSosCurrents" +
+            "&responseFormat=text/csv" +
+            "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z" +
+            "&featureOfInterest=BBOX:-88,29.1,-87.9,29.2"; //<min_lon>,<min_lat>,<max_lon>,<max_lat>
 
-            String2.log("\n+++ GetObservations for 1 station (via BBOX)\n" + sosQuery1);
-            baos = new ByteArrayOutputStream();
-            osss = new OutputStreamSourceSimple(baos);
-            eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSosCurBB");
-    /*from eddTableSos.testNdbcSosCurrents
-    "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30", 
-    "station_id, longitude, latitude, altitude, time, CurrentDirection, CurrentSpeed\n" +
-    ", degrees_east, degrees_north, m, UTC, degrees_true, cm s-1\n" +
-    "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -56.8, 2008-06-01T14:03:00Z, 83, 30.2\n" +
-    "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -88.8, 2008-06-01T14:03:00Z, 96, 40.5\n" +
-    "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -120.8, 2008-06-01T14:03:00Z, 96, 40.7\n" +
-    "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -152.8, 2008-06-01T14:03:00Z, 96, 35.3\n" +
-    "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -184.8, 2008-06-01T14:03:00Z, 89, 31.9\n" +
-    */
-            results = baos.toString(String2.UTF_8);
-            //String2.log(results);        
-            expected = 
-    "longitude, latitude, station_id, altitude, time, CurrentDirection, CurrentSpeed\n" +
-    "degrees_east, degrees_north, , m, UTC, degrees_true, cm s-1\n" +
-    "-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -56.8, 2008-06-01T14:03:00Z, 83, 30.2\n" +
-    "-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -88.8, 2008-06-01T14:03:00Z, 96, 40.5\n" +
-    "-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -120.8, 2008-06-01T14:03:00Z, 96, 40.7\n" +
-    "-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -152.8, 2008-06-01T14:03:00Z, 96, 35.3\n" +
-    "-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -184.8, 2008-06-01T14:03:00Z, 89, 31.9\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        String2.log("\n+++ GetObservations for 1 station (via BBOX)\n" + sosQuery1);
+        baos = new ByteArrayOutputStream();
+        osss = new OutputStreamSourceSimple(baos);
+        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSosCurBB");
+/*from eddTableSos.testNdbcSosCurrents
+"&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30", 
+"station_id, longitude, latitude, altitude, time, CurrentDirection, CurrentSpeed\n" +
+", degrees_east, degrees_north, m, UTC, degrees_true, cm s-1\n" +
+"urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -56.8, 2008-06-01T14:03:00Z, 83, 30.2\n" +
+"urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -88.8, 2008-06-01T14:03:00Z, 96, 40.5\n" +
+"urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -120.8, 2008-06-01T14:03:00Z, 96, 40.7\n" +
+"urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -152.8, 2008-06-01T14:03:00Z, 96, 35.3\n" +
+"urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -184.8, 2008-06-01T14:03:00Z, 89, 31.9\n" +
+*/
+        results = baos.toString(String2.UTF_8);
+        //String2.log(results);        
+        expected = 
+"longitude, latitude, station_id, altitude, time, CurrentDirection, CurrentSpeed\n" +
+"degrees_east, degrees_north, , m, UTC, degrees_true, cm s-1\n" +
+"-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -56.8, 2008-06-01T14:03:00Z, 83, 30.2\n" +
+"-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -88.8, 2008-06-01T14:03:00Z, 96, 40.5\n" +
+"-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -120.8, 2008-06-01T14:03:00Z, 96, 40.7\n" +
+"-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -152.8, 2008-06-01T14:03:00Z, 96, 35.3\n" +
+"-87.94, 29.16, urn:ioos:station:noaa.nws.ndbc:42376:, -184.8, 2008-06-01T14:03:00Z, 89, 31.9\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
-            //*** same query, but via offering=(station) instead of via bbox
-            //  observations for 1 station, 2 times   
-            String sosQuery2 = 
-                "service=SOS&version=1.0.0&request=GetObservation" +
-                "&offering=urn:ioos:Station:1.0.0.127.ndbcSosCurrents:42376:" +
-                "&observedProperty=ndbcSosCurrents" +
-                "&responseFormat=text/csv" +
-                "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z";
+        //*** same query, but via offering=(station) instead of via bbox
+        //  observations for 1 station, 2 times   
+        String sosQuery2 = 
+            "service=SOS&version=1.0.0&request=GetObservation" +
+            "&offering=urn:ioos:Station:1.0.0.127.ndbcSosCurrents:42376:" +
+            "&observedProperty=ndbcSosCurrents" +
+            "&responseFormat=text/csv" +
+            "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z";
 
-            String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery2);
-            baos = new ByteArrayOutputStream();
-            osss = new OutputStreamSourceSimple(baos);
-            eddTable.sosGetObservation(sosQuery2, null, osss, dir, "testSosCurSta");
-            results = baos.toString(String2.UTF_8);
-            String2.log(results);        
-            //expected = same data
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery2);
+        baos = new ByteArrayOutputStream();
+        osss = new OutputStreamSourceSimple(baos);
+        eddTable.sosGetObservation(sosQuery2, null, osss, dir, "testSosCurSta");
+        results = baos.toString(String2.UTF_8);
+        String2.log(results);        
+        //expected = same data
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
 
-            //*** same query, but return as sos xml
-            //  observations for 1 station, 2 times   
-            String sosQuery3 = 
-                "service=SOS&version=1.0.0&request=GetObservation" +
-                "&offering=42376" +  //and switch to short offering name
-                "&observedProperty=ndbcSosCurrents" +
-                "&responseFormat=" + SSR.minimalPercentEncode("text/xml;schema=\"ioos/0.6.1\"") +
-                "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z";
+        //*** same query, but return as sos xml
+        //  observations for 1 station, 2 times   
+        String sosQuery3 = 
+            "service=SOS&version=1.0.0&request=GetObservation" +
+            "&offering=42376" +  //and switch to short offering name
+            "&observedProperty=ndbcSosCurrents" +
+            "&responseFormat=" + SSR.minimalPercentEncode("text/xml;schema=\"ioos/0.6.1\"") +
+            "&eventTime=2008-06-01T14:00:00Z/2008-06-01T14:30:00Z";
 
-            String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery3);
-            baos = new ByteArrayOutputStream();
-            osss = new OutputStreamSourceSimple(baos);
-            eddTable.sosGetObservation(sosQuery3, null, osss, dir, "testSosCurSta2");
-            results = baos.toString(String2.UTF_8);
-            //String2.log(results);        
-            expected = 
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    "<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +   
-    "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
-    "  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
-    "  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
-    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
-    "  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 http://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
-    "  gml:id=\"ndbcSosCurrentsTimeSeriesObservation\">\n" +
-    "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
-    "  <gml:description>ndbcSosCurrents observations at a series of times</gml:description>\n" +
-    "  <gml:name>Buoy Data from the NOAA NDBC SOS Server - Currents, Station 42376</gml:name>\n" +
-    "  <gml:boundedBy>\n" +
-    "    <gml:Envelope srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
-    "      <gml:lowerCorner>29.16 -87.94</gml:lowerCorner>\n" +
-    "      <gml:upperCorner>29.16 -87.94</gml:upperCorner>\n" +
-    "    </gml:Envelope>\n" +
-    "  </gml:boundedBy>\n" +
-    "  <om:samplingTime>\n" +
-    "    <gml:TimePeriod gml:id=\"ST\">\n" +
-    "      <gml:beginPosition>2008-06-01T14:03:00Z</gml:beginPosition>\n" +
-    "      <gml:endPosition>2008-06-01T14:23:00Z</gml:endPosition>\n" +
-    "    </gml:TimePeriod>\n" +
-    "  </om:samplingTime>\n" +
-    "  <om:procedure>\n" +
-    "    <om:Process>\n" +
-    "      <ioos:CompositeContext gml:id=\"SensorMetadata\">\n" +
-    "        <gml:valueComponents>\n" +
-    "          <ioos:Count name=\"NumberOfStations\">1</ioos:Count>\n" +
-    "          <ioos:ContextArray gml:id=\"StationArray\">\n" +
-    "            <gml:valueComponents>\n" +
-    "              <ioos:CompositeContext gml:id=\"Station1Info\">\n" +
-    "                <gml:valueComponents>\n" +
-    "                  <ioos:StationName>Station - urn:ioos:station:noaa.nws.ndbc:42376:</ioos:StationName>\n" +
-    "                  <ioos:Organization>NOAA NDBC</ioos:Organization>\n" +
-    "                  <ioos:StationId>urn:ioos:Station:1.0.0.127.ndbcSosCurrents:urn:ioos:station:noaa.nws.ndbc:42376:</ioos:StationId>\n" +
-    "                  <gml:Point gml:id=\"Station1LatLon\">\n" +
-    "                    <gml:pos>29.16 -87.94</gml:pos>\n" +
-    "                  </gml:Point>\n" +
-    "                  <ioos:VerticalDatum>urn:ogc:def:datum:epsg::5113</ioos:VerticalDatum>\n" +
-    "                  <ioos:VerticalPosition xsi:nil=\"true\" nilReason=\"missing\"/>\n" +
-    "                  <ioos:Count name=\"Station1NumberOfSensors\">1</ioos:Count>\n" +
-    "                  <ioos:ContextArray gml:id=\"Station1SensorArray\">\n" +
-    "                    <gml:valueComponents>\n" +
-    "                      <ioos:CompositeContext gml:id=\"Station1Sensor1Info\">\n" +
-    "                        <gml:valueComponents>\n" +
-    "                          <ioos:SensorId>urn:ioos:sensor:1.0.0.127.ndbcSosCurrents:urn:ioos:station:noaa.nws.ndbc:42376:ndbcSosCurrents</ioos:SensorId>\n" +
-    "                        </gml:valueComponents>\n" +
-    "                      </ioos:CompositeContext>\n" +
-    "                    </gml:valueComponents>\n" +
-    "                  </ioos:ContextArray>\n" +
-    "                </gml:valueComponents>\n" +
-    "              </ioos:CompositeContext>\n" +
-    "            </gml:valueComponents>\n" +
-    "          </ioos:ContextArray>\n" +
-    "        </gml:valueComponents>\n" +
-    "      </ioos:CompositeContext>\n" +
-    "    </om:Process>\n" +
-    "  </om:procedure>\n" +
-    "  <om:observedProperty xlink:href=\"http://localhost:8080/cwexperimental/sos/ndbcSosCurrents/phenomenaDictionary.xml#ndbcSosCurrents\"/>\n" +
-    "  <om:featureOfInterest xlink:href=\"urn:cgi:Feature:CGI:EarthOcean\"/>\n" +
-    "  <om:result>\n" +
-    "    <ioos:Composite gml:id=\"ndbcSosCurrentsPointCollectionTimeSeriesDataObservations\">\n" +
-    "      <gml:valueComponents>\n" +
-    "        <ioos:Count name=\"NumberOfObservationsPoints\">1</ioos:Count>\n" +
-    "        <ioos:Array gml:id=\"ndbcSosCurrentsPointCollectionTimeSeries\">\n" +
-    "          <gml:valueComponents>\n" +
-    "            <ioos:Composite gml:id=\"Station1TimeSeriesRecord\">\n" +
-    "              <gml:valueComponents>\n" +
-    "                <ioos:Count name=\"Station1NumberOfObservationsTimes\">2</ioos:Count>\n" +
-    "                <ioos:Array gml:id=\"Station1ProfileTimeSeries\">\n" +
-    "                  <gml:valueComponents>\n" +
-    "                    <ioos:Composite gml:id=\"Station1T1Profile\">\n" +
-    "                      <gml:valueComponents>\n" +
-    "                        <ioos:CompositeContext gml:id=\"Station1T1ObservationConditions\" processDef=\"#Station1Info\">\n" +
-    "                          <gml:valueComponents>\n" +
-    "                            <gml:TimeInstant gml:id=\"Station1T1Time\">\n" +
-    "                              <gml:timePosition>2008-06-01T14:03:00Z</gml:timePosition>\n" +
-    "                            </gml:TimeInstant>\n" +
-    "                          </gml:valueComponents>\n" +
-    "                        </ioos:CompositeContext>\n" +
-    "                        <ioos:Count name=\"Station1T1NumberOfBinObservations\">32</ioos:Count>\n" +
-    "                        <ioos:ValueArray gml:id=\"Station1T1ProfileObservations\">\n" +
-    "                          <gml:valueComponents>\n" +
-    "                            <ioos:CompositeValue gml:id=\"Station1T1Bin1Obs\" processDef=\"#Station1Sensor1Info\">\n" +
-    "                              <gml:valueComponents>\n" +
-    "                                <ioos:Context name=\"altitude\" uom=\"m\">-1048.8</ioos:Context>\n" +
-    "                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
-    "                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
-    "                              </gml:valueComponents>\n" +
-    "                            </ioos:CompositeValue>\n" +
-    "                            <ioos:CompositeValue gml:id=\"Station1T1Bin2Obs\" processDef=\"#Station1Sensor1Info\">\n" +
-    "                              <gml:valueComponents>\n" +
-    "                                <ioos:Context name=\"altitude\" uom=\"m\">-1016.8</ioos:Context>\n" +
-    "                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
-    "                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
-    "                              </gml:valueComponents>\n" +
-    "                            </ioos:CompositeValue>\n" +
-    "                            <ioos:CompositeValue gml:id=\"Station1T1Bin3Obs\" processDef=\"#Station1Sensor1Info\">\n" +
-    "                              <gml:valueComponents>\n" +
-    "                                <ioos:Context name=\"altitude\" uom=\"m\">-984.8</ioos:Context>\n" +
-    "                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
-    "                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
-    "                              </gml:valueComponents>\n" +
-    "                            </ioos:CompositeValue>\n" +
-    "                            <ioos:CompositeValue gml:id=\"Station1T1Bin4Obs\" processDef=\"#Station1Sensor1Info\">\n" +
-    "                              <gml:valueComponents>\n" +
-    "                                <ioos:Context name=\"altitude\" uom=\"m\">-952.8</ioos:Context>\n" +
-    "                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">75</ioos:Quantity>\n" +
-    "                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">4.3</ioos:Quantity>\n" +
-    "                              </gml:valueComponents>\n" +
-    "                            </ioos:CompositeValue>\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery3);
+        baos = new ByteArrayOutputStream();
+        osss = new OutputStreamSourceSimple(baos);
+        eddTable.sosGetObservation(sosQuery3, null, osss, dir, "testSosCurSta2");
+        results = baos.toString(String2.UTF_8);
+        //String2.log(results);        
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<om:CompositeObservation xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +   
+"  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" +
+"  xmlns:om=\"http://www.opengis.net/om/1.0\"\n" +
+"  xmlns:swe=\"http://www.opengis.net/swe/1.0.1\"  xmlns:ioos=\"http://www.noaa.gov/ioos/0.6.1\"\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +
+"  xsi:schemaLocation=\"http://www.opengis.net/om/1.0 http://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd\"\n" + 
+"  gml:id=\"ndbcSosCurrentsTimeSeriesObservation\">\n" +
+"<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
+"  <gml:description>ndbcSosCurrents observations at a series of times</gml:description>\n" +
+"  <gml:name>Buoy Data from the NOAA NDBC SOS Server - Currents, Station 42376</gml:name>\n" +
+"  <gml:boundedBy>\n" +
+"    <gml:Envelope srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
+"      <gml:lowerCorner>29.16 -87.94</gml:lowerCorner>\n" +
+"      <gml:upperCorner>29.16 -87.94</gml:upperCorner>\n" +
+"    </gml:Envelope>\n" +
+"  </gml:boundedBy>\n" +
+"  <om:samplingTime>\n" +
+"    <gml:TimePeriod gml:id=\"ST\">\n" +
+"      <gml:beginPosition>2008-06-01T14:03:00Z</gml:beginPosition>\n" +
+"      <gml:endPosition>2008-06-01T14:23:00Z</gml:endPosition>\n" +
+"    </gml:TimePeriod>\n" +
+"  </om:samplingTime>\n" +
+"  <om:procedure>\n" +
+"    <om:Process>\n" +
+"      <ioos:CompositeContext gml:id=\"SensorMetadata\">\n" +
+"        <gml:valueComponents>\n" +
+"          <ioos:Count name=\"NumberOfStations\">1</ioos:Count>\n" +
+"          <ioos:ContextArray gml:id=\"StationArray\">\n" +
+"            <gml:valueComponents>\n" +
+"              <ioos:CompositeContext gml:id=\"Station1Info\">\n" +
+"                <gml:valueComponents>\n" +
+"                  <ioos:StationName>Station - urn:ioos:station:noaa.nws.ndbc:42376:</ioos:StationName>\n" +
+"                  <ioos:Organization>NOAA NDBC</ioos:Organization>\n" +
+"                  <ioos:StationId>urn:ioos:Station:1.0.0.127.ndbcSosCurrents:urn:ioos:station:noaa.nws.ndbc:42376:</ioos:StationId>\n" +
+"                  <gml:Point gml:id=\"Station1LatLon\">\n" +
+"                    <gml:pos>29.16 -87.94</gml:pos>\n" +
+"                  </gml:Point>\n" +
+"                  <ioos:VerticalDatum>urn:ogc:def:datum:epsg::5113</ioos:VerticalDatum>\n" +
+"                  <ioos:VerticalPosition xsi:nil=\"true\" nilReason=\"missing\"/>\n" +
+"                  <ioos:Count name=\"Station1NumberOfSensors\">1</ioos:Count>\n" +
+"                  <ioos:ContextArray gml:id=\"Station1SensorArray\">\n" +
+"                    <gml:valueComponents>\n" +
+"                      <ioos:CompositeContext gml:id=\"Station1Sensor1Info\">\n" +
+"                        <gml:valueComponents>\n" +
+"                          <ioos:SensorId>urn:ioos:sensor:1.0.0.127.ndbcSosCurrents:urn:ioos:station:noaa.nws.ndbc:42376:ndbcSosCurrents</ioos:SensorId>\n" +
+"                        </gml:valueComponents>\n" +
+"                      </ioos:CompositeContext>\n" +
+"                    </gml:valueComponents>\n" +
+"                  </ioos:ContextArray>\n" +
+"                </gml:valueComponents>\n" +
+"              </ioos:CompositeContext>\n" +
+"            </gml:valueComponents>\n" +
+"          </ioos:ContextArray>\n" +
+"        </gml:valueComponents>\n" +
+"      </ioos:CompositeContext>\n" +
+"    </om:Process>\n" +
+"  </om:procedure>\n" +
+"  <om:observedProperty xlink:href=\"http://localhost:8080/cwexperimental/sos/ndbcSosCurrents/phenomenaDictionary.xml#ndbcSosCurrents\"/>\n" +
+"  <om:featureOfInterest xlink:href=\"urn:cgi:Feature:CGI:EarthOcean\"/>\n" +
+"  <om:result>\n" +
+"    <ioos:Composite gml:id=\"ndbcSosCurrentsPointCollectionTimeSeriesDataObservations\">\n" +
+"      <gml:valueComponents>\n" +
+"        <ioos:Count name=\"NumberOfObservationsPoints\">1</ioos:Count>\n" +
+"        <ioos:Array gml:id=\"ndbcSosCurrentsPointCollectionTimeSeries\">\n" +
+"          <gml:valueComponents>\n" +
+"            <ioos:Composite gml:id=\"Station1TimeSeriesRecord\">\n" +
+"              <gml:valueComponents>\n" +
+"                <ioos:Count name=\"Station1NumberOfObservationsTimes\">2</ioos:Count>\n" +
+"                <ioos:Array gml:id=\"Station1ProfileTimeSeries\">\n" +
+"                  <gml:valueComponents>\n" +
+"                    <ioos:Composite gml:id=\"Station1T1Profile\">\n" +
+"                      <gml:valueComponents>\n" +
+"                        <ioos:CompositeContext gml:id=\"Station1T1ObservationConditions\" processDef=\"#Station1Info\">\n" +
+"                          <gml:valueComponents>\n" +
+"                            <gml:TimeInstant gml:id=\"Station1T1Time\">\n" +
+"                              <gml:timePosition>2008-06-01T14:03:00Z</gml:timePosition>\n" +
+"                            </gml:TimeInstant>\n" +
+"                          </gml:valueComponents>\n" +
+"                        </ioos:CompositeContext>\n" +
+"                        <ioos:Count name=\"Station1T1NumberOfBinObservations\">32</ioos:Count>\n" +
+"                        <ioos:ValueArray gml:id=\"Station1T1ProfileObservations\">\n" +
+"                          <gml:valueComponents>\n" +
+"                            <ioos:CompositeValue gml:id=\"Station1T1Bin1Obs\" processDef=\"#Station1Sensor1Info\">\n" +
+"                              <gml:valueComponents>\n" +
+"                                <ioos:Context name=\"altitude\" uom=\"m\">-1048.8</ioos:Context>\n" +
+"                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
+"                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
+"                              </gml:valueComponents>\n" +
+"                            </ioos:CompositeValue>\n" +
+"                            <ioos:CompositeValue gml:id=\"Station1T1Bin2Obs\" processDef=\"#Station1Sensor1Info\">\n" +
+"                              <gml:valueComponents>\n" +
+"                                <ioos:Context name=\"altitude\" uom=\"m\">-1016.8</ioos:Context>\n" +
+"                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
+"                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
+"                              </gml:valueComponents>\n" +
+"                            </ioos:CompositeValue>\n" +
+"                            <ioos:CompositeValue gml:id=\"Station1T1Bin3Obs\" processDef=\"#Station1Sensor1Info\">\n" +
+"                              <gml:valueComponents>\n" +
+"                                <ioos:Context name=\"altitude\" uom=\"m\">-984.8</ioos:Context>\n" +
+"                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">0</ioos:Quantity>\n" +
+"                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">0.0</ioos:Quantity>\n" +
+"                              </gml:valueComponents>\n" +
+"                            </ioos:CompositeValue>\n" +
+"                            <ioos:CompositeValue gml:id=\"Station1T1Bin4Obs\" processDef=\"#Station1Sensor1Info\">\n" +
+"                              <gml:valueComponents>\n" +
+"                                <ioos:Context name=\"altitude\" uom=\"m\">-952.8</ioos:Context>\n" +
+"                                <ioos:Quantity name=\"CurrentDirection\" uom=\"degrees_true\">75</ioos:Quantity>\n" +
+"                                <ioos:Quantity name=\"CurrentSpeed\" uom=\"cm s-1\">4.3</ioos:Quantity>\n" +
+"                              </gml:valueComponents>\n" +
+"                            </ioos:CompositeValue>\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     }
 
     /**
@@ -21381,46 +21376,41 @@ writer.write(
      * This caused an internal error in EDDTableFromSos. So this helped me fix the bug.
      */
     public static void testSosGomoos() throws Throwable {
-        try {
-            String2.log("\n*** EDDTable.testSosGomoos()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "gomoosBuoy"); 
-            String dir = EDStatic.fullTestCacheDirectory;
-            String sosQuery, fileName, results, expected;
-            java.io.StringWriter writer;
-            ByteArrayOutputStream baos;
-            OutputStreamSourceSimple osss;
+        String2.log("\n*** EDDTable.testSosGomoos()");
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "gomoosBuoy"); 
+        String dir = EDStatic.fullTestCacheDirectory;
+        String sosQuery, fileName, results, expected;
+        java.io.StringWriter writer;
+        ByteArrayOutputStream baos;
+        OutputStreamSourceSimple osss;
 
-            //*** observations for 1 station   
-            //request that caused error:
-            ///erddap2/sos/gomoosBuoy/server?service=SOS&version=1.0.0&request=GetObservation
-            //&offering=urn:ioos:Station:noaa.pfeg.coastwatch.gomoosBuoy::A01
-            //&observedProperty=gomoosBuoy&eventTime=2009-08-25T00:00:00Z/2009-09-01T18:23:51Z
-            //&responseFormat=text/xml;schema%3D%22ioos/0.6.1%22
-            String sosQuery1 = 
-                "service=SOS&version=1.0.0&request=GetObservation" +
-                "&offering=urn:ioos:Station:1.0.0.127.gomoosBuoy::A01" +
-                "&observedProperty=gomoosBuoy" +
-                "&responseFormat=text/csv" +
-                "&eventTime=2009-08-25T00:00:00Z/2009-09-01T18:23:51Z";
+        //*** observations for 1 station   
+        //request that caused error:
+        ///erddap2/sos/gomoosBuoy/server?service=SOS&version=1.0.0&request=GetObservation
+        //&offering=urn:ioos:Station:noaa.pfeg.coastwatch.gomoosBuoy::A01
+        //&observedProperty=gomoosBuoy&eventTime=2009-08-25T00:00:00Z/2009-09-01T18:23:51Z
+        //&responseFormat=text/xml;schema%3D%22ioos/0.6.1%22
+        String sosQuery1 = 
+            "service=SOS&version=1.0.0&request=GetObservation" +
+            "&offering=urn:ioos:Station:1.0.0.127.gomoosBuoy::A01" +
+            "&observedProperty=gomoosBuoy" +
+            "&responseFormat=text/csv" +
+            "&eventTime=2009-08-25T00:00:00Z/2009-09-01T18:23:51Z";
 
-            String2.log("\n+++ GetObservations for 1 station\n" + sosQuery1);
-            baos = new ByteArrayOutputStream();
-            osss = new OutputStreamSourceSimple(baos);
-            eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testGomoos");
-            results = baos.toString(String2.UTF_8);
-            //String2.log(results);        
-            expected = 
+        String2.log("\n+++ GetObservations for 1 station\n" + sosQuery1);
+        baos = new ByteArrayOutputStream();
+        osss = new OutputStreamSourceSimple(baos);
+        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testGomoos");
+        results = baos.toString(String2.UTF_8);
+        //String2.log(results);        
+        expected = 
 "longitude (deg{east}), latitude (deg{north}), station_id, altitude (m), time (UTC), air_temperature (Cel), chlorophyll (mg.m-3), direction_of_sea_water_velocity (deg{true}), dominant_wave_period (s), sea_level_pressure (mbar), sea_water_density (kg.m-3), sea_water_electrical_conductivity (S.m-1), sea_water_salinity ({psu}), sea_water_speed (cm.s-1), sea_water_temperature (Cel), wave_height (m), visibility_in_air (m), wind_from_direction (deg{true}), wind_gust (m.s-1), wind_speed (m.s-1)\n" +
 "-70.5680705627165, 42.5221700538877, A01, 4.0, 2009-08-25T00:00:00Z, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 1.69000005722046, 3.05599999427795, 1.46200001239777\n" +
 "-70.5680705627165, 42.5221700538877, A01, 3.0, 2009-08-25T00:00:00Z, 20.9699993133545, NaN, NaN, NaN, 1016.49780273438, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\n" +
 "-70.5680705627165, 42.5221700538877, A01, 0.0, 2009-08-25T00:00:00Z, NaN, NaN, NaN, 8.0, NaN, NaN, NaN, NaN, NaN, NaN, 1.00613415, NaN, NaN, NaN, NaN\n" +
 "-70.5680705627165, 42.5221700538877, A01, -1.0, 2009-08-25T00:00:00Z, NaN, NaN, NaN, NaN, NaN, 21.1049213409424, 43.431999206543, 30.5694179534912, NaN, 21.0799999237061, NaN, NaN, NaN, NaN, NaN\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "\nresults=\n" + results.substring(0, Math.min(5000, results.length())));
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "\nresults=\n" + results.substring(0, Math.min(5000, results.length())));
 
     }
 
@@ -21598,13 +21588,48 @@ writer.write(
     }
 
 
-    /** This tests some EDDTable-specific things. */
-    public static void test() throws Throwable {
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : -1;
+        String msg = "\n^^^ EDDTable.test(" + interactive + ") test=";
 
-        //tests of ERDDAP's SOS server are disabled
-        //testSosGomoos();
-        //testSosNdbcMet();
-        //testSosOostethys();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    //tests of ERDDAP's SOS server are disabled
+                    //if (test ==  0) testSosGomoos();
+                    //if (test ==  1) testSosNdbcMet();
+                    //if (test ==  2) testSosOostethys();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

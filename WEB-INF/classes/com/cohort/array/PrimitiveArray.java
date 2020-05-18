@@ -4496,8 +4496,8 @@ public abstract class PrimitiveArray {
      *
      * @throws Exception if trouble.
      */
-    public static void testBasic() throws Throwable {
-        String2.log("*** PrimitiveArray.testBasic");
+    public static void basicTest() throws Throwable {
+        String2.log("*** PrimitiveArray.basicTest");
 
 
         //test factory 
@@ -5165,7 +5165,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(csvFactory(PAType.SHORT,  "1.1, 2.2").addFromPA(csvFactory(PAType.SHORT,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
         Test.ensureEqual(csvFactory(PAType.STRING, "1.1, 2.2").addFromPA(csvFactory(PAType.STRING, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
 
-        String2.log("PrimitiveArray.testBasic finished successfully.");
+        String2.log("PrimitiveArray.basicTest finished successfully.");
     }
 
 
@@ -5509,25 +5509,48 @@ public abstract class PrimitiveArray {
 
     }
 
+
     /**
-     * This tests the methods of this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Exception if trouble.
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("*** PrimitiveArray.test");
-/* for releases, this line should have open/close comment */
-        testBasic();
-        testTestValueOpValue();
-        testNccsv();
-    }
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 2;
+        String msg = "\n^^^ PrimitiveArray.test(" + interactive + ") test=";
 
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-    /**
-     * This runs test.
-     */
-    public static void main(String args[]) throws Throwable {
-        test();
+                } else {
+                    if (test ==  0) basicTest();
+                    if (test ==  1) testTestValueOpValue();
+                    if (test ==  2) testNccsv();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

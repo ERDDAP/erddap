@@ -676,11 +676,11 @@ public class EDVTimeStamp extends EDV {
     /**
      * This is a unit test.
      */
-    public static void test() throws Throwable {
+    public static void basicTest() throws Throwable {
         verbose = true;
 
         //***with Z
-        String2.log("\n*** EDVTimeStamp.test with Z");
+        String2.log("\n*** EDVTimeStamp.basicTest with Z");
         EDVTimeStamp eta = new EDVTimeStamp("sourceName", "time",
             null, 
             (new Attributes())
@@ -750,7 +750,47 @@ public class EDVTimeStamp extends EDV {
         d = eta.sourceTimeToEpochSeconds(t4);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3Z(d), t13, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString( d)+"Z", t13, "b2");
-
-
     }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ EDVTimeStamp.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 }

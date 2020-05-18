@@ -1223,12 +1223,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      *       makes 10000 insertions with data values =hammer.
      *     If hammer==0, this prints the hammer'd data file -- raw, no processing.
      */
-    public static void testStatic() throws Throwable {
+    public static void testStatic(int hammer) throws Throwable {
         String2.log("\n*** EDDTableFromHttpGet.testStatic");
         String results, expected;
-        int hammer = String2.parseInt(String2.getStringFromSystemIn(
-            "Enter -1 for static tests, 1... for a hammer test, 0 for results of hammer test?"));
-        if (hammer == Integer.MAX_VALUE) hammer = -1;
 
         //test parseDirectoryStructure
         StringArray dsColumnName = new StringArray();
@@ -2470,24 +2467,54 @@ expected =
     }
 
 
-
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-/* for releases, this line should have open/close comment */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 2;
+        String msg = "\n^^^ EDDTableFromHttpGet.test(" + interactive + ") test=";
 
-//FUTURE: command=2=addIfNew: adds a row if it is a new combination of
-//  requiredVariables (after processing the jsonl file)
-// and/or addIfDifferent if will result in a change to the data
-//  E.g., Use addIfNew to "add" all of the data from NdbcMet last5days file.
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        testStatic(); 
-        testGenerateDatasetsXml();
-        testBasic(); 
-        /* */
+                } else {
+                    //FUTURE: command=2=addIfNew or addIfDifferent: adds a row if it is a new combination of
+                    //  requiredVariables (after processing the jsonl file)
+                    // and/or addIfDifferent if will result in a change to the data
+                    //  E.g., Use addIfNew to "add" all of the data from NdbcMet last5days file.
+
+                    //happer: -1 for static tests, 1... for a hammer test, 0 for results of hammer test
+                    if (test ==  0) testStatic(-1); 
+                    if (test ==  1) testGenerateDatasetsXml();
+                    if (test ==  2) testBasic(); 
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
 }
 

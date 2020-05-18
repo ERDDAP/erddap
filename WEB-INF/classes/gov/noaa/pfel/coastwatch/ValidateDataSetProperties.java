@@ -4,7 +4,9 @@
  */
 package gov.noaa.pfel.coastwatch;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
+import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -33,6 +35,11 @@ public class ValidateDataSetProperties {
      * @param args is ignored
      */
     public static void main(String args[]) throws Exception {
+
+        doIt();
+    }
+
+    public static void doIt() throws Exception {
 
         String2.log("ValidateDataSetProperties (testing DataSet.properties validDataSets");
 
@@ -71,5 +78,78 @@ public class ValidateDataSetProperties {
         }
         String2.log("  ValidateDataSetProperties successfully tested n=" + nDataSets + 
             " last=" + tDataSetList[nDataSets - 1]);
+    }
+
+    public static void ensureDatasetInDataSetProperties() throws Exception {
+        //ensure all of the datasets used in each browser are in DataSet.properties validDataSets.
+        String propNames[] = {
+            "CWBrowser",
+            "CWBrowserAK",
+            "CWBrowserSA",
+            "CWBrowserWW180",
+            "CWBrowserWW360",
+            "CWBrowserHAB"};
+        StringArray validDataSets = null;
+        for (int pni = 0; pni < propNames.length; pni++) {
+            String2.log("\nTesting " + propNames[pni]);
+            FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch." + propNames[pni]);
+            String tDataSetList[] = String2.split(fnu.classRB2().getString("dataSetList", null), '`');
+            int nDataSets = tDataSetList.length;
+            if (validDataSets == null) {
+                String ts = fnu.dataSetRB2().getString("validDataSets", null);
+                String[] tsa = String2.split(ts, '`');
+                validDataSets = new StringArray(tsa);
+            }
+            for (int i = OneOf.N_DUMMY_GRID_DATASETS; i < nDataSets; i++) {  //"2" in order to skip 0=OneOf.NO_DATA and 1=BATHYMETRY
+                if (validDataSets.indexOf(tDataSetList[i], 0) == -1) {
+                    Test.error("In " + propNames[pni] + ".properties, [" + i + "]=" + 
+                        tDataSetList[i] + " not found in DataSet.properties validDataSets:\n" +
+                        validDataSets);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 1;
+        String msg = "\n^^^ ValidateDatasetProperties.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0 && doSlowTestsToo) doIt();
+                    if (test ==  1) ensureDatasetInDataSetProperties();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 }

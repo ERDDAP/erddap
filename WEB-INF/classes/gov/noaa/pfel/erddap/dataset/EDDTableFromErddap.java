@@ -701,17 +701,16 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         int po;
 
         //test local generateDatasetsXml.  In tests, always use non-https url.
-        try { 
-            String results = generateDatasetsXml(EDStatic.erddapUrl, true) + "\n"; 
-            String2.log("results=\n" + results);
+        String results = generateDatasetsXml(EDStatic.erddapUrl, true) + "\n"; 
+        String2.log("results=\n" + results);
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromErddap",
-                EDStatic.erddapUrl,
-                "true", "-1"},  //keep original names?, defaultStandardizeWhat
-              false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromErddap",
+            EDStatic.erddapUrl,
+            "true", "-1"},  //keep original names?, defaultStandardizeWhat
+          false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n" +
@@ -721,47 +720,35 @@ String expected =
 String fragment = expected;
             String2.log("\nresults=\n" + results);
             po = results.indexOf(expected.substring(0, 70));
-try {
+        try {
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
-} catch (Throwable t) {
-    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-        "This test requires erdGlobecBottle in localhost ERDDAP.\n" +
-        "Unexpected error.");  
-}
+        } catch (Throwable t) {
+            throw new RuntimeException("Unexpected error. This test requires erdGlobecBottle in localhost ERDDAP.", t);  
+        }
 
 expected = 
 "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
             po = results.indexOf(expected.substring(0, 20));
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
-try {
+        try {
             Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
-} catch (Throwable t) {
-    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-        "This test requires rGlobecBottle in localhost ERDDAP.\n" +
-        "Unexpected error.");  
-}
-
-
-            /*
-            //ensure it is ready-to-use by making a dataset from it       
-            //NO - don't mess with existing erdGlobecBottle
-            String tDatasetID = "erdGlobecBottle";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, fragment);
-            Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par", 
-                "");
-            */
-
-
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml on " + 
-                EDStatic.erddapUrl); //in tests, always use non-https url                
+            throw new RuntimeException("Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);  
         }
 
+
+        /*
+        //ensure it is ready-to-use by making a dataset from it       
+        //NO - don't mess with existing erdGlobecBottle
+        String tDatasetID = "erdGlobecBottle";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, fragment);
+        Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par", 
+            "");
+        */
     }
 
 
@@ -1438,31 +1425,51 @@ expected =
     }
 
 
-
-    
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** EDDTableFromErddap.test()\n");
-        testVerboseOn();
-        
-/* for releases, this line should have open/close comment */
-        //always done
-        testBasic(true);   //rTestNccsvScalar
-        testBasic(false);  //rTestNccsvScalarNoRedirect
-        testGenerateDatasetsXml();
-        testTableNoIoosCat();
-        testQuotes();
-        testChukchiSea();
-        testFiles();
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 6;
+        String msg = "\n^^^ EDDTableFromErddap.test(" + interactive + ") test=";
 
-        /* */
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
 
-        //not usually done
+                } else {
+                    if (test ==  0) testBasic(true);   //rTestNccsvScalar
+                    if (test ==  1) testBasic(false);  //rTestNccsvScalarNoRedirect
+                    if (test ==  2) testGenerateDatasetsXml();
+                    if (test ==  3) testTableNoIoosCat();
+                    if (test ==  4) testQuotes();
+                    if (test ==  5) testChukchiSea();
+                    if (test ==  6) testFiles();
+                }
 
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

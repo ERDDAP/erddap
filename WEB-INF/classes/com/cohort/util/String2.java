@@ -2364,6 +2364,26 @@ public class String2 {
     }
 
     /** 
+     * This returns a json version of s if there is a character &lt; 32
+     * or &gt;= firstUEncodedChar or if the first or last char is whitespace.
+     */
+    public static String toJsonIfNeeded(String s, int firstUEncodedChar) {
+        int slen = s.length();
+        for (int po = 0; po < slen; po++) {
+            char ch = s.charAt(po);
+            if (ch < 32 || //notably  \n \f \t
+                ch == '\\' ||
+                ch == '\"' ||
+                ch >= firstUEncodedChar) 
+                return toJson(s);
+        }
+        if ((slen > 0 && s.charAt(0) == 32) ||
+            (slen > 1 && s.charAt(slen-1) == 32))
+            return toJson(s);
+        return s;
+    }
+
+    /** 
      * This is a variant of toJson that lets you encode newlines or not. 
      * 
      * @param s The String to be encoded.
@@ -2948,19 +2968,24 @@ public class String2 {
             return null;
         int n = ar.length;
         boolean csv = separator.charAt(0) == ',';
-        //8 bytes is lame estimate of bytes/element
+        boolean tsv = separator.charAt(0) == ',';
+        //8 bytes is lame estimate of bytes/element, but better than nothing
         StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(separator);
             Object o = ar[i];
-            if (o == null) 
+            if (o == null) {
                 sb.append("[null]");
-            else {
+            } else {
                 String s = o.toString();
-                if (csv && (s.indexOf(',') >= 0 || s.indexOf('"') >= 0))
+                int slen = s.length();
+                if (csv) 
+                    s = s.indexOf(',') >= 0? toJson(s) : toJsonIfNeeded(s, 65536);
+                else if (tsv && s.indexOf('\t') >= 0) 
                     s = toJson(s);
                 sb.append(s);
+
             }
         }
         if (finalSeparator && n > 0)
@@ -2984,7 +3009,7 @@ public class String2 {
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(ar[i]);
+            sb.append("" + ar[i]);
         }
         return sb.toString();
     }

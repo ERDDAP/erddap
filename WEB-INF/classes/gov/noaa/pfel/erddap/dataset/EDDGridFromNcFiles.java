@@ -1189,6 +1189,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
             "results.length=" + results.length() + " expected.length=" + expected.length() + 
             "\nresults=\n" + results);
 
+        /* this test usually aren't worth the extra effort
         try {
             expected = 
         "<att name=\"testOutOfDate\">now-3days</att>\n" +  //changes
@@ -1202,6 +1203,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
                 "\nThe dates will vary (or fail because no testOutOfDate) depending " +
                 "on when a jplMURSST41 file was last download to this computer."); 
         }
+        */
 
 
 expected = 
@@ -1865,19 +1867,15 @@ expected =
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
-        String answer = String2.getStringFromSystemIn(
-            "This test is very slow. Full test (f), quick test / no download (q), or skip this (s)?");
-        if ("s".equals(answer))
-            return;
 
         try {
-
         String cacheFromUrl = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
         String regex = ".*_CESM1-CAM5_201.*\\.nc";
         String dir = "/u00/data/points/testAwsS3NexDcp/";
         String name = ""; //with cacheFromUrl, use nothing.   Was: dir + "tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc";
         int reload = 1000000;
-        if ("f".equals(answer)) {
+        //if ("f".equals(answer))   //full test?
+        {
             //delete the cached files
             String2.log("Emptying cache...  nRemain=" + File2.deleteAllFiles(dir, true, true)); //recursive, deleteEmptySubdirectories
             String2.log("Deleting " + dir + "  result=" + File2.delete(dir)); //must be empty      
@@ -2067,9 +2065,9 @@ expected =
         String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3 passed the test.");
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nIf creation_date minor variation: it varies wth sample file.\n" +
-                "Otherwise: Unexpected error: Have you updated your AWS credentials lately?\n"); 
+            throw new RuntimeException( 
+                "If creation_date minor variation: it varies wth sample file.\n" +
+                "Otherwise: Unexpected error: Have you updated your AWS credentials lately?\n", t); 
         }
     }
 
@@ -2080,12 +2078,8 @@ expected =
      */
     public static void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testAwsS3() *****************\n");
-        if ("s".equals(String2.getStringFromSystemIn(
-            "This test is very slow. Continue (y) or skip this (s)?")))
-            return;
 
         testVerboseOn();
-        try {
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -2299,11 +2293,6 @@ expected =
             "&.colorBar=|||||&.land=under",
             tDir, "testAwsS3", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error: Have you updated your AWS credentials lately?\n"); 
-        }
 
     }
 
@@ -4835,8 +4824,8 @@ expected =
                 }
 
             } catch (Exception e) {
-                String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                    "\nUnexpected ERROR for Test#" + ext + ": " + dotExt + "."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                    "Unexpected error for Test#" + ext + ": " + dotExt + "."); 
             }
         }
         reallyVerbose = oReallyVerbose;
@@ -5676,8 +5665,8 @@ expected =
             "&.vars=days|hours|&.marker=5|5&.color=0x000000&.colorBar=|||||",
             tDir, fName,  ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
-        String2.log("\n!!!! KNOWN PROBLEM: SgtGraph DOESN'T SUPPORT TWO TIME AXES. !!!!\n" +
-            "See SgtGraph \"yIsTimeAxis = false;\".\n");
+        Test.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
+            "See SgtGraph \"yIsTimeAxis = false;\".");
         Math2.sleep(10000);       
 
     }
@@ -6124,7 +6113,14 @@ expected =
         //*** rename a non-data file so it matches the regex
         try {
             String2.log("\n*** rename an invalid file to be a valid name\n");       
-            File2.rename(dataDir, "bad.notnc", "bad.nc");
+            try {
+                //change the invalid file's name so it will be noticed
+                if ( File2.isFile(dataDir + "bad.notnc") &&
+                    !File2.isFile(dataDir + "bad.nc"))
+                File2.rename(dataDir, "bad.notnc", "bad.nc");
+            } catch (Exception e) {
+                //rename will fail if file already in place
+            }
             for (int i = 0; i < 5; i++) {
                 String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update());
                 Math2.sleep(1000);
@@ -6153,7 +6149,12 @@ expected =
         } finally {
             //rename it back to original
             String2.log("\n*** rename it back to original\n");       
-            File2.rename(dataDir, "bad.nc", "bad.notnc");
+            try {
+                //put things back to initial state
+                File2.rename(dataDir, "bad.nc", "bad.notnc");
+            } catch (Exception e) {
+                throw new RuntimeException("2020-05-15 This failed. Why? Because the original rename failed?");
+            }
             for (int i = 0; i < 5; i++) {
                 String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update());
                 Math2.sleep(1000);
@@ -6190,9 +6191,9 @@ expected =
             cumTime += (System.currentTimeMillis() - time);
             Math2.sleep(2); //updateEveryNMillis=1, so always a valid new update()
         }
-        String2.pressEnterToContinue("time/update() = " + (cumTime/1000.0) +
-            "ms (diverse results 0.001 - 11.08ms on Bob's M4700)" +
-            "\nNot an error, just FYI."); 
+        Test.ensureTrue(cumTime/1000.0 < 11.08,
+            "Too slow! time/update() = " + (cumTime/1000.0) +
+            "ms (diverse results 0.001 - 11.08ms on Bob's M4700)"); 
     }
 
     /**
@@ -9220,10 +9221,6 @@ expected =
             "\n nTimePoints=" + nTimePoints +
             " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 4320 * 8640, EDStatic.partialRequestMaxBytes));
-        String s = String2.getStringFromSystemIn(
-            "This test is very slow. Continue ('c') or skip ('s')?");
-        if (s.equals("s"))
-            return;
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "nceiPH53sstd1day"); 
         String query = "sea_surface_temperature[0:" + (nTimePoints - 1) + "][][]";
@@ -9325,7 +9322,6 @@ expected =
         Test.ensureEqual(nTasks, expectedN, "nFilesToDownload");
         String2.pressEnterToContinue("\nPress Enter when the download tasks are finished (" +
             expectedN + " minutes?).");
-        try {        
         results = FileVisitorDNLS.oneStep(tLocalDir, 
             tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
 expected = 
@@ -9336,11 +9332,6 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** EDDGridFromNcFiles.testMakeCopyFileTasks finished successfully");
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
 
         FileVisitorDNLS.debugMode=false;
 
@@ -9647,7 +9638,6 @@ FileVisitorDNLS.debugMode = true;
         }
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** EDDGridCopyFiles  das and dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_copyFiles_Entire", ".das"); 
@@ -9773,18 +9763,14 @@ expected =
 "    Float64 Westernmost_Easting 205.0;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_copyFiles_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -9806,16 +9792,12 @@ expected =
 "  } MWchla;\n" +
 "} testEDDGridCopyFiles;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+ 
 
         //*** test make data files
         String2.log("\n****************** EDDGridCopyFiles make DATA FILES\n");       
 
         //.csv   
-        try {
         userDapQuery = 
             "MWchla[(2002-07-09T12:00:00Z)][][0:1000:last][0:1000:last]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
@@ -9841,12 +9823,6 @@ expected =
 "2002-07-09T12:00:00Z,0.0,47.0,242.5,NaN\n" +
 "2002-07-09T12:00:00Z,0.0,47.0,255.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
 
         String2.log("\n*** EDDGridFromNcFiles.testCopyFiles() finished successfully.");
 FileVisitorDNLS.verbose = false;
@@ -9884,7 +9860,6 @@ FileVisitorDNLS.debugMode = true;
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** EDDGridCacheFiles  das and dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_cacheFiles_Entire", ".das"); 
@@ -10010,18 +9985,14 @@ expected =
 "    Float64 Westernmost_Easting 205.0;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_cacheFiles_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -10043,16 +10014,12 @@ expected =
 "  } MWchla;\n" +
 "} testEDDGridCacheFiles;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+
 
         //*** test make data files
         String2.log("\n****************** EDDGridCacheFiles make DATA FILES\n");       
 
         //.csv that needs every file
-        try {
         userDapQuery = "MWchla[0:last][][0][3000]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_cacheFiles_data", ".csv"); 
@@ -10112,12 +10079,6 @@ expected =
 "2002-08-28T12:00:00Z,0.0,22.0,242.5,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
-
         String2.log("\n*** EDDGridFromNcFiles.testCacheFiles() finished successfully.");
 FileVisitorDNLS.verbose = false;
 FileVisitorDNLS.reallyVerbose = false;
@@ -10149,7 +10110,6 @@ FileVisitorDNLS.debugMode = false;
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** testFileName  das and dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testFileName", ".das"); 
@@ -10291,18 +10251,14 @@ expected =
 "    Float64 Westernmost_Easting -179.9792;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testFileName", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -10322,16 +10278,11 @@ expected =
 "  } chlorophyll;\n" +
 "} erdMH1chlamday;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** testRepaceWithFileName make DATA FILES\n");       
 
         //time values
-        try {
         userDapQuery = "time[]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testFileName" + "Time", ".csv"); 
@@ -10344,13 +10295,8 @@ expected =
 "2003-02-16T00:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv that needs every file
-        try {
         userDapQuery = "chlorophyll[0:last][1600:1601][10]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testFileName", ".csv"); 
@@ -10364,12 +10310,6 @@ expected =
 "2003-02-16T00:00:00Z,23.312494,-179.5625,0.067577\n" +
 "2003-02-16T00:00:00Z,23.27083,-179.5625,0.068499\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
 
         String2.log("\n*** EDDGridFromNcFiles.testFileName() finished successfully.");
         /* */
@@ -10398,7 +10338,6 @@ expected =
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** testReplaceFromFileName  das and dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".das"); 
@@ -10654,18 +10593,14 @@ expected =
 "    Float64 Westernmost_Easting -179.9792;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -10733,16 +10668,11 @@ expected =
 "  } l2p_flags;\n" +
 "} nceiPH53sstd1day;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** testRepaceWithFileName make DATA FILES\n");       
 
         //time values
-        try {
         userDapQuery = "time[]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testReplaceFromFileName" + "Time", ".csv"); 
@@ -10760,13 +10690,8 @@ expected =
 "1981-08-31T12:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv that needs every file
-        try {
         userDapQuery = "sea_surface_temperature[0:last][1600:1601][10]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".csv"); 
@@ -10790,12 +10715,6 @@ expected =
 "1981-08-31T12:00:00Z,23.312502,-179.5625,-3.0\n" +
 "1981-08-31T12:00:00Z,23.270836,-179.5625,-3.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
 
         String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName() finished successfully.");
         /* */
@@ -10830,7 +10749,6 @@ expected =
             "  >> EDDGridFromFiles.getSourceMetadata   just using known info, not reading the file.\n");
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** testMinimalReadSource  das and dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".das"); 
@@ -11086,18 +11004,13 @@ expected =
 "    Float64 Westernmost_Easting -179.9792;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -11165,16 +11078,11 @@ expected =
 "  } l2p_flags;\n" +
 "} testMinimalReadSource;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** testRepaceWithFileName make DATA FILES\n");       
 
         //time values
-        try {
         userDapQuery = "time[]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testMinimalReadSource" + "Time", ".csv"); 
@@ -11192,13 +11100,8 @@ expected =
 "1981-08-31T12:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv that needs every file
-        try {
         userDapQuery = "sea_surface_temperature[0:last][1600:1601][10]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".csv"); 
@@ -11223,12 +11126,6 @@ expected =
 "1981-08-31T12:00:00Z,23.270836,-179.5625,-3.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
-
         String2.log("\n*** EDDGridFromNcFiles.testMinimalReadSource() finished successfully.");
         debugMode = oDebugMode;
         /* */
@@ -11238,10 +11135,9 @@ expected =
      * This makes a series of graphs which test log axes.
      * @param whichChunk -1 (all) or 0 - 4.
      */
-    public static void testLogAxis(int whichChunk) throws Exception {
+    public static void testLogAxis(int whichChunk) throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testLogAxis()");
-        try {
         String tDir = EDStatic.fullTestCacheDirectory;
         String tName, start, query, results, expected;
         EDDGrid eddGrid;
@@ -11431,10 +11327,6 @@ expected =
         }
 
         //String2.pressEnterToContinue();
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
 
@@ -11744,8 +11636,6 @@ expected =
         String2.log(NcHelper.ncdump(String2.unitTestBigDataDir + 
             "nc/V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc", "-h"));
 
-        try {
-
         String name, tName, results, tResults, expected;
         String error = "";
         int po;
@@ -11780,11 +11670,6 @@ expected =
 
         String2.log("\nEDDGridFromNcFiles.testUnsignedGrid passed the test.");
 
-        } catch (Exception e7) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e7) + 
-                "//trouble  needs work.");
-        } 
-
     }
 
     /**
@@ -11795,11 +11680,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testNThreads(int maxNThreads) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
-        String s = String2.getStringFromSystemIn(
-            "This test is very slow. Continue ('c') or skip ('s')?");
-        if (s.equals("s"))
-            return;
+        String2.log("\n****************** EDDGridFromNcFiles.testNThreads() *****************\n");
 
         testVerboseOn();
         String tName, results,  expected, userDapQuery, tQuery;
@@ -12059,9 +11940,7 @@ expected =
 
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires nceiPH53sstn1day in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("Unexpected error. This test requires nceiPH53sstn1day in the localhost ERDDAP.", t); 
         } 
     }
 
@@ -12092,104 +11971,128 @@ expected =
 
 
     /**
-     * This tests this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-/* for releases, this line should have open/close comment */
-        testNc(deleteCachedDatasetInfo);
-        testCwHdf(deleteCachedDatasetInfo);
-        testHdf();
-        testNcml();
-        testNccsv();
-        testGrib_43(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3+
-        testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
-        testGenerateDatasetsXml();  //also tests decompressIfNeeded
-        testGenerateDatasetsXml2();
-        testGenerateDatasetsXml3();
-        testGenerateDatasetsXml4();
-        testGenerateDatasetsXmlLong2();
- testGenerateDatasetsXml5(); //not finished test of unsigned PAType
-        testSpeed(0, 1000);  //0, 1000
-        testAVDVSameSource();
-        test2DVSameSource();
-        testAVDVSameDestination();
-        test2DVSameDestination();
-        testUInt16File();
-        testTimePrecisionMillis();
-        testSimpleTestNc();
-        testSimpleTestNc2();
-        testSpecialAxis0Time();
-        testSpecialAxis0FileNameInt();
-        testSpecialAxis0PathNameInt();
-        testSpecialAxis0GlobalDouble();
-        testFileName(true);
-        testFileName(false);
-        testReplaceFromFileName(true);
-        testReplaceFromFileName(false);
-        testMinimalReadSource();
-        testDapErrors();
-        testFiles();  
-        testIslandShift();
- testUnsignedGrid();  //not finished test of unsigned PAType
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 11 : 54;
+        String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
-//unfinished:    testRTechHdf();
-        testUpdate();
-        testQuickRestart();
-        testBigRequestSpeed(3, ".dods", 895847390, 20000); //expected bytes, ms. Also testNThreads.
-        testNThreads(3);
+        boolean deleteCachedDatasetInfo = true; 
 
-        testMakeCopyFileTasks(true); 
-        testMakeCopyFileTasks(false);
-        testGenerateDatasetsXmlCopy(); //requires localhost erdMWchla1day
-        testCopyFiles(true);  //deleteDataFiles  //does require localhost erddap
-        testCopyFiles(false); //uses cachePartialPathRegex  //doesn't require localhost erddap
-        testCacheFiles(true);  //deleteDataFiles //does require localhost erddap 
-        testCacheFiles(false);                   //does require localhost erddap
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testIslandShift();
+                    if (test ==  1) testSpeed(0, 1000);  //0, 1000
 
-        //tests of remote sources on-the-fly
-        //NetcdfFile.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
-        //NetcdfDataset.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
-        //from command line: curl --head https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
-        testGenerateDatasetsXmlWithRemoteThreddsFiles();  
-        //testRemoteThreddsFiles(true); //deleteCachedInfo. Don't do this. Use <cacheFromUrl> instead
-        testMatchAxisNDigits();
-        testIgor();
-        testBadNcFile(false);  //runIncrediblySlowTest?
-        testInvalidShortenedNcFile();
-        testLogAxis(-1); //-1=all
+                    if (test ==  3) testGenerateDatasetsXmlLong2();
+                    if (test ==  4) testSpecialAxis0GlobalDouble();
+                    if (test ==  5) testMinimalReadSource();
+                    if (test ==  6) testMakeCopyFileTasks(true); 
+                    if (test ==  7) testMakeCopyFileTasks(false);
+                    if (test ==  8) testGenerateDatasetsXmlCopy(); //requires localhost erdMWchla1day
+                    if (test ==  9) testLogAxis(-1); //-1=all
+                    if (test == 10) testCopyFiles(true);  //deleteDataFiles  //does require localhost erddap
+                    if (test == 11) testCopyFiles(false); //uses cachePartialPathRegex  //doesn't require localhost erddap
 
-        testGenerateDatasetsXmlAwsS3();       
-        testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
-        testAwsS3(false);  //deleteCachedInfo 
+                } else {
+                    if (test ==  0) testNc(deleteCachedDatasetInfo);
+                    if (test ==  1) testCwHdf(deleteCachedDatasetInfo);
+                    if (test ==  2) testHdf();
+                    if (test ==  3) testNcml();
+                    if (test ==  4) testNccsv();
+                    if (test ==  5) testGrib_43(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3+
+                    if (test ==  6) testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
+                    if (test ==  7) testGenerateDatasetsXml();  //also tests decompressIfNeeded
+                    if (test ==  8) testGenerateDatasetsXml2();
+                    if (test ==  9) testGenerateDatasetsXml3();
+                    if (test == 10) testGenerateDatasetsXml4();
+if (test == 12) testGenerateDatasetsXml5(); //not finished test of unsigned PAType
+                    if (test == 14) testAVDVSameSource();
+                    if (test == 15) test2DVSameSource();
+                    if (test == 16) testAVDVSameDestination();
+                    if (test == 17) test2DVSameDestination();
+                    if (test == 18) testUInt16File();
+                    if (test == 19) testTimePrecisionMillis();
+                    if (test == 20) testSimpleTestNc();
+                    if (test == 21) testSimpleTestNc2();
+                    if (test == 22) testSpecialAxis0Time();
+                    if (test == 23) testSpecialAxis0FileNameInt();
+                    if (test == 24) testSpecialAxis0PathNameInt();
+                    if (test == 26) testFileName(true);
+                    if (test == 27) testFileName(false);
+                    if (test == 28) testReplaceFromFileName(true);
+                    if (test == 29) testReplaceFromFileName(false);
+                    if (test == 31) testDapErrors();
+                    if (test == 32) testFiles();  
+if (test == 33) testUnsignedGrid();  //not finished test of unsigned PAType
 
-        /* */
+                    //unfinished: if (test == 34) testRTechHdf();
+                    if (test == 35) testUpdate();
+                    if (test == 36) testQuickRestart();
 
-        //not usually run
-        //testQuickRestart2();
+                    if (test == 40) testCacheFiles(true);  //deleteDataFiles //does require localhost erddap 
+                    if (test == 41) testCacheFiles(false);                   //does require localhost erddap
 
-        //NOT FINISHED
-        //none
+                    //tests of remote sources on-the-fly
+                    //NetcdfFile.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+                    //NetcdfDataset.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+                    //from command line: curl --head https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
+                    if (test == 42) testGenerateDatasetsXmlWithRemoteThreddsFiles();  
+                    //if (test == 43) testRemoteThreddsFiles(true); //deleteCachedInfo. Don't do this. Use <cacheFromUrl> instead
+                    if (test == 44) testMatchAxisNDigits();
+                    if (test == 45) testIgor();
+                    if (test == 46) testBadNcFile(false);  //runIncrediblySlowTest?
+                    if (test == 47) testInvalidShortenedNcFile();
 
-        //Remote Hyrax
-        //  These were tests of reading remote data files on Hyrax without downloading,
-        //  but test Hyrax server doesn't support Byte Ranges.
-        //testGenerateDatasetsXmlWithRemoteHyraxFiles();  //Test server doesn't support Byte Ranges.
-        //testRemoteHyraxFiles(false); //deleteCachedInfo //Test server doesn't support Byte Ranges.
+                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 20000); //expected bytes, ms. Also testNThreads.
+                    if (test == 51 && doSlowTestsToo) testNThreads(3);
+                    if (test == 52 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
+                    if (test == 53 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+                    if (test == 54 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
-        //NOT FINISHED. test file for groups also has no named dimensions.  
-        //testGenerateDatasetsXmlGroups();
-        //testGroups();
+                    //not usually run
+                    //if (test == 1000) testQuickRestart2();
 
-        //one time tests
-        //String fiName = String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2";
-        //String2.log(NcHelper.ncdump(fiName, "-h"));
-        //NetcdfDataset in = NetcdfDataset.openDataset(fiName);
-        //in.close();
+                    //NOT FINISHED
+                    //none
 
+                    //Remote Hyrax
+                    //  These were tests of reading remote data files on Hyrax without downloading,
+                    //  but test Hyrax server doesn't support Byte Ranges.
+                    //if (test == 1001) testGenerateDatasetsXmlWithRemoteHyraxFiles();  //Test server doesn't support Byte Ranges.
+                    //if (test == 1002) testRemoteHyraxFiles(false); //deleteCachedInfo //Test server doesn't support Byte Ranges.
+
+                    //NOT FINISHED. test file for groups also has no named dimensions.  
+                    //if (test == 1003) testGenerateDatasetsXmlGroups();
+                    //if (test == 1004) testGroups();
+
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
-
 
 }
 

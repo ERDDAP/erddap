@@ -1149,25 +1149,24 @@ cdmSuggestion() +
     public static void testGenerateDatasetsXml2() throws Throwable {
         testVerboseOn();
 
-        try {
-            String results = generateDatasetsXml(
-        "c:/data/ngdcJasonSwath/", ".*\\.nc", 
-        "c:/data/ngdcJasonSwath/JA2_OPN_2PcS088_239_20101201_005323_20101201_025123.nc", 
-        "time",  //not "time, meas_ind"
-        DEFAULT_RELOAD_EVERY_N_MINUTES, 
-        "", "", "", 
-        "", "", 
-        "time", 
-        "", "", "", "", 
-        -1, null, //defaultStandardizeWhat
-        new Attributes());
+        String results = generateDatasetsXml(
+            "c:/data/ngdcJasonSwath/", ".*\\.nc", 
+            "c:/data/ngdcJasonSwath/JA2_OPN_2PcS088_239_20101201_005323_20101201_025123.nc", 
+            "time",  //not "time, meas_ind"
+            DEFAULT_RELOAD_EVERY_N_MINUTES, 
+            "", "", "", 
+            "", "", 
+            "time", 
+            "", "", "", "", 
+            -1, null, //defaultStandardizeWhat
+            new Attributes());
 
-            String tDatasetID = "ngdcJasonSwath_c70d_5281_4d5c";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "OGDR, Standard dataset", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+        String tDatasetID = "ngdcJasonSwath_c70d_5281_4d5c";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "OGDR, Standard dataset", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "time, latitude, longitude, surface_type, alt_echo_type, rad_surf_type, " +
 "qual_alt_1hz_range_ku, qual_alt_1hz_range_c, qual_alt_1hz_swh_ku, qual_alt_1hz_swh_c, " +
 "qual_alt_1hz_sig0_ku, qual_alt_1hz_sig0_c, qual_alt_1hz_off_nadir_angle_wf_ku, " +
@@ -1192,13 +1191,7 @@ cdmSuggestion() +
 "ocean_tide_equil, ocean_tide_non_equil, load_tide_sol1, load_tide_sol2, " +
 "solid_earth_tide, pole_tide, wind_speed_model_u, wind_speed_model_v, " +
 "wind_speed_alt, wind_speed_rad, rad_water_vapor, rad_liquid_water, ssha", 
-                ""); 
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
+            ""); 
     }
 
     /**
@@ -6593,7 +6586,6 @@ expected =
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec. 
 
-    try {
 
         //*** .das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, "gtspp", ".das"); 
@@ -6914,11 +6906,6 @@ expected =
         tResults = results.substring(tPo);
         Test.repeatedlyTestLinesMatch(tResults, expected, "\nresults=\n" + results);
        
-    } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-    }
-    try {
 
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
@@ -6943,11 +6930,6 @@ expected =
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-    }
-    try {
 
         //station_id    (slow for .nc, faster for .ncCF)
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -6991,11 +6973,6 @@ expected =
             Test.ensureTrue(error.indexOf(MustBe.THERE_IS_NO_DATA) >= 0, "error=" + error);
         }
 
-    } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-    }
-    try {
 
         //latitude = -78.579002  the minmin value as of 2014-07-21
         //should succeed quickly (except for println statements here)
@@ -7036,11 +7013,6 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime) + "ms");
         //String2.pressEnterToContinue();
-
-    } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-    }
 
     }
 
@@ -7537,9 +7509,8 @@ expected =
                 }
                 //String2.pressEnterToContinue("Okay."); 
             } catch (Exception e) {
-                String2.pressEnterToContinue(
-                    MustBe.throwableToString(e) +
-                    "\nUnexpected ERROR for Test#" + ext + ": " + dotExt + "."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                    "Unexpected error for Test#" + ext + ": " + dotExt + "."); 
             }
         }
         reallyVerbose = oReallyVerbose;
@@ -8411,8 +8382,7 @@ expected =
 
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n2014-08-08 Known problem: nwioos source currently isn't working."); 
+            Test.knownProblem("nwioos source currently isn't working.", "", t); 
         }
 
     }
@@ -11065,11 +11035,11 @@ String expected3 = expected2 +
             tableDataset.writeDapHtmlForm(null, "", writer);
         float results = ((System.currentTimeMillis() - time) / (float)n);
         double expected = 5.31;
-        String2.log("\nEDDTableFromNcFiles.testSpeedDAF time per .html = " +
+        String msg = "\nEDDTableFromNcFiles.testSpeedDAF time per .html = " +
             results + "ms (java 1.7M4700 " + expected + "ms, 1.6 14.6ms, 1.5 40.8ms)\n" +  //slow because of info for sliders and subset variables
-            "  outputFileName=" + fileName);
-        if (results > expected * 2)
-            String2.pressEnterToContinue(String2.beep(1) + "\nSlow."); 
+            "  outputFileName=" + fileName;
+        String2.log(msg);
+        Test.ensureTrue(results < expected * 2, "Too slow! (common if computer is busy)" + msg); 
 
         EDD.testVerbose(true);
     }
@@ -11096,12 +11066,12 @@ String expected3 = expected2 +
                 dir, "testSpeedMAG.txt", ".graph");
         double observe = (System.currentTimeMillis() - time2) / (float)n;
         double expect = 8; //2014-09 java 1.7 was 4.38ms, java 1.6 10.7ms, java 1.5 55.172ms
-        String2.log("\nEDDTableFromNcFiles.testSpeedMAG time per .graph = " +
+        String msg = "\nEDDTableFromNcFiles.testSpeedMAG time per .graph = " +
             observe + 
             "ms (java 1.7M4700 " + expect + "ms)\n" + //slow because of info for sliders and subset variables
-            "  outputFileName=" + fileName);
-        if (observe > 1.5 * expect) 
-            String2.pressEnterToContinue("Too slow!");
+            "  outputFileName=" + fileName;
+        String2.log(msg);
+        Test.ensureTrue(observe < 1.5 * expect, "Too slow!" + msg);
         EDD.testVerbose(true);
     }
 
@@ -11129,12 +11099,12 @@ String expected3 = expected2 +
 
         double observe = (System.currentTimeMillis() - time2) / (float)n;
         double expect = 4.23; //2013-10-28 ~10ms   
-        String2.log("\nEDDTableFromNcFiles.testSpeedSubset time per .graph = " +
+        String msg = "\nEDDTableFromNcFiles.testSpeedSubset time per .graph = " +
             observe + 
             "ms (java 1.7M4700 " + expect + "ms, 1.6 17.36ms)\n" +
-            "  outputFileName=" + fileName);
-        if (observe > 1.5 * expect) 
-            String2.pressEnterToContinue("Too slow!");
+            "  outputFileName=" + fileName;
+        String2.log(msg);
+        Test.ensureTrue(observe < 1.5 * expect, "Too slow! (common if computer is busy)" + msg);
         EDD.testVerbose(true);
     }
 
@@ -11285,8 +11255,7 @@ String expected3 = expected2 +
         } catch (Throwable t) {
             String msg = t.toString();
             if (msg.indexOf(MustBe.THERE_IS_NO_DATA) < 0) 
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nUnexpected error.   expected=" + MustBe.THERE_IS_NO_DATA); 
+                throw new RuntimeException("Unexpected error.  expected=" + MustBe.THERE_IS_NO_DATA, t); 
         }
         
     } //end of testMV
@@ -12135,15 +12104,14 @@ String expected3 = expected2 +
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  test of String=
-        try {
-            String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
-                "&time>=2002-08-07T00&time<=2002-08-07T06&ship=\"New_Horizon\"";
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
-                globecBottle.className() + "_StrEq", ".csv"); 
-            //SSR.displayInBrowser("file://" + dir + tName);
-            results = String2.directReadFrom88591File(dir + tName);
-            //String2.log(results);
-            expected = 
+        String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
+            "&time>=2002-08-07T00&time<=2002-08-07T06&ship=\"New_Horizon\"";
+        tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
+            globecBottle.className() + "_StrEq", ".csv"); 
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
 "longitude,NO3,time,ship\n" +
 "degrees_east,micromoles L-1,UTC,\n" +
 "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
@@ -12165,22 +12133,17 @@ String expected3 = expected2 +
 "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  test of String< >
-        try {
-            String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
-                "&time>=2002-08-07T00&time<=2002-08-07T06&ship>\"Nev\"&ship<\"Nex\"";
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
-                globecBottle.className() + "_GTLT", ".csv"); 
-            //SSR.displayInBrowser("file://" + dir + tName);
-            results = String2.directReadFrom88591File(dir + tName);
-            //String2.log(results);
-            expected = 
+        tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
+            "&time>=2002-08-07T00&time<=2002-08-07T06&ship>\"Nev\"&ship<\"Nex\"";
+        tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
+            globecBottle.className() + "_GTLT", ".csv"); 
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
 "longitude,NO3,time,ship\n" +
 "degrees_east,micromoles L-1,UTC,\n" +
 "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
@@ -12202,11 +12165,7 @@ String expected3 = expected2 +
 "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv    test of String regex
         //!!! I also tested this with 
@@ -12219,15 +12178,14 @@ String expected3 = expected2 +
         //Other simpler regex tests succeed.
         //It seems that the regex syntax is different for drds than erddap/java.
         //So recommend that people not say that drds servers can constrain String regex
-        try {
-            String tDapQuery = "longitude,NO3,time,ship&latitude>0" +
-                "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
-                //"&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\"";       //source works with this
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
-                globecBottle.className() + "_regex", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            //String2.log(results);
-            expected = 
+        tDapQuery = "longitude,NO3,time,ship&latitude>0" +
+            "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
+            //"&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\"";       //source works with this
+        tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
+            globecBottle.className() + "_regex", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
 "longitude,NO3,time,ship\n" +
 "degrees_east,micromoles L-1,UTC,\n" +
 "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
@@ -12249,21 +12207,16 @@ String expected3 = expected2 +
 "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dataTable
-        try {
-            String tDapQuery = "longitude,NO3,time,ship&latitude>0" +
-                "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
-                globecBottle.className() + "_regex_dataTable", ".dataTable"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            //String2.log(results);
-            expected =   //note that month is 0-based
+        tDapQuery = "longitude,NO3,time,ship&latitude>0" +
+            "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
+        tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
+            globecBottle.className() + "_regex_dataTable", ".dataTable"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected =   //note that month is 0-based
 "{\"cols\":[{\"id\":\"longitude\",\"label\":\"longitude (degrees_east) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"NO3\",\"label\":\"NO3 (micromoles L-1) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"time\",\"label\":\"time\",\"pattern\":\"\",\"type\":\"datetime\"},{\"id\":\"ship\",\"label\":\"ship\",\"pattern\":\"\",\"type\":\"string\"}],\n" +
 "\"rows\": [\n" +
 "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":34.54,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n" +
@@ -12287,11 +12240,7 @@ String expected3 = expected2 +
 "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":4.69,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]}\n" +
 "    ]\n" +
 "  }\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
         //.das     das isn't affected by userDapQuery
@@ -12898,15 +12847,14 @@ expected =
 
 
         //.odvTxt
-        try {
-            tName = globecBottle.makeNewFileForDapQuery(null, null, 
-                "&latitude>0&time>=2002-08-03", 
-                dir, globecBottle.className() + "_ODV", ".odvTxt"); 
-            String2.log("ODV fileName=" + dir + tName);
-            results = String2.directReadFromUtf8File(dir + tName);
-            results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
-                                         "<CreateTime>9999-99-99T99:99:99");
-            expected = 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, 
+            "&latitude>0&time>=2002-08-03", 
+            dir, globecBottle.className() + "_ODV", ".odvTxt"); 
+        String2.log("ODV fileName=" + dir + tName);
+        results = String2.directReadFromUtf8File(dir + tName);
+        results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
+                                     "<CreateTime>9999-99-99T99:99:99");
+        expected = 
 "//<Creator>http://www.globec.org/</Creator>\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>\n" +
 "//<Encoding>UTF-8</Encoding>\n" +
@@ -12946,12 +12894,8 @@ expected =
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "\nresults=\n" + results);
 
 
         //.tsv
@@ -13518,12 +13462,11 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
 
         //the basicQuery
-        try {
-            //an easy query
-            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, dir, 
-                tedd.className() + "_bird1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
+        //an easy query
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, dir, 
+            tedd.className() + "_bird1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
 "22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,1,180,240,1,0.448,SHSO,15\n" +
@@ -13539,13 +13482,13 @@ expected =
 "22022,8388607,-125.978,43.727,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n" +
 "22023,8388607,-125.953,43.695,2000-08-07T00:00:00Z,1.3,2,0,150,1,1.0,PHRE,25\n" +
 "22025,8388607,-125.903,43.628,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-           
-            //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
-            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=40", 
-                dir, tedd.className() + "_bird2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+       
+        //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
+        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=40", 
+            dir, tedd.className() + "_bird2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
 "22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,1,180,240,1,0.448,SHSO,15\n" +
@@ -13556,12 +13499,8 @@ expected =
 "22020,8388607,-125.968,43.693,2000-08-07T00:00:00Z,1.6,1,40,340,1,0.67,STLE,25\n" +
 "22022,8388607,-125.978,43.727,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n" +
 "22025,8388607,-125.903,43.628,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-        
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdGlobecBirds."); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+    
 
         try {        
             //try getting no data -- exception should be MustBe.THERE_IS_NO_DATA
@@ -13603,16 +13542,15 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
 
         //the basicQuery
-        try {
-            EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "erdGlobecMoc1"); 
+        EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "erdGlobecMoc1"); 
 
-            //*** test a TableWriter that doesn't convert time to iso format
-            query = "cruise_id,station_id,longitude,latitude&latitude=44.6517&distinct()";             
-           
-            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
-                edd.className() + "_LL", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
+        //*** test a TableWriter that doesn't convert time to iso format
+        query = "cruise_id,station_id,longitude,latitude&latitude=44.6517&distinct()";             
+       
+        tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+            edd.className() + "_LL", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
 "cruise_id,station_id,longitude,latitude\n" +
 ",,degrees_east,degrees_north\n" +
 "NH0005,NH15,-124.4117,44.6517\n" +
@@ -13631,12 +13569,8 @@ expected =
 "W0204A,NH25,-124.65,44.6517\n" +
 "W0205A,NH15,-124.4117,44.6517\n" +
 "W0205A,NH25,-124.65,44.6517\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
+        Test.ensureEqual(results, expected, "results=\n" + results);      
            
-        } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testLatLon."); 
-        }
     }
 
 
@@ -13964,7 +13898,7 @@ expected =
             if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i])
                 //|| time < expectedMs[i] / 2 || time > expectedMs[i] * 2) 
                 String2.pressEnterToContinue(
-                    "Unexpected length or time." + String2.beep(1)); 
+                    "Unexpected length or time."); 
         }
 
         testVerboseOn();
@@ -14133,7 +14067,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2020-04-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2020-05-07 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -16166,9 +16100,9 @@ expected =
             try {
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t3) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t3) + 
-                    "Eeek!!! Known problem!!!\n" +
-                    "update() doesn't update subsetVariables (which is fine most of the time).");
+                Test.knownProblem(
+                    "update() doesn't update subsetVariables (which is fine most of the time).",
+                    "", t3);
             }
 
             //min and max time should be different
@@ -17216,10 +17150,6 @@ expected =
      */
     public static void testNThreads() throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testNThreads()\n");
-        String answer = String2.getStringFromSystemIn(
-            "This test is very slow. Do full test (f) or skip this (s)?");
-        if ("s".equals(answer))
-            return;
 
         Table.verbose = false;
         Table.reallyVerbose = false;
@@ -17304,10 +17234,6 @@ nThreads=1 time=67 47 69
      */
     public static void testNThreads2(String tDatasetID, int startNThreads, int endNThreads) throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testNThreads2()\n");
-        String answer = String2.getStringFromSystemIn(
-            "This test is very slow. Do full test (f) or skip this (s)?");
-        if ("s".equals(answer))
-            return;
 
         Table.verbose = false;
         Table.reallyVerbose = false;
@@ -17783,7 +17709,6 @@ FileVisitorDNLS.debugMode = true;
         int po;
         EDV edv;
 
-        try {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String tDir = EDStatic.fullTestCacheDirectory;
@@ -17805,7 +17730,6 @@ FileVisitorDNLS.debugMode = true;
         }
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "_Entire", ".das"); 
@@ -17930,18 +17854,13 @@ expected =
 "    String title \"Data from a local source.\";\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
 
         //*** test getting dds for entire dataset
-        try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -17967,16 +17886,11 @@ expected =
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test make data files
         String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");       
 
         //.csv   
-        try {
         userDapQuery = "area&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             eddTable.className() + "_areaList", ".csv"); 
@@ -17998,10 +17912,6 @@ expected =
 "Washington\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //.csv    for one area and time range
         userDapQuery = "&area=\"Central California\"&nominal_species=\"ABLN\"&time>=1976-01-01&time<=1976-04-01";
@@ -18029,10 +17939,6 @@ expected =
 "NaN,6,1976,702,3,615,5533,Central California,N,6,1976-03-15T00:00:00Z,\"Abalone, red\",ABLN,INV,\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         String2.log("\n*** testCopyFilesBasic() finished successfully.");
 FileVisitorDNLS.verbose = false;
@@ -18078,7 +17984,6 @@ FileVisitorDNLS.debugMode = true;
 
 
         //*** test getting das for entire dataset
-        try {
         String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "TestCache_Entire", ".das"); 
@@ -18333,13 +18238,8 @@ FileVisitorDNLS.debugMode = true;
 "    String history ";
             Test.ensureEqual(results.substring(0, expected.length()), 
                 expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
         //*** test getting dds for entire dataset
-        try {
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "TestCache_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
@@ -18362,18 +18262,13 @@ FileVisitorDNLS.debugMode = true;
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
-        String2.pressEnterToContinue("Turn off Anti Virus software for next test?"); 
+        //String2.pressEnterToContinue("Turn off Anti Virus software for next test?"); //I can't turn it off any more
 
         //*** test make data files
         String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");       
 
         //.csv   
-        try {        
         Math2.gc(10000);
         resultsSB.setLength(0);
         for (int thread = 1; thread <= 1; thread++) { //or -3 to 3
@@ -18397,7 +18292,7 @@ FileVisitorDNLS.debugMode = true;
             Math2.gc(10000);
             Math2.gc(10000);
         }
-        String2.pressEnterToContinue(resultsSB.toString());
+        String2.log(resultsSB.toString());
 //With AV software on, Progressively slower! 110 -> 330 s !
 //  and when finished it is clear that the disk is still really busy
 //  Task Manager shows activity by Antimalware Service Executable
@@ -18410,12 +18305,7 @@ FileVisitorDNLS.debugMode = true;
 //finished query #1 nThreads=3 time=121032 ms
 //  disk is quieter sooner with AV off.
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
-        try {
         //time range     should succeed quickly (except for println statements here)
         //!!! sort order of nc (by time, station_id ?) vs ncCF (by time, lat, lon ?!) is different
         time = System.currentTimeMillis();
@@ -18438,10 +18328,6 @@ FileVisitorDNLS.debugMode = true;
 "ME_BA_33TT_22001 00,ME,BA,33TT,22001 00,1254716,126.3,28.1667,2000-01-01T03:00:00Z,100.0,19.8,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("finished query #2 time=" + (System.currentTimeMillis()-time) + " ms (expected ~140 ms)\n");
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
 
 
         String2.log("\n*** testCacheFiles() finished successfully.");
@@ -18766,7 +18652,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
-    "(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=";
+    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to ";
 //2020-05-04T19:50:00Z, and hasNaN=false.)\n"; //end date changes
         Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);
@@ -18816,7 +18702,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     /**
      * This tests a problem with precision.
      */
-    public static void testPrecision() throws Exception {
+    public static void testPrecision() throws Throwable {
 
         String2.log("\n*** EDDTableFromNcFiles.testPrecision()");
         String tDir = EDStatic.fullTestCacheDirectory;
@@ -18828,120 +18714,148 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 
 
         //test default=linear
-        try {
-            eddTable = (EDDTable)oneFromDatasetsXml(null, "testPrecision");
-            dapQuery = "&time>max(time)-3days";
-            tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
-                tDir, eddTable.className() + "_testPrecision",  ".htmlTable"); 
-            SSR.displayInBrowser("file://" + tDir + tName);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) +
-                "\nUnexpected error."); 
-        }
+        eddTable = (EDDTable)oneFromDatasetsXml(null, "testPrecision");
+        dapQuery = "&time>max(time)-3days";
+        tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
+            tDir, eddTable.className() + "_testPrecision",  ".htmlTable"); 
+        SSR.displayInBrowser("file://" + tDir + tName);
     }
 
     /**
-     * This tests the methods in this class.
+     * This runs all of the interactive or not interactive tests for this class.
      *
-     * @throws Throwable if trouble
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
      */
-    public static void test(boolean doAllGraphicsTests) throws Throwable {
-        String2.log("\n*** EDDTableFromNcFiles.test()");
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? 13 : 73;
+        String msg = "\n^^^ EDDTableFromNcFiles.test(" + interactive + ") test=";
 
-/* for releases, this line should have open/close comment */
-        test1D(false); //deleteCachedDatasetInfo
-        test2D(true); 
-        test3D(false);
-        test4D(false);
-        testGlobec();
-        testKml();
-        testGraphics(doAllGraphicsTests);
-        testLegend();
-        testTimeAxis();
-        testLogAxis(-1);  //-1=all
-        testModTime();
-testNetcdf();  //trouble: opendap bytes are 0 - 255, Java/ERDDAP bytes are -128 to 127 !  //unsigned test?
-        testGlobecBirds();
-        testLatLon();
-        testDapErrors();
-        testId();
-        testDistinct();
-        testOrderBy();  
-        testOrderByCount();   //need to convert mv fv back for key cols?
-        testOrderByMax();     //mv fv fixed //has the most tests
-        testOrderByMin();     //mv fv fixed 
-        testOrderByMinMax();  //mv fv fixed 
-        testOrderByClosest(); //mv fv fixed 
-        testOrderByLimit();   //mv fv fixed 
-        testOrderByMean();    //mv fv fixed
-        testAddVariablesWhere();
-        testStationLonLat();
-        testGlobal();  //tests global: metadata to data conversion
-        testGenerateDatasetsXml();
-        testGenerateDatasetsXml2();
-        testGenerateDatasetsXmlNcdump();
-        testGtspp15FilesExist(1990, 2020);
-        testGtsppabFilesExist(1990, 2020);
-        testErdGtsppBest("erdGtsppBestNc");
-        testErdGtsppBest("erdGtsppBest");
-        testTransparentPng();
-        testSpeed(0, 1000);  
-        testManyYears();
-        testCAMarCat();
-        testNcCFPoint();
-        testNcCF1a();
-        testNcCFMA1a();
-        testNcCF1b();
-        testNcCFMA1b(); 
-        testNcCF2a();
-        testNcCFMA2a();
-        testNcCF2b();
-        testNcCFMA2b();
-        testSpeedDAF();
-        testSpeedMAG();
-        testSpeedSubset();
-        testEqualsNaN();
-        testAltitude();
-        //testTableWithAltitude(); !!!2013-12-27 DATASET GONE! NO SUITABLE REPLACEMENT  
-        testTableWithDepth();
-        testMV();     
-        //testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
-        testPmelTaoAirt();
-        testNow();
-        testMinMaxConstraints();
-        testTimePrecisionMillis();
-        testSimpleTestNcTable();
-        testSimpleTestNc2Table();
-        testUpdate();
-        testQuickRestart();
-        testNewTime();
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    if (test ==  0) testGenerateDatasetsXml();
+                    if (test ==  1) testGraphics(true); //doAllGraphicsTests
+                    if (test ==  2) testLogAxis(-1);  //-1=all
+                    if (test ==  3) testTransparentPng();
+                    if (test ==  4) testKml();
+                    if (test ==  5) testLegend();
+                    if (test ==  6) testTimeAxis();
+                    if (test ==  7) testSpeed(0, 1000);  
+                    if (test ==  8) testGtspp15FilesExist(1990, 2020);
+                    if (test ==  9) testGtsppabFilesExist(1990, 2020);
+                    if (test == 10) testCAMarCat();
+                    if (test == 11) testNewTime();
+                    if (test == 12) testMakeCopyFileTasks();           //requires fedCalLandings in localhost ERDDAP
+                    if (test == 13) testCopyFilesGenerateDatasetsXml();//requires fedCalLandings
 
-        testTablePseudoSourceNames();
-        testIgor();
-        testTimeSince19000101();
-        testHardFlag();
-        testNThreads();
-        testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads
-        String s = String2.getStringFromSystemIn("Run cwwcNDBCMetSSD test (y/n)? ");
-        if (s.equals("") || s.equals("y"))
-            testNThreads2("cwwcNDBCMetSSD", -3, 3);
+                } else {
+                    if (test ==  0) test1D(false); //deleteCachedDatasetInfo
+                    if (test ==  1) test2D(true); 
+                    if (test ==  2) test3D(false);
+                    if (test ==  3) test4D(false);
+                    if (test ==  4) testGlobec();
+                    if (test ==  5) testModTime();
+if (test ==  6) testNetcdf();  //trouble: opendap bytes are 0 - 255, Java/ERDDAP bytes are -128 to 127 !  //unsigned test?
+                    if (test ==  7) testGlobecBirds();
+                    if (test ==  8) testLatLon();
+                    if (test ==  9) testDapErrors();
+                    if (test == 10) testId();
+                    if (test == 11) testDistinct();
+                    if (test == 12) testOrderBy();  
+                    if (test == 13) testOrderByCount();   //need to convert mv fv back for key cols?
+                    if (test == 14) testOrderByMax();     //mv fv fixed //has the most tests
+                    if (test == 15) testOrderByMin();     //mv fv fixed 
+                    if (test == 16) testOrderByMinMax();  //mv fv fixed 
+                    if (test == 17) testOrderByClosest(); //mv fv fixed 
+                    if (test == 18) testOrderByLimit();   //mv fv fixed 
+                    if (test == 19) testOrderByMean();    //mv fv fixed
+                    if (test == 20) testAddVariablesWhere();
+                    if (test == 21) testStationLonLat();
+                    if (test == 22) testGlobal();  //tests global: metadata to data conversion
+                    if (test == 24) testGenerateDatasetsXml2();
+                    if (test == 25) testGenerateDatasetsXmlNcdump();
+                    if (test == 28) testErdGtsppBest("erdGtsppBestNc");
+                    if (test == 29) testErdGtsppBest("erdGtsppBest");
+                    if (test == 30) testManyYears();
+                    //if (test == 32) testNcCFPoint(); //source is gone
+                    if (test == 33) testNcCF1a();
+                    if (test == 34) testNcCFMA1a();
+                    if (test == 35) testNcCF1b();
+                    if (test == 36) testNcCFMA1b(); 
+                    if (test == 37) testNcCF2a();
+                    if (test == 38) testNcCFMA2a();
+                    if (test == 39) testNcCF2b();
+                    if (test == 40) testNcCFMA2b();
+                    if (test == 41) testSpeedDAF();
+                    if (test == 42) testSpeedMAG();
+                    if (test == 43) testSpeedSubset();
+                    if (test == 44) testEqualsNaN();
+                    if (test == 45) testAltitude();
+                    //if (test == 46) testTableWithAltitude(); !!!2013-12-27 DATASET GONE! NO SUITABLE REPLACEMENT  
+                    if (test == 47) testTableWithDepth();
+                    if (test == 48) testMV();     
+                    if (test == 49) testPmelTaoAirt();
+                    if (test == 50) testNow();
+                    if (test == 51) testMinMaxConstraints();
+                    if (test == 52) testTimePrecisionMillis();
+                    if (test == 53) testSimpleTestNcTable();
+                    if (test == 54) testSimpleTestNc2Table();
+                    if (test == 55) testUpdate();
+                    if (test == 56) testQuickRestart();
 
-        testMakeCopyFileTasks();           //requires fedCalLandings in localhost ERDDAP
-        testCopyFilesGenerateDatasetsXml();//requires fedCalLandings
-        testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
-        testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
-        //testCacheFiles(true);  //deleteCachedInfo?   //requires gtsppBest,  very slow, not usually run
-        testCacheFiles(false);                         //requires gtsppBest
+                    if (test == 60) testTablePseudoSourceNames();
+                    if (test == 61) testIgor();
+                    if (test == 62) testTimeSince19000101();
+                    if (test == 63) testHardFlag();
 
-        /* */
+                    if (test == 66) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
+                    if (test == 67) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
+                    if (test == 68) testCacheFiles(false);                         //requires gtsppBest
 
-        //not usually run
-        //test24Hours();  //requires special set up
-        //testByteRange(); //as of 2017-10-13 this doesn't work. I think because of bug in netcdf-java.
-        //testPrecision(); //used to diagnose one problem for one user
+                    if (test == 70 && doSlowTestsToo) testNThreads();
+                    if (test == 71 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads
+                    if (test == 72 && doSlowTestsToo) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
+                    if (test == 73 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo?   //requires gtsppBest,  very slow, not usually run
 
-        //NOT FINISHED
-        //testReadPngInfo();  //needs work
+                    /* */
+
+                    //not usually run
+                    if (test == 1000) test24Hours();  //requires special set up
+                    if (test == 1001) testByteRange(); //as of 2017-10-13 this doesn't work. I think because of bug in netcdf-java.
+                    if (test == 1002) testPrecision(); //used to diagnose one problem for one user
+                    if (test == 1003) {
+                        String s = String2.getStringFromSystemIn("Run cwwcNDBCMetSSD test (y/n)? ");
+                        if (s.equals("") || s.equals("y"))
+                            testNThreads2("cwwcNDBCMetSSD", -3, 3);
+                    }
+
+                    //NOT FINISHED
+                    //if (test == 1003) testReadPngInfo();  //needs work
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
+
+
 }
 

@@ -4,6 +4,8 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 /**
@@ -52,7 +54,7 @@ public class DegreeMinuteFormatter implements NumberFormatter  {
      *
      * @param args is ignored
      */
-    public static void main(String args[]) {
+    public static void basicTest() {
         DegreeMinuteFormatter dmf = new DegreeMinuteFormatter();
         Test.ensureEqual(dmf.format(4),     "4°",      "a");
         Test.ensureEqual(dmf.format(4.501), "4°30'",   "b");
@@ -67,5 +69,47 @@ public class DegreeMinuteFormatter implements NumberFormatter  {
         Test.ensureEqual(dmf.format(-0.001), "0°",     "n");
 
     }
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ DegreeMinuteFormatter.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) basicTest();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
+
 
 }
