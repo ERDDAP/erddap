@@ -1449,9 +1449,8 @@ reallyVerbose=false;
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires testTableCopy in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("This test requires testTableCopy in the localhost ERDDAP.\n" +
+                "Unexpected error.", t); 
         } 
     }
 

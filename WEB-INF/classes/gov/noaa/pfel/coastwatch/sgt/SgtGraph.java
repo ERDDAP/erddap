@@ -1741,7 +1741,7 @@ public class SgtGraph  {
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+        String imageDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "images/";
 
         int width = 800;  //2 graphs wide 
@@ -2145,7 +2145,7 @@ public class SgtGraph  {
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+        String imageDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "images/";
 
         int width = 400;  
@@ -2257,7 +2257,7 @@ public class SgtGraph  {
 
         String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+        String imageDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "images/";
        
         int width = 400;  
@@ -2279,7 +2279,7 @@ public class SgtGraph  {
         CompoundColorMap cColorMap = new CompoundColorMap(
             //String baseDir, String palette, String scale, double minData, 
             //double maxData, int nSections, boolean continuous, String resultDir)
-            SSR.getContextDirectory() + "WEB-INF/cptfiles/",
+            String2.webInfParentDirectory() + "WEB-INF/cptfiles/",
             "Rainbow", "linear", 0, 20, 5, true, 
             SSR.getTempDirectory());
 

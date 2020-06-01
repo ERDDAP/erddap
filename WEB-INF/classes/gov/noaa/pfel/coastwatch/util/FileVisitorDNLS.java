@@ -2549,7 +2549,7 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
     public static void testLocal(boolean doBigTest) throws Throwable {
         String2.log("\n*** FileVisitorDNLS.testLocal");
         verbose = true;
-        String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
+        String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
         String tPathRegex = null;
         Table table;
         long time;
@@ -2743,7 +2743,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         String2.log("\n*** FileVisitorDNLS.testAWSS3");
 
         verbose = true;
-        String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
+        String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
         Table table;
         long time;
         int n;

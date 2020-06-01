@@ -7,10 +7,10 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
+import com.cohort.util.Units2;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.EDUnits;
 
 /**
  * TableWriterUnits provides a way to change the units standard 
@@ -159,8 +159,8 @@ public class TableWriterUnits extends TableWriter {
             String units = atts.getString("units");
             if (units == null || units.equals(""))
                 continue;
-            if      (toUcum)    atts.set("units", EDUnits.safeUdunitsToUcum(units));
-            else if (toUdunits) atts.set("units", EDUnits.safeUcumToUdunits(units));
+            if      (toUcum)    atts.set("units", Units2.safeUdunitsToUcum(units));
+            else if (toUdunits) atts.set("units", Units2.safeUcumToUdunits(units));
         }
     }
 

@@ -68,7 +68,6 @@ public class PAOne {
     /**
      * This makes a new PAOne which is a copy of the other PAOne.
      *
-     * @return a new PAOne which is a copy of the other PAOne.
      */
     public PAOne(PAOne tPAOne) {
         pa = PrimitiveArray.factory(tPAOne.pa.elementType(), 1, true);
@@ -320,7 +319,7 @@ public class PAOne {
      * This sets this PAOne's value from the value in otherPAOne.
      *
      * @param otherPA the source PAOne which must be of the same (or smaller) PAType.
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne readFrom(PAOne otherPA) {
         pa.setFromPA(0, otherPA.pa, 0);
@@ -332,7 +331,7 @@ public class PAOne {
      *
      * @param otherPA the source PAOne which must be of the same (or smaller) PAType.
      * @param index the source index in PAOne.
-     * @param this PAOne, for convenience
+     * @return this PAOne, for convenience
      */
     public PAOne readFrom(PrimitiveArray otherPA, int index) {
         pa.setFromPA(0, otherPA, index);
@@ -461,7 +460,7 @@ public class PAOne {
      * For numeric types, this multiplies the value by value.
      *
      * @param value some value
-     * @returns this PAOne for convenience.
+     * @return this PAOne for convenience.
      */
     public PAOne multiply(PAOne value) {
         PAType paType = paType();
@@ -486,7 +485,7 @@ public class PAOne {
      * For numeric types, this adds the value by value.
      *
      * @param value some value
-     * @returns this PAOne for convenience.
+     * @return this PAOne for convenience.
      */
     public PAOne add(PAOne value) {
         PAType paType = paType();

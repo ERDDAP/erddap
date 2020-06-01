@@ -575,8 +575,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2020-04-20</att>\n" +  //changes
-"        <att name=\"date_issued\">2020-04-20</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2020-05-22</att>\n" +  //changes
+"        <att name=\"date_issued\">2020-05-22</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -657,8 +657,8 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2020-04-20T19:00:00Z</att>\n" + //changes
-"        <att name=\"time_coverage_start\">2020-04-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"time_coverage_end\">2020-05-22T16:40:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_start\">2020-05-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -711,7 +711,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.5856992E9 1.5874092E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">1.5882912E9 1.5901656E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -720,8 +720,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.5875E9</att>\n" +  //changes
-"            <att name=\"colorBarMinimum\" type=\"double\">1.5855E9</att>\n" + //changes
+"            <att name=\"colorBarMaximum\" type=\"double\">1.5905E9</att>\n" +  //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.588E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3412,7 +3412,6 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
-        try {
         //test orderByMean(twoVars)
         //from NdbcMetStation.test31201
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
@@ -3650,8 +3649,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-04-20\";\n" + //changes every month
-"  :date_issued = \"2020-04-20\";\n" +  //changes every month
+"  :date_created = \"2020-05-22\";\n" + //changes every month
+"  :date_issued = \"2020-05-22\";\n" +  //changes every month
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -3756,10 +3755,6 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
-        } catch (Throwable tt) {
-            String2.pressEnterToContinue(MustBe.throwableToString(tt) + 
-                "Unexpected exception.");
-        }
     }
 
     /**
@@ -4865,8 +4860,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-04-20\";\n" + //changes every month
-"  :date_issued = \"2020-04-20\";\n" +
+"  :date_created = \"2020-05-22\";\n" + //changes every month
+"  :date_issued = \"2020-05-22\";\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -6809,7 +6804,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2020-05-22 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6837,9 +6832,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-04-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2020-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2020-04-10 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
+"2020-05-22 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6857,7 +6852,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-05-22 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7385,7 +7380,7 @@ expected =
             //2020-03-09 times faster after big changes to cwwcNDBCMet, because files smaller with no extra rows on-the-hour with all mv's.
             1287, 1210, 1197, 1196,     //3125, 2625, 2687, ?,           //4469, 4125, 4094, ?, 
             1503, 14, 16, 3855,         //2014-09 .dods slower 176->508 why? // 16, 31, 687 //16, 32, 1782, 
-            1371, 1658, 63, 40,         //3531, 5219, 47, 31,            //5156, 6922, 125, 100, 
+            1371, 1658, 48, 40,         //3531, 5219, 47, 31,            //5156, 6922, 125, 100, 
             517, 1226, 1173, 1242, 1639,//1672, 2719, ., .,              //4109, 4921, ., .,
             3849, 1163, 578,            //1531, 1922, 1797,              //4921, 4921, 4610, 
             1268, 19, 1631,
@@ -18385,10 +18380,9 @@ FileVisitorDNLS.debugMode = false;
      * This makes a series of graphs which test log axes.
      * @param whichChunk -1 (all) or 0 - 4.
      */
-    public static void testLogAxis(int whichChunk) throws Exception {
+    public static void testLogAxis(int whichChunk) throws Throwable {
 
         String2.log("\n*** EDDTableFromNcFiles.testLogAxis()");
-        try {
         String tDir = EDStatic.fullTestCacheDirectory;
         String tName, start, query, results, expected;
         EDDTable eddTable;
@@ -18531,12 +18525,6 @@ FileVisitorDNLS.debugMode = false;
                 tDir, start + "WideRangeLog5", ".png")); 
             /* */
         }
-
-        //String2.pressEnterToContinue();
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
     }
 
     /**
@@ -18652,7 +18640,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
-    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to ";
+    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to";
+//was    "(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=";
 //2020-05-04T19:50:00Z, and hasNaN=false.)\n"; //end date changes
         Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);

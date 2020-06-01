@@ -20,6 +20,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
@@ -31,7 +32,6 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.EDUnits;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedInputStream;
@@ -7865,7 +7865,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
                 po = colName.indexOf(" (");
                 if (po > 0) {
                     colNameNoParen = colName.substring(0, po);
-                    tUnits = EDUnits.safeUcumToUdunits(
+                    tUnits = Units2.safeUcumToUdunits(
                         colName.substring(po + 2, colName.length() - 1));
                 }
             }

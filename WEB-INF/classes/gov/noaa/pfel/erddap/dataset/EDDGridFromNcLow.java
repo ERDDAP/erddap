@@ -19,6 +19,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.Projects;
@@ -150,7 +151,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
                     //unpack?
                     if (unpack()) {
-                        tAtts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType())); 
+                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var.getDataType())); 
                         //shouldn't be any mv or fv
                     }
                 }
@@ -167,7 +168,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
                     //unpack?
                     if (unpack()) 
-                        tAtts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
                 }
             }
 
@@ -317,16 +318,16 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel));
                     //2020-02-27 netcdf-java 5.2.0 has bug: when var isUnsigned,
                     //  array returned by var.read isn't unsigned.
-                    //String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + tDataVariables[dvi].sourceName() + 
-                    //    " var._Unsigned=" + var.getDataType().isUnsigned() +
-                    //    " pa._Unsigned=" + paa[dvi].getUnsigned() );
-                    //    //    "[" + selection + "]\n" + paa[dvi].toString());
+                    String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + edv.sourceName() + 
+                        " sourceDataPAType()=" + edv.sourceDataPAType() +
+                        " var.getDataType()=" + var.getDataType() +
+                        " var._Unsigned=" + var.getDataType().isUnsigned() +
+                        " pa.isUnsigned=" + paa[dvi].isUnsigned() );
+                        //    "[" + selection + "]\n" + paa[dvi].toString());
 
                     if (unpack()) 
                         paa[dvi] = NcHelper.unpackPA(var, paa[dvi], 
                             true, true); //lookForStringTime, lookForUnsigned (which changes type, eg unsigned byte to signed short)
-                    //else if (var.getDataType().isUnsigned()) //work around the bug
-                    //    paa[dvi].setUnsigned(true);
 
                     nValues = paa[dvi].size();
                 }
@@ -466,7 +467,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     if (axisVar != null) {//it will be null for dimension without same-named coordinate axis variable
                         NcHelper.getVariableAttributes(axisVar, sourceAtts);
                         if (tUnpack)  
-                            sourceAtts.unpackVariableAttributes(axisVar.getFullName(), NcHelper.getElementPAType(axisVar.getDataType()));
+                            Units2.unpackVariableAttributes(sourceAtts, axisVar.getFullName(), NcHelper.getElementPAType(axisVar.getDataType()));
 
                         //if time, try to get maxTimeES
                         String tUnits = sourceAtts.getString("units");
@@ -541,7 +542,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 if (tUnpack) {
                     sourcePA = sourceAtts.unpackPA(var.getFullName(), sourcePA, 
                         true, true); //lookForStringTime, lookForUnsigned
-                    sourceAtts.unpackVariableAttributes(  //after unpackPA
+                    Units2.unpackVariableAttributes(sourceAtts,   //after unpackPA
                         var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
                 }
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, 

@@ -2140,9 +2140,8 @@ sb.append(
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires erdMBsstdmday_AsATable in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("This test requires erdMBsstdmday_AsATable in the localhost ERDDAP.\n" +
+                "Unexpected error.", t); 
         } 
     }
 

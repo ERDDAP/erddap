@@ -14,11 +14,11 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.EDUnits;
 
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -69,7 +69,7 @@ public class EDV {
         ALT_UNITS, "meter", "meters", "metre", "metres"};
 
     /** */
-    public static String TIME_UCUM_UNITS = EDUnits.udunitsToUcum(TIME_UNITS);
+    public static String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
 
     /** The optional string for no units. 
      * There doesn't seem to be a udUnits standard. But LAS uses "unitless".*/
@@ -975,7 +975,7 @@ will show NaN).
         if ("\u0000".equals(ucumUnits)) {
             if ("UDUNITS".equals(EDStatic.units_standard)) {
                 try {
-                    ucumUnits = EDUnits.udunitsToUcum(units()); //null returns null
+                    ucumUnits = Units2.udunitsToUcum(units()); //null returns null
                 } catch (Throwable t) {
                     String2.log(String2.ERROR + " while converting udunits=" + units() + " to ucum:\n" +
                         MustBe.throwableToString(t));

@@ -49,7 +49,7 @@ public class Boundaries  {
     public static boolean debug = false;
 
     public final static String REF_DIRECTORY = 
-        SSR.getContextDirectory() + //with / separator and / at the end
+        String2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     /** 
@@ -60,7 +60,7 @@ public class Boundaries  {
      *    GPL license: http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
      *    landMaskDir should have slash at end.
      */
-    public String directory = SSR.getContextDirectory() + //with / separator and / at the end
+    public String directory = String2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     /**

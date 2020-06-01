@@ -33330,68 +33330,62 @@ expected =
     /** Test the speed of readNDNc */
     public static void testReadNDNcSpeed() throws Exception {
 
-        try {
-            String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc"; 
-            Table table = new Table();
-            long time = 0;
+        String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc"; 
+        Table table = new Table();
+        long time = 0;
 
-            for (int attempt = 0; attempt < 3; attempt++) {
-                String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
-                Math2.gcAndWait(); //in a test
+        for (int attempt = 0; attempt < 3; attempt++) {
+            String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
+            Math2.gcAndWait(); //in a test
 
-                //time it
-                time = System.currentTimeMillis();
-                long fileLength = File2.length(fileName); //was 20580000
-                Test.ensureTrue(fileLength > 20570000, "fileName=" + fileName + " length=" + fileLength); 
-                table = new Table();
-                table.readNDNc(fileName, null, 0, null, 0, 0); //standardizeWhat=0   
+            //time it
+            time = System.currentTimeMillis();
+            long fileLength = File2.length(fileName); //was 20580000
+            Test.ensureTrue(fileLength > 20570000, "fileName=" + fileName + " length=" + fileLength); 
+            table = new Table();
+            table.readNDNc(fileName, null, 0, null, 0, 0); //standardizeWhat=0   
 
-                String results = table.dataToString(3);
-                String expected =  //before 2011-06-14 was 32.31, -75.35,
+            String results = table.dataToString(3);
+            String expected =  //before 2011-06-14 was 32.31, -75.35,
 "TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
 "2.678004E8,0.0,32.501,-79.099,255,1.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.5,27.2,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,1.3,0.3,41004\n" +
 "2.67804E8,0.0,32.501,-79.099,247,6.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.6,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.1,2.6,41004\n" +
 "2.678076E8,0.0,32.501,-79.099,249,7.0,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.4,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.5,2.5,41004\n" +
 "...\n";
-                Test.ensureEqual(results, expected, "results=\n" + results);
-                Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
-                Test.ensureTrue(table.nRows() >= 351509, "nRows=" + table.nRows()); 
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
+            Test.ensureTrue(table.nRows() >= 351509, "nRows=" + table.nRows()); 
 
-                time = System.currentTimeMillis() - time;
-                String2.log("********** Done. cells/ms=" + 
-                    (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
-                    "\ntime=" + time + "ms (usual=556 Lenovo, was 226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
-                if (time <= 650)
-                    break;
-            }
-            if (time > 650)
-                throw new SimpleException("readNDNc took too long.");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nUnexpected ERROR."); 
+            time = System.currentTimeMillis() - time;
+            String2.log("********** Done. cells/ms=" + 
+                (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
+                "\ntime=" + time + "ms (usual=556 Lenovo, was 226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
+            if (time <= 650)
+                break;
         }
+        if (time > 650)
+            throw new SimpleException("readNDNc took too long.");
     }
 
 
     /** Test the speed of readOpendapSequence */
     public static void testReadOpendapSequenceSpeed() throws Exception {
 
-        try {
-            String url = 
-                "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet?" +
-                "&time%3E=1999-01-01&time%3C=1999-04-01&station=%2241009%22";
-            long time = 0;
+        String url = 
+            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet?" +
+            "&time%3E=1999-01-01&time%3C=1999-04-01&station=%2241009%22";
+        long time = 0;
 
-            for (int attempt = 0; attempt < 3; attempt++) {
-                String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
-                Math2.gcAndWait(); //in a test
+        for (int attempt = 0; attempt < 3; attempt++) {
+            String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
+            Math2.gcAndWait(); //in a test
 
-                //time it
-                time = System.currentTimeMillis();
-                Table table = new Table();
-                table.readOpendapSequence(url);
-                String results = table.dataToString(3);            
-                String expected = //before 2011-06-14 was -80.17, 28.5
+            //time it
+            time = System.currentTimeMillis();
+            Table table = new Table();
+            table.readOpendapSequence(url);
+            String results = table.dataToString(3);            
+            String expected = //before 2011-06-14 was -80.17, 28.5
 //"station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 //"41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
 //"41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
@@ -33412,95 +33406,85 @@ expected =
 "41009,-80.166,28.519,9.151524E8,53,1.5,2.6,1.1,11.11,6.97,,1021.1,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" + //1999-01-01T01:00
 "41009,-80.166,28.519,9.15156E8,73,2.5,3.8,1.09,11.11,6.87,,1021.2,20.7,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-2.4,-0.7\n" + //1999-01-01T02:00
 "...\n";
-                Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-                Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
-                time = System.currentTimeMillis() - time;
-                String2.log("********** Done. cells/ms=" + 
-                    (table.nColumns() * table.nRows()/time) + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +                
-                    "\ntime=" + time + "ms (usual(https)=1285, was http=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");  
-                if (time <= 1600)
-                    break;
-            }
-            if (time > 1600)
-                throw new SimpleException("readOpendapSequence took too long.");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nUnexpected ERROR."); 
+            Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
+            time = System.currentTimeMillis() - time;
+            String2.log("********** Done. cells/ms=" + 
+                (table.nColumns() * table.nRows()/time) + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +                
+                "\ntime=" + time + "ms (usual(https)=1285, was http=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");  
+            if (time <= 1600)
+                break;
         }
+        if (time > 1600)
+            throw new SimpleException("readOpendapSequence took too long.");
     }
 
 
     /** Test the speed of saveAs speed */
     public static void testSaveAsSpeed() throws Exception {
 
-        try {
-            //warmup
-            String2.log("\n*** Table.testSaveAsSpeed\n");
-            String sourceName = "/u00/data/points/ndbcMet2HistoricalTxt/41009h1990.txt"; 
-            String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
-            Table table = new Table();
-            table.readASCII(sourceName);
-            Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
-            Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
+        //warmup
+        String2.log("\n*** Table.testSaveAsSpeed\n");
+        String sourceName = "/u00/data/points/ndbcMet2HistoricalTxt/41009h1990.txt"; 
+        String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
+        Table table = new Table();
+        table.readASCII(sourceName);
+        Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
+        Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
+        table.saveAsCsvASCII(destName + ".csv");
+        table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
+        table.saveAsFlatNc(destName + ".nc", "row");
+        long time = 0;
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            //time it
+            String2.log("\ntime it\n");
+
+            //saveAsCsvASCII
+            time = System.currentTimeMillis();
             table.saveAsCsvASCII(destName + ".csv");
-            table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
-            table.saveAsFlatNc(destName + ".nc", "row");
-            long time = 0;
-
-            for (int attempt = 0; attempt < 3; attempt++) {
-                //time it
-                String2.log("\ntime it\n");
-
-                //saveAsCsvASCII
-                time = System.currentTimeMillis();
-                table.saveAsCsvASCII(destName + ".csv");
-                time = System.currentTimeMillis() - time;
-                String2.log("saveAsCsvASCII attempt#" + attempt + 
-                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //796
-                    "\ntime=" + time + "ms  (expected=344, was 532 for Java 1.5 Dell)"); 
-                File2.delete(destName + ".csv");
-                if (time <= 550)
-                    break;
-            }
-            if (time > 550)
-                throw new SimpleException("saveAsCsvASCII took too long. Expected=~344 for 17117 rows.");
-
-            for (int attempt = 0; attempt < 3; attempt++) {
-                //saveAsJson
-                time = System.currentTimeMillis();
-                table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
-                time = System.currentTimeMillis() - time;
-                String2.log("saveAsJson attempt#" + attempt + 
-                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) +   //974
-                    "\ntime=" + time + "ms  (expect=281, was 515 for Java 1.5 Dell)"); 
-                File2.delete(destName + ".json");
-                if (time <= 450)
-                    break;
-            }
-            if (time >= 450)
-                throw new SimpleException("saveAsJson took too long. Expected=~281 for 17117 rows.");
-
-            //saveAsFlatNc
-            for (int attempt = 0; attempt < 3; attempt++) {
-                time = System.currentTimeMillis();
-                table.saveAsFlatNc(destName + ".nc", "row");
-                time = System.currentTimeMillis() - time;
-                String2.log("saveAsFlatNc attempt#" + attempt + 
-                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //2190
-                    "\ntime=" + time + "ms  (expected=125, was 172 for Java 1.5 Dell)"); 
-                File2.delete(destName + ".nc");
-                if (time <= 200)
-                    break;
-            }
-            if (time > 200)
-                throw new SimpleException("saveAsFlatNc took too long. Expected=~125 for 17117 rows.");
-            
-
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nUnexpected ERROR."); 
+            time = System.currentTimeMillis() - time;
+            String2.log("saveAsCsvASCII attempt#" + attempt + 
+                " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //796
+                "\ntime=" + time + "ms  (expected=344, was 532 for Java 1.5 Dell)"); 
+            File2.delete(destName + ".csv");
+            if (time <= 550)
+                break;
         }
+        if (time > 550)
+            throw new SimpleException("saveAsCsvASCII took too long. Expected=~344 for 17117 rows.");
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            //saveAsJson
+            time = System.currentTimeMillis();
+            table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
+            time = System.currentTimeMillis() - time;
+            String2.log("saveAsJson attempt#" + attempt + 
+                " done. cells/ms=" + (table.nColumns() * table.nRows() / time) +   //974
+                "\ntime=" + time + "ms  (expect=281, was 515 for Java 1.5 Dell)"); 
+            File2.delete(destName + ".json");
+            if (time <= 450)
+                break;
+        }
+        if (time >= 450)
+            throw new SimpleException("saveAsJson took too long. Expected=~281 for 17117 rows.");
+
+        //saveAsFlatNc
+        for (int attempt = 0; attempt < 3; attempt++) {
+            time = System.currentTimeMillis();
+            table.saveAsFlatNc(destName + ".nc", "row");
+            time = System.currentTimeMillis() - time;
+            String2.log("saveAsFlatNc attempt#" + attempt + 
+                " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //2190
+                "\ntime=" + time + "ms  (expected=125, was 172 for Java 1.5 Dell)"); 
+            File2.delete(destName + ".nc");
+            if (time <= 200)
+                break;
+        }
+        if (time > 200)
+            throw new SimpleException("saveAsFlatNc took too long. Expected=~125 for 17117 rows.");
+        
     }
 
 

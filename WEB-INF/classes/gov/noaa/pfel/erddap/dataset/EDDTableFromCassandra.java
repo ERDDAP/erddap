@@ -2980,7 +2980,7 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3027,7 +3027,7 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3084,7 +3084,7 @@ expected =
                 if (msg.indexOf("You are requesting too much data. " +
                     "Please further constrain one or more of these variables: " +
                     "deviceid, date, sampletime. (5/5=1.0 > 0.55)") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3106,7 +3106,7 @@ expected =
                 if (msg.indexOf("You are requesting too much data. " +
                     "Please further constrain one or more of these variables: " +
                     "deviceid, date, sampletime. (3/5=0.6 > 0.55)") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3496,7 +3496,7 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3516,7 +3516,7 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(

@@ -51,7 +51,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 
 
     /** Properties of the datafile */
-    protected static String fileName = EDStatic.contextDirectory + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    protected static String fileName = EDStatic.webInfParentDirectory + "WEB-INF/ref/etopo1_ice_g_i2.bin";
     protected final static double fileMinLon = -180, fileMaxLon = 180; 
     protected final static double fileMinLat = -90,  fileMaxLat = 90;
     protected final static int fileNLons = 21601, fileNLats = 10801;

@@ -7918,7 +7918,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         expected = 
 "time,altitude,latitude,longitude,u\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
-"0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-05-17 was 12-15, 2018-01-25 was 12-13?!
+//2020-05-28 data is all NaNs. I emailed Charles Carleton.
+"0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-05-17 was 12-15, 2018-01-25 was 12-13?! 
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
@@ -8636,7 +8637,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /**
      * This tests a bug in which land and national boundaries were draw twice
      * and offset horizontally if drawLandMask=under.
-     * <p>ANTIALIASING PROBLEM SOLVED 2018-06-20 (not by me). It was a problem with antialiasing,
+     * <p>ANTIALIASING PROBLEM SOLVED ITSELF 2018-06-20 (not by me). It was a problem with antialiasing,
      * but turning antialiasing off or changing other renderingHints had no effict
      * (e.g., in SgtMap, see g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, )).
      * I spent hours trying to characterize then fix this, but found no solution.
@@ -8662,7 +8663,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingBAD", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        String2.pressEnterToContinue("\nANTIALIASING PROBLEM SOLVED 2018-06-20"); 
+        String2.pressEnterToContinue("\nANTIALIASING PROBLEM SOLVED ITSELF 2018-06-20"); 
     }
 
     /**
@@ -9396,7 +9397,7 @@ expected =
 "        <att name=\"naming_authority\">org.ghrsst</att>\n" +
 "        <att name=\"netcdf_version_id\">4.1</att>\n" +
 "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
-"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-A, MetOp-B, Buoys/Ships</att>\n" +
+"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-A</att>\n" +
 "        <att name=\"processing_level\">L4</att>\n" +
 "        <att name=\"product_version\">04.1nrt</att>\n" +
 "        <att name=\"project\">NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program</att>\n" +
@@ -11371,7 +11372,13 @@ String expected =
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
-            EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
+        EDDGrid edd = null;
+        try {
+            edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
+        } catch (Throwable t) {
+            Test.knownProblem("2020-05-27 The source url changed.",
+                "It works in a browser but fails in Java. Redirect problem? Certificate problem?", t);
+        }
  
             tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
                 edd.className() + "_actual_range2", ".dds"); 

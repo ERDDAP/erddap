@@ -207,7 +207,7 @@ public class LandMask  {
      */
     public static void main(String args[]) throws Exception {
         LandMask.verbose = true;
-        LandMask landMask = new LandMask(String2.getContextDirectory() + "WEB-INF/ref/landmask.dat");
+        LandMask landMask = new LandMask(String2.webInfParentDirectory() + "WEB-INF/ref/landmask.dat");
         Test.ensureEqual(landMask.isLand((-130 + 360) * 128, (40 + 90) * 128), false, "a"); //is lon right?
         Test.ensureEqual(landMask.isLand((-120 + 360) * 128, (40 + 90) * 128), true , "b"); 
 
