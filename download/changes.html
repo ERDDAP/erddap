@@ -272,6 +272,13 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Also, a related small bug that occurred with this type of file is now fixed.
     <br>&nbsp;
 
+  <li>IMPROVED: EDDGridFromNcFilesUnpacked now standardizes "units" attributes to 
+    standard/"canonical" udunits (the same method as the Units converter).
+    It is possible this will cause problems for some existing datasets
+    (e.g., cause new files to be labeled "bad").  If so, set a hardFlag 
+    for the dataset so that all of the source files will be reread with the
+    new system.
+
   <li>IMPROVED: The drawLandMask setting now supports two more options:
     <br>"outline" just draws the landmask outline, political boundaries, lakes and rivers. 
     <br>"off" doesn't draw anything.
@@ -356,8 +363,17 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     then "station_id" must be in the cf_timeseries_variables list,
     but must not be in the cf_profile_variables list.
     <br>Thanks to Micah Wengren.
+    <br>&nbsp;
 
   <li>IMPROVED: 'Simplify' is now faster, uses less memory, and may return LongArray or ULongArray.
+    Thanks to Unidata.
+    <br>&nbsp;
+
+  <li>IMPROVED: There is now support for time strings with precision 
+    greater than to-the-millisecond if the additional digits are all 0's, e.g.,
+    "2020-05-22T01:02:03.456000000Z".
+    Thanks to Yibo Jiang.
+    <br>&nbsp;
 
   <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
     requested variable, with a file name ending in the variable's name.

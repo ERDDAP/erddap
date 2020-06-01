@@ -2084,7 +2084,7 @@ expected =
                 String2.log(msg +
                     "  no matching data time=" + (System.currentTimeMillis() - eTime) + "ms"); 
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.pressEnterToContinue("Unexpected error."); 
+                    throw new RuntimeException("Unexpected error.", t); 
             }
 
             //quick reject -> orderBy var not in results vars

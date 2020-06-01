@@ -364,29 +364,28 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
-        try {
-            Attributes externalAddAttributes = new Attributes();
-            externalAddAttributes.add("title", "New Title!");
-            String results = generateDatasetsXml(
-                String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
-                1, 2, 1440,
-                "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
-                "ob-date", "station-id ob-date", 
-                "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
-                -1, null, //defaultStandardizeWhat
-                externalAddAttributes) + "\n";
+        Attributes externalAddAttributes = new Attributes();
+        externalAddAttributes.add("title", "New Title!");
+        String results = generateDatasetsXml(
+            String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
+            1, 2, 1440,
+            "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
+            "ob-date", "station-id ob-date", 
+            "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
+            -1, null, //defaultStandardizeWhat
+            externalAddAttributes) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromAwsXmlFiles",
-                String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
-                "1", "2", "1440",
-                "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
-                "ob-date", "station-id ob-date", 
-                "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromAwsXmlFiles",
+            String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
+            "1", "2", "1440",
+            "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
+            "ob-date", "station-id ob-date", 
+            "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
@@ -1012,22 +1011,17 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //ensure it is ready-to-use by making a dataset from it
-            //!!! actually this will fail with a specific error which is caught below
-            String tDatasetID = "xml_5540_32bf_7f9d";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "xml_5540_32bf_7f9d", "");
-            Test.ensureEqual(edd.title(), "The Newer Title!", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+        //ensure it is ready-to-use by making a dataset from it
+        //!!! actually this will fail with a specific error which is caught below
+        String tDatasetID = "xml_5540_32bf_7f9d";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), "xml_5540_32bf_7f9d", "");
+        Test.ensureEqual(edd.title(), "The Newer Title!", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg", "");
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error using generateDatasetsXml."); 
-        }
 
     }
 

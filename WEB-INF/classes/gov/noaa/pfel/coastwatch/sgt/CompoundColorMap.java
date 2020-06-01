@@ -875,7 +875,7 @@ public class CompoundColorMap extends ColorMap {
      */
     public static void basicTest() throws Exception {
         verbose = true;
-        String basePaletteDir = SSR.getContextDirectory() + //with / separator and / at the end
+        String basePaletteDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF/cptfiles/";
         String tempDir = SSR.getTempDirectory();      
         File2.deleteAllFiles(tempDir);

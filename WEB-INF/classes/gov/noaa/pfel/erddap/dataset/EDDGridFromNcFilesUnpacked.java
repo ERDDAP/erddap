@@ -18,6 +18,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.Projects;
@@ -373,7 +374,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "            <att name=\"coordinates\">time lat lon </att>\n" +
 "            <att name=\"long_name\">analysed sea surface temperature</att>\n" +
 "            <att name=\"standard_name\">sea_surface_foundation_temperature</att>\n" +
-"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"units\">degree_K</att>\n" +
 "            <att name=\"valid_max\" type=\"double\">330.917</att>\n" +
 "            <att name=\"valid_min\" type=\"double\">265.383</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -414,7 +415,6 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        try {
 
         //generateDatasetsXml        
         String id = "testEDDGridFromNcFilesUnpacked";
@@ -470,7 +470,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"analysed sea surface temperature\";\n" +
 "    String standard_name \"sea_surface_foundation_temperature\";\n" +
-"    String units \"kelvin\";\n" +
+"    String units \"degree_K\";\n" +
 "    Float64 valid_max 330.917;\n" +
 "    Float64 valid_min 265.383;\n" +
 "  }\n" +
@@ -567,7 +567,7 @@ expected =
         //String2.log(results);
         expected = 
 "time,latitude,longitude,analysed_sst\n" +
-"UTC,degrees_north,degrees_east,kelvin\n" +
+"UTC,degrees_north,degrees_east,degree_K\n" +
 "2015-10-05T09:00:00Z,20.0006,-134.995,299.929\n" +  //note double values (Kelvin)
 "2015-10-05T09:00:00Z,20.0006,-134.973,299.952\n" +
 "2015-10-05T09:00:00Z,20.0006,-134.951,299.977\n" +
@@ -587,9 +587,6 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
     }
 
     /**
@@ -931,6 +928,338 @@ expected =
         NcHelper.debugMode = oDebugMode;
     }
 
+    /**
+     * Test file from Yibo Jiang (PODAAC) and stored in /erddapTest/nc/ .
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSuperPreciseTimeUnits() throws Throwable {
+        String2.log("\n*** EDDGridFromNcFilesUnpacked.testSuperPreciseTimeUnits");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        String fileDir = EDStatic.unitTestDataDir + "nc/";
+        boolean oDebugMode = NcHelper.debugMode;
+        NcHelper.debugMode = true;
+
+        //ncdump of file showing time units and values
+        results = NcHelper.ncdump(fileDir + "superPreciseTimeUnits.nc", "-v time");
+        expected = 
+"netcdf superPreciseTimeUnits.nc {\n" +
+"  dimensions:\n" +
+"    time = 24;\n" +
+"    lat = 400;\n" +
+"    lon = 1800;\n" +
+"  variables:\n" +
+"    byte time(time=24);\n" +
+"      :long_name = \"Reference time of file\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :calendar = \"gregorian\";\n" +
+"      :comment = \"Timestamp coordinate at the center of the 1 hr bin, at 1 hour resolution. Range is one UTC day.\";\n" +
+"      :units = \"hours since 2020-01-01 00:30:00.000000000\";\n" +
+"      :_ChunkSizes = 24U; // uint\n" +
+"\n" +
+"    int epoch_time(time=24);\n" +
+"      :long_name = \"Time Centering of Data Based on Epoch Reference\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :calendar = \"gregorian\";\n" +
+"      :comment = \"Timestamp coordinate is at the center of the 1 hr bin, at 1 hour resolution referenced by the historical Epoch reference date/time. The Epoch reference date/time corresponds to the first observation time window in the CYGNSS historical data record. Total number of timestamps in a file corresponds to one UTC day. This value is rounded to the nearest hour since leap seconds may have occured making the number of hours since the start of the mission not exact.\";\n" +
+"      :units = \"hours since 2017-03-18 00:30:00.000000000\";\n" +
+"      :_ChunkSizes = 24U; // uint\n" +
+"\n" +
+"    float lat(lat=400);\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :comment = \"Latitude coordinate at the center of the 0.2 degree bin, degrees_north, at 0.2 degree resolution. Range is -39.9 .. 39.9.\";\n" +
+"      :_ChunkSizes = 400U; // uint\n" +
+"\n" +
+"    float lon(lon=1800);\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :comment = \"Longitude coordinate at the center of the 0.2 degree bin, degrees_east, at 0.2 degree resolution. Range is 0.1 .. 359.9.\";\n" +
+"      :_ChunkSizes = 1800U; // uint\n" +
+"\n" +
+"    float wind_speed(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Wind speed\";\n" +
+"      :standard_name = \"wind_speed\";\n" +
+"      :units = \"m s-1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = -5.0, 100.0; // double\n" +
+"      :comment = \"Minimum variance estimate of the mean wind speed in the bin over the spatial and temporal intervals specified by the bin's boundaries. This is done using an inverse-variance weighted average of all L2 samples of the wind speed that were made within the bin.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float wind_speed_uncertainty(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Wind speed uncertainty\";\n" +
+"      :units = \"m s-1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = 0.0, 10.0; // double\n" +
+"      :comment = \"Standard deviation of the error in the mean of all L2 samples of the wind speed within the bin.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    int num_wind_speed_samples(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Number of wind speed samples\";\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -99; // int\n" +
+"      :valid_range = 1, 100000; // int\n" +
+"      :comment = \"The number of L2 wind speed samples used to calculate wind_speed.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float yslf_wind_speed(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Young sea limited fetch wind speed\";\n" +
+"      :standard_name = \"yslf_wind_speed\";\n" +
+"      :units = \"m s-1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = -5.0, 100.0; // double\n" +
+"      :comment = \"Minimum variance estimate of the young sea limited fetch mean wind speed in the bin over the spatial and temporal intervals specified by the bin's boundaries. This is done using an inverse-variance weighted average of all L2 samples of the wind speed that were made within the bin.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float yslf_wind_speed_uncertainty(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Young sea limited fetch wind speed uncertainty\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = 0.0, 10.0; // double\n" +
+"      :comment = \"Standard deviation of the error in the mean of all L2 samples of the young sea limited fetch wind speed within the bin.\";\n" +
+"      :units = \"m s-1\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    int num_yslf_wind_speed_samples(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Number of young sea limited fetch wind speed samples\";\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -99; // int\n" +
+"      :valid_range = 1, 100000; // int\n" +
+"      :comment = \"The number of L2 young sea limited fetch wind speed samples used to calculate yslf_wind_speed.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float mean_square_slope(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Mean square slope\";\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = 0.0, 0.04; // double\n" +
+"      :comment = \"Mean MSS in the bin over the spatial and temporal intervals specified by the bin's boundaries.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float mean_square_slope_uncertainty(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Mean square slope uncertainty\";\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = 0.0, 0.08; // double\n" +
+"      :comment = \"Standard deviation of the error in the mean of all L2 samples of the MSS within the bin.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    int num_mss_samples(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"Number of mean square slope samples\";\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -99; // int\n" +
+"      :valid_range = 1, 100000; // int\n" +
+"      :comment = \"The number of L2 MSS samples used to calculate mean_square_slope.\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    float merra2_wind_speed(time=24, lat=400, lon=1800);\n" +
+"      :long_name = \"MERRA-2 reference wind speed\";\n" +
+"      :units = \"m s-1\";\n" +
+"      :_FillValue = -9999.0f; // float\n" +
+"      :valid_range = 0.0, 100.0; // double\n" +
+"      :comment = \"Mean MERRA-2 wind speed in the bin over the spatial and temporal intervals specified by the bin's boundaries. See https://disc.gsfc.nasa.gov/datasets/M2I1NXASM_5.12.4/summary?keywords=%22MERRA-2%22\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"    int num_merra2_wind_speed_samples(time=24, lat=400, lon=1800);\n" +
+"      :units = \"1\";\n" +
+"      :_FillValue = -99; // int\n" +
+"      :valid_range = 1, 100000; // int\n" +
+"      :comment = \"The number of L2 MERRA-2 wind speed samples used to calculate merra2_wind_speed.\";\n" +
+"      :long_name = \"Number of MERRA-2 wind speed samples\";\n" +
+"      :_ChunkSizes = 8U, 134U, 600U; // uint\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :Conventions = \"CF-1.6, ACDD-1.3, ISO-8601\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v30\";\n" +
+"  :project = \"CYGNSS\";\n" +
+"  :summary = \"CYGNSS is a NASA Earth Venture mission, managed by the Earth System Science Pathfinder Program. The mission consists of a constellation of eight small satellites. The eight observatories comprise a constellation that measures the ocean surface wind field with very high temporal resolution and spatial coverage, under all precipitating conditions, and over the full dynamic range of wind speeds experienced in a tropical cyclone. The CYGNSS observatories fly in 510 km circular orbits at a common inclination of 35°. Each observatory includes a Delay Doppler Mapping Instrument (DDMI) consisting of a modified GPS receiver capable of measuring surface scattering, a low gain zenith antenna for measurement of the direct GPS signal, and two high gain nadir antennas for measurement of the weaker scattered signal. Each DDMI is capable of measuring 4 simultaneous bi-static reflections, resulting in a total of 32 wind measurements per second by the full constellation.\";\n" +
+"  :program = \"CYGNSS\";\n" +
+"  :references = \"Ruf, C., P. Chang, M.P. Clarizia, S. Gleason, Z. Jelenak, J. Murray, M. Morris, S. Musko, D. Posselt, D. Provost, D. Starkenburg, V. Zavorotny, CYGNSS Handbook, Ann Arbor, MI, Michigan Pub., ISBN 978-1-60785-380-0, 154 pp, 1 Apr 2016. http://clasp-research.engin.umich.edu/missions/cygnss/reference/cygnss-mission/CYGNSS_Handbook_April2016.pdf\n" +
+"Global Modeling and Assimilation Office (GMAO) (2015), MERRA-2 inst1_2d_asm_Nx: 2d,1-Hourly,Instantaneous,Single-Level,Assimilation,Single-Level Diagnostics V5.12.4, Greenbelt, MD, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC), Accessed: {dates differ for each L1 file. See 'source' L1 files for exact timestamps}, https://doi.org/10.5067/3Z173KIE2TPD\";\n" +
+"  :processing_level = \"3\";\n" +
+"  :comment = \"This Level 3 gridded product combines all 8 x 4 = 32 wind speed and mean square slope (MSS) measurements made by the CYGNSS constellation each second, uniformly sampled in latitude, longitude and time.\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :institution = \"University of Michigan Space Physics Research Lab (SPRL)\";\n" +
+"  :creator_name = \"CYGNSS Science Operations Center\";\n" +
+"  :publisher_name = \"PO.DAAC\";\n" +
+"  :publisher_email = \"podaac@podaac.jpl.nasa.gov\";\n" +
+"  :publisher_url = \"\u200Bhttp://podaac.jpl.nasa.gov\";\n" +    //! zero width space  #8203
+"  :sensor = \"Delay Doppler Mapping Instrument (DDMI)\";\n" +
+"  :geospatial_lat_min = \"-39.9N\";\n" +
+"  :geospatial_lat_max = \"39.9N\";\n" +
+"  :geospatial_lon_min = \"0.1E\";\n" +
+"  :geospatial_lon_max = \"359.9E\";\n" +
+"  :version_id = \"1.0\";\n" +
+"  :title = \"CYGNSS Level 3 Climate Data Record Version 1.0\";\n" +
+"  :ShortName = \"CYGNSS_L3_CDR_V1.0\";\n" +
+"  :id = \"PODAAC-CYGNS-L3C10\";\n" +
+"  :netcdf_version_id = \"4.3.3.1 of Dec 10 2015 16:44:18 $\";\n" +
+"  :l3_algorithm_version = \"cdr-v1.0\";\n" +
+"  :date_created = \"2020-04-28T17:49:27Z\";\n" +
+"  :date_issued = \"2020-04-28T17:49:27Z\";\n" +
+"  :source = \"cyg.ddmi.s20200101-000000-e20200101-235959.l2.wind-mss-cdr.a10.d10.nc\";\n" +
+"  :history = \"Tue Apr 28 17:49:28 2020: ncks -O -L1 -a /tmp/qt_temp.J61461 /tmp/qt_temp.T61461\n" +
+"/data/ops/op_cdr_1_0/apps/src/produce-L3-files/produce-L3-files --dstore production_1@cygnss-data-1.engin.umich.edu --day 2020-01-01\";\n" +
+"  :time_coverage_start = \"2020-01-01T00:30:00Z\";\n" +
+"  :time_coverage_end = \"2020-01-01T23:30:00Z\";\n" +
+"  :time_coverage_duration = \"P1DT00H00M00S\";\n" +
+"  :time_coverage_resolution = \"P0DT1H0M0S\";\n" +
+"  :platform = \"Observatory References: cyg1, cyg2, cyg3, cyg4, cyg5, cyg6, cyg7, cyg8\";\n" +
+"  :NCO = \"4.4.4\";\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}\n" +
+"}\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+
+        //ensure files are reread
+        File2.deleteAllFiles(datasetDir("testSuperPreciseTimeUnits"));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testSuperPreciseTimeUnits"); 
+
+        //.dds     dds isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
+        expected = //difference from testUInt16Dap: lat lon are float here, not double
+"Dataset {\n" +
+"  Float64 time[time = 24];\n" +
+"  Float32 latitude[latitude = 400];\n" +
+"  Float32 longitude[longitude = 1800];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 wind_speed[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } wind_speed;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 wind_speed_uncertainty[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } wind_speed_uncertainty;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 num_wind_speed_samples[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } num_wind_speed_samples;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 yslf_wind_speed[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } yslf_wind_speed;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 yslf_wind_speed_uncertainty[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } yslf_wind_speed_uncertainty;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 num_yslf_wind_speed_samples[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } num_yslf_wind_speed_samples;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 mean_square_slope[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } mean_square_slope;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 mean_square_slope_uncertainty[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } mean_square_slope_uncertainty;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 num_mss_samples[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } num_mss_samples;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 merra2_wind_speed[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } merra2_wind_speed;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 num_merra2_wind_speed_samples[time = 24][latitude = 400][longitude = 1800];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 24];\n" +
+"      Float32 latitude[latitude = 400];\n" +
+"      Float32 longitude[longitude = 1800];\n" +
+"  } num_merra2_wind_speed_samples;\n" +
+"} testSuperPreciseTimeUnits;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv data values
+        userDapQuery = "time"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "time", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
+        String2.log(results);
+        expected = //difference from testUInt16Dap: lat lon are float here, not double
+"time\n" +
+"UTC\n" +
+"2020-01-01T00:30:00Z\n" +
+"2020-01-01T01:30:00Z\n" +
+"2020-01-01T02:30:00Z\n" +
+"2020-01-01T03:30:00Z\n" +
+"2020-01-01T04:30:00Z\n" +
+"2020-01-01T05:30:00Z\n" +
+"2020-01-01T06:30:00Z\n" +
+"2020-01-01T07:30:00Z\n" +
+"2020-01-01T08:30:00Z\n" +
+"2020-01-01T09:30:00Z\n" +
+"2020-01-01T10:30:00Z\n" +
+"2020-01-01T11:30:00Z\n" +
+"2020-01-01T12:30:00Z\n" +
+"2020-01-01T13:30:00Z\n" +
+"2020-01-01T14:30:00Z\n" +
+"2020-01-01T15:30:00Z\n" +
+"2020-01-01T16:30:00Z\n" +
+"2020-01-01T17:30:00Z\n" +
+"2020-01-01T18:30:00Z\n" +
+"2020-01-01T19:30:00Z\n" +
+"2020-01-01T20:30:00Z\n" +
+"2020-01-01T21:30:00Z\n" +
+"2020-01-01T22:30:00Z\n" +
+"2020-01-01T23:30:00Z\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        NcHelper.debugMode = oDebugMode;
+    }
+
 
     /**
      * Test files from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI
@@ -1010,17 +1339,17 @@ NcHelper.debugMode = true;
             expected = 
     "    _FillValue=-32767.0f\n" +
     "    long_name=Longitude\n" +
-    "    units=degree_east\n" +
+    "    units=degree_east\n" +  //what's in the file
     "    valid_max=180.0f\n" +
     "    valid_min=-180.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
     "    _FillValue=NaNf\n" +  //converted to PA standard mv
     "    long_name=Longitude\n" +
-    "    units=degree_east\n" +
+    "    units=degrees_east\n" + //standardized to degrees_east
     "    valid_max=180.0f\n" +
     "    valid_min=-180.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1035,7 +1364,7 @@ NcHelper.debugMode = true;
     "    _Unsigned=true\n"; //disappeared w netcdf-java 5.2, so I added back in with code in getVariableAttributes.
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
                 "";
@@ -1081,7 +1410,7 @@ NcHelper.debugMode = true;
     "    valid_min=0.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
             results = atts.toString();
             expected = 
     "    _ChunkSizes=64i,64i\n" +
@@ -1094,7 +1423,7 @@ NcHelper.debugMode = true;
     "    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
     //"    scale_factor=1.0f\n" + //removed
     "    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
-    "    units=mg m^-3\n" +
+    "    units=mg m-3\n" +
     "    valid_max=1000.0f\n" +
     "    valid_min=0.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1183,17 +1512,17 @@ NcHelper.debugMode = true;
         expected = 
 "    _FillValue=-999.0f\n" +
 "    long_name=Longitude\n" +
-"    units=degree_east\n" +
+"    units=degree_east\n" + //in file
 "    valid_max=180.0f\n" +
 "    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = 
 "    _FillValue=NaNf\n" + //converted to PA standard mv
 "    long_name=Longitude\n" +
-"    units=degree_east\n" +
+"    units=degrees_east\n" + //stardardized to 's'
 "    valid_max=180.0f\n" +
 "    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1208,7 +1537,7 @@ NcHelper.debugMode = true;
 "    _Unsigned=true\n";  //2020-01-23 added in NcHelper.getVariableAttributes to deal with changes in netcdf-java 5.2
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = "";
 //"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
@@ -1248,12 +1577,12 @@ NcHelper.debugMode = true;
 "    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
 "    scale_factor=0.2f\n" +
 "    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
-"    units=mg m^-3\n" +
+"    units=mg m^-3\n" +  // in file
 "    valid_max=-27000s\n" +
 "    valid_min=-32000s\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        atts.unpackVariableAttributes(var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = 
 "    _ChunkSizes=40i,1729i\n" +
@@ -1266,7 +1595,7 @@ NcHelper.debugMode = true;
 "    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
 //"    scale_factor=0.2f\n" + removed
 "    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
-"    units=mg m^-3\n" +
+"    units=mg m-3\n" +  //standardized
 "    valid_max=1000.0f\n" + //unpacked
 "    valid_min=0.0f\n";     //unpacked
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -1347,7 +1676,7 @@ NcHelper.debugMode = true;
 "    String long_name \"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\";\n" +
 "    String references \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
 "    String standard_name \"mole_concentration_of_particulate_organic_carbon_in_sea_water\";\n" +
-"    String units \"mg m^-3\";\n" +
+"    String units \"mg m-3\";\n" +
 "    Float32 valid_max 1000.0;\n" +
 "    Float32 valid_min 0.0;\n" +
 "  }\n" +
@@ -1499,7 +1828,7 @@ expected =
         String2.log(results);
         expected = 
 "time,latitude,longitude,poc\n" +
-"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"UTC,degrees_north,degrees_east,mg m-3\n" +
 "2003-01-01T12:00:00Z,89.979164,-179.97917,NaN\n" +
 "2003-01-01T12:00:00Z,89.979164,-138.3125,NaN\n" +
 "2003-01-01T12:00:00Z,89.979164,-96.64583,NaN\n" +
@@ -1556,7 +1885,7 @@ expected =
         String2.log(results);
         expected = 
 "time,latitude,longitude,poc\n" +
-"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"UTC,degrees_north,degrees_east,mg m-3\n" +
 "2016-08-28T12:00:00Z,87.0625,-177.0625,NaN\n" +
 "2016-08-28T12:00:00Z,87.0625,-135.39583,NaN\n" +
 "2016-08-28T12:00:00Z,87.0625,-93.729164,NaN\n" +
@@ -1629,7 +1958,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 3;
+            lastTest = interactive? -1 : 4;
         String msg = "\n^^^ EDDGridFromNcFilesUnpacked.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true;
@@ -1647,6 +1976,7 @@ expected =
                     if (test ==  1) testBasic(deleteCachedDatasetInfo);
 if (test ==  2) testUInt16File();  //trouble
                     if (test ==  3) testMissingValue();
+                    if (test ==  4) testSuperPreciseTimeUnits();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

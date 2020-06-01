@@ -131,7 +131,6 @@ public class SSR {
     public static String windows7Zip = "c:\\progra~1\\7-Zip\\7z"; //on Bob's computer
     public static String erddapVersion = "2"; //vague. will be updated by EDStatic
 
-    private static String contextDirectory; //lazy creation by getContextDirectory
     private static String tempDirectory; //lazy creation by getTempDirectory
 
     static {
@@ -2077,28 +2076,6 @@ public class SSR {
     }
 
     /**
-     * This returns the directory that is the application's root
-     * (with forward slashes and a trailing slash, 
-     * e.g., c:/programs/_tomcat/webapps/cwexperimental/).
-     * Tomcat calls this the ContextDirectory.
-     * This only works if these classes are installed
-     * underneath Tomcat (with "WEB-INF/" 
-     * the start of things to be removed from classPath).
-     *
-     * @return the contextDirectory (with / separator and / at the end)
-     * @throws Exception if trouble
-     */
-    public static String getContextDirectory() {
-        if (contextDirectory == null) {
-            String classPath = String2.getClassPath(); //with / separator and / at the end
-            int po = classPath.indexOf("/WEB-INF/");
-            contextDirectory = classPath.substring(0, po + 1);
-        }
-
-        return contextDirectory;
-    }
-
-    /**
      * This returns a directory for temporary files
      * (with forward slashes and a trailing slash, 
      * currently: <contextDirectory>WEB-INF/temp/).
@@ -2111,8 +2088,7 @@ public class SSR {
      */
     public static String getTempDirectory() {
         if (tempDirectory == null) {
-            getContextDirectory(); 
-            String tdir = contextDirectory + "WEB-INF/temp/";
+            String tdir = String2.webInfParentDirectory() + "WEB-INF/temp/";
             //make it, because Git doesn't track empty dirs
             File2.makeDirectory(tdir);            
             //then set it if successful

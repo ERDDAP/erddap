@@ -99,20 +99,15 @@ public class TestSSR {
         String password = String2.getPasswordFromSystemIn(//String2.beep(1) +
             "cwatch password for coastwatch computer (enter \"\" to skip the test)? ");
         if (password.length() > 0) {
-            try {
-                String fileName = "Rainbow.cpt";
-                StringBuilder cmds = new StringBuilder(
-                    "lcd " + SSR.getTempDirectory() + "\n" +
-                    "cd /u00/cwatch/bobtemp\n" +  //on coastwatch computer; don't use String2.testU00Dir
-                    "get " + fileName);
-                File2.delete(SSR.getTempDirectory() + fileName);
-                SSR.sftp("coastwatch.pfeg.noaa.gov", "cwatch", password, cmds.toString());
-                Test.ensureEqual(File2.length(SSR.getTempDirectory() + fileName), 214, "a");
-                File2.delete(SSR.getTempDirectory() + fileName);
-            } catch (Exception e) {
-                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-                    "\nUnexpected error."); 
-            }
+            String fileName = "Rainbow.cpt";
+            StringBuilder cmds = new StringBuilder(
+                "lcd " + SSR.getTempDirectory() + "\n" +
+                "cd /u00/cwatch/bobtemp\n" +  //on coastwatch computer; don't use String2.testU00Dir
+                "get " + fileName);
+            File2.delete(SSR.getTempDirectory() + fileName);
+            SSR.sftp("coastwatch.pfeg.noaa.gov", "cwatch", password, cmds.toString());
+            Test.ensureEqual(File2.length(SSR.getTempDirectory() + fileName), 214, "a");
+            File2.delete(SSR.getTempDirectory() + fileName);
         }
         Math2.sleep(3000); //allow j2ssh to finish closing and writing messages
         */
@@ -126,14 +121,14 @@ public class TestSSR {
 
         //dosShell
         String2.log("test dosShell");
-        String tempGif = SSR.getContextDirectory() + //with / separator and / at the end
+        String tempGif = String2.webInfParentDirectory() + //with / separator and / at the end
             "images/temp.gif";
         File2.delete(tempGif);
         try {
             Test.ensureEqual(
                 String2.toNewlineString(SSR.dosShell(
                     "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" " +
-                    SSR.getContextDirectory() + //with / separator and / at the end
+                    String2.webInfParentDirectory() + //with / separator and / at the end
                         "images/subtitle.jpg " +
                     tempGif, 10).toArray()),
                 "", "dosShell a");
@@ -322,19 +317,19 @@ public class TestSSR {
 
         //getContextDirectory
         String2.log("test getContextDirectory current=" + 
-            SSR.getContextDirectory()); //with / separator and / at the end
+            String2.webInfParentDirectory()); //with / separator and / at the end
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
         //ensureEqual(String2.getContextDirectory(), //with / separator and / at the end
         //  "C:/programs/_tomcat/webapps/cwexperimental/", "a");
         //wimpy test, but works on all computers
-        Test.ensureNotNull(SSR.getContextDirectory(), //with / separator and / at the end
+        Test.ensureNotNull(String2.webInfParentDirectory(), //with / separator and / at the end
             "contextDirectory");
 
         //getTempDirectory
         String2.log("test getTempDirectory current=" + SSR.getTempDirectory());
         //wimpy test
-        Test.ensureEqual(SSR.getTempDirectory(), SSR.getContextDirectory() + "WEB-INF/temp/", "a");
+        Test.ensureEqual(SSR.getTempDirectory(), String2.webInfParentDirectory() + "WEB-INF/temp/", "a");
 
 
         //done 

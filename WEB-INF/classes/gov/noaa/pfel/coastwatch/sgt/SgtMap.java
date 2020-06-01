@@ -121,7 +121,7 @@ public class SgtMap  {
      *    landMaskDir should have slash at end.
      */
     public static String fullRefDirectory = 
-        SSR.getContextDirectory() + //with / separator and / at the end
+        String2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     //some of this information is in DataSet.properties too, see BAthymFGDC
@@ -2627,17 +2627,17 @@ String2.log("err: " + errCatcher.getString());
             "gov/noaa/pfel/coastwatch/griddata/";
         /*String fullResultCpt = griddataDir + "TestMakeMap.cpt";
         File2.delete(fullResultCpt);
-        CompoundColorMap.makeCPT(SSR.getContextDirectory() + //with / separator and / at the end
+        CompoundColorMap.makeCPT(String2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF/cptfiles/Rainbow.cpt", 
             "Linear", 0, 10, true, fullResultCpt); */
         String vectorCpt = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + //with / separator and / at the end
+            String2.webInfParentDirectory() + //with / separator and / at the end
                 "WEB-INF/cptfiles/", 
             "Rainbow", 
             "Linear", 0, 10, 5, false, griddataDir);
 
         String gridCpt = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + //with / separator and / at the end
+            String2.webInfParentDirectory() + //with / separator and / at the end
                 "WEB-INF/cptfiles/", 
             "BlueWhiteRed", //"LightBlueWhite"
             "Linear", -10, 10, 8, true, griddataDir);
@@ -2673,7 +2673,7 @@ String2.log("err: " + errCatcher.getString());
             minX, maxX, minY, maxY, imageWidth, imageHeight);
         makeMap(false, 
             SgtUtil.LEGEND_BELOW, "NOAA", "CoastWatch",
-            SSR.getContextDirectory() + //with / separator and / at the end
+            String2.webInfParentDirectory() + //with / separator and / at the end
                 "images/", //imageDir
             "noaa20.gif", //logoImageFile
             minX, maxX, minY, maxY,
@@ -2748,7 +2748,7 @@ String2.log("err: " + errCatcher.getString());
             minX[region], maxX[region], minY[region], maxY[region]);
         makeMap(false, 
             SgtUtil.LEGEND_BELOW, "NOAA", "CoastWatch",
-            SSR.getContextDirectory() + //with / separator and / at the end
+            String2.webInfParentDirectory() + //with / separator and / at the end
                 "images/", //imageDir
             "noaa20.gif", //logoImageFile
             minX[region], maxX[region], minY[region], maxY[region],
@@ -3262,7 +3262,7 @@ String2.log("err: " + errCatcher.getString());
             BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
 
             //make the cpt file
-            String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
+            String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
             DoubleArray dataDA = new DoubleArray(grid.data);
             double stats[] = dataDA.calculateStats();
             double minData = stats[PrimitiveArray.STATS_MIN];
@@ -3383,7 +3383,7 @@ String2.log("err: " + errCatcher.getString());
 landMaskStrokeColor = new Color(0, 0, 0, 0);
 
         String cptName = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + //with / separator and / at the end
+            String2.webInfParentDirectory() + //with / separator and / at the end
                 "WEB-INF/cptfiles/", 
             "Topography", "Linear", -8000, 8000, -1, true, //continuous, 
             SSR.getTempDirectory());

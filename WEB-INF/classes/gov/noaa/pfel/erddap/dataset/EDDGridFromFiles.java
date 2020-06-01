@@ -21,6 +21,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -30,7 +31,6 @@ import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.EDUnits;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileWriter;
@@ -1371,7 +1371,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 
                 String observedUnits = tsaAtt.getString("units");
                 String expectedUnits =  saAtt.getString("units");
-                if (!EDUnits.udunitsAreEquivalent(observedUnits, expectedUnits))
+                if (!Units2.udunitsAreEquivalent(observedUnits, expectedUnits))
                     Test.ensureEqual(observedUnits, expectedUnits,
                         emsg1 + "units" + emsg2);
             }
@@ -1409,7 +1409,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     emsg1 + "scale_factor"  + emsg2);
                 String observedUnits = tsdAtt.getString("units");
                 String expectedUnits =  sdAtt.getString("units");
-                if (!EDUnits.udunitsAreEquivalent(observedUnits, expectedUnits))
+                if (!Units2.udunitsAreEquivalent(observedUnits, expectedUnits))
                     Test.ensureEqual(observedUnits, expectedUnits,
                         emsg1 + "units" + emsg2);
             }

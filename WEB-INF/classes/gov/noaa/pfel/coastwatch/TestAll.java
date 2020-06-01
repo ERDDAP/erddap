@@ -164,9 +164,9 @@ public class TestAll  {
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {                
       // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/tylar/VSNPP_2020127_2020133_7D_FK_SSTN.nc"; 
+//      String tFileName = "/data/melanie/A20191522019181.L3m_MO_CHL_chlor_a_4km-0-360.nc"; 
 //      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
-//      DasDds.main(new String[]{"tylar2", "-verbose"});
+//    DasDds.main(new String[]{"melanie2", "-verbose"});
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
 //      String2.log(table.toString());
@@ -336,7 +336,7 @@ m Pathfinder Version 5.2 grid.";
         SSR.displayInBrowser("file://" + dirName);
     }*/
 
-//    EDDGridAggregateExistingDimension.testUnpackedValidRange();
+//    EDDGridAggregateExistingDimension.testBasic();
 //    EDDGridAggregateExistingDimension.testGenerateDatasetsXml();
 //      CCMP 
 //      String2.log(EDDGridAggregateExistingDimension.generateDatasetsXml("hyrax",
@@ -524,7 +524,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromNcFiles.testDapErrors();
 //    EDDGridFromNcFiles.testGenerateDatasetsXml3();
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
-//        "/data/andy/challenges/access/access-r/", "", "", -1, "", null);
+//        "/data/melanie/", ".*.nc", "", "", -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
 //    DasDds.main(new String[]{"access_r2", "-verbose"});
 //    EDDGridFromNcFiles.testIgor();
@@ -541,7 +541,6 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testSpecialAxis0GlobalDouble();
 //    EDDGridFromNcFiles.testNThreads(3); 
 //    EDDGridFromNcFiles.testTimePrecisionMillis();
-//    EDDGridFromNcFiles.testUInt16File();
 //    EDDGridFromNcFiles.testGenerateDatasetsXml5();
 //    EDDGridFromNcFiles.testUnsignedGrid();
 
@@ -598,10 +597,11 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    Projects.acousticCsvToNc(
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.csv",
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.nc");
-//    s = EDDGridFromNcFiles.generateDatasetsXml("/data/tylar/", ".*\\.nc", "", "", -1, "", null);
+
+//    s = EDDGridFromNcFiles.generateDatasetsXml("/u00/satellite/oi2_nrt/", ".*\\.nc", "", "", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
-//    DasDds.main(new String[]{"travisGrid", "-verbose"});
+//    DasDds.main(new String[]{"ncdcOisst21Agg", "-verbose"});
 
 /*
     EDDGridFromNcFiles.testFiles();         //requires nceiPH53sstn1day in localhost ERDDAP
@@ -1134,6 +1134,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    EDDTableFromNcCFFiles.testNoAttName(); 
 //    EDDTableFromNcCFFiles.testKevin20160519();
+//    EDDTableFromNccsvFiles.testActualRange();
 //    EDDTableFromNccsvFiles.testChar();
 //    EDDTableFromNccsvFiles.testBasic(false);
 //
@@ -1228,7 +1229,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 1, 2020, 3, false);  //first/last year(1985..)/month(1..), testMode
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(1985, 2, 2020, 4, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -1321,7 +1322,6 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    EDDTableReplicate.testReplicatePostDet(false);  //defaultCheckSourceData (faster)
 //    EDStatic.test();
-//    EDUnits.testUdunitsToUcum();
 //    String2.log(File2.hexDump("c:/downloads/sendaiFail.dods", 1000000000));
 
       //Run the GenerateDatasetsXml program in interactive mode:
@@ -1407,15 +1407,6 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        60,
 //        "", "", "", "", "",
 //        "time", null)); 
-
-//    EDUnits.gatherUniqueCFUnits(
-//        "C:/programs/CFStandardNames/cf-standard-name-table54.xml");
-//    EDUnits.areCFCanonicalUnitsUnique();
-//    String2.log(EDUnits.getUniqueUAFUnits());
-//    EDUnits.testStandardizeUdunits();
-//    EDUnits.generateTests();
-//    EDUnits.testAllToUcumToUdnits();
-//    EDUnits.repeatedlyTestOneUdunit();  //includes UDUNITS software canonical-ization
 
 //    Erddap.testBasic();
 //    Erddap.testJsonld();
@@ -1768,6 +1759,15 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    TestUtil.testString2();
 //    TestUtil.testCalendar2();
 //    Touch.getPiscoUrls();
+//    Units2.gatherUniqueCFUnits(
+//        "C:/programs/CFStandardNames/cf-standard-name-table54.xml");
+//    Units2.areCFCanonicalUnitsUnique();
+//    String2.log(Units2.getUniqueUAFUnits());
+//    Units2.testStandardizeUdunits();
+//    Units2.generateTests();
+//    Units2.testAllToUcumToUdnits();
+//    Units2.repeatedlyTestOneUdunit();  //includes UDUNITS software canonical-ization
+//    Units2.testUdunitsToUcum();
 
 
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
@@ -1796,9 +1796,9 @@ CompoundColorMapLayerChild ccmlc;
 ContourScreen cons;
 CWUser cwUser;
 CWBrowser cwBrowser;
-CWBrowserHAB cwBrowserHAB;
-CWBrowserAK cwBrowserAK;
-CWBrowserSA cwBrowserSA;
+//CWBrowserHAB cwBrowserHAB;  INACTIVE
+//CWBrowserAK cwBrowserAK;    INACTIVE
+//CWBrowserSA cwBrowserSA;    INACTIVE
 CWBrowserWW180 cwBrowserWW180;
 CWBrowserWW360 cwBrowserWW360;
 CWDataBrowser cwDataBrowser;
@@ -1933,6 +1933,7 @@ TestBrowsers tb;
 TestSSR tssr;
 Touch touch;
 TrajectoryScreen trajs;
+Units2 u2;
 gov.noaa.pmel.sgt.VectorCartesianRenderer vcr;
 VectorPointsRenderer vpr;
 VectorScreen vs;
@@ -1988,7 +1989,6 @@ EDDTableFromOBIS eddtfo;
 EDDTableFromSOS eddtfs;
 EDDTableFromThreddsFiles eddtftf;
 //EDStatic above
-EDUnits edu;
 EDV edv;
 EDVAlt edva;
 EDVAltGridAxis edvaga;
@@ -2106,7 +2106,7 @@ WaitThenTryAgainException wttae;
         NcHelper.test(               errorSB, interactive, doSlowTestsToo, 0, -1);   
         OpendapHelper.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //few tests. relies on testing in classes that use it.
         Grid.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-        //GridDataSetCWOpendap.test( errorSB, interactive, doSlowTestsToo, 0, -1);  //the files are no longer available since we are moving to thredds
+        //GridDataSetCWOpendap.test( errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
         GridDataSetThredds.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
         GridDataSetOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
         SaveOpendap.test(            errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -2150,7 +2150,7 @@ WaitThenTryAgainException wttae;
         EDStatic.test(               errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDV.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDVTimeStamp.test(           errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDUnits.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
+        Units2.test(                 errorSB, interactive, doSlowTestsToo, 0, -1); 
         Subscriptions.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
         FileVisitorDNLS.test(        errorSB, interactive, doSlowTestsToo, 0, -1);
         FileVisitorSubdir.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  

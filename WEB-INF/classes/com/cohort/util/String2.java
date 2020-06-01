@@ -209,9 +209,36 @@ public class String2 {
         }
     }
 
+    private static String webInfParentDirectory; //lazy creation by webInfParentDirectory()
+
     //EDStatic may change this
     public static String unitTestDataDir    = "/erddapTest/";
     public static String unitTestBigDataDir = "/erddapTestBig/";
+
+    /**
+     * This returns the directory that is the tomcat application's root
+     * (with forward slashes and a trailing slash, 
+     * e.g., c:/programs/_tomcat/webapps/cwexperimental/).
+     * Tomcat calls this the ContextDirectory.
+     * This only works if these classes are installed
+     * underneath Tomcat (with "WEB-INF/" 
+     * the start of things to be removed from classPath).
+     *
+     * @return the parent directory of WEB-INF (with / separator and / at the end)
+     *   or "ERROR if trouble
+     * @throws RuntimeException if trouble
+     */
+    public static String webInfParentDirectory() {
+        if (webInfParentDirectory == null) {
+            String classPath = getClassPath(); //with / separator and / at the end
+            int po = classPath.indexOf("/WEB-INF/");
+            if (po < 0)
+                throw new RuntimeException(ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+            webInfParentDirectory = classPath.substring(0, po + 1);
+        }
+
+        return webInfParentDirectory;
+    }
 
     /**
      * This returns the string which sorts higher.

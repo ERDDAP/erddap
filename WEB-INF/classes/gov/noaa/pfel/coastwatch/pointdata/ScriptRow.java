@@ -283,7 +283,7 @@ public class ScriptRow  {
         }
         Test.ensureEqual(results,
             "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.test@1:1 unsolvable function/method 'java.lang.StringBuilder'",
+            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 unsolvable function/method 'java.lang.StringBuilder'",
             "");
 
         //work with static functions  by making a shell class (ScriptMath) that can be instantiated
@@ -334,7 +334,7 @@ public class ScriptRow  {
             results = e.toString();
         }
         Test.ensureEqual(results,
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.test@1:34 undefined variable String",
+            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:34 undefined variable String",
             "");
 
         //String static methods are accessible if String in MapContext
@@ -355,7 +355,7 @@ public class ScriptRow  {
             results = e.toString();
         }
         Test.ensureEqual(results, 
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.test@1:1 undefined variable String2", 
+            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 
         //but succeeds when added to context
