@@ -230,7 +230,7 @@ public class SaveOpendap  {
 
         //test ndbc       It would be better test if it actually tested the data.
         name = "SaveOpendapAsNcNDBC.nc";
-        asNc("http://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/31201/31201h2005.nc", dir + name);
+        asNc("https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/31201/31201h2005.nc", dir + name);
         String info = NcHelper.ncdump(dir + name, "-h");
         int po = info.indexOf("{");
         info = info.substring(po);

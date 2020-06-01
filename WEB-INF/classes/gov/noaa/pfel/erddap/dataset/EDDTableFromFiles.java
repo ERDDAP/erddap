@@ -22,6 +22,7 @@ import com.cohort.util.Script2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
@@ -35,7 +36,6 @@ import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.NoMoreDataPleaseException;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.EDUnits;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileWriter;
@@ -2163,8 +2163,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (!Double.isNaN(tMissingValue))
             Test.ensureEqual(tMissingValue, expectedMissingValue[dv], "missing_value" + oNEe);
         Test.ensureEqual(tScaleFactor,      expectedScaleFactor[ dv], "scale_factor" + oNEe);
-        if (!EDUnits.udunitsAreEquivalent(tUnits, expectedUnits[dv]))
-                         Test.ensureEqual(tUnits, expectedUnits[dv], "units" + oNEe);
+        if (!Units2.udunitsAreEquivalent(tUnits, expectedUnits[dv]))
+                        Test.ensureEqual(tUnits, expectedUnits[dv], "units" + oNEe);
     }
 
 

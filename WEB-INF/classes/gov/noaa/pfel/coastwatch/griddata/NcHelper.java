@@ -392,7 +392,7 @@ public class NcHelper  {
      * @return a PrimitiveArray
      */
     public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars) {
-        //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
+String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
         PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars));
         //if (nc2Array.isUnsigned()) 
         //    pa.setUnsigned(true);

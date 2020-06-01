@@ -276,10 +276,12 @@ public abstract class PrimitiveArray {
      * The values from pa are then treated as unsigned, e.g., -1 in ByteArray  
      * becomes 255 in a UByteArray.
      *
+     * <p>The signed PA types overwrite this.
+     *
      * @return a new unsigned PrimitiveArray, or this pa.
      */
     public PrimitiveArray makeUnsignedPA() {
-        return this;
+        return this;  
     }
 
     /**
@@ -287,6 +289,8 @@ public abstract class PrimitiveArray {
      * (e.g., PAType.UBYTE returns a PAType.BYTE).
      * The values from pa are then treated as unsigned, e.g., 255 in UByteArray  
      * becomes -1 in a ByteArray.
+     *
+     * <p>The unsigned PA types overwrite this.
      *
      * @return a new unsigned PrimitiveArray, or this pa.
      */

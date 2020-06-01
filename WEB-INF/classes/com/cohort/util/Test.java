@@ -858,7 +858,7 @@ public class Test {
      * @param t  MustBe.throwableToString is appended to the msg
      */
     public static void knownProblem(String title, String msg, Throwable t) throws Exception {
-        knownProblem(title, msg + "/n" + MustBe.throwableToString(t));
+        knownProblem(title, msg + "\n" + MustBe.throwableToString(t));
     }
 
     /** 

@@ -1418,9 +1418,8 @@ expected =
  
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-                "This test requires testTableAscii and testTableFromErddap in the localhost ERDDAP.\n" +
-                "Unexpected error."); 
+            throw new RuntimeException("This test requires testTableAscii and testTableFromErddap in the localhost ERDDAP.\n" +
+                "Unexpected error.", t); 
         } 
     }
 

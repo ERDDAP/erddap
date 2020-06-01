@@ -41,7 +41,7 @@ public class MakeErdJavaZip  {
         String errorInMethod = String2.ERROR + " while generating ErdJava.zip:\n";
 
         //define directories
-        String baseDir = SSR.getContextDirectory() + //with / separator and / at the end
+        String baseDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF/";
         String classPath = baseDir + "classes/";
         String coastWatchDir = classPath + "gov/noaa/pfel/coastwatch/";
@@ -109,7 +109,7 @@ public class MakeErdJavaZip  {
             Test.ensureTrue(File2.isFile(tDir + checkNames[i]), errorInMethod + tDir + checkNames[i] + " not found.");
 
         //generate javadocs again for online use
-        tDir = SSR.getContextDirectory() + //with / separator and / at the end
+        tDir = String2.webInfParentDirectory() + //with / separator and / at the end
             "ErdJavaDoc"; //dir to hold results
         SSR.dosShell("del /s /q " + //delete (/s=recursive /q=quiet) previous results
             String2.replaceAll(tDir, "/", "\\"), 60); 
@@ -205,7 +205,7 @@ public class MakeErdJavaZip  {
         //String2.log(String2.toNewlineString(dirNameArray));
 
         //make the zip file
-        String zipName = SSR.getContextDirectory() + //with / separator and / at the end
+        String zipName = String2.webInfParentDirectory() + //with / separator and / at the end
             "ErdJava.zip";
         String2.log("MakeErdJavaZip is making " + zipName + ".");
         File2.delete(zipName);
@@ -229,7 +229,7 @@ public class MakeErdJavaZip  {
 
         //define directories
         destinationDir = File2.addSlash(destinationDir);
-        String baseDir = (SSR.getContextDirectory() + //with / separator and / at the end
+        String baseDir = (String2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF\\classes").substring(2);
         String coastWatchDir = "gov\\noaa\\pfel\\coastwatch\\";
 

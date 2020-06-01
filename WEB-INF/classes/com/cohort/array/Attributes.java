@@ -1547,9 +1547,7 @@ public class Attributes {
 
             String tUnits = newAtts.getString("units");
             if (tUnits != null)
-                //not ideal that this uses EDUnits, which uses EDStatic,
-                //which is not in com.cohort.*.
-                newAtts.set("units", gov.noaa.pfel.erddap.util.EDUnits.safeStandardizeUdunits(tUnits)); 
+                newAtts.set("units", Units2.safeStandardizeUdunits(tUnits)); 
 
             if (debugMode) String2.log(
                 ">> #4096, standardized units.");
@@ -1559,112 +1557,6 @@ public class Attributes {
         return dataPa;
     }
 
-    /**
-     * If the variable is packed with scale_factor and/or add_offset, 
-     *  this will unpack the packed attributes of the variable: 
-     *   actual_range, actual_min, actual_max, 
-     *   data_max, data_min, 
-     *   valid_max, valid_min, valid_range.
-     * missing_value and _FillValue will be converted to PA standard mv 
-     *   for the the unpacked datatype (or current type if not packed).
-     *
-     * @param varName the var's fullName, for diagnostic messages only
-     * @param oPAType the var's initial elementPAType
-     */    
-    public void unpackVariableAttributes(String varName, PAType oPAType) {
-
-        Attributes newAtts = this;   //so it has a more descriptive name     
-        Attributes oldAtts = new Attributes(this); //so we have an unchanged copy to refer to
-
-        //deal with numeric time units
-        String tUnits = newAtts.getString("units");
-        if (Calendar2.isNumericTimeUnits(tUnits)) 
-            newAtts.set("units", Calendar2.SECONDS_SINCE_1970); //AKA EDV.TIME_UNITS
-            //presumably, String time var doesn't have units
-
-        PrimitiveArray unsignedPA = newAtts.remove("_Unsigned");
-        boolean unsigned = unsignedPA != null && "true".equals(unsignedPA.toString());         
-        PrimitiveArray scalePA = newAtts.remove("scale_factor");
-        PrimitiveArray addPA   = newAtts.remove("add_offset");
-
-        //if present, convert _FillValue and missing_value to PA standard mv
-        PAType destPAType = 
-            scalePA != null? scalePA.elementType() :
-            addPA   != null? addPA.elementType() : 
-            unsigned && oPAType == PAType.BYTE?  PAType.SHORT :  //similar code below
-            unsigned && oPAType == PAType.SHORT? PAType.INT :
-            unsigned && oPAType == PAType.INT?   PAType.DOUBLE : //ints are converted to double because nc3 doesn't support long
-            unsigned && oPAType == PAType.LONG?  PAType.DOUBLE : //longs are converted to double (not ideal)
-            oPAType;  
-        if (newAtts.remove("_FillValue")    != null)
-            newAtts.set(   "_FillValue",    PrimitiveArray.factory(destPAType, 1, ""));
-        if (newAtts.remove("missing_value") != null)
-            newAtts.set(   "missing_value", PrimitiveArray.factory(destPAType, 1, ""));
-
-        //if var isn't packed, we're done
-        if (!unsigned && scalePA == null && addPA == null)
-            return; 
-
-        //var is packed, so unpack all packed numeric attributes
-        //lookForStringTimes is false because these are all attributes of numeric variables
-        if (debugMode) 
-            String2.log(">> before unpack " + varName + 
-                " unsigned="      + unsigned +
-                " scale_factor="  + scalePA + 
-                " add_offset="    + addPA + 
-                " actual_max="    + oldAtts.get("actual_max") + 
-                " actual_min="    + oldAtts.get("actual_min") +
-                " actual_range="  + oldAtts.get("actual_range") + 
-                " data_max="      + oldAtts.get("data_max") + 
-                " data_min="      + oldAtts.get("data_min") +
-                " valid_max="     + oldAtts.get("valid_max") + 
-                " valid_min="     + oldAtts.get("valid_min") +
-                " valid_range="   + oldAtts.get("valid_range"));
-
-        //attributes are never unsigned
-
-        //before erddap v1.82, ERDDAP said actual_range had packed values.
-        //but CF 1.7 says actual_range is unpacked. 
-        //So look at data types and guess which to do, with preference to believing they're already unpacked
-        //Note that at this point in this method, we're dealing with a packed data variable
-        if (destPAType != null && (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
-            PrimitiveArray pa;
-            pa = newAtts.get("actual_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_max",   oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("actual_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_min",   oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("actual_range");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_range", oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("data_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("data_min",     oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("data_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("data_max",     oldAtts.unpackPA(varName, pa, false, false)); 
-        }
-        newAtts.set("valid_max",   oldAtts.unpackPA(varName, oldAtts.get("valid_max"),   false, false)); 
-        newAtts.set("valid_min",   oldAtts.unpackPA(varName, oldAtts.get("valid_min"),   false, false));
-        newAtts.set("valid_range", oldAtts.unpackPA(varName, oldAtts.get("valid_range"), false, false)); 
-
-        if (debugMode) 
-            String2.log(">> after  unpack " + varName + 
-                " unsigned="      + unsigned +               
-                " actual_max="    + newAtts.get("actual_max") + 
-                " actual_min="    + newAtts.get("actual_min") +
-                " actual_range="  + newAtts.get("actual_range") + 
-                " data_max="      + newAtts.get("data_max") + 
-                " data_min="      + newAtts.get("data_min") +
-                " valid_max="     + newAtts.get("valid_max") + 
-                " valid_min="     + newAtts.get("valid_min") +
-                " valid_range="   + newAtts.get("valid_range"));
-    }
 
    /**
      * Given this (sourceAtts, which won't be changed), this unpacks the dataPa.

@@ -18,6 +18,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -208,7 +209,7 @@ public static boolean developmentMode = false;
     public final static int TITLE_DOT_LENGTH = 95; //max nChar before using " ... "
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-    public static String contextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
+    public static String webInfParentDirectory = String2.webInfParentDirectory(); //with / separator and / at the end
     //fgdc and iso19115XmlDirectory are used for virtual URLs.
     public final static String fgdcXmlDirectory     = "metadata/fgdc/xml/";     //virtual
     public final static String iso19115XmlDirectory = "metadata/iso19115/xml/"; //virtual
@@ -216,10 +217,10 @@ public static boolean developmentMode = false;
     public final static String IMAGES_DIR           = "images/";
     public final static String PUBLIC_DIR           = "public/"; 
     public static String
-        fullPaletteDirectory = contextDirectory + "WEB-INF/cptfiles/",
-        fullPublicDirectory  = contextDirectory + PUBLIC_DIR,
-        downloadDir          = contextDirectory + DOWNLOAD_DIR, //local directory on this computer
-        imageDir             = contextDirectory + IMAGES_DIR;   //local directory on this computer
+        fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/",
+        fullPublicDirectory  = webInfParentDirectory + PUBLIC_DIR,
+        downloadDir          = webInfParentDirectory + DOWNLOAD_DIR, //local directory on this computer
+        imageDir             = webInfParentDirectory + IMAGES_DIR;   //local directory on this computer
     public static Tally tally = new Tally();
     public static int failureTimesDistributionLoadDatasets[] = new int[String2.DistributionSize];
     public static int failureTimesDistribution24[]           = new int[String2.DistributionSize];
@@ -1426,10 +1427,6 @@ public static boolean developmentMode = false;
         zoomIn,
         zoomOut;
 
-    public static HashMap<String,String> standardizeUdunitsHM = new HashMap();
-    public static HashMap<String,String> ucumToUdunitsHM = new HashMap();
-    public static HashMap<String,String> udunitsToUcumHM = new HashMap();
-
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
     private static String theLongDescriptionHtml; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
@@ -1574,7 +1571,7 @@ public static boolean developmentMode = false;
 
         String2.log(
             "bigParentDirectory=" + bigParentDirectory + eol +
-            "contextDirectory=" + contextDirectory);
+            "webInfParentDirectory=" + webInfParentDirectory);
 
         //are bufferedImages hardware accelerated?
         String2.log(SgtUtil.isBufferedImageAccelerated());
@@ -2860,7 +2857,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
             Test.ensureTrue( String2.isSomething(tStandardizeUdunits[ i3]),   "standardizeUdunits line #" + (i3 + 0) + " is empty.");
             Test.ensureTrue( String2.isSomething(tStandardizeUdunits[ i3+1]), "standardizeUdunits line #" + (i3 + 1) + " is empty.");
             Test.ensureEqual(tStandardizeUdunits[i3+2].trim(), "",            "standardizeUdunits line #" + (i3 + 2) + " isn't empty.");
-            standardizeUdunitsHM.put(
+            Units2.standardizeUdunitsHM.put(
                 String2.canonical(tStandardizeUdunits[i3].trim()), 
                 String2.canonical(tStandardizeUdunits[i3 + 1].trim()));
         }       
@@ -2871,7 +2868,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
             Test.ensureTrue( String2.isSomething(tUcumToUdunits[ i3]),   "ucumToUdunits line #" + (i3 + 0) + " is empty.");
             Test.ensureTrue( String2.isSomething(tUcumToUdunits[ i3+1]), "ucumToUdunits line #" + (i3 + 1) + " is empty.");
             Test.ensureEqual(tUcumToUdunits[i3+2].trim(), "",            "ucumToUdunits line #" + (i3 + 2) + " isn't empty.");
-            ucumToUdunitsHM.put(
+            Units2.ucumToUdunitsHM.put(
                 String2.canonical(tUcumToUdunits[i3].trim()), 
                 String2.canonical(tUcumToUdunits[i3 + 1].trim()));
         }       
@@ -2882,7 +2879,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
             Test.ensureTrue( String2.isSomething(tUdunitsToUcum[ i3]),   "udunitsToUcum line #" + (i3 + 0) + " is empty.");
             Test.ensureTrue( String2.isSomething(tUdunitsToUcum[ i3+1]), "udunitsToUcum line #" + (i3 + 1) + " is empty.");
             Test.ensureEqual(tUdunitsToUcum[i3+2].trim(), "",            "udunitsToUcum line #" + (i3 + 2) + " isn't empty.");
-            udunitsToUcumHM.put(
+            Units2.udunitsToUcumHM.put(
                 String2.canonical(tUdunitsToUcum[i3].trim()), 
                 String2.canonical(tUdunitsToUcum[i3 + 1].trim()));
         }       
@@ -3047,7 +3044,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Calendar2.verbose = verbose;
         EDD.verbose = verbose;
         EDV.verbose = verbose;      
-        EDUnits.verbose = verbose;
         Erddap.verbose = verbose;
         File2.verbose = verbose;
         FileVisitorDNLS.reallyVerbose = reallyVerbose;
@@ -3070,6 +3066,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Subscriptions.verbose = verbose;
         Table.verbose = verbose;
         TaskThread.verbose = verbose;
+        Units2.verbose = verbose;
 
         reallyVerbose = logLevel.equals("all");
         AxisDataAccessor.reallyVerbose = reallyVerbose;
@@ -4367,7 +4364,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         table.addColumn("acronym", col1);
         table.addColumn("fullName", col2);
         ArrayList<String> lines = String2.readLinesFromFile(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
             String2.ISO_8859_1, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) { //1 because skip colNames
@@ -4400,7 +4397,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         table.addColumn("variableName", col1);
         table.addColumn("fullName", col2);
         ArrayList<String> lines = String2.readLinesFromFile(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
             String2.ISO_8859_1, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) {
@@ -4509,7 +4506,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static Table fipsCountyTable() throws Exception {
         Table table = new Table();
         table.readASCII(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
             String2.ISO_8859_1, "", "",
             0, 1, "", null, null, null, null, false); //false = don't simplify
         return table;
@@ -4523,7 +4520,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static Table keywordsCfTable() throws Exception {
         StringArray sa = StringArray.fromFile(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
         Table table = new Table();
         table.addColumn("CfStandardNames", sa);
         return table;
@@ -4537,7 +4534,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static Table keywordsGcmdTable() throws Exception {
         StringArray sa = StringArray.fromFile(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
         Table table = new Table();
         table.addColumn("GcmdScienceKeywords", sa);
         return table;
@@ -4552,7 +4549,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static Table keywordsCfToGcmdTable() throws Exception {
         StringArray sa = StringArray.fromFile(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
         Table table = new Table();
         table.addColumn("CfToGcmd", sa);
         return table;

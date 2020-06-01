@@ -3072,7 +3072,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             int po = msg.indexOf("SimpleException: Your query produced no matching results. " +
                 "(There are no matching sites (time).)");
             if (po < 0)
-                throw new SimpleException("Unexpected Error: " + msg);
+                throw new RuntimeException("Unexpected Error.", t);
         }
 
         //test time in future
@@ -3089,7 +3089,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             String msg = MustBe.throwableToString(t);
             int po = msg.indexOf("SimpleException: Your query produced no matching results.");
             if (po < 0)
-                throw new SimpleException("Unexpected Error: " + msg);
+                throw new RuntimeException("Unexpected Error.", t);
         }
 
         //test one time: noon (so no data)
@@ -3106,7 +3106,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             String msg = MustBe.throwableToString(t);
             int po = msg.indexOf("SimpleException: Your query produced no matching results.");
             if (po < 0)
-                throw new SimpleException("Unexpected Error: " + msg);
+                throw new RuntimeException("Unexpected Error.", t);
         }
 
         //test   actual data for more than one station (not allowed)
@@ -3125,7 +3125,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
                 "(not just station information), you must request " +
                 "data for just one station at a time.  (There were 9 matching stations.)");
             if (po < 0)
-                throw new SimpleException("Unexpected Error: " + msg);
+                throw new RuntimeException("Unexpected Error.", t);
         }
 
            

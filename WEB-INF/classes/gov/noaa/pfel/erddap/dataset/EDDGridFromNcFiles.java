@@ -4686,6 +4686,9 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
             "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n" +
             SgtUtil.isBufferedImageAccelerated() + "\n");
+        //gc and sleep to give computer time to catch up from previous tests
+        for (int i = 0; i < 4; i++) 
+            Math2.gc(5000);
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = false;
         String outName;
@@ -4719,7 +4722,7 @@ expected =
             303, 1759, 1635, 1544,        //734, 6391, 6312, ?            //1250, 9750, 9562, ?                                  
             //why is esriAscii so slow??? was ~9000 for a long time. Then jumped to 23330.
             15, 15, 663, 12392,           //15, 15, 109/156, 16875        //15, 15, 547, 18859
-            78, 45, 603,                  //63, 47, 2032,                 //93, 31, ...,
+            40, 25, 603,                  //63, 47, 2032,                 //93, 31, ...,
             1843, 1568, 1568, 2203, 666,  //6422, ., ., 203,              //9621, ., ., 625,  
             173, 117,                     //234, 250,                     //500, 500, 
             1798, 16, 390,
@@ -10158,7 +10161,7 @@ FileVisitorDNLS.debugMode = false;
 "    String long_name \"Mean Chlorophyll a Concentration\";\n" +
 "    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
 "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
-"    String units \"mg m^-3\";\n" +
+"    String units \"mg m-3\";\n" +
 "    Float32 valid_max 100.0;\n" +
 "    Float32 valid_min 0.001;\n" +
 "  }\n" +
@@ -10304,7 +10307,7 @@ expected =
         //String2.log(results);
         expected = 
 "time,latitude,longitude,chlorophyll\n" +
-"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"UTC,degrees_north,degrees_east,mg m-3\n" +
 "2003-01-16T00:00:00Z,23.312494,-179.5625,0.076702\n" +
 "2003-01-16T00:00:00Z,23.27083,-179.5625,0.074305\n" +
 "2003-02-16T00:00:00Z,23.312494,-179.5625,0.067577\n" +

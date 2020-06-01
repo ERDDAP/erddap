@@ -26,6 +26,7 @@ import com.cohort.util.Script2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
@@ -14509,7 +14510,7 @@ public abstract class EDDTable extends EDD {
                             Attributes atts = twawm.columnAttributes(col);
                             String units = atts.getString("units");
                             if (units != null)
-                                atts.set("units", EDUnits.safeUdunitsToUcum(units)); 
+                                atts.set("units", Units2.safeUdunitsToUcum(units)); 
                         }
                     }
 
@@ -21418,173 +21419,167 @@ writer.write(
      * Test the Oostethys-style SOS data response using cwwcNDBCMet.
      */
     public static void testSosOostethys() throws Throwable {
-        try {
-            String2.log("\n*** EDDTable.testSosOostethys()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
-            String dir = EDStatic.fullTestCacheDirectory;
-            String sosQuery, fileName, results, expected;
-            java.io.StringWriter writer;
-            ByteArrayOutputStream baos;
-            OutputStreamSourceSimple osss;
+        String2.log("\n*** EDDTable.testSosOostethys()");
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+        String dir = EDStatic.fullTestCacheDirectory;
+        String sosQuery, fileName, results, expected;
+        java.io.StringWriter writer;
+        ByteArrayOutputStream baos;
+        OutputStreamSourceSimple osss;
 
 
-            //*** observations for 1 station, all vars  CSV response
-            String sosQuery1 = 
-                "service=SOS&version=1.0.0&request=GetObservation" +
-                "&offering=urn:ioos:Station:1.0.0.127.cwwcNDBCMet::41004" +
-                "&observedProperty=cwwcNDBCMet" +
-                "&responseFormat=application/com-xml" +
-                "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
-            String2.log("\n+++ GetObservations for 1 station \n" + sosQuery1);
-            baos = new ByteArrayOutputStream();
-            osss = new OutputStreamSourceSimple(baos);
-            eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSos1Sta");
-            results = baos.toString(String2.UTF_8);
-            String2.log(results);        
-            expected = 
-    //"longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
-    //"degrees_east, degrees_north, UTC, , degrees_true, m s-1, m s-1, m, s, s, degrees_true, hPa, degree_C, degree_C, degree_C, km, hPa, m, m s-1, m s-1\n" +
-    //"-79.09, 32.5, 2008-08-01T00:00:00Z, 41004, 225, 10.9, 14.0, 1.66, 5.26, 4.17, NaN, 1007.6, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.7, 7.7\n" +
-    //"-79.09, 32.5, 2008-08-01T01:00:00Z, 41004, 229, 10.1, 12.6, 1.68, 5.56, 4.36, NaN, 1008.0, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.6, 6.6\n";
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    "<om:Observation\n" +
-    "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +   
-    "  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
-    "  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
-    "  xmlns:om=\"http://www.opengis.net/om\"\n" +
-    "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
-    "  xsi:schemaLocation=\"http://www.opengis.net/om ../../../../../../ows4/schema0/swe/branches/swe-ows4-demo/om/current/commonObservation.xsd\"\n" +
-    "  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
-    "<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
-    "  <gml:description>cwwcNDBCMet observations at a series of times</gml:description>\n" +
-    "  <gml:name>NDBC Standard Meteorological Buoy Data, Station 41004</gml:name>\n" +
-    "  <gml:location>\n" +
-    "    <gml:Point gml:id=\"OBSERVATION_LOCATION\" srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
-    "      <gml:coordinates>32.5 -79.09</gml:coordinates>\n" +
-    "    </gml:Point>\n" +
-    "  </gml:location>\n" +
-    "  <om:time>\n" +
-    "    <gml:TimePeriod gml:id=\"DATA_TIME\">\n" +
-    "      <gml:beginPosition>2008-08-01T00:00:00Z</gml:beginPosition>\n" +
-    "      <gml:endPosition>2008-08-01T01:00:00Z</gml:endPosition>\n" +
-    "    </gml:TimePeriod>\n" +
-    "  </om:time>\n" +
-    "    <om:procedure xlink:href=\"urn:ioos:sensor:1.0.0.127.cwwcNDBCMet::41004:cwwcNDBCMet\"/>\n" +
-    "    <om:observedProperty xlink:href=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#cwwcNDBCMet\"/>\n" +
-    "    <om:featureOfInterest xlink:href=\"urn:cgi:Feature:CGI:EarthOcean\"/>\n" +
-    "    <om:resultDefinition>\n" +
-    "        <swe:DataBlockDefinition>\n" +
-    "            <swe:components name=\"cwwcNDBCMetDataFor41004\">\n" +
-    "                <swe:DataRecord>\n" +
-    "                    <swe:field name=\"time\">\n" +
-    "                        <swe:Time definition=\"urn:ogc:phenomenon:time:iso8601\"/>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"latitude\">\n" +
-    "                        <swe:Quantity definition=\"urn:ogc:phenomenon:latitude:wgs84\">\n" +
-    "                            <swe:uom xlink:href=\"urn:ogc:unit:degree\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"longitude\">\n" +
-    "                        <swe:Quantity definition=\"urn:ogc:phenomenon:longitude:wgs84\">\n" +
-    "                            <swe:uom xlink:href=\"urn:ogc:unit:degree\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wd\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wd\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#degrees_true\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wspd\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspd\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"gst\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#gst\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wvht\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wvht\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"dpd\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#dpd\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#s\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"apd\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#apd\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#s\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"mwd\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#mwd\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#degrees_true\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"bar\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#bar\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#hPa\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"atmp\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#atmp\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wtmp\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wtmp\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"dewp\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#dewp\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"vis\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#vis\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#km\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"ptdy\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#ptdy\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#hPa\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"tide\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#tide\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wspu\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspu\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                    <swe:field name=\"wspv\">\n" +
-    "                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspv\">\n" +
-    "                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
-    "                        </swe:Quantity>\n" +
-    "                    </swe:field>\n" +
-    "                </swe:DataRecord>\n" +
-    "            </swe:components>\n" +
-    "            <swe:encoding>\n" +
-    "                <swe:AsciiBlock tokenSeparator=\",\" blockSeparator=\" \" decimalSeparator=\".\"/>\n" +
-    "            </swe:encoding>\n" +
-    "        </swe:DataBlockDefinition>\n" +
-    "    </om:resultDefinition>\n" +
-    "    <om:result>2008-08-01T00:00:00Z,32.5,-79.09,225,10.9,14.0,1.66,5.26,4.17,,1007.6,27.8,27.9,,,,,7.7,7.7 " +
-                   "2008-08-01T01:00:00Z,32.5,-79.09,229,10.1,12.6,1.68,5.56,4.36,,1008.0,27.8,27.9,,,,,7.6,6.6</om:result>\n" +
-    "</om:Observation>\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
-        }
-
+        //*** observations for 1 station, all vars  CSV response
+        String sosQuery1 = 
+            "service=SOS&version=1.0.0&request=GetObservation" +
+            "&offering=urn:ioos:Station:1.0.0.127.cwwcNDBCMet::41004" +
+            "&observedProperty=cwwcNDBCMet" +
+            "&responseFormat=application/com-xml" +
+            "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
+        String2.log("\n+++ GetObservations for 1 station \n" + sosQuery1);
+        baos = new ByteArrayOutputStream();
+        osss = new OutputStreamSourceSimple(baos);
+        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSos1Sta");
+        results = baos.toString(String2.UTF_8);
+        String2.log(results);        
+        expected = 
+//"longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
+//"degrees_east, degrees_north, UTC, , degrees_true, m s-1, m s-1, m, s, s, degrees_true, hPa, degree_C, degree_C, degree_C, km, hPa, m, m s-1, m s-1\n" +
+//"-79.09, 32.5, 2008-08-01T00:00:00Z, 41004, 225, 10.9, 14.0, 1.66, 5.26, 4.17, NaN, 1007.6, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.7, 7.7\n" +
+//"-79.09, 32.5, 2008-08-01T01:00:00Z, 41004, 229, 10.1, 12.6, 1.68, 5.56, 4.36, NaN, 1008.0, 27.8, 27.9, NaN, NaN, NaN, NaN, 7.6, 6.6\n";
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<om:Observation\n" +
+"  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n" +   
+"  xmlns:swe=\"http://www.opengis.net/swe/0\"\n" +
+"  xmlns:gml=\"http://www.opengis.net/gml\"\n" +
+"  xmlns:om=\"http://www.opengis.net/om\"\n" +
+"  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
+"  xsi:schemaLocation=\"http://www.opengis.net/om ../../../../../../ows4/schema0/swe/branches/swe-ows4-demo/om/current/commonObservation.xsd\"\n" +
+"  gml:id=\"cwwcNDBCMetTimeSeriesObservation\">\n" +
+"<!-- This is ERDDAP's PROTOTYPE SOS service.  The information in this response is NOT complete. -->\n" +
+"  <gml:description>cwwcNDBCMet observations at a series of times</gml:description>\n" +
+"  <gml:name>NDBC Standard Meteorological Buoy Data, Station 41004</gml:name>\n" +
+"  <gml:location>\n" +
+"    <gml:Point gml:id=\"OBSERVATION_LOCATION\" srsName=\"urn:ogc:def:crs:epsg::4326\">\n" +
+"      <gml:coordinates>32.5 -79.09</gml:coordinates>\n" +
+"    </gml:Point>\n" +
+"  </gml:location>\n" +
+"  <om:time>\n" +
+"    <gml:TimePeriod gml:id=\"DATA_TIME\">\n" +
+"      <gml:beginPosition>2008-08-01T00:00:00Z</gml:beginPosition>\n" +
+"      <gml:endPosition>2008-08-01T01:00:00Z</gml:endPosition>\n" +
+"    </gml:TimePeriod>\n" +
+"  </om:time>\n" +
+"    <om:procedure xlink:href=\"urn:ioos:sensor:1.0.0.127.cwwcNDBCMet::41004:cwwcNDBCMet\"/>\n" +
+"    <om:observedProperty xlink:href=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#cwwcNDBCMet\"/>\n" +
+"    <om:featureOfInterest xlink:href=\"urn:cgi:Feature:CGI:EarthOcean\"/>\n" +
+"    <om:resultDefinition>\n" +
+"        <swe:DataBlockDefinition>\n" +
+"            <swe:components name=\"cwwcNDBCMetDataFor41004\">\n" +
+"                <swe:DataRecord>\n" +
+"                    <swe:field name=\"time\">\n" +
+"                        <swe:Time definition=\"urn:ogc:phenomenon:time:iso8601\"/>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"latitude\">\n" +
+"                        <swe:Quantity definition=\"urn:ogc:phenomenon:latitude:wgs84\">\n" +
+"                            <swe:uom xlink:href=\"urn:ogc:unit:degree\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"longitude\">\n" +
+"                        <swe:Quantity definition=\"urn:ogc:phenomenon:longitude:wgs84\">\n" +
+"                            <swe:uom xlink:href=\"urn:ogc:unit:degree\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wd\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wd\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#degrees_true\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wspd\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspd\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"gst\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#gst\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wvht\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wvht\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"dpd\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#dpd\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#s\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"apd\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#apd\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#s\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"mwd\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#mwd\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#degrees_true\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"bar\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#bar\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#hPa\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"atmp\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#atmp\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wtmp\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wtmp\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"dewp\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#dewp\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#degree_C\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"vis\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#vis\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#km\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"ptdy\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#ptdy\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#hPa\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"tide\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#tide\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wspu\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspu\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                    <swe:field name=\"wspv\">\n" +
+"                        <swe:Quantity definition=\"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#wspv\">\n" +
+"                            <swe:uom xlink:href=\"urn:erddap.def:units#m s-1\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n" +
+"                </swe:DataRecord>\n" +
+"            </swe:components>\n" +
+"            <swe:encoding>\n" +
+"                <swe:AsciiBlock tokenSeparator=\",\" blockSeparator=\" \" decimalSeparator=\".\"/>\n" +
+"            </swe:encoding>\n" +
+"        </swe:DataBlockDefinition>\n" +
+"    </om:resultDefinition>\n" +
+"    <om:result>2008-08-01T00:00:00Z,32.5,-79.09,225,10.9,14.0,1.66,5.26,4.17,,1007.6,27.8,27.9,,,,,7.7,7.7 " +
+               "2008-08-01T01:00:00Z,32.5,-79.09,229,10.1,12.6,1.68,5.56,4.36,,1008.0,27.8,27.9,,,,,7.6,6.6</om:result>\n" +
+"</om:Observation>\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
 

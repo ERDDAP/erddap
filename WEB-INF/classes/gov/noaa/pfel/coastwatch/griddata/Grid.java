@@ -3535,7 +3535,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * nor does it get information from the .grd file name.
      *
      * <p>This uses jhdf.jar which must be in the 
-     * String2.getContextDirectory()+"WEB-INF\lib" directory (for Tomcat)
+     * String2.webInfParentDirectory()+"WEB-INF\lib" directory (for Tomcat)
      * and on the javac's and java's classpath (for compiling and running outside
      * of Tomcat).
      *

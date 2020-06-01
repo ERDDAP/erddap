@@ -21,6 +21,7 @@ import com.cohort.util.ResourceBundle2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
@@ -253,7 +254,7 @@ public class Erddap extends HttpServlet {
             String2.standardHelpAboutMessage() + "\n" +
             "verbose=" + verbose + " reallyVerbose=" + reallyVerbose + "\n" +
             "bigParentDirectory=" + BPD + "\n" +
-            "contextDirectory=" + EDStatic.contextDirectory + "\n" +
+            "contextDirectory=" + EDStatic.webInfParentDirectory + "\n" +
             "available fonts=" + String2.toCSSVString(java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));         
 
         //on start up, always delete all files from fullPublicDirectory and fullCacheDirectory
@@ -7352,7 +7353,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         avUnits = "EPSG:5030"; //here just 1.1.0 or 1.1.1
                     } else if (EDStatic.units_standard.equals("UDUNITS")) {
                         //convert other udnits to ucum   (this is in WMS GetCapabilities)
-                        avUnits = EDUnits.safeUdunitsToUcum(avUnits);
+                        avUnits = Units2.safeUdunitsToUcum(avUnits);
                     }
 
                     writer.write(
@@ -7387,7 +7388,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         (avi == eddGrid.depthIndex()? -1 : 1) * av.lastDestinationValue());
                 } else if (EDStatic.units_standard.equals("UDUNITS")) {
                     //convert other udnits to ucum (this is in WMS GetCapabilites)
-                    avUnits = EDUnits.safeUdunitsToUcum(avUnits);
+                    avUnits = Units2.safeUdunitsToUcum(avUnits);
                 }
 
                 if (tVersion.equals("1.1.0")) writer.write(
@@ -9252,7 +9253,7 @@ breadCrumbs + endBreadCrumbs +
             requestUrl.indexOf("%0") >= 0) {  //percent-encoded ASCII char <16, e.g., %00
             throw new SimpleException(EDStatic.queryError + "Some characters are never allowed in requests.");
         }
-        String dir = EDStatic.contextDirectory + protocol + "/";
+        String dir = EDStatic.webInfParentDirectory + protocol + "/";
         String fileNameAndExt = requestUrl.length() <= datasetIDStartsAt? "" : 
             requestUrl.substring(datasetIDStartsAt);
 
@@ -15178,17 +15179,17 @@ writer.write(
         if (tStandardizeUdunits.length() > 0) {
             tUdunits = "";
             tUcum = "";
-            rStandardizeUdunits = EDUnits.safeStandardizeUdunits(tStandardizeUdunits);
-            rUcum    = EDUnits.safeUdunitsToUcum(tStandardizeUdunits);
+            rStandardizeUdunits = Units2.safeStandardizeUdunits(tStandardizeUdunits);
+            rUcum    = Units2.safeUdunitsToUcum(tStandardizeUdunits);
             rUdunits = rStandardizeUdunits;
         } else if (tUdunits.length() > 0) {
             tStandardizeUdunits = "";
             tUcum = "";
-            rUcum    = EDUnits.safeUdunitsToUcum(tUdunits);
+            rUcum    = Units2.safeUdunitsToUcum(tUdunits);
         } else if (tUcum.length() > 0) {
             tStandardizeUdunits = "";
             tUdunits = "";
-            rUdunits = EDUnits.ucumToUdunits(tUcum);
+            rUdunits = Units2.ucumToUdunits(tUcum);
         }
 
         //do the .txt response

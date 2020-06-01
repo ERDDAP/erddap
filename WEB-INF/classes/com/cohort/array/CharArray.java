@@ -1633,12 +1633,8 @@ public class CharArray extends PrimitiveArray {
 /* for releases, this line should have open/close comment */
 
         CharArray anArray = CharArray.fromCSV(       "\"\\t\", a, \"\\n\", \"\\u20AC\", ,  \"\\uffff\" ");
-        try {
         Test.ensureEqual(anArray.toString(),         "\\t, a, \\n, \\u20ac, \\uffff, \\uffff", "");
         Test.ensureEqual(anArray.toNccsvAttString(), "\"'\\t'\",\"'a'\",\"'\\n'\",\"'\\u20ac'\",\"'\\uffff'\",\"'\\uffff'\"", "");
-        } catch (Exception e) {            
-            String2.pressEnterToContinue(MustBe.throwableToString(e) + "FIX THIS!");
-        }
 
         //** test default constructor and many of the methods
         anArray = new CharArray();

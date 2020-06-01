@@ -1248,13 +1248,13 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         expected = 
 "netcdf EDDGridAggregateExistingDimension.nc {\n" +
-" dimensions:\n" +
-"   time = 5;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
-"   latitude = 1;\n" +   // (has coord.var)\n" +
-"   longitude = 1;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double time(time=5);\n" +
-"     :_CoordinateAxisType = \"Time\";\n";
+"  dimensions:\n" +
+"    time = 5;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
+"    latitude = 1;\n" +   // (has coord.var)\n" +
+"    longitude = 1;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double time(time=5);\n" +
+"      :_CoordinateAxisType = \"Time\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //BUG???!!!
@@ -1262,100 +1262,114 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
 expected = 
 ":axis = \"T\";\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Epoch Time\";\n" +
-"     :short_name = \"time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   float latitude(latitude=1);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = 32.27f, 32.27f; // float\n" +
-"     :axis = \"Y\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :short_name = \"latitude\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   float longitude(longitude=1);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = -75.42f, -75.42f; // float\n" +
-"     :axis = \"X\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :short_name = \"longitude\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float wind_speed(time=5, latitude=1, longitude=1);\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"     :ioos_category = \"Wind\";\n" +
-"     :long_name = \"Wind Speed\";\n" +
-"     :missing_value = 99.0f; // float\n" +
-"     :short_name = \"wspd\";\n" +
-"     :standard_name = \"wind_speed\";\n" +
-"     :units = \"m s-1\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Epoch Time\";\n" +
+"      :short_name = \"time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :comment = \"S HATTERAS - 250 NM East of Charleston, SC\";\n" +
-" :contributor_name = \"NOAA NDBC\";\n" +
-" :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-" :Easternmost_Easting = -75.42f; // float\n" +
-" :geospatial_lat_max = 32.27f; // float\n" +
-" :geospatial_lat_min = 32.27f; // float\n" +
-" :geospatial_lon_max = -75.42f; // float\n" +
-" :geospatial_lon_min = -75.42f; // float\n" +
-" :history = \"" + today + " http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+"    float latitude(latitude=1);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 32.27f, 32.27f; // float\n" +
+"      :axis = \"Y\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :short_name = \"latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    float longitude(longitude=1);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = -75.42f, -75.42f; // float\n" +
+"      :axis = \"X\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :short_name = \"longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    float wind_speed(time=5, latitude=1, longitude=1);\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Wind Speed\";\n" +
+"      :missing_value = 99.0f; // float\n" +
+"      :short_name = \"wspd\";\n" +
+"      :standard_name = \"wind_speed\";\n" +
+"      :units = \"m s-1\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :comment = \"S HATTERAS - 250 NM East of Charleston, SC\";\n" +
+"  :contributor_name = \"NOAA NDBC\";\n" +
+"  :contributor_role = \"Source of data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Easternmost_Easting = -75.42f; // float\n" +
+"  :geospatial_lat_max = 32.27f; // float\n" +
+"  :geospatial_lat_min = 32.27f; // float\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = -75.42f; // float\n" +
+"  :geospatial_lon_min = -75.42f; // float\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :history = \"";
+//today + " https://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+        int po = results.indexOf(":axis =");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+expected = 
 "/griddap/ndbcCWind41002.nc?wind_speed[1:5][0][0]\";\n" +
-" :infoUrl = \"https://www.ndbc.noaa.gov/cwind.shtml\";\n" +
-" :institution = \"NOAA NDBC\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :infoUrl = \"https://www.ndbc.noaa.gov/cwind.shtml\";\n" +
+"  :institution = \"NOAA NDBC\";\n" +
+"  :keywords = \"Earth Science > Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :location = \"32.27 N 75.42 W \";\n" +
-" :Northernmost_Northing = 32.27f; // float\n" +
-" :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
-" :sourceUrl = \"http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\";\n" +
-" :Southernmost_Northing = 32.27f; // float\n" +
-" :station = \"41002\";\n" +
-" :summary = \"These continuous wind measurements from the NOAA National Data Buoy Center (NDBC) stations are 10-minute average values of wind speed (in m/s) and direction (in degrees clockwise from North).\";\n" +
-" :time_coverage_end = \"1989-06-13T16:50:00Z\";\n" +
-" :time_coverage_start = \"1989-06-13T16:10:00Z\";\n" +
-" :title = \"Wind Data from NDBC 41002\";\n" +
-" :url = \"http://dods.ndbc.noaa.gov\";\n" +
-" :Westernmost_Easting = -75.42f; // float\n" +
-" data:\n" +
-"time =\n" +
-"  {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
-"latitude =\n" +
-"  {32.27}\n" +
-"longitude =\n" +
-"  {-75.42}\n" +
-"wind_speed =\n" +
-"  {\n" +
-"    {\n" +
-"      {15.7}\n" +
-"    },\n" +
-"    {\n" +
-"      {15.0}\n" +
-"    },\n" +
-"    {\n" +
-"      {14.4}\n" +
-"    },\n" +
-"    {\n" +
-"      {14.0}\n" +
-"    },\n" +
-"    {\n" +
-"      {13.6}\n" +
-"    }\n" +
-"  }\n" +
+"  :location = \"32.27 N 75.42 W\";\n" +
+"  :Northernmost_Northing = 32.27f; // float\n" +
+"  :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
+"  :sourceUrl = \"https://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\";\n" +
+"  :Southernmost_Northing = 32.27f; // float\n" +
+"  :station = \"41002\";\n" +
+"  :summary = \"These continuous wind measurements from the NOAA National Data Buoy Center (NDBC) stations are 10-minute average values of wind speed (in m/s) and direction (in degrees clockwise from North).\";\n" +
+"  :time_coverage_end = \"1989-06-13T16:50:00Z\";\n" +
+"  :time_coverage_start = \"1989-06-13T16:10:00Z\";\n" +
+"  :title = \"Wind Data from NDBC 41002\";\n" +
+"  :url = \"https://dods.ndbc.noaa.gov\";\n" +
+"  :Westernmost_Easting = -75.42f; // float\n" +
+"\n" +
+"  data:\n" +
+"    time = \n" +
+"      {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
+"    latitude = \n" +
+"      {32.27}\n" +
+"    longitude = \n" +
+"      {-75.42}\n" +
+"    wind_speed = \n" +
+"      {\n" +
+"        {\n" +
+"          {15.7}\n" +
+"        },\n" +
+"        {\n" +
+"          {15.0}\n" +
+"        },\n" +
+"        {\n" +
+"          {14.4}\n" +
+"        },\n" +
+"        {\n" +
+"          {14.0}\n" +
+"        },\n" +
+"        {\n" +
+"          {13.6}\n" +
+"        }\n" +
+"      }\n" +
 "}\n";
-        int po = results.indexOf(":axis =");
+        po = results.indexOf(expected.substring(0, 50));
         Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_direction[1:5][0][0]";
@@ -1364,13 +1378,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_direction\n" +
-"UTC, degrees_north, degrees_east, degrees_true\n" +
-"1989-06-13T16:10:00Z, 32.27, -75.42, 234\n" +
-"1989-06-13T16:20:00Z, 32.27, -75.42, 233\n" +
-"1989-06-13T16:30:00Z, 32.27, -75.42, 233\n" +
-"1989-06-13T16:40:00Z, 32.27, -75.42, 235\n" +
-"1989-06-13T16:50:00Z, 32.27, -75.42, 235\n";
+"time,latitude,longitude,wind_direction\n"+
+"UTC,degrees_north,degrees_east,degrees_true\n"+
+"1989-06-13T16:10:00Z,32.27,-75.42,234\n"+
+"1989-06-13T16:20:00Z,32.27,-75.42,233\n"+
+"1989-06-13T16:30:00Z,32.27,-75.42,233\n"+
+"1989-06-13T16:40:00Z,32.27,-75.42,235\n"+
+"1989-06-13T16:50:00Z,32.27,-75.42,235\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_speed[1:5][0][0],wind_direction[1:5][0][0]";
@@ -1379,13 +1393,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_speed, wind_direction\n" +
-"UTC, degrees_north, degrees_east, m s-1, degrees_true\n" +
-"1989-06-13T16:10:00Z, 32.27, -75.42, 15.7, 234\n" +
-"1989-06-13T16:20:00Z, 32.27, -75.42, 15.0, 233\n" +
-"1989-06-13T16:30:00Z, 32.27, -75.42, 14.4, 233\n" +
-"1989-06-13T16:40:00Z, 32.27, -75.42, 14.0, 235\n" +
-"1989-06-13T16:50:00Z, 32.27, -75.42, 13.6, 235\n";
+"time,latitude,longitude,wind_speed,wind_direction\n"+
+"UTC,degrees_north,degrees_east,m s-1,degrees_true\n"+
+"1989-06-13T16:10:00Z,32.27,-75.42,15.7,234\n"+
+"1989-06-13T16:20:00Z,32.27,-75.42,15.0,233\n"+
+"1989-06-13T16:30:00Z,32.27,-75.42,14.4,233\n"+
+"1989-06-13T16:40:00Z,32.27,-75.42,14.0,235\n"+
+"1989-06-13T16:50:00Z,32.27,-75.42,13.6,235\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_direction[1:5][0][0],wind_speed[1:5][0][0]";
@@ -1394,13 +1408,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_direction, wind_speed\n" +
-"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
-"1989-06-13T16:10:00Z, 32.27, -75.42, 234, 15.7\n" +
-"1989-06-13T16:20:00Z, 32.27, -75.42, 233, 15.0\n" +
-"1989-06-13T16:30:00Z, 32.27, -75.42, 233, 14.4\n" +
-"1989-06-13T16:40:00Z, 32.27, -75.42, 235, 14.0\n" +
-"1989-06-13T16:50:00Z, 32.27, -75.42, 235, 13.6\n";
+"time,latitude,longitude,wind_direction,wind_speed\n"+
+"UTC,degrees_north,degrees_east,degrees_true,m s-1\n"+
+"1989-06-13T16:10:00Z,32.27,-75.42,234,15.7\n"+
+"1989-06-13T16:20:00Z,32.27,-75.42,233,15.0\n"+
+"1989-06-13T16:30:00Z,32.27,-75.42,233,14.4\n"+
+"1989-06-13T16:40:00Z,32.27,-75.42,235,14.0\n"+
+"1989-06-13T16:50:00Z,32.27,-75.42,235,13.6\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1410,48 +1424,48 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = results.substring(dataPo);
         expected = 
 "data:\n" +
-"time =\n" +
-"  {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
-"latitude =\n" +
-"  {32.27}\n" +
-"longitude =\n" +
-"  {-75.42}\n" +
-"wind_direction =\n" +
-"  {\n" +
-"    {\n" +
-"      {234}\n" +
-"    },\n" +
-"    {\n" +
-"      {233}\n" +
-"    },\n" +
-"    {\n" +
-"      {233}\n" +
-"    },\n" +
-"    {\n" +
-"      {235}\n" +
-"    },\n" +
-"    {\n" +
-"      {235}\n" +
-"    }\n" +
-"  }\n" +
-"wind_speed =\n" +
-"  {\n" +
-"    {\n" +
-"      {15.7}\n" +
-"    },\n" +
-"    {\n" +
-"      {15.0}\n" +
-"    },\n" +
-"    {\n" +
-"      {14.4}\n" +
-"    },\n" +
-"    {\n" +
-"      {14.0}\n" +
-"    },\n" +
-"    {\n" +
-"      {13.6}\n" +
-"    }\n" +
-"  }\n" +
+"    time = \n" +
+"      {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
+"    latitude = \n" +
+"      {32.27}\n" +
+"    longitude = \n" +
+"      {-75.42}\n" +
+"    wind_direction = \n" +
+"      {\n" +
+"        {\n" +
+"          {234}\n" +
+"        },\n" +
+"        {\n" +
+"          {233}\n" +
+"        },\n" +
+"        {\n" +
+"          {233}\n" +
+"        },\n" +
+"        {\n" +
+"          {235}\n" +
+"        },\n" +
+"        {\n" +
+"          {235}\n" +
+"        }\n" +
+"      }\n" +
+"    wind_speed = \n" +
+"      {\n" +
+"        {\n" +
+"          {15.7}\n" +
+"        },\n" +
+"        {\n" +
+"          {15.0}\n" +
+"        },\n" +
+"        {\n" +
+"          {14.4}\n" +
+"        },\n" +
+"        {\n" +
+"          {14.0}\n" +
+"        },\n" +
+"        {\n" +
+"          {13.6}\n" +
+"        }\n" +
+"      }\n" +
 "}\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1462,16 +1476,16 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_direction, wind_speed\n" +
-"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
-"1989-12-05T05:20:00Z, 32.27, -75.42, 232, 23.7\n" +
-"1989-12-05T05:30:00Z, 32.27, -75.42, 230, 24.1\n" +
-"1989-12-05T05:40:00Z, 32.27, -75.42, 225, 23.5\n" +
-"1989-12-05T05:50:00Z, 32.27, -75.42, 233, 23.3\n" +
-"1992-04-28T23:00:00Z, 32.27, -75.42, 335, 29.4\n" +
-"1992-04-28T23:10:00Z, 32.27, -75.42, 335, 30.5\n" +
-"1992-04-28T23:20:00Z, 32.27, -75.42, 330, 32.3\n" +
-"1992-04-28T23:30:00Z, 32.27, -75.42, 331, 33.2\n";
+"time,latitude,longitude,wind_direction,wind_speed\n"+
+"UTC,degrees_north,degrees_east,degrees_true,m s-1\n"+
+"1989-12-05T05:20:00Z,32.27,-75.42,232,23.7\n"+
+"1989-12-05T05:30:00Z,32.27,-75.42,230,24.1\n"+
+"1989-12-05T05:40:00Z,32.27,-75.42,225,23.5\n"+
+"1989-12-05T05:50:00Z,32.27,-75.42,233,23.3\n"+
+"1992-04-28T23:00:00Z,32.27,-75.42,335,29.4\n"+
+"1992-04-28T23:10:00Z,32.27,-75.42,335,30.5\n"+
+"1992-04-28T23:20:00Z,32.27,-75.42,330,32.3\n"+
+"1992-04-28T23:30:00Z,32.27,-75.42,331,33.2\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test seam of two datasets   with stride
@@ -1481,12 +1495,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_direction, wind_speed\n" +
-"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
-"1989-12-05T05:20:00Z, 32.27, -75.42, 232, 23.7\n" +
-"1989-12-05T05:40:00Z, 32.27, -75.42, 225, 23.5\n" +
-"1992-04-28T23:00:00Z, 32.27, -75.42, 335, 29.4\n" +
-"1992-04-28T23:20:00Z, 32.27, -75.42, 330, 32.3\n";
+"time,latitude,longitude,wind_direction,wind_speed\n"+
+"UTC,degrees_north,degrees_east,degrees_true,m s-1\n"+
+"1989-12-05T05:20:00Z,32.27,-75.42,232,23.7\n"+
+"1989-12-05T05:40:00Z,32.27,-75.42,225,23.5\n"+
+"1992-04-28T23:00:00Z,32.27,-75.42,335,29.4\n"+
+"1992-04-28T23:20:00Z,32.27,-75.42,330,32.3\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         // */
 
@@ -1498,10 +1512,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"time, latitude, longitude, wind_direction, wind_speed\n" +
-"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
-"2007-12-31T22:40:00Z, 32.27, -75.42, 36, 4.0\n" +
-"2007-12-31T22:50:00Z, 32.27, -75.42, 37, 4.3\n";
+"time,latitude,longitude,wind_direction,wind_speed\n"+
+"UTC,degrees_north,degrees_east,degrees_true,m s-1\n"+
+"2007-12-31T22:40:00Z,32.27,-75.42,36,4.0\n"+
+"2007-12-31T22:50:00Z,32.27,-75.42,37,4.3\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** EDDGridAggregateExistingDimension.test finished.");

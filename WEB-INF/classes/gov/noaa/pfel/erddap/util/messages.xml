@@ -5509,10 +5509,10 @@ deg{azimuth}
 degree(azimuth)
 
 deg east
-degree_east
+degrees_east
 
 deg north 
-degree_north 
+degrees_north 
 
 </ucumToUdunits>
 
@@ -5877,6 +5877,9 @@ https://docs.aws.amazon.com
 
 http://docs.opendap.org
 https://docs.opendap.org
+
+http://dods.ndbc.noaa.gov
+https://dods.ndbc.noaa.gov
 
 http://download.deegree.org
 https://download.deegree.org

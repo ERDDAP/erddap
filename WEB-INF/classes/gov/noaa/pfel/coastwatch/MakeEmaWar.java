@@ -97,7 +97,7 @@ public class MakeEmaWar  {
         //String2.log(String2.toNewlineString(dirNameArray));
 
         //make the zip file
-        String zipName = SSR.getContextDirectory() + //with / separator and / at the end
+        String zipName = String2.webInfParentDirectory() + //with / separator and / at the end
             "EMA.war";
         String2.log("MakeEmaWar is making " + zipName + ".");
         SSR.zip(zipName, dirNameArray, 60, baseDir);
