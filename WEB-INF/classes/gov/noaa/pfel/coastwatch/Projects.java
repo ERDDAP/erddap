@@ -929,7 +929,7 @@ Should the license/disclaimer still be:
             data.removeColumn(5);
 
             //add metadata for data columns
-            //standardNames from http://cfconventions.org/standard-names.html
+            //standardNames from https://cfconventions.org/standard-names.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String pm2 = " per square meter";  //must be all lowercase
@@ -1273,7 +1273,7 @@ String2.log("uniqueYear = " + uniqueYear);
             String2.log("newDataName=" + newDataName + " newDataUnits=" + newDataUnits);
 
             //add metadata for data columns
-            //standardNames from http://cfconventions.org/standard-names.html
+            //standardNames from https://cfconventions.org/standard-names.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String pm2 = " per square meter";  //must be all lowercase
@@ -1646,7 +1646,7 @@ String2.log("uniqueYear = " + uniqueYear);
             //    CommonName, Number fish per 100mX2mX30m transect",  //6,7
 
             //add metadata for data columns
-            //standardNames from http://cfconventions.org/standard-names.html
+            //standardNames from https://cfconventions.org/standard-names.html
             //none seem relevant here
 //Year	IslandName	SiteName	Date	Species	Species Name	Adult/Juvenile/sex	CommonName	Transect	Number fish per 100mX2mX30m transect
 //1985	Anacapa	Admiral's Reef	8/30/1985 0:00:00	14001.00	Chromis punctipinnis	 Adult	Blacksmith Adult	1	224
@@ -1972,7 +1972,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
             data.removeColumn(5);
 
             //add metadata for data columns
-            //standardNames from http://cfconventions.org/standard-names.html
+            //standardNames from https://cfconventions.org/standard-names.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String colName = data.getColumnName(col);
@@ -2275,7 +2275,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             //data.columnAttributes(4).set("units", DataHelper.UNITLESS);
 
             //add metadata for data columns
-            //standardNames from http://cfconventions.org/standard-names.html
+            //standardNames from https://cfconventions.org/standard-names.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String colName = data.getColumnName(col);

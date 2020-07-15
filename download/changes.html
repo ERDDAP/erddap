@@ -134,6 +134,12 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Thanks to Dan Nowacki.
     <br>&nbsp;
 
+  <li>IMPROVED: In additional places, floating point numbers (especially floats converted to doubles)
+    now appear as a slightly more rounded version of the number in additional places,
+    e.g. 32.279998779296875 now appears as 32.28.
+    Thanks to Kyle Wilcox.
+    <br>&nbsp;
+
   <li>BUG FIX: unsigned integer audio files were read slightly incorrectly. 
     Now they are read correctly.
     <br>&nbsp;
@@ -272,6 +278,10 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Also, a related small bug that occurred with this type of file is now fixed.
     <br>&nbsp;
 
+  <li>BUG FIX: GenerateDatasetsXml now properly lists "EDDTableFromJsonlCSVFiles" 
+    (not "EDDTableFromJsonlCSV") as one of the EDDType options. Thanks to Andy Ziegler.
+    <br>&nbsp;
+
   <li>IMPROVED: EDDGridFromNcFilesUnpacked now standardizes "units" attributes to 
     standard/"canonical" udunits (the same method as the Units converter).
     It is possible this will cause problems for some existing datasets
@@ -375,6 +385,10 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Thanks to Yibo Jiang.
     <br>&nbsp;
 
+  <li>BROKEN LINKS FIX: I made a proper system for testing for broken links
+    in ERDDAP web pages, so there should now be very few broken links (at least
+    as of each release date -- new broken links arise often).
+    
   <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
     requested variable, with a file name ending in the variable's name.
     If the variable's name was also a type of compression (e.g., .Z), ERDDAP
@@ -1275,7 +1289,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
       file
       (for example, 
       <a rel="bookmark" 
-      href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/testMediaFiles.htmlTable?url%2Cname%2ClastModified%2Csize%2CfileType&amp;url=~%22.*ShouldWork.*%22"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/testMediaFiles.htmlTable?url%2Cname%2ClastModified%2Csize%2CfileType%26url=~%22.*ShouldWork.*%22"
       >this request</a>).
       If you hover over a '?' icon, you should see an image, audio, or video
       file preview.
@@ -2067,7 +2081,7 @@ in ERDDAP version 1.76 (released 2017-05-12)</h2>
     Each line stands on its own. The lines are not enclosed in a larger JSON array or object. 
     For an example, see     
     <a rel="help"
-    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst.jsonlKVP?longitude%2Clatitude%2Ctime%2Cstation%2Cwmo_platform_code%2CT_25&amp;time%3E=2015-05-23T12:00:00Z&amp;time%3C=2015-05-31T12:00:00Z"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst.jsonlKVP?longitude%2Clatitude%2Ctime%2Cstation%2Cwmo_platform_code%2CT_25%26time%3E=2015-05-23T12:00:00Z%26time%3C=2015-05-31T12:00:00Z"
     >this sample request</a>.
     Thanks to Damian Smyth, Rob Fuller, Adam Leadbetter, and Ireland's Marine Institute.
   <li>NEW: There is new documentation describing 
@@ -2775,7 +2789,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     http://192.168.#.# URLS won't be allowed for security reasons.
     So please always use the public domain name in the <kbd>&lt;sourceUrl&gt;</kbd> 
     tag (if needed because of DNS problems), you can use the
-    <a rel="help" href="http://linux.die.net/man/5/hosts">/etc/hosts table on your server</a>
+    <a rel="help" href="https://linux.die.net/man/5/hosts">/etc/hosts table on your server</a>
     to solve the problem by converting local domain names to IP numbers without 
     using a DNS server.
     You can test if a given domain name gets properly resolved by using
@@ -3222,7 +3236,7 @@ in ERDDAP version 1.64 (released 2015-08-19)</h2>
     ~/.aws/credentials (on Linux, OS X, or Unix), or
     C:\Users\USERNAME\.aws\credentials (on Windows)
     on the server with ERDDAP. See the 
-    <a rel="help" href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html"
+    <a rel="help" href="https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1"
     >Amazon SDK documentation<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
@@ -3247,7 +3261,7 @@ in ERDDAP version 1.64 (released 2015-08-19)</h2>
     <br>If you use the CF standard name sea_water_salinity for any variable, 
     I encourage you to switch to sea_water_practical_salinity which 
     is available in <a rel="help" 
-    href="http://cfconventions.org/Data/cf-standard-names/29/build/cf-standard-name-table.html"
+    href="https://cfconventions.org/Data/cf-standard-names/29/build/cf-standard-name-table.html"
     >version 29 of the CF Standard Name Table</a>
     (and some previous versions -- I didn't know that).
     This name indicates that this is indeed a Practical Salinity value using 
@@ -3319,7 +3333,7 @@ in ERDDAP version 1.62 (released 2015-06-08)</h2>
   <li>ACDD-1.3
     <br>Previously, ERDDAP (notably GenerateDatasetsXml) 
     used/recommended the original (1.0) version of the <a rel="bookmark" 
-    href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html"
+    href="https://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html"
     >NetCDF Attribute Convention for Dataset Discovery</a>
     which was referred to as "Unidata Dataset Discovery v1.0" in the
     global Conventions and Metadata_Conventions attributes.
@@ -3551,9 +3565,7 @@ in ERDDAP version 1.56 (released 2014-12-16)</h2>
     in your ERDDAP. User requests for actual data from these datasets get 
     routed invisibly to the source ERDDAP, so the data doesn't flow through your
     system or use your bandwidth. There is now a large list of recommended datasets 
-    in the
-    <a rel="bookmark"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip"
-    >sample datasets.xml in erddapContent.zip</a>.
+    in the sample datasets.xml in erddapContent.zip.
     To include them in your ERDDAP, all you have to do is copy and paste the 
     ones you want into your datasets.xml.    
     Thanks to Conor Delaney.
@@ -3566,7 +3578,7 @@ in ERDDAP version 1.56 (released 2014-12-16)</h2>
     >EDDTableFromCassandra</a>
     handles getting data from 
     <a rel="help" 
-    href="http://planetcassandra.org/cassandra/">Cassandra<img 
+    href="https://cassandra.apache.org/">Cassandra<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     Thanks to Ocean Networks Canada.
@@ -3711,7 +3723,7 @@ in ERDDAP version 1.48 (released 2014-09-04)</h2>
   <li>Maps can now be made to longitudes in the range -720 to 720. 
   <li>The new .ncml response File Type is available for all EDDGrid datasets.
     It returns the <a rel="help" 
-    href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/">NCML<img 
+    href="https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html">NCML<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>-formatted
     description of the dataset (similar to a combined .dds + .das).
@@ -3985,8 +3997,8 @@ in ERDDAP version 1.44 (released 2013-05-30)</h2>
     of the <kbd>&lt;sourceUrls&gt;</kbd> tag.
     This works with web pages that have lists of files within <kbd>&lt;pre&gt;&lt;/pre&gt;</kbd>
     and often beneath an OPeNDAP logo. An example is 
-    <a href="https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/ocean_mass/RL05/netcdf/contents.html"
-    >https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/ocean_mass/RL05/netcdf/contents.html<img 
+    <a href="https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/mascon/RL06/JPL/v02/CRI/netcdf/contents.html"
+            >https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/mascon/RL06/JPL/v02/CRI/netcdf/contents.html<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
 
@@ -4018,7 +4030,7 @@ in ERDDAP version 1.44 (released 2013-05-30)</h2>
     <kbd>&lt;html&gt;</kbd> into 
     <br><kbd>&lt;html lang="en-US"&gt;</kbd> 
     (or a different 
-    <a href="http://www.w3schools.com/tags/ref_language_codes.asp">language code<img 
+    <a href="https://www.w3schools.com/tags/ref_language_codes.asp">language code<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     if you have translated messages.xml).
@@ -4089,13 +4101,13 @@ in ERDDAP version 1.40 (released 2012-10-25)</h2>
   <ul>
   <li>There is a new output file format for tabledap datasets: .ncCFMA, which saves the
     requested data in a .nc file which conforms to the CF 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >Discrete Sampling Geometries<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
      Multidimensional Array options,
     and which therefore conforms to the 
-    <a href="http://www.nodc.noaa.gov/data/formats/netcdf/">NODC templates<img 
+    <a href="https://www.nodc.noaa.gov/data/formats/netcdf/">NODC templates<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     for storing this type of data.
@@ -4145,7 +4157,7 @@ in ERDDAP version 1.40 (released 2012-10-25)</h2>
   >EDDTableFromNcCFFiles</a>
     is a new dataset <kbd>type</kbd> which you can use in your datasets.xml file.
     It can read data from any of the numerous file formats defined by the     
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries<img 
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     conventions.  Thanks to NODC and
@@ -4329,7 +4341,7 @@ in ERDDAP version 1.38 (released 2012-04-21)</h2>
     <br><kbd>&lt;connectionProperty name="defaultRowPrefetch"&gt;4096&lt;/connectionProperty&gt;</kbd>
     <br>to specify how many rows of data to fetch at one time 
     because the default is 10, which is horribly inefficient.
-    See the <a href="http://docs.oracle.com/cd/B10501_01/java.920/a96654/basic.htm">Oracle
+    See the <a href="https://docs.oracle.com/cd/B10501_01/java.920/a96654/basic.htm">Oracle
     documentation<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
@@ -4370,9 +4382,7 @@ in ERDDAP version 1.38 (released 2012-04-21)</h2>
 
   <li>Sample datasets.xml -- There were several small but significant errors in the
     sample datasets.xml. If you use those datasets, please get the newer versions
-    from the new sample datasets.xml in the new
-    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip"
-    >erddapContent.zip</a>.
+    from the new sample datasets.xml in the new erddapContent.zip file.
     Thanks to James Wilkinson.  
 
   <li>Git -- I will try hard to make ERDDAP a GitHub project ASAP after 
@@ -4560,7 +4570,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
   <li>Memory saving improvements significantly lower ERDDAP's base memory usage.
   <li>For tabular datasets, ERDDAP is now fully aware of a dataset's cdm_data_type, and
     how the data maps to the CDM type. See the 
-      <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+      <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
       >CF Discrete Sampling Geometries specification<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
@@ -4568,7 +4578,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
       the current "OBSOLETE" information on that web page. Thanks to the NOAA UAF project.
   <li>For most EDDTable datasets, a new output file type option, .ncCF, creates 
     Contiguous Ragged Array .nc files which conform to the latest version of the 
-      <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+      <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
       >CF Discrete Sampling Geometries conventions<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
@@ -4611,7 +4621,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
     Sorry. Hopefully, the next version will be relatively soon (and much easier to upgrade to).
 
   <li>To avoid several security bugs in Java 6 update 23 and below, 
-      <a href="http://www.java.com/en/download/manual.jsp">download<img 
+      <a href="https://www.java.com/en/download/manual.jsp">download<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
       and install the latest version 
@@ -4891,7 +4901,7 @@ in ERDDAP version 1.24 (released 2010-08-06)</h2>
     Thanks to NOAA IOOS SOS.
   <li>If a tabledap request includes <kbd>&amp;units("UCUM")</kbd>, the units names will be converted
     from original names (usually UDUNITS) to 
-      <a href="http://aurora.regenstrief.org/~ucum/ucum.html">UCUM<img 
+      <a href="https://unitsofmeasure.org/ucum.html">UCUM<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     units names.
@@ -4939,7 +4949,7 @@ in ERDDAP version 1.24 (released 2010-08-06)</h2>
     <li>.csvp and .tsvp -- like .csv and .tsv, but with "(<i>units</i>)" appended to
     column names on first line.
     <li>.odvTxt -- makes a .txt file that simplifies getting data into 
-      <a href="http://odv.awi.de/">Ocean Data View (ODV)<img 
+      <a href="https://odv.awi.de/">Ocean Data View (ODV)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     <li>.esriCsv -- makes a .csv file suitable for import in ESRI's ArcGIS. (tabular datasets only)
@@ -5192,7 +5202,7 @@ This particular ERDDAP installation has oceanographic data
     ><kbd>&lt;sourceNeedsExpandedFP_EQ&gt;</kbd></a> is helpful if the source server doesn't   
     consistently handle <kbd>&amp;<i>variable</i>=<i>value</i></kbd> tests correctly
     (because of the 
-      <a href="http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm">general 
+      <a href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">general 
       difficulty of testing the equality of floating point numbers<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>). 
@@ -5403,7 +5413,7 @@ The default is 10000.
   ><kbd>&lt;requestBlacklist&gt;</kbd></a>
 now also supports IP addresses where the last number has been replaced by *.
 <li>Requests for .json and .geoJson files may now include an optional 
-  <a href="http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp<img 
+  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> request
   by adding "&amp;.jsonp=<i>functionName</i>" to the end of the query.
@@ -5662,7 +5672,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
   but the dataset's entire longitude,latitude range.
   Unfortunately, support for time ranges was removed (I hope it will come back).
 <li>ERDDAP now adds 
-  <a href="http://developer.yahoo.net/blog/archives/2007/05/high_performanc_2.html"
+  <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
   >Expires and Cache-Control max-age headers<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 

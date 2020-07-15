@@ -37,6 +37,12 @@ public class Attributes {
     /** The backing data structure.  It is thread-safe. */
     private ConcurrentHashMap<String,PrimitiveArray> hashmap = new ConcurrentHashMap(16, 0.75f, 4);
 
+    public static String signedToUnsignedAttNames[] = new String[]{
+        "_FillValue", 
+        "actual_max","actual_min", "actual_range", 
+        "data_max",  "data_min",   "data_range",   "missing_value",
+        "valid_max", "valid_min",  "valid_range"};
+
     /**
      * This constructs a new, empty Attributes object.
      */
@@ -1559,7 +1565,7 @@ public class Attributes {
 
 
    /**
-     * Given this (sourceAtts, which won't be changed), this unpacks the dataPa.
+     * Given these sourceAtts (which won't be changed), this unpacks the dataPa.
      * If the var has time units, or scale_factor and add_offset, the values in the dataPa
      * will be unpacked (numeric times will be epochSeconds).
      * If missing_value and/or _FillValue are used, they are converted to PA standard mv.
@@ -1571,6 +1577,7 @@ public class Attributes {
      * @param lookForStringTimes If true, this tries to convert string times 
      *   (but not purely numeric formats because too many false positives).
      * @param lookForUnsigned If true, this looks for _Unsigned=true and unpacks dataPa.
+     *   If dataPA is an attribute's pa, this is usually false.
      * @return The same dataPa or a new dataPa or null (if the dataPa parameter = null).
      *   missing_value and _FillValue will be converted to PA standard mv 
      *     for the the unpacked datatype (or current type if not packed).
@@ -1581,15 +1588,19 @@ public class Attributes {
         if (dataPa == null)
             return null;
         Attributes sourceAtts = this; //so it has a nice name
-        PAType dataPaPAType = dataPa.elementType();
         if (debugMode)
             String2.log(">> Attributes.unpackPA(var=" + varName);
 
+        //handle _Unsigned first
+        boolean unsigned = lookForUnsigned && "true".equals(sourceAtts.getString("_Unsigned"));         
+        if (unsigned) 
+            dataPa = dataPa.makeUnsignedPA();
+
         //any of these may be null
+        PAType dataPaPAType    = dataPa.elementType();
         PrimitiveArray scalePA = sourceAtts.get("scale_factor");
         PrimitiveArray addPA   = sourceAtts.get("add_offset");
         String tUnits          = sourceAtts.getString("units");         
-        boolean unsigned       = lookForUnsigned && "true".equals(sourceAtts.getString("_Unsigned"));         
         double dataPaMV        = dataPa.missingValue().getRawDouble();
         //_FillValue and missing_value should be unsigned if _Unsigned=true, 
         //  but in practice sometimes aren't
@@ -1604,7 +1615,7 @@ public class Attributes {
         if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
 
         //scale and add_offset -- done first, before check for numeric time
-        if (unsigned || scalePA != null || addPA != null) {
+        if (scalePA != null || addPA != null) {
 
             //figure out new data type indicated by scale_factor or add_offset 
             double scale = 1;
@@ -1625,27 +1636,18 @@ public class Attributes {
             }
             if (tPAType == null) //might be
                 tPAType = dataPaPAType;
-            //or data type needed by '_Unsigned'      //same code above
-            if (unsigned && tPAType == dataPaPAType) {
-                if      (tPAType == PAType.BYTE)  tPAType = PAType.UBYTE;
-                else if (tPAType == PAType.SHORT) tPAType = PAType.USHORT;
-                else if (tPAType == PAType.INT)   tPAType = PAType.UINT; 
-                else if (tPAType == PAType.LONG)  tPAType = PAType.ULONG; 
-            }
 
             //switch data type
             PrimitiveArray dataPa2 = 
                 //if stated missing_value or _FillValue is same as cohort missingValue...
-                unsigned? 
-                    dataPa.makeUnsignedPA() : //unsigned 
-                    dataPa.isIntegerType() &&
-                        (dMissingValue == dataPaMV ||  //e.g., 127 == 127
-                         dFillValue    == dataPaMV)?
-                        PrimitiveArray.factory(        tPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
-                        PrimitiveArray.rawFactory(     tPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
+                dataPa.isIntegerType() &&
+                    (dMissingValue == dataPaMV ||  //e.g., 127 == 127
+                     dFillValue    == dataPaMV)?
+                    PrimitiveArray.factory(        tPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
+                    PrimitiveArray.rawFactory(     tPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
             if (debugMode) String2.log(
-                ">> source="   + dataPaPAType + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
-                ">> dataPa2= " + tPAType      + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+                ">> source =" + dataPaPAType          + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
+                ">> dataPa2=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
 
             //dataPa2 is destination data type and now has (if relevant) unsigned values, 
             //but not yet scaleAddOffset.
@@ -1666,8 +1668,8 @@ public class Attributes {
             dataPa2.scaleAddOffset(scale, add); //it checks for (1,0)
             if (debugMode)
                 String2.log(
-                    ">> NcHelper.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
-                    ">> unpacked=" + tPAType + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+                    ">> Attributes.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
+                    ">> unpacked=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
             return dataPa2;
 
         }
@@ -1738,6 +1740,38 @@ public class Attributes {
         }
 
         return dataPa;
+    }
+
+    /**
+     * Use this when a unsigned variable has been stored in a signed nc3 variable,
+     * because nc3 doesn't support unsigned attributes.
+     * This converts some signed attributes into the correct unsigned attributes.
+     *
+     */
+    public void convertSomeSignedToUnsigned() {
+        //if var isUnsigned and select atts in nc3 file are signed, change to unsigned
+        for (int i = 0; i < signedToUnsignedAttNames.length; i++) {
+            String name = signedToUnsignedAttNames[i];
+            PrimitiveArray tPa = get(name);        
+            if (tPa != null && !tPa.isUnsigned())
+                set(name, tPa.makeUnsignedPA());
+        }
+    }
+
+    /**
+     * Use this when a unsigned variable needs to be stored in a signed nc3 variable,
+     * because nc3 doesn't support unsigned attributes.
+     * This converts some unsigned attributes into temporary signed attributes.
+     *
+     */
+    public void convertSomeUnsignedToSigned() {
+        //if var isUnsigned and select atts in nc3 file are signed, change to unsigned
+        for (int i = 0; i < signedToUnsignedAttNames.length; i++) {
+            String name = signedToUnsignedAttNames[i];
+            PrimitiveArray tPa = get(name);        
+            if (tPa != null && tPa.isUnsigned())
+                set(name, tPa.makeSignedPA());
+        }
     }
 
 

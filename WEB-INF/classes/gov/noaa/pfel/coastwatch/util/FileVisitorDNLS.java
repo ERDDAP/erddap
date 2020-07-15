@@ -731,7 +731,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         String sourceBaseDir, String cacheDir,
         int pruneCacheWhenGB, boolean reuseExisting) throws Exception {
         //        !isDecompressible?  then nothing needs to be done
-        if (!File2.isDecompressible(sourceFullName))
+        if (!File2.isDecompressible(File2.getExtension(sourceFullName)))
             return sourceFullName;
 
         //make destination cacheFullName
@@ -2736,7 +2736,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
-     * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
+     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
      * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
      */
     public static void testAWSS3() throws Throwable {

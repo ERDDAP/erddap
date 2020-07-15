@@ -1021,7 +1021,7 @@ public class FloatArray extends PrimitiveArray {
     public String toNccsvAttString() {
         StringBuilder sb = new StringBuilder(size * 11);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "" : ",") + array[i] + "f");
+            sb.append((i == 0? "" : ",") + String.valueOf(array[i]) + "f");
         return sb.toString();
     }
 

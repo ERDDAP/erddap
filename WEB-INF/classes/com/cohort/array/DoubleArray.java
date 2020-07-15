@@ -333,7 +333,7 @@ public class DoubleArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null == MISSING_VALUE).
      */
     public void addPAOne(PAOne value) {
-        add(value == null? Double.NaN : value.getDouble());
+        add(value == null? Double.NaN : value.getNiceDouble());
     }
 
     /**
@@ -344,7 +344,7 @@ public class DoubleArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null).
      */
     public void addNPAOnes(int n, PAOne value) {
-        addN(n, value == null? Double.NaN : value.getDouble());
+        addN(n, value == null? Double.NaN : value.getNiceDouble());
     }
 
     /**
@@ -459,7 +459,7 @@ public class DoubleArray extends PrimitiveArray {
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            add(otherPA.getDouble(otherIndex++)); //does error checking
+            add(otherPA.getNiceDouble(otherIndex++)); //does error checking    'nice' just affects float->double
         return this;
     }
 
@@ -471,7 +471,7 @@ public class DoubleArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        set(index, otherPA.getDouble(otherIndex));
+        set(index, otherPA.getNiceDouble(otherIndex));  //'nice' just affects float->double
     }
 
     /**
@@ -990,7 +990,7 @@ public class DoubleArray extends PrimitiveArray {
     public String toNccsvAttString() {
         StringBuilder sb = new StringBuilder(size * 15);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "" : ",") + array[i] + "d");
+            sb.append((i == 0? "" : ",") + String.valueOf(array[i]) + "d");
         return sb.toString();
     }
 
@@ -1022,7 +1022,7 @@ public class DoubleArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return Double.compare(getDouble(index1), otherPA.getDouble(index2));
+        return Double.compare(getDouble(index1), otherPA.getNiceDouble(index2));
     }
 
     /**
@@ -1162,7 +1162,7 @@ public class DoubleArray extends PrimitiveArray {
             System.arraycopy(((DoubleArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pa.getDouble(i); //this converts mv's
+                array[size + i] = pa.getNiceDouble(i); //this converts mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1888,6 +1888,42 @@ public class DoubleArray extends PrimitiveArray {
         Test.ensureEqual((new DoubleArray(new double[] {-1e300})).tryToFindNumericMissingValue(), -1e300, "");
         Test.ensureEqual((new DoubleArray(new double[] {1e300 })).tryToFindNumericMissingValue(),  1e300, "");
         Test.ensureEqual((new DoubleArray(new double[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
+
+        //calculateStats2
+        //test from https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance mean=10, variance=s^2=30
+        anArray = new DoubleArray(new double[] {99, 4, 7, 13, 99, 16}); 
+        Attributes atts99 = (new Attributes()).add("missing_value", 99.0);
+        double stats2[] = anArray.calculateStats2(atts99);
+                                           //n min max sum mean variance
+        Test.ensureEqual(stats2, new double[]{4, 4, 16, 40, 10, 30}, "");
+
+        //median
+        Test.ensureEqual(anArray.calculateMedian(atts99), 10, "");
+        Test.ensureEqual(anArray.calculateMedian(null), 14.5, "");  //when the 99's are data values
+        anArray = new DoubleArray(new double[] {99, 99}); 
+        Test.ensureEqual(anArray.calculateMedian(atts99), Double.NaN, "");
+        anArray = new DoubleArray(new double[] {99, 4, 99}); 
+        Test.ensureEqual(anArray.calculateMedian(atts99), 4, "");
+        anArray = new DoubleArray(new double[] {99, 4, 7, 99}); 
+        Test.ensureEqual(anArray.calculateMedian(atts99), 5.5, "");
+        anArray = new DoubleArray(new double[] {99, 4, 13, 7, 99}); 
+        Test.ensureEqual(anArray.calculateMedian(atts99), 7, "");
+
+        //big numbers
+        anArray = new DoubleArray(new double[] {99, 1e12 + 4, 1e12 + 7, 1e12 + 13, 99, 1e12 + 16}); 
+        stats2 = anArray.calculateStats2((new Attributes()).add("missing_value", 99.0));
+        Test.ensureEqual(stats2, new double[]{4, 1e12 + 4, 1e12 + 16, 4e12 + 40, 1e12 + 10, 30}, "");
+
+        //0 values
+        anArray = new DoubleArray(new double[] {99, 99}); 
+        stats2 = anArray.calculateStats2((new Attributes()).add("missing_value", 99.0));
+        Test.ensureEqual(stats2, new double[]{0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN}, "");
+
+        //1 value
+        anArray = new DoubleArray(new double[] {99, 4, 99}); 
+        stats2 = anArray.calculateStats2((new Attributes()).add("missing_value", 99.0));
+        Test.ensureEqual(stats2, new double[]{1, 4, 4, 4, 4, Double.NaN}, "");
+
     }
 
     /**

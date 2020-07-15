@@ -2138,7 +2138,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Error: destinationVariableName=zztop wasn't found.", 
+            "SimpleException: Error: destinationVariableName=zztop wasn't found in datasetID=erdMHchla8day.", 
             "error=" + error);
 
         error = "";
@@ -2218,7 +2218,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Error: variableName=zztop wasn't found.", 
+            "SimpleException: Error: variableName=zztop wasn't found in datasetID=erdMHchla8day.", 
             "error=" + error);
 
         error = "";
@@ -4834,7 +4834,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Wed Mar 18 10:21:59 HST 2020 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
+"        <att name=\"history\">Fri Jun 05 09:23:34 HST 2020 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
 "        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -5026,39 +5026,34 @@ String expected1 =
 "\n" +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_90cf_3790_6762\" active=\"true\">\n";
 
-        try {
-            String results = generateDatasetsXml(url, 
-                null, null, null, -1, null);
-            
-            Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
-                "results=\n" + results);
+        String results = generateDatasetsXml(url, 
+            null, null, null, -1, null);
+        
+        Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
+            "results=\n" + results);
 
-            //int po = results.indexOf(expected2.substring(0, 40));
-            //Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
+        //int po = results.indexOf(expected2.substring(0, 40));
+        //Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
-                "-verbose", "-i#testGenerateDatasetsXml",
-                "EDDGridFromDap", url, "-1"}, //defaultReloadEvery,
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults.substring(0, expected1.length()), expected1,
-                "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
+            "-verbose", "-i#testGenerateDatasetsXml",
+            "EDDGridFromDap", url, "-1"}, //defaultReloadEvery,
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults.substring(0, expected1.length()), expected1,
+            "Unexpected results from GenerateDatasetsXml.doIt.");
 
-            //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = "hawaii_soest_418c_b59f_8e9e";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), 
-                "SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5°, 1958-2008", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "temp, salt, u, v", "");
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "hawaii_soest_418c_b59f_8e9e";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), 
+            "SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5°, 1958-2008", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "temp, salt, u, v", "");
 
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
     
     }
 
@@ -5958,6 +5953,7 @@ expected =
     public static void testDescendingLat(boolean doGraphicsTests) throws Throwable {
         String2.log("\n*** EDDGridFromDap.testDescendinglat");
         testVerboseOn();
+        int tSize;
         String name, tName, results, tResults, expected, userDapQuery;
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
         // if need a different test dataset in the future: 
@@ -5966,16 +5962,56 @@ expected =
         String query180       = SSR.fixPercentEncodedUrl("topo[][]&.draw=surface&.vars=longitude|latitude|topo");
         String query180stride = SSR.fixPercentEncodedUrl("topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo");
 /* */
-        //***test some edvga things
+        //***test some edvga things with descending lat axis
         edvga = eddGrid.axisVariables()[0];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), -8.333333333333334E-4, "");
         Test.ensureEqual(edvga.spacingDescription(), "-8.333333E-4 (even)", "");
 
+        tSize = edvga.sourceValues().size();
+        String2.log("tSize-1=" + (tSize-1));  //6000
+        Test.ensureEqual(edvga.destinationDouble(0),       23, "");
+        Test.ensureEqual(edvga.destinationDouble(tSize-1), 18, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(25     ), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(23.0001), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(23     ), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(22.9999), 0.11999999999982947, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(20.0001), 3599.88, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(20     ), 3600,    "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(19.9999), 3600.12, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(18.0001), 5999.88, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(18     ), 6000, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(17.9999), 6000, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(16     ), 6000, "");
+
+        //***test some edvga things with ascending lon axis
         edvga = eddGrid.axisVariables()[1];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), 8.333333333333334E-4, "");
         Test.ensureEqual(edvga.spacingDescription(), "8.333333E-4 (even)", "");
+
+        tSize = edvga.sourceValues().size();
+        String2.log("tSize-1=" + (tSize-1));  //9600
+        Test.ensureEqual(edvga.destinationDouble(0),       -161, "");
+        Test.ensureEqual(edvga.destinationDouble(tSize-1), -153, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-162     ), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-161.0001), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-161     ), 0, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-160.9999), 0.11999999999982947, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-160.0001), 1199.879999999996, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-160     ), 1200,    "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-159.9999), 1200.12, "");
+
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-153.0001), 9599.88, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-153     ), 9600, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-152.9999), 9600, "");
+        Test.ensureEqual(edvga.destinationToDoubleIndex(-151     ), 9600, "");
+
 
         //lat
         results = eddGrid.axisVariables[0].sliderCsvValues();
@@ -6066,7 +6102,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 23.0;\n" +
 "    String references \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
-"    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
+"    String sourceUrl \"https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "    Float64 Southernmost_Northing 18.0;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
@@ -6148,7 +6184,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 22.0; // double\n" +
 "  :references = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
-"  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
+"  :sourceUrl = \"https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "  :Southernmost_Northing = 21.0; // double\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
 "  :summary = \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
@@ -11372,18 +11408,12 @@ String expected =
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
-        EDDGrid edd = null;
-        try {
-            edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
-        } catch (Throwable t) {
-            Test.knownProblem("2020-05-27 The source url changed.",
-                "It works in a browser but fails in Java. Redirect problem? Certificate problem?", t);
-        }
- 
-            tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
-                edd.className() + "_actual_range2", ".dds"); 
-            results = String2.directReadFrom88591File(tDir + tName);
-            expected = 
+        EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
+
+        tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+            edd.className() + "_actual_range2", ".dds"); 
+        results = String2.directReadFrom88591File(tDir + tName);
+        expected = 
 "Dataset {\n" +
 "  Float64 time[time = 180];\n" +
 "  Float32 latitude[latitude = 51];\n" +
@@ -11397,17 +11427,17 @@ String expected =
 "      Float32 longitude[longitude = 360];\n" +
 "  } hrc;\n" +
 "} testActualRange2;\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-          
-            tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
-                edd.className() + "_actual_range2", ".das"); 
-            results = String2.directReadFrom88591File(tDir + tName);
-            expected = 
+        Test.ensureEqual(results, expected, "results=\n" + results);
+      
+        tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+            edd.className() + "_actual_range2", ".das"); 
+        results = String2.directReadFrom88591File(tDir + tName);
+        expected = 
 //Attributes {
 //  time {
 //    String _CoordinateAxisType "Time";
 //    Float64 actual_range 3.1536e+7, 5.022432e+8;
-   "String avg_period \"0000-01-00 00:00:00\";\n" +
+"String avg_period \"0000-01-00 00:00:00\";\n" +
 "    String axis \"T\";\n" +
 "    String delta_t \"0000-01-00 00:00:00\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -11467,9 +11497,9 @@ String expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Created 1998/08/27 by Don Hooper from NCAR data";
 
-            int po = results.indexOf(expected.substring(0, 30));
-            Test.ensureEqual(results.substring(po, po+expected.length()), expected,
-                "results=\n" + results);
+        int po = results.indexOf(expected.substring(0, 30));
+        Test.ensureEqual(results.substring(po, po+expected.length()), expected,
+            "results=\n" + results);
 
     }
 
@@ -11543,7 +11573,7 @@ String expected =
                     if (test == 35) testTimeErrorMessage();
                     if (test == 37) testValidMinMax();
                     //if (test == 38) testUInt16Dap();  //2019-11-21 THIS DATASET IS GONE, but I have other testUInt16 tests. 2016-12-06 trouble with syntax.  
-                     if (test == 39) testScale1Offset0();
+                    if (test == 39) testScale1Offset0();
                     if (test == 40) testFromNccsv();
                     if (test == 41) testActualRange();
                     if (test == 42) testActualRange2();

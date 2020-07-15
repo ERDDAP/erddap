@@ -310,9 +310,9 @@ public class NcHelper  {
         }
 
 
-        if (o instanceof byte[])   return Array.factory(isUnsigned? DataType.UBYTE  : DataType.BYTE,   new int[]{((byte[])o).length}, o);
+        if (o instanceof byte[])   return Array.factory(isUnsigned? DataType.UBYTE  : DataType.BYTE,   new int[]{((byte[] )o).length}, o);
         if (o instanceof short[])  return Array.factory(isUnsigned? DataType.USHORT : DataType.SHORT,  new int[]{((short[])o).length}, o);
-        if (o instanceof int[])    return Array.factory(isUnsigned? DataType.UINT   : DataType.INT,    new int[]{((int[])o).length}, o);
+        if (o instanceof int[])    return Array.factory(isUnsigned? DataType.UINT   : DataType.INT,    new int[]{((int[]  )o).length}, o);
         if (o instanceof long[])   {
             //String2.log("\n>> long values=" + String2.toCSSVString((long[])o));
             long lar[] = (long[])o;
@@ -361,6 +361,25 @@ public class NcHelper  {
         return null;
     }
 
+    /** 
+     * This returns true if the variable's DataType isIntegral and isUnsigned.
+     * This works with nc3 and nc4 files.
+     * With nc3 files, this looks for the _Unsigned=true attribute
+     *
+     * @return true if the variable's DataType isIntegral and isUnsigned.
+     */
+    public static boolean isUnsigned(Variable variable) {
+        DataType dt = variable.getDataType();
+        if (!dt.isIntegral()) 
+            return false;
+        if (dt.isUnsigned())
+            return true; //vars in nc4 files return correct isUnsigned status
+        PrimitiveArray pa = getVariableAttribute(variable, "_Unsigned");
+        if (pa != null && "true".equals(pa.toString()))
+            return true;
+        return false;
+    }
+
     /**
      * This reads all of the values from an nDimensional variable.
      * The variable can be any shape.
@@ -370,7 +389,7 @@ public class NcHelper  {
      * @return a suitable primitiveArray 
      */
      public static PrimitiveArray getPrimitiveArray(Variable variable) throws Exception {
-         return getPrimitiveArray(variable.read(), true);
+         return getPrimitiveArray(variable.read(), true, isUnsigned(variable));
      }
 
     /**
@@ -378,36 +397,27 @@ public class NcHelper  {
      * The variable can be any shape.
      *
      * @param variable
+     * @param buildStringsFromChars only applies to source DataType=char variables.
      * @return a suitable primitiveArray 
      */
-     public static PrimitiveArray getPrimitiveArray(Variable variable, 
-         boolean buildStringsFromChars) throws Exception {
-         return getPrimitiveArray(variable.read(), buildStringsFromChars);
-     }
-
-    /** 
-     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
-     *
-     * @param nc2Array an nc2Array
-     * @return a PrimitiveArray
-     */
-    public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars) {
-String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
-        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars));
-        //if (nc2Array.isUnsigned()) 
-        //    pa.setUnsigned(true);
-        return pa;
+    public static PrimitiveArray getPrimitiveArray(Variable variable, 
+        boolean buildStringsFromChars) throws Exception {
+        
+        return getPrimitiveArray(variable.read(), buildStringsFromChars, isUnsigned(variable));
     }
 
     /** 
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
-     * This version uses buildStringsFromChars=true.
      *
      * @param nc2Array an nc2Array
+     * @param isUnsigned if true and if the object type isIntegerType, 
+     *   the resulting PrimitiveArray will be an unsigned PAType.
      * @return a PrimitiveArray
      */
-    public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
-        return PrimitiveArray.factory(getArray(nc2Array, true));
+    public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
+        //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars), isUnsigned);
+        return pa;
     }
 
 //was
@@ -887,6 +897,39 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
         return variableListToArray(loadVariables);
     }
 
+/*    public static Variable[] findMaxDVariables(NetcdfFile netcdfFile) {
+
+        //find dimNames of highest dimension variable
+        String dimNames[] = new String[0];
+        List<Variable> allVariables = netcdfFile.getVariables();
+        List<Variable> loadVariables = null; 
+        for (int v = 0; v < allVariables.size(); v++) {
+            Variable variable = allVariables.get(v);
+            boolean isChar = variable.getDataType() == DataType.CHAR;
+            int tnDim = variable.getRank() - (isChar? 1 : 0);
+            if (tnDim > dimNames.length) {
+                //a new winner
+                loadVariables = new ArrayList();
+                loadVariables.add(variable);
+                dimNames = new String[tnDim];
+                for (int d = 0; d < tnDim; d++)
+                    dimNames[d] = variable.getDimension(d).getFullName();
+            } else if (tnDim > 0 && tnDim == dimNames.length) {
+                //a similar variable?
+                boolean ok = true;
+                for (int d = 0; d < tnDim; d++) {
+                    if (!dimNames[d].equals(variable.getDimension(d).getFullName())) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) 
+                    loadVariables.add(variable);
+            }
+        }
+        return variableListToArray(loadVariables);
+    } */
+
     /** 
      * This finds all variables with dimensions in the rootGroup.
      *
@@ -1003,7 +1046,7 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
     }
 
     /**
-     * This adds attributes to a variable.
+     * This adds attributes to a variable in preparation for writing a .nc file.
      *
      * @param var  e.g., from findVariable(netcdfFile, varName)
      * @param attributes the Attributes that will be set
@@ -1017,7 +1060,8 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
             if (!String2.isSomething(tName)) 
                 continue;
             PrimitiveArray tValue = attributes.get(tName);
-            if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) 
+            if (tValue == null || tValue.size() == 0 || 
+                (tValue.elementType() == PAType.STRING && tValue.toString().length() == 0)) 
                 continue; //do nothing
             var.addAttribute(createAttribute(nc3Mode, tName, tValue));
         }
@@ -1030,14 +1074,14 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
      * If there is trouble, this lots a warning message and returns null.
      * This is low level and isn't usually called directly.
      *
-     * @param varName the variable name (or "global"), used for diagnostic messages only
+     * @param varName the variable's name (or "global"), used for diagnostic messages only
      * @param att   
      * @return a PrimitiveArray or null if trouble
      */
     public static PrimitiveArray getAttributePA(String varName, ucar.nc2.Attribute att) {
         if (att == null) {
-            if (debugMode)
-                String2.log("Warning: NcHelper.getAttributePA " + varName + " att=null");
+            //if (debugMode)
+            //    String2.log("Warning: NcHelper.getAttributePA varName=" + varName + " att=null"); // + MustBe.stackTrace());
             return null;
         } else if (String2.isSomething(att.getFullName())) {
             try {
@@ -1049,14 +1093,14 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
                 }
                 return PrimitiveArray.factory(decodeAttribute(getArray(values))); 
             } catch (Throwable t) {
-                String2.log("Warning: NcHelper caught an exception while reading '" + 
+                String2.log("Warning: NcHelper caught an exception while reading varName='" + 
                     varName + "' attribute=" + att.getFullName() + "\n" +
                     MustBe.throwableToString(t));
                 return null;
             }
         } else {
             if (reallyVerbose)
-                String2.log("Warning: NcHelper.getAttributePA " + varName + 
+                String2.log("Warning: NcHelper.getAttributePA varName=" + varName + 
                     " att.getFullName()=" + String2.annotatedString(att.getFullName()));
             return null;
         }
@@ -1164,26 +1208,25 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
             return;
         String variableName = variable.getFullName();
 
-        //deal with netcdf-java 5.2 which now treats unsigned vars as separate types
-        //  and no longer has _Unsigned=true attribute.
-        DataType dataType = variable.getDataType();
-        if (dataType != null && dataType.isUnsigned()) 
-            attributes.add("_Unsigned", "true");
-
         //add the attributes
         List variableAttList = variable.getAttributes();
         if (variableAttList == null) 
             return;
         for (int att = 0; att < variableAttList.size(); att++) 
             addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
+
+        //in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
+        //String2.log(">> getVariableAttributes var=" + variable.getName() + " _Unsigned=" + attributes.getString("_Unsigned"));
+        if ("true".equals(attributes.getString("_Unsigned")))
+            attributes.convertSomeSignedToUnsigned();
     }
 
 
     /** 
      * Given a ncFile and the name of the pseudo-data Variable with the projection information,
      * this tries to get the attributes and then gatherGridMappingAtts.
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
      *
      * @param gridMappingVarName  eg from attributes.getString("grid_mapping")  
      * @return gridMappingAttributes in a form suitable for addition to the 
@@ -1198,8 +1241,8 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
     /** 
      * Given what might be the netcdf pseudo-data Variable with the projection information,
      * this tries to get the attributes and then gatherGridMappingAtts.
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
      *
      * @param pseudoDataVariable  
      * @return gridMappingAttributes in a form suitable for addition to the 
@@ -1216,8 +1259,8 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
     /** 
      * Call this with the sourceAtts that might be from the pseudo-variable with  
      * a grid_mapping_name attribute in order to collect the grid_mapping attributes. 
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#grid-mappings-and-projections
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#rotated-pole-grid-ex
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
      *
      * @param sourceAtts 
      * @return gridMappingAttributes in a form suitable for addition to the 
@@ -1596,7 +1639,7 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
         int firstRow, int lastRow) throws Exception {
 
         if (lastRow == -1)
-            return getPrimitiveArray(variable.read());
+            return getPrimitiveArray(variable);
 
         boolean isChar = variable.getDataType() == DataType.CHAR;
         int nDim = variable.getRank();
@@ -1610,7 +1653,7 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
         shape[0] = nRows;
         if (isChar) 
             shape[nDim - 1] = oShape[nDim - 1]; //nChars / String
-        PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape));
+        PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape), true, isUnsigned(variable));
 
         //eek! opendap returns a full-sized array! 
         //     netcdf  returns a shape-sized array
@@ -2171,13 +2214,13 @@ String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUn
 
         fi = openFile(dir + "sst_20120214.nc");
         var = fi.findVariable("SST");  
-        PrimitiveArray pas14 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"));
+        PrimitiveArray pas14 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true, isUnsigned(var));
         fi.close();
 String2.log(pas14.toString());     
 
         fi = openFile(dir + "sst_20120212.nc");
         var = fi.findVariable("SST");  
-        PrimitiveArray pas13 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"));
+        PrimitiveArray pas13 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true, isUnsigned(var));
         fi.close();
 String2.log(pas13.toString());     
 

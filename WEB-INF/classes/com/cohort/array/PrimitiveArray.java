@@ -55,8 +55,9 @@ public abstract class PrimitiveArray {
 
     /**
      * The constants identify the items in the array returned by calculateStats.
+     * mean and SD are only calculated by calculateStats2().
      */
-    public final static int STATS_N = 0, STATS_MIN = 1, STATS_MAX = 2, STATS_SUM = 3; 
+    public final static int STATS_N = 0, STATS_MIN = 1, STATS_MAX = 2, STATS_SUM = 3, STATS_MEAN = 4,  STATS_SD = 5; 
 
     /* DON'T CHANGE THESE: NCCSV BINARY depends on them (but NCCSV Binary was never created).
     public final static int PATYPE_INDEX_BYTE = 0;
@@ -118,11 +119,24 @@ public abstract class PrimitiveArray {
 
     /** 
      * This returns a PrimitiveArray wrapped around a String[] or array of primitives.
+     * For this variant, integerType objects always return signed PrimitiveArrays.
      *
      * @param o a char[][], String[] or primitive[] (e.g., int[])
      * @return a PrimitiveArray which (at least initially) uses the array for data storage.
      */
     public static PrimitiveArray factory(Object o) {
+        return factory(o, false);
+    }
+
+    /** 
+     * This returns a PrimitiveArray wrapped around a String[] or array of primitives.
+     *
+     * @param o a char[][], String[] or primitive[] (e.g., int[])
+     * @param isUnsigned if true and if the object type isIntegerType, 
+     *   the resulting PrimitiveArray will be an unsigned PAType.
+     * @return a PrimitiveArray which (at least initially) uses the array for data storage.
+     */
+    public static PrimitiveArray factory(Object o, boolean isUnsigned) {
         if (o == null)
             throw new IllegalArgumentException(String2.ERROR + 
                 " in PrimitiveArray.factory: o is null.");
@@ -142,10 +156,10 @@ public abstract class PrimitiveArray {
         }
         if (o instanceof double[]) return new DoubleArray((double[])o);
         if (o instanceof float[])  return new FloatArray((float[])o);
-        if (o instanceof long[])   return new LongArray((long[])o);
-        if (o instanceof int[])    return new IntArray((int[])o);
-        if (o instanceof short[])  return new ShortArray((short[])o);
-        if (o instanceof byte[])   return new ByteArray((byte[])o);
+        if (o instanceof long[])   return isUnsigned? new ULongArray( (long[] )o) : new LongArray( (long[] )o);
+        if (o instanceof int[])    return isUnsigned? new UIntArray(  (int[]  )o) : new IntArray(  (int[]  )o);
+        if (o instanceof short[])  return isUnsigned? new UShortArray((short[])o) : new ShortArray((short[])o);
+        if (o instanceof byte[])   return isUnsigned? new UByteArray( (byte[] )o) : new ByteArray( (byte[] )o);
         if (o instanceof char[])   return new CharArray((char[])o);
         if (o instanceof String[]) return new StringArray((String[])o);
 
@@ -171,15 +185,20 @@ public abstract class PrimitiveArray {
     }
 
 
-    /** This returns a new PAOne with the minimum value that can be held by this class, e.g., -128b. 
+    /** 
+     * This returns a new PAOne with the minimum value that can be held by this class, e.g., -128b. 
      * This must be a non-static method to work with inheritence.
      *
      * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b. 
      */
     abstract public PAOne MINEST_VALUE();
 
-    /** This returns a new PAOne with the maximum value that can be held by this class, e.g., 126b
-        (not including the cohort missing value). */
+    /** 
+     * This returns a new PAOne with the maximum value that can be held by this class, e.g., 126b
+     * (not including the cohort missing value). 
+     *
+     * @return a new PAOne with the minimum value that can be held by this class, e.g., 126b. 
+     */
     abstract public PAOne MAXEST_VALUE();
 
     /**
@@ -226,10 +245,12 @@ public abstract class PrimitiveArray {
     }
 
     /**
+     * This converts a PrimitiveArray into the specified elementType.
      * This returns the current pa (if already correct type) 
      * or a new pa of a specified type.
      *
      * @param elementType desired class e.g., PAType.FLOAT
+     * @param pa the source PrimitiveArray
      * @return a PrimitiveArray 
      */
     public static PrimitiveArray factory(PAType elementType, PrimitiveArray pa) {
@@ -253,6 +274,7 @@ public abstract class PrimitiveArray {
     }
 
     /**
+     * This converts a PrimitiveArray into the specified elementType.
      * This returns the current pa (if already correct type) 
      * or a new pa of a specified type.
      * In this "raw" variant, if pa isIntegerType, then the cohort missingValue 
@@ -260,6 +282,7 @@ public abstract class PrimitiveArray {
      * and NOT converted to new pa's missingValue (e.g., Double.NaN).
      *
      * @param elementType e.g., PAType.FLOAT
+     * @param pa the source PrimitiveArray
      * @return a PrimitiveArray
      */
     public static PrimitiveArray rawFactory(PAType elementType, PrimitiveArray pa) {
@@ -1109,14 +1132,24 @@ public abstract class PrimitiveArray {
      * Return a value from the array as a PAOne.
      * 
      * @param index the index number 0 ... size-1 
-     * @return a PAOne.
+     * @return a new PAOne.
      */
     public PAOne getPAOne(int index) {
         return new PAOne(this, index);
     }
 
     /**
-     * Set a value in the array as a PAOne.
+     * Return a value from the array as a PAOne.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return the desired value in the supplied PAOne.
+     */
+    public PAOne getPAOne(int index, PAOne paOne) {
+        return paOne.readFrom(this, index);
+    }
+
+    /**
+     * Set a value in the array from a value in a PAOne.
      * 
      * @param index the index number 0 ... size-1
      * @param paOne the value.
@@ -1377,12 +1410,13 @@ public abstract class PrimitiveArray {
      * PrimitiveArray.
      * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
      * be converted to NaN.
+     * CharArray's calculate min and max as chars (eg 'a' sorts before 'b').
+     * StringArray's calculate min and max via String2.parseDouble(s).
      *
      * @param atts The related attributes. If they have _FillValue and/or missing_value,
      *   those will be temporarily applied so the stats don't include them.
      *   !!! THESE SHOULD BE NOT-PACKED _FillValue and/or missing_value ATTRIBUTES.
-     *   CharArray's calculate min and max as chars (eg 'a' sorts before 'b').
-     *   StringArray's calculate min and max via String2.parseDouble(s).
+     *   This can be null.
      * @return a PAOne[] with 
      *    dar[STATS_N] containing the number of valid values.
      *    dar[STATS_MIN] containing the minimum value, and
@@ -1543,7 +1577,7 @@ public abstract class PrimitiveArray {
         int precision = isFloat? 5 : 14;
 
         for (int i = 0; i < size; i++) {
-            double d = getNiceDouble(i); //converts local missingValue to Double.NaN
+            double d = getNiceDouble(i); //converts floats to nice doubles
             if (!Double.isFinite(d) || 
                 (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
                 (mvIsFinite && Math2.almostEqual(precision, mv, d))) {
@@ -1595,6 +1629,157 @@ public abstract class PrimitiveArray {
             "nNaN=" + String2.right(String2.genEFormat6(size() - stats[STATS_N]), 7) +
             " " + displayStats(stats);
     }
+
+    /**
+     * This calculates min, max, and nValid for the values in this 
+     * PrimitiveArray.
+     * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
+     * be converted to NaN.
+     * Calculation of mean and variance is via the methods described in 
+     * Spicer, C.C. 1972. Algorithm AS 52 Calculation of Power Sums of Deviations About the Mean, Appl. Stat. 21:226-7.
+     *
+     * @param atts The related attributes. If they have _FillValue and/or missing_value,
+     *   those will be temporarily applied so the stats don't include them.
+     *   !!! THESE SHOULD BE NOT-PACKED _FillValue and/or missing_value ATTRIBUTES.
+     *   This can be null.
+     * @return a double[] with 
+     *    dar[STATS_N] containing the number of valid values.
+     *    dar[STATS_MIN] containing the minimum value, and
+     *    dar[STATS_MAX] containing the maximum value.
+     *    dar[STATS_SUM] containing the sum of the values.
+     *    dar[4] containing the mean of the values.
+     *    dar[5] containing the variance of the values.
+     *    If n is 0, min and max will be NaN (or e.g., Long.MAX_VALUE), and sum will be 0.
+     */
+    public double[] calculateStats2(Attributes atts) {
+        long time = System.currentTimeMillis();
+
+        //for long and ulong, this could claculate as BigDecimal
+        //then convert to double results.
+
+        //calculate as double
+        int n = 0;
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE; //not Double.MIN_VALUE
+        double mean = Double.NaN;
+        double sum = 0;
+        double powerSum2 = 0;
+        double sd = Double.NaN;
+
+        boolean isFloat = elementType() == PAType.FLOAT;
+        double mv = Double.NaN;
+        double fv = Double.NaN;
+        if (atts != null) {
+            fv = atts.getNiceDouble("_FillValue");    
+            mv = atts.getNiceDouble("missing_value"); 
+        }
+        boolean fvIsFinite = Double.isFinite(fv);
+        boolean mvIsFinite = Double.isFinite(mv);
+        int precision = isFloat? 5 : 14;
+
+        //for the Spicer algorithm, see cohort Descriptive.addData()
+        for (int i = 0; i < size; i++) {
+            double d = getNiceDouble(i);  //converts floats to nice doubles
+            if (!Double.isFinite(d) || 
+                (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
+                (mvIsFinite && Math2.almostEqual(precision, mv, d))) {
+            } else { 
+                n++;
+                min = Math.min(min, d);
+                max = Math.max(max, d);
+                sum += d;
+                if (n == 1) {
+                    mean = d;
+                } else {
+                    double dx = (d - mean) / n;
+                    powerSum2 += (dx * dx * n) * (n-1); //avoid n*(n-1) int arithmetic
+                    mean += dx;
+                }
+            }
+        }
+
+        if (n == 0) {
+            min = Double.NaN;
+            max = Double.NaN;
+            sum = Double.NaN;
+            mean = Double.NaN;
+        } else if (n > 1) {
+            sd = powerSum2 / (n - 1);
+        }
+          
+        //if (debugMode) String2.log(">> PrimitiveArray.calculateStats double n=" + n + " min=" + tMin " max=" + tMax);
+        return new double[]{n, min, max, sum, mean, sd};
+    }
+
+    
+    /**
+     * This calculates the median of the values in this PrimitiveArray as a double.
+     * This assumes mv's all sort lower and/or higher that finite values.
+     * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
+     * be converted to NaN.
+     *
+     * @param atts The related attributes. If they have _FillValue and/or missing_value,
+     *   those will be temporarily applied so the stats don't include them.
+     *   !!! THESE SHOULD BE NOT-PACKED _FillValue and/or missing_value ATTRIBUTES.
+     *   This can be null.
+     * @return the median.
+     */
+    public double calculateMedian(Attributes atts) {
+        long time = System.currentTimeMillis();
+
+        //for long and ulong, this could claculate as BigDecimal
+        //then convert to double results.
+
+        //calculate as double
+        boolean isFloat = elementType() == PAType.FLOAT;
+        double mv = Double.NaN;
+        double fv = Double.NaN;
+        if (atts != null) {
+            fv = atts.getNiceDouble("_FillValue");    
+            mv = atts.getNiceDouble("missing_value"); 
+        }
+        boolean fvIsFinite = Double.isFinite(fv);
+        boolean mvIsFinite = Double.isFinite(mv);
+        int precision = isFloat? 5 : 14;
+
+        //rank
+        int rank[] = rank(true);
+
+        //find first finite value
+        //This assumes mv's all sort lower and/or higher that finite values.
+        int firstFinite = 0;
+        while (firstFinite < size) {
+            double d = getNiceDouble(rank[firstFinite]);  //converts floats to nice doubles
+            if (!Double.isFinite(d) || 
+                (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
+                (mvIsFinite && Math2.almostEqual(precision, mv, d))) 
+                firstFinite++;
+            else break;
+        }
+        if (firstFinite == size) //all mv
+            return Double.NaN;
+
+        //find last finite value
+        int lastFinite = size - 1;
+        while (lastFinite > firstFinite) {
+            double d = getNiceDouble(rank[lastFinite]);  //converts floats to nice doubles
+            if (!Double.isFinite(d) || 
+                (fvIsFinite && Math2.almostEqual(precision, fv, d)) || 
+                (mvIsFinite && Math2.almostEqual(precision, mv, d))) 
+                lastFinite--;
+            else break;
+        }
+
+        //calculate median
+        int half = firstFinite + (lastFinite - firstFinite + 1)/2;
+        if ((lastFinite - firstFinite + 1) % 2 == 0) 
+            //even number of values
+            return (getNiceDouble(rank[half]) + getNiceDouble(rank[half - 1])) / 2.0;
+        else
+            //odd number of values so grab the one in the middle
+            return  getNiceDouble(rank[half]);
+    }
+
     
     /**
      * This compares the values in this.row1 and otherPA.row2
@@ -2556,18 +2741,25 @@ public abstract class PrimitiveArray {
      * This returns an PrimitiveArray which is the simplist possible 
      * type of PrimitiveArray which can accurately hold the data.
      *
-     * <p>If this primitiveArray is a StringArray, then null, ".", "", and "NaN" are allowable 
-     *   missing values for conversion to numeric types.
+     * <p>If this source primitiveArray is a StringArray, then null, ".", "", 
+     *   and "NaN" are allowable missing values for conversion to numeric types.
      *   And if a value in the column has an internal "." (e.g., 5.0), 
      *   the column will not be converted to an integer type.
      *
      * @param colName is for diagnostics only
      * @return the simpliest possible PrimitiveArray (possibly this PrimitiveArray) 
      *     (although not a CharArray).
-     *     A LongArray may return a LongArray, but a StringArray with longs will return a StringArray
-     *     (because long ints are often used as String-like identifiers and .nc files don't support longs).
+     *     If the source isUnsigned, this returns this PA unchanged.
+     *     For integer types, this only looks for signed integer types, not unsigned types.
+     *     Starting with ERDDAP v2.10, a StringArray with longs will return a LongArray
+     *     (even though long ints are often used as String-like identifiers and 
+     *     .nc files don't support longs).
      */
     public PrimitiveArray simplify(String colName) {
+        //return unsigned arrays as is
+        if (isUnsigned()) 
+            return this; 
+
         PAType type = PAType.BYTE; //the current, simplest possible type
         int n = size();
         boolean isStringArray = this instanceof StringArray;
@@ -2620,21 +2812,27 @@ public abstract class PrimitiveArray {
             //assume column contains only bytes
             //if not true, work way up: short -> int -> long -> float -> double -> String
             if (type == PAType.BYTE) { 
-                if (d != Math.rint(d) || d < Byte.MIN_VALUE || d > Byte.MAX_VALUE) {
+                if (d != Math.rint(d)) {
+                    type = PAType.FLOAT;
+                } else if (d < Byte.MIN_VALUE || d > Byte.MAX_VALUE) {
                     type = PAType.SHORT;
                     if (this instanceof CharArray || this instanceof ShortArray)
                         return this; //don't continue; it would just check that a ShortArray contains shorts
                 }
             }
             if (type == PAType.SHORT) { 
-                if (d != Math.rint(d) || d < Short.MIN_VALUE || d > Short.MAX_VALUE) {
+                if (d != Math.rint(d)) {
+                    type = PAType.FLOAT;
+                } else if (d < Short.MIN_VALUE || d > Short.MAX_VALUE) {
                     type = PAType.INT;
                     if (this instanceof IntArray)
                         return this;  //don't continue; it would just check that an IntArray contains ints
                 }
             }
             if (type == PAType.INT) { 
-                if (d != Math.rint(d) || d < Integer.MIN_VALUE || d > Integer.MAX_VALUE) {
+                if (d != Math.rint(d)) {
+                    type = PAType.FLOAT;
+                } else if (d < Integer.MIN_VALUE || d > Integer.MAX_VALUE) {
                     type = PAType.LONG;
                     if (this instanceof LongArray)
                         return this; //don't continue; it would just check that a LongArray contains longs
@@ -2677,12 +2875,11 @@ public abstract class PrimitiveArray {
         }
 
         //make array of simplified type
-        PrimitiveArray tSourcePA = newDoubleArray == null? this : newDoubleArray; 
+        PrimitiveArray tSourcePA = newDoubleArray == null? this : newDoubleArray; //newDoubleArray has already parsed values
         if (type == PAType.BYTE)    return new ByteArray(tSourcePA);
         if (type == PAType.SHORT)   return new ShortArray(tSourcePA);
         if (type == PAType.INT)     return new IntArray(tSourcePA);
-        if (type == PAType.LONG)    return new LongArray( this); //for full precision, use real sourcePA
-        if (type == PAType.ULONG)   return new ULongArray(this); //for full precision, use real sourcePA
+        if (type == PAType.LONG)    return new LongArray(this); //for full precision, use real sourcePA
         if (type == PAType.FLOAT)   return new FloatArray(tSourcePA);
         if (type == PAType.DOUBLE)  return new DoubleArray(tSourcePA);
         throw new IllegalArgumentException(String2.ERROR + 
@@ -2710,7 +2907,25 @@ public abstract class PrimitiveArray {
      *  or the data will be rounded.
      */
     abstract public void rawAppend(PrimitiveArray primitiveArray);
-    
+
+    /**
+     * This ranks this primitiveArray.
+     *
+     * <p>This sort is stable: equal elements will not be reordered as a result of the sort.
+     *
+     * @param ascending a boolean indicating ascending or descending order.
+     * @return an int[] with values (0 ... size-1) 
+     *   which points to the row number for a row with a specific 
+     *   rank (e.g., rank[0] is the row number of the first item 
+     *   in the sorted list, rank[1] is the row number of the
+     *   second item in the sorted list, ...).
+     */
+    public int[] rank(boolean ascending) {
+        ArrayList table = new ArrayList();
+        table.add(this);
+        return rank(table, new int[]{0}, new boolean[]{ascending});
+    }
+
     /**
      * Given table[], keys[], and ascending[],
      * this creates an int[] with the ranks the rows of the table. 
@@ -4713,6 +4928,11 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(arByte.array,   new byte[]{  100,    110,   0,  50},   ""); //col0
         Test.ensureEqual(arFloat.array,  new float[]{   3,    -5,    1,   3},   ""); //col1
         Test.ensureEqual(arDouble.array, new double[]{1e300,   0,   17,   3},   ""); //col2
+
+        //test rank this pa
+        arFloat   = new FloatArray(  new float[] {3, 1, 3, Float.NaN, -5});
+        int rank[] = arFloat.rank(true); //ascending?
+        Test.ensureEqual(rank, new int[]{4, 1, 0, 2, 3}, ""); //NaN ranks like big positive number
 
         //test removeDuplicates
         IntArray arInt3a = new IntArray(new int[]{1,5,5,7,7,7});

@@ -924,7 +924,7 @@ switch to finally clause
      *
      * <p>.grd (GMT-style NetCDF) files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+     * <a href="https://www.unidata.ucar.edu/software/netcdf-java/"
      *  >NetCDF Java Library</a>
      * renamed as netcdf-latest.jar.
      * Put it in the classpath for the compiler and for Java.
@@ -1910,7 +1910,7 @@ switch to finally clause
      *
      * <p>.nc files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html">NetCDF Java Library</a>
+     * <a href="https://www.unidata.ucar.edu/software/netcdf-java/">NetCDF Java Library</a>
      * renamed as netcdf-latest.jar.
      * Put it in the classpath for the compiler and for Java.
      *

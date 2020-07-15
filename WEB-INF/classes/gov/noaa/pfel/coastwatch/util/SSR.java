@@ -15,6 +15,7 @@ import com.cohort.util.String2;
 import com.cohort.util.String2Log;
 import com.cohort.util.String2LogFactory;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import java.awt.Toolkit;
 import java.io.ByteArrayOutputStream;
@@ -51,6 +52,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -2502,6 +2504,64 @@ public class SSR {
             }
         }
     } 
+
+    /**
+     * This checks that the links on the specified web page return error 200.
+     *
+     * @param tUrl the web page to be checked
+     * @throws RuntimeException for 
+     */
+    public static void testForBrokenLinks(String tUrl) throws Exception{
+
+        String2.log("\nSSR.testForBrokenLinks(" + tUrl + ")");
+        String regex = "\"(http.+?)\"";
+        Pattern pattern = Pattern.compile(regex);
+        String lines[] = getUrlResponseLines(tUrl);
+        StringBuilder log = new StringBuilder();
+        int errorCount = 0;
+        HashSet<String> tried = new HashSet();
+        String skip[] = new String[]{
+            "http",  "http:",  "http://", 
+            "https", "https:", "https://",
+            "httpGetDirectoryStructure", "httpGetKeys", "httpGetRequiredVariables", 
+            "httpsOnly", "https://192.168.31.18/",
+            "https://localhost:8443/cwexperimental/login.html"};  //the links to log in (upper right of most web pages) will fail on my test computer
+            //https://unitsofmeasure.org/ucum.html fails in tests because of certificate, but succeeds in my browser. Others are like this, too.
+        for (int linei = 0; linei < lines.length; linei++) {
+            String urls[] = String2.extractAllCaptureGroupsAsHashSet(lines[linei], pattern, 1).toArray(new String[0]);
+            for (int urli = 0; urli < urls.length; urli++) {
+                //just try a given url once
+                if (tried.contains(urls[urli]))
+                    continue;
+                tried.add(urls[urli]);
+
+                String ttUrl = XML.decodeEntities(urls[urli]);
+                if (String2.indexOf(skip, ttUrl) >= 0)
+                    continue;
+                String msg = null;
+                try {
+                    Object[] o3 = getUrlConnBufferedInputStream(ttUrl, 
+                        20000, false, true); //timeOutMillis, requestCompression, touchMode
+                    HttpURLConnection conn = (HttpURLConnection)(o3[0]);
+                    int code = conn.getResponseCode();
+                    if (code != 200) 
+                        msg = " code=" + code + " " + ttUrl;
+                } catch (Exception e) {
+                    msg = " code=ERR " + ttUrl + " error=\n" +
+                        e.toString() + "\n";
+                }
+                if (msg != null) {
+                    String fullMsg = "#" + ++errorCount + " line=" + String2.left("" + (linei + 1), 4) + msg;
+                    String2.log(fullMsg);
+                    log.append(fullMsg + "\n");                            
+                }
+            }
+        }
+        if (log.length() > 0) 
+            throw new RuntimeException(
+                "\nSSR.testForBrokenLinks(" + tUrl + ") found:\n" +
+                log.toString());
+    }
 
     //public static void main(String args[]) {
         //usage 

@@ -2278,19 +2278,18 @@ String expected =
     public static void testGenerateDatasetsXmlDimensions() throws Throwable {
         testVerboseOn();
 
-        try {
-            String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
-                "TIME, DEPTH",
-                1440,
-                "", "", "", "", //just for test purposes
-                false, //removeMVRows
-                "TIME", //sort files by 
-                "", "", "", "", 
-                4355, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
-                "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs
-                null, //cacheFromUrl
-                null) + "\n";
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+            "TIME, DEPTH",
+            1440,
+            "", "", "", "", //just for test purposes
+            false, //removeMVRows
+            "TIME", //sort files by 
+            "", "", "", "", 
+            4355, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
+            "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs
+            null, //cacheFromUrl
+            null) + "\n";
 
 String expected = 
 "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_442a_2710_b83c\" active=\"true\">\n" +
@@ -2463,7 +2462,7 @@ String expected =
 "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
 "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
-"            <att name=\"units\">degree_north</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
 "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" +
 "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -2471,7 +2470,6 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
-"            <att name=\"units\">degrees_north</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -2485,7 +2483,7 @@ String expected =
 "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" +
 "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
-"            <att name=\"units\">degree_east</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
 "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" +
 "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -2493,7 +2491,6 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
-"            <att name=\"units\">degrees_east</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -2651,52 +2648,46 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //GenerateDatasetsXml
-            results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromMultidimNcFiles", 
-                EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
-                "TIME, DEPTH",
-                "1440",
-                "", "", "", "", //just for test purposes
-                "false", //removeMVRows
-                "TIME", //sort files by 
-                "", "", "", "", 
-                "4355",  //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
-                "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs                   
-                ""}, //cacheFromUrl
-                false); //doIt loop?
-            Test.ensureEqual(results, expected, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromMultidimNcFiles", 
+            EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+            "TIME, DEPTH",
+            "1440",
+            "", "", "", "", //just for test purposes
+            "false", //removeMVRows
+            "TIME", //sort files by 
+            "", "", "", "", 
+            "4355",  //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
+            "LATITUDE, LONGITUDE, TIME", //treatDimensionsAs                   
+            ""}, //cacheFromUrl
+            false); //doIt loop?
+        Test.ensureEqual(results, expected, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-            //ensure it is ready-to-use by making a dataset from it
-            //with one small change to addAttributes:
-            results = String2.replaceAll(results, 
+        //ensure it is ready-to-use by making a dataset from it
+        //with one small change to addAttributes:
+        results = String2.replaceAll(results, 
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n",
 "        <att name=\"cdm_data_type\">Point</att>\n");
-            results = String2.replaceAll(results, 
+        results = String2.replaceAll(results, 
 "        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n",
 "");
-            //it could be made into valid TimeSeries by adding a few more atts
-            String2.log(results);
-          
-            String tDatasetID = "nc_442a_2710_b83c";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "Unknown institution data from a local source.", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+        //it could be made into valid TimeSeries by adding a few more atts
+        String2.log(results);
+      
+        String tDatasetID = "nc_442a_2710_b83c";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "Unknown institution data from a local source.", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "time, TIME_QC, depth, DEPTH_QC, latitude, longitude, TEMP, TEMP_QC, TEMP_DM, ATPT, ATPT_QC, ATPT_DM, ATMS, ATMS_QC, ATMS_DM", 
-                "");
-            Test.ensureEqual(edd.treatDimensionsAs.length, 1, TREAT_DIMENSIONS_AS);
-            Test.ensureEqual(String2.toCSSVString(edd.treatDimensionsAs[0]), 
-                "LATITUDE, LONGITUDE, TIME", TREAT_DIMENSIONS_AS);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
-
+            "");
+        Test.ensureEqual(edd.treatDimensionsAs.length, 1, TREAT_DIMENSIONS_AS);
+        Test.ensureEqual(String2.toCSSVString(edd.treatDimensionsAs[0]), 
+            "LATITUDE, LONGITUDE, TIME", TREAT_DIMENSIONS_AS);
     }
 
     /**
