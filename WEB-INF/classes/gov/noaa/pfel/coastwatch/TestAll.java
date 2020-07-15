@@ -142,8 +142,9 @@ public class TestAll  {
 //    double td = tl;
 //    String2.log("tl=" + tl + " td=" + td); 
 //    String2.log("1904: " + String2.toCSSVString(Calendar2.getTimeBaseAndFactor("seconds since 1904-01-01")));
-
+//      DoubleArray.basicTest();
 //    
+//    DoubleArray.basicTest();
 //    Table.test4DNc();
 //    Table.testFlatNc();
 //    Table.testReadNDNc();
@@ -166,7 +167,20 @@ public class TestAll  {
       // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
 //      String tFileName = "/data/melanie/A20191522019181.L3m_MO_CHL_chlor_a_4km-0-360.nc"; 
 //      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
-//    DasDds.main(new String[]{"melanie2", "-verbose"});
+
+//String tFileName = "/data/biddle/684362_v1_PRS_bacteria_identification.tsv";
+//String2.log(String2.annotatedString(String2.directReadFromUtf8File(tFileName))); 
+//      Table table = new Table();
+//      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
+//        table.readASCII(tFileName, "", "", "", 0, 1, "\t", null, null, null, null, true);
+//      String2.log(table.toString());
+//      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
+//        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
+//          0, "", null));
+//   GenerateDatasetsXml.main(new String[0]); //interactive 
+
+//      DasDds.main(new String[]{"ncdcOw6hrStrs", "-verbose"});
+
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
 //      String2.log(table.toString());
@@ -414,6 +428,8 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
     SSR.displayInBrowser(fName);
 */
 //    EDDGridFromDap.testActualRange2();
+//    EDDGridFromDap.testBasic1();
+//    EDDGridFromDap.testDescendingLat(false);
 //    EDDGridFromDap.testGraphics(false);
 
 //    String ftcName = EDStatic.fullLogsDirectory + "fromThreddsCatalog" + 
@@ -522,7 +538,9 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testBigRequestSpeed(3, ".dods", 895847390, 50000);  //also testNThreads
 //    EDDGridFromNcFiles.testDapErrors();
 //    EDDTableFromNcFiles.testDapErrors();
+//    EDDGridFromNcFiles.testFileName(true); 
 //    EDDGridFromNcFiles.testGenerateDatasetsXml3();
+//    EDDGridFromNcFiles.testGenerateDatasetsXml5();
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
 //        "/data/melanie/", ".*.nc", "", "", -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
@@ -530,7 +548,6 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testIgor();
 //    EDDGridFromNcFiles.testInvalidShortenedNcFile(); 
 //    EDDGridFromNcFiles.testIslandShift();
-//    EDDGridFromNcFiles.testFileName(true); 
 //    EDDGridFromNcFiles.testReplaceFromFileName(true); 
 //    EDDGridFromNcFiles.testMinimalReadSource(); 
 //    EDDGridFromNcFiles.testNccsv();
@@ -541,10 +558,12 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testSpecialAxis0GlobalDouble();
 //    EDDGridFromNcFiles.testNThreads(3); 
 //    EDDGridFromNcFiles.testTimePrecisionMillis();
-//    EDDGridFromNcFiles.testGenerateDatasetsXml5();
-//    EDDGridFromNcFiles.testUnsignedGrid();
 
-//    EDDGridFromNcFilesUnpacked.testUInt16File();
+//tests of nc3 _Unsigned=true:
+//    EDDGridFromNcFiles.testUInt16File();
+//    EDDGridFromNcFiles.testUnsignedGrid();  //trouble: 255 or NaN?
+//    EDDGridFromNcFilesUnpacked.testUInt16File();  //trouble
+
 //    EDDGridFromNcFilesUnpacked.testMissingValue();
 
 //        String opt[] = {
@@ -598,7 +617,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.csv",
 //        "/u00/data/points/acoustic/StetsonSP1_1-3OB_48000ptHann_50pcOlap.nc");
 
-//    s = EDDGridFromNcFiles.generateDatasetsXml("/u00/satellite/oi2_nrt/", ".*\\.nc", "", "", -1, "", null);
+//    s = EDDGridFromNcFiles.generateDatasetsXml("/erddapTest/something/", "something.nc", "", "", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
 //    DasDds.main(new String[]{"ncdcOisst21Agg", "-verbose"});
@@ -886,8 +905,8 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //EDDTableCopyPost.run(-1); //-1=allTests, 0..6
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
-//        "/data/biddle/", "feb3\\.tsv", "",
-//        "", 1, 2, "\t", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
+//        "/u00/data/points/ndbcMet2Csv/", ".*\\.csv", "",
+//        "", 1, 3, ",", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
 //        "", "", "", "", "",  //regex
 //        "", // tSortFilesBySourceNames, 
 //        "", "", "", "", Integer.MAX_VALUE, "", null));  //info, institution, summary, title, standardizeWhat=0, cacheFromUrl, atts
@@ -989,6 +1008,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromAsciiFiles.testBasic(true);
 //    EDDTableFromAsciiFiles.testBasic2();
 //    EDDTableFromAsciiFiles.testFixedValueAndScripts();
+//    EDDTableFromAsciiFiles.testNThreads();
 //    EDDTableFromAsciiFiles.testTimeZone();
 //    EDDTableFromAsciiFiles.testStandardizeWhat();
 //    EDDTableFromAsciiServiceNOS.testNosCoops(".*"); //".*", "nosCoopsWLTP60");  //a regex
@@ -1102,6 +1122,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromFileNames.test();
 //      Table.debugMode = true; DasDds.main(new String[]{"awsS3NoaaGoes17", "-verbose"});
 //    EDDTableFromFileNames.testLocal(); 
+//    EDDTableFromFileNames.testOnTheFly();
 
 //    EDDTableFromHttpGet.testStatic();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
@@ -1116,12 +1137,16 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDTableFromHyraxFiles.testJpl(true); //deleteCachedInfoAndOneFile
 
 //    EDDTableFromNcFiles.testAddVariablesWhere();
+//    EDDTableFromNcFiles.testCacheFiles(false);
 //    EDDTableFromNcFiles.testGlobec(); 
+//    EDDTableFromNcFiles.testNThreads(); 
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -5, 5);  //nThreads=-3, 3
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMetSSD", 1, 1); 
+//    EDDTableFromNcFiles.testOrderByClosest();
 //    EDDTableFromNcFiles.testOrderByCount();
 //    EDDTableFromNcFiles.testOrderByMean();
 //    EDDTableFromNcFiles.testSpeed(0, 1000); 
+//    EDDTableFromNcFiles.testTablePseudoSourceNames();
 
 //    s = EDDTableFromNcCFFiles.generateDatasetsXml(
 //        "/data/ben/", ".*\\.nc", 
@@ -1222,14 +1247,14 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    2) Overnight (still! because it's still sluggish)
 //       unzip and consolidate the profiles 
-//       Full run takes 48 hours with ramdisk (about 10 min to process 1 month's data,
+//       Full run takes 16 hours with ramdisk (about 5 min to process 1 month's data,
 //           or 132K source files (in one tgz) in ~200 seconds = ~ 660 files/second)
 //           was 36 hours(?) then multiple days on Dell M4700 before ramdisk, 
 //           was 2 days 14 hours on old Dell Opti).
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(1985, 2, 2020, 4, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(1985, 2, 2020, 6, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -1259,9 +1284,10 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //       //one time: EDDTableFromNcFiles.bobFindGtsppDuplicateCruises();
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");  //~5 minutes
 //    7) Create ncCF files with the same date range as 2a) above: 
-//       It takes ~20 seconds per month processed
-//       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 1, 2020, 3); //e.g., first/last year(1990..)/month(1..)
+//       It takes ~20 seconds per month processed.
+//       It uses a local version of the dataset, not the one in localhost erddap.
+//       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(1985, 2, 2020, 6); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
@@ -1316,6 +1342,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        "http://tds.gliders.ioos.us/thredds/dodsC/North-Caroline-State-University_salacia-20130916T1603_Files/salacia-20131003T114710_rt0.nc",
 //        1440, "", "", "", "", "",
 //        "Time", null)); 
+//    EDDTableFromThreddsFiles.testGetThreddsFileInfo();
 //    EDDTableFromThreddsFiles.testShipWTEP(false); //deleteCachedInfo
 //    EDDTableFromWFSFiles.testGenerateDatasetsXml(true);  //developmentMode (read from file, not source)
 //    EDDTableFromWFSFiles.testBasic();
@@ -1412,6 +1439,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    Erddap.testJsonld();
 //    Erddap.testAdvancedSearch();
 //    Erddap.testCategorize();
+//    Erddap.testConvertInterpolate();
 //    Erddap.makeErddapContentZip("c:/programs/_tomcat/samples/", "c:/backup/");
 //    Erddap.testHammerGetDatasets();
 //    File2.touch("c:/data/erddapBPD/copy/nmspWcosTemp/ANO001/2005/ANO001_021MTBD020R00_20051105.nc");
@@ -1460,6 +1488,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    GridSaveAs.main(new String[]{"c:/u00/data/SC/mday/grd/.grd.zip", "C:/u00/data/SC/mday/nc/.nc"});
 //    String2.log(File2.hexDump("C:/programs/gshhs/2009v7/gshhs_c.b", 1000));
 //    GSHHS.test();
+//    HtmlWidgets.basicTest();
 
 //    String2.log("ImageIO Readers: " + String2.toCSSVString(ImageIO.getReaderFormatNames()) +
 //        "\nImageIO Writers: " + String2.toCSSVString(ImageIO.getWriterFormatNames()));
@@ -1516,12 +1545,14 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        else String2.log("didn't match");
 //    post.TestJdbc.test();
 //
+//    PrimitiveArray.basicTest();
+//    PrimitiveArray.testTestValueOpValue();
+
 //    TestUtil.testCalendar2(); //has some nccsv testing
 //    TestUtil.testMath2(); //has some nccsv testing
 //    TestUtil.testString2(); //has some nccsv testing
 //    TestUtil.testString2canonical(); 
 //    TestUtil.testString2canonicalBytes(); 
-//    PrimitiveArray.testTestValueOpValue();
 //    Table.testReadASCIISpeed();
 //    Table.testBigAscii();
 //    Table.testJsonlCSV();
@@ -1701,6 +1732,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    String2.log(SSR.getURLResponseStringUnchanged("https://coastwatch.pfeg.noaa.gov:8443/erddap2/griddap/etopo180.htmlTable?altitude[(-90.0):1000:(90.0)][(-180.0):1000:(180.0)]"));
 //      String2.log(SSR.minimalPercentEncode("sst[(1870-01-01):1:(2011-07-01T00:00:00Z)][(29.5):1:(29.5)][(-179.5):1:(179.5)]"));
 //    SSR.testPost();
+//    SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
 //
 //
 //    String touchThese[] = {
@@ -2008,6 +2040,7 @@ GenerateDatasetsXml gdx;
 GridDataAccessor gda;
 GridDataAllAccessor gdaacc;
 GridDataRandomAccessor gdracc;
+GridDataRandomAccessorInMemory gdraccim;
 HtmlWidgets hw;
 LoadDatasets ld;
 NoMoreDataPleaseException nmdpe;
@@ -2047,7 +2080,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = true;
+        boolean interactive = false;
         boolean doSlowTestsToo = false;
 
 /* for releases, this line should have open/close comment */

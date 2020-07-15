@@ -36,6 +36,7 @@ public class TableWriterNccsv extends TableWriter {
 
     //set by firstTime
     protected volatile boolean isLong[];
+    protected volatile boolean isULong[];
     protected volatile boolean isTimeStamp[];
     protected volatile String time_precision[];
     protected volatile BufferedWriter writer;
@@ -90,12 +91,14 @@ public class TableWriterNccsv extends TableWriter {
 
             //write the column attributes   
             isLong      = new boolean[nColumns];
+            isULong     = new boolean[nColumns];
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
 
                 String tClass = table.getColumn(col).elementTypeString();
-                isLong[col] = tClass.equals("long");
+                isLong[ col] = tClass.equals("long");
+                isULong[col] = tClass.equals("ulong");
                 Attributes catts = table.columnAttributes(col);
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
@@ -156,8 +159,13 @@ public class TableWriterNccsv extends TableWriter {
                 } else {
                     String ts = pas[col].getNccsvDataString(row);
                     writer.write(ts);
-                    if (isLong[col] && ts.length() > 0)
-                        writer.write('L'); //special case not handled by getNccsvDataString
+                    if (isLong[col]) {
+                        if (ts.length() > 0)
+                            writer.write('L'); //special case not handled by getNccsvDataString
+                    } else if (isLong[col]) {
+                        if (ts.length() > 0)
+                            writer.write("uL"); //special case not handled by getNccsvDataString
+                    }
                 }
                 writer.write(col == nColumns -1? "\n" : ",");
             }

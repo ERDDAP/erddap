@@ -259,13 +259,13 @@ public abstract class EDDTable extends EDD {
         "http://jsonlines.org/", //jsonlKVP
         "https://www.mathworks.com/", //mat
         "https://www.unidata.ucar.edu/software/netcdf/", //nc
-        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncHeader
-        "http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries", //ncCF Discrete Sampling Geometries 
-        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncCFHeader
+        "https://linux.die.net/man/1/ncdump", //ncHeader
+        "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", //ncCF Discrete Sampling Geometries 
+        "https://linux.die.net/man/1/ncdump", //ncCFHeader
         "https://www.nodc.noaa.gov/data/formats/netcdf/", //.ncCFMA
-        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncCFMAHeader
+        "https://linux.die.net/man/1/ncdump", //ncCFMAHeader
 //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-//        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
+//        "https://linux.die.net/man/1/ncdump", //nc4Header
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "http://nco.sourceforge.net/nco.html#json",
@@ -5296,7 +5296,7 @@ public abstract class EDDTable extends EDD {
     /**
      * Create a Point .ncCF file (Discrete Sampling Geometries).  Specifically:
      * <br>"Point Data" at
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=Point. 
      *
      * <p>This also handles .ncCFMA.  No changes needed.
@@ -5368,7 +5368,7 @@ public abstract class EDDTable extends EDD {
     /**
      * Create a one-level TimeSeries, Trajectory, or Profile .ncCF or .ncCFMA file
      * (Discrete Sampling Geometries).
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=TimeSeries|Trajectory|Profile and 
      * cdm_timeseries_variables, cdm_trajectory_variables, or 
      * cdm_profile_variables are defined correctly. 
@@ -5706,7 +5706,7 @@ public abstract class EDDTable extends EDD {
     /**
      * Create a two-level TimeSeriesProfile or TrajectoryProfile .ncCF or .ncCFMA file
      * (Discrete Sampling Geometries). 
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=TimeSeriesProfile|TrajectoryProfile and 
      * cdm_timeseries_variables, cdm_trajectory_variables, and/or cdm_profile_variables 
      * are defined correctly. 
@@ -7199,7 +7199,7 @@ public abstract class EDDTable extends EDD {
             String tooltip =  MessageFormat.format(EDStatic.functionOrderBySort, important[ob]);
             writer.write(widgets.comboBox(formName, "orderByComboBox" + ob,
                 tooltip, 18, 120, ob < obsa.size()? obsa.get(ob) : "",
-                dvList0, ""));
+                dvList0, "", null));
             writer.write("<wbr>");
         }
         writer.write("\")");
@@ -7374,7 +7374,7 @@ public abstract class EDDTable extends EDD {
             "\n" +
 
             //ArcGIS
-            "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/index.html\">ArcGIS" +
+            "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/en-us/arcgis/about-arcgis/overview\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "  <a rel=\"help\" href=\"https://desktop.arcgis.com/en/arcmap/latest/manage-data/tables/adding-an-ascii-or-text-file-table.htm\">.esriCsv" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
@@ -7437,7 +7437,7 @@ public abstract class EDDTable extends EDD {
             "    is a commercial scientific data visualization program. To get data from\n" +
             "  ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  Then, use these\n" +
-            "    <a rel=\"help\" href=\"https://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions" +
+            "    <a rel=\"help\" href=\"https://northstar-www.dartmouth.edu/doc/idl/html_6.2/Using_Macros_to_Import_HDF_Files.html\">instructions" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
             "\n" +
@@ -7587,7 +7587,7 @@ public abstract class EDDTable extends EDD {
             "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a>\n" +
             "      for .ncHeader and .nc4Header files will return the header information (text)\n" +
             "  that would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\"\n" +
+            "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\"\n" +
             "      >ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding NetCDF-3 or NetCDF-4 .nc file.\n" +
@@ -7600,9 +7600,9 @@ public abstract class EDDTable extends EDD {
             "  file with the\n" +
             "  Contiguous Ragged Array Representation associated with the dataset's cdm_data_type,\n" +
             "  as defined in the\n" +
-            "    <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html\">CF" +
+            "    <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html\">CF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\"\n" +
+            "    <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries\"\n" +
             "      >Discrete Geometries" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> conventions\n" +
             "  (which were previously named \"CF Point Observation Conventions\").\n" +
@@ -7625,7 +7625,7 @@ public abstract class EDDTable extends EDD {
             "    - <a class=\"selfLink\" id=\"ncCFHeader\" href=\"#ncCFHeader\" rel=\"bookmark\">Requests</a>\n" +
             "      for .ncCFHeader files will return the header information (text) that\n" +
             "  would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
+            "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding .ncCF file.\n" +
             "\n" +
@@ -7636,9 +7636,9 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> file\n" +
             "   with the Complete or Incomplete, depending on the data, Multidimensional Array Representation\n" +
             "   associated with the dataset's cdm_data_type, as defined in the\n" +
-            "     <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html\">CF" +
+            "     <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html\">CF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "     <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries\"\n" +
+            "     <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries\"\n" +
             "      >Discrete Sampling Geometries" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "   conventions, which were previously named \"CF Point Observation Conventions\".\n" +
@@ -7654,7 +7654,7 @@ public abstract class EDDTable extends EDD {
             "    - <a class=\"selfLink\" id=\"ncCFMAHeader\" href=\"#ncCFMAHeader\" rel=\"bookmark\">Requests</a>\n" +
             "      for .ncCFMAHeader files will return the header information (text) that\n" +
             "  would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
+            "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding .ncCFMA file.\n" +
             "\n" +
@@ -13140,7 +13140,7 @@ public abstract class EDDTable extends EDD {
      * Currently, this is only for some of the Discrete Sampling Geometries
      * (was PointObservationConventions) cdm_data_type 
      * representations at
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
      *
      * @throws SimpleException if trouble (e.g., something set up wrong).
      */

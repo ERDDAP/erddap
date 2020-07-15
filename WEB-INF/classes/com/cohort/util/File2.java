@@ -14,6 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.FileSystems;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -790,38 +793,19 @@ public class File2 {
      * This returns true if the file is compressed and decompressible via
      * getDecompressedInputStream.
      *
-     * @param fileName The file's name (with or without dir).
+     * @param ext The file's extension, e.g., .gz
      */
-    public static boolean isDecompressible(String fileName) {
-        String ext = getExtension(fileName); //if e.g., .tar.gz, this returns .gz
+    public static boolean isDecompressible(String ext) {
 
         //this exactly parallels getDecompressedInputStream
-
-        //handle .Z (capital Z) specially first
-        if (ext.equals(".Z")) 
-            return true;
-
-        //everything caught below has a z in ext
-        if (ext.indexOf('z') < 0) 
-            return false;
-
-        if (ext.equals(".tgz") || 
-            fileName.endsWith(".tar.gz") || 
-            fileName.endsWith(".tar.gzip")) 
-            return true;
-
-        if (ext.equals(".gz") || ext.equals(".gzip")) 
-            return true;
-
-        if (ext.equals(".zip")) 
-            return true;
-
-        if (ext.equals(".bz2")) 
-            return true;
-
-        //.7z is possible but different and harder
-
-        return false;
+        return 
+            ext.equals(".Z") ||
+            (ext.indexOf('z') >=0 && 
+                (ext.equals(".tgz") || 
+                 ext.equals(".gz")  ||   //includes .tar.gz
+                 ext.equals(".gzip") ||  //includes .tar.gzip
+                 ext.equals(".zip") || 
+                 ext.equals(".bz2")));
     }
 
 
@@ -841,6 +825,7 @@ public class File2 {
         InputStream is = new BufferedInputStream( //recommended by https://commons.apache.org/proper/commons-compress/examples.html
             new FileInputStream(fullFileName));  //1MB buffer makes no difference
 
+        // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
         //handle .Z (capital Z) specially first
         if (ext.equals(".Z")) {
@@ -914,9 +899,48 @@ public class File2 {
         }
         //.7z is possible but different and harder
 
-        return new BufferedInputStream(is);
+        // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
+
+        return is;
     }
 
+    /** 
+     * This creates a buffered, decompressed (e.g., from .gz file) FileReader. 
+     *
+     * @param fullFileName the full file name
+     * @return a buffered FileReader
+     * @throws Exception if trouble  
+     */
+    public static BufferedReader getDecompressedBufferedFileReader(String fullFileName, 
+        String charset) throws Exception {
+
+        /* new method (no evidence it is better) */
+        if (isDecompressible(getExtension(fullFileName))) { //if e.g., .tar.gz, this returns .gz
+            InputStream is = getDecompressedBufferedInputStream(fullFileName);
+            try {
+                return new BufferedReader(new InputStreamReader(is,  
+                    String2.isSomething(charset)? charset : String2.ISO_8859_1)); //invalid charset throws exception
+            } catch (Exception e) {
+                try {if (is != null) is.close();} catch (Exception e2) {}
+                throw e;
+            }
+        } else {
+            return Files.newBufferedReader(FileSystems.getDefault().getPath(fullFileName), 
+                String2.isSomething(charset)? Charset.forName(charset) : String2.ISO_8859_1_CHARSET);
+        }
+        /* */
+
+        /* old method 
+        InputStream is = getDecompressedBufferedInputStream(fullFileName);
+        try {
+            return new BufferedReader(new InputStreamReader(is,  
+                String2.isSomething(charset)? charset : String2.ISO_8859_1)); //invalid charset throws exception
+        } catch (Exception e) {
+            try {if (is != null) is.close();} catch (Exception e2) {}
+            throw e;
+        }
+        /* */
+    }
 
     /**
      * This generates a hex dump of the first nBytes of the file.
@@ -1280,28 +1304,6 @@ public class File2 {
         char slash = po < 0? '/' : dir.charAt(po);
         return dir + slash;
     }
-
-
-    /** 
-     * This creates a buffered, decompressed (e.g., from .gz file) FileReader. 
-     *
-     * @param fullFileName the full file name
-     * @return a buffered FileReader
-     * @throws Exception if trouble  
-     */
-    public static BufferedReader getDecompressedBufferedFileReader(String fullFileName, 
-        String charset) throws Exception {
-
-        InputStream is = getDecompressedBufferedInputStream(fullFileName);
-        try {
-            return new BufferedReader(new InputStreamReader(is,  
-                String2.isSomething(charset)? charset : String2.ISO_8859_1)); //invalid charset throws exception
-        } catch (Exception e) {
-            try {if (is != null) is.close();} catch (Exception e2) {}
-            throw e;
-        }
-    }
-
 
 }
 

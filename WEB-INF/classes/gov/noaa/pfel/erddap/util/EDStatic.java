@@ -268,8 +268,11 @@ public static boolean developmentMode = false;
     public final static int DEFAULT_nTableThreads = 1;
     public static int decompressedCacheMaxGB         = DEFAULT_decompressedCacheMaxGB; 
     public static int decompressedCacheMaxMinutesOld = DEFAULT_decompressedCacheMaxMinutesOld; 
-    public static int nGridThreads                   = DEFAULT_nGridThreads;   //will be a valid number 1+
+    public static int nGridThreads                   = DEFAULT_nGridThreads;  //will be a valid number 1+
     public static int nTableThreads                  = DEFAULT_nTableThreads; //will be a valid number 1+
+    public static String convertInterpolateRequestCSVExample = null;         //may be null or ""
+    public static String convertInterpolateDatasetIDVariableList[] = new String[0]; //may be [0]
+
 
     //things that were in setup.xml (discouraged) and are now in datasets.xml (v2.00+)
     public final static int    DEFAULT_cacheMinutes            = 60;
@@ -461,6 +464,8 @@ public static boolean developmentMode = false;
 
         accessConstraints,
         accessRequiresAuthorization,
+
+        awsS3OutputBucket, //null or valid
 
         fees,
         keywords,
@@ -764,6 +769,14 @@ public static boolean developmentMode = false;
         convertFipsCountyNotes,
         convertFipsCountyService,
         convertHtml,
+        convertInterpolate,             
+        convertInterpolateIntro,
+        convertInterpolateTLLTable,
+        convertInterpolateTLLTableHelp,
+        convertInterpolateDatasetIDVariable,
+        convertInterpolateDatasetIDVariableHelp,
+        convertInterpolateNotes,
+        convertInterpolateService,
         convertKeywords,          
         convertKeywordsCfTooltip,
         convertKeywordsGcmdTooltip,
@@ -1709,6 +1722,10 @@ public static boolean developmentMode = false;
         fees                       = setup.getNotNothingString("fees",                       errorInMethod);
         keywords                   = setup.getNotNothingString("keywords",                   errorInMethod);
 
+        //awsS3OutputBucket          = setup.getString(          "awsS3OutputBucket",          null);
+        if (!String2.isSomething(awsS3OutputBucket))
+            awsS3OutputBucket = null;
+
         units_standard             = setup.getString(          "units_standard",             "UDUNITS");
 
         fgdcActive                 = setup.getBoolean(         "fgdcActive",                 true); 
@@ -2026,6 +2043,17 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     errorInMethod);
         convertFipsCountyService   = messages.getNotNothingString("convertFipsCountyService",   errorInMethod);
         convertHtml                = messages.getNotNothingString("convertHtml",                errorInMethod);
+        convertInterpolate         = messages.getNotNothingString("convertInterpolate",         errorInMethod);
+        convertInterpolateIntro    = messages.getNotNothingString("convertInterpolateIntro",    errorInMethod);
+        convertInterpolateTLLTable = messages.getNotNothingString("convertInterpolateTLLTable", errorInMethod);
+        convertInterpolateTLLTableHelp
+                                   = messages.getNotNothingString("convertInterpolateTLLTableHelp",              errorInMethod);
+        convertInterpolateDatasetIDVariable 
+                                   = messages.getNotNothingString("convertInterpolateDatasetIDVariable",     errorInMethod);
+        convertInterpolateDatasetIDVariableHelp
+                                   = messages.getNotNothingString("convertInterpolateDatasetIDVariableHelp", errorInMethod);
+        convertInterpolateNotes    = messages.getNotNothingString("convertInterpolateNotes",    errorInMethod);
+        convertInterpolateService  = messages.getNotNothingString("convertInterpolateService",  errorInMethod);
         convertKeywords            = messages.getNotNothingString("convertKeywords",            errorInMethod);
         convertKeywordsCfTooltip   = messages.getNotNothingString("convertKeywordsCfTooltip",   errorInMethod);
         convertKeywordsGcmdTooltip = messages.getNotNothingString("convertKeywordsGcmdTooltip", errorInMethod);
@@ -2215,11 +2243,11 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDTableOptConstraint1Html = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
         EDDTableOptConstraint2Html = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
         EDDTableOptConstraintVar   = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
-        EDDTableNumericConstraintTooltip=messages.getNotNothingString("EDDTableNumericConstraintTooltip",errorInMethod);
-        EDDTableStringConstraintTooltip =messages.getNotNothingString("EDDTableStringConstraintTooltip",errorInMethod);
-        EDDTableTimeConstraintTooltip   =messages.getNotNothingString("EDDTableTimeConstraintTooltip", errorInMethod);
-        EDDTableConstraintTooltip  = messages.getNotNothingString("EDDTableConstraintTooltip",  errorInMethod);
-        EDDTableSelectConstraintTooltip =messages.getNotNothingString("EDDTableSelectConstraintTooltip",   errorInMethod);
+        EDDTableNumericConstraintTooltip= messages.getNotNothingString("EDDTableNumericConstraintTooltip", errorInMethod);
+        EDDTableStringConstraintTooltip = messages.getNotNothingString("EDDTableStringConstraintTooltip",  errorInMethod);
+        EDDTableTimeConstraintTooltip   = messages.getNotNothingString("EDDTableTimeConstraintTooltip",    errorInMethod);
+        EDDTableConstraintTooltip       = messages.getNotNothingString("EDDTableConstraintTooltip",        errorInMethod);
+        EDDTableSelectConstraintTooltip = messages.getNotNothingString("EDDTableSelectConstraintTooltip",  errorInMethod);
 
         //default EDDGrid...Example
         EDDTableErddapUrlExample   = messages.getNotNothingString("EDDTableErddapUrlExample",   errorInMethod);
@@ -2679,6 +2707,8 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         shiftXLeft                 = messages.getNotNothingString("shiftXLeft",                 errorInMethod);
         shiftXRight                = messages.getNotNothingString("shiftXRight",                errorInMethod);
         shiftXAllTheWayRight       = messages.getNotNothingString("shiftXAllTheWayRight",       errorInMethod);
+        Attributes.signedToUnsignedAttNames = StringArray.arrayFromCSV(
+                                     messages.getNotNothingString("signedToUnsignedAttNames",   errorInMethod));
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
         sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod); 
@@ -2957,16 +2987,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             (useLuceneSearchEngine? searchHintsLuceneTooltip : searchHintsOriginalTooltip) +
             "</div>";
         advancedSearchDirections = String2.replaceAll(advancedSearchDirections, "&searchButton;", searchButton);
-
-        convertOceanicAtmosphericAcronymsService      = MessageFormat.format(convertOceanicAtmosphericAcronymsService, preferredErddapUrl) + "\n";
-        convertOceanicAtmosphericVariableNamesService = MessageFormat.format(convertOceanicAtmosphericVariableNamesService, preferredErddapUrl) + "\n";
-        convertFipsCountyService = MessageFormat.format(convertFipsCountyService, preferredErddapUrl) + "\n";
-        convertKeywordsService   = MessageFormat.format(convertKeywordsService,   preferredErddapUrl) + "\n";
-        convertTimeNotes         = MessageFormat.format(convertTimeNotes,         preferredErddapUrl, convertTimeUnitsHelp) + "\n";
-        convertTimeService       = MessageFormat.format(convertTimeService,       preferredErddapUrl) + "\n"; 
-        convertUnitsFilter       = MessageFormat.format(convertUnitsFilter,       preferredErddapUrl, units_standard) + "\n";
-        convertUnitsService      = MessageFormat.format(convertUnitsService,      preferredErddapUrl) + "\n"; 
-        convertURLsService       = MessageFormat.format(convertURLsService,       preferredErddapUrl) + "\n"; 
 
         String tEmail = SSR.getSafeEmailAddress(adminEmail);
         filesDocumentation = String2.replaceAll(filesDocumentation, "&adminEmail;", tEmail); 

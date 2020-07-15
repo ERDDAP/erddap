@@ -118,7 +118,7 @@ public class GridDataAccessor {
      * @param tRowMajor  
      *    Set this to true if you want to get the data in row major order. 
      *    Set this to false if you want to get the data in column major order. 
-     * @param tConvertToNaN  set this to True if you want the GridDataAccessor
+     * @param tConvertToNaN  set this to true if you want the GridDataAccessor
      *    to convert stand-in missing values (e.g., -9999999.0, as identified
      *    by the missing_value or _FillValue metadata) to NaNs.
      * @throws Throwable if trouble

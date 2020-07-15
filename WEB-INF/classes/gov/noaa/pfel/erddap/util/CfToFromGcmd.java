@@ -22,7 +22,7 @@ import java.util.HashSet;
  * ~2011-09-29 based on 
  * ./cfStdNames.txt 
  * (Bob created from CF Standard Names, Version 18, 22 July 2011
- * at http://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html 
+ * at https://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html 
  * Aliases are treated like other Standard Names.  File sorted by EditPlus.)
  * and 
  * ./gcmdScienceKeywords.txt 

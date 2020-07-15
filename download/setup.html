@@ -104,9 +104,9 @@ at the University of Hawaii (UH)
 <li><a rel="bookmark" href="https://erddap.bco-dmo.org/erddap/index.html">BCO-DMO at WHOI</a> 
 (Biological and Chemical Oceanography Data Management Office at Woods Hole Oceanographic Institution)
   <!-- 2017-11-20 email from Adam Shepherd  -->
-<li><a rel="bookmark" href="http://rs-data1-mel.csiro.au/erddap/index.html">CSIRO and IMOS</a>
+<li>CSIRO and IMOS
   (Australia's Commonwealth Scientific and Industrial Research Organisation and the Integrated Marine Observing System)
-  <!-- 2015-06-28 email Jonathan Hodge -->
+  <!-- 2015-06-28 email Jonathan Hodge  was http://rs-data1-mel.csiro.au/erddap/index.html-->
 <li><a rel="bookmark" href="https://pub-data.diver.orr.noaa.gov/erddap/index.html">DIVER (NOAA ORR)</a>
   (NOAA Office of Response and Restoration)
   <!-- 2019-10-24 email Vincent Luzzo -->
@@ -159,7 +159,7 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="https://erddap.sensors.ioos.us/erddap/index.html">NOAA IOOS Sensors</a> 
   (Integrated Ocean Observing System) 
   <!-- 2017-11-13 Tiffany Vance email announcement. -->
-<li><a rel="bookmark" href="http://erddap.axiomdatascience.com/erddap/index.html">NOAA IOOS CeNCOOS</a> 
+<li><a rel="bookmark" href="https://erddap.axiomdatascience.com/erddap/index.html">NOAA IOOS CeNCOOS</a> 
   (Central and Northern California Ocean Observing System, run by Axiom Data Science) 
   <!-- was 2015-03-18 Jennifer Patterson -->
 <li><a rel="bookmark" href="http://gcoos5.geos.tamu.edu:6060/erddap/index.html">NOAA IOOS GCOOS Oceanographic Data</a> and 
@@ -175,7 +175,7 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="https://pae-paha.pacioos.hawaii.edu/erddap/index.html">NOAA IOOS PacIOOS</a> 
   (Pacific Islands Ocean Observing System) at the University of Hawaii (UH) 
   <!-- 2015-03-16 John Maurer, 2015-03-17 James Potemra -->
-<li><a rel="bookmark" href="http://sccoos.org/erddap/index.html">NOAA IOOS SCCOOS</a> 
+<li><a rel="bookmark" href="https://sccoos.org/erddap/index.html">NOAA IOOS SCCOOS</a> 
 (Southern California Coastal Ocean Observing System) 
   <!-- 2015-05-26 Sarah Heim -->
 <li><a rel="bookmark" href="https://erddap.secoora.org/erddap/index.html">NOAA IOOS SECOORA</a> 
@@ -189,9 +189,8 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-17 (was NCDDC) Glenn Rutledge, Charles Carleton -->
 <li>NOAA NGDC STP (National Geophysical Data Center, Solar -- Terrestrial Physics)
   <!-- 2015-03-23 Dominic Fuller-Rowell -->
-<li><a rel="bookmark" href="https://comet.nefsc.noaa.gov/erddap/index.html">NOAA NMFS NEFSC</a> 
-  (Northeast Fisheries Science Center) 
-  <!-- 2019-08-13 I assumed public. David Hiltz    -->
+<li>NOAA NMFS NEFSC (Northeast Fisheries Science Center) 
+  <!-- 2019-08-13 I assumed public. David Hiltz  was https://comet.nefsc.noaa.gov/erddap/index.html  -->
 <li><a rel="bookmark" href="https://opendap.co-ops.nos.noaa.gov/erddap/index.html">NOAA NOS CO-OPS</a> 
   (Center for Operational Oceanographic Products and Services) 
   <!-- 2019-08-13 I assumed public. Armin Pruessner   -->
@@ -232,7 +231,7 @@ San Francisco Estuary Institute
  >Scripps Institution of Oceanography, Spray Underwater Gliders</a>
   <!-- 2018-02-01 Guilherme Pimenta Castelao -->
 <li><a rel="bookmark" href="https://www.smartatlantic.ca/erddap/index.html">Smart Atlantic</a>
-  Memorial University of Newoundland
+  Memorial University of Newfoundland
 <li>South African Environmental Observation Network
   <!-- 2018-01-19 Kyle Cooper -->
 <li>Spyglass Technologies 
@@ -261,7 +260,7 @@ or endorses ERDDAP.
 
 <p><strong>ERDDAP is recommended within NOAA</strong> 
 <br><a rel="bookmark" 
-href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations"
+href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
 >NOAA's Data Access Procedural Directive<img 
   src="../images/external.png" alt=" (external link)" 
   title="This is a link to an external website."/></a> 
@@ -586,7 +585,7 @@ or Mac server instead.
 
       <!--p>Optional: You can add <kbd>-verbose:gc</kbd> to the JAVA_OPTS (or to the list of Java Options
       <br>in the Window's Tomcat Manager icon in the systemtry). It tells Java to send   
-  <a rel="help" href="https://download.oracle.com/javase/technologies/hotspot/gc/gc_tuning_6.html">Java garbage collection</a>
+  <a rel="help" href="https://docs.oracle.com/en/java/javase/13/gctuning/introduction-garbage-collection-tuning.html">Java garbage collection</a>
       information to <i>tomcat</i>/logs/catalina.out (or some other Tomcat log file) 
       which is useful if your ERDDAP has memory problems. -->
 
@@ -642,7 +641,7 @@ or Mac server instead.
         <ul>
         <li>As user "tomcat", run <kbd><i>tomcat</i>/bin/startup.sh</kbd>
         <li>View your URL + ":8080/" in your browser (e.g., 
-          <a href="https://coastwatch.pfeg.noaa.gov:8080/">https://coastwatch.pfeg.noaa.gov:8080/</a>).
+          <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
         <li>You should see the Tomcat "Congratulations" page. 
           <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
         </ul>
@@ -650,7 +649,7 @@ or Mac server instead.
         <ul>
         <li>Run <kbd><i>tomcat</i>/bin/startup.sh</kbd>
         <li>View your URL + ":8080/" in your browser (e.g., 
-          <a href="https://coastwatch.pfeg.noaa.gov:8080/">https://coastwatch.pfeg.noaa.gov:8080/</a>).
+          <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
           Note that by default, your Tomcat is only accessible by you. It is not publicly accessible.
         <li>You should see the Tomcat "Congratulations" page. 
           <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
@@ -911,7 +910,7 @@ And in the nginx config file, you need to set these headers:
   <li><a rel="help" href="#tomcatLogs">You</a> can see what comes to Tomcat (and related errors) 
     in the Tomcat log files (<i>tomcat</i>/logs/catalina.out and other files in that directory).
   <li><a rel="help" href="#log">You</a> can see what comes to ERDDAP,
-    diagnostic messages from ERDDAP, and error meessages from ERDDAP,
+    diagnostic messages from ERDDAP, and error messages from ERDDAP,
     in the ERDDAP &lt;bigParentDirectory&gt;logs/log.txt file.
   <li>Tomcat doesn't start ERDDAP until Tomcat gets a request for ERDDAP. 
     So you can see in the Tomcat log files if it started ERDDAP or if there is an error message related to that attempt.
@@ -1660,7 +1659,7 @@ If you repeatedly use Tomcat Manager to <kbd>Reload</kbd> (or <kbd>Stop</kbd> an
     The disadvantage is that the log will almost always end with a 
     partial message, which won't be completed until the next chunk is written.
     You can make it up-to-date (for an instant) by viewing your ERDDAP's 
-    status web page at http://<i>your.domain.org</i>/erddap/status.html .
+    status web page at https://<i>your.domain.org</i>/erddap/status.html (or http:// if https isn't enabled).
   <li>When the log.txt files gets to 20 MB, 
     <br>the file is renamed log.txt.previous and a new log.txt file is created.
     So log files don't accumulate.
@@ -2200,7 +2199,7 @@ notably, it takes a long time for ERDDAP to open all those data files
 when responding to a user request for data. 
 In this case, the solution may be to aggregate the files to that there are fewer data files.
 For tabular datasets, it is often great if you save the data from the current dataset in
-<a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+<a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -3492,11 +3491,11 @@ to signal that the dataset should be reloaded ASAP.
     and other semantic tools can use this structured markup 
     to facilitate discovery and indexing. 
     The json-ld structured markup appears as invisible-to-humans &lt;script&gt; code on the 
-    http://.../erddap/info/index.html web page (which is a semantic web 
+    https://.../erddap/info/index.html web page (which is a semantic web 
     <a rel="help" href="https://schema.org/DataCatalog">DataCatalog<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>) 
-    and on each http://.../erddap/info/<i>datasetID</i>/index.html web page
+    and on each https://.../erddap/info/<i>datasetID</i>/index.html web page
     (which is a semantic web 
     <a rel="help" href="https://schema.org/Dataset">Dataset<img 
       src="../images/external.png" alt=" (external link)" 
@@ -3585,7 +3584,7 @@ are used by ERDDAP to convert a range of data values into a range of colors
 when making graphs and maps. 
 
   <p>Each palette is defined in a .cpt-style palette file as used by 
-  <a rel="help" href="https://gmt.soest.hawaii.edu/">GMT<img 
+  <a rel="help" href="https://www.soest.hawaii.edu/gmt/">GMT<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.  
   All ERDDAP .cpt files are valid GMT .cpt files, but the opposite is not true.
@@ -4426,7 +4425,7 @@ credit where credit is due.)
   <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#citeDataset"
   >How to Cite a Dataset in a Paper</a>.
 <li><a rel="bookmark" href="#licenseCoHortSoftware">The com/cohort classes</a> are from CoHort Software 
-    (<a rel="help" href="http://www.cohort.com">http://www.cohort.com<img 
+    (<a rel="help" href="https://www.cohort.com">https://www.cohort.com<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
     which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
@@ -4439,7 +4438,7 @@ credit where credit is due.)
       title="This link to an external website does not constitute an endorsement."></a>
     (license: LGPL).
 <li>NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written with code in the
-  <a rel="help" href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+  <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf-java/"
   >NetCDF Java Library<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -4463,18 +4462,18 @@ credit where credit is due.)
   (license: <a rel="bookmark" href="https://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
-<li>The NetCDF Java Library and Cassandra need <a rel="help" href="https://www.slf4j.org/"
+<li>The NetCDF Java Library and Cassandra need <a rel="help" href="http://www.slf4j.org/"
   >slf4j from the Simple Logging Facade for Java</a> project.
   Currently, ERDDAP uses the slf4j-simple-xxx.jar renamed as slf4j.jar to meet this need.
-    (license: <a rel="bookmark" href="https://www.slf4j.org/license.html">MIT/X<img 
+    (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
-<!--li>ERDDAP and the NetCDF Java Library use <a rel="help" href="http://www.joda.org/joda-time/">Joda<img 
+<!--li>ERDDAP and the NetCDF Java Library use <a rel="help" href="https://www.joda.org/joda-time/">Joda<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
      for some calendar calculations.
      (license: <a rel="bookmark" 
-     href="http://www.joda.org/joda-time/license.html">Apache 2.0<img 
+     href="https://www.joda.org/joda-time/licenses.html">Apache 2.0<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>). -->
 <li>ERDDAP and the NetCDF Java Library uses code from some .jar files from 
@@ -4617,11 +4616,11 @@ credit where credit is due.)
     <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE SHORELINE DATA THAT COMES WITH ERDDAP --
     DO NOT USE IT FOR NAVIGATIONAL PURPOSES.
 <li>The political boundary and river data are from the 
-    <a rel="help" href="https://gmt.soest.hawaii.edu/doc/5.4.5/pscoast.html">pscoast<img 
+    <a rel="help" href="https://www.soest.hawaii.edu/gmt/gmt/html/man/pscoast.html">pscoast<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     program in 
-    <a rel="help" href="https://gmt.soest.hawaii.edu">GMT<img 
+    <a rel="help" href="https://www.soest.hawaii.edu/gmt/">GMT<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
     which uses data from the 
@@ -4660,16 +4659,16 @@ credit where credit is due.)
      but slightly reformatted by Jennifer Sevadjian of NOAA so that they conform
      to ERDDAP's .cpt requirements.
 <li>Emails are sent using code in mail.jar from Oracle's   
-    <a rel="help" href="https://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API<img 
+    <a rel="help" href="https://javaee.github.io/javamail/">JavaMail API<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     (license: 
-    <a rel="bookmark" href="https://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt"
-      >Oracle Binary Code License Agreement for Java EE Technologies<img 
+    <a rel="bookmark" href="https://javaee.github.io/javamail/LICENSE"
+      >COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
 <li>ERDDAP includes the 
-     <a rel="help" href="https://jdbc.postgresql.org/download.html">PostGres JDBC42<img 
+     <a rel="help" href="https://jdbc.postgresql.org/download.html">PostGres JDBC<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> driver
      (license: <a rel="bookmark" href="https://www.postgresql.org/about/licence/">BSD<img 
@@ -4805,7 +4804,7 @@ including
     <a rel="help" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    <a rel="help" href="https://en.todoist.com/">todoist<img 
+    <a rel="help" href="https://todoist.com/?lang=en">todoist<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
     the Internet, the World Wide Web, and all the great, helpful websites.

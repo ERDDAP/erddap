@@ -441,7 +441,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 } else {
                     // > >= < <= (and =somethingOutOfRange) were tested in EDDTable.parseUserDapQuery
                     if (conOp.equals("=")) {
-                        int si = edvga.destinationToClosestSourceIndex(conValD);
+                        int si = edvga.destinationToClosestIndex(conValD);
                         if (si < 0)
                             passed = false;
                         else {

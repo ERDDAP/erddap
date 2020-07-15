@@ -620,7 +620,7 @@ public class Units2 {
      * This tests udunitsToUcum.
      * The most likely bugs are:
      * <ul>
-     * <li> Excess/incorrect substitutions, e.g., "avoirdupois_pounds" -> "[lb_av]" -> "[[lb_av]_av]".
+     * <li> Excess/incorrect substitutions, e.g., "avoirdupois_pounds" to "[lb_av]" to "[[lb_av]_av]".
      *   <br>This is the only thing that this method has pretty good tests for.
      * <li> Plural vs Singular conversions
      * <li> Typos 
@@ -2051,7 +2051,7 @@ String2.log("5/9=" + (5/9.0));
      *   (e.g., K to degree_C) and saves that to cfUnique. 
      *
      * @param fullCFXMLFileName A CF standard names XML file downloaded from
-     *    http://cfconventions.org/standard-names.html
+     *    https://cfconventions.org/standard-names.html
      * @throws Exception if trouble
      */
     public static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
@@ -2104,6 +2104,9 @@ String2.log("5/9=" + (5/9.0));
      * @param oPAType the var's initial elementPAType
      */    
     public static void unpackVariableAttributes(Attributes atts, String varName, PAType oPAType) {
+
+        if (debugMode)
+            String2.log(">> unpackVariableAttributes for varName=" + varName);
 
         Attributes newAtts = atts;   //so it has a more descriptive name     
         Attributes oldAtts = new Attributes(atts); //so we have an unchanged copy to refer to
@@ -2166,30 +2169,13 @@ String2.log("5/9=" + (5/9.0));
         //So look at data types and guess which to do, with preference to believing they're already unpacked
         //Note that at this point in this method, we're dealing with a packed data variable
         if (destPAType != null && (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
-            PrimitiveArray pa;
-            pa = newAtts.get("actual_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_max",   oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("actual_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_min",   oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("actual_range");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("actual_range", oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("data_min");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("data_min",     oldAtts.unpackPA(varName, pa, false, false)); 
-
-            pa = newAtts.get("data_max");
-            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-                newAtts.set("data_max",     oldAtts.unpackPA(varName, pa, false, false)); 
+            for (int i = 0; i < Attributes.signedToUnsignedAttNames.length; i++) {
+                String name = Attributes.signedToUnsignedAttNames[i];
+                PrimitiveArray pa = newAtts.get(name);
+                if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                    newAtts.set(name, oldAtts.unpackPA(varName, pa, false, false)); 
+            }
         }
-        newAtts.set("valid_max",   oldAtts.unpackPA(varName, oldAtts.get("valid_max"),   false, false)); 
-        newAtts.set("valid_min",   oldAtts.unpackPA(varName, oldAtts.get("valid_min"),   false, false));
-        newAtts.set("valid_range", oldAtts.unpackPA(varName, oldAtts.get("valid_range"), false, false)); 
 
         if (debugMode) 
             String2.log(">> after  unpack " + varName + 

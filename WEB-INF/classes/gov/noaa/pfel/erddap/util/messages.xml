@@ -343,7 +343,7 @@ For example, the acronym "NOAA" converts to the full name "National Oceanic and 
   <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggestions?</a> 
   This service's list of acronyms is not complete. If you want to add a common 
-  acronym or make a correction, please email it to bob.simons at noaa.gov.
+  acronym or make a correction, please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
 ]]></convertOceanicAtmosphericAcronymsNotes>
@@ -421,7 +421,7 @@ For example, the variable name "sst" converts to the full name "Sea Surface Temp
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggestions?</a> 
   This service's list of variable names is not complete. If you want to add a 
   commonly used variable name or make a correction, 
-  please email it to bob.simons at noaa.gov.
+  please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
 ]]></convertOceanicAtmosphericVariableNamesNotes>
@@ -572,13 +572,283 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 
 <convertHtml>ERDDAP has some simple forms to help you do some common conversions.</convertHtml>
 
+<convertInterpolate>Interpolate Values From Gridded Dataset Values</convertInterpolate>
+
+<convertInterpolateIntro><![CDATA[
+This converter efficiently interpolates values from a gridded dataset''s values. 
+As such, it is particularly useful for researchers working with animal track data 
+(e.g., the 
+  <a rel="help" href="https://ioos.noaa.gov/project/atn/"
+  >IOOS Animal Telemetry Network<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>).
+This converter takes in a table with latitude, longitude, and time columns 
+(and perhaps other columns) and 
+returns a table with additional columns with interpolated values based on 
+the user-specified Request CSV with datasetID/variable/algorithm/nearby 
+combinations (for example,
+<span class="nowrap"><kbd>{0}</kbd> ).</span> 
+In all cases, for each latitude, longitude, and time point that you provide, the converter
+finds the specified number of nearby values from the specified datasetID/variable,
+then applies the specified algorithm to create the interpolated value.
+
+<p>Few people will routinely use this web page. Instead, most users will write and/or use
+a script which uses this web page''s <a rel="help" href="#computerProgram">underlying web service</a>.
+]]></convertInterpolateIntro>
+
+<convertInterpolateTLLTable>The table with time, latitude, and longitude columns:</convertInterpolateTLLTable>
+<convertInterpolateTLLTableHelp><![CDATA[
+Please enter a table with at least three columns: time (with any common time format,
+<br>but preferably the ISO 8601:2004 "extended" format <kbd>yyyy-MM-ddTHH:mm:ssZ</kbd>,
+<br>for example, <kbd>2020-06-12T06:17:00Z</kbd> ), latitude (with units=degrees_north), 
+<br>and longitude (with units=degrees_east).  The table can have up to 100 rows.
+]]></convertInterpolateTLLTableHelp>
+
+<convertInterpolateDatasetIDVariable>Request CSV:</convertInterpolateDatasetIDVariable>
+<convertInterpolateDatasetIDVariableHelp><![CDATA[
+Please specify a comma separated list of datasetIDs/variableName/algorithm/nearby 
+<br>values, for example <kbd>{0}</kbd> .
+]]></convertInterpolateDatasetIDVariableHelp>
+
+<convertInterpolateNotes><![CDATA[
+<p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notes:</strong></a>
+<ul>
+<li>Always check the results from the converters. 
+  <br>If you think that the converter gave an incorrect result,
+  please email the details to <kbd>bob dot simons at noaa dot gov</kbd> .
+  <br>&nbsp;
+<li>DISCLAIMER OF LIABILITY 
+  <br>No person or organization associated with this website
+  makes any warranty, express or implied, including warranties of merchantability
+  and fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  completeness, or usefulness, of any information at this website.
+  <br>&nbsp;
+<li>If a specified datasetID and/or variable isn't currently available,
+  or if the algorithm or nearby value is invalid,
+  this returns an error message.
+  <br>&nbsp;
+<li>The <kbd>algorithm</kbd> options are:
+  <ul>
+  <li><kbd>Nearest</kbd>  
+    <br>This looks at the n <kbd>nearby</kbd> dataset points and
+    returns the 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Multivariate_interpolation">nearest<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>
+    non-NaN dataset value (or NaN if they are all NaN), as is.
+    If &gt;1 dataset values are equally close to the source point, 
+    this method will return one of them (unspecified).
+
+  <li><kbd>Bilinear</kbd> (the default)  
+    <br>This looks at the 4 <kbd>nearby</kbd> dataset points 
+    in the latitude longitude plane and returns the
+    <a rel="help" href="https://en.wikipedia.org/wiki/Multivariate_interpolation">bilinear interpolated value<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>.
+    This handles NaN values and only returns NaN for a point if all 4 nearby points are NaNs.
+    For this algorithm, the only allowed value of <kbd>nearby</kbd> is 4. 
+    This algorithm is the default. If you don't specify an algorithm, <kbd>Bilinear/4</kbd> will be used.
+
+  <li><kbd>Mean</kbd>  
+    <br>This returns the mean of the non-NaN, <kbd>nearby</kbd> dataset values. 
+    This does the calculations with doubles and returns doubles, regardless of the variable's data type.
+    The default <kbd>nearby</kbd> setting for this option is 4. 
+  <li><kbd>SD</kbd>  
+    <br>This returns the standard deviation of the non-NaN, <kbd>nearby</kbd> dataset values. 
+    This does the calculations with doubles and returns doubles, regardless of the variable's data type.
+    The default <kbd>nearby</kbd> setting for this option is 4. 
+  <li><kbd>Median</kbd>  
+    <br>This returns the median of the non-NaN, <kbd>nearby</kbd> dataset values. 
+    The default <kbd>nearby</kbd> setting for this option is 4. 
+    This does the calculations with doubles and returns doubles, regardless of the variable's dataset type.
+  <li><kbd>Scaled</kbd>  
+    <br>This returns the scaled, inverse distance squared interpolation 
+    of the non-NaN, <kbd>nearby</kbd> dataset values (Y). 
+    <br>The weight for each nearby dataset value is w = (1 - D/Dmax)<sup>2</sup> / (D/Dmax)
+    , where D is the distance (Davis, 1986, eq 5.68, page 371).
+    <br>Thus, the furthest nearby dataset value gets weight=0.
+    <br>Each interpolated point is E = &sum;(w Y)/&sum;(w)
+    <br>If a nearby dataset point has a distance of 0, that point's value is used as the interpolated value.
+    <br>This does the calculations with doubles and returns doubles, regardless of the variable's data type.
+    The default <kbd>nearby</kbd> setting for this option is 4. 
+  <li><kbd>InverseDistance</kbd>  
+    <br>This returns the inverse distance interpolation 
+    of the non-NaN, <kbd>nearby</kbd> data values (Y). 
+    <br>The weight for each nearby data value is w = 1/D
+    , where D is the distance (Davis, 1986, eq 5.67, page 367).
+    <br>Each interpolated value is E = &sum;(w Y)/&sum;(w)   
+    <br>If a nearby dataset point has a distance of 0, that point's value is used as the interpolated value.
+    <br>This does the calculations with doubles and returns doubles, regardless of the variable's data type.
+    The default <kbd>nearby</kbd> setting for this option is 4.   
+  <li><kbd>InverseDistance2</kbd>  
+    <br>This is like InverseDistance, but the weight for each nearby data value is
+    w = 1/D<sup>2</sup> .
+  <li><kbd>InverseDistance4</kbd>  
+    <br>This is like InverseDistance, but the
+    weight for each nearby data value is 
+    w = 1/D<sup>4</sup> .
+  <li><kbd>InverseDistance6</kbd>  
+    <br>This is like InverseDistance, but the
+    weight for each nearby data value is
+    w = 1/D<sup>6</sup> .
+  </ul>
+  &nbsp;
+  <br>All of the algorithms that calculate distances 
+  (Nearest, Bilinear, Scaled and all InverseDistance algorithms),
+  calculate the distances in index space, not with the actual time, latitude, and longitude values.
+  Thus, this gives equal weight to one lat index unit and one lon index unit (and
+  if 3D, to one time index unit). 
+  If this is inappropriate for a given datasetID/variable,
+  use one of the other algorithm options or see
+  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+  <br>&nbsp;
+<li><kbd>nearby</kbd> specifies the number of points to be used by the algorithm. 
+  <br>Only certain numbers are allowed. 
+  For all algorithm options, there are 2D and 3D options for <kbd>nearby</kbd>.
+  The 2D options (4, 16, and 36, corresponding to 2D squares with sides that 
+  are 1, 2, or 3 index values long (2<sup>2</sup>, 4<sup>2</sup>, 6<sup>2</sup>)) include nearby points in the 2D lat/lon plane.
+  The 3D options (8, 64, and 216, corresponding to 3D cubes with edges that 
+  are 1, 2, or 3 index values long (2<sup>3</sup>, 4<sup>3</sup>, 6<sup>3</sup>)) include nearby points in 3D lat/lon/time space.
+  The <kbd>algorithm=Nearest</kbd> option also supports a <kbd>nearby</kbd> value of 1,
+  which only looks at the nearest data point in the 2D plane.
+  <p>If a given longitude, latitude, time point is outside of a dataset's range,
+    the resulting data value will be NaN. However, if adding or subtracting 
+    360 to the longitude value makes the point in the dataset's range,
+    the results will have the corresponding data value.
+  <p>WARNING: If the closest longitude value is near the minimum or maximum
+  longitude value, this method only finds nearby points near that same minimum
+  or maximum longitude value -- it doesn't wrap around to find nearby points. 
+  Instead, it duplicates the points at the minimum or maximum longitude value,
+  as needed. This is technically not correct behavior, but it only affects
+  some people, some of the time. If this affects you and is not acceptable, see
+  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+<li>Other Dimensions 
+  <br>If a specified dataset has dimensions other than latitude, longitude,
+  and time (for example, depth), this converter will request the
+  dimension value closest to 0 for each of those other dimensions.
+  If this is not the desired behavior, see
+  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+  <br>&nbsp;
+<li>The interpolation methods used here are from 
+  Davis, J.C. 1986. Statistics and Data Analysis in Geology, 2nd Ed. John Wiley and Sons. New York, New York.
+  <br>&nbsp;
+<li>Missing Data Values  
+  <br>If a dataset has no missing values, then a simple
+  algorithm like <kbd>Bilinear</kbd> yields reliably good results. But
+  when the dataset has missing values, the result can be a biased value
+  or a missing value. In this common situation, you may prefer to choose
+  the <kbd>Scaled</kbd> algorithm or one of the <kbd>InverseDistance</kbd>
+  algorithms and a larger number of <kbd>nearby</kbd> points. These
+  algorithms are better at dealing with missing values and are less likely
+  to return a missing value.
+  <br>&nbsp;
+<li>In the response table, the names of the new columns are created by 
+  taking each part of the datasetID/variable/algorithm/nearby CSV 
+  (e.g., <kbd>jplMURSST41/analysed_sst/Bilinear/4</kbd> ) and changing the /'s to _'s
+  (e..g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd> )
+  so that they are valid variable names in all types of data files
+  <br>&nbsp;
+<li>In the response table, except for <kbd>algorithm=Nearest</kbd> (which returns the original data type),
+  the interpolated values are returned as doubles, not the original data type.
+  Missing values are returned as NaN, never a missing_value stand in.
+  <br>&nbsp;
+<li>Centered Grids? 
+  <br>The latitude and longitude values for gridded datasets may 
+  identify the center of the relevant cell or the cell's lower left. 
+  The 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
+>CF standard<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>
+  says "If bounds are not provided, an application might reasonably 
+  assume the gridpoints to be at the centers of the cells, but we do not require 
+  that in this standard."
+  This converter treats the dataset's latitude and longitude values as points
+  so that it can interpolate values which fall in between the dataset's latitude 
+  and longitude points. This is more consistent with the assumption that the 
+  dataset's latitude and longitude values identify the center of the cell.
+  If this isn't the correct approach for a given dataset, in some cases
+  it may be appropriate to subtract half of the cell spacing from latitude and 
+  longitude values that you supply to this converter. 
+  <br>&nbsp;
+<li><a class="selfLink" id="NotWhatYouWant" href="#NotWhatYouWant" rel="help"
+  >Not what you want?</a>
+  <br>If the methods or options offered by this converter are not suitable
+  for your purposes or otherwise not what you want, don't use them.
+  Instead, you can do it yourself, your own way: 
+  download subsets of the dataset and apply your own algorithm.
+  To request that other interpolation algorithms be added to this converter,
+  please email <kbd>bob dot simons at noaa dot gov</kbd> .
+  <br>&nbsp;
+<li>ERDDAP administrators: 
+  <br>You can change the default Request CSV by 
+  by adding/editing the &lt;convertInterpolateRequestCSVExample&gt; tag in
+  datasets.xml.
+  Similarly, you can change the list of datasetID/variable options
+  by adding/editing the &lt;convertInterpolateDatasetIDVariableList&gt; tag in
+  datasets.xml, which can have a comma-separated list of suggested 
+  datasetID/variable combinations. 
+</ul>
+]]></convertInterpolateNotes>
+
+<convertInterpolateService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a class="selfLink" id="computerProgram" href="#computerProgram" rel="help"
+>Want To Do Conversions from within a Computer Program, Script, or Web Page?</a></h2>
+The form on this web page helps humans generate a request URL that is 
+sent to ERDDAP when the human presses the Convert button. 
+However, you can bypass this form by generating the URL by hand or in a computer program
+or script, and submitting the URL directly to ERDDAP.
+<ul>
+<li>The time, latitude, longitude table in the form becomes the TimeLatLonTable parameter in the request.
+<li>The Request CSV in the form becomes the requestCSV parameter in the request.
+<li>The File type in the form becomes the file type of the request.
+</ul>
+A sample request URL is
+<pre><a rel="help"
+    href="{0}/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"
+>{0}/convert/interpolate.htmlTable?TimeLatLonTable=
+time%2Clatitude%2Clongitude%0A
+2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A
+2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A
+2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A
+2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A
+&requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a> 
+</pre>
+(That has line breaks inserted to make it easier to read, but it is really just one long line.)
+
+<p><a class="selfLink" id="URLLength" href="#URLLength" rel="help"
+>URL Length</a> - Note that as the amount of data in the TimeLatLonTable increases, the request URL
+becomes very long. Because Tomcat has a default limit of 4096 characters per request URL,
+this converter is limited to 100 rows of input -- 100 rows is the most you can 
+reliably request at one time. Even with this limit, this converter is much more
+efficient than making a separate request for each source Time Latitude Longitude
+value because bulk requests have 1/100th the network overhead and also get the data 
+from the source dataset much more efficiently (often almost 100 times more efficiently).
+
+<p><a class="selfLink" id="PercentEncoding" href="#PercentEncoding" rel="help"
+>Percent Encoding</a> - The TimeLatLonTable and requestCSV parameter values in the URL must be properly
+  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"
+  >percent encoded<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>:
+    all characters other than A-Za-z0-9_-!.~''()* must be encoded as %HH,
+  where HH is the 2 digit hexadecimal value of the character, for example, a space becomes
+  %20. Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must
+  be percent encoded (ask a programmer for help).  There are
+  <a rel="help" href="https://www.url-encode-decode.com/"
+  >websites that percent encode and decode for you<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>.  
+]]></convertInterpolateService>
+
 <!-- These HTML messages are used to describe the "convert" options in general and individually. -->
 <convertKeywords>Convert a CF Standard Name to/from a GCMD Science Keyword</convertKeywords>
 
 <!-- Don't change the examples (from defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 This web page lets you convert a 
-<a rel="bookmark" href="http://cfconventions.org/standard-names.html">CF Standard Name<img 
+<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF Standard Name<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
 to/from a 
@@ -624,7 +894,7 @@ Select a GCMD Science Keyword.
   completeness, or usefulness, of any information at this website.
   <br>&nbsp;
 <li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Corrections</a></strong> - 
-Please email any suggested corrections to bob.simons at noaa.gov .
+Please email any suggested corrections to <kbd>bob dot simons at noaa dot gov</kbd> .
 </ul>
 ]]></convertKeywordsNotes>
 
@@ -748,7 +1018,7 @@ These converters are imperfect. Always check the results from these converters.
   ERDDAP tries to deal with improperly formatted input.
   If ERDDAP can''t deal with the input, ERDDAP will generate an error message.
   If the "invalid input" is a string time that you think should be supported, 
-  please email it to bob.simons at noaa.gov 
+  please email it to <kbd>bob dot simons at noaa dot gov</kbd> . 
   <br>&nbsp;
 </ul>
 
@@ -820,7 +1090,7 @@ often called
 >UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
-and the <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+and the <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
 >Climate and Forecast Metadata Conventions (CF)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
@@ -864,7 +1134,7 @@ For example, 17611992 hours since 0001-01-01T00:00:00Z = 2010-03-01T00:00:00Z
 
 <p>Currently, ERDDAP does not support any other calendar (including the noleap, 365_day,
 360_day, and Julian calendars defined by the
-<a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#calendar"
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#calendar"
 >CF metadata conventions<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>).  
@@ -950,8 +1220,8 @@ As much as is practical, ERDDAP, like Unix time and UDUNITS, uses the
 time system.  UTC uses occasional leap seconds to stay close to the International Atomic
 Time (TAI). GPS devices use GPS time (which doesn''t use leap seconds) internally,
 but display UTC time to users. (See 
-    <a rel="help" href="https://tycho.usno.navy.mil/systime.html"
-    >https://tycho.usno.navy.mil/systime.html<img 
+    <a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
+    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     or other 
@@ -1339,7 +1609,7 @@ But there are a few difficulties and special cases:
     <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> and
-    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
+    <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>), use
     degree_east and degree_north to identify the longitude and latitude variables
@@ -1487,7 +1757,7 @@ Two common standards for writing units of measure are:
   <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
+  <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>, and
   <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
@@ -1500,17 +1770,17 @@ Two common standards for writing units of measure are:
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
   - the Unified Code for Units of Measure.
-  <a rel="bookmark" href="https://www.opengeospatial.org/">OGC<img 
+  <a rel="bookmark" href="https://www.ogc.org/">OGC<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
   services such as
-  <a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+  <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="https://www.opengeospatial.org/standards/wcs">WCS<img 
+  <a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>, and
-  <a rel="help" href="https://www.opengeospatial.org/standards/wms">WMS<img 
+  <a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
   often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
@@ -2169,10 +2439,12 @@ If you want the examples to point to your ERDDAP, the easiest method is:
 <!-- This is a comma-separated list of variables from the dataset.
      It is useful if it is "longitude,latitude,time," plus a data variable name. -->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
-<!-- This is the constraints example which is appended to EDDTableVariablesExample. -->
+<!-- This is the constraints example which is appended to EDDTableVariablesExample. 
+  THIS FAILS in SSR.testForBrokenLinks BUT SUCCEEDS using it on the tabledap documentation web page. So leave it. -->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
 <!-- This is an example data query using an ISO-formatted time. 
-     You could generate your example via your dataset's Data Access Form in ERDDAP.  -->
+     You could generate your example via your dataset's Data Access Form in ERDDAP. 
+  THIS FAILS in SSR.testForBrokenLinks BUT SUCCEEDS using it on the tabledap documentation web page. So leave it.  -->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
 <!-- This is an equivalent example data query, but which specifies time as seconds-since-1970-01-01. 
      If you need to convert a date/time to "seconds since 1970-01-01", use
@@ -2429,7 +2701,7 @@ But here is a quick tutorial related to using curl with ERDDAP:
   <br>&nbsp;&nbsp;<kbd><i>erddapUrl</i></kbd> is any ERDDAP URL that requests a data or image file, and
   <br>&nbsp;&nbsp;<kbd>-o <i>fileDir/fileName.ext</i></kbd> specifies the name for the file that will be created.
   <br>For example,
-<pre>curl --compressed -g "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/NDBC_41004_met.nc" -o ndbc/41004.nc</pre>
+<pre>curl --compressed -g "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc" -o ndbc/41004.nc</pre>
 In curl, as in many other programs, the query part of the erddapUrl must be 
 <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"
 >percent encoded<img
@@ -2459,7 +2731,7 @@ Then, in the erddapUrl, replace a zero-padded number (for example <kbd>01</kbd>)
 range of values (for example, <kbd>[01-15]</kbd> ), or replace a substring (for example <kbd>41004</kbd>) with a list of values (for example, <kbd>{41004,41009,41010}</kbd> ).
 The <kbd>#1</kbd> within the output fileName causes the current value of the range or 
 list to be put into the output fileName. For example, 
-<pre>curl --compressed "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/NDBC_{41004,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
+<pre>curl --compressed "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41004,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
 &nbsp;
 </ul>
 
@@ -2613,7 +2885,7 @@ Fortunately, there are lots of software tools for working with the various file 
   </ul>
 
 <li><a class="selfLink" id="ncFiles" href="#ncFiles" rel="help">NetCDF Files (.nc)</a>
-   <br><a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html">NetCDF .nc<img
+   <br><a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/docs/">NetCDF .nc<img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a> 
      is a common type of binary data file. 
@@ -2638,7 +2910,7 @@ Fortunately, there are lots of software tools for working with the various file 
        title="This link to an external website does not constitute an endorsement."></a>). 
    <li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, 
      a powerful command line tool to permanently modify .nc files.
-   <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/index.jsp">NetCDF-C and NetCDF-Java<img
+   <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF-C and NetCDF-Java<img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a>,
        the main software libraries for C, C++, Fortran, or Java to read and write .nc files. 
@@ -3745,13 +4017,13 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
   <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="https://www.opengeospatial.org/standards/wcs">WCS<img 
+  <a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="https://www.opengeospatial.org/standards/wfs">WFS<img 
+  <a rel="help" href="https://www.ogc.org/standards/wfs">WFS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+  <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
   or an HTML form)
@@ -3877,15 +4149,20 @@ For details, see
 <shiftXRight>Shift the X Axis rightwards.</shiftXRight>
 <shiftXAllTheWayRight>Shift the X Axis all the way to the right.</shiftXAllTheWayRight>
 
+<signedToUnsignedAttNames>_FillValue, 
+actual_max, actual_min, actual_range, 
+data_max, data_min, data_range, missing_value,
+valid_max, valid_min, valid_range</signedToUnsignedAttNames>
+
 <sosDescriptionHtml>The Sensor Observation Service (SOS) lets you request data via the SOS protocol.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</sosDescriptionHtml>
 
 <sosLongDescriptionHtml><![CDATA[
 ERDDAP's Sensor Observation Service (SOS) lets you request data via the SOS protocol.
 <br><span class="warningColor"><strong>This is an EXPERIMENTAL WORK-IN-PROGRESS.</strong></span>
-<p><a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+<p><a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
-is an <a rel="bookmark" href="https://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+is an <a rel="bookmark" href="https://www.ogc.org/">Open Geospatial Consortium (OGC)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
 standard that "provides an API for managing deployed
@@ -4300,7 +4577,7 @@ and will be able to download the data in additional file formats
 or as graphs or maps.
 ERDDAP has been installed by over 60 organizations worldwide.
 <a rel="bookmark"
-href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
+href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> 
 includes ERDDAP in its list of recommended data servers for use by groups within NOAA. 
@@ -4712,7 +4989,7 @@ offers several ways to search for interesting datasets.</a></strong>
     (ERDDAP's implementation of the
       <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP constraint protocol</a>).
       <!--and
-      <a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+      <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>. -->
   </ul>
@@ -4724,12 +5001,12 @@ offers several ways to search for interesting datasets.</a></strong>
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     is one of 
-    <a rel="bookmark" href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations"
+    <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     >NOAA's Data Access Technical Recommendations<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     and a
-    <a rel="bookmark" href="https://earthdata.nasa.gov/about/esdis-project/eso/standards-and-references#ed-standards"
+    <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
@@ -4744,7 +5021,7 @@ offers several ways to search for interesting datasets.</a></strong>
   and the list of 
   <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap file types</a>.
   Other protocols for requesting the data (for example,
-    <a rel="help" href="https://www.opengeospatial.org/standards/wcs">WCS<img 
+    <a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>)
     may be added in the future.
@@ -4830,7 +5107,7 @@ offers several ways to search for interesting datasets.</a></strong>
     <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
+    <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, and
     <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
@@ -4843,17 +5120,17 @@ offers several ways to search for interesting datasets.</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     - the Unified Code for Units of Measure.
-    <a rel="bookmark" href="https://www.opengeospatial.org/">OGC<img 
+    <a rel="bookmark" href="https://www.ogc.org/">OGC<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     services such as
-    <a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+    <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-    <a rel="help" href="https://www.opengeospatial.org/standards/wcs">WCS<img 
+    <a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, and
-    <a rel="help" href="https://www.opengeospatial.org/standards/wms">WMS<img 
+    <a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
@@ -4878,7 +5155,7 @@ offers several ways to search for interesting datasets.</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     (for example, 
-    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF metadata<img 
+    <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF metadata<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
     describing the data.
@@ -5562,7 +5839,7 @@ The changes are applied in the order of the lines here.
 !!! ONLY ADD PAIRS THAT YOU CONSIDER TO BE VERY, VERY RELIABLE CHANGES!!!
 Notes:
 * If you think that there are rules here which are wrong or new rules to be added,
-  please email bob.simons at noaa.gov.
+  please email <kbd>bob dot simons at noaa dot gov</kbd> .
 * The first half has dramatic changes. The second half has simple http to https changes.
   The http to https changes are important because some websites don't have redirects,
   and, even if they do, some systems (e.g., Java) don't automatically follow redirects.
@@ -5578,26 +5855,41 @@ Notes:
 http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
+www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
+www.unidata.ucar.edu/software/netcdf-java/v4.5/ncml/AnnotatedSchema4.html
+
+www.esri.com/software/arcgis/index.html
+www.esri.com/en-us/arcgis/about-arcgis/overview
+
 ://resources.arcgis.com/en/help/main/10.1/index.html#//004600000011000000
 ://desktop.arcgis.com/en/arcmap/latest/tools/multidimension-toolbox/make-netcdf-raster-layer.htm
 
 ://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589
 ://desktop.arcgis.com/en/arcmap/latest/manage-data/tables/adding-an-ascii-or-text-file-table.htm
 
+://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html
+://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html
+
 http://aurora.regenstrief.org/~ucum/ucum.html
 https://unitsofmeasure.org/ucum.html
 
-http://code.google.com/apis/visualization/documentation/querylanguage.html
-https://developers.google.com/chart/interactive/docs/querylanguage?csw=1
-
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
+http://portal.chordsrt.com/about
 
 http://coaps.fsu.edu/thredds
 https://tds.coaps.fsu.edu/thredds
 
 coastwatch.pfel.noaa.gov
 coastwatch.pfeg.noaa.gov
+
+http://code.google.com/apis/visualization/documentation/querylanguage.html
+https://developers.google.com/chart/interactive/docs/querylanguage?csw=1
+
+http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
+https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 
 http://www.cs.tut.fi/~jkorpela/
 http://jkorpela.fi/
@@ -5611,11 +5903,17 @@ schemas.opengis.net/
 www.csc.noaa.gov
 www.coast.noaa.gov
 
+http://www.eppleylab.com/PrdPrecInfRadmtr.htm
+http://www.eppleylab.com/instrument-list/precision-infared-radiometer/
+
 http://www.esdswg.org/spg/
 https://earthdata.nasa.gov/about/esdis-project/eso/standards-and-references#ed-standards
 
 http://www.esdswg.org/
 https://earthdata.nasa.gov/
+
+gmt.soest.hawaii.edu/
+www.soest.hawaii.edu/gmt/
 
 http://www.gomoos.org
 http://oceandata.gmri.org
@@ -5638,11 +5936,23 @@ https://www.ncdc.noaa.gov/data-access/model-data/model-datasets/navoceano-ncom-g
 www.epic.noaa.gov/epic
 www.pmel.noaa.gov/epic
 
+https://www.esa-oceancolour-cci.org/?q=publications
+https://esa-oceancolour-cci.org/documents/publications
+
+https://www.esa-oceancolour-cci.org
+https://esa-oceancolour-cci.org
+
+https://earthdata.nasa.gov/about/esdis-project/eso/standards-and-references#ed-standards
+https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards
+
 ferret.wrc.noaa.gov
 ferret.pmel.noaa.gov
 
 www.ferret.noaa.gov
 ferret.pmel.noaa.gov
+
+//geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations
+//www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations
 
 http://geolibportal.usm.maine.edu/geolib/
 https://www.maine.edu/geolib/
@@ -5655,6 +5965,9 @@ https://www.glos.us
 
 http://icesjms.oxfordjournals.org
 https://academic.oup.com/icesjms
+
+www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=32546
+www.iso.org/standard/32546.html
 
 http://www.marine-geo.org/portals/gmrt/
 https://www.gmrt.org/
@@ -5677,11 +5990,17 @@ https://code.mpimet.mpg.de/projects/cdi
 http://mpimet.mpg.de/cdo
 https://code.mpimet.mpg.de/projects/cdo
 
+https://www.whoi.edu/mvco
+https://mvco.whoi.edu/
+
 http://myroms.org
 https://www.myroms.org
 
-https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html
-https://linux.die.net/man/1/ncdump
+www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html
+linux.die.net/man/1/ncdump
+
+www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html
+linux.die.net/man/1/ncdump
 
 http://webhelp.esri.com
 https://support.esri.com
@@ -5698,17 +6017,29 @@ https://www.fisheries.noaa.gov/about/office-protected-resources
 https://www.fisheries.noaa.gov/sfa/
 https://www.fisheries.noaa.gov/about/office-sustainable-fisheries
 
-https://www.opendap.org/download/hyrax.html
-https://www.opendap.org/software/hyrax-data-server
-
 http://www.jma.go.jp/en/gms/
 https://www.jma.go.jp/jma/indexe.html
 
 https://www.linux.org/info/gnu.html
 https://www.gnu.org/licenses/gpl-3.0.html
 
+http://mur.jpl.nasa.gov
+https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
+
+https://mur.jpl.nasa.gov
+https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
+
+www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/
+docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
+
+https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_introduction.html
+https://www.unidata.ucar.edu/software/netcdf/docs/
+
 http://ocean-ridge.ldeo.columbia.edu/general/html/home.html
 http://www.marine-geo.org/portals/gmrt/
+
+www.opengeospatial.org
+www.ogc.org
 
 http://opendap.org
 https://www.opendap.org
@@ -5716,17 +6047,29 @@ https://www.opendap.org
 https://www.opendap.org/java-DAP
 https://www.opendap.org/deprecated-software/java-dap
 
+https://www.opendap.org/download/hyrax.html
+https://www.opendap.org/software/hyrax-data-server
+
 http://pacioos.org
 http://www.pacioos.hawaii.edu
+
+https://docs.lib.noaa.gov/noaa_documents/NOAA_Research_Council/NOAA_PARR_Plan_v5.04.pdf
+https://www.glerl.noaa.gov/review2016/reviewer_docs/NOAA_PARR_Plan_v5.04.pdf
 
 .pfel.noaa.gov
 .pfeg.noaa.gov
 
-http://podaac-opendap.jpl.nasa.gov
-https://opendap.jpl.nasa.gov
+https://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST 
+https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 
 http://podaac.jpl.nasa.gov:8890
 https://podaac.jpl.nasa.gov
+
+http://podaac-opendap.jpl.nasa.gov
+https://opendap.jpl.nasa.gov
+
+https://swfsc.noaa.gov/PRD/
+https://swfsc.noaa.gov/main.aspx?Division=PRD&amp;ParentMenuId=147&amp;id=1221
 
 https://pyoceans.github.io/erddapy/
 https://github.com/ioos/erddapy#--erddapy
@@ -5740,14 +6083,29 @@ www.rvdata.us/search/cruise/
 http://www.rvdata.us
 https://www.rvdata.us
 
+https://tycho.usno.navy.mil/systime.html
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+
 http://www.tc211.org
 https://data.noaa.gov
+
+https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+https://www.unidata.ucar.edu/software/netcdf-java/
+
+/www.unidata.ucar.edu/software/netcdf/docs/user_guide.html
+/docs.unidata.ucar.edu/netcdf-java/current/userguide/index.html
+
+www.unidata.ucar.edu/downloads/netcdf/index.jsp
+www.unidata.ucar.edu/downloads/netcdf/
 
 www.unidata.ucar.edu/projects/THREDDS/
 www.unidata.ucar.edu/software/thredds/current/tds/
 
 www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
 www.unidata.ucar.edu/software/udunits/
+
+http://www.useit.com/papers/heuristic/heuristic_list.html
+https://www.nngroup.com/articles/ten-usability-heuristics/
 
 http://visibleearth.nasa.gov/view_rec.php?id=72
 https://oceancolor.gsfc.nasa.gov/data/aqua/
@@ -5769,6 +6127,9 @@ https://www.pmel.noaa.gov/epic/java/sgt/
 
 http://www.geotools.org/ArcInfo+ASCII+Grid+format
 https://en.wikipedia.org/wiki/Esri_grid
+
+www.geotraces.org/science/intercalibration/322-standards-and-reference-materials
+www.geotraces.org/standards-and-reference-materials/
 
 http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf
 https://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf
@@ -5794,6 +6155,9 @@ github.com/dewitt/opensearch
 http://www.postcoml.org
 http://www.coml.org
 
+http://www.soda.umd.edu
+https://www.atmos.umd.edu/~ocean/
+
 http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf
 http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf
  
@@ -5802,6 +6166,9 @@ http://www.remss.com
 
 http://www.stevens.edu/maritimeforecast/
 http://hudson.dl.stevens-tech.edu/maritimeforecast/
+
+ftp://topex.ucsd.edu/pub/global_topo_1min
+https://topex.ucsd.edu/marine_topo/mar_topo.html
 
 https://www.w3schools.com/xhtml/xhtml_intro.asp
 https://www.w3schools.com/html/html_xhtml.asp
@@ -5821,6 +6188,9 @@ https://aquarius.nasa.gov
 http://betterexplained.com
 https://betterexplained.com
 
+http://cfconventions.org
+https://cfconventions.org
+
 http://coastwatch.glerl.noaa.gov
 https://coastwatch.glerl.noaa.gov
 
@@ -5835,6 +6205,9 @@ https://cordc.ucsd.edu
 
 http://cpo.noaa.gov
 https://cpo.noaa.gov
+
+http://cran.r-project.org/
+https://cran.r-project.org/
 
 http://creativecommons.org
 https://creativecommons.org
@@ -5878,6 +6251,9 @@ https://docs.aws.amazon.com
 http://docs.opendap.org
 https://docs.opendap.org
 
+http://docs.oracle.com
+https://docs.oracle.com
+
 http://dods.ndbc.noaa.gov
 https://dods.ndbc.noaa.gov
 
@@ -5898,6 +6274,9 @@ https://ecowatch.ncddc.noaa.gov
 
 http://en.wikipedia.org
 https://en.wikipedia.org
+
+http://erddap.axiomdatascience.com
+https://erddap.axiomdatascience.com
 
 http://erddap.emodnet-physics.eu
 https://erddap.emodnet-physics.eu
@@ -5926,8 +6305,8 @@ https://github.com/
 http://global.jaxa.jp
 https://global.jaxa.jp
 
-http://gmt.soest.hawaii.edu
-https://gmt.soest.hawaii.edu
+http://www.soest.hawaii.edu
+https://www.soest.hawaii.edu
 
 http://gtopp.org
 https://gtopp.org
@@ -5944,11 +6323,20 @@ https://hycom.org
 http://icoads.noaa.gov
 https://icoads.noaa.gov
 
+http://www.iooc.us
+https://www.iooc.us
+
 http://ioos.noaa.gov
 https://ioos.noaa.gov
 
 http://iprc.soest.hawaii.edu
 https://iprc.soest.hawaii.edu
+
+https://iprc.soest.hawaii.edu/users/
+http://iprc.soest.hawaii.edu/users/
+
+http://www.iso.org
+https://www.iso.org
 
 http://journals.ametsoc.org
 https://journals.ametsoc.org
@@ -5992,9 +6380,6 @@ https://motherlode.ucar.edu
 http://motherlode.ucar.edu
 https://motherlode.ucar.edu
 
-http://mur.jpl.nasa.gov
-https://mur.jpl.nasa.gov
-
 http://nctr.pmel.noaa.gov
 https://nctr.pmel.noaa.gov
 
@@ -6027,6 +6412,9 @@ https://oceanwatch.pfeg.noaa.gov
 
 http://oceanwatch.pifsc.noaa.gov
 https://oceanwatch.pifsc.noaa.gov
+
+http://odv.awi.de/
+https://odv.awi.de/
 
 http://onlinelibrary.wiley.com
 https://onlinelibrary.wiley.com
@@ -6084,6 +6472,9 @@ https://science.jpl.nasa.gov
 
 http://science.nasa.gov
 https://science.nasa.gov
+
+http://sccoos.org/erddap/
+https://erddap.sccoos.org/erddap/
 
 http://sdf.ndbc.noaa.gov
 https://sdf.ndbc.noaa.gov
@@ -6202,6 +6593,9 @@ https://www.crummy.com
 http://www.dal.ca
 https://www.dal.ca
 
+http://www.datastax.com
+https://www.datastax.com
+
 http://www.deegree.org
 https://www.deegree.org
 
@@ -6231,6 +6625,12 @@ https://www.fgdc.gov
 
 http://www.fourmilab.ch
 https://www.fourmilab.ch
+
+http://geoport.whoi.edu/thredds
+https://geoport.whoi.edu/thredds
+
+http://www.geotraces.org
+https://www.geotraces.org
 
 http://www.gfdl.noaa.gov
 https://www.gfdl.noaa.gov
@@ -6279,6 +6679,9 @@ https://www.isotc211.org
 
 http://www.jma.go.jp
 https://www.jma.go.jp
+
+http://www.joda.org
+https://www.joda.org
 
 http://www.json.org
 https://www.json.org
@@ -6343,8 +6746,8 @@ https://www.nrl.navy.mil
 http://www.nwfsc.noaa.gov
 https://www.nwfsc.noaa.gov
 
-http://www.opengeospatial.org
-https://www.opengeospatial.org
+http://www.ogc.org
+https://www.ogc.org
 
 http://www.oracle.com
 https://www.oracle.com
@@ -6462,7 +6865,6 @@ https://apdrc.soest.hawaii.edu works but e.g., http://apdrc.soest.hawaii.edu/dat
 https://atm-phys.nies.go.jp
 https://bcodata.whoi.edu
 https://bmlsc.ucdavis.edu/erddap/index.html
-https://cfconventions.org  and in setupDatasetsXml.html
 https://climate.geog.udel.edu
 https://colossus.dl.stevens-tech.edu/thredds/catalog.html
 https://data.bcodmo.org/GEOTRACES/cruises/Atlantic_2010/KN199-04_crtrk.jpg  other security stuff with this server?
@@ -6476,7 +6878,6 @@ https://edac-dap3.northerngulfinstitute.org
 https://erddap.incois.gov.in
 https://fgdcxml.sourceforge.net
 https://geoport.whoi.edu/
-https://geoport.whoi.edu/thredds/catalog.html
 https://hadobs.metoffice.com
 https://hudson.dl.stevens-tech.edu/maritimeforecast/
 https://hydromet-thredds.princeton.edu/erddap/index.html  (http uses :8000)
@@ -6484,7 +6885,6 @@ https://jkorpela.fi
 https://jsonlines.org/
 https://lab.usgin.org
 https://mapserver.refractions.net
-https://marine.copernicus.eu/
 https://meteora.ucsd.edu
 https://mmisw.org  //never update, because SOS parameters require http://  ???
 https://nco.sourceforge.net
@@ -6496,7 +6896,6 @@ https://osmc.noaa.gov/erddap/index.html
 https://postgresql-8.4.sourcearchive.com
 https://rs-data1-mel.csiro.au
 https://rtech-engineering.com/?lang=en
-https://sccoos.org/erddap/index.html
 https://schemas.opengis.net
 https://sfbaynutrients.sfei.org/erddap/index.html
 https://tds.marine.rutgers.edu/thredds/catalog.html
@@ -6513,9 +6912,7 @@ https://www.creativyst.com
 https://www.datypic.com
 https://www.ferret.noaa.gov
 https://www.godac.jamstec.go.jp
-https://www.geotraces.org/science/intercalibration/322-standards-and-reference-materials
 https://www.globec.org
-https://www.iobis.org
 http://www.isotc211.org/2005/srv  Don't ever switch these to https. They are for URIs in 19115 docs.
 https://www.j2eeprogrammer.com
 https://www.jdom.org
@@ -6531,6 +6928,7 @@ https://www.opengis.net
 https://www.openwebfoundation.org
 https://www.remss.com
 https://www.schemacentral.com
+https://www.slf4j.org
 https://www.usgin.org
 
 -->
@@ -6555,14 +6953,14 @@ never be an attribute name. -->
 <wcsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.
 <br><span class="warningColor"><strong>This is an EXPERIMENTAL WORK-IN-PROGRESS.</strong></span>
-<p><a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+<p><a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
-is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+is an <a rel="bookmark" href="https://www.ogc.org/">Open Geospatial Consortium (OGC)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
 standard for "access to geospatial
-<a href="http://www.opengeospatial.org/ogc/glossary/c">coverages<img 
+<a href="https://www.ogc.org/ogc/glossary/c">coverages<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
 The term 'grid coverages' typically refers to content such as satellite images, digital aerial photos,
@@ -6584,13 +6982,13 @@ Web Map Server (WMS) version &wmsVersion;.
 
 <wmsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Map Service (WMS) lets you request an image with data plotted on a map.
-<a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS<img 
+<a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
-is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+is an <a rel="bookmark" href="https://www.ogc.org/">Open Geospatial Consortium (OGC)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
-and <a rel="help" href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=32546"
+and <a rel="help" href="https://www.iso.org/standard/32546.html"
   >ISO (19128)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>

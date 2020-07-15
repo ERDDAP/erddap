@@ -201,7 +201,7 @@ public abstract class EDDGrid extends EDD {
         "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
         "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
         "https://en.wikipedia.org/wiki/Esri_grid", //esriAscii
-        //"https://gmt.soest.hawaii.edu/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
+        //was "https://www.soest.hawaii.edu/gmt/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
         //"https://www.hdfgroup.org/products/hdf4/", //hdf
         "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", //GraphicsCommands
@@ -216,10 +216,10 @@ public abstract class EDDGrid extends EDD {
         "http://jsonlines.org/", //jsonlKVP
         "https://www.mathworks.com/", //mat
         "https://www.unidata.ucar.edu/software/netcdf/", //nc3
-        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
-        "https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/", //ncml
+        "https://linux.die.net/man/1/ncdump", //nc4Header
+        "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html", //ncml
 //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-//        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
+//        "https://linux.die.net/man/1/ncdump", //nc4Header
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "http://nco.sourceforge.net/nco.html#json",
@@ -1161,15 +1161,14 @@ public abstract class EDDGrid extends EDD {
      * This returns the axis variable which has the specified source name.
      *
      * @return the specified axis variable sourceName
-     * @throws Throwable if not found
+     * @throws SimpleException if not found
      */
-    public EDVGridAxis findAxisVariableBySourceName(String tSourceName) 
-        throws Throwable {
+    public EDVGridAxis findAxisVariableBySourceName(String tSourceName) {
 
         int which = String2.indexOf(axisVariableSourceNames(), tSourceName);
         if (which < 0) throw new SimpleException(
-            MessageFormat.format(EDStatic.errorNotFound, 
-                "sourceAxisVariableName=" + tSourceName));
+            MessageFormat.format(EDStatic.errorNotFoundIn, 
+                "sourceAxisVariableName=" + tSourceName, "datasetID=" + datasetID));
         return axisVariables[which];
     }
 
@@ -1177,15 +1176,14 @@ public abstract class EDDGrid extends EDD {
      * This returns the axis variable which has the specified destination name.
      *
      * @return the specified axis variable destinationName
-     * @throws Throwable if not found
+     * @throws SimpleException if not found
      */
-    public EDVGridAxis findAxisVariableByDestinationName(String tDestinationName) 
-        throws Throwable {
+    public EDVGridAxis findAxisVariableByDestinationName(String tDestinationName) {
 
         int which = String2.indexOf(axisVariableDestinationNames(), tDestinationName);
         if (which < 0) throw new SimpleException(
-            MessageFormat.format(EDStatic.errorNotFound, 
-                "variableName=" + tDestinationName));
+            MessageFormat.format(EDStatic.errorNotFoundIn, 
+                "variableName=" + tDestinationName, "datasetID=" + datasetID));
         return axisVariables[which];
     }
 
@@ -1760,7 +1758,7 @@ public abstract class EDDGrid extends EDD {
                             av.destinationToString(av.destinationCoarseMax())));
                 }
 
-                startI = av.destinationToClosestSourceIndex(startDestD);
+                startI = av.destinationToClosestIndex(startDestD);
                 //String2.log("!ParseAxisBrackets startS=" + startS + " startD=" + startDestD + " startI=" + startI);
 
             } else {
@@ -1832,7 +1830,7 @@ public abstract class EDDGrid extends EDD {
                             av.destinationToString(av.destinationCoarseMax())));
                 }
 
-                stopI = av.destinationToClosestSourceIndex(stopDestD);
+                stopI = av.destinationToClosestIndex(stopDestD);
                 //String2.log("!ParseAxisBrackets stopS=" + stopS + " stopD=" + stopDestD + " stopI=" + stopI);
 
             } else {
@@ -3044,8 +3042,8 @@ public abstract class EDDGrid extends EDD {
                 //format
                 avStart[av]      = edvga.destinationToString(dStart);
                 avStop[av]       = edvga.destinationToString(dStop);
-                avStartIndex[av] = edvga.destinationToClosestSourceIndex(dStart);
-                avStopIndex[av]  = edvga.destinationToClosestSourceIndex(dStop);
+                avStartIndex[av] = edvga.destinationToClosestIndex(dStart);
+                avStopIndex[av]  = edvga.destinationToClosestIndex(dStop);
 
                 if (av == lonIndex) {
                     lonAscending = edvga.isAscending()? 1 : -1;
@@ -3130,8 +3128,8 @@ public abstract class EDDGrid extends EDD {
                             int index0, index1;
 
                             //lon
-                            index0 = lonEdvga.destinationToClosestSourceIndex(clickLonLat[0] - radius);
-                            index1 = lonEdvga.destinationToClosestSourceIndex(clickLonLat[0] + radius);
+                            index0 = lonEdvga.destinationToClosestIndex(clickLonLat[0] - radius);
+                            index1 = lonEdvga.destinationToClosestIndex(clickLonLat[0] + radius);
                             if (!lonEdvga.isAscending()) {
                                 int ti = index0; index0 = index1; index1 = ti;
                             }
@@ -3145,8 +3143,8 @@ public abstract class EDDGrid extends EDD {
                             lonRange = lonStop - lonStart;
 
                             //lat
-                            index0 = latEdvga.destinationToClosestSourceIndex(clickLonLat[1] - radius);
-                            index1 = latEdvga.destinationToClosestSourceIndex(clickLonLat[1] + radius);
+                            index0 = latEdvga.destinationToClosestIndex(clickLonLat[1] - radius);
+                            index1 = latEdvga.destinationToClosestIndex(clickLonLat[1] + radius);
                             if (!latEdvga.isAscending()) {
                                 int ti = index0; index0 = index1; index1 = ti;
                             }
@@ -4538,6 +4536,7 @@ public abstract class EDDGrid extends EDD {
 
             //write the data  //OPeNDAP 2.0, 7.3.2.4
             //write elements of the array, in dds order
+            PAOne tPAOne = new PAOne(PAType.STRING);
             int nDataVariables = tDataVariables.length;
             for (int dv = 0; dv < nDataVariables; dv++) {
                 String dvDestName = tDataVariables[dv].destinationName();
@@ -4560,7 +4559,7 @@ public abstract class EDDGrid extends EDD {
                         for (int av = 0; av < nAv - 1; av++)
                             writer.write("[" + current[av] + "]");
                     }
-                    writer.write(", " + partialGda.getDataValueAsPAOne(0, new PAOne(PAType.STRING)));
+                    writer.write(", " + partialGda.getDataValueAsPAOne(0, tPAOne));
                 }
 
                 //send the axis data
@@ -4821,7 +4820,7 @@ Attributes {
      * https://oceanwatch.pfeg.noaa.gov/thredds/ncml/satellite/MUR/ssta/1day?catalog=http%3A%2F%2Foceanwatch.pfeg.noaa.gov%2Fthredds%2FSatellite%2FaggregsatMUR%2Fssta%2Fcatalog.html&dataset=satellite%2FMUR%2Fssta%2F1day
      * stored locally as c:/data/ncml/MUR.xml
      * <br>Annotated Schema for NcML
-     * https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
+     * "https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html"
      * 
      * @param loggedInAs 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
@@ -7094,11 +7093,11 @@ Attributes {
             throw new SimpleException(EDStatic.queryError + 
                 "For .kml requests, there must be some longitude values must be between -180 and 360.");
         if (lonStartd < -180) {
-            lonStarti = lonEdv.destinationToClosestSourceIndex(-180);
+            lonStarti = lonEdv.destinationToClosestIndex(-180);
             lonStartd = lonEdv.destinationValue(lonStarti).getNiceDouble(0);
         }
         if (lonStopd > Math.min(lonStartd + 360, 360)) {
-            lonStopi = lonEdv.destinationToClosestSourceIndex(Math.min(lonStartd + 360, 360));
+            lonStopi = lonEdv.destinationToClosestIndex(Math.min(lonStartd + 360, 360));
             lonStopd = lonEdv.destinationValue(lonStopi).getNiceDouble(0);
         }
         int    lonMidi   = (lonStarti + lonStopi) / 2;
@@ -9312,7 +9311,7 @@ Attributes {
             "\n" +
 
             //ArcGIS
-            "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/index.html\">ArcGIS" +
+            "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/en-us/arcgis/about-arcgis/overview\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a><a class=\"selfLink\" id=\"ArcGIS\" href=\"#ArcGIS\" rel=\"bookmark\">&nbsp;</a>\n" +
             "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Esri_grid\">.esriAsc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
@@ -9398,7 +9397,7 @@ Attributes {
             "    <a class=\"selfLink\" id=\"IDL\" href=\"#IDL\" rel=\"bookmark\">IDL</a> is a commercial scientific data visualization program. To get data from ERDDAP\n" +
             "  into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  Then, use these\n" +
-            "    <a rel=\"help\" href=\"https://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions" +
+            "    <a rel=\"help\" href=\"https://northstar-www.dartmouth.edu/doc/idl/html_6.2/Using_Macros_to_Import_HDF_Files.html\">instructions" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
             "\n" +
@@ -9548,7 +9547,7 @@ Attributes {
             "  <p><strong>.ncHeader</strong>\n" +
             "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
             "  would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
+            "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
@@ -9675,7 +9674,7 @@ Attributes {
             "<pre>download.file(url=\"" + fullTimeNcExampleHE + "\", destfile=\"/home/bsimons/test.nc\")</pre>\n" +
             "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n" +
             "  Then import data from that .nc file into R with the RNetCDF, ncdf, or ncdf4 packages available\n" +
-            "  from <a rel=\"bookmark\" href=\"http://cran.r-project.org/\">CRAN" +
+            "  from <a rel=\"bookmark\" href=\"https://cran.r-project.org/\">CRAN" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "    Or, if you want the data in tabular form, download and import the data in a .csv file.\n" +
             "  For example,\n" +
@@ -10287,7 +10286,7 @@ Attributes {
             "        translate unambiguously into a contiguous range of indices.\n" +
             "        Tied values are not allowed because requests for a single <kbd>[(value)]</kbd> must\n" +
             "        translate unambiguously to one index. Also, the\n" +
-            "        <a rel=\"help\" href=\"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#terminology\">CF Conventions" +
+            "        <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#terminology\">CF Conventions" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "        require that \"coordinate variables\", as it calls them, be \"ordered monotonically\".\n" +
             "      <li>Each axis variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n" +
@@ -11330,8 +11329,8 @@ Attributes {
             //lonStride
             String n   = wcsQueryMap.get("width"); //test name.toLowerCase()
             String res = wcsQueryMap.get("resx");  //test name.toLowerCase()
-            int start = lonEdv.destinationToClosestSourceIndex(minLonD);
-            int stop  = lonEdv.destinationToClosestSourceIndex(maxLonD);
+            int start = lonEdv.destinationToClosestIndex(minLonD);
+            int stop  = lonEdv.destinationToClosestIndex(maxLonD);
             if (start > stop) { //because !isAscending
                 int ti = start; start = stop; stop = ti;}
             if (n != null) {
@@ -11351,8 +11350,8 @@ Attributes {
             //latStride
             n   = wcsQueryMap.get("height"); //test name.toLowerCase()
             res = wcsQueryMap.get("resy");  //test name.toLowerCase()
-            start = latEdv.destinationToClosestSourceIndex(minLatD);
-            stop  = latEdv.destinationToClosestSourceIndex(maxLatD);
+            start = latEdv.destinationToClosestIndex(minLatD);
+            stop  = latEdv.destinationToClosestIndex(maxLatD);
             if (start > stop) { //because !isAscending
                 int ti = start; start = stop; stop = ti;}
             if (n != null) {
@@ -11374,8 +11373,8 @@ Attributes {
             if (altIndex >= 0 || depthIndex >= 0) {
                 n   = wcsQueryMap.get("depth"); //test name.toLowerCase()
                 res = wcsQueryMap.get("resz");  //test name.toLowerCase()
-                start = altDepthEdv.destinationToClosestSourceIndex(minAltD);
-                stop  = altDepthEdv.destinationToClosestSourceIndex(maxAltD);
+                start = altDepthEdv.destinationToClosestIndex(minAltD);
+                stop  = altDepthEdv.destinationToClosestIndex(maxAltD);
                 if (start > stop) { //because !isAscending
                     int ti = start; start = stop; stop = ti;}
                 if (n != null) {
@@ -11487,8 +11486,8 @@ Attributes {
                             throw new SimpleException(EDStatic.queryError + 
                                 dName + " min=" + valSA[0] + 
                                 " must be <= max=" + valSA[1] + ".");
-                        int start = edv.destinationToClosestSourceIndex(minD);
-                        int stop  = edv.destinationToClosestSourceIndex(maxD);
+                        int start = edv.destinationToClosestIndex(minD);
+                        int stop  = edv.destinationToClosestIndex(maxD);
                         if (start < stop) { //because !isAscending
                             int ti = start; start = stop; stop = ti; }                        
                         if (Double.isNaN(resD) || resD <= 0)
@@ -12062,7 +12061,7 @@ Attributes {
      * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
      * XML to the writer.
      * <br>The template is initially based on a sample file from Dave Neufeld: maybe
-     * <br>https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/Tutorial.html
+     * <br>https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
      * <br>(stored on Bob's computer as F:/programs/fgdc/258Neufeld20110830.xml).
      * <br>Made pretty via TestAll: XML.prettyXml(in, out);
      *

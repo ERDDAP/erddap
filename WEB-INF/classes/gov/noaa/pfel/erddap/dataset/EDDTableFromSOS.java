@@ -1848,7 +1848,8 @@ public class EDDTableFromSOS extends EDDTable{
                 do {
                     //process the tags
                     //String2.log("tags=" + tags + xmlReader.content());
-    /* from http://mvcodata.whoi.edu:8080/q2o/adcp?service=SOS&version=1.0.0&responseFormat=text/xml;%20subtype%3D%22om/1.0%22&request=GetObservation&offering=ADCP_DATA&observedProperty=ALL_DATA&eventTime=2008-04-09T00:00:00Z/2008-04-09T01:00:00Z
+    /*  2020-07-09 whoiSos IS GONE. see email from Mathew Biddle.
+       from http://mvcodata.whoi.edu:8080/q2o/adcp?service=SOS&version=1.0.0&responseFormat=text/xml;%20subtype%3D%22om/1.0%22&request=GetObservation&offering=ADCP_DATA&observedProperty=ALL_DATA&eventTime=2008-04-09T00:00:00Z/2008-04-09T01:00:00Z
        stored as C:/data/whoiSos/GetObervations.xml
     <om:ObservationCollection gml:id="ADCP_Observation" xmlns:gml="http://www.opengis.net/gml" xmlns:om="http://www.opengis.net/om/1.0" xmlns:swe="http://www.opengis.net/swe/1.0.1" xmlns:xlink="https://www.w3.org/1999/xlink" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observation.xsd">
         <!-- Observation name -->
@@ -8578,149 +8579,6 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
     } */
 
     /**
-     * This tests datasetID=whoiSos.
-     * See the email from Janet Fredericks (now retired) to me 2013-01-28 6:36 AM
-     * (in response to my email suggesting she work with NOAA IOOS and standardize)
-     * saying this was funded by IOOS!
-     *
-     * @throws Throwable if trouble
-     */
-    public static void testWhoiSos() throws Throwable {
-        boolean oSosActive = EDStatic.sosActive;
-        EDStatic.sosActive = true;
-        boolean oDebugMode = debugMode;
-        debugMode = true;
-        boolean oTestQuickRestart = testQuickRestart;
-        testQuickRestart = false; 
-
-        String2.log("\n*** EDDTableFromSOS.testWhoiSos");
-        testVerboseOn();
-        double tLon, tLat;
-        String name, tName, results, expected, userDapQuery;
-        String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
-        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "whoiSos"); //should work
-
-        //getEmpiricalMinMax just do once
-        //useful for SOS: get alt values
-        //eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true);
-        //if (true) System.exit(1);
-
-        /*
-        //test sos-server values
-        String2.log("nOfferings=" + eddTable.sosOfferings.size());
-        String2.log(eddTable.sosOfferings.getString(0) + "  lon=" +
-            eddTable.sosMinLon.getNiceDouble(0) + ", " +
-            eddTable.sosMaxLon.getNiceDouble(0) + " lat=" +
-            eddTable.sosMinLat.getNiceDouble(0) + ", " +
-            eddTable.sosMaxLat.getNiceDouble(0) + " time=" +
-            eddTable.sosMinTime.getNiceDouble(0) + ", " +
-            eddTable.sosMaxTime.getNiceDouble(0));
-        String2.log(String2.toCSSVString(eddTable.sosObservedProperties()));       
-        */
- 
-        try {
-        userDapQuery = "&time<=2008-04-09T01:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
-            eddTable.datasetID() + "_Data", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        expected =
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
-"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:00:00Z,1128.3,73.2,9.0,0.06,0.16,97.8,71.1,38.4,6.0,10.0,5.0,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:20:00Z,1138.2,76.5,9.0,0.06,0.16,99.0,74.8,37.5,6.0,9.0,5.0,148.5,156.9,147.2,9.6,3.1,0,0,0,0,0\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:40:00Z,1147.0,75.0,10.0,0.06,0.12,103.4,79.4,38.6,6.0,10.0,5.0,154.6,160.2,150.3,9.6,3.1,0,0,0,0,0\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T01:00:00Z,1154.1,81.0,10.0,0.06,0.12,109.5,87.4,41.0,6.0,10.0,5.0,156.5,159.0,155.7,9.6,3.1,0,0,0,0,0\n";
-        Test.ensureEqual(results, expected, results);
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Small changes are common. The WHOI SOS Server is in flux.\n" +
-                "2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).", t);
-        }
-
-
-        try {
-        //there was a problem with 2 rows have different data for same L,L,A,T,ID
-        //2013-03-05 I used this to find the problem times. See emails to Janet Fredericks (now retired).
-        userDapQuery = "&time>2009-09-01&time<2009-10";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
-            eddTable.datasetID() + "_Data2", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        expected =
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
-"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T16:07:58Z,1027.3,58.1,8.0,0.06,0.17,100.0,46.4,19.6,19.0,10.0,5.0,153.1,165.1,151.0,8.6,3.1,1,0,0,0,1\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T22:27:58Z,1097.8,47.7,8.0,0.06,0.2,55.0,40.3,24.9,7.0,9.0,5.0,151.3,166.1,137.6,9.6,NaN,1,0,0,0,1\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T23:09:15Z,1103.0,41.9,8.0,0.06,0.2,50.6,35.2,23.8,7.0,10.0,5.0,155.6,165.0,140.9,9.6,1.1,1,0,0,0,1";
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Small changes are common. The WHOI SOS Server is in flux.\n" + 
-                "2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).", t);
-        }
-
-
-        try {
-        //data for mapExample  (no time)  just uses station table data
-        tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&distinct()", 
-            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapNT", ".csv");
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        //String2.log(results);
-        expected = 
-"longitude,latitude\n" +
-"degrees_east,degrees_north\n" +
-"-70.5564,41.3366\n"; 
-       Test.ensureEqual(results, expected, "\nresults=\n" + results);  
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Small changes are common. The WHOI SOS Server is in flux.\n" +
-                "2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).", t);
-        }
-
-
-        try {
-        //data for mapExample (with time
-        tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&time=2010-12-11", 
-            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWT", ".csv");
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        //String2.log(results);
-        expected = 
-"longitude,latitude\n" +
-"degrees_east,degrees_north\n" +
-"-70.5564,41.3366\n"; 
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Small changes are common. The WHOI SOS Server is in flux.\n" +
-                "2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).", t);
-        }
-
-
-        try {
-        //data for all variables 
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&longitude=-70.5564&time=2010-12-11", 
-            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWTAV", ".csv");
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        //String2.log(results);
-        expected = 
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
-"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
-"-70.5564,41.3366,ADCP_DATA,0.0,2010-12-11T00:00:00Z,1057.2,32.8,11.0,0.06,0.16,47.3,38.8,16.3,9.0,12.0,5.0,167.0,165.4,178.3,9.1,3.1,0,0,0,0,0\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
-
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Small changes are common. The WHOI SOS Server is in flux.\n" +
-                "2020-01-16 This used to work. Now, the XML from the server is malformed. I emailed Janet Fredericks (now retired).", t);
-        } finally {
-            EDStatic.sosActive = oSosActive;
-            debugMode = oDebugMode;
-            testQuickRestart = oTestQuickRestart;
-        }
-    }
-
-    /**
      * This tests that ensureValid throws exception if 2  
      * dataVariables use the same sourceName.
      * These tests are in EDDTableFromSOS because EDDTableFromFiles has a separate test.
@@ -9194,7 +9052,6 @@ expected =
                     //2015-11 Wind no longer works. mismatch between station observedProperties and allowed observedProperties -- see getCapabilities
                     //  2015-12-11 I emailed Andrea Hardy
                     // if (test == 29 && doSlowTestsToo) testNosSosWind("");  
-                    if (test == 30 && doSlowTestsToo) testWhoiSos();        
                     //if (test == 31 && doSlowTestsToo) testGcoos52N(useCachedInfo);   not finished
 
                

@@ -603,8 +603,10 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
         String fileDir = EDStatic.unitTestDataDir + "unsigned/";
         String fileName = "9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc";
-        boolean oDebugMode = NcHelper.debugMode;
+        boolean oNcDebugMode = NcHelper.debugMode;
         NcHelper.debugMode = true;
+        boolean oAttDebugMode = Attributes.debugMode;
+        Attributes.debugMode = true;
 
         //DumpString
         results = NcHelper.ncdump(fileDir + fileName, "-h");
@@ -728,10 +730,232 @@ expected =
 "}\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //one time
-        if (false)
-            String2.log(generateDatasetsXml(fileDir, fileName, fileDir + fileName,
-                "", DEFAULT_RELOAD_EVERY_N_MINUTES, null, null));        
+        //generateDatasetsXml
+        results = generateDatasetsXml(fileDir, fileName, "", "", -1, "", null);
+        expected = 
+"<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"unsigned_55f5_4ca9_09f2\" active=\"true\">\n" + //same id as EDDGridFromNcFiles !!!
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/erddapTest/unsigned/</fileDir>\n" +
+"    <fileNameRegex>9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"Conventions\">CF-1.0</att>\n" +
+"        <att name=\"Data_Bins\" type=\"int\">14234182</att>\n" +
+"        <att name=\"Data_Maximum\" type=\"float\">36.915</att>\n" +
+"        <att name=\"Data_Minimum\" type=\"float\">-1.999999</att>\n" +
+"        <att name=\"Easternmost_Longitude\" type=\"float\">180.0</att>\n" +
+"        <att name=\"End_Day\" type=\"short\">271</att>\n" +
+"        <att name=\"End_Millisec\" type=\"int\">10806395</att>\n" +
+"        <att name=\"End_Orbit\" type=\"int\">0</att>\n" +
+"        <att name=\"End_Time\">2009271030006395</att>\n" +
+"        <att name=\"End_Year\" type=\"short\">2009</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">89.95833587646484</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">-89.95833587646484</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">-134.04165649414062</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-136.04165649414062</att>\n" +
+"        <att name=\"History\">Translated to CF-1.0 Conventions by Netcdf-Java CDM (NetcdfCFWriter)\n" +
+"Original Dataset = file:/usr/ftp/ncml/catalog_ncml/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml; Translation Date = Fri Oct 30 09:44:07 GMT-08:00 2015</att>\n" +
+"        <att name=\"Input_Files\">A20092652009272.L3b_8D_SST.main</att>\n" +
+"        <att name=\"Input_Parameters\">IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I</att>\n" +
+"        <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +
+"        <att name=\"L2_Flag_Names\">LAND,HISOLZ</att>\n" +
+"        <att name=\"Latitude_Step\" type=\"float\">0.083333336</att>\n" +
+"        <att name=\"Latitude_Units\">degrees North</att>\n" +
+"        <att name=\"Longitude_Step\" type=\"float\">0.083333336</att>\n" +
+"        <att name=\"Longitude_Units\">degrees East</att>\n" +
+"        <att name=\"Map_Projection\">Equidistant Cylindrical</att>\n" +
+"        <att name=\"Measure\">Mean</att>\n" +
+"        <att name=\"Northernmost_Latitude\" type=\"float\">90.0</att>\n" +
+"        <att name=\"Number_of_Columns\" type=\"int\">4320</att>\n" +
+"        <att name=\"Number_of_Lines\" type=\"int\">2160</att>\n" +
+"        <att name=\"Orbit\" type=\"int\">0</att>\n" +
+"        <att name=\"Parameter\">Sea Surface Temperature</att>\n" +
+"        <att name=\"Period_End_Day\" type=\"short\">270</att>\n" +
+"        <att name=\"Period_End_Year\" type=\"short\">2009</att>\n" +
+"        <att name=\"Period_Start_Day\" type=\"short\">265</att>\n" +
+"        <att name=\"Period_Start_Year\" type=\"short\">2009</att>\n" +
+"        <att name=\"Processing_Control\">smigen par=A20092652009272.L3m_8D_SST_9.param</att>\n" +
+"        <att name=\"Processing_Time\">2009282201111000</att>\n" +
+"        <att name=\"Product_Name\">A20092652009272.L3m_8D_SST_9</att>\n" +
+"        <att name=\"Product_Type\">8-day</att>\n" +
+"        <att name=\"Replacement_Flag\">ORIGINAL</att>\n" +
+"        <att name=\"Scaled_Data_Maximum\" type=\"float\">45.0</att>\n" +
+"        <att name=\"Scaled_Data_Minimum\" type=\"float\">-2.0</att>\n" +
+"        <att name=\"Scaling\">linear</att>\n" +
+"        <att name=\"Scaling_Equation\">(Slope*l3m_data) + Intercept = Parameter value</att>\n" +
+"        <att name=\"Sensor_Name\">MODISA</att>\n" +
+"        <att name=\"Slope\" type=\"float\">7.17185E-4</att>\n" +
+"        <att name=\"Software_Name\">smigen</att>\n" +
+"        <att name=\"Software_Version\">4.0</att>\n" +
+"        <att name=\"Southernmost_Latitude\" type=\"float\">-90.0</att>\n" +
+"        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
+"        <att name=\"Start_Day\" type=\"short\">265</att>\n" +
+"        <att name=\"Start_Millisec\" type=\"int\">8779</att>\n" +
+"        <att name=\"Start_Orbit\" type=\"int\">0</att>\n" +
+"        <att name=\"Start_Time\">2009265000008779</att>\n" +
+"        <att name=\"start_time\">00:00:00 UTC</att>\n" +
+"        <att name=\"Start_Year\" type=\"short\">2009</att>\n" +
+"        <att name=\"Station_Latitude\" type=\"float\">0.0</att>\n" +
+"        <att name=\"Station_Longitude\" type=\"float\">0.0</att>\n" +
+"        <att name=\"stop_date\">2015-03-06 UTC</att>\n" +
+"        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
+"        <att name=\"SW_Point_Latitude\" type=\"float\">-89.958336</att>\n" +
+"        <att name=\"SW_Point_Longitude\" type=\"float\">-179.95833</att>\n" +
+"        <att name=\"Title\">MODISA Level-3 Standard Mapped Image</att>\n" +
+"        <att name=\"Units\">deg-C</att>\n" +
+"        <att name=\"Westernmost_Longitude\" type=\"float\">-180.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Data_Bins\">null</att>\n" +
+"        <att name=\"Data_Maximum\">null</att>\n" +
+"        <att name=\"Data_Minimum\">null</att>\n" +
+"        <att name=\"Easternmost_Longitude\">null</att>\n" +
+"        <att name=\"End_Day\">null</att>\n" +
+"        <att name=\"End_Millisec\">null</att>\n" +
+"        <att name=\"End_Orbit\">null</att>\n" +
+"        <att name=\"End_Time\">null</att>\n" +
+"        <att name=\"End_Year\">null</att>\n" +
+"        <att name=\"History\">null</att>\n" +
+"        <att name=\"history\">Translated to CF-1.0 Conventions by Netcdf-Java CDM (NetcdfCFWriter)\n" +
+"Original Dataset = file:/usr/ftp/ncml/catalog_ncml/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml; Translation Date = Fri Oct 30 09:44:07 GMT-08:00 2015</att>\n" +
+"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"Input_Files\">null</att>\n" +
+"        <att name=\"institution\">???</att>\n" +
+"        <att name=\"Intercept\">null</att>\n" +
+"        <att name=\"keywords\">aqua, data, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modisa, ocean, oceans, quality, resolution, science, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"Latitude_Step\">null</att>\n" +
+"        <att name=\"Latitude_Units\">null</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"Longitude_Step\">null</att>\n" +
+"        <att name=\"Longitude_Units\">null</att>\n" +
+"        <att name=\"Northernmost_Latitude\">null</att>\n" +
+"        <att name=\"Number_of_Columns\">null</att>\n" +
+"        <att name=\"Number_of_Lines\">null</att>\n" +
+"        <att name=\"Orbit\">null</att>\n" +
+"        <att name=\"Parameter\">null</att>\n" +
+"        <att name=\"Period_End_Day\">null</att>\n" +
+"        <att name=\"Period_End_Year\">null</att>\n" +
+"        <att name=\"Period_Start_Day\">null</att>\n" +
+"        <att name=\"Period_Start_Year\">null</att>\n" +
+"        <att name=\"Scaling\">null</att>\n" +
+"        <att name=\"Scaling_Equation\">null</att>\n" +
+"        <att name=\"Slope\">null</att>\n" +
+"        <att name=\"Southernmost_Latitude\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"start_date\">null</att>\n" +
+"        <att name=\"Start_Day\">null</att>\n" +
+"        <att name=\"Start_Millisec\">null</att>\n" +
+"        <att name=\"Start_Orbit\">null</att>\n" +
+"        <att name=\"Start_Time\">null</att>\n" +
+"        <att name=\"start_time\">null</att>\n" +
+"        <att name=\"Start_Year\">null</att>\n" +
+"        <att name=\"Station_Latitude\">null</att>\n" +
+"        <att name=\"Station_Longitude\">null</att>\n" +
+"        <att name=\"stop_date\">null</att>\n" +
+"        <att name=\"stop_time\">null</att>\n" +
+"        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image</att>\n" +
+"        <att name=\"SW_Point_Latitude\">null</att>\n" +
+"        <att name=\"SW_Point_Longitude\">null</att>\n" +
+"        <att name=\"Title\">null</att>\n" +
+"        <att name=\"title\">MODISA L3 SMI,</att>\n" +
+"        <att name=\"Units\">null</att>\n" +
+"        <att name=\"Westernmost_Longitude\">null</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Time</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +  //correct based on what is in the file, but needs to be Number_of_Lines
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +  //correct based on what is in the file, but needs to be Number_of_Columns
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>l3m_data</sourceName>\n" +
+"        <destinationName>sst</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
+"            <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +
+"            <att name=\"long_name\">l3m_data</att>\n" +
+"            <att name=\"Scaling\">linear</att>\n" +
+"            <att name=\"Scaling_Equation\">(Slope*l3m_data) + Intercept = Parameter value</att>\n" +
+"            <att name=\"Slope\" type=\"float\">7.17185E-4</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"Intercept\">null</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
+"            <att name=\"Scaling\">null</att>\n" +
+"            <att name=\"Scaling_Equation\">null</att>\n" +
+"            <att name=\"Slope\">null</att>\n" +
+"            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
+"            <att name=\"units\">deg_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>l3m_qual</sourceName>\n" +
+"        <destinationName>sst_quality</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
+"            <att name=\"long_name\">l3m_qual</att>\n" +
+"            <att name=\"valid_range\" type=\"float\">-2.0 -1.9985657</att>\n" + //crazy result of erroneous scale_factor and add_offset
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Sea Surface Temperature Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
 
         //ensure files are reread
         File2.deleteAllFiles(datasetDir("testUInt16FileUnpacked"));
@@ -885,14 +1109,14 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv data values
-        userDapQuery = "sst[0][0:100:2159][(-134.95833513)]"; 
+        userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_qual[0][0:100:2159][(-134.95833513)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
-"time,latitude,longitude,sst\n" +
+"time,latitude,longitude,sst,\n" +
 "UTC,degrees_north,degrees_east,deg_C\n" +
 "2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905\n" +
 "2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044\n" +
@@ -925,7 +1149,8 @@ expected =
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        NcHelper.debugMode = oDebugMode;
+        NcHelper.debugMode = oNcDebugMode;
+        Attributes.debugMode = oAttDebugMode;
     }
 
     /**
@@ -1374,11 +1599,11 @@ NcHelper.debugMode = true;
 
             //palette as unsigned byte
             pa = NcHelper.getPrimitiveArray(
-                var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
-            Test.ensureEqual(pa.elementTypeString(), "byte", "");
+                var.read(new int[]{0,0}, new int[]{1, 10}), true, NcHelper.isUnsigned(var)); //origin, shape
+            Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
             results = pa.toString();
             expected = 
-    "-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
+    "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //palette ubyte
@@ -1430,7 +1655,7 @@ NcHelper.debugMode = true;
 
             //poc as packed values (shorts)
             pa = NcHelper.getPrimitiveArray(   
-                var.read(new Section("(0:4100:1000,0:8100:1000)"))); //start:end:stride 
+                var.read(new Section("(0:4100:1000,0:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride 
             Test.ensureEqual(pa.elementTypeString(), "float", "");
             results = pa.toString();
             expected = 
@@ -1546,11 +1771,11 @@ NcHelper.debugMode = true;
 
         //palette as unsigned byte
         pa = NcHelper.getPrimitiveArray(
-            var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
-        Test.ensureEqual(pa.elementTypeString(), "byte", "");
+            var.read(new int[]{0,0}, new int[]{1, 10}), true, NcHelper.isUnsigned(var)); //origin, shape
+        Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
         results = pa.toString();
         expected = 
-"-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
+"147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette ubyte
@@ -1602,7 +1827,7 @@ NcHelper.debugMode = true;
 
         //poc as packed values (shorts)
         pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
-            var.read(new Section("(70:4100:1000,70:8100:1000)"))); //start:end:stride 
+            var.read(new Section("(70:4100:1000,70:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride 
         Test.ensureEqual(pa.elementTypeString(), "short", "");
         results = pa.toString();
         expected = 

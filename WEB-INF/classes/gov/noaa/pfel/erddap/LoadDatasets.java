@@ -694,6 +694,17 @@ public class LoadDatasets extends Thread {
                         "&erddapVersion;", EDStatic.erddapVersion);
                     String2.log("endBodyHtml5 was set.");
 
+                } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
+                    EDStatic.convertInterpolateRequestCSVExample = xmlReader.content();
+                    String2.log("convertInterpolateRequestCSVExample=" + xmlReader.content());
+
+                } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
+                    String sar[] = StringArray.arrayFromCSV(xmlReader.content());
+                    EDStatic.convertInterpolateDatasetIDVariableList = sar;
+                    String2.log("convertInterpolateDatasetIDVariableList=" + String2.toCSVString(sar));
+
                 } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
                 } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
                     int tnt = String2.parseInt(xmlReader.content());

@@ -986,10 +986,11 @@ public class HtmlWidgets {
      * @param imgUrl is the URL of the downArrow image
      * @param options One of the options can be "".
      * @param other Other attributes for the textField (usually "")
+     * @param onChange the onChange parameter for the options (use null for the standard value).
      */    
     public String comboBox(String formName, String name, String tooltip, 
         int fieldLength, int maxLength,
-        String initialTextValue, String options[], String other) {
+        String initialTextValue, String options[], String other, String onChange) {
 
         StringBuilder sb = new StringBuilder();
         int nOptions = options.length;
@@ -1009,8 +1010,11 @@ public class HtmlWidgets {
                 options, -1, 
 //!!! This javascript is identical to other places (except within popup).
 //It works in all browsers except MS Edge (item is selected, but value not copied to 'name' textfield).
-                "\n  onChange=\"document." + formName + "." + name + 
-                    ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n")));  //
+                "\n  " + 
+                (onChange == null? 
+                    "onChange=\"document." + formName + "." + name + 
+                    ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n" :
+                    onChange))));  
         sb.append("</span>");
 
 /*
@@ -2011,7 +2015,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             "<input type=\"password\" name=\"mypassword\" autocomplete=\"off\">\n" +
             "<br>ComboBox: " + 
             widgets.comboBox(formName, "myComboBox", "My comboBox tooltip", 25, 255,
-                "myInitialValue", new String[]{"", "able", "baker", "charlie"}, "") + //other
+                "myInitialValue", new String[]{"", "able", "baker", "charlie"}, "", null) + //other
             "<br>TextField1: \n" + 
             widgets.textField("textFieldName1", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, 
                 "initialValue<script>prompt(123)</script>", "") +

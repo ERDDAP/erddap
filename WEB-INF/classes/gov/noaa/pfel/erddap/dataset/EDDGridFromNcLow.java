@@ -315,15 +315,18 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     String tSel = selection;
                     if (edv.sourceDataPAType() == PAType.STRING) 
                         tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
-                    paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel));
-                    //2020-02-27 netcdf-java 5.2.0 has bug: when var isUnsigned,
-                    //  array returned by var.read isn't unsigned.
+                    paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel), true, NcHelper.isUnsigned(var));
+                    //2020-02-27 WARNING: in netcdf-java 5+, when reading nc3 file,
+                    //  variable with _Unsigned="true" behaves in raw way
+                    /* 
                     String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + edv.sourceName() + 
                         " sourceDataPAType()=" + edv.sourceDataPAType() +
-                        " var.getDataType()=" + var.getDataType() +
-                        " var._Unsigned=" + var.getDataType().isUnsigned() +
+                        " var.getDataType()=" + var.getDataType() +                //returns raw (signed) dataType
+                        " dataType.isUnsigned=" + var.getDataType().isUnsigned() + //returns false
+                        " pa.elementType()=" + paa[dvi].elementType() + 
                         " pa.isUnsigned=" + paa[dvi].isUnsigned() );
-                        //    "[" + selection + "]\n" + paa[dvi].toString());
+                        //    "[" + selection + "]\n" + paa[dvi].toString());  
+                    /* */
 
                     if (unpack()) 
                         paa[dvi] = NcHelper.unpackPA(var, paa[dvi], 
@@ -448,6 +451,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     useDims.add(ncFile.findDimension(axisVars.get(avi)));
             } else {
                 Variable maxDVariables[] = NcHelper.findMaxDVariables(ncFile);
+                if (maxDVariables == null || maxDVariables.length == 0)
+                    throw new RuntimeException(String2.ERROR + 
+                        ": NcHelper.findMaxDVariables didn't find any variables with dimensions!");
                 useDims = maxDVariables[0].getDimensions(); //what is getDimensionsAll()?               
             }
             int nUseDims = useDims.size();
