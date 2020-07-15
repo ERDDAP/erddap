@@ -53,7 +53,7 @@ public class EDV {
      * These are the standardized variable names, long names, CF standard names, 
      * and units for the lon, lat, alt, and time axes in the results. 
      * These names match the CF standard names
-     * (see http://cfconventions.org/standard-names.html).
+     * (see https://cfconventions.org/standard-names.html).
      */
     public final static String
         LON_NAME  = "longitude", LON_LONGNAME  = "Longitude", LON_STANDARD_NAME  = "longitude", LON_UNITS  = "degrees_east",        

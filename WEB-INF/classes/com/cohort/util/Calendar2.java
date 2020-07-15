@@ -66,7 +66,7 @@ import java.time.ZoneOffset;
  * http://www.cl.cam.ac.uk/~mgk25/iso-time.html 
  * https://en.wikipedia.org/wiki/ISO_8601
  * and http://dotat.at/tmp/ISO_8601-2004_E.pdf 
- * (was http://www.iso.org/iso/date_and_time_format)
+ * (was https://www.iso.org/iso/date_and_time_format)
  * and years B.C at http://www.tondering.dk/claus/cal/node4.html#SECTION00450000000000000000
  *
  * <p>Calendar2 does not use ERA designations. It uses negative year values for B.C years

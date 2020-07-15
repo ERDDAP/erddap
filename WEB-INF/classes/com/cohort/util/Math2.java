@@ -2229,6 +2229,17 @@ public class Math2 {
         return bdar;
     }
 
+    /** 
+     * This returns the d*d.
+     *
+     * @param d a double value
+     * @return d*d.
+     */
+    public static double sqr(double d) {
+        return d*d;
+    }
+    
+
 
 
 } //End of Math2 class.

@@ -1490,7 +1490,7 @@ String expected =
      * Your S3 credentials must be in 
      * <br> ~/.aws/credentials on Linux, OS X, or Unix
      * <br> C:\Users\USERNAME\.aws\credentials on Windows
-     * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
+     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
      */
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
@@ -2035,7 +2035,7 @@ String expected =
      * Your S3 credentials must be in 
      * <br> ~/.aws/credentials on Linux, OS X, or Unix
      * <br> C:\Users\USERNAME\.aws\credentials on Windows
-     * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
+     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
      */
     public static void testAwsS3() throws Throwable {
         String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
@@ -2614,7 +2614,7 @@ String expected =
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-05-13T17:49:06Z,32357.0,.html\n" + //changes sometimes
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-05-29T14:31:57Z,32357.0,.html\n" + //changes sometimes
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +

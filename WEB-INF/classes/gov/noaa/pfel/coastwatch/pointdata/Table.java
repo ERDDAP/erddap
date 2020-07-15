@@ -2397,6 +2397,7 @@ public class Table  {
 
         //determine column separator
         //look for separator that appears the most and on in 3 test lines
+//FUTURE also look for separator that appears the same number of times on the 3 test lines.
         String oneLine;
         char colSeparator = ',';
         if (tColSeparator == null || tColSeparator.length() == 0) {
@@ -6468,7 +6469,7 @@ Dataset {
                 Variable var = (Variable)rootGroupVariables.get(v);
                 boolean isChar = var.getDataType() == DataType.CHAR;
                 if (var.getRank() + (isChar? -1 : 0) == 0) {
-                    PrimitiveArray pa = NcHelper.getPrimitiveArray(var.read());                    
+                    PrimitiveArray pa = NcHelper.getPrimitiveArray(var);                    
                     //unpack is done at end of method
                     //nc allows strings to be 0-terminated or padded with spaces, so always trimEnd
                     if (pa instanceof StringArray) 
@@ -7054,7 +7055,7 @@ Dataset {
                         continue;
 
                     //read it
-                    PrimitiveArray pa = NcHelper.getPrimitiveArray(var.read());                    
+                    PrimitiveArray pa = NcHelper.getPrimitiveArray(var);                    
                     //nc allows strings to be 0-terminated or padded with spaces, so always trimEnd
                     if (pa instanceof StringArray) 
                         pa.setString(0, String2.trimEnd(pa.getString(0)));
@@ -24402,7 +24403,7 @@ String2.log(table.dataToString());
      *
      * <p>netcdf files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+     * <a href="https://www.unidata.ucar.edu/software/netcdf-java/"
      * >NetCDF Java Library</a>
      * renamed as netcdf-latest.jar.
      * Put it in the classpath for the compiler and for Java.

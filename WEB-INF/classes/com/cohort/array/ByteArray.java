@@ -1335,7 +1335,7 @@ public class ByteArray extends PrimitiveArray {
      * This writes array[index] to a randomAccessFile at the current position.
      *
      * @param raf the RandomAccessFile
-     * @param index
+     * @param index the index of the item to be written
      * @throws Exception if trouble
      */
     public void writeToRAF(RandomAccessFile raf, int index) throws Exception {

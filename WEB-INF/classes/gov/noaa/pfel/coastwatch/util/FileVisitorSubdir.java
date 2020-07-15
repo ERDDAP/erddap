@@ -323,7 +323,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      * Your S3 credentials must be in 
      * <br> ~/.aws/credentials on Linux, OS X, or Unix
      * <br> C:\Users\USERNAME\.aws\credentials on Windows
-     * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
+     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
      */
     public static void testAWSS3() throws Throwable {
         String2.log("\n*** FileVisitorSubdir.testAWSS3");

@@ -103,7 +103,7 @@ public class GridDataRandomAccessor {
     }
 
     /**
-     * Call this after increment() to get a data value (as a PAOne) 
+     * Call this to get the specified (current) data value (as a PAOne) 
      * from the specified dataVariable.
      *
      * @param current  from gridDataAccessor.totalIndex().getCurrent() (or compatible),

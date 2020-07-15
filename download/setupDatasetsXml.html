@@ -26,7 +26,7 @@
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
       href="https://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark"
-      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
@@ -94,6 +94,8 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
 <li><a rel="help" href="#details">Details</a> (Read as needed)
   <ul>
   <li><a rel="help" href="#cacheMinutes"><kbd>&lt;cacheMinutes&gt;</kbd></a>
+  <li><a rel="help" href="#convertInterpolateDatasetIDVariableExample"><kbd>&lt;convertInterpolateDatasetIDVariableExample&gt;</kbd></a>
+  <li><a rel="help" href="#convertInterpolateDatasetIDVariableList"><kbd>&lt;convertInterpolateDatasetIDVariableList&gt;</kbd></a>
   <li><a rel="help" href="#convertToPublicSourceUrl"><kbd>&lt;convertToPublicSourceUrl&gt;</kbd></a>
   <li><a rel="help" href="#drawLandMask"><kbd>&lt;drawLandMask&gt;</kbd></a>
   <li><a rel="help" href="#graphBackgroundColor"><kbd>&lt;graphBackgroundColor&gt;</kbd></a>
@@ -244,7 +246,7 @@ dataset in datasets.xml.
     Instead, when someone tells you they want to have their data served by your ERDDAP,
     you can send them an email saying something like:
 <br><kbd>Yes, we can get your data into ERDDAP. To get started, 
-please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
+please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html (or http:// if https:// isn't enabled).
 <br>After you finish, I'll contact you to work out the final details.
 </kbd>
     <br>If you just want to look at the form (without filling it out),
@@ -267,7 +269,7 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
     <br>in your setup.xml file.
 
     <p>The impetus for this was NOAA's 2014 <a rel="help"
-    href="https://docs.lib.noaa.gov/noaa_documents/NOAA_Research_Council/NOAA_PARR_Plan_v5.04.pdf"
+    href="https://www.glerl.noaa.gov/review2016/reviewer_docs/NOAA_PARR_Plan_v5.04.pdf"
     >Public Access to Research Results (PARR) directive<img 
       src="../images/external.png" alt=" (external link)" 
       title="This is a link to an external website."/></a>,
@@ -373,6 +375,16 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
         see the documentation for the EDDType that you specified 
         by clicking on the same dataset type in the
         <a rel="help" href="#datasetTypes">List of Dataset Types</a>.
+
+        <p>If you need to enter a string with special characters (e.g., 
+        whitespace characters at the beginning or end, non-ASCII characters),
+        enter a 
+        <a rel="help" href="https://www.json.org/json-en.html" >JSON-style string<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+        (with special characters escaped with \ characters). 
+        For example, to enter just tab character, enter "\t" (with the surrounding double quotes,
+        which tell ERDDAP that this is JSON-style string.
 
       <li>Often, one of your answers won't be what GenerateDatasetsXml needs.
         You can then try again, with revised answers to the questions, 
@@ -505,7 +517,10 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
         <p>Details:
         <ul>
         <li>If a parameter contains a space or some special character, then encode the
-          parameter as a JSON-style string, e.g., 
+          parameter as a 
+          <a rel="help" href="https://www.json.org/json-en.html" >JSON-style string<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>, e.g., 
           <kbd>"my parameter with spaces and two\nlines"</kbd>.
         <li>If you want to specify an empty string as a parameter, use: <kbd>nothing</kbd>
         <li>If you want to specify the default value of a parameter, use: <kbd>default</kbd>
@@ -584,7 +599,7 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
           <li>Make sure the URL you are using is valid, includes <kbd>/catalog/</kbd>,
             and ends with /catalog.xml .
           <li>If possible, use a public IP address (for example, https://oceanwatch.pfeg.noaa.gov)
-            in the URL, not a local numeric IP address (for example, http://12.34.56.78).
+            in the URL, not a local numeric IP address (for example, https://12.34.56.78).
             If the THREDDS is only accessible via the local numeric IP address, you can use
             <a rel="help" href="#convertToPublicSourceUrl"><kbd>&lt;convertToPublicSourceUrl&gt;</kbd></a>
             so ERDDAP users see the public address, even though ERDDAP gets data from the 
@@ -788,7 +803,7 @@ please fill out the form at http://<i>yourUrl</i>/erddap/dataProviderForm.html .
         <li>ERDDAP is listed as one of the data servers recommended for use within NOAA
            in the
         <a rel="bookmark" 
-href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA Data Access Procedural Directive<img 
+href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA Data Access Procedural Directive<img 
   src="../images/external.png" alt=" (external link)" 
   title="This is a link to an external website."/></a>, 
           unlike some other software being considered.
@@ -862,7 +877,7 @@ href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recomm
         href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#fileType_dds"
         >.dds (Dataset Descriptor Structure)</a>, and 
         <a rel="help" 
-        href="https://coastwatch.pfeg.noaa.gov/erddap/download/documentation.html#timeGaps"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps"
         >.timeGaps (time gaps)</a>         
          information for the dataset on your screen and write them to 
          <i>bigParentDirectory</i>/logs/DasDds.out .
@@ -883,6 +898,8 @@ href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recomm
   <a rel="help" href="#angularDegreeTrueUnits">&lt;angularDegreeTrueUnits&gt;</a>...&lt;/angularDegreeTrueUnits&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#cacheMinutes">&lt;cacheMinutes&gt;</a>...&lt;/cacheMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#commonStandardNames">&lt;commonStandardNames&gt;</a>...&lt;/commonStandardNames&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#convertInterpolateDatasetIDVariableExample">&lt;convertInterpolateDatasetIDVariableExample /&gt;</a> &lt;!-- 0 or more --&gt;
+  <a rel="help" href="#convertInterpolateDatasetIDVariableList">&lt;convertInterpolateDatasetIDVariableList /&gt;</a> &lt;!-- 0 or more --&gt;
   <a rel="help" href="#convertToPublicSourceUrl">&lt;convertToPublicSourceUrl /&gt;</a> &lt;!-- 0 or more --&gt;
   <a rel="help" href="#decompressedCacheMaxGB">&lt;decompressedCacheMaxGB&gt;</a>...&lt;/decompressedCacheMaxGB&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#decompressedCacheMaxMinutesOld">&lt;decompressedCacheMaxMinutesOld&gt;</a>...&lt;/decompressedCacheMaxMinutesOld&gt; &lt;!-- 0 or 1 --&gt;
@@ -992,7 +1009,7 @@ Usually this works fine. Some exceptions are:
       For tabular data, consider storing the data in a collection of 
       .nc files that use the 
       <a rel="help"
-      href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+      href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
       >CF Discrete Sampling Geometries (DSG)<img 
           src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -1808,7 +1825,7 @@ to view the contents of a public bucket.
   The NcML files MUST have the extension .ncml.
   See the 
   <a rel="help" 
-  href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/"
+  href="https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html"
   >Unidata NcML documentation<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -2062,7 +2079,7 @@ currently recommend
   Prior to ERDDAP version 1.62 (released in June 2015),
   ERDDAP used/recommended the original, version 1.0,
   of the <a rel="bookmark" 
-  href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html">NetCDF Attribute Convention for Dataset Discovery</a>
+  href="https://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html">NetCDF Attribute Convention for Dataset Discovery</a>
   which was referred to as "Unidata Dataset Discovery v1.0" in the
   global Conventions and Metadata_Conventions attributes.
   
@@ -2090,7 +2107,7 @@ currently recommend
     please change the format of the value to, for example, 
     <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v65&lt;/att&gt;</kbd>
     <br>If the reference is to an older version of the 
-    <a rel="help" href="http://cfconventions.org/standard-names.html">CF standard name table<img 
+    <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard name table<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
     it is probably a good idea to switch to the current version (65, as we write this),
@@ -2193,7 +2210,7 @@ currently recommend
     In all EDDGrid datasets, each dimension MUST be in sorted order (ascending or descending). 
     Each can be irregularly spaced. There can be no ties.
     This is a requirement of the
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
     >CF metadata standard<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -2337,7 +2354,7 @@ currently recommend
       <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
         aggregates data from NetCDF (v3 or v4) .nc files which use one of the 
         file formats specified by the 
-        <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
+        <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
         conventions. 
@@ -2403,7 +2420,7 @@ currently recommend
    The values for each dimension MUST be in sorted order (ascending or descending). 
    The values can be irregularly spaced. There can be no ties.
    This is a requirement of the
-   <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+   <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
     >CF metadata standard<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -2559,7 +2576,7 @@ currently recommend
   of axis values in the grid. For integer data types, it is easy to determine if 
   two values are equal. But for floats and
   doubles, this brings up the horrible problem of floating point numbers 
-  <a rel="help" href="http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">not matching exactly<img 
+  <a rel="help" href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">not matching exactly<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
   (for example, 0.2 versus 0.199999999999996). 
@@ -2991,7 +3008,7 @@ Instead, use a subclass of EDDGridFromFiles to handle the specific file type:
    <li><a rel="help" href="#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
      handles data from gridded 
       <a rel="help"
-      href="http://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR
+      href="https://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR
       .gz<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> files.
@@ -3428,7 +3445,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
    except for the first (left-most) dimension which must be ascending). 
    The values can be irregularly spaced. There can't be any ties.
    This is a requirement of the
-   <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+   <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
     >CF metadata standard<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -3485,7 +3502,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
   >Accessing</a> ERDDAP datasets as files via byte range requests -- 
   <br>Flipping this around, given that you can (in theory) think of a dataset 
   in ERDDAP as a giant .nc file by appending ".nc" to the base OPenDAP URL
-  for a given dataset (e.g., http://myserver.org/erddap/griddap/datasetID.nc
+  for a given dataset (e.g., https://myserver.org/erddap/griddap/datasetID.nc
   and also by adding a ?query after that to specify a subset),
   it is perhaps reasonable to ask whether you can use netcdf-java, Ferret, or some other 
   NetCDF client software to read data via HTTP Range Requests from ERDDAP.
@@ -3817,7 +3834,7 @@ for general information on how this class works and how to use this class.
 
 <p><a class="selfLink" id="EDDGridFromMergeIRFiles" href="#EDDGridFromMergeIRFiles" rel="bookmark"><strong>EDDGridFromMergeIRFiles</strong></a> aggregates data 
   from local, <a rel="help"
-  href="http://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR<img
+  href="https://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR<img
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
   files, which are from the 
@@ -4158,7 +4175,7 @@ dimension and another child might have 365 values (for 2005) for the time dimens
    The values for each dimension MUST be in sorted order (ascending or descending). 
    The values can be irregularly spaced. There can be no ties.
    This is a requirement of the
-   <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+   <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
     >CF metadata standard<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -4210,7 +4227,7 @@ dimension and another child might have 365 values (for 2005) for the time dimens
     ascending values for the aggregated dimension. --&gt;
   &lt;sourceUrls serverType="..." regex="..." recursive="true" 
     <a rel="help" href="#pathRegex">pathRegex</a>=".*"
-    &gt;http://<i>someServer/someDirectory/someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
+    &gt;https://<i>someServer/someDirectory/someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
     &lt;!-- 0 or 1. This specifies how to find the other children, 
     instead of using separate sourceUrl tags for each child.  The 
     advantage of this is: new children will be detected each time 
@@ -4241,8 +4258,8 @@ dimension and another child might have 365 values (for 2005) for the time dimens
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
     An example of a dodsindex URL is 
-    <a href="https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/ocean_mass/RL05/netcdf/contents.html"
-      >https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/ocean_mass/RL05/netcdf/contents.html<img 
+    <a href="https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/mascon/RL06/JPL/v02/CRI/netcdf/contents.html"
+      >https://opendap.jpl.nasa.gov/opendap/GeodeticsGravity/tellus/L3/mascon/RL06/JPL/v02/CRI/netcdf/contents.html<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
     (Note the "OPeNDAP logo at the top of the page.)
@@ -4359,7 +4376,7 @@ of another EDDGrid's data and serves data from the local copy.
   s/he can make a copy of the dataset and mail the hard drive back to you.
   Use that data as a starting point and EDDGridCopy will add data to it.
   (That is one way that 
-  <a rel="help" href="http://aws.amazon.com/importexport/">Amazon's EC2 Cloud Service<img 
+  <a rel="help" href="https://aws.amazon.com/importexport/">Amazon's EC2 Cloud Service<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
     handles the problem, even though their system
@@ -4519,7 +4536,7 @@ p><a class="selfLink" id="EDDTableFromBMDE" href="#EDDTableFromBMDE" rel="bookma
 <ul>
 <li>BMDE servers expect an XML request and return an XML response.
 <li>All BMDE servers return XML responses with the same variables, as specified in the 
-<a rel="help" href="http://akn.ornith.cornell.edu/Schemas/bmde/BMDE-Bandingv1.38.08.xsd">BMDE schema<img 
+<a rel="help" href="WAS http://akn.ornith.cornell.edu/Schemas/bmde/BMDE-Bandingv1.38.08.xsd">BMDE schema<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
   The BMDE schema defines 515 data variables(!), but most BMDE servers only return data in a few of the variables.
@@ -4553,7 +4570,14 @@ p><a class="selfLink" id="EDDTableFromBMDE" href="#EDDTableFromBMDE" rel="bookma
 </ul -->
 
 <p><a class="selfLink" id="EDDTableFromCassandra" href="#EDDTableFromCassandra" rel="bookmark"><strong>EDDTableFromCassandra</strong></a> 
-handles data from one Cassandra table.
+handles data from one 
+<a rel="help" 
+    href="https://cassandra.apache.org/">Cassandra<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+table.
+Cassandra is a NoSQL database.
+
 <!-- or <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">view<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>. -->
@@ -4586,7 +4610,7 @@ handles data from one Cassandra table.
      and DataStax Enterprise (3.1+).
      If you are using Apache Cassandra 1.2.x, you must edit the cassandra.yaml file for 
      each node to set <kbd>start_native_transport: true</kbd>, then restart each node.
-     <!-- http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/driverDependencies_r.html -->
+     <!-- https://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/driverDependencies_r.html -->
   <li>We strongly recommend using the
     <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
     to make a rough draft of the datasets.xml chunk for this dataset.
@@ -4634,7 +4658,7 @@ handles data from one Cassandra table.
     <br>(The defaults shown are what we see. Your system's defaults may be different.)
     <ul>
     <li><strong>General Options</strong>
-    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/ProtocolOptions.html -->
+    <!-- https://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/ProtocolOptions.html -->
     <br>&lt;connectionProperty 
     name="<strong>compression</strong>"&gt;<i>none|LZ4|snappy</i>&lt;/connectionProperty&gt;   (case-insensitive, default=none)
     <br>(General compression advice: use 'none' if the connection between 
@@ -4651,7 +4675,7 @@ handles data from one Cassandra table.
     you did it.)
 
     <li><strong>Query Options</strong>
-    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/QueryOptions.html -->
+    <!-- https://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/QueryOptions.html -->
     <br>&lt;connectionProperty 
     name="<strong>consistencyLevel</strong>"&gt;<i>all|any|each_quorum|local_one|local_quorum|
     local_serial|one|quorum|serial|three|two</i>&lt;/connectionProperty&gt;   (case-insensitive, default=ONE)
@@ -4663,7 +4687,7 @@ handles data from one Cassandra table.
     local_serial|one|quorum|serial|three|two</i>&lt;/connectionProperty&gt;   (case-insensitive, default=SERIAL)
 
     <li><strong>Socket Options</strong>
-    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/SocketOptions.html -->
+    <!-- https://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/SocketOptions.html -->
     <br>&lt;connectionProperty
     name="<strong>connectTimeoutMillis</strong>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;  (default=5000)
     <br>(Do not set connectTimeoutMillis to a smaller value.)
@@ -4845,7 +4869,7 @@ deviceid,date
   <li>WARNING: Cassandra indexes aren't like database indexes.
     Cassandra indexes only help with '=' constraints. 
     And they are only 
-    <a rel="help" href="http://www.datastax.com/docs/1.1/ddl/indexes">recommended<img 
+    <a rel="help" href="https://cassandra.apache.org/doc/latest/cql/indexes.html">recommended<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     for columns that have far fewer distinct values than total values.
@@ -4911,7 +4935,7 @@ deviceid,date
 <li><a class="selfLink" id="CassandraDataTypes" href="#CassandraDataTypes" rel="bookmark">Cassandra DataTypes</a> -- 
   Because there is some ambiguity about which
   <a rel="help" 
-  href="http://www.datastax.com/documentation/cql/3.0/cql/cql_reference/cql_data_types_c.html">Cassandra data types</a>
+  href="https://cassandra.apache.org/doc/latest/cql/types.html">Cassandra data types</a>
   map to which ERDDAP data types, you need to specify a 
   <a rel="help" href="#dataType"><kbd>&lt;dataType&gt;</kbd></a> tag
   for each <a rel="help" href="#dataVariable"><kbd>&lt;dataVariable&gt;</kbd></a>
@@ -5037,7 +5061,7 @@ deviceid,date
 
 <li><a class="selfLink" id="CassandraSecurity" href="#CassandraSecurity" rel="bookmark">Security</a> 
   <br>See <a rel="help" 
-  href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/security/secure_intro.html">
+  href="https://cassandra.apache.org/doc/latest/operating/security.html">
   Securing Cassandra</a>
 
   <p>When working with Cassandra, you need to do things as safely and securely as
@@ -5117,7 +5141,7 @@ deviceid,date
   <br>&nbsp;
 
   <li>Make <a rel="help"
-    href="http://www.datastax.com/documentation/cql/3.1/cql/ddl/ddl_when_use_index_c.html"
+    href="https://cassandra.apache.org/doc/latest/cql/indexes.html"
     >Indexes<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -5201,7 +5225,7 @@ deviceid,date
   <li>If all else fails, 
     <br>consider storing the data in a collection of NetCDF v3 .nc files 
     (especially .nc files that use the 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -5275,11 +5299,8 @@ EDDTableFromCassandra dataset is:</a>
   You can then edit that to fine tune it.
   You can gather the information you need 
   by looking at the source dataset's DDS and DAS files in your browser 
-  (by adding .das and .dds to the sourceUrl, for example, 
-  <a rel="help" href="http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.dds"
-  >http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.dds<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>).
+  (by adding .das and .dds to the sourceUrl
+  (an example was at https://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.dds ).
 <li>A variable is in a DAP sequence if the .dds response indicates that the data structure holding
   the variable is a "sequence" (case insensitive).
 <li>In some cases, you will see a sequence within a sequence, a 2-level sequence -- 
@@ -5585,7 +5606,7 @@ handles data from one relational database table or
   In ERDDAP, please always treat database column names as case sensitive.
   <ul>
   <li>For MariaDB, you need to run the database with 
-    <a rel="help" href="https://kb.askmonty.org/en/mysqld-options-full-list/">--sql-mode=ANSI_QUOTES<img 
+    <a rel="help" href="https://mariadb.com/kb/en/mysql-command-line-client/">--sql-mode=ANSI_QUOTES<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> . 
   <li>For MySQL and Amazon RDS, you need to run the database with
@@ -5816,7 +5837,7 @@ handles data from one relational database table or
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
     <br>MariaDB will respond much faster if you use
-    <a rel="help" href="https://kb.askmonty.org/en/optimize-table/">OPTIMIZE TABLE<img 
+    <a rel="help" href="https://mariadb.com/kb/en/optimize-table/">OPTIMIZE TABLE<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
     <br>PostgreSQL will respond much faster if you 
@@ -5877,7 +5898,7 @@ handles data from one relational database table or
   <li>If all else fails, 
     <br>consider storing the data in a collection of NetCDF v3 .nc files 
     (especially .nc files that use the 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -6076,12 +6097,12 @@ subclasses, this dataset type does not serve data from within the files.
       The files that are actually located in the server's file system
       in &lt;fileDir&gt; will appear in the url column of this dataset 
       within a virtual directory named
-      http://<i>serverUrl</i>/erddap/files/<i>datasetID/</i> .
+      https://<i>serverUrl</i>/erddap/files/<i>datasetID/</i> .
       <br>For example, if the datasetID is jplMURSST,
       <br>and the &lt;fileDir&gt; is /home/data/mur/ ,
       <br>and that directory has a file named jplMURSST20150103000000.png, 
       <br>then the URL that will be shown to users for that file will be
-      <br>http://<i>serverUrl</i>/erddap/jplMURSST/jplMURSST20150103000000.png .
+      <br>https://<i>serverUrl</i>/erddap/jplMURSST/jplMURSST20150103000000.png .
 
       <p>In addition to using a local directory for the &lt;fileDir&gt;,
       you can also specify the URL of a remote, directory-like web page.
@@ -6446,7 +6467,7 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
     aggregates data from NetCDF (v3 or v4) .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
     files which use one of the file formats specified by the 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -6476,7 +6497,7 @@ But it is usually relatively easy to add support for other file types. Contact u
 Or, if your data is in an old file format that you would like to move away from, 
 we recommend converting the files to be NetCDF v3 .nc files
 (and especially .nc files with the  
-<a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+<a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
 >CF Discrete Sampling Geometries (DSG)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> 
@@ -7007,7 +7028,7 @@ href="https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/"
     file for the current time period (e.g., this month) frequently 
     (every 10 minutes? every hour?).
     Requests to ERDDAP for .ncCF files create a NetCDF v3 .nc file that uses the 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -7220,7 +7241,11 @@ and you only need to modify one, small, new file to add the next month's worth o
             title="This link to an external website does not constitute an endorsement."></a>.)
   The regex may be specified as a string with or without surrounding quotes.
   If the regex is specified as a string with surrounding quotes,
-  the string must be JSON-encoded (with special characters escaped with \ characters).
+  the string must be 
+  <a rel="help" href="https://www.json.org/json-en.html" >JSON-style string<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+  (with special characters escaped with \ characters).
   The capture group number is usually 1 (the first capture group), but may be any number.
   <br>&nbsp;
 
@@ -7251,7 +7276,11 @@ and you only need to modify one, small, new file to add the next month's worth o
             title="This link to an external website does not constitute an endorsement."></a>.)
   The regex may be specified as a string with or without surrounding quotes.
   If the regex is specified as a string with surrounding quotes,
-  the string must be JSON-encoded (with special characters escaped with \ characters).
+  the string must be a
+  <a rel="help" href="https://www.json.org/json-en.html" >JSON-style string<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+  (with special characters escaped with \ characters).
   The capture group number is usually 1 (the first capture group), but may be any number.
   <br>&nbsp;
   </ul>
@@ -7340,13 +7369,11 @@ try to apply. The changes are the sum of some combination of:
    <li>Unpack packed attributes (e.g., actual_min, actual_max, actual_range, 
      data_min, data_max, data_range, valid_min, valid_max, valid_range), if present, if the variable was packed, and 
      if the attribute values were packed (this is tricky, but reasonably reliable).
-   <li>If _Unsigned=true, change the variable into a signed variable, 
-     e.g., unsigned bytes become signed shorts.
    <li>If _FillValue and/or missing_value are present, 
      convert those data values to ERDDAP's "standard" missing values:
      MAX_VALUE for integer types (e.g., 127 for bytes, 32,767 for short, and
      2,147,483,647 for ints, 9223372036854775807 for longs)
-     and NAN for doubles and floats.       
+     and NaN for doubles and floats.       
    <li>Remove the old _FillValue and/or missing_value attributes (if any),
       and replace them with just _FillValue=[the ERDDAP standard missing value].
       <br>&nbsp;
@@ -7759,7 +7786,8 @@ tags in the chunk of XML for this dataset:
 
 
 <!-- p><a class="selfLink" id="EDDTableFromMWFS" href="#EDDTableFromMWFS" rel="bookmark"><strong>EDDTableFromMWFS</strong></a> handles data from a 
-<a rel="help" href="http://csc-s-ial-p.csc.noaa.gov/DTL/DTLProjects/microwfs/microWFS.html">microWFS<img 
+<a rel="help" href="
+WAS    https://csc-s-ial-p.csc.noaa.gov/DTL/DTLProjects/microwfs/microWFS.html">microWFS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> source.
 <ul>
@@ -7852,10 +7880,8 @@ for the response. This lets users search for datasets of interest in very powerf
 
 
 <p><a class="selfLink" id="EDDTableFromAwsXmlFiles" href="#EDDTableFromAwsXmlFiles" rel="bookmark"><strong>EDDTableFromAwsXmlFiles</strong></a> aggregates data from
-  a set of Automatic Weather Station (AWS) XML data files. Some background information is at
-  <a rel="help" href="http://developer.weatherbug.com/docs/read/WeatherBug_Rest_XML_API">WeatherBug_Rest_XML_API<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>.
+  a set of Automatic Weather Station (AWS) XML data files using the 
+  WeatherBug Rest XML API (which is no longer active).
 <ul>
 <li>This type of file is a simple but inefficient way to store the data, 
   because each file usually seems to contain the observation from just one time point.  
@@ -7863,7 +7889,7 @@ for the response. This lets users search for datasets of interest in very powerf
   consider consolidating groups of observations (a week's worth?) 
   in NetCDF v3 .nc files
   (best: .nc files with the 
-  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) Contiguous Ragged Array format<img 
+  <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) Contiguous Ragged Array format<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
   and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
@@ -8236,7 +8262,7 @@ which uniquely identify a row of data.
 This should be as minimal as possible and will almost always include the time variable.
 For example, here are the recommended httpGetRequiredVariables for each of the 
 <a rel="help"
-  href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+  href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
   >CF Discrete Sampling Geometries (DSG)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
@@ -8822,7 +8848,7 @@ Simple file systems don't offer this. Relational databases don't. Cassandra does
 <br><a rel="help" href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">Hypertext Transfer Protocol (HTTP)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
-is the basis of the World Wide Web and the reason that web page URLs begin with "http://".
+is the basis of the World Wide Web and the reason that web page URLs begin with "http://" or "https://".
 HTTPS is HTTP with an additional security layer.
 Every day, browsers, scripts and computer programs make billions of HTTP(S)
 <strong>GET</strong> requests to get information from remote sources.
@@ -8857,7 +8883,7 @@ cumbersome approach given the way the tools have evolved.
 >Thanks to CHORDS for the basic idea.</a>
 <br>The basic idea for EDDTableFromHttpGet (i.e., using an HTTP GET request
 to add data to a dataset) is from UCAR's
-<a rel="help" href="https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services"
+<a rel="help" href="http://portal.chordsrt.com/about"
 >Cloud-Hosted Real-time Data Services (CHORDS)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> project.
@@ -9081,7 +9107,7 @@ on how this class works and how to use this class.
     variables or dimensions.
   <li>This class can remove blocks of rows with missing values as 
     specified for 
-    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#_incomplete_multidimensional_array_representation"
+    <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#_incomplete_multidimensional_array_representation"
     >CF Discrete Sampling Geometries (DSG) Incomplete Multidimensional Array files<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -9178,7 +9204,7 @@ variables:
   for information on how this class works and how to use this class.
 <ul>
 <li>If the .nc files use one of the  
-  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
+  <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
   file formats, try using 
@@ -9279,7 +9305,7 @@ variables:
   NetCDF (v3 or v4) .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
   files which use one of the file formats specified by the 
-  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+  <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -9353,15 +9379,13 @@ variables:
 
 
 <p><a class="selfLink" id="EDDTableFromOBIS" href="#EDDTableFromOBIS" rel="bookmark"><strong>EDDTableFromOBIS</strong></a> handles data from an
-<a rel="help" href="http://www.iobis.org">Ocean Biogeographic Information System (OBIS)<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a> server.
+Ocean Biogeographic Information System (OBIS) server (was http://www.iobis.org ).
+
+It is possible that there are no more active servers which use this now out-of-date type of OBIS server system.
 <ul>
 <li>OBIS servers expect an XML request and return an XML response.
 <li>Because all OBIS servers serve the same variables the same way
-  (see the <a rel="help" href="http://www.iobis.org/tech/provider/questions">OBIS schema<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>),
+  (was http://iobis.org/tech/provider/questions),
   you don't have to specify much to set up an OBIS dataset in ERDDAP.
 <li>You MUST include a "creator_email" attribute in the global addAttributes,
   since that information is used within the license.
@@ -9408,7 +9432,7 @@ variables:
 
 <p><a class="selfLink" id="EDDTableFromSOS" href="#EDDTableFromSOS" rel="bookmark"><strong>EDDTableFromSOS</strong></a> handles data from a
 Sensor Observation Service
-(SWE/<a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+(SWE/<a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>) server.
 <ul>
@@ -9437,7 +9461,7 @@ Sensor Observation Service
 <li>SOS overview:
     <ul>
     <li>SWE (Sensor Web Enablement) and SOS (Sensor Observation Service) are
-      <a rel="help" href="https://www.opengeospatial.org/standards">OpenGIS&reg; standards<img 
+      <a rel="help" href="https://www.ogc.org/standards">OpenGIS&reg; standards<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
       That website has the standards documents.
@@ -9846,10 +9870,8 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   The solution is to mail a hard drive to the administrator of the remote data set so that
   s/he can make a copy of the dataset and mail the hard drive back to you.
   Use that data as a starting point and EDDTableCopy will add data to it.
-  (That is how <a rel="help" href="http://aws.amazon.com/importexport/">Amazon's EC2 Cloud Service<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a> 
-  handles the problem, even though their system has lots of bandwidth.)
+  (That is how Amazon's EC2 Cloud Service used to handle the problem, 
+  even though their system has lots of bandwidth.)
 
   <p>WARNING: If a given combination of values disappears from remote dataset,
   EDDTableCopy does NOT delete the local copied file. If you want to, you can delete it yourself.
@@ -9983,7 +10005,7 @@ Here are detailed descriptions of common tags and attributes.
   ><kbd><strong>&lt;commonStandardNames&gt;</strong></kbd></a>
   is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml to specify
   a comma-separated list of common 
-  <a rel="help" href="http://cfconventions.org/standard-names.html">CF standard names<img 
+  <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard names<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
   E.g.,
@@ -10016,7 +10038,25 @@ Here are detailed descriptions of common tags and attributes.
   but discouraged.
   <br>&nbsp;
 
-<li><a class="selfLink" id="convertToPublicSourceUrl" href="#convertToPublicSourceUrl" rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
+
+<li><a class="selfLink" id="convertInterpolateRequestCSVExample" 
+                     href="#convertInterpolateRequestCSVExample" 
+rel="bookmark"><kbd><strong>&lt;convertInterpolateRequestCSVExample&gt;</strong></kbd></a>
+  is an OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml 
+  [starting with ERDDAP v2.10] which contains an
+  example which will be shown on the Interpolate converter's web page.
+  The default value is: jplMURSST41/analysed_sst/Bilinear/4 .
+
+<li><a class="selfLink" id="convertInterpolateDatasetIDVariableList" 
+                     href="#convertInterpolateDatasetIDVariableList" 
+rel="bookmark"><kbd><strong>&lt;convertInterpolateDatasetIDVariableList&gt;</strong></kbd></a>
+  is an OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml
+  [starting with ERDDAP v2.10] which contains a
+  CSV list of datasetID/variableName examples which will be used as suggestions 
+  by the Interpolate converter's web page. The default value is: jplMURSST41/analysed_sst .
+
+<li><a class="selfLink" id="convertToPublicSourceUrl" href="#convertToPublicSourceUrl" 
+rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   is an OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml which contains a
     "<kbd>from</kbd>" and a "<kbd>to</kbd>" attribute which specifies how to convert 
       a matching local sourceUrl (usually an IP number) into a public sourceUrl (a domain name).
@@ -10305,7 +10345,7 @@ Here are detailed descriptions of common tags and attributes.
     for example, malicious users.
     For example, you can block their access to everything on your server, not just ERDDAP.
     On Linux, one such method is to use <a rel="help"
-    href="https://www.linode.com/docs/security/firewalls/control-network-traffic-with-iptables"
+    href="https://www.linode.com/docs/security/firewalls/control-network-traffic-with-iptables/"
     >iptables<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -11145,14 +11185,14 @@ while processing each request.
       
       <p>As discussed above, very high nThreads settings may lead to faster responses 
       to some requests,
-      but the risk of overall descreased ERDDAP responsiveness and high memory
+      but the risk of overall decreased ERDDAP responsiveness and high memory
       use (as noted above) while those requests are being processed 
       means it generally isn't a good idea.
 
     <li><a class="selfLink" id="nThreadsCPUCores" href="#nThreadsCPUCores" rel="bookmark">CPU Cores</a>
       <br>You shouldn't ever set nThreads to a number larger than the number
       of CPU cores in the computer's CPU. 
-      Essentially all modern CPUs have multple cores (e.g., 2, 4, or 8).
+      Essentially all modern CPUs have multiple cores (e.g., 2, 4, or 8).
       Some computers even have multiple CPUs (e.g., 2 CPUs * 4 cores/CPU = 8 CPU cores).
       To find out how many CPUs and cores a computer has:
       <ul>
@@ -11178,7 +11218,7 @@ while processing each request.
       <li>When ERDDAP responds to a given request, other computing resources 
         (e.g., disk drive access, network bandwidth) may be limiting.
         The higher you set nThreads, the more likely that these other resources
-        will be maxxed out and will slow down ERDDAP's general responsiveness.
+        will be maxed out and will slow down ERDDAP's general responsiveness.
       <li>The operating system does things other than run ERDDAP.
       </ul>
       So it is best not to set the nThreads setting to more than the number
@@ -11235,7 +11275,8 @@ while processing each request.
   <li>Currently, for EDDTable subclasses, any reloading of the dataset is considered a change.
   <li>Currently, only two types of actions are allowed:
     <ul>
-    <li>http:// -- If the action starts with "http://", ERDDAP will send an HTTP GET request to the
+    <li>http:// or https:// -- If the action starts with "http://" or "https://",
+      ERDDAP will send an HTTP GET request to the
       specified URL. The response will be ignored.
       For example, the URL might tell some other web service to do something.
       <ul>
@@ -11272,9 +11313,9 @@ while processing each request.
         <li>Since datasets.xml is an XML file, you MUST also &amp;-encode ALL '&amp;', '&lt;', and '&gt;' in the
           URL as '&amp;amp;', '&amp;lt;', and '&amp;gt;' after percent encoding.          
       <li>Example: For a URL that you might type into a browser as:
-        <br><kbd>http://www.company.com/webService?department=R%26D&amp;param2=value2</kbd> 
+        <br><kbd>https://www.company.com/webService?department=R%26D&amp;param2=value2</kbd> 
         <br>You should specify an <kbd>&lt;onChange&gt;</kbd> tag via (on one line)
-        <br><kbd>&lt;onChange&gt;http://www.company.com/webService?department=R%26D&amp;amp;param2=value2&lt;/onChange&gt;</kbd> 
+        <br><kbd>&lt;onChange&gt;https://www.company.com/webService?department=R%26D&amp;amp;param2=value2&lt;/onChange&gt;</kbd> 
       </ul>
     <li>mailto: -- If the action starts with "mailto:", ERDDAP will send an email to the subsequent
       email address indicating that the dataset has been updated/changed.
@@ -11603,7 +11644,7 @@ while processing each request.
     with floating point numbers.
     For example, a search for <kbd>longitude=220.2</kbd> may fail if the value is stored as 220.20000000000001.
   <li>This problem arises because floating point numbers are
-    <a rel="help" href="http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">not represented exactly within computers<img 
+    <a rel="help" href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">not represented exactly within computers<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
   <li>If sourceNeedsExpandedFP_EQ is set to true (the default), 
@@ -11649,7 +11690,7 @@ while processing each request.
     how to convert the local sourceUrls to public sourceUrls.
   <li><a class="selfLink" id="handshakeAlert" href="#handshakeAlert" rel="bookmark"
     >A sourceUrl may begin with</a> 
-    http://, ftp://, https:// and perhaps other prefixes.
+    http://, https://, ftp://, and perhaps other prefixes.
     https connections read and check the source's digital certificate to ensure
     that the source is who they say they are. 
     In rare cases, this check may fail with the error 
@@ -11864,7 +11905,7 @@ while processing each request.
         title="This link to an external website does not constitute an endorsement."></a> 
         metadata standard) 
         is a global attribute that indicates the 
-          Unidata <a rel="help" href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/CDM/"
+          Unidata <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf-java/v4.6/CDM/index.html"
           >Common Data Model<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -11872,10 +11913,10 @@ while processing each request.
         <br><kbd>&lt;att name="cdm_data_type"&gt;Point&lt;/att&gt;</kbd>
         <br>The CDM is still evolving and may change again. ERDDAP complies with the 
         related and more detailed 
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries (DSG)<img 
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> chapter of the 
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF 1.6<img 
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF 1.6<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         metadata conventions
@@ -12143,12 +12184,12 @@ while processing each request.
             and .ncCFMA files (.nc files which comply with the 
             Multidimensional Array Representations associated with the dataset's cdm_data_type)
             as defined in  
-            <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+            <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
             >Discrete&nbsp;Sampling&nbsp;Geometries&nbsp;(DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
           chapter of the 
-            <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+            <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
             >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12194,7 +12235,7 @@ while processing each request.
 
       <li><a class="selfLink" id="Conventions" href="#Conventions" rel="bookmark"><strong>Conventions</strong></a> 
         (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12212,7 +12253,7 @@ while processing each request.
         title="This link to an external website does not constitute an endorsement."></a> 
         is the precursor to CF. 
 
-        <li><a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <li><a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >Climate and Forecast (CF) Conventions<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12222,7 +12263,7 @@ while processing each request.
         <li>The NetCDF Attribute Convention for Dataset Discovery (ACDD)
         is the source of many of the recommended and required attributes in ERDDAP. 
         The original 1.0 version of ACDD (a brilliant piece of work by Ethan Davis), was identified as
-        <a rel="help" href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html"
+        <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html"
         >Unidata Dataset Discovery v1.0<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12361,7 +12402,7 @@ while processing each request.
 
       <li><a class="selfLink" id="featureType" href="#featureType" rel="bookmark"><strong>featureType</strong></a> 
         (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12373,7 +12414,7 @@ while processing each request.
         <p>However, if you are using 
         <a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>
         to create a dataset from files that follow the 
-        <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+        <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
         >CF Discrete Sampling Geometries (DSG) standard<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
@@ -12384,7 +12425,7 @@ while processing each request.
 
       <li><a class="selfLink" id="history" href="#history" rel="bookmark"><strong>history</strong></a> 
         (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12471,7 +12512,7 @@ while processing each request.
 
       <li><a class="selfLink" id="institution" href="#institution" rel="bookmark"><strong>institution</strong></a> 
         (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12577,7 +12618,7 @@ while processing each request.
       <li><a class="selfLink" id="Metadata_Conventions" href="#Metadata_Conventions" rel="bookmark"><strong>Metadata_Conventions</strong></a> 
         is from the outdated 
         <a rel="help" 
-        href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html"
+        href="https://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html"
         >ACDD 1.0<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12712,7 +12753,7 @@ while processing each request.
         For example,
         <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v65&lt;/att&gt;</kbd>
         <br>for version 65 of the 
-        <a rel="help" href="http://cfconventions.org/standard-names.html">CF standard name table<img 
+        <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard name table<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
         <br>&nbsp;
@@ -12842,7 +12883,7 @@ while processing each request.
       <li><a class="selfLink" id="summary" href="#summary" rel="bookmark"><strong>summary</strong></a> 
         (from the
         <a rel="help"
-        href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -12914,7 +12955,7 @@ while processing each request.
         <br>If the index is &lt;=2, the dataset is considered very out-of-date.
 
         <p>The testOutOfDate value is also used by ERDDAP to generate the 
-        http://<i>yourDomain</i>/erddap/outOfDateDatasets.html web page
+        https://<i>yourDomain</i>/erddap/outOfDateDatasets.html web page
         (<a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/outOfDateDatasets.html"
         >example</a>)
@@ -12938,7 +12979,7 @@ while processing each request.
 
       <li><a class="selfLink" id="title" href="#title" rel="bookmark"><strong>title</strong></a> 
         (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -13086,7 +13127,11 @@ while processing each request.
         <ul>
           <li>For numeric variables, the fixed value must be single finite value or <kbd>NaN</kbd> 
             (case insensitive, e.g., <kbd>=NaN</kbd> ).
-          <li>For String variables, the fixed value must be single JSON-encoded string, e.g., <kbd>="My \"Special\" String"</kbd> .
+          <li>For String variables, the fixed value must be single, 
+            <a rel="help" href="https://www.json.org/json-en.html" >JSON-style string<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>
+            (with special characters escaped with \ characters), e.g., <kbd>="My \"Special\" String"</kbd> .
           <li>For a timestamp variable, specify the fixed value as a number in "seconds since 1970-01-01T00:00:00Z" and use 
             <br>units=<kbd>seconds since 1970-01-01T00:00:00Z</kbd> .  
         </ul>
@@ -13142,7 +13187,7 @@ while processing each request.
             return a "seconds since 1970-01-01T00:00:00Z" (epochSeconds) double value.
           <li><a rel="help" href="ScriptMath.html">Math</a>, 
             which is a wrapper for almost all of the static, math-related methods in 
-            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.htmljava.lang.Math"
+            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.html"
               >java.lang.Math<img 
               src="../images/external.png" alt=" (external link)" 
               title="This link to an external website does not constitute an endorsement."></a>.
@@ -13159,12 +13204,12 @@ while processing each request.
             will round d to the specified number of digits to the right of the 
             decimal point.
           <li>String, which gives you access to all of the static, String-related methods in 
-            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/Math.htmljava.lang.String"
+            <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/lang/String"
               >java.lang.String<img 
               src="../images/external.png" alt=" (external link)" 
               title="This link to an external website does not constitute an endorsement."></a>.
             String objects in ERDDAP expressions and scripts can use any of their
-            associated Java methods, as described in the java.lang.String documenation.
+            associated Java methods, as described in the java.lang.String documentation.
             For example,
             <kbd>String.valueOf(d)</kbd>
             will convert the double value d into a String
@@ -13501,7 +13546,11 @@ while processing each request.
               1-byte characters in Strings,
               char data variables will appear as 1-character-long ISO-8859-1 
               String variables in OPeNDAP .das, .dds, and .dods responses.
-            <li>ERDDAP writes char data to JSON files as 1-character-long JSON-encoded Strings,
+            <li>ERDDAP writes char data to JSON files as 1-character-long 
+              <a rel="help" href="https://www.json.org/json-en.html" >JSON-style strings<img 
+                src="../images/external.png" alt=" (external link)" 
+                title="This link to an external website does not constitute an endorsement."></a>
+                (with special characters escaped with \ characters),
               since JSON has no separate char data type.
             <li>ERDDAP writes to .csv files with the ISO-8859-1 charset (a 1-byte charset),
               so characters #0 through #255 will be correctly represented,
@@ -13685,7 +13734,7 @@ while processing each request.
           title="This link to an external website does not constitute an endorsement."></a>
           and
           <a rel="help"
-          href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+          href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
           >CF 1.7+<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>
@@ -13968,7 +14017,7 @@ while processing each request.
         <li>This attribute is strongly recommended.
         <li>This attribute is from the 
           <a rel="help"
-          href="https://www.unidata.ucar.edu/software/netcdf/docs/user_guide.html"
+          href="https://docs.unidata.ucar.edu/netcdf-java/current/userguide/index.html"
           >NetCDF User's Guide (NUG)<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>.
@@ -14074,7 +14123,7 @@ while processing each request.
         <li>The core names are from Zdenka Willis' .ppt "Integrated Ocean Observing System (IOOS)
            NOAA's Approach to Building an Initial Operating Capability" and from the
            <a rel="help"
-           href="http://www.iooc.us/wp-content/uploads/2010/11/US-IOOS-Blueprint-for-Full-Capability-Version-1.0.pdf"
+           href="https://www.iooc.us/wp-content/uploads/2010/11/US-IOOS-Blueprint-for-Full-Capability-Version-1.0.pdf"
            >US IOOS Blueprint<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -14157,7 +14206,7 @@ while processing each request.
         >COARDS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>,
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -14194,7 +14243,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         and
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>)
@@ -14266,7 +14315,7 @@ while processing each request.
         title="This link to an external website does not constitute an endorsement."></a>
         and
         <a rel="help"
-        href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>)
@@ -14314,14 +14363,14 @@ while processing each request.
       <li><a class="selfLink" id="standard_name" href="#standard_name" rel="bookmark"><strong>standard_name</strong></a> 
         (from the
         <a rel="help"
-        href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         metadata standard) 
         is a RECOMMENDED variable attribute in ERDDAP.
         CF maintains the list of allowed
-          <a rel="help" href="http://cfconventions.org/standard-names.html"
+          <a rel="help" href="https://cfconventions.org/standard-names.html"
           >CF standard names<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.  
@@ -14463,7 +14512,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>,
         <a rel="help"
-        href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
+        href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
          and
@@ -14489,7 +14538,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
           and
-          <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+          <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
           >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -14498,18 +14547,18 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
           -- the Unified Code for Units of Measure.
-          <a rel="help" href="https://www.opengeospatial.org/">OGC<img 
+          <a rel="help" href="https://www.ogc.org/">OGC<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         services such as
-            <a rel="help" href="https://www.opengeospatial.org/standards/sos">SOS<img 
+            <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>,
-            <a rel="help" href="https://www.opengeospatial.org/standards/wcs">WCS<img 
+            <a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>, 
         and
-            <a rel="help" href="https://www.opengeospatial.org/standards/wms">WMS<img 
+            <a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
             require UCUM and often refer to UCUM 
@@ -14959,7 +15008,7 @@ email bob.simons at noaa.gov.</td>
         These are OPTIONAL variable attributes 
         defined in the 
         <a rel="help"
-        href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+        href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
         >CF<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 

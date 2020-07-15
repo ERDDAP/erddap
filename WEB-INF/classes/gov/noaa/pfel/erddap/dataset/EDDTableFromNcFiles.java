@@ -3649,8 +3649,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-05-22\";\n" + //changes every month
-"  :date_issued = \"2020-05-22\";\n" +  //changes every month
+"  :date_created = \"2020-06-23\";\n" + //changes every month
+"  :date_issued = \"2020-06-23\";\n" +  //changes every month
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4860,8 +4860,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-05-22\";\n" + //changes every month
-"  :date_issued = \"2020-05-22\";\n" +
+"  :date_created = \"2020-06-23\";\n" + //changes every month
+"  :date_issued = \"2020-06-23\";\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4880,9 +4880,9 @@ expected =
 "      {1.325379E9, 1.3253898E9, 1.3254042E9}\n" +
 "    station = \"41004\", \"41004\", \"41004\"\n" +
 "    wd = \n" +
-"      {252, 32767, 288}\n" +         //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted
+"      {252, 32767, 288}\n" +         //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted)
 "    atmp = \n" +
-"      {19.4, -9999999.0, 19.0}\n" +  //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted
+"      {19.4, -9999999.0, 19.0}\n" +  //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted)
 "    wtmp = \n" +
 "      {20.1, -9999999.0, 20.2}\n" +
 "}\n";
@@ -6697,7 +6697,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 38374786;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 39194156;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6742,7 +6742,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.58556288e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.772736e\\+8, 1.5931686e\\+9;\n" + //2nd value changes   use \\+ //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6804,7 +6804,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2020-05-22 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2020-07-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6832,9 +6832,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2020-07-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2020-05-22 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
+"2020-07-11 Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6852,7 +6852,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-05-22 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2020-07-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6877,7 +6877,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the March 2020 data\\) but is a subset of the " + //month changes
+    "up to and including the June 2020 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -6890,8 +6890,8 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-03-30T10:08:00Z\";\n" + //changes
-"    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
+"    String time_coverage_end \"2020-06-26T10:50:00Z\";\n" + //changes
+"    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
 "  \\}\n" +
@@ -14062,7 +14062,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2020-05-07 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2020-07-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14518,7 +14518,7 @@ So the changes seem good. */
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             Test.ensureEqual(t.toString(),
-                "com.cohort.util.SimpleException: Error: destinationVariableName=p wasn't found.", 
+                "com.cohort.util.SimpleException: Error: destinationVariableName=p wasn't found in datasetID=LiquidR_HBG3_2015_weather.", 
                 "");
         }
 
@@ -17019,10 +17019,10 @@ expected =
         expected = 
 "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n" +
 ",,degrees_east,degrees_north,UTC,m,degrees_north,,,,,degrees_true,\n" +
-"41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.847999572753906,down,,320,\"0.0, 27.0\"\n" +
-"41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.00600051879883,down,,NaN,\"0.0, 27.7\"\n" +
-"41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.810001373291016,down,,230,\"0.0, 19.0\"\n" +
-"41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.279998779296875,down,,220,\"0.0, 96.0\"\n";
+"41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n" +
+"41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n" +
+"41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n" +
+"41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         userDapQuery = "&time>=2014-01-15T00&time<=2014-01-15T01";
@@ -17033,14 +17033,14 @@ expected =
         expected = 
 "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n" +
 ",,degrees_east,degrees_north,UTC,m,degrees_north,,,,,degrees_true,\n" +
-"41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.847999572753906,down,,320,\"0.0, 27.0\"\n" +
-"41024,miniNdbc,-78.489,33.848,2014-01-15T01:00:00Z,7.0,33.848,NaN,33.847999572753906,down,,330,\"0.0, 27.0\"\n" +
-"41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.00600051879883,down,,NaN,\"0.0, 27.7\"\n" +
-"41025,miniNdbc,-75.402,35.006,2014-01-15T01:00:00Z,7.0,35.006,NaN,35.00600051879883,down,,NaN,\"0.0, 27.7\"\n" +
-"41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.810001373291016,down,,230,\"0.0, 19.0\"\n" +
-"41029,miniNdbc,-79.63,32.81,2014-01-15T01:00:00Z,7.0,32.81,NaN,32.810001373291016,down,,310,\"0.0, 19.0\"\n" +
-"41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.279998779296875,down,,220,\"0.0, 96.0\"\n" +
-"41033,miniNdbc,-80.41,32.28,2014-01-15T01:00:00Z,7.0,32.28,NaN,32.279998779296875,down,,260,\"0.0, 96.0\"\n";
+"41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n" +
+"41024,miniNdbc,-78.489,33.848,2014-01-15T01:00:00Z,7.0,33.848,NaN,33.848,down,,330,\"0.0, 27.0\"\n" +
+"41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n" +
+"41025,miniNdbc,-75.402,35.006,2014-01-15T01:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n" +
+"41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n" +
+"41029,miniNdbc,-79.63,32.81,2014-01-15T01:00:00Z,7.0,32.81,NaN,32.81,down,,310,\"0.0, 19.0\"\n" +
+"41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n" +
+"41033,miniNdbc,-80.41,32.28,2014-01-15T01:00:00Z,7.0,32.28,NaN,32.28,down,,260,\"0.0, 96.0\"\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
@@ -17181,11 +17181,12 @@ expected =
             results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);            
             expected =  //ensure that order is correct
+/* pre 2020-06-16 was:   (I did full gtspp reprocessing 2020-06-13. Same results, but slightly different order.)
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
 ",,,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
 "ME_TE_33PF_Q590410717,ME,TE,33PF,Q590410717,28178811,-129.651,31.432,2017-01-28T17:19:00Z,200.0,10.0,33.61\n" +
 "ME_TE_61PF_Q590250317,ME,TE,61PF,Q590250317,28081602,116.295,-45.927,2017-01-22T16:02:00Z,200.0,10.0,34.75\n" +
-"ME_TE_33AW_68942 17,ME,TE,33AW,68942 17,28404309,-9.91,56.86,2017-02-28T15:47:00Z,200.0,10.0,35.33\n" +
+"ME_TE_33AW_68942 17,ME,TE,33AW,68942 17,28404309,-9.91,56.86,2017-02-28T15:47:00Z,200.0,10.0,35.33\n" +   
 "ME_TE_33PF_Q590480817,ME,TE,33PF,Q590480817,28252348,93.943,-43.403,2017-02-14T06:09:00Z,200.0,10.0,34.67\n" +
 "ME_TE_09PF_Q590424217,ME,TE,09PF,Q590424217,28252286,122.487,-38.964,2017-02-14T22:50:00Z,200.0,10.0,34.73\n" +
 "ME_TE_33AW_68944 17,ME,TE,33AW,68944 17,28404467,-11.26,57.37,2017-03-04T20:11:00Z,200.0,10.0,35.31\n" +
@@ -17200,10 +17201,30 @@ expected =
 "ME_TE_33PF_Q590245817,ME,TE,33PF,Q590245817,29011132,148.57,-46.113,2017-05-27T08:43:00Z,200.0,10.0,34.76\n" +
 "ME_TE_33PF_Q590237417,ME,TE,33PF,Q590237417,28895913,132.582,-45.091,2017-05-12T10:51:00Z,200.0,10.0,34.79\n" +
 "ME_TE_33AW_68990 17,ME,TE,33AW,68990 17,29162540,-20.14,58.22,2017-06-02T20:09:00Z,200.0,10.0,35.3\n";
+*/
+"trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
+",,,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
+"ME_TE_33PF_Q590410717,ME,TE,33PF,Q590410717,28178811,-129.651,31.432,2017-01-28T17:19:00Z,200.0,10.0,33.61\n" +
+"ME_TE_61PF_Q590250317,ME,TE,61PF,Q590250317,28081602,116.295,-45.927,2017-01-22T16:02:00Z,200.0,10.0,34.75\n" +
+"ME_TE_33PF_Q590480817,ME,TE,33PF,Q590480817,28252348,93.943,-43.403,2017-02-14T06:09:00Z,200.0,10.0,34.67\n" +
+"ME_TE_09PF_Q590424217,ME,TE,09PF,Q590424217,28252286,122.487,-38.964,2017-02-14T22:50:00Z,200.0,10.0,34.73\n" +
+"ME_TE_33AW_68942 17,ME,TE,33AW,68942 17,28404309,-9.91,56.86,2017-02-28T15:47:00Z,200.0,10.0,35.33\n" +
+"ME_DB_33TT_52006 17,ME,DB,33TT,52006 17,28403335,165.1,8.1,2017-03-07T20:00:00Z,200.0,10.0,NaN\n" +
+"ME_TE_33AW_68944 17,ME,TE,33AW,68944 17,28404467,-11.26,57.37,2017-03-04T20:11:00Z,200.0,10.0,35.31\n" +
+"ME_TE_33PF_Q590465217,ME,TE,33PF,Q590465217,28417679,-171.046,-46.9,2017-03-06T18:53:00Z,200.0,10.0,34.71\n" +
+"ME_TE_33PF_Q490166617,ME,TE,33PF,Q490166617,28613687,-135.913,36.571,2017-04-04T06:54:00Z,200.0,10.0,33.88\n" +
+"ME_BA_49TK_7JWN 17,ME,BA,49TK,7JWN 17,28918431,137.0,33.761,2017-05-15T16:50:00Z,200.0,10.0,NaN\n" +
+"ME_TE_35FP_Q390187117,ME,TE,35FP,Q390187117,28935333,-9.61,56.682,2017-05-18T11:52:00Z,200.0,10.0,35.34\n" +
+"ME_TE_35FP_Q690152417,ME,TE,35FP,Q690152417,28953222,-44.059,50.323,2017-05-22T14:35:00Z,200.0,10.0,35.2\n" +
+"ME_TE_33AW_68990 17,ME,TE,33AW,68990 17,29162406,-19.3,57.88,2017-05-24T19:44:00Z,200.0,10.0,35.3\n" +
+"ME_TE_33PF_Q590476517,ME,TE,33PF,Q590476517,28871179,-167.444,-49.142,2017-05-08T00:00:00Z,200.0,10.0,34.7\n" +
+"ME_TE_33PF_Q590245817,ME,TE,33PF,Q590245817,29011132,148.57,-46.113,2017-05-27T08:43:00Z,200.0,10.0,34.76\n" +
+"ME_TE_33PF_Q590237417,ME,TE,33PF,Q590237417,28895913,132.582,-45.091,2017-05-12T10:51:00Z,200.0,10.0,34.79\n" +
+"ME_TE_33AW_68990 17,ME,TE,33AW,68990 17,29162540,-20.14,58.22,2017-06-02T20:09:00Z,200.0,10.0,35.3\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         }
-        String2.pressEnterToContinue(bigResults.toString());
+        String2.log(bigResults.toString());
 /* 2018-07-27 but times vary greatly
 bigResults: (truncated to seconds)  not much: but these are large data files.
 nThreads=5 time=65
@@ -17211,6 +17232,16 @@ nThreads=4 time=77
 nThreads=3 time=62
 nThreads=2 time=66    63
 nThreads=1 time=67 47 69
+        2020-06-16 
+nThreads=5 time=26
+nThreads=4 time=25
+nThreads=3 time=24
+nThreads=2 time=33
+nThreads=1 time=35
+nThreads=1 time=34
+nThreads=2 time=33
+nThreads=3 time=26
+nThreads=4 time=26
 */
 
         Table.verbose = true;
@@ -18095,7 +18126,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 38374786;\n" + //changes
+"    Int32 actual_range 1, 39194156;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18140,7 +18171,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e+8, 1.58556288e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.5931686e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18202,7 +18233,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2020-04-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2020-07-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18810,9 +18841,9 @@ if (test ==  6) testNetcdf();  //trouble: opendap bytes are 0 - 255, Java/ERDDAP
 
                     if (test == 66) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
                     if (test == 67) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
-                    if (test == 68) testCacheFiles(false);                         //requires gtsppBest
+                    if (test == 68) testNThreads();
 
-                    if (test == 70 && doSlowTestsToo) testNThreads();
+                    if (test == 70 && doSlowTestsToo) testCacheFiles(false);     //deleteDataFiles?  //requires gtsppBest
                     if (test == 71 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads
                     if (test == 72 && doSlowTestsToo) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
                     if (test == 73 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo?   //requires gtsppBest,  very slow, not usually run

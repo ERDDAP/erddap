@@ -35,6 +35,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -5461,7 +5462,7 @@ String expected =
 "        <att name=\"deployment_2_description\">KN199-05 is the completion of the US GEOTRACES Zonal North Atlantic Survey Section cruise originally planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +
 "4 November 2010 update: Due to engine failure, the science activities scehduled for the KN199-04 cruise were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde (ending KN199 leg 4) and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University.&#xa0; The objective of KN199 leg 5 (KN199-05) is to carry the vessel in transit to Charleston, SC while conducting abbreviated science activities originally planned for KN199-04. The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
 "Planned scientific activities and operations area during the KN199 leg 5 (KN199-05)  transit will be as follows: the ship&#39;s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\n" +
-"Science Objectives are to obtain state of the art  trace metal and isotope measurements on a suite of samples taken on a  mid-latitude zonal transect of the North Atlantic. In particular  sampling will target the oxygen minimum zone extending off the west  African coast near Mauritania, the TAG hydrothermal field, and the  western boundary current system along Line W. In addition, the major  biogeochemical provinces of the subtropical North Atlantic will be  characterized. For additional information, please refer to the GEOTRACES  program Web site ( [ http://www.geotraces.org/ ] GEOTRACES.org) for overall program objectives and a summary of properties to be measured.\n" +
+"Science Objectives are to obtain state of the art  trace metal and isotope measurements on a suite of samples taken on a  mid-latitude zonal transect of the North Atlantic. In particular  sampling will target the oxygen minimum zone extending off the west  African coast near Mauritania, the TAG hydrothermal field, and the  western boundary current system along Line W. In addition, the major  biogeochemical provinces of the subtropical North Atlantic will be  characterized. For additional information, please refer to the GEOTRACES  program Web site ( [ https://www.geotraces.org/ ] GEOTRACES.org) for overall program objectives and a summary of properties to be measured.\n" +
 "Science Activities include seawater sampling via  GoFLO and Niskin carousels, in situ pumping (and filtration), CTDO2 and  transmissometer sensors, underway pumped sampling of surface waters, and  collection of aerosols and rain.\n" +
 "Hydrography, CTD and nutrient measurements will be supported by the  Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography  and funded through NSF Facilities. They will be providing an additional  CTD rosette system along with nephelometer and LADCP. A trace metal  clean Go-Flo Rosette and winch will be provided by the group at Old  Dominion University (G. Cutter) along with a towed underway pumping  system.\n" +
 "List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
@@ -5549,7 +5550,7 @@ String expected =
 "The section completion effort resumed again in November 2011 with KN204-01A,B (Figure 3).\n" +
 "[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Submitted_Preliminary_Cruise_Report_for_Knorr_204-01.pdf ] KN204-01A,B Cruise Report (PDF)\n" +
 "Figure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R/V Knorr in November 2011.&#xa0;  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/KN204-01_Stations.png ] \n" +
-"Data from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: [ http://www.geotraces.org/science/intercalibration/322-standards-and-reference-materials?acm=455_215 ] Standards and Reference Materials\n" +
+"Data from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: [ https://www.geotraces.org/standards-and-reference-materials/?acm=455_215 ] Standards and Reference Materials\n" +
 "ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04&#xa0;&#xa0; (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05&#xa0;&#xa0; (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
 "        <att name=\"project_1_title\">U.S. GEOTRACES North Atlantic Transect</att>\n" +
 "        <att name=\"project_1_webpage\">https://www.bco-dmo.org/project/2066</att>\n" +
@@ -6458,6 +6459,214 @@ String expected =
         } 
     }
 
+    /**
+     * This tests threading.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testNThreads() throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiFiles.testNThreads()\n");
+
+        Table.verbose = false;
+        Table.reallyVerbose = false;
+        EDD.verbose = false;
+        EDD.reallyVerbose = false;
+        EDD.debugMode = false;
+        EDDTableFromFilesCallable.debugMode = true;
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String error = "";
+        int po;
+
+        //one time: make csv version of ndbc2/nrt directory in ndbcMet2Csv
+        /*
+        String sourceDir = "/u00/data/points/ndbcMet2/nrt/";
+        String list[] = (new File(sourceDir)).list();
+        for (int i = 0; i < list.length; i++) { //convert each
+            Table table = new Table();
+            table.readNDNc(sourceDir + list[i], null, 0, null, Double.NaN, Double.NaN);
+            table.saveAsCsvASCII("/u00/data/points/ndbcMet2Csv/" + File2.getNameNoExtension(list[i]) + ".csv");
+        }
+        */
+        
+        StringBuilder bigResults = new StringBuilder("\nbigResults:\n");
+
+        //this dataset and this request are a good test that the results are always in the same order
+        String id = "ndbcMet2Csv";
+        userDapQuery = "&time=2020-05-22T20:40:00Z";
+
+        //warmup
+        EDDTableFromAsciiFiles eddTable = (EDDTableFromAsciiFiles)oneFromDatasetsXml(null, id); 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            "testNThreadsWarmup", ".csv"); 
+
+        //test
+        for (int i = 5; i > -5; i--) {  
+            if (i == 0)
+                continue;
+            eddTable.nThreads = Math.abs(i);
+            Math2.gc(5000);
+
+            long startTime = System.currentTimeMillis();
+            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+                "testNThreads" + i, ".csv"); 
+
+            long eTime = System.currentTimeMillis() - startTime;
+            String msg = "nThreads=" + eddTable.nThreads + " time=" + eTime + "\n";
+            String2.log(msg);
+            bigResults.append(msg);
+            if (eTime > 18000)
+                throw new RuntimeException("Too slow!\n" + bigResults);
+
+            results = String2.directReadFrom88591File(dir + tName);
+            //String2.log(results);            
+            expected =  //ensure that order is correct
+"ID,time,depth,latitude,longitude,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV\n" +
+",UTC,m,degrees_north,degrees_east,degrees_true,m s-1,m s-1,m,s,s,degrees_true,hPa,degree_C,degree_C,degree_C,km,hPa,m,m s-1,m s-1\n" +
+"41001,2020-05-22T20:40:00Z,0.0,34.675,-72.698,160,7.0,9.0,1.7,NaN,5.9,84,1020.6,21.5,21.7,18.4,NaN,NaN,NaN,-2.4,6.6\n" +
+"41004,2020-05-22T20:40:00Z,0.0,32.501,-79.099,NaN,4.0,5.0,NaN,NaN,NaN,,1018.2,24.8,24.4,24.8,NaN,NaN,NaN,NaN,NaN\n" +
+"41009,2020-05-22T20:40:00Z,0.0,28.519,-80.166,110,5.0,7.0,NaN,NaN,NaN,,1018.2,27.2,27.4,20.6,NaN,NaN,NaN,-4.7,1.7\n" +
+"41010,2020-05-22T20:40:00Z,0.0,28.906,-78.471,130,5.0,6.0,1.8,NaN,7.9,54,NaN,26.4,NaN,22.9,NaN,NaN,NaN,-3.8,3.2\n" +
+"41013,2020-05-22T20:40:00Z,0.0,33.436,-77.743,160,5.0,6.0,NaN,NaN,NaN,,1017.8,25.1,24.9,20.6,NaN,NaN,NaN,-1.7,4.7\n" +
+"41025,2020-05-22T20:40:00Z,0.0,35.006,-75.402,190,8.0,10.0,NaN,NaN,NaN,,1017.8,23.5,24.4,21.1,NaN,NaN,NaN,1.4,7.9\n" +
+"41040,2020-05-22T20:40:00Z,0.0,14.477,-53.008,70,6.0,7.0,NaN,NaN,NaN,,1015.3,26.8,NaN,22.6,NaN,NaN,NaN,-5.6,-2.1\n" +
+"41043,2020-05-22T20:40:00Z,0.0,21.061,-64.966,130,1.0,2.0,NaN,NaN,NaN,,1015.7,28.3,28.8,24.8,NaN,NaN,NaN,-0.8,0.6\n" +
+"41044,2020-05-22T20:40:00Z,0.0,21.652,-58.695,100,4.0,5.0,1.3,NaN,7.2,3,NaN,25.6,NaN,22.2,NaN,NaN,NaN,-3.9,0.7\n" +
+"41046,2020-05-22T20:40:00Z,0.0,23.836,-70.863,80,4.0,5.0,NaN,NaN,NaN,,1017.1,26.7,27.6,24.4,NaN,NaN,NaN,-3.9,-0.7\n" +
+"41047,2020-05-22T20:40:00Z,0.0,27.469,-71.491,NaN,5.0,7.0,NaN,NaN,NaN,,1019.6,24.7,NaN,19.1,NaN,NaN,NaN,NaN,NaN\n" +
+"41048,2020-05-22T20:40:00Z,0.0,31.978,-69.649,110,7.0,9.0,2.3,NaN,6.6,93,1022.4,NaN,22.4,NaN,NaN,NaN,NaN,-6.6,2.4\n" +
+"41049,2020-05-22T20:40:00Z,0.0,27.5,-63.0,90,9.0,12.0,3.0,NaN,7.1,28,1019.0,NaN,NaN,NaN,NaN,NaN,NaN,-9.0,0.0\n" +
+"41053,2020-05-22T20:40:00Z,0.0,18.476,-66.099,150,4.0,6.0,NaN,NaN,NaN,,1013.3,30.7,NaN,NaN,NaN,NaN,NaN,-2.0,3.5\n" +
+"41056,2020-05-22T20:40:00Z,0.0,18.26,-65.458,140,4.0,5.0,NaN,NaN,NaN,,1013.9,28.4,NaN,NaN,NaN,NaN,NaN,-2.6,3.1\n" +
+"41110,2020-05-22T20:40:00Z,0.0,34.141,-77.709,NaN,NaN,NaN,1.1,7.0,5.7,113,NaN,NaN,22.4,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"42001,2020-05-22T20:40:00Z,0.0,25.888,-89.658,130,5.0,7.0,NaN,NaN,NaN,,1014.3,NaN,NaN,NaN,NaN,NaN,NaN,-3.8,3.2\n" +
+"42002,2020-05-22T20:40:00Z,0.0,25.79,-93.666,150,8.0,9.0,NaN,NaN,NaN,,1012.0,27.0,26.9,24.1,NaN,NaN,NaN,-4.0,6.9\n" +
+"42003,2020-05-22T20:40:00Z,0.0,26.044,-85.612,100,6.0,8.0,NaN,NaN,NaN,,1016.3,NaN,27.3,NaN,NaN,NaN,NaN,-5.9,1.0\n" +
+"42012,2020-05-22T20:40:00Z,0.0,30.065,-87.555,180,4.0,5.0,NaN,NaN,NaN,,1016.3,26.6,26.8,26.1,NaN,NaN,NaN,0.0,4.0\n" +
+"42019,2020-05-22T20:40:00Z,0.0,27.913,-95.353,130,4.0,6.0,NaN,NaN,NaN,,1011.5,27.0,26.3,25.5,NaN,NaN,NaN,-3.1,2.6\n" +
+"42020,2020-05-22T20:40:00Z,0.0,26.966,-96.695,140,5.0,6.0,1.5,NaN,5.5,127,1010.1,27.7,NaN,25.6,NaN,NaN,NaN,-3.2,3.8\n" +
+"42035,2020-05-22T20:40:00Z,0.0,29.232,-94.413,160,5.0,7.0,NaN,NaN,NaN,,1012.4,27.2,26.9,25.9,NaN,NaN,NaN,-1.7,4.7\n" +
+"42036,2020-05-22T20:40:00Z,0.0,28.5,-84.517,100,1.0,1.0,NaN,NaN,NaN,,1017.6,NaN,NaN,NaN,NaN,NaN,NaN,-1.0,0.2\n" +
+"42039,2020-05-22T20:40:00Z,0.0,28.791,-86.008,130,2.0,3.0,NaN,NaN,NaN,,1016.6,NaN,26.8,NaN,NaN,NaN,NaN,-1.5,1.3\n" +
+"42040,2020-05-22T20:40:00Z,0.0,29.212,-88.207,180,4.0,4.0,NaN,NaN,NaN,,1016.4,27.3,NaN,25.1,NaN,NaN,NaN,0.0,4.0\n" +
+"42055,2020-05-22T20:40:00Z,0.0,22.017,-94.046,130,4.0,5.0,NaN,NaN,NaN,,1009.5,28.6,28.5,27.2,NaN,NaN,NaN,-3.1,2.6\n" +
+"42056,2020-05-22T20:40:00Z,0.0,19.874,-85.059,130,5.0,7.0,NaN,NaN,NaN,,1013.4,28.8,28.9,22.9,NaN,NaN,NaN,-3.8,3.2\n" +
+"42057,2020-05-22T20:40:00Z,0.0,16.834,-81.501,110,7.0,8.0,NaN,NaN,NaN,,1012.3,28.1,28.5,25.4,NaN,NaN,NaN,-6.6,2.4\n" +
+"42058,2020-05-22T20:40:00Z,0.0,15.093,-75.064,80,9.0,12.0,1.9,NaN,5.3,112,1011.1,28.2,27.9,25.3,NaN,NaN,NaN,-8.9,-1.6\n" +
+"42059,2020-05-22T20:40:00Z,0.0,15.252,-67.483,110,7.0,9.0,NaN,NaN,NaN,,1012.9,28.3,28.3,26.6,NaN,NaN,NaN,-6.6,2.4\n" +
+"42060,2020-05-22T20:40:00Z,0.0,16.5,-63.5,120,6.0,7.0,NaN,NaN,NaN,,1014.5,28.0,28.3,25.3,NaN,NaN,NaN,-5.2,3.0\n" +
+"42085,2020-05-22T20:40:00Z,0.0,17.86,-66.524,120,5.0,7.0,NaN,NaN,NaN,,1013.7,28.9,NaN,NaN,NaN,NaN,NaN,-4.3,2.5\n" +
+"42395,2020-05-22T20:40:00Z,0.0,26.407,-90.845,160,7.0,9.0,1.2,6.0,NaN,,1013.7,27.7,27.6,NaN,NaN,NaN,NaN,-2.4,6.6\n" +
+"44008,2020-05-22T20:40:00Z,0.0,40.502,-69.247,210,5.0,5.0,NaN,NaN,NaN,,1020.6,NaN,NaN,NaN,NaN,NaN,NaN,2.5,4.3\n" +
+"44011,2020-05-22T20:40:00Z,0.0,41.118,-66.578,NaN,8.0,9.0,NaN,NaN,NaN,,1019.7,NaN,7.6,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"44014,2020-05-22T20:40:00Z,0.0,36.611,-74.836,160,5.0,7.0,NaN,NaN,NaN,,1018.4,16.5,14.5,15.5,NaN,NaN,NaN,-1.7,4.7\n" +
+"44017,2020-05-22T20:40:00Z,0.0,40.692,-72.048,210,3.0,4.0,NaN,NaN,NaN,,1020.0,14.8,11.7,13.1,NaN,NaN,NaN,1.5,2.6\n" +
+"44020,2020-05-22T20:40:00Z,0.0,41.443,-70.186,210,7.0,8.0,NaN,NaN,NaN,,1017.7,14.2,12.5,12.4,NaN,NaN,NaN,3.5,6.1\n" +
+"44025,2020-05-22T20:40:00Z,0.0,40.25,-73.166,160,3.0,4.0,NaN,NaN,NaN,,1019.2,14.3,11.1,12.9,NaN,NaN,NaN,-1.0,2.8\n" +
+"44064,2020-05-22T20:40:00Z,0.0,36.979,-76.043,120,5.0,6.0,NaN,NaN,NaN,,1015.5,NaN,NaN,NaN,NaN,NaN,NaN,-4.3,2.5\n" +
+"44065,2020-05-22T20:40:00Z,0.0,40.369,-73.703,100,3.0,3.0,NaN,NaN,NaN,,1019.1,14.4,12.9,13.4,NaN,NaN,NaN,-3.0,0.5\n" +
+"44066,2020-05-22T20:40:00Z,0.0,39.583,-72.601,NaN,NaN,NaN,NaN,NaN,NaN,,1020.5,NaN,11.7,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"44072,2020-05-22T20:40:00Z,0.0,37.201,-76.266,210,5.0,6.0,NaN,NaN,NaN,,NaN,18.8,NaN,NaN,NaN,NaN,NaN,2.5,4.3\n" +
+"45029,2020-05-22T20:40:00Z,0.0,42.801,-86.264,340,1.0,1.0,0.1,NaN,NaN,174,1017.2,12.1,10.2,10.6,NaN,NaN,NaN,0.3,-0.9\n" +
+"45165,2020-05-22T20:40:00Z,0.0,41.806,-83.271,60,3.0,3.0,0.2,NaN,NaN,75,NaN,13.3,13.3,13.3,NaN,NaN,NaN,-2.6,-1.5\n" +
+"45168,2020-05-22T20:40:00Z,0.0,42.396,-86.331,340,2.0,2.0,0.1,NaN,NaN,60,1017.3,12.5,14.1,10.5,NaN,NaN,NaN,0.7,-1.9\n" +
+"46005,2020-05-22T20:40:00Z,0.0,46.1,-131.001,240,5.0,5.0,1.5,NaN,6.9,289,1023.5,11.3,11.6,7.2,NaN,NaN,NaN,4.3,2.5\n" +
+"46011,2020-05-22T20:40:00Z,0.0,34.868,-120.857,320,10.0,13.0,2.7,NaN,6.0,314,1014.6,NaN,12.9,NaN,NaN,NaN,NaN,6.4,-7.7\n" +
+"46012,2020-05-22T20:40:00Z,0.0,37.363,-122.881,320,12.0,16.0,NaN,NaN,NaN,,1015.9,12.6,12.7,9.3,NaN,NaN,NaN,7.7,-9.2\n" +
+"46013,2020-05-22T20:40:00Z,0.0,38.242,-123.301,320,14.0,18.0,NaN,NaN,NaN,,1014.6,11.7,11.1,8.4,NaN,NaN,NaN,9.0,-10.7\n" +
+"46014,2020-05-22T20:40:00Z,0.0,39.196,-123.969,320,14.0,17.0,2.7,NaN,5.4,335,1016.1,12.3,11.5,9.5,NaN,NaN,NaN,9.0,-10.7\n" +
+"46015,2020-05-22T20:40:00Z,0.0,42.747,-124.823,350,7.0,8.0,NaN,NaN,NaN,,1022.9,12.0,13.9,7.5,NaN,NaN,NaN,1.2,-6.9\n" +
+"46022,2020-05-22T20:40:00Z,0.0,40.763,-124.577,340,12.0,14.0,NaN,NaN,NaN,,1020.0,12.8,13.6,7.8,NaN,NaN,NaN,4.1,-11.3\n" +
+"46025,2020-05-22T20:40:00Z,0.0,33.749,-119.053,200,3.0,3.0,NaN,NaN,NaN,,1012.9,16.3,17.9,13.9,NaN,NaN,NaN,1.0,2.8\n" +
+"46026,2020-05-22T20:40:00Z,0.0,37.759,-122.833,320,11.0,14.0,NaN,NaN,NaN,,1015.3,11.7,11.3,8.5,NaN,NaN,NaN,7.1,-8.4\n" +
+"46027,2020-05-22T20:40:00Z,0.0,41.85,-124.381,330,12.0,16.0,NaN,NaN,NaN,,1020.5,NaN,12.8,NaN,NaN,NaN,NaN,6.0,-10.4\n" +
+"46028,2020-05-22T20:40:00Z,0.0,35.741,-121.884,320,12.0,15.0,NaN,NaN,NaN,,1014.2,12.9,11.9,9.7,NaN,NaN,NaN,7.7,-9.2\n" +
+"46029,2020-05-22T20:40:00Z,0.0,46.144,-124.51,310,7.0,9.0,NaN,NaN,NaN,,1022.2,11.0,13.8,7.4,NaN,NaN,NaN,5.4,-4.5\n" +
+"46042,2020-05-22T20:40:00Z,0.0,36.789,-122.404,310,11.0,15.0,NaN,NaN,NaN,,1015.4,12.7,12.5,9.1,NaN,NaN,NaN,8.4,-7.1\n" +
+"46047,2020-05-22T20:40:00Z,0.0,32.433,-119.533,320,10.0,13.0,NaN,NaN,NaN,,1013.9,14.7,NaN,12.6,NaN,NaN,NaN,6.4,-7.7\n" +
+"46050,2020-05-22T20:40:00Z,0.0,44.641,-124.5,330,5.0,6.0,NaN,NaN,NaN,,1022.5,12.4,13.5,5.9,NaN,NaN,NaN,2.5,-4.3\n" +
+"46053,2020-05-22T20:40:00Z,0.0,34.248,-119.841,260,4.0,5.0,NaN,NaN,NaN,,1013.6,14.0,14.4,12.3,NaN,NaN,NaN,3.9,0.7\n" +
+"46054,2020-05-22T20:40:00Z,0.0,34.274,-120.459,310,11.0,13.0,NaN,NaN,NaN,,1013.6,12.4,11.1,9.4,NaN,NaN,NaN,8.4,-7.1\n" +
+"46059,2020-05-22T20:40:00Z,0.0,38.047,-129.969,350,6.0,8.0,1.5,NaN,6.1,289,1025.8,13.5,14.7,8.6,NaN,NaN,NaN,1.0,-5.9\n" +
+"46069,2020-05-22T20:40:00Z,0.0,33.67,-120.2,NaN,10.0,13.0,NaN,NaN,NaN,,1014.5,NaN,13.4,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"46086,2020-05-22T20:40:00Z,0.0,32.491,-118.034,NaN,4.0,6.0,1.8,NaN,6.8,187,1013.3,16.0,NaN,12.3,NaN,NaN,NaN,NaN,NaN\n" +
+"46088,2020-05-22T20:40:00Z,0.0,48.333,-123.167,NaN,8.0,9.0,NaN,NaN,NaN,,1018.3,NaN,9.9,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"46128,2020-05-22T20:40:00Z,0.0,43.295,-124.537,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,11.5,14.1,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"51000,2020-05-22T20:40:00Z,0.0,23.546,-154.056,70,8.0,10.0,NaN,NaN,NaN,,1019.1,24.0,25.2,20.0,NaN,NaN,NaN,-7.5,-2.7\n" +
+"51001,2020-05-22T20:40:00Z,0.0,23.445,-162.279,80,6.0,8.0,NaN,NaN,NaN,,1020.6,24.1,24.5,20.0,NaN,NaN,NaN,-5.9,-1.0\n" +
+"51002,2020-05-22T20:40:00Z,0.0,17.094,-157.808,90,7.0,9.0,NaN,NaN,NaN,,1015.1,25.0,25.9,21.1,NaN,NaN,NaN,-7.0,0.0\n" +
+"51003,2020-05-22T20:40:00Z,0.0,19.087,-160.66,80,8.0,10.0,NaN,NaN,NaN,,1017.1,NaN,26.3,NaN,NaN,NaN,NaN,-7.9,-1.4\n" +
+"51004,2020-05-22T20:40:00Z,0.0,17.525,-152.382,80,7.0,9.0,NaN,NaN,NaN,,1015.3,24.5,25.3,21.8,NaN,NaN,NaN,-6.9,-1.2\n" +
+"51101,2020-05-22T20:40:00Z,0.0,24.321,-162.058,80,7.0,8.0,NaN,NaN,NaN,,1019.8,24.0,24.5,19.8,NaN,NaN,NaN,-6.9,-1.2\n" +
+"APNM4,2020-05-22T20:40:00Z,0.0,45.06,-83.424,160,5.1,5.7,NaN,NaN,NaN,,NaN,13.8,NaN,NaN,NaN,NaN,NaN,-1.7,4.8\n" +
+"BIGM4,2020-05-22T20:40:00Z,0.0,46.83,-87.73,130,2.6,6.2,NaN,NaN,NaN,,1014.6,19.5,NaN,NaN,NaN,NaN,NaN,-2.0,1.7\n" +
+"BSBM4,2020-05-22T20:40:00Z,0.0,44.055,-86.514,350,2.6,3.6,NaN,NaN,NaN,,1017.9,13.6,NaN,NaN,NaN,NaN,NaN,0.5,-2.6\n" +
+"CHII2,2020-05-22T20:40:00Z,0.0,42.0,-87.5,40,3.1,3.1,NaN,NaN,NaN,,NaN,11.9,NaN,11.9,NaN,NaN,NaN,-2.0,-2.4\n" +
+"CLSM4,2020-05-22T20:40:00Z,0.0,42.471,-82.877,150,1.5,2.6,NaN,NaN,NaN,,1017.6,17.7,NaN,NaN,NaN,NaN,NaN,-0.7,1.3\n" +
+"FPTM4,2020-05-22T20:40:00Z,0.0,45.619,-86.659,130,1.5,1.5,NaN,NaN,NaN,,1016.6,12.8,NaN,NaN,NaN,NaN,NaN,-1.1,1.0\n" +
+"GRIM4,2020-05-22T20:40:00Z,0.0,46.721,-87.412,120,3.6,5.7,NaN,NaN,NaN,,1016.1,7.6,NaN,3.3,NaN,NaN,NaN,-3.1,1.8\n" +
+"GRMM4,2020-05-22T20:40:00Z,0.0,46.68,-85.97,40,2.6,4.1,NaN,NaN,NaN,,1017.3,10.8,NaN,NaN,NaN,NaN,NaN,-1.7,-2.0\n" +
+"GSLM4,2020-05-22T20:40:00Z,0.0,44.018,-83.537,30,5.7,6.2,NaN,NaN,NaN,,NaN,16.5,NaN,NaN,NaN,NaN,NaN,-2.8,-4.9\n" +
+"GTLM4,2020-05-22T20:40:00Z,0.0,45.211,-85.55,30,1.0,2.1,NaN,NaN,NaN,,1017.6,15.5,NaN,NaN,NaN,NaN,NaN,-0.5,-0.9\n" +
+"HHLO1,2020-05-22T20:40:00Z,0.0,41.401,-82.545,80,1.5,2.6,NaN,NaN,NaN,,1016.3,13.8,NaN,NaN,NaN,NaN,NaN,-1.5,-0.3\n" +
+"KNSW3,2020-05-22T20:40:00Z,0.0,42.589,-87.809,NaN,0.0,0.5,NaN,NaN,NaN,,1016.9,11.7,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"LDLC3,2020-05-22T20:40:00Z,0.0,41.305,-72.077,240,5.7,7.2,NaN,NaN,NaN,,1017.9,17.5,NaN,12.8,NaN,NaN,NaN,4.9,2.8\n" +
+"LMFS1,2020-05-22T20:40:00Z,0.0,34.107,-81.271,280,1.5,2.6,NaN,NaN,NaN,,NaN,28.0,NaN,NaN,NaN,NaN,NaN,1.5,-0.3\n" +
+"LORO1,2020-05-22T20:40:00Z,0.0,41.481,-82.195,50,2.1,2.1,NaN,NaN,NaN,,NaN,13.1,NaN,NaN,NaN,NaN,NaN,-1.6,-1.3\n" +
+"MCYI3,2020-05-22T20:40:00Z,0.0,41.729,-86.913,50,2.1,2.1,NaN,NaN,NaN,,NaN,13.2,NaN,13.0,NaN,NaN,NaN,-1.6,-1.3\n" +
+"MEEM4,2020-05-22T20:40:00Z,0.0,44.248,-86.346,0,2.6,3.1,NaN,NaN,NaN,,1018.3,15.4,NaN,NaN,NaN,NaN,NaN,0.0,-2.6\n" +
+"MKGM4,2020-05-22T20:40:00Z,0.0,43.228,-86.339,340,3.1,3.1,NaN,NaN,NaN,,1016.8,16.5,NaN,13.7,NaN,NaN,NaN,1.1,-2.9\n" +
+"MLWW3,2020-05-22T20:40:00Z,0.0,43.046,-87.879,100,2.6,3.1,NaN,NaN,NaN,,NaN,10.7,NaN,NaN,NaN,NaN,NaN,-2.6,0.5\n" +
+"NABM4,2020-05-22T20:40:00Z,0.0,46.087,-85.443,160,1.0,1.5,NaN,NaN,NaN,,1016.3,15.7,NaN,NaN,NaN,NaN,NaN,-0.3,0.9\n" +
+"NBBA3,2020-05-22T20:40:00Z,0.0,36.087,-114.728,170,9.8,14.9,0.3,2.0,NaN,,1001.6,29.9,NaN,NaN,NaN,NaN,NaN,-1.7,9.7\n" +
+"NLMA3,2020-05-22T20:40:00Z,0.0,35.458,-114.666,NaN,NaN,NaN,0.5,2.0,NaN,,NaN,29.8,22.2,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"NPDW3,2020-05-22T20:40:00Z,0.0,45.29,-86.978,40,2.1,2.6,NaN,NaN,NaN,,1016.6,19.0,NaN,NaN,NaN,NaN,NaN,-1.3,-1.6\n" +
+"OLCN6,2020-05-22T20:40:00Z,0.0,43.341,-78.719,80,3.1,4.1,NaN,NaN,NaN,,1016.9,10.8,NaN,NaN,NaN,NaN,NaN,-3.1,-0.5\n" +
+"PNGW3,2020-05-22T20:40:00Z,0.0,46.792,-91.386,310,0.5,1.5,NaN,NaN,NaN,,1015.6,8.1,NaN,NaN,NaN,NaN,NaN,0.4,-0.3\n" +
+"PSCM4,2020-05-22T20:40:00Z,0.0,43.423,-82.536,170,1.0,1.5,NaN,NaN,NaN,,1034.9,16.9,NaN,NaN,NaN,NaN,NaN,-0.2,1.0\n" +
+"PTRP4,2020-05-22T20:40:00Z,0.0,18.367,-67.251,20,2.6,4.6,NaN,NaN,NaN,,NaN,29.0,NaN,NaN,NaN,NaN,NaN,-0.9,-2.4\n" +
+"PWAW3,2020-05-22T20:40:00Z,0.0,43.388,-87.868,120,1.5,2.1,NaN,NaN,NaN,,1017.9,14.0,NaN,NaN,NaN,NaN,NaN,-1.3,0.7\n" +
+"RPRN6,2020-05-22T20:40:00Z,0.0,43.258,-77.592,90,1.5,2.6,NaN,NaN,NaN,,NaN,16.0,NaN,NaN,NaN,NaN,NaN,-1.5,0.0\n" +
+"SBBN2,2020-05-22T20:40:00Z,0.0,36.05,-114.748,170,9.3,15.4,0.4,2.0,NaN,,1001.6,30.6,NaN,NaN,NaN,NaN,NaN,-1.6,9.2\n" +
+"SBLM4,2020-05-22T20:40:00Z,0.0,43.806,-83.719,30,4.6,5.7,NaN,NaN,NaN,,1015.9,16.2,NaN,NaN,NaN,NaN,NaN,-2.3,-4.0\n" +
+"SISW1,2020-05-22T20:40:00Z,0.0,48.318,-122.843,180,6.7,7.2,NaN,NaN,NaN,,1018.5,11.4,NaN,6.9,NaN,NaN,NaN,0.0,6.7\n" +
+"SJOM4,2020-05-22T20:40:00Z,0.0,42.099,-86.494,30,2.6,3.6,NaN,NaN,NaN,,1016.9,14.7,NaN,NaN,NaN,NaN,NaN,-1.3,-2.3\n" +
+"SLVM5,2020-05-22T20:40:00Z,0.0,47.269,-91.252,50,2.6,5.1,NaN,NaN,NaN,,1015.6,7.4,NaN,NaN,NaN,NaN,NaN,-2.0,-1.7\n" +
+"SMKF1,2020-05-22T20:40:00Z,0.0,24.627,-81.11,100,8.8,10.8,NaN,NaN,NaN,,NaN,28.0,NaN,23.2,NaN,NaN,NaN,-8.7,1.5\n" +
+"SVNM4,2020-05-22T20:40:00Z,0.0,42.401,-86.289,350,1.0,1.5,NaN,NaN,NaN,,NaN,13.9,NaN,NaN,NaN,NaN,NaN,0.2,-1.0\n" +
+"SXHW3,2020-05-22T20:40:00Z,0.0,46.563,-90.44,10,1.5,2.1,NaN,NaN,NaN,,1015.6,10.8,NaN,NaN,NaN,NaN,NaN,-0.3,-1.5\n" +
+"TAWM4,2020-05-22T20:40:00Z,0.0,44.256,-83.443,70,2.1,3.6,NaN,NaN,NaN,,1016.9,18.2,NaN,NaN,NaN,NaN,NaN,-2.0,-0.7\n" +
+"TBIM4,2020-05-22T20:40:00Z,0.0,45.035,-83.194,150,1.5,2.1,NaN,NaN,NaN,,NaN,11.6,NaN,NaN,NaN,NaN,NaN,-0.7,1.3\n" +
+"THLO1,2020-05-22T20:40:00Z,0.0,41.826,-83.194,100,3.1,3.1,NaN,NaN,NaN,,NaN,12.9,NaN,NaN,NaN,NaN,NaN,-3.1,0.5\n" +
+"TIBC1,2020-05-22T20:40:00Z,0.0,37.891,-122.447,140,4.6,NaN,NaN,NaN,NaN,,1014.0,17.1,NaN,NaN,NaN,NaN,NaN,-3.0,3.5\n" +
+"TWCO1,2020-05-22T20:40:00Z,0.0,41.699,-83.259,70,3.6,4.1,NaN,NaN,NaN,,NaN,NaN,13.0,NaN,NaN,NaN,NaN,-3.4,-1.2\n" +
+"VBBA3,2020-05-22T20:40:00Z,0.0,36.132,-114.412,180,8.2,11.8,0.3,2.0,NaN,,1001.9,30.2,NaN,NaN,NaN,NaN,NaN,0.0,8.2\n" +
+"WFPM4,2020-05-22T20:40:00Z,0.0,46.762,-84.966,0,4.6,6.7,NaN,NaN,NaN,,1015.9,18.7,NaN,NaN,NaN,NaN,NaN,0.0,-4.6\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        }
+        String2.log(bigResults.toString());
+/* times truncted to seconds
+     2020-06-16 new 
+nThreads=5 time=13  
+nThreads=4 time=13  
+nThreads=3 time=13  
+nThreads=2 time=14  
+nThreads=1 time=14  
+nThreads=1 time=14  
+nThreads=2 time=15  
+nThreads=3 time=13  
+nThreads=4 time=13  
+*/
+
+        Table.verbose = true;
+        Table.reallyVerbose = true;
+        EDD.verbose = true;
+        EDD.reallyVerbose = true;
+        EDD.debugMode = false;
+        EDDTableFromFilesCallable.debugMode = false;
+    }
+
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -6473,7 +6682,7 @@ String expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 15;
+            lastTest = interactive? -1 : 16;
         String msg = "\n^^^ EDDTableFromAsciiFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = false; //usually false, rarely true
@@ -6503,6 +6712,7 @@ String expected =
                     if (test == 13) testTimeRange2();
                     if (test == 14) testStandardizeWhat();
                     if (test == 15) testFiles();
+                    if (test == 16) testNThreads();
 
                     //not usually run
                     if (test == 1000) testQuickRestart();

@@ -10,6 +10,8 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAOne;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -49,6 +51,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +62,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.net.URLConnection;
 import java.text.MessageFormat;
@@ -139,6 +143,13 @@ public class Erddap extends HttpServlet {
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false; 
+
+    /**
+     * Set this to true (by calling debugMod=true in your program, 
+     * not by changing the code here)
+     * if you want debug-level diagnostic messages sent to String2.log.
+     */
+    public static boolean debugMode = false; 
 
     /** The programmatic/computer access to Erddap services are available as 
      * all of the plainFileTypes. 
@@ -920,6 +931,8 @@ public class Erddap extends HttpServlet {
                 "    <td>" + EDStatic.convertOceanicAtmosphericAcronyms + "</td></tr>\n" +
                 "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\">FIPS County Codes</a></td>\n" + 
                 "    <td>" + EDStatic.convertFipsCounty + "</td></tr>\n" +
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\">Interpolate</a></td>\n" + 
+                "    <td>" + EDStatic.convertInterpolate + "</td></tr>\n" +
                 "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\">Keywords</a></td>\n" + 
                 "    <td>" + EDStatic.convertKeywords + "</td></tr>\n" +
                 "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Time</a></td>\n" + 
@@ -3015,7 +3028,7 @@ widgets.textField("long_name" + var, "", 40, 100, tLongName[var], "") +
     "<br>&nbsp;&nbsp;just leave this blank. We'll fill it in.") + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.comboBox(formName, "standard_name" + var, "", 40, 120, tStandardName[var], 
-    EDStatic.commonStandardNames, "") + 
+    EDStatic.commonStandardNames, "", null) + 
 "</tr>\n" +
 "<tr>\n" +
 "  <td>dataType\n" + 
@@ -6849,8 +6862,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                 " rejected because request is out of lon range.");
                             continue LAYER;
                         }
-                        int first = av.destinationToClosestSourceIndex(minx);
-                        int last = av.destinationToClosestSourceIndex(maxx);
+                        int first = av.destinationToClosestIndex(minx);
+                        int last = av.destinationToClosestIndex(maxx);
                         if (first > last) {int ti = first; first = last; last = ti;}
                         int stride = DataHelper.findStride(last - first + 1, width);
                         tQuery.append("[" + first + ":" + stride + ":" + last + "]");
@@ -6864,8 +6877,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                 " rejected because request is out of lat range.");
                             continue LAYER;
                         }
-                        int first = av.destinationToClosestSourceIndex(miny);
-                        int last = av.destinationToClosestSourceIndex(maxy);
+                        int first = av.destinationToClosestIndex(miny);
+                        int last = av.destinationToClosestIndex(maxy);
                         if (first > last) {int ti = first; first = last; last = ti;}
                         int stride = DataHelper.findStride(last - first + 1, height);
                         tQuery.append("[" + first + ":" + stride + ":" + last + "]");
@@ -6895,7 +6908,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                 " for " + tAvName);
                             continue LAYER;
                         }
-                        int first = av.destinationToClosestSourceIndex(tValueD);
+                        int first = av.destinationToClosestIndex(tValueD);
                         tQuery.append("[" + first + "]");
                     }
                 }
@@ -7602,7 +7615,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 "            xlink:type=\"simple\" \n" +
 "            xlink:href=\"" + 
     (layeri < 2? "https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html" : 
-                "https://gmt.soest.hawaii.edu/") + 
+                "https://www.soest.hawaii.edu/gmt/") + 
     "\" />\n" +
          //LogoURL
 "        </Attribution>\n" +
@@ -9034,7 +9047,7 @@ breadCrumbs + endBreadCrumbs +
                     //find closest index (so canonical request), then epochSeconds, then ISO (so readable)
                     centeredIsoTime = tEdvTime.destinationToString(
                         tEdvTime.destinationDouble(
-                        tEdvTime.destinationToClosestSourceIndex(tEpochSeconds)));
+                        tEdvTime.destinationToClosestIndex(tEpochSeconds)));
                 }
 
                 //format
@@ -13822,6 +13835,12 @@ writer.write(
             }
             return;
 
+        //interpolate
+        } else if (endOfRequestUrl.equals("interpolate.html") ||
+                   (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes[pft]))) {
+            doConvertInterpolate(request, response, loggedInAs, endOfRequestUrl, userQuery, pft);
+            return;
+
         //OceanicAtmospheric Acronyms
         } else if (endOfRequestUrl.equals("oceanicAtmosphericAcronyms.html") ||
                    endOfRequestUrl.equals("oceanicAtmosphericAcronyms.txt")) {
@@ -13903,6 +13922,8 @@ writer.write(
                     EDStatic.convertOceanicAtmosphericAcronyms + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><strong>FIPS County Codes</strong></a> - " + 
                     EDStatic.convertFipsCounty + "\n" +
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\"><strong>Interpolate</strong></a> - " + 
+                    EDStatic.convertInterpolate + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><strong>Keywords</strong></a> - " + 
                     EDStatic.convertKeywords + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\"><strong>Time</strong></a> - " + 
@@ -14120,7 +14141,7 @@ writer.write(
             writer.write(EDStatic.convertFipsCountyNotes);
 
             //Info about .txt fips service option   
-            writer.write(EDStatic.convertFipsCountyService);
+            writer.write(MessageFormat.format(EDStatic.convertFipsCountyService, tErddapUrl) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -14334,7 +14355,7 @@ writer.write(
             writer.write(EDStatic.convertOceanicAtmosphericAcronymsNotes);
 
             //Info about .txt fips service option  
-            writer.write(EDStatic.convertOceanicAtmosphericAcronymsService);
+            writer.write(MessageFormat.format(EDStatic.convertOceanicAtmosphericAcronymsService, tErddapUrl) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -14368,17 +14389,17 @@ writer.write(
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
-        String defaultVariableName   = "sst";
-        String defaultFullName = "Sea Surface Temperature";
-        String queryVariableName     = queryMap.get("variableName"); 
-        String queryFullName   = queryMap.get("fullName");
+        String defaultVariableName = "sst";
+        String defaultFullName     = "Sea Surface Temperature";
+        String queryVariableName   = queryMap.get("variableName"); 
+        String queryFullName       = queryMap.get("fullName");
         if (queryVariableName   == null) queryVariableName = "";
         if (queryFullName == null) queryFullName = "";
-        String answerVariableName    = "";
-        String answerFullName  = "";
-        String variableNameTooltip   = "The oceanic/atmospheric variable name, for example, \"" + defaultVariableName + "\".";
+        String answerVariableName  = "";
+        String answerFullName      = "";
+        String variableNameTooltip = "The oceanic/atmospheric variable name, for example, \"" + defaultVariableName + "\".";
         //String fullNameTooltip = "The full name, for example, \"" + defaultFullName + "\".";
-        String fullNameTooltip = "Select a full name.";
+        String fullNameTooltip     = "Select a full name.";
 
         //only 0 or 1 of toVariableName,toFullName will be true (not both)
         boolean toFullName = queryVariableName.length() > 0; 
@@ -14545,7 +14566,7 @@ writer.write(
             writer.write(EDStatic.convertOceanicAtmosphericVariableNamesNotes);
 
             //Info about .txt service option   
-            writer.write(EDStatic.convertOceanicAtmosphericVariableNamesService);
+            writer.write(MessageFormat.format(EDStatic.convertOceanicAtmosphericVariableNamesService, tErddapUrl) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -14745,7 +14766,7 @@ writer.write(
 
                 "<li>View/download the entire CF Standard Names list in these file types:" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "") +
-                "  <br>Source: <a rel=\"bookmark\" href=\"http://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html\">Version 18, dated 22 July 2011" +
+                "  <br>Source: <a rel=\"bookmark\" href=\"https://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html\">Version 18, dated 22 July 2011" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "  <br>&nbsp;\n" +
 
@@ -14766,7 +14787,7 @@ writer.write(
             writer.write(EDStatic.convertKeywordsNotes);
 
             //Info about .txt time service option   
-            writer.write(EDStatic.convertKeywordsService);
+            writer.write(MessageFormat.format(EDStatic.convertKeywordsService, tErddapUrl) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -14778,6 +14799,1119 @@ writer.write(
             writer.write("</div>\n");
             endHtmlWriter(out, writer, tErddapUrl, false);
         }
+    }
+
+    //other possible algorithms: https://en.wikipedia.org/wiki/Multivariate_interpolation
+    final static String INTERPOLATE_ALGORITHMS[] = new String[]{
+        "Nearest", "Bilinear", "Mean", "SD", "Median", "Scaled",
+        "InverseDistance", "InverseDistance2", "InverseDistance4", "InverseDistance6"};
+
+    /**
+     * Process erddap/convert/interpolate.html and interpolate.plainFileTypes.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequestUrl   urls.html or urls.txt
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     * @param pft the plainFileType or -1 if not matched
+     * @throws Throwable if trouble
+     */
+    public void doConvertInterpolate(HttpServletRequest request, HttpServletResponse response, 
+        String loggedInAs, String endOfRequestUrl, String userQuery, int pft) throws Throwable {
+
+        //first thing
+        if (!EDStatic.convertersActive) {
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.disabled, "convert"));
+            return;
+        }
+
+        //parse the userQuery
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
+        String tTLLTable   = queryMap.get("TimeLatLonTable"); 
+        String tRequestCSV = queryMap.get("requestCSV"); 
+        String tFileType   = pft >= 0?  plainFileTypes[pft] : ""; //default pft
+        if (tTLLTable   == null) tTLLTable   = "";
+        if (tRequestCSV == null) tRequestCSV = "";
+        String sampleTLL = 
+"time,latitude,longitude\n" +
+"2020-01-01T06:00:00Z,35.580,-122.550\n" +
+"2020-01-01T12:00:00Z,35.576,-122.553\n" +
+"2020-01-01T18:00:00Z,35.572,-122.568\n" +
+"2020-01-02T00:00:00Z,35.569,-122.571\n";
+
+        //do the .plainFileType response
+
+        if (pft >= 0 && endOfRequestUrl.equals("interpolate" + tFileType)) {
+
+            Table resultsTable = interpolate(gridDatasetHashMap, tTLLTable, tRequestCSV);  //throws exception if trouble
+
+            //respond to a valid request
+            sendPlainTable(loggedInAs, request, response, resultsTable, "convertInterpolate", tFileType);
+            return;
+        }
+
+        //do the .html response
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
+        widgets.enterTextSubmitsForm = true; 
+        OutputStream out = getHtmlOutputStreamUtf8(request, response);
+        Writer writer = getHtmlWriterUtf8(loggedInAs, "Convert Nearest Data", out); 
+        try {
+            String defaultIDVarExample = "jplMURSST41/analysed_sst/Bilinear/4";
+            String idVarExample = String2.isSomething(EDStatic.convertInterpolateRequestCSVExample)?
+                EDStatic.convertInterpolateRequestCSVExample :
+                defaultIDVarExample; 
+            String idVarList[] = EDStatic.convertInterpolateDatasetIDVariableList.length == 0?
+                new String[]{"jplMURSST41/analysed_sst"} : 
+                EDStatic.convertInterpolateDatasetIDVariableList;
+
+            String datasetIDVarOptions[] = new String[idVarList.length + 1];
+            datasetIDVarOptions[0] = "";
+            System.arraycopy(idVarList, 0, datasetIDVarOptions, 1, idVarList.length);
+
+            String algorithmOptions[] = new String[INTERPOLATE_ALGORITHMS.length + 1];
+            algorithmOptions[0] = "";
+            for (int i = 0; i < INTERPOLATE_ALGORITHMS.length; i++) 
+                algorithmOptions[i + 1] = "/" + INTERPOLATE_ALGORITHMS[i];
+
+            String nearbyOptions[] = new String[]{"", 
+                "/1", "/4", "/16", "/36", 
+                "/8", "/64", "/216"};
+
+            writer.write(
+                "<div class=\"standard_width\">\n" +
+                EDStatic.youAreHere(loggedInAs, "convert", "Interpolate") +
+                "<h2>" + EDStatic.convertInterpolate + "</h2>\n" +
+                MessageFormat.format(EDStatic.convertInterpolateIntro, idVarExample));
+     
+            //convert
+            String tableCSV = "tableCSV";  
+            String formName = "f1"; //hard coded in a few places below
+            writer.write(
+                "\n" +
+                "<p>" +
+                widgets.beginForm(formName, "GET", tErddapUrl + "/convert/interpolate.html", "") +
+                widgets.beginTable("class=\"compact\"") +
+
+                "<tr><td>" + 
+                    EDStatic.convertInterpolateTLLTable + "\n" +
+                    EDStatic.htmlTooltipImage(loggedInAs, EDStatic.convertInterpolateTLLTableHelp) +
+                "</td>\n" +
+                //default maxHttpHeaderSize (in server.xml) is 4096 bytes
+                "<td><textarea name=\"TimeLatLonTable\" cols=\"66\" rows=\"6\" maxlength=\"4000\" wrap=\"soft\">" + //"hard" adds newline char for wordwrap places (hopefully irrelevant)
+                    XML.encodeAsHTML(tTLLTable.length() > 0? tableCSV : sampleTLL) +  
+                    "</textarea>" +
+                "</td></tr>\n" +
+
+                "<tr><td>" + 
+                    EDStatic.convertInterpolateDatasetIDVariable + "\n" +
+                    EDStatic.htmlTooltipImage(loggedInAs, 
+                        MessageFormat.format(EDStatic.convertInterpolateDatasetIDVariableHelp, idVarExample)) + 
+                "</td>\n" +
+                "<td class=\"N\">" + 
+                    widgets.textField("requestCSV", "", //tooltip, 
+                        64, 500, idVarExample, "") + //other
+                "</td></tr>\n" +
+
+                "<tr><td>&nbsp;&nbsp;&nbsp;" + EDStatic.options + ":" +
+                "</td>\n" +
+                "<td class=\"N\">&nbsp;&nbsp;&nbsp;" +
+                    widgets.select("datasetIDVarOptions", 
+                        "If you select one of these datasetID/variable options," +
+                        "<br>it will be appended to the Request CSV above.", 
+                        1, datasetIDVarOptions, 0, 
+                        "onChange=\"document." + formName + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"") + 
+                    "\n" +
+
+                    widgets.select("algorithmOptions", 
+                        "If you select one of these algorithm options," +
+                        "<br>it will be appended to the Request CSV above.", 
+                        1, algorithmOptions, 0, 
+                        "onChange=\"document." + formName + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"") + 
+                    "\n" +
+
+                    widgets.select("nearbyOptions", 
+                        "If you select one of these 'nearby' options," +
+                        "<br>it will be appended to the Request CSV above." + 
+                        "<br>Note that options 1, 4, 16, and 36 are 2D (lat lon) options," +
+                        "<br>while options 8, 64 and 216 are 3D (lat lon time) options.", 
+                        1, nearbyOptions, 0, 
+                        "onChange=\"document." + formName + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"") + 
+                    "\n" +
+
+                    widgets.htmlButton("button", "comma", "", //value
+                        "If you click this button, a comma will be appended to the Request CSV above.",  
+                        ",", //htmlLabel
+                        "onclick=\"document." + formName + ".requestCSV.value+=',';\"") + //other
+                    "\n" +
+
+                "</td></tr>\n" +
+
+                "<tr><td>" + 
+                    EDStatic.EDDFileType + 
+                "</td>\n" +
+                "<td>" +               
+                    widgets.select("fileType", "", 1, plainFileTypes, 1, "") + 
+                "</td></tr>\n" +
+
+                "<tr><td>" + 
+                    widgets.htmlButton("button", null, "Convert", 
+                        "Click to submit the information in this form to the server.",
+                        "<strong>Convert</strong>", 
+                        "onclick=\"var d = document;\n" +
+                             "window.location='" + tErddapUrl + "/convert/interpolate' + " +
+                             "d.f1.fileType.options[d.f1.fileType.selectedIndex].text + " + 
+                             "'?TimeLatLonTable=' + encodeURIComponent(d.f1.TimeLatLonTable.value) + " + 
+                             "'&requestCSV=' + encodeURIComponent(d.f1.requestCSV.value);\"") + //\" is end of onclick
+                "</td></tr>\n" +
+
+
+                widgets.endTable());
+
+            writer.write(
+                widgets.endForm() +
+                "\n");
+
+            //notes 
+            writer.write("<br>" + EDStatic.convertInterpolateNotes + "\n");
+
+            //Info about service / plainFileType option 
+            writer.write(MessageFormat.format(EDStatic.convertInterpolateService, tErddapUrl) + "\n");
+            writer.write('\n');
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(t));
+            throw t; 
+        } finally {
+            //end of document
+            writer.write("</div>\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+        }  
+    }
+
+
+    /**
+     * This does the work for the Nearest Data converter.
+     * This is static (with gridDatasetHashMap as a param) to facilitate testing.
+     *
+     * @param gridDatasetHashMap 
+     * @param TLLTable ASCII text with table with latitude,longitude,time columns
+     * @param requestCSV the CSV list of desired datasetID/variable/algorithm/nearby settings
+     * @return a table with latitude,longitude,time and requested datasetID/variable columns
+     * @throws Throwable if trouble
+     */
+    public static Table interpolate(ConcurrentHashMap<String,EDDGrid> tGridDatasetHashMap, 
+        String TLLTable, String requestCSV) throws Throwable {
+
+        if (debugMode) String2.log("\n*** interpolate");
+        if (!String2.isSomething(TLLTable))
+            throw new SimpleException(EDStatic.queryError + MessageFormat.format(EDStatic.queryErrorInvalid, "TimeLatLonTable (nothing)"));
+        if (!String2.isSomething(requestCSV))
+            throw new SimpleException(EDStatic.queryError + MessageFormat.format(EDStatic.queryErrorInvalid, "requestCSV (nothing)"));
+
+        //split requestCSV
+        //poor man's enumeration of INTERPOLATE_ALGORITHMS
+        final int NEAREST          = 0;
+        final int BILINEAR         = 1;
+        final int MEAN             = 2;
+        final int SD               = 3;
+        final int MEDIAN           = 4;
+        final int SCALED           = 5;
+        final int INVERSEDISTANCE  = 6;
+        final int INVERSEDISTANCE2 = 7;
+        final int INVERSEDISTANCE4 = 8;
+        final int INVERSEDISTANCE6 = 9;
+        int NEARBY_2D[]       = new int[]{4, 16, 36};  //2^2, 4^2, 6^2 -> radius 1, 2, 3
+        int NEARBY_3D[]       = new int[]{8, 64, 216}; //2^3, 4^3, 6^3 -> radius 1, 2, 3
+        int CATCH_DISTANCE0[] = new int[]{SCALED, INVERSEDISTANCE, INVERSEDISTANCE2, INVERSEDISTANCE4, INVERSEDISTANCE6}; //not BILINEAR because this pt might be NaN
+        String requestParts[] = StringArray.arrayFromCSV(requestCSV);
+        int ndv = requestParts.length;
+        String datasetIDs[]   = new String[ ndv];
+        String variable[]     = new String[ ndv];
+        int algorithm[]       = new int[    ndv];
+        boolean is3D[]        = new boolean[ndv]; //true=3D false=2D
+        int radius[]          = new int[    ndv]; //0 (just an option for Nearest), 1, 2, 3
+        EDDGrid eddGrid[]     = new EDDGrid[ndv];
+        EDV edv[]             = new EDV[    ndv];
+        for (int dv = 0; dv < ndv; dv++) {
+            String tParts[] = String2.split(requestParts[dv], '/');
+            if (tParts.length < 2 || tParts.length > 4)
+                throw new SimpleException(EDStatic.queryError + MessageFormat.format(
+                    EDStatic.queryErrorInvalid, "datasetID/variable/algorithm/nearby value=\"" + requestParts[dv] + "\""));
+            datasetIDs[dv] = tParts[0];
+            variable[  dv] = tParts[1];
+
+            //algorithm
+            algorithm[ dv] = tParts.length < 3? BILINEAR : String2.indexOf(INTERPOLATE_ALGORITHMS, tParts[2]); 
+            if (algorithm[dv] < 0) 
+                throw new SimpleException(EDStatic.queryError + MessageFormat.format(
+                    EDStatic.queryErrorInvalid, "algorithm in " + requestParts[dv]) + 
+                    " (must be one of " + String2.toCSSVString(INTERPOLATE_ALGORITHMS) + ")");
+
+            //nearby
+            if (tParts.length < 4) {
+                is3D[dv] = false;
+                radius[dv] = 1;  //  as if nearby=4
+            } else {
+                int tn = String2.parseInt(tParts[3]);
+                if (algorithm[dv] == NEAREST && tn == 1) {
+                    is3D[dv] = false;
+                    radius[dv] = 0;
+                } else if (algorithm[dv] == BILINEAR) {
+                    if (tn != 4)
+                        throw new SimpleException(EDStatic.queryError + MessageFormat.format(
+                            EDStatic.queryErrorInvalid, "For algorithm=Bilinear, 'nearby' must be 4."));
+                    is3D[dv] = false;
+                    radius[dv] = 1;
+                } else if (String2.indexOf(NEARBY_2D, tn) >= 0) {
+                    is3D[dv] = false;
+                    radius[dv] = String2.indexOf(NEARBY_2D, tn) + 1;
+                } else if (String2.indexOf(NEARBY_3D, tn) >= 0) {
+                    is3D[dv] = true;
+                    radius[dv] = String2.indexOf(NEARBY_3D, tn) + 1;
+                } else { 
+                    throw new SimpleException(EDStatic.queryError + MessageFormat.format(
+                        EDStatic.queryErrorInvalid, "'nearby' value in " + requestParts[dv]));
+                }
+            }
+        }
+
+        //ensure datasets are available and variableName is valid and has TLL axes
+        //  Get them now and hold them. (? or check now and get later as needed?)
+        for (int dv = 0; dv < ndv; dv++) {
+            eddGrid[dv] = tGridDatasetHashMap.get(datasetIDs[dv]);
+            if (eddGrid[dv] == null)
+                throw new SimpleException(MessageFormat.format(EDStatic.errorNotFound, 
+                    "datasetID=" + datasetIDs[dv]));
+            edv[dv] = eddGrid[dv].findDataVariableByDestinationName(variable[dv]); //throws SimpleException if not found
+            eddGrid[dv].findAxisVariableByDestinationName("time"     ); //throws SimpleException
+            eddGrid[dv].findAxisVariableByDestinationName("latitude" ); //throws SimpleException
+            eddGrid[dv].findAxisVariableByDestinationName("longitude"); //throws SimpleException
+        }
+
+        //parse sourceTable  
+        Table sourceTable = new Table();
+        try {
+            sourceTable.readASCII("TLLTable", new BufferedReader(new StringReader(TLLTable)),
+                "", "", //skipHeaderToRegex, skipLinesRegex,
+                0, 1, ",", //columnNamesLine, dataStartLine, tColSeparator,
+                null, null, null, null, false); //simplify
+        } catch (Exception e) {
+            throw new SimpleException(EDStatic.queryError + MessageFormat.format(EDStatic.queryErrorInvalid, "TimeLatLonTable"));
+        }
+        int nRows = sourceTable.nRows();
+        if (nRows == 0)
+            throw new SimpleException(EDStatic.queryError + MessageFormat.format(EDStatic.queryErrorInvalid, "TimeLatLonTable (nRows=0)"));
+        if (nRows > 100)  //I don't object to more, but there is more danger of a timeout.
+            throw new SimpleException(EDStatic.queryError + "The TLLTable must not have more than 100 rows.");
+
+        //manual simplify
+        for (int col = 0; col < sourceTable.nColumns(); col++) {
+            String colName = sourceTable.getColumnName(col);
+            PrimitiveArray pa = sourceTable.getColumn(col);
+            if (colName.equals("time")) {
+                //leave as string for now
+            } else if (colName.equals("latitude") || colName.equals("longitude")) {
+                sourceTable.setColumn(col, new DoubleArray(pa));
+            } else {
+                sourceTable.setColumn(col, pa.simplify(colName));
+            }
+        }           
+
+        PrimitiveArray sourceTimePA =              sourceTable.getColumn("time");      //exception if not found
+           DoubleArray        latPA = (DoubleArray)sourceTable.getColumn("latitude");  //exception if not found
+           DoubleArray        lonPA = (DoubleArray)sourceTable.getColumn("longitude"); //exception if not found
+
+        //convert time to epochSeconds
+        String format = Calendar2.suggestDateTimeFormat(sourceTimePA, true); //evenIfPurelyNumeric
+        DoubleArray timePA = null;
+        if (format.length() == 0) {
+            //are the values all numeric?
+            //  if yes, assume they are already epoch seconds
+            PrimitiveArray pa = sourceTimePA.simplify("time");
+            if (pa.elementType() == PAType.DOUBLE) {
+                timePA = (DoubleArray)pa;
+            } else if (pa.elementType() == PAType.INT ||
+                       pa.elementType() == PAType.LONG ||
+                       pa.elementType() == PAType.FLOAT) {
+                timePA = new DoubleArray(sourceTimePA);  //assume they are already epoch seconds. String->double
+            } else {
+                throw new SimpleException(EDStatic.queryError + 
+                    "Unrecognized string time format in 'time' column.");
+            }
+        } else {
+            timePA = Calendar2.parseToEpochSeconds(sourceTimePA, format);  //NaN if trouble
+        }
+
+        //set units in sourceTable
+        sourceTable.columnAttributes(sourceTable.findColumnNumber("time"     )).set("units", format.length() == 0? EDV.TIME_UNITS : format);
+        sourceTable.columnAttributes(sourceTable.findColumnNumber("latitude" )).set("units", EDV.LAT_UNITS);
+        sourceTable.columnAttributes(sourceTable.findColumnNumber("longitude")).set("units", EDV.LON_UNITS);
+        
+        //make indexTable with time,lat,lon double indices for each datasetID/Variable
+        DoubleArray timeDIndexPA  = new DoubleArray(nRows, false);
+        DoubleArray  latDIndexPA  = new DoubleArray(nRows, false);
+        DoubleArray  lonDIndexPA  = new DoubleArray(nRows, false); //values can be low/high because of +/-180, 0-360 
+        IntArray      isValidPA  = new IntArray(   nRows, false); //0=no 1=yes
+        Table indexTable = new Table();
+        indexTable.addColumn("timeIndex", timeDIndexPA);
+        indexTable.addColumn( "latIndex",  latDIndexPA);
+        indexTable.addColumn( "lonIndex",  lonDIndexPA);
+        indexTable.addColumn(  "isValid",   isValidPA);
+
+        Attributes emptyAttributes = new Attributes();
+
+        for (int dv = 0; dv < ndv; dv++) {
+            //find edvga's
+            EDVGridAxis timeAxis = eddGrid[dv].findAxisVariableByDestinationName("time"     ); //throws SimpleException
+            EDVGridAxis  latAxis = eddGrid[dv].findAxisVariableByDestinationName("latitude" ); //throws SimpleException
+            EDVGridAxis  lonAxis = eddGrid[dv].findAxisVariableByDestinationName("longitude"); //throws SimpleException
+            double timeAxisMin = timeAxis.destinationCoarseMin();
+            double timeAxisMax = timeAxis.destinationCoarseMax();
+            double  latAxisMin =  latAxis.destinationCoarseMin();
+            double  latAxisMax =  latAxis.destinationCoarseMax();
+            double  lonAxisMin =  lonAxis.destinationCoarseMin();
+            double  lonAxisMax =  lonAxis.destinationCoarseMax();
+
+            //make the column to hold the results for this datasetID/variable (filled with NaN)
+            PrimitiveArray resultsPA = PrimitiveArray.factory(
+                algorithm[dv] == NEAREST? edv[dv].destinationDataPAType() : PAType.DOUBLE, 
+                nRows, ""); //fill with NaN's
+            sourceTable.addColumn(String2.replaceAll(requestParts[dv], "/", "_"), resultsPA);          
+            if (edv[dv].units() != null)
+                sourceTable.columnAttributes(sourceTable.nColumns() - 1).set("units", edv[dv].units());
+
+            //make TLL index columns (double values, as if index space was continuous)
+            indexTable.removeRows(0, indexTable.nRows());
+            for (int row = 0; row < nRows; row++) {
+                double tTime = timePA.get(row);
+                double tLat  =  latPA.get(row);
+                double tLon  =  lonPA.get(row);
+                double timeDIndex = Double.isNaN(tTime) || tTime    < timeAxisMin || tTime    > timeAxisMax? -1 : timeAxis.destinationToDoubleIndex(tTime); 
+                double  latDIndex = Double.isNaN( tLat) || tLat     <  latAxisMin || tLat     >  latAxisMax? -1 :  latAxis.destinationToDoubleIndex(tLat);
+                double  lonDIndex = Double.isNaN( tLon) || tLon     <  lonAxisMin || tLon     >  lonAxisMax? -1 :  lonAxis.destinationToDoubleIndex(tLon);
+                if     (lonDIndex < 0)
+                        lonDIndex = Double.isNaN( tLon) || tLon-360 < lonAxisMin  || tLon-360 >  lonAxisMax? -1 :  lonAxis.destinationToDoubleIndex(tLon-360);
+                if     (lonDIndex < 0)
+                        lonDIndex = Double.isNaN( tLon) || tLon+360 < lonAxisMin  || tLon+360 >  lonAxisMax? -1 :  lonAxis.destinationToDoubleIndex(tLon+360);
+                timeDIndexPA.add(timeDIndex); 
+                 latDIndexPA.add( latDIndex); 
+                 lonDIndexPA.add( lonDIndex); 
+                  isValidPA.add(timeDIndex < 0 || latDIndex < 0 || lonDIndex < 0? 0 : 1);
+            }
+            if (debugMode) String2.log(">> timePA=" + timePA.toString() + 
+                                     "\n>> timeDIndexPA=" + timeDIndexPA.toString());
+
+            //rank table by isValid, time, lat, lon
+            int rank[] = indexTable.rank(new int[]{3, 0,1,2}, new boolean[]{true, true, true, true}); //colNumbers, ascending
+
+            //skip all isValid=0 rows
+            int startOfGroup = 0;  //rank index
+            while (startOfGroup < nRows && isValidPA.get(rank[startOfGroup]) == 0)
+                startOfGroup++;
+            if (startOfGroup == nRows) //no point is valid/within this dataset's range
+                continue;
+
+            //repeatedly find a group of points close together, get chunk of data from source, do calculations 
+            //  (very arbitrary -- there are too many scenarios to optimize)
+            StringBuilder howGrouped = new StringBuilder();
+            while (startOfGroup < nRows) {
+                howGrouped.append(" " + rank[startOfGroup]);
+
+                //find outer bounds of the group (not including radius)
+                double minTimeDIndex = timeDIndexPA.get(rank[startOfGroup]);
+                double  minLatDIndex =  latDIndexPA.get(rank[startOfGroup]);
+                double  minLonDIndex =  lonDIndexPA.get(rank[startOfGroup]);
+                double maxTimeDIndex = minTimeDIndex;
+                double  maxLatDIndex =  minLatDIndex;
+                double  maxLonDIndex =  minLonDIndex;
+                int      endOfGroup = startOfGroup + 1; //rank index, exclusive
+                while (endOfGroup < nRows) {
+                    //consider adding the endOfGroup row to the group
+                    double tTimeDIndex = timeDIndexPA.get(rank[endOfGroup]);
+                    double  tLatDIndex =  latDIndexPA.get(rank[endOfGroup]);
+                    double  tLonDIndex =  lonDIndexPA.get(rank[endOfGroup]);
+
+                    //what will the bounds be if this row is accepted into the group (not counting radius)?
+                    double tMinTimeDIndex = Math.min(minTimeDIndex, tTimeDIndex);
+                    double  tMinLatDIndex = Math.min( minLatDIndex,  tLatDIndex);
+                    double  tMinLonDIndex = Math.min( minLonDIndex,  tLonDIndex);
+                    double tMaxTimeDIndex = Math.max(maxTimeDIndex, tTimeDIndex);
+                    double  tMaxLatDIndex = Math.max( maxLatDIndex,  tLatDIndex);
+                    double  tMaxLonDIndex = Math.max( maxLonDIndex,  tLonDIndex);
+
+                    //rules/hueristics for group size are difficult to create.
+                    //  there are lots of scenarios
+                    //  and algorithm/nearby make it more complicated
+                    //  also, different if local file vs remote dataset
+
+                    //(almost) contiguous time rule:
+                    //  only include this row if it is a contiguous time index (or gap of 1).
+                    //  For ATN/AIS this shouldn't be a problem. There is data for every day.
+                    if (Math.abs(tTimeDIndex - minTimeDIndex) > 2 || //allow a gap of ~1 time point
+                        Math.abs(tTimeDIndex - maxTimeDIndex) > 2)
+                        break; //no. We're done with this group.
+
+                    //max time points rule:
+                    //  allow up to 50 time points, since lat lon range is small.
+                    //  Think about time needed to open 50 files. I tested with jplMURSST41. 
+                    //  ERDDAP can get data for a small lat lon range very quickly.
+                    //  With 50 time points, just 2 requests to source to get 
+                    //    100 days worth of daily data if animal doesn't move too much.
+                    if ((tMaxTimeDIndex - tMinTimeDIndex) + 1 > 50) 
+                        break; //no. We're done with this group.
+
+                    //max points rule:  (crudely calculated because lat and lon indexes are doubles)
+                    if (((tMaxTimeDIndex - tMinTimeDIndex) + 1.0 + (is3D[dv]? 2*radius[dv] : 0)) *
+                        (( tMaxLatDIndex -  tMinLatDIndex) + 1.0 + 2*radius[dv]) *
+                        (( tMaxLonDIndex -  tMinLonDIndex) + 1.0 + 2*radius[dv]) > 10000) //10000=100^2~=22^3, or 10000*1var*8bytes=80KB data
+                        break; 
+
+                    //yes, keep it
+                    howGrouped.append(" " + rank[endOfGroup]);
+                    endOfGroup++;
+                    minTimeDIndex = tMinTimeDIndex;
+                     minLatDIndex =  tMinLatDIndex;
+                     minLonDIndex =  tMinLonDIndex;
+                    maxTimeDIndex = tMaxTimeDIndex;
+                     maxLatDIndex =  tMaxLatDIndex;
+                     maxLonDIndex =  tMaxLonDIndex;
+                }
+                howGrouped.append(",");
+                //String2.log(">> interpolate startOfGroup=" + startOfGroup + " end=" + endOfGroup);
+
+                //adjust min/maxLat/LonIndex so it is integers and includes radius
+                int iMinLatIndex, iMaxLatIndex,   //these will be what is actually requested (valid values)
+                    iMinLonIndex, iMaxLonIndex, 
+                    iMinTimeIndex,iMaxTimeIndex;
+                if (radius[dv] == 0) {  //just the 1 nearest point
+                   iMinTimeIndex = Math2.roundToInt(minTimeDIndex);
+                    iMinLatIndex = Math2.roundToInt( minLatDIndex);
+                    iMinLonIndex = Math2.roundToInt( minLonDIndex);
+                   iMaxTimeIndex = Math2.roundToInt(maxTimeDIndex);
+                    iMaxLatIndex = Math2.roundToInt( maxLatDIndex);
+                    iMaxLonIndex = Math2.roundToInt( maxLonDIndex);
+                } else {
+                    int truncMinTime = Math2.truncToInt(minTimeDIndex);
+                    int truncMinLat  = Math2.truncToInt( minLatDIndex);
+                    int truncMinLon  = Math2.truncToInt( minLonDIndex);
+                    int ceilMaxTime  = Math2.truncToInt(maxTimeDIndex) + 1;  //not simple ceil. always at least 1 higher
+                    int ceilMaxLat   = Math2.truncToInt( maxLatDIndex) + 1;
+                    int ceilMaxLon   = Math2.truncToInt( maxLonDIndex) + 1;
+                    int nearestOffset = algorithm[dv] == NEAREST? 1 : 0; //+1 in case NEAREST and roundTime/Lat/Lon would be 1 higher
+                   iMinTimeIndex = is3D[dv]? 
+                                   Math.max(0, truncMinTime - (radius[dv] - 1)) :
+                                   Math2.roundToInt(minTimeDIndex);
+                    iMinLatIndex = Math.max(0, truncMinLat  - (radius[dv] - 1));
+                    iMinLonIndex = Math.max(0, truncMinLon  - (radius[dv] - 1));
+                   iMaxTimeIndex = is3D[dv]? 
+                                   Math.min(timeAxis.sourceValues().size() - 1, ceilMaxTime + nearestOffset + radius[dv]) :  
+                                   Math2.roundToInt(maxTimeDIndex);
+                    iMaxLatIndex = Math.min( latAxis.sourceValues().size() - 1, ceilMaxLat  + nearestOffset + radius[dv]);   // "
+                    iMaxLonIndex = Math.min( lonAxis.sourceValues().size() - 1, ceilMaxLon  + nearestOffset + radius[dv]);   // "
+                }
+
+
+                //make userDapQuery
+                StringBuilder tUserDapQuery = new StringBuilder(variable[dv]);
+                int tTimeAVIndex = eddGrid[dv].timeIndex();
+                int tLatAVIndex  = eddGrid[dv].latIndex();
+                int tLonAVIndex  = eddGrid[dv].lonIndex();
+                EDVGridAxis axisVariables[] = eddGrid[dv].axisVariables();
+                int nav = axisVariables.length;
+                int iMinIndex[] = new int[nav]; //this is needed below when requesting data from the GridDataAccessor
+                for (int av = 0; av < nav; av++) {
+                    EDVGridAxis edvga = axisVariables[av];
+                    iMinIndex[av] = 
+                        av == tTimeAVIndex? iMinTimeIndex :
+                        av ==  tLatAVIndex?  iMinLatIndex :
+                        av ==  tLonAVIndex?  iMinLonIndex :
+                        //otherwise get index closest to destValue=0.0 (even if only 1 value and it isn't 0.0)
+                        edvga.destinationToClosestIndex(0.0);  
+                    tUserDapQuery.append("[" + 
+                        (av == tTimeAVIndex? iMinTimeIndex + ":" + iMaxTimeIndex :
+                         av ==  tLatAVIndex?  iMinLatIndex + ":" + iMaxLatIndex :
+                         av ==  tLonAVIndex?  iMinLonIndex + ":" + iMaxLonIndex :
+                         "" + iMinIndex[av]) +  
+                        "]");
+                }
+                //stated another way, i0Max...Indexes are the max allowed indices (inclusive)
+                //  when the indices are shifted to iMinIndex=0.
+                int i0MaxTimeIndex = iMaxTimeIndex - iMinTimeIndex;
+                int i0MaxLatIndex  = iMaxLatIndex  - iMinLatIndex;
+                int i0MaxLonIndex  = iMaxLonIndex  - iMinLonIndex;
+
+                //get the chunk of data this group
+                GridDataRandomAccessorInMemory gdraim = new GridDataRandomAccessorInMemory(
+                    new GridDataAccessor(eddGrid[dv], "",  //tRequestUrl just used for history metadata
+                        tUserDapQuery.toString(), true, true)); //tRowMajor, tConvertToNaN
+
+                //for each point in this group, make the new interpolated value
+                //ResultsPA is currently all NaNs, so I can set values randomly.
+                int current[] = new int[nav]; //filled with 0's (essential for non-time/lat/lon)
+                PAOne paOne = new PAOne(edv[dv].destinationDataPAType());
+                Table nearbyTable = new Table();
+                IntArray       nearbyTimePA        = new IntArray();    //these hold the index #'s
+                IntArray       nearbyLatPA         = new IntArray();
+                IntArray       nearbyLonPA         = new IntArray();
+                DoubleArray    nearbyDistancePA    = new DoubleArray();
+                DoubleArray    nearbyLatDistancePA = new DoubleArray();
+                PrimitiveArray nearbyDataPA        = PrimitiveArray.factory(edv[dv].destinationDataPAType());
+                nearbyTable.addColumn("timeIndex",   nearbyTimePA);
+                nearbyTable.addColumn("latIndex",    nearbyLatPA);
+                nearbyTable.addColumn("lonIndex",    nearbyLonPA);
+                nearbyTable.addColumn("distance",    nearbyDistancePA);     //in index space
+                nearbyTable.addColumn("latDistance", nearbyLatDistancePA);  //in index space
+                nearbyTable.addColumn("data",        nearbyDataPA);
+
+                //sort by distance, then latDistance (gives precedent to other value at same lat)
+                int     nearbyTableSortby[]    = new int[]{3,4};  
+                boolean nearbyTableAscending[] = new boolean[]{true, true};
+
+                int startTimeOffset = is3D[dv] && radius[dv] > 0? -(radius[dv]-1) : 0;
+                int  stopTimeOffset = is3D[dv]?                     radius[dv]    : 0;
+                int  startLatOffset =             radius[dv] > 0? -(radius[dv]-1) : 0;
+                int   stopLatOffset =                               radius[dv];
+                int  startLonOffset =             radius[dv] > 0? -(radius[dv]-1) : 0;
+                int   stopLonOffset =                               radius[dv];
+                for (int po = startOfGroup; po < endOfGroup; po++) {
+
+                    //if some aspect of source point is invalid, result is NaN
+                    if (isValidPA.get(rank[po]) == 0) {
+                        resultsPA.setDouble(rank[po], Double.NaN); 
+                        continue;
+                    }
+
+                    double dBaseTime = timeDIndexPA.get(rank[po]);
+                    double dBaseLat  =  latDIndexPA.get(rank[po]);
+                    double dBaseLon  =  lonDIndexPA.get(rank[po]);
+
+                    int baseTime = is3D[dv]? Math2.truncToInt(dBaseTime) : Math2.roundToInt(dBaseTime);
+                    int baseLat  = Math2.truncToInt(dBaseLat );
+                    int baseLon  = Math2.truncToInt(dBaseLon );
+
+                    //handle special case of NEAREST 1 point
+                    if (algorithm[dv] == NEAREST && radius[dv] == 0) {
+                        current[tTimeAVIndex] = Math2.roundToInt(dBaseTime) - iMinIndex[tTimeAVIndex];
+                        current[ tLatAVIndex] = Math2.roundToInt(dBaseLat ) - iMinIndex[ tLatAVIndex];
+                        current[ tLonAVIndex] = Math2.roundToInt(dBaseLon ) - iMinIndex[ tLonAVIndex];
+
+                        //Shouldn't be necessary (but maybe with rounding): 
+                        //ensure the nearest point is an available point
+                        current[tTimeAVIndex] = Math2.minMax(0, i0MaxTimeIndex, current[tTimeAVIndex]);
+                        current[ tLatAVIndex] = Math2.minMax(0, i0MaxLatIndex,  current[ tLatAVIndex]);
+                        current[ tLonAVIndex] = Math2.minMax(0, i0MaxLonIndex,  current[ tLonAVIndex]);
+
+                        resultsPA.setPAOne(rank[po], gdraim.getDataValueAsPAOne(current, 0, paOne)); //dv always 0.  throws Throwable
+                        continue;
+                    }
+
+                    //put the nearby points in a mini table
+                    nearbyTable.removeAllRows();
+                    int whichIsDistance0 = -1;
+                    boolean isBilinear = algorithm[dv] == BILINEAR;
+                    ALL_LOOPS:
+                    for (        int tTime = baseTime + startTimeOffset; tTime <= baseTime + stopTimeOffset; tTime++) {
+                        for (    int tLat  = baseLat  + startLatOffset;  tLat  <= baseLat  + stopLatOffset;  tLat++)  {
+                            for (int tLon  = baseLon  + startLonOffset;  tLon  <= baseLon  + stopLonOffset;  tLon++)  {
+                                //the dataset point I want is...
+                                current[tTimeAVIndex] = tTime - iMinIndex[tTimeAVIndex];
+                                current[ tLatAVIndex] = tLat  - iMinIndex[ tLatAVIndex];
+                                current[ tLonAVIndex] = tLon  - iMinIndex[ tLonAVIndex];
+                                if (debugMode) String2.log(">> a current=" + String2.toCSSVString(current));
+
+                                //DEBATABLE: but sometimes that isn't available at the margins of the dataset
+                                //  so get the nearest available actual dataset point.
+                                //Alternatives would be to say this datum is NaN 
+                                //  or to write a lot of code to get data from the other lon end of the dataset.
+                                current[tTimeAVIndex] = Math2.minMax(0, i0MaxTimeIndex, current[tTimeAVIndex]);
+                                current[ tLatAVIndex] = Math2.minMax(0, i0MaxLatIndex,  current[ tLatAVIndex]);
+                                current[ tLonAVIndex] = Math2.minMax(0, i0MaxLonIndex,  current[ tLonAVIndex]);
+ 
+                                //get the dataset value
+                                gdraim.getDataValueAsPAOne(current, 0, paOne);
+                                if (debugMode) 
+                                    String2.log(">> b current=" + String2.toCSSVString(current) + 
+                                      " datasetValue=" + paOne.toString());
+                                if (!isBilinear && Double.isNaN(paOne.getDouble())) 
+                                    continue;
+
+                                //calculate distance
+                                double tDistance = Math.sqrt(
+                                    (is3D[dv]? Math2.sqr(tTime - dBaseTime) : 0) +
+                                               Math2.sqr(tLat  - dBaseLat ) +
+                                               Math2.sqr(tLon  - dBaseLon ));
+
+                                //add the dataset point to the nearbyTable
+                                       nearbyTimePA.add(tTime);
+                                        nearbyLatPA.add(tLat);
+                                        nearbyLonPA.add(tLon);
+                                   nearbyDistancePA.add(tDistance);
+                                nearbyLatDistancePA.add(Math.abs(tLat - dBaseLat));
+                                       nearbyDataPA.addPAOne(paOne); //dv always 0.  throws Throwable
+
+                                if (tDistance == 0) //only gets here if !NaN  (or BILINEAR)
+                                    whichIsDistance0 = nearbyDistancePA.size() - 1;
+                            }
+                        }
+                    }
+                    int nearbyTableNRows = nearbyTable.nRows();
+                    if (nearbyTableNRows == 0) {
+                        resultsPA.setDouble(rank[po], Double.NaN);
+                        continue;
+                    }
+
+                    //process them (algorithm, is3D, and radius)
+                    double d = Double.NaN;
+
+                    if (whichIsDistance0 >= 0 && String2.indexOf(CATCH_DISTANCE0, algorithm[dv]) >= 0) {
+                        resultsPA.setPAOne(rank[po], nearbyDataPA.getPAOne(whichIsDistance0, paOne)); 
+
+                    } else if (algorithm[dv] == NEAREST) {
+                        //return the nearest non-NaN dataset value 
+                        //(note latDistance used as tie breaker since lons closer together on globe)
+                        int tNearbyRank[] = nearbyTable.rank(nearbyTableSortby, nearbyTableAscending);                        
+                        resultsPA.setPAOne(rank[po], nearbyDataPA.getPAOne(tNearbyRank[0], paOne)); 
+
+                    } else if (algorithm[dv] == BILINEAR) {
+                        //nearbyTable always has all 4 points 
+                        //(even if NaN, even if there is a distance0 point)
+                        double x1y1 = nearbyDataPA.getDouble(0);
+                        double x2y1 = nearbyDataPA.getDouble(1);
+                        double x1y2 = nearbyDataPA.getDouble(2);
+                        double x2y2 = nearbyDataPA.getDouble(3);
+
+                        double xFrac = Math2.frac(dBaseLon);
+                        double yFrac = Math2.frac(dBaseLat);
+
+                        //calculate weighted averages y1 and y2
+                        //do in this order because on globe, lon deg distance is less (better to avg them first)
+                        double y1;
+                        if (Double.isNaN(x1y1)) {
+                            y1 = Double.isNaN(x2y1)? Double.NaN : x2y1;
+                        } else {
+                            y1 = Double.isNaN(x2y1)? x1y1 :
+                                (1-xFrac) * x1y1 + xFrac * x2y1;
+                        }
+
+                        double y2;
+                        if (Double.isNaN(x1y2)) {
+                            y2 = Double.isNaN(x2y2)? Double.NaN : x2y2;
+                        } else {
+                            y2 = Double.isNaN(x2y2)? x1y2 :
+                                (1-xFrac) * x1y2 + xFrac * x2y2;
+                        }
+
+                        //calculate weighted average of y1 and y2
+                        double td;
+                        if (Double.isNaN(y1)) {
+                            td = Double.isNaN(y2)? Double.NaN : y2;
+                        } else {
+                            td = Double.isNaN(y1)? y2 :
+                                (1-yFrac) * y1 + yFrac * y2;
+                        }
+                        if (debugMode) 
+                            String2.log(">> bilinear xFrac=" + (float)xFrac + 
+                                " y1=" + (float)y1 + " y2=" + (float)y2 + " yFrac=" + (float)yFrac);
+                        resultsPA.setDouble(rank[po], td); 
+
+                    } else if (algorithm[dv] == MEAN) {                        
+                        double stats2[] = nearbyDataPA.calculateStats2(emptyAttributes);
+                        resultsPA.setDouble(rank[po], stats2[PrimitiveArray.STATS_MEAN]); 
+
+                    } else if (algorithm[dv] == SD) {
+                        double stats2[] = nearbyDataPA.calculateStats2(emptyAttributes);
+                        resultsPA.setDouble(rank[po], stats2[PrimitiveArray.STATS_SD]); 
+
+                    } else if (algorithm[dv] == MEDIAN) {
+                        resultsPA.setDouble(rank[po], nearbyDataPA.calculateMedian(null)); //mv fv are already NaN
+
+                    } else if (algorithm[dv] == SCALED) {
+                        //find the minDistance and maxDistance of nearby points
+                        int[] nMinMax = nearbyDistancePA.getNMinMaxIndex();
+                        double minDistance = nearbyDistancePA.get(nMinMax[1]);
+                        double maxDistance = nearbyDistancePA.get(nMinMax[2]);
+                        boolean allSameDistance = minDistance == maxDistance;
+
+                        double wt;
+                        double sum = 0;
+                        double sumWt = 0;
+                        for (int row = 0; row < nearbyTableNRows; row++) {
+                            //Davis eq 5.68, pg 371
+                            double dist = nearbyDistancePA.get(row);
+                            if (allSameDistance) {
+                                wt = 1;
+                            } else if (Math2.almost0(dist)) {
+                                //just use this datum
+                                sum = nearbyDataPA.getDouble(row);
+                                sumWt = 1;
+                                break;
+                            } else if (dist >= maxDistance) {
+                                wt = 0;
+                            } else {
+                                wt = dist / maxDistance;
+                                wt = Math2.sqr(1 - wt) / wt; 
+                            }
+                            sum += nearbyDataPA.getDouble(row) * wt;
+                            sumWt += wt;
+                        }
+                        resultsPA.setDouble(rank[po], sumWt > 0? sum / sumWt : Double.NaN);
+
+                    } else if (algorithm[dv] == INVERSEDISTANCE  ||
+                               algorithm[dv] == INVERSEDISTANCE2 ||
+                               algorithm[dv] == INVERSEDISTANCE4 ||
+                               algorithm[dv] == INVERSEDISTANCE6) {
+                        boolean isID  = algorithm[dv] == INVERSEDISTANCE;
+                        boolean isID2 = algorithm[dv] == INVERSEDISTANCE2;
+                        boolean isID4 = algorithm[dv] == INVERSEDISTANCE4;
+                        boolean isID6 = algorithm[dv] == INVERSEDISTANCE6;
+                        double wt = 0;
+                        double sum = 0;
+                        double sumWt = 0;
+                        //Davis eq 5.67, pg 367
+                        for (int row = 0; row < nearbyTableNRows; row++) {
+                            double dist = nearbyDistancePA.get(row);
+                            if (Math2.almost0(dist)) {
+                                //just use this datum
+                                sum = nearbyDataPA.getDouble(row);
+                                sumWt = 1;
+                                break;
+                            } else if (isID ) {
+                                wt = 1 / dist;
+                            } else if (isID2) {
+                                wt = 1 / Math2.sqr(dist);
+                            } else if (isID4) {
+                                wt = 1 / Math2.sqr(Math2.sqr(dist)); 
+                            } else {
+                                wt = 1 / Math.pow(dist, 6); //isID6
+                            }
+                            sum += nearbyDataPA.getDouble(row) * wt;
+                            sumWt += wt;
+                        }
+                        resultsPA.setDouble(rank[po], sumWt > 0? sum / sumWt : Double.NaN);
+
+                    } else {
+                        throw new SimpleException(EDStatic.errorInternal + 
+                            "Unexpected algorithm=" + INTERPOLATE_ALGORITHMS[algorithm[dv]]);
+                    }
+                if (debugMode) String2.log(">> dv=" + dv + "=" + requestParts[dv] + 
+                    " requestRow=" + rank[po] + " estValue=" + resultsPA.getNiceDouble(rank[po]) + "\n" + 
+                    nearbyTable.dataToString());
+
+                }
+                //prepare for next group
+                startOfGroup = endOfGroup;
+            }
+            if (debugMode) 
+                String2.log(">> Nearest Data: for dv=" + datasetIDs[dv] + "/" + variable[dv] + 
+                    " howGrouped:" + howGrouped.toString());
+        }
+
+        return sourceTable;
+    }
+
+    /**
+     * Test Convert Nearest Data.
+     *
+     */
+    public static void testConvertInterpolate() throws Throwable {
+        String2.log("\n*** Erddap.testConvertInterpolate");
+        Table table;
+        String results, expected;
+        long time;
+        ConcurrentHashMap<String,EDDGrid> tGridDatasetHashMap = new ConcurrentHashMap();
+        tGridDatasetHashMap.put("testGriddedNcFiles", 
+            (EDDGrid)EDD.oneFromDatasetsXml(null, "testGriddedNcFiles")); 
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+
+        //test error: no TLL table
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"",
+"testGriddedNcFiles/x_wind/Nearest/1");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: TimeLatLonTable (nothing) is invalid.", "");
+
+        //test error: no TLL rows
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n",
+"testGriddedNcFiles/x_wind/Nearest/1");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: TimeLatLonTable is invalid.", "");
+
+        //test error: no specification
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: requestCSV (nothing) is invalid.", "");
+
+        //test error: incomplete specification
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"testGriddedNcFiles");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: datasetID/variable/algorithm/nearby value=\"testGriddedNcFiles\" is invalid.", "");
+
+        //test error: unknown dataset
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"junk/x_wind/Nearest/1");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Error: datasetID=junk wasn't found.", "");
+
+        //test error: unknown var
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"testGriddedNcFiles/junk/Nearest/1");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Error: destinationVariableName=junk wasn't found in datasetID=testGriddedNcFiles.", "");
+
+       //test error: unknown algorithm
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"testGriddedNcFiles/x_wind/junk/1");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: algorithm in testGriddedNcFiles/x_wind/junk/1 is invalid. " +
+            "(must be one of Nearest, Bilinear, Mean, SD, Median, Scaled, InverseDistance, InverseDistance2, InverseDistance4, InverseDistance6)", "");
+
+       //test error: unsupported nearby
+        try {
+            table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T12Z\n" +  
+"TC1,33.125,176.900,2008-01-10T12Z\n" +
+"TC1,33.125,177.100,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T12Z\n",
+"testGriddedNcFiles/x_wind/Nearest/3");
+            results = "shouldn't get here";
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        Test.ensureEqual(results, "Query error: 'nearby' value in testGriddedNcFiles/x_wind/Nearest/3 is invalid.", "");
+
+/*
+http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.htmlTable?x_wind[(2008-01-09T12:00:00Z):1:(2008-01-10T12:00:00Z)]
+  [(0.0):1:(0.0)][(32.875):1:(33.625)][(176.625):1:(177.375)]
+time             altitude latitude longitude x_wind
+UTC                    m   d_north d_east   m s-1
+2008-01-09T12:00:00Z  0.0  32.625  176.625  12.452795
+2008-01-09T12:00:00Z  0.0  32.625  176.875  12.282755
+2008-01-09T12:00:00Z  0.0  32.625  177.125  11.99785
+2008-01-09T12:00:00Z  0.0  32.625  177.375  12.354391
+2008-01-09T12:00:00Z  0.0  32.875  176.625  12.689985
+2008-01-09T12:00:00Z  0.0  32.875  176.875  12.002501
+2008-01-09T12:00:00Z  0.0  32.875  177.125  11.9996195
+2008-01-09T12:00:00Z  0.0  32.875  177.375  12.855539
+2008-01-09T12:00:00Z  0.0  33.125  176.625  13.6933
+2008-01-09T12:00:00Z  0.0  33.125  176.875  11.938499
+2008-01-09T12:00:00Z  0.0  33.125  177.125  11.453595
+2008-01-09T12:00:00Z  0.0  33.125  177.375  11.90157
+2008-01-09T12:00:00Z  0.0  33.375  176.625  13.9815
+2008-01-09T12:00:00Z  0.0  33.375  176.875  12.8286495
+2008-01-09T12:00:00Z  0.0  33.375  177.125  13.00185
+2008-01-09T12:00:00Z  0.0  33.375  177.375  11.661514
+2008-01-10T12:00:00Z  0.0  32.625  176.625  17.5809
+2008-01-10T12:00:00Z  0.0  32.625  176.875  20.372
+2008-01-10T12:00:00Z  0.0  32.625  177.125  13.870621
+2008-01-10T12:00:00Z  0.0  32.625  177.375  12.935455
+2008-01-10T12:00:00Z  0.0  32.875  176.625  15.3107
+2008-01-10T12:00:00Z  0.0  32.875  176.875  16.7248
+2008-01-10T12:00:00Z  0.0  32.875  177.125  
+2008-01-10T12:00:00Z  0.0  32.875  177.375  6.22317
+2008-01-10T12:00:00Z  0.0  33.125  176.625  14.7641
+2008-01-10T12:00:00Z  0.0  33.125  176.875  
+2008-01-10T12:00:00Z  0.0  33.125  177.125  5.72859
+2008-01-10T12:00:00Z  0.0  33.125  177.375  5.2508
+2008-01-10T12:00:00Z  0.0  33.375  176.625  9.068385
+2008-01-10T12:00:00Z  0.0  33.375  176.875  9.7424
+2008-01-10T12:00:00Z  0.0  33.375  177.125  4.60233
+2008-01-10T12:00:00Z  0.0  33.375  177.375  4.44326
+*/
+        //Nearest/1
+        time = System.currentTimeMillis();
+        table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T10Z\n" +  //right on NaN
+"TC1,33.100,176.9,2008-01-10T11Z\n" +
+"TC1,33.100,177.1,2008-01-10T12Z\n" +
+"TC1,33.125,177.125,2008-01-10T13Z\n",
+"testGriddedNcFiles/x_wind/Nearest/1,testGriddedNcFiles/x_wind/Nearest/4,testGriddedNcFiles/x_wind/Bilinear/4," +
+"testGriddedNcFiles/x_wind/Mean/4,testGriddedNcFiles/x_wind/SD," +
+"testGriddedNcFiles/x_wind/Median/4,testGriddedNcFiles/x_wind/Scaled/4," +
+"testGriddedNcFiles/x_wind/InverseDistance/4,testGriddedNcFiles/x_wind/InverseDistance2/4," +
+"testGriddedNcFiles/x_wind/InverseDistance4/4,testGriddedNcFiles/x_wind/InverseDistance6/4");
+        time = System.currentTimeMillis() - time;
+        String2.log("elapsedTime=" + time);
+        results = table.dataToString();
+        expected = 
+//for me, it is essential to see this layout when validating results below by hand
+//
+//  time [9] 2008-01-10T12Z
+//               176.625  176.875   177.125   177.375
+//              ---------------------------------------
+// [493] 33.375   9.068385  9.7424    4.60233   4.44326  
+// [492] 33.125  14.7641      x       5.72859   5.2508   
+// [491] 32.875  15.3107   16.7248              6.22317 
+// [490] 32.625  17.5809   20.372    13.870621 12.935455
+
+//  time [8] 2008-01-09T12Z  (approx data)
+//               176.625  176.875   177.125   177.375
+//              ---------------------------------------
+// [493] 33.375    ...    12.82865  13.00185  11.6615
+// [492] 33.125    ...    11.9385   11.453595 11.90157        
+// [491] 32.875    ...    12.0025   11.9916   12.8555
+// [490] 32.625    ...
+
+//nearest 4, first point: if equally close points, it picks nearby lon value (since closer on globe)
+//! all these tested with calculator
+"ID,latitude,longitude,time,testGriddedNcFiles_x_wind_Nearest_1,testGriddedNcFiles_x_wind_Nearest_4,testGriddedNcFiles_x_wind_Bilinear_4," +
+    "testGriddedNcFiles_x_wind_Mean_4,testGriddedNcFiles_x_wind_SD,testGriddedNcFiles_x_wind_Median_4,testGriddedNcFiles_x_wind_Scaled_4," +
+    "testGriddedNcFiles_x_wind_InverseDistance_4,testGriddedNcFiles_x_wind_InverseDistance2_4,testGriddedNcFiles_x_wind_InverseDistance4_4,testGriddedNcFiles_x_wind_InverseDistance6_4\n" +
+"TC1,33.125,176.875,2008-01-10T10Z,,5.72859," + //right on NaN            // nearest1, nearest4,      
+    "5.72859," +                                                          // bilinear4
+    "6.691106666666667,7.299908651433333,5.72859,7.735494999999999," +    // mean4, sd4, median4, scaled4
+    "6.9171001610992295,7.108862,7.387365555555555,7.551191176470589\n" + // invDist, invDist2, invDist4, invDist6, 
+"TC1,33.1,176.9,2008-01-10T11Z,,5.72859," +  //close to NaN
+    "6.82821100000025," +
+    "11.226695,60.458317182049974,11.226695,11.226695," +  //scaled4 is test of           both valid nearby dataset points are equidistant
+    "11.226695,11.226695,11.226694999999998,11.226695\n" + //all invDist are same because both valid nearby dataset points are equidistant, so get equal wt
+"TC1,33.1,177.1,2008-01-10T12Z,5.72859,5.72859," +  //close to 5.72859
+    "6.82821100000025," +
+    "11.226695,60.458317182049974,11.226695,5.72859," + 
+    "6.828211000000249,5.862690121951286,5.730265740627859,5.728610691270167\n" + //increasing wt to closest dataset point: 5.72859
+"TC1,33.125,177.125,2008-01-10T13Z,5.72859,5.72859," +  //right on 5.72859
+    "5.72859," +
+    "5.006245,0.35389629483333246,4.926565,5.72859," +
+    "5.72859,5.72859,5.72859,5.72859\n"; //all same because atm point is right on dataset point
+//ok: nearest1, nearest4, mean, 
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+/* http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.htmlTable?
+x_wind[(2008-01-09T12:00:00Z)][(0.0)][(33.125):1:(33.375)][(176.875):1:(177.125)] 
+time                 alt lat     longitude x_wind
+UTC                  m   deg_n    deg_east m s-1
+2008-01-09T12:00:00Z 0.0 33.125  176.875   11.938499
+2008-01-09T12:00:00Z 0.0 33.125  177.125   11.453595
+2008-01-09T12:00:00Z 0.0 33.375  176.875   12.8286495
+2008-01-09T12:00:00Z 0.0 33.375  177.125   13.00185 */
+
+        //Nearest/8, Mean/8 (3D)
+        time = System.currentTimeMillis();
+        table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.125,176.875,2008-01-10T10Z\n" +  
+"TC1,33.1,176.900,2008-01-10T10Z\n" +
+"TC1,33.1,177.100,2008-01-10T10Z\n" +
+"TC1,33.125,177.125,2008-01-10T10Z\n" +
+"TC1,33.125,176.875,2008-01-10T06Z\n" +  
+"TC1,33.125,176.875,2008-01-09T18Z\n" +
+"TC1,33.125,176.875,2008-01-09T12Z\n",  
+"testGriddedNcFiles/x_wind/Nearest/8,testGriddedNcFiles/x_wind/Mean/8");
+        time = System.currentTimeMillis() - time;
+        String2.log("elapsedTime=" + time);
+        results = table.dataToString();
+        expected =  //verified by hand
+"ID,latitude,longitude,time,testGriddedNcFiles_x_wind_Nearest_8,testGriddedNcFiles_x_wind_Mean_8\n" +
+"TC1,33.125,176.875,2008-01-10T10Z,11.938499,9.899416214285715\n" +  
+"TC1,33.1,176.9,2008-01-10T10Z,5.72859,11.641267416666665\n" +
+"TC1,33.1,177.1,2008-01-10T10Z,5.72859,11.641267416666665\n" +
+"TC1,33.125,177.125,2008-01-10T10Z,5.72859,8.505438625\n" +          //nearest: mv->next lon
+"TC1,33.125,176.875,2008-01-10T06Z,11.938499,9.899416214285715\n" +  //nearest: mv->prev time
+"TC1,33.125,176.875,2008-01-09T18Z,11.938499,9.899416214285715\n" +  
+"TC1,33.125,176.875,2008-01-09T12Z,11.938499,9.899416214285715\n";  
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //Nearest/16, Mean/16 (2D)
+        time = System.currentTimeMillis();
+        table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.1,176.900,2008-01-10T10Z\n",
+"testGriddedNcFiles/x_wind/Nearest/16," +
+    "testGriddedNcFiles/x_wind/Mean/4,testGriddedNcFiles/x_wind/Mean/16,testGriddedNcFiles/x_wind/Mean/36," +
+    "testGriddedNcFiles/x_wind/Mean/8,testGriddedNcFiles/x_wind/Mean/64,testGriddedNcFiles/x_wind/Mean/216");
+        time = System.currentTimeMillis() - time;
+        String2.log("elapsedTime=" + time);
+        results = table.dataToString();
+        expected = //verified by hand
+"ID,latitude,longitude,time,testGriddedNcFiles_x_wind_Nearest_16," +
+    "testGriddedNcFiles_x_wind_Mean_4,testGriddedNcFiles_x_wind_Mean_16,testGriddedNcFiles_x_wind_Mean_36," +
+    "testGriddedNcFiles_x_wind_Mean_8,testGriddedNcFiles_x_wind_Mean_64,testGriddedNcFiles_x_wind_Mean_216\n" +
+"TC1,33.1,176.9,2008-01-10T10Z,5.72859," +
+    "11.226695,11.18696507142857,9.728878844117647," + // /4 /16 by hand, /36 looks good
+    "11.641267416666665,11.813308039215682,14.658405367015714\n";  // look good
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //Scaled/x
+        time = System.currentTimeMillis();
+        table = interpolate(tGridDatasetHashMap, 
+"ID,latitude,longitude,time\n" +
+"TC1,33.1,176.900,2008-01-10T10Z\n",
+    "testGriddedNcFiles/x_wind/Scaled/4,testGriddedNcFiles/x_wind/Scaled/16,testGriddedNcFiles/x_wind/Scaled/36," +
+    "testGriddedNcFiles/x_wind/Scaled/8,testGriddedNcFiles/x_wind/Scaled/64,testGriddedNcFiles/x_wind/Scaled/216");
+        time = System.currentTimeMillis() - time;
+        String2.log("elapsedTime=" + time);
+        results = table.dataToString();
+        expected = //verified by hand
+"ID,latitude,longitude,time," +
+    "testGriddedNcFiles_x_wind_Scaled_4,testGriddedNcFiles_x_wind_Scaled_16,testGriddedNcFiles_x_wind_Scaled_36," +
+    "testGriddedNcFiles_x_wind_Scaled_8,testGriddedNcFiles_x_wind_Scaled_64,testGriddedNcFiles_x_wind_Scaled_216\n" +
+"TC1,33.1,176.9,2008-01-10T10Z," +
+    "11.226695,11.26523262746242,10.791734445086393," +            // looks good  (based on the debug msg showing pts involved) 
+    "11.474244755147355,11.677036187464559,12.158548484000905\n";  // looks good (test of duplicating values beyond dataset's time values)
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        debugMode = oDebugMode;
+
     }
 
     /**
@@ -15129,10 +16263,10 @@ writer.write(
                 "<p>" + EDStatic.convertTimeBypass + "\n");
 
             //notes  
-            writer.write(EDStatic.convertTimeNotes);
+            writer.write(MessageFormat.format(EDStatic.convertTimeNotes, tErddapUrl, EDStatic.convertTimeUnitsHelp) + "\n");
 
             //Info about .txt time service option  
-            writer.write(EDStatic.convertTimeService);
+            writer.write(MessageFormat.format(EDStatic.convertTimeService, tErddapUrl) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -15336,16 +16470,15 @@ writer.write(
             writer.write('\n');
 
             //Info about service / .txt option   
-            writer.write(EDStatic.convertUnitsService);
+            writer.write(MessageFormat.format(EDStatic.convertUnitsService, tErddapUrl) + "\n");
             writer.write('\n');
-
 
             //info about syntax differences 
             writer.write(EDStatic.convertUnitsComparison);
             writer.write('\n');
 
             //info about tabledap unitsFilter &units("UCUM") 
-            writer.write(EDStatic.convertUnitsFilter);
+            writer.write(MessageFormat.format(EDStatic.convertUnitsFilter, tErddapUrl, EDStatic.units_standard) + "\n");
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -15358,6 +16491,7 @@ writer.write(
             endHtmlWriter(out, writer, tErddapUrl, false);
         }
     }
+
 
     /**
      * Process erddap/convert/urls.html and urls.txt.
@@ -15452,7 +16586,7 @@ writer.write(
             writer.write('\n');
 
             //Info about service / .txt option 
-            writer.write(EDStatic.convertURLsService);
+            writer.write(MessageFormat.format(EDStatic.convertURLsService, tErddapUrl) + "\n");
             writer.write('\n');
 
         } catch (Throwable t) {
@@ -16355,142 +17489,141 @@ writer.write(
         String2.log("\n*** Erddap.testBasic");
         int po;
 
+        //home page
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl); //redirects to index.html
+        expected = "The small effort to set up ERDDAP brings many benefits.";
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/"); //redirects to index.html
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.html"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        
+        //test version info  (opendap spec section 7.2.5)
+        //"version" instead of datasetID
+        expected = 
+            "Core Version: DAP/2.0\n" +
+            "Server Version: dods/3.7\n" +
+            "ERDDAP_version: " + EDStatic.erddapVersion + "\n";
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/version");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/version");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //"version.txt"
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/version.txt");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/version.txt");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //".ver"
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/etopo180.ver");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.ver");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //help
+        expected = "griddap to Request Data and Graphs from Gridded Datasets";
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/help"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/documentation.html"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.help"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+
+        expected = "tabledap to Request Data and Graphs from Tabular Datasets";
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/help"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/documentation.html"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.help"); 
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        //error 404
+        results = "";
         try {
-            //home page
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl); //redirects to index.html
-            expected = "The small effort to set up ERDDAP brings many benefits.";
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+            SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/gibberish"); 
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureTrue(results.indexOf("java.io.FileNotFoundException") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/"); //redirects to index.html
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+        //info    list all datasets
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.html?" +
+            EDStatic.defaultPIppQuery); 
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.html"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.csv?" +
+            EDStatic.defaultPIppQuery); 
+        Test.ensureTrue(results.indexOf("</html>") < 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
 
-            
-            //test version info  (opendap spec section 7.2.5)
-            //"version" instead of datasetID
-            expected = 
-                "Core Version: DAP/2.0\n" +
-                "Server Version: dods/3.7\n" +
-                "ERDDAP_version: " + EDStatic.erddapVersion + "\n";
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/version");
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/version");
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdGlobecBottle/index.html"); 
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("ioos_category") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Location") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("long_name") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Cast Number") >= 0, "results=\n" + results);
 
-            //"version.txt"
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/version.txt");
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/version.txt");
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdGlobecBottle/index.tsv"); 
+        Test.ensureTrue(results.indexOf("\t") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("ioos_category") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Location") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("long_name") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Cast Number") >= 0, "results=\n" + results);
 
-            //".ver"
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/etopo180.ver");
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.ver");
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        //search    
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
+            EDStatic.defaultPIppQuery);
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Do a Full Text Search for Datasets") >= 0, "results=\n" + results);
+        //index.otherFileType must have ?searchFor=...
 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
+            EDStatic.defaultPIppQuery + "&searchFor=all");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
+            "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">GLOBEC NEP Rosette Bottle Data (2002)") >= 0,
+            "results=\n" + results);            
+       
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.htmlTable?" +
+            EDStatic.defaultPIppQuery + "&searchFor=all");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
+            "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
+            "results=\n" + results);            
+       
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n") > 0,
+            "results=\n" + results);
 
-            //help
-            expected = "griddap to Request Data and Graphs from Gridded Datasets";
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/help"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/documentation.html"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.help"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-
-            expected = "tabledap to Request Data and Graphs from Tabular Datasets";
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/help"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/documentation.html"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.help"); 
-            Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-            //error 404
-            results = "";
-            try {
-                SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/gibberish"); 
-            } catch (Throwable t) {
-                results = t.toString();
-            }
-            Test.ensureTrue(results.indexOf("java.io.FileNotFoundException") >= 0, "results=\n" + results);
-
-            //info    list all datasets
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.html?" +
-                EDStatic.defaultPIppQuery); 
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.csv?" +
-                EDStatic.defaultPIppQuery); 
-            Test.ensureTrue(results.indexOf("</html>") < 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdGlobecBottle/index.html"); 
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("ioos_category") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Location") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("long_name") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Cast Number") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdGlobecBottle/index.tsv"); 
-            Test.ensureTrue(results.indexOf("\t") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("ioos_category") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Location") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("long_name") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Cast Number") >= 0, "results=\n" + results);
-
-            //search    
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
-                EDStatic.defaultPIppQuery);
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Do a Full Text Search for Datasets") >= 0, "results=\n" + results);
-            //index.otherFileType must have ?searchFor=...
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
-                EDStatic.defaultPIppQuery + "&searchFor=all");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
-                "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">GLOBEC NEP Rosette Bottle Data (2002)") >= 0,
-                "results=\n" + results);            
-           
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.htmlTable?" +
-                EDStatic.defaultPIppQuery + "&searchFor=all");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
-                "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
-                "results=\n" + results);            
-           
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.html?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n") > 0,
-                "results=\n" + results);
-
-            //.json
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.json?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            expected = 
+        //.json
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.json?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        expected = 
 "{\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Accessible\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"],\n" +
@@ -16502,12 +17635,12 @@ writer.write(
 "    ]\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //.json with jsonp
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.json?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel&.jsonp=fnName");
-            expected = 
+        //.json with jsonp
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.json?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel&.jsonp=fnName");
+        expected = 
 "fnName({\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Accessible\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"],\n" +
@@ -16520,71 +17653,71 @@ writer.write(
 "  }\n" +
 "}\n" +
 ")";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //and read the header to see the mime type
-            results = String2.toNewlineString(
-                SSR.dosShell("curl -i \"" + EDStatic.erddapUrl + "/search/index.json?" +
-                    EDStatic.defaultPIppQuery + "&searchFor=tao+pmel&.jsonp=fnName\"", 
-                    120).toArray());
-            po = results.indexOf("HTTP");
-            results = results.substring(po);
-            po = results.indexOf("chunked");
-            results = results.substring(0, po + 7);
-            expected = 
+        //and read the header to see the mime type
+        results = String2.toNewlineString(
+            SSR.dosShell("curl -i \"" + EDStatic.erddapUrl + "/search/index.json?" +
+                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel&.jsonp=fnName\"", 
+                120).toArray());
+        po = results.indexOf("HTTP");
+        results = results.substring(po);
+        po = results.indexOf("chunked");
+        results = results.substring(0, po + 7);
+        expected = 
 "HTTP/1.1 200 \n" +
 "Content-Encoding: identity\n" +
 "Content-Type: application/javascript;charset=UTF-8\n" +
 "Transfer-Encoding: chunked";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
 
 
-            //.jsonlCSV1
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlCSV1?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            expected = 
+        //.jsonlCSV1
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlCSV1?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        expected = 
 "[\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Accessible\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //.jsonlCSV
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlCSV?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            expected = 
+        //.jsonlCSV
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlCSV?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        expected = 
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"\", \"\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rPmelTaoDySst\"]\n" +
 "[\"\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"public\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //.jsonlKVP
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlKVP?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            expected = 
+        //.jsonlKVP
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlKVP?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        expected = 
 "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/cwexperimental/files/pmelTaoDySst/\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/pmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySst\"}\n" +
 "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/rPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/rPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/rPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rPmelTaoDySst\"}\n" +
 "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/cwexperimental/files/rlPmelTaoDySst/\", \"Accessible\":\"public\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\\n\\ncdm_data_type = TimeSeries\\nVARIABLES:\\narray\\nstation\\nwmo_platform_code\\nlongitude (Nominal Longitude, degrees_east)\\nlatitude (Nominal Latitude, degrees_north)\\ntime (Centered Time, seconds since 1970-01-01T00:00:00Z)\\ndepth (m)\\nT_25 (Sea Surface Temperature, degree_C)\\nQT_5025 (Sea Surface Temperature Quality)\\nST_6025 (Sea Surface Temperature Source)\\n\", \"FGDC\":\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/cwexperimental/info/rlPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/cwexperimental/rss/rlPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rlPmelTaoDySst\"}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.tsv?" +
-                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-            Test.ensureTrue(results.indexOf("\tTAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\t") > 0,
-                "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.tsv?" +
+            EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
+        Test.ensureTrue(results.indexOf("\tTAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\t") > 0,
+            "results=\n" + results);
 
 
-            //categorize
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/index.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">standard_name\n") >= 0,
-                "results=\n" + results);
+        //categorize
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/index.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">standard_name\n") >= 0,
+            "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/index.json");
-            Test.ensureEqual(results, 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/index.json");
+        Test.ensureEqual(results, 
 "{\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
@@ -16600,13 +17733,13 @@ writer.write(
 "    ]\n" +
 "  }\n" +
 "}\n", 
-                "results=\n" + results);
+            "results=\n" + results);
 
-            //json with jsonp 
-            String jsonp = "myFunctionName";
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/index.json?.jsonp=" + SSR.percentEncode(jsonp));
-            Test.ensureEqual(results, 
+        //json with jsonp 
+        String jsonp = "myFunctionName";
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/index.json?.jsonp=" + SSR.percentEncode(jsonp));
+        Test.ensureEqual(results, 
 jsonp + "(" +
 "{\n" +
 "  \"table\": {\n" +
@@ -16624,472 +17757,472 @@ jsonp + "(" +
 "  }\n" +
 "}\n" +
 ")", 
-                "results=\n" + results);
+            "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/standard_name/index.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">sea_water_temperature\n") >= 0, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/standard_name/index.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">sea_water_temperature\n") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/standard_name/index.json");
-            Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"sea_water_temperature\"") >= 0, "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/standard_name/index.json");
+        Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"sea_water_temperature\"") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/institution/index.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">ioos_category\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">noaa_coastwatch_west_coast_node\n") >= 0, 
-                "results=\n" + results);
-            
-            results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/institution/index.tsv"));
-            Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "noaa_coastwatch_west_coast_node[9]http://localhost:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
-                "results=\n" + results);
-            
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/standard_name/sea_water_temperature/index.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">erdGlobecBottle\n") >= 0,
-                "results=\n" + results);
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/institution/index.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">ioos_category\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">noaa_coastwatch_west_coast_node\n") >= 0, 
+            "results=\n" + results);
+        
+        results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/institution/index.tsv"));
+        Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            "noaa_coastwatch_west_coast_node[9]http://localhost:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
+            "results=\n" + results);
+        
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/standard_name/sea_water_temperature/index.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">erdGlobecBottle\n") >= 0,
+            "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                "/categorize/standard_name/sea_water_temperature/index.json");
-            expected = 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            "/categorize/standard_name/sea_water_temperature/index.json");
+        expected = 
 "{\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", " +
-                (EDStatic.sosActive? "\"sos\", " : "") +
-                (EDStatic.wcsActive? "\"wcs\", " : "") +
-                (EDStatic.wmsActive? "\"wms\", " : "") + 
-                (EDStatic.filesActive? "\"files\", " : "") + 
-                (EDStatic.authentication.length() > 0? "\"Accessible\", " : "") +
-                "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", " +
-                (EDStatic.subscriptionSystemActive? "\"Email\", " : "") +
-                "\"Institution\", \"Dataset ID\"],\n" +
+            (EDStatic.sosActive? "\"sos\", " : "") +
+            (EDStatic.wcsActive? "\"wcs\", " : "") +
+            (EDStatic.wmsActive? "\"wms\", " : "") + 
+            (EDStatic.filesActive? "\"files\", " : "") + 
+            (EDStatic.authentication.length() > 0? "\"Accessible\", " : "") +
+            "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", " +
+            (EDStatic.subscriptionSystemActive? "\"Email\", " : "") +
+            "\"Institution\", \"Dataset ID\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", " +
-                (EDStatic.sosActive? "\"String\", " : "") +
-                (EDStatic.wcsActive? "\"String\", " : "") +
-                (EDStatic.wmsActive? "\"String\", " : "") +
-                (EDStatic.filesActive? "\"String\", " : "") +
-                (EDStatic.authentication.length() > 0? "\"String\", " : "") +
-                "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", " +
-                (EDStatic.subscriptionSystemActive? "\"String\", " : "") +
-                "\"String\", \"String\"],\n" +
+            (EDStatic.sosActive? "\"String\", " : "") +
+            (EDStatic.wcsActive? "\"String\", " : "") +
+            (EDStatic.wmsActive? "\"String\", " : "") +
+            (EDStatic.filesActive? "\"String\", " : "") +
+            (EDStatic.authentication.length() > 0? "\"String\", " : "") +
+            "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", " +
+            (EDStatic.subscriptionSystemActive? "\"String\", " : "") +
+            "\"String\", \"String\"],\n" +
 "    \"rows\": [\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            expected =            
+        expected =            
 "http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle.subset\", " +                
 "\"http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle\", " +
 "\"http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle.graph\", " + 
-                (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
-                (EDStatic.wcsActive? "\"\", " : "") +
-                (EDStatic.wmsActive? "\"\", " : "") +
-                (EDStatic.filesActive? "\"http://localhost:8080/cwexperimental/files/erdGlobecBottle/\", " : "") +
-                (EDStatic.authentication.length() > 0? "\"public\", " : "") +
-                "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
-                "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
-                "New Horizon Cruise (NH0207: 1-19 August 2002).\\nNotes:\\nPhysical data " +
-                "processed by Jane Fleischbein (OSU).\\nChlorophyll readings done by " +
-                "Leah Feinberg (OSU).\\nNutrient analysis done by Burke Hales (OSU).\\n" +
-                "Sal00 - salinity calculated from primary sensors (C0,T0).\\n" +
-                "Sal11 - salinity calculated from secondary sensors (C1,T1).\\n" +
-                "secondary sensor pair was used in final processing of CTD data for\\n" +
-                "most stations because the primary had more noise and spikes. The\\n" +
-                "primary pair were used for cast #9, 24, 48, 111 and 150 due to\\n" +
-                "multiple spikes or offsets in the secondary pair.\\n" +
-                "Nutrient samples were collected from most bottles; all nutrient data\\n" +
-                "developed from samples frozen during the cruise and analyzed ashore;\\n" +
-                "data developed by Burke Hales (OSU).\\n" +
-                "Operation Detection Limits for Nutrient Concentrations\\n" +
-                "Nutrient  Range         Mean    Variable         Units\\n" +
-                "PO4       0.003-0.004   0.004   Phosphate        micromoles per liter\\n" +
-                "N+N       0.04-0.08     0.06    Nitrate+Nitrite  micromoles per liter\\n" +
-                "Si        0.13-0.24     0.16    Silicate         micromoles per liter\\n" +
-                "NO2       0.003-0.004   0.003   Nitrite          micromoles per liter\\n" +
-                "Dates and Times are UTC.\\n\\n" +
-                "For more information, see https://www.bco-dmo.org/dataset/2452\\n\\n" +
-                //was "http://cis.whoi.edu/science/bcodmo/dataset.cfm?id=10180&flag=view\\n\\n" +
-                "Inquiries about how to access this data should be directed to\\n" +
-                "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\\n\\n" +
-                "cdm_data_type = TrajectoryProfile\\n" +
-                "VARIABLES:\\ncruise_id\\n... (24 more variables)\\n\", " +
-                "\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
-                "\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
-                "\"http://localhost:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
-                "\"http://www.globec.org/\", " +
-                "\"http://localhost:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
-                (EDStatic.subscriptionSystemActive? 
-                    "\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
-                    "") +
-                "\"GLOBEC\", \"erdGlobecBottle\"],";
-            po = results.indexOf("http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle");
-            Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+            (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
+            (EDStatic.wcsActive? "\"\", " : "") +
+            (EDStatic.wmsActive? "\"\", " : "") +
+            (EDStatic.filesActive? "\"http://localhost:8080/cwexperimental/files/erdGlobecBottle/\", " : "") +
+            (EDStatic.authentication.length() > 0? "\"public\", " : "") +
+            "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
+            "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
+            "New Horizon Cruise (NH0207: 1-19 August 2002).\\nNotes:\\nPhysical data " +
+            "processed by Jane Fleischbein (OSU).\\nChlorophyll readings done by " +
+            "Leah Feinberg (OSU).\\nNutrient analysis done by Burke Hales (OSU).\\n" +
+            "Sal00 - salinity calculated from primary sensors (C0,T0).\\n" +
+            "Sal11 - salinity calculated from secondary sensors (C1,T1).\\n" +
+            "secondary sensor pair was used in final processing of CTD data for\\n" +
+            "most stations because the primary had more noise and spikes. The\\n" +
+            "primary pair were used for cast #9, 24, 48, 111 and 150 due to\\n" +
+            "multiple spikes or offsets in the secondary pair.\\n" +
+            "Nutrient samples were collected from most bottles; all nutrient data\\n" +
+            "developed from samples frozen during the cruise and analyzed ashore;\\n" +
+            "data developed by Burke Hales (OSU).\\n" +
+            "Operation Detection Limits for Nutrient Concentrations\\n" +
+            "Nutrient  Range         Mean    Variable         Units\\n" +
+            "PO4       0.003-0.004   0.004   Phosphate        micromoles per liter\\n" +
+            "N+N       0.04-0.08     0.06    Nitrate+Nitrite  micromoles per liter\\n" +
+            "Si        0.13-0.24     0.16    Silicate         micromoles per liter\\n" +
+            "NO2       0.003-0.004   0.003   Nitrite          micromoles per liter\\n" +
+            "Dates and Times are UTC.\\n\\n" +
+            "For more information, see https://www.bco-dmo.org/dataset/2452\\n\\n" +
+            //was "http://cis.whoi.edu/science/bcodmo/dataset.cfm?id=10180&flag=view\\n\\n" +
+            "Inquiries about how to access this data should be directed to\\n" +
+            "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\\n\\n" +
+            "cdm_data_type = TrajectoryProfile\\n" +
+            "VARIABLES:\\ncruise_id\\n... (24 more variables)\\n\", " +
+            "\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
+            "\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
+            "\"http://localhost:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
+            "\"http://www.globec.org/\", " +
+            "\"http://localhost:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
+            (EDStatic.subscriptionSystemActive? 
+                "\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
+                "") +
+            "\"GLOBEC\", \"erdGlobecBottle\"],";
+        po = results.indexOf("http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
-            //griddap
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/index.html?" + 
-                EDStatic.defaultPIppQuery);            
+        //griddap
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/index.html?" + 
+            EDStatic.defaultPIppQuery);            
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("List of griddap Datasets") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            ">SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)\n") >= 0,
+            "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/index.json?" + 
+            EDStatic.defaultPIppQuery + "");
+        Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            "\"SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)\"") >= 0,
+            "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.html");            
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("(Centered Time, UTC)") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.graph");            
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
+
+
+        //tabledap
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/index.html?" + 
+            EDStatic.defaultPIppQuery);
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("List of tabledap Datasets") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
+            "results=\n" + results);            
+        Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/index.json?" + 
+            EDStatic.defaultPIppQuery);
+        Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("\"GLOBEC NEP Rosette Bottle Data (2002)\"") >= 0,
+            "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("\"erdGlobecBottle\"") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");            
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.graph");            
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Filled Square") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
+
+        //files
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/");
+        Test.ensureTrue(results.indexOf("ERDDAP's \"files\" system lets you browse a virtual file system and download source data files.") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("cwwcNDBCMet") >= 0, "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("directories") >= 0, "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
+
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/");
+        Test.ensureTrue(results.indexOf("NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Make a graph") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf("NDBC&#x5f;41004&#x5f;met&#x2e;nc") >= 0, "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("directory") >= 0, "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
+
+        String localName = EDStatic.fullTestCacheDirectory + "NDBC_41004_met.nc";
+        File2.delete(localName);
+        SSR.downloadFile( //throws Exception if trouble
+            EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc",
+            localName, true); //tryToUseCompression
+        Test.ensureTrue(File2.isFile(localName), 
+            "/files download failed. Not found: localName=" + localName);
+        File2.delete(localName);
+
+        //sos
+        if (EDStatic.sosActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/index.html?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("List of griddap Datasets") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                ">SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)\n") >= 0,
-                "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List of SOS Datasets") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">NDBC Standard Meteorological Buoy Data") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf(">cwwcNDBCMet") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/index.json?" + 
-                EDStatic.defaultPIppQuery + "");
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/index.json?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"NDBC Standard Meteorological Buoy Data\"") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("\"cwwcNDBCMet\"") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/documentation.html");            
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
-                "\"SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)\"") >= 0,
+                "available via ERDDAP's Sensor Observation Service (SOS) web service.") >= 0, 
                 "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.html");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("(Centered Time, UTC)") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/erdMHchla8day.graph");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
-
-
-            //tabledap
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/index.html?" + 
-                EDStatic.defaultPIppQuery);
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("List of tabledap Datasets") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
-                "results=\n" + results);            
-            Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/index.json?" + 
-                EDStatic.defaultPIppQuery);
-            Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"GLOBEC NEP Rosette Bottle Data (2002)\"") >= 0,
-                "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("\"erdGlobecBottle\"") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.graph");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Filled Square") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
-
-            //files
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/");
-            Test.ensureTrue(results.indexOf("ERDDAP's \"files\" system lets you browse a virtual file system and download source data files.") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("cwwcNDBCMet") >= 0, "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("directories") >= 0, "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
-
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/");
-            Test.ensureTrue(results.indexOf("NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make a graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("NDBC&#x5f;41004&#x5f;met&#x2e;nc") >= 0, "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("directory") >= 0, "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
-
-            String localName = EDStatic.fullTestCacheDirectory + "NDBC_41004_met.nc";
-            File2.delete(localName);
-            SSR.downloadFile( //throws Exception if trouble
-                EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc",
-                localName, true); //tryToUseCompression
-            Test.ensureTrue(File2.isFile(localName), 
-                "/files download failed. Not found: localName=" + localName);
-            File2.delete(localName);
-
-            //sos
-            if (EDStatic.sosActive) {
+            String sosUrl = EDStatic.erddapUrl + "/sos/cwwcNDBCMet/" + EDDTable.sosServer;
+            results = SSR.getUrlResponseStringUnchanged(sosUrl + "?service=SOS&request=GetCapabilities");            
+            Test.ensureTrue(results.indexOf("<ows:ServiceIdentification>") >= 0, "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("<ows:Get xlink:href=\"" + sosUrl + "?\"/>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("</Capabilities>") >= 0, "results=\n" + results);
+        } else {
+            results = "Shouldn't get here.";
+            try {
                 results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/index.html?" + 
                     EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("List of SOS Datasets") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">NDBC Standard Meteorological Buoy Data") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf(">cwwcNDBCMet") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/index.json?" + 
-                    EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"NDBC Standard Meteorological Buoy Data\"") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("\"cwwcNDBCMet\"") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/documentation.html");            
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(
-                    "available via ERDDAP's Sensor Observation Service (SOS) web service.") >= 0, 
-                    "results=\n" + results);
-
-                String sosUrl = EDStatic.erddapUrl + "/sos/cwwcNDBCMet/" + EDDTable.sosServer;
-                results = SSR.getUrlResponseStringUnchanged(sosUrl + "?service=SOS&request=GetCapabilities");            
-                Test.ensureTrue(results.indexOf("<ows:ServiceIdentification>") >= 0, "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("<ows:Get xlink:href=\"" + sosUrl + "?\"/>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("</Capabilities>") >= 0, "results=\n" + results);
-            } else {
-                results = "Shouldn't get here.";
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/sos/index.html?" + 
-                        EDStatic.defaultPIppQuery);
-                } catch (Throwable t) {
-                    results = MustBe.throwableToString(t);
-                }
+            } catch (Throwable t) {
+                results = MustBe.throwableToString(t);
+            }
 expected = 
 "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/sos/index.html?page=1&itemsPerPage=1000\n" +
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: The \\\"SOS\\\" system has been disabled on this ERDDAP.\";\n" +
 "})\n";
-                Test.ensureEqual(results.substring(0, expected.length()), expected,
-                    "results=\n" + results);            
-            }
+            Test.ensureEqual(results.substring(0, expected.length()), expected,
+                "results=\n" + results);            
+        }
 
 
-            //wcs
-            if (EDStatic.wcsActive) {
+        //wcs
+        if (EDStatic.wcsActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/index.html?" + 
+                EDStatic.defaultPIppQuery);
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via WCS") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">RSS</th>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/index.json?" + 
+                EDStatic.defaultPIppQuery);
+            Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/documentation.html");            
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(
+                "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.") >= 0, 
+                "results=\n" + results);
+
+            String wcsUrl = EDStatic.erddapUrl + "/wcs/erdMHchla8day/" + EDDGrid.wcsServer;
+            results = SSR.getUrlResponseStringUnchanged(wcsUrl + "?service=WCS&request=GetCapabilities");            
+            Test.ensureTrue(results.indexOf("<CoverageOfferingBrief>") >= 0, "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("<lonLatEnvelope srsName") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("</WCS_Capabilities>") >= 0, "results=\n" + results);
+        } else {
+            //wcs is inactive
+            results = "Shouldn't get here.";
+            try {
                 results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/index.html?" + 
                     EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via WCS") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">RSS</th>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/index.json?" + 
-                    EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/documentation.html");            
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(
-                    "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.") >= 0, 
-                    "results=\n" + results);
-
-                String wcsUrl = EDStatic.erddapUrl + "/wcs/erdMHchla8day/" + EDDGrid.wcsServer;
-                results = SSR.getUrlResponseStringUnchanged(wcsUrl + "?service=WCS&request=GetCapabilities");            
-                Test.ensureTrue(results.indexOf("<CoverageOfferingBrief>") >= 0, "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("<lonLatEnvelope srsName") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("</WCS_Capabilities>") >= 0, "results=\n" + results);
-            } else {
-                //wcs is inactive
-                results = "Shouldn't get here.";
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wcs/index.html?" + 
-                        EDStatic.defaultPIppQuery);
-                } catch (Throwable t) {
-                    results = MustBe.throwableToString(t);
-                }
-                Test.ensureTrue(results.indexOf("java.io.FileNotFoundException: http://localhost:8080/cwexperimental/wcs/index.html?page=1&itemsPerPage=1000") >= 0, "results=\n" + results);            
+            } catch (Throwable t) {
+                results = MustBe.throwableToString(t);
             }
+            Test.ensureTrue(results.indexOf("java.io.FileNotFoundException: http://localhost:8080/cwexperimental/wcs/index.html?page=1&itemsPerPage=1000") >= 0, "results=\n" + results);            
+        }
 
-            //wms
-            if (EDStatic.wmsActive) {
+        //wms
+        if (EDStatic.wmsActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/index.html?" + 
+                EDStatic.defaultPIppQuery);
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/index.json?" + 
+                EDStatic.defaultPIppQuery);
+            Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/documentation.html");            
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("display of registered and superimposed map-like views") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/erdMHchla8day/index.html");            
+            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)") >= 0,
+                "results=\n" + results);            
+            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("altitude") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+        } else {
+            results = "Shouldn't get here.";
+            try {
                 results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/index.html?" + 
                     EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\n") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/index.json?" + 
-                    EDStatic.defaultPIppQuery);
-                Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)\"") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/documentation.html");            
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("display of registered and superimposed map-like views") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/erdMHchla8day/index.html");            
-                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)") >= 0,
-                    "results=\n" + results);            
-                Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("altitude") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
-            } else {
-                results = "Shouldn't get here.";
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/index.html?" + 
-                        EDStatic.defaultPIppQuery);
-                } catch (Throwable t) {
-                    results = MustBe.throwableToString(t);
-                }
-                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+            } catch (Throwable t) {
+                results = MustBe.throwableToString(t);
             }
+            Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+        }
 
 //            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
 //                "/categorize/standard_name/index.html");
 //            Test.ensureTrue(results.indexOf(">sea_water_temperature<") >= 0,
 //                "results=\n" + results);
 
-            //validate the various GetCapabilities documents
+        //validate the various GetCapabilities documents
 /* NOT ACTIVE
-            String s = https://xmlvalidation.com/   ".../xml/validate/?lang=en" +
-                "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
-                "request=GetCapabilities&version=";
-            SSR.displayInBrowser(s + "1.1.0");
-            SSR.displayInBrowser(s + "1.1.1");
-            SSR.displayInBrowser(s + "1.3.0");
+        String s = https://xmlvalidation.com/   ".../xml/validate/?lang=en" +
+            "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
+            "request=GetCapabilities&version=";
+        SSR.displayInBrowser(s + "1.1.0");
+        SSR.displayInBrowser(s + "1.1.1");
+        SSR.displayInBrowser(s + "1.3.0");
 */
 
-            //more information
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/information.html");
+        //more information
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/information.html");
+        Test.ensureTrue(results.indexOf(
+            "ERDDAP a solution to everyone's data distribution / data access problems?") >= 0,
+            "results=\n" + results);
+
+        //subscriptions
+        if (EDStatic.subscriptionSystemActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/subscriptions/index.html");
+            Test.ensureTrue(results.indexOf("Add a new subscription") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Validate a subscription") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List your subscriptions") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Remove a subscription") >= 0, "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/subscriptions/add.html");
             Test.ensureTrue(results.indexOf(
-                "ERDDAP a solution to everyone's data distribution / data access problems?") >= 0,
+                "To add a (another) subscription, please fill out this form:") >= 0, 
                 "results=\n" + results);
 
-            //subscriptions
-            if (EDStatic.subscriptionSystemActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/subscriptions/validate.html");
+            Test.ensureTrue(results.indexOf(
+                "To validate a (another) subscription, please fill out this form:") >= 0, 
+                "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/subscriptions/list.html");
+            Test.ensureTrue(results.indexOf(
+                "To request an email with a list of your subscriptions, please fill out this form:") >= 0, 
+                "results=\n" + results);
+
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/subscriptions/remove.html");
+            Test.ensureTrue(results.indexOf(
+                "To remove a (another) subscription, please fill out this form:") >= 0, 
+                "results=\n" + results);
+        } else {
+            results = "Shouldn't get here.";
+            try {
                 results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
                     "/subscriptions/index.html");
-                Test.ensureTrue(results.indexOf("Add a new subscription") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Validate a subscription") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("List your subscriptions") >= 0, "results=\n" + results);
-                Test.ensureTrue(results.indexOf("Remove a subscription") >= 0, "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                    "/subscriptions/add.html");
-                Test.ensureTrue(results.indexOf(
-                    "To add a (another) subscription, please fill out this form:") >= 0, 
-                    "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                    "/subscriptions/validate.html");
-                Test.ensureTrue(results.indexOf(
-                    "To validate a (another) subscription, please fill out this form:") >= 0, 
-                    "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                    "/subscriptions/list.html");
-                Test.ensureTrue(results.indexOf(
-                    "To request an email with a list of your subscriptions, please fill out this form:") >= 0, 
-                    "results=\n" + results);
-
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                    "/subscriptions/remove.html");
-                Test.ensureTrue(results.indexOf(
-                    "To remove a (another) subscription, please fill out this form:") >= 0, 
-                    "results=\n" + results);
-            } else {
-                results = "Shouldn't get here.";
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                        "/subscriptions/index.html");
-                } catch (Throwable t) {
-                    results = MustBe.throwableToString(t);
-                }
-                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+            } catch (Throwable t) {
+                results = MustBe.throwableToString(t);
             }
+            Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+        }
 
 
-            //slideSorter
-            if (EDStatic.slideSorterActive) {
+        //slideSorter
+        if (EDStatic.slideSorterActive) {
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/slidesorter.html");
+            Test.ensureTrue(results.indexOf(
+                "Your slides will be lost when you close this browser window, unless you:") >= 0, 
+                "results=\n" + results);
+        } else {
+            results = "Shouldn't get here.";
+            try {
                 results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
                     "/slidesorter.html");
-                Test.ensureTrue(results.indexOf(
-                    "Your slides will be lost when you close this browser window, unless you:") >= 0, 
-                    "results=\n" + results);
-            } else {
-                results = "Shouldn't get here.";
-                try {
-                    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                        "/slidesorter.html");
-                } catch (Throwable t) {
-                    results = MustBe.throwableToString(t);
-                }
-                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+            } catch (Throwable t) {
+                results = MustBe.throwableToString(t);
             }
+            Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+        }
 
 
-            //NOT ACTIVE - google Gadgets (always at coastwatch)
-            //results = SSR.getUrlResponseStringUnchanged(
-            //    "https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html");
-            //Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            //Test.ensureTrue(results.indexOf(
-            //    "Google Gadgets with Graphs or Maps") >= 0, 
-            //    "results=\n" + results);
-            //Test.ensureTrue(results.indexOf(
-            //    "are self-contained chunks of web content") >= 0, 
-            //    "results=\n" + results);
+        //NOT ACTIVE - google Gadgets (always at coastwatch)
+        //results = SSR.getUrlResponseStringUnchanged(
+        //    "https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html");
+        //Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        //Test.ensureTrue(results.indexOf(
+        //    "Google Gadgets with Graphs or Maps") >= 0, 
+        //    "results=\n" + results);
+        //Test.ensureTrue(results.indexOf(
+        //    "are self-contained chunks of web content") >= 0, 
+        //    "results=\n" + results);
 
 
-            //embed a graph  (always at coastwatch)
-            results = SSR.getUrlResponseStringUnchanged(
-                "https://coastwatch.pfeg.noaa.gov/erddap/images/embed.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "Embed a Graph in a Web Page") >= 0, 
-                "results=\n" + results);
+        //embed a graph  (always at coastwatch)
+        results = SSR.getUrlResponseStringUnchanged(
+            "https://coastwatch.pfeg.noaa.gov/erddap/images/embed.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            "Embed a Graph in a Web Page") >= 0, 
+            "results=\n" + results);
 
-            //Computer Programs            
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/rest.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "ERDDAP's RESTful Web Services") >= 0,
-                "results=\n" + results);
+        //Computer Programs            
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/rest.html");
+        Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+        Test.ensureTrue(results.indexOf(
+            "ERDDAP's RESTful Web Services") >= 0,
+            "results=\n" + results);
 
-            //list of services
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.csv");
-            expected = 
+        //list of services
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.csv");
+        expected = 
 "Resource,URL\n" +
 "info,http://localhost:8080/cwexperimental/info/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
 "search,http://localhost:8080/cwexperimental/search/index.csv?" + EDStatic.defaultPIppQuery + "&searchFor=\n" +
@@ -17101,11 +18234,11 @@ expected =
 (EDStatic.wmsActive? "wms,http://localhost:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "");
 //subscriptions?
 //converters?
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.htmlTable?" + 
-                EDStatic.defaultPIppQuery);
-            expected = 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.htmlTable?" + 
+            EDStatic.defaultPIppQuery);
+        expected = 
 EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "Resources") + "\n" +
 "</head>\n" +
 EDStatic.startBodyHtml(null) + 
@@ -17148,10 +18281,10 @@ EDStatic.startBodyHtml(null) +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</html>\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.json");
-            expected = 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.json");
+        expected = 
 "{\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"Resource\", \"URL\"],\n" +
@@ -17169,10 +18302,10 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    ]\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.tsv"));
-            expected = 
+        results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.tsv"));
+        expected = 
 "Resource[9]URL[10]\n" +
 "info[9]http://localhost:8080/cwexperimental/info/index.tsv?page=1&itemsPerPage=1000[10]\n" +
 "search[9]http://localhost:8080/cwexperimental/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
@@ -17183,10 +18316,10 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 (EDStatic.wcsActive? "wcs[9]http://localhost:8080/cwexperimental/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
 (EDStatic.wmsActive? "wms[9]http://localhost:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
 "[end]";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.xhtml");
-            expected = 
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.xhtml");
+        expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
 "  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
@@ -17242,13 +18375,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</table>\n" +
 "</body>\n" +
 "</html>\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError accessing " + EDStatic.erddapUrl); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);
     }
 
     /**
@@ -17264,13 +18391,12 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         String2.log("\n*** Erddap.testJsonld");
         int po;
 
-        try {
-            //info    list all datasets
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.html?" +
-                EDStatic.defaultPIppQuery); 
+        //info    list all datasets
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/index.html?" +
+            EDStatic.defaultPIppQuery); 
 
-            //json-ld all datasets
-            expected = 
+        //json-ld all datasets
+        expected = 
 "<script type=\"application/ld+json\">\n" +
 "{\n" +
 "  \"@context\": \"http://schema.org\",\n" +
@@ -17301,8 +18427,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    {\n" +
 "      \"@type\": \"Dataset\",\n" +
 "      \"name\": \"";
-            po = Math.max(0, results.indexOf(expected.substring(0, 80)));
-            Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+        po = Math.max(0, results.indexOf(expected.substring(0, 80)));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
 expected = 
 "    {\n" +
@@ -17310,11 +18436,11 @@ expected =
 "      \"name\": \"JPL MUR SST Images\",\n" +
 "      \"sameAs\": \"https://localhost:8443/cwexperimental/info/testFileNames/index.html\"\n" +
 "    }";
-            po = Math.max(0, results.indexOf(expected.substring(0, 80)));
-            Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+        po = Math.max(0, results.indexOf(expected.substring(0, 80)));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
-            //json-ld 1 dataset
-            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/jplMURSST41/index.html"); 
+        //json-ld 1 dataset
+        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/jplMURSST41/index.html"); 
 expected = 
 "<script type=\"application/ld+json\">\n" +
 "{\n" +
@@ -17340,8 +18466,8 @@ expected =
 "-L4-GLOB-v04.1\\ninfoUrl=https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1\\ninstitution=NASA JPL\\nkeyword" +
 "s_vocabulary=GCMD Science Keywords\\nnaming_authority=org.ghrsst\\nnetcdf_version_id=4.1\\nNorthernmost_Northing=8" +
 "9.99\\nplatform=Terra, Aqua, GCOM-W, NOAA-19, MetOp-A, Buoys/Ships\\nprocessing_level=L4\\nproject=NASA Making Ear" +
-"th Science Data Records for Use in Research Environments (MEaSUREs) Program\\nreferences=https://podaac.jpl.nasa" +
-".gov/Multi-scale_Ultra-high_Resolution_MUR-SST\\nsensor=MODIS, AMSR2, AVHRR, in-situ\\nsource=MODIS_T-JPL, MODIS_" +
+"th Science Data Records for Use in Research Environments (MEaSUREs) Program\\nreferences=https://podaac.jpl.nasa.gov/" +
+"dataset/MUR-JPL-L4-GLOB-v4.1\\nsensor=MODIS, AMSR2, AVHRR, in-situ\\nsource=MODIS_T-JPL, MODIS_" +
 "A-JPL, AMSR2-REMSS, AVHRR19_G-NAVO, AVHRRMTA_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF\\nsourceUrl=(local files" +
 ")\\nSouthernmost_Northing=-89.99\\nspatial_resolution=0.01 degrees\\nstandard_name_vocabulary=CF Standard Name Tab" +
 //                                                end date changes   
@@ -17849,14 +18975,10 @@ expected =
 "  }\n" +
 "}\n" +
 "</script>\n";
-            po = Math.max(0, results.indexOf(expected.substring(0, 80)));
-            Test.ensureEqual(results.substring(po, Math.min(results.length(), po + expected.length())), 
-                expected, "results=\n" + results);
+        po = Math.max(0, results.indexOf(expected.substring(0, 80)));
+        Test.ensureEqual(results.substring(po, Math.min(results.length(), po + expected.length())), 
+            expected, "results=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError accessing " + EDStatic.erddapUrl); 
-        }
     }
 
     /** This repeatedly gets the info/index.html web page and ensures it is without error. 
@@ -17871,28 +18993,24 @@ expected =
         int count = -5; //let it warm up
         long sumTime = 0;
 
-        try {
-            while (true) {
-                if (count == 0) sumTime = 0;
-                sumTime -= System.currentTimeMillis();
-                //if uncompressed, it is 1Thread=280 4Threads=900ms
-                results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                    "/info/index.html?" + EDStatic.defaultPIppQuery); 
-                //if compressed, it is 1Thread=1575 4=Threads=5000ms
-                //results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
-                //    "/info/index.html?" + EDStatic.defaultPIppQuery); 
-                sumTime += System.currentTimeMillis();
-                count++;
-                if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
-                expected = "List of All Datasets";
-                Test.ensureTrue(results.indexOf(expected) >= 0, 
-                    "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-                expected = "dataset(s)";
-                Test.ensureTrue(results.indexOf(expected) >= 0,
-                    "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-            }
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+        while (true) {
+            if (count == 0) sumTime = 0;
+            sumTime -= System.currentTimeMillis();
+            //if uncompressed, it is 1Thread=280 4Threads=900ms
+            results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+                "/info/index.html?" + EDStatic.defaultPIppQuery); 
+            //if compressed, it is 1Thread=1575 4=Threads=5000ms
+            //results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + 
+            //    "/info/index.html?" + EDStatic.defaultPIppQuery); 
+            sumTime += System.currentTimeMillis();
+            count++;
+            if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
+            expected = "List of All Datasets";
+            Test.ensureTrue(results.indexOf(expected) >= 0, 
+                "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
+            expected = "dataset(s)";
+            Test.ensureTrue(results.indexOf(expected) >= 0,
+                "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
         }
     }
 
@@ -18060,7 +19178,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 3;
+            lastTest = interactive? -1 : 37;
         String msg = "\n^^^ Erddap.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -18076,6 +19194,34 @@ expected =
                     if (test ==  1) testJsonld();
                     if (test ==  2) testAdvancedSearch();
                     if (test ==  3) testCategorize();
+                    if (test ==  4) testConvertInterpolate();
+
+                    if (test == 10) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericAcronyms.html");
+                    if (test == 11) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/fipscounty.html");
+                    if (test == 12) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/keywords.html");
+                    if (test == 13) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/time.html");
+                    if (test == 14) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/units.html");
+                    if (test == 15) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/urls.html");
+                    if (test == 16) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericVariableNames.html");
+
+                    if (test == 20) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/AccessToPrivateDatasets.html");
+                    if (test == 21) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/changes.html");
+                    if (test == 22) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/EDDTableFromEML.html");
+                    if (test == 23) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/grids.html");
+                    if (test == 24) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV.html");
+                    if (test == 25) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV_1.00.html");
+                    if (test == 26) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setup.html");
+                    if (test == 27) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setupDatasetsXml.html");
+
+                    if (test == 30) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/information.html");
+                    if (test == 31) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/rest.html");
+                    if (test == 32) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/griddap/documentation.html");
+                    if (test == 33) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/tabledap/documentation.html");
+                    if (test == 34) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/files/documentation.html");
+                    if (test == 35) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/wms/documentation.html");
+                    if (test == 36) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/TablesAndGrids.html");
+                    if (test == 37) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
+
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

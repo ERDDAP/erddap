@@ -357,7 +357,7 @@ public class EDVGridAxis extends EDV {
                 double values[] = Calendar2.getNEvenlySpaced(destinationMinDouble(), 
                     destinationMaxDouble(), SLIDER_MAX_NVALUES);
                 for (int i = 0; i < values.length; i++) 
-                    sliderIndices.add(destinationToClosestSourceIndex(values[i]));
+                    sliderIndices.add(destinationToClosestIndex(values[i]));
 
                 //add last index
                 sliderIndices.add(nSourceValues - 1);  
@@ -373,7 +373,7 @@ public class EDVGridAxis extends EDV {
                     (destinationMaxDouble() - destinationMinDouble()) / stride));
                 double base = Math.floor(destinationMinDouble() / stride) * stride;
                 for (int i = 0; i < nDiv; i++) 
-                    sliderIndices.add(destinationToClosestSourceIndex(base + i * stride));
+                    sliderIndices.add(destinationToClosestIndex(base + i * stride));
 
                 //add last index
                 sliderIndices.add(nSourceValues - 1);  
@@ -427,7 +427,7 @@ public class EDVGridAxis extends EDV {
      *   (or -1 if trouble, e.g., sliderCsvValues can't be constructed (e.g., no min + max values)).
      */
     public int closestSliderPosition(double destinationValue) {
-        int index = destinationToClosestSourceIndex(destinationValue);
+        int index = destinationToClosestIndex(destinationValue);
         if (index == -1)
             return index;
 
@@ -595,13 +595,79 @@ public class EDVGridAxis extends EDV {
      * @param destinationD
      * @return the closest source index
      */
-    public int destinationToClosestSourceIndex(double destinationD) {
+    public int destinationToClosestIndex(double destinationD) {
         if (Double.isNaN(destinationD))
             return -1;
 
         DoubleArray destDA = new DoubleArray(new double[]{destinationD});
         PrimitiveArray sourcePA = toSource(destDA);
-        return sourceToClosestSourceIndex(sourcePA.getNiceDouble(0)); //all grid sources are numeric
+        return sourceToClosestIndex(sourcePA.getNiceDouble(0)); //all grid sources are numeric
+    }
+
+    /**
+     * This is like destinationToClosestIndex but returns
+     * a double as if the index numbers where a continuous line,
+     * e.g., 2.25 indicates the dest value is 1/4 of the way between the data 
+     * values for [2] and [3].
+     *
+     * <p>Out of range values are converted to closest source index, first or last (even if way off).
+     * NaN returns -1.
+     * This works whether isAscending or not.
+     * (!!!If there are ties, this wouldn't specify which of the tied values would be found,
+     *   which is part of why EDVGridAxis doesn't allow ties).
+     *
+     * @param destinationD
+     * @return the closest source index as a continuous value
+     */
+    public double destinationToDoubleIndex(double destinationD) {
+        //thankfully, there can't be any tied values
+        int closest = sourceToClosestIndex(destinationD);
+
+        //is it an exact match?
+        double dClosest = destinationDouble(closest);
+        if (dClosest == destinationD)
+            return closest;
+        boolean isLess = destinationD < dClosest;
+
+        //there are more concise ways to code this (^), but this is the easiest to read
+        double tdClosest;
+        if (isAscending) {
+            if (isLess) {
+                //look at closest - 1
+                if (closest == 0) {
+                    return closest;
+                } else {
+                    tdClosest = destinationDouble(closest - 1);        
+                    return (closest-1) + (destinationD - tdClosest) / (dClosest - tdClosest);
+                }
+            } else {
+                //look at closest + 1
+                if (closest == sourceValues.size() - 1) {
+                    return closest;
+                } else {
+                    tdClosest = destinationDouble(closest + 1);        
+                    return closest + (destinationD - dClosest) / (tdClosest - dClosest);
+                }
+            }
+        } else {  //descending
+            if (isLess) {
+                //look at closest + 1
+                if (closest == sourceValues.size() - 1) {
+                    return closest;
+                } else {
+                    tdClosest = destinationDouble(closest + 1);        
+                    return closest + (destinationD - dClosest) / (tdClosest - dClosest);
+                }
+            } else {
+                //look at closest - 1
+                if (closest == 0) {
+                    return closest;
+                } else {
+                    tdClosest = destinationDouble(closest - 1);        
+                    return (closest-1) + (destinationD - tdClosest) / (dClosest - tdClosest);
+                }
+            }
+        }
     }
 
     /**
@@ -613,7 +679,7 @@ public class EDVGridAxis extends EDV {
      * @param sourceD  A number that is way out of range will catch one of the end indices.
      * @return the closest source index
      */
-    public int sourceToClosestSourceIndex(double sourceD) {
+    public int sourceToClosestIndex(double sourceD) {
         if (Double.isNaN(sourceD))
             return -1;
 

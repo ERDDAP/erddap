@@ -177,7 +177,7 @@ public class GenerateDatasetsXml {
                 "EDDTableFromHttpGet",
                 "EDDTableFromInPort",
                 "EDDTableFromIoosSOS",
-                "EDDTableFromJsonlCSV",
+                "EDDTableFromJsonlCSVFiles",
                 "EDDTableFromMultidimNcFiles",
                 "EDDTableFromNcFiles",
                 "EDDTableFromNcCFFiles",
@@ -202,7 +202,10 @@ public class GenerateDatasetsXml {
                     //get the EDD type
                     eddType = get(args, 0, eddType,
                         "\n*** GenerateDatasetsXml ***\n" +
-                        "Press Enter or type the word \"default\" (but without the quotes)\n" +
+                        "To enter a String with special characters or whitespace at the\n" +
+                        "  beginning or end, enter a JSON-style string (with double quotes at\n" +
+                        "  the beginning and end, and \\-encoded special characters, e.g., \"\\t\" .\n" +
+                        "Just press Enter or type the word \"default\" (but without the quotes)\n" +
                         "  to get the default value.\n" +
                         "Type the word \"nothing\" (but without quotes) or \"\" (2 double quotes)\n" +
                         "  to change from a non-nothing default back to nothing (a 0-length string).\n" +

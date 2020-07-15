@@ -30,7 +30,7 @@ import gov.noaa.pfel.erddap.variable.*;
 /** 
  * This class represents a table of data from a collection of FeatureDatasets
  * using CF Discrete Sampling Geometries (was Point Observation Conventions), 
- * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries
+ * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2011-01-27
  */

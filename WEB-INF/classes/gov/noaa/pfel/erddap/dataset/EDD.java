@@ -589,6 +589,10 @@ public abstract class EDD {
                 } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
                 } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
                 } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
+                } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
+                } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
                 } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
                 } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
                 } else if (tags.equals("<erddapDatasets><user>")) {
@@ -1669,7 +1673,7 @@ public abstract class EDD {
      * (or "" if it is).
      * Currently, this is only for some of the Discrete Sampling Geometries cdm_data_type 
      * representations at
-     * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html
+     * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html
      */
     public abstract String accessibleViaNcCF();
 
@@ -2273,7 +2277,7 @@ public abstract class EDD {
         int which = String2.indexOf(dataVariableSourceNames(), tSourceName);
         if (which < 0) throw new SimpleException(
             MessageFormat.format(EDStatic.errorNotFound, 
-                "sourceVariableName=" + tSourceName));
+                "sourceVariableName=" + tSourceName + " in datasetID=" + datasetID));
         return dataVariables[which];
     }
 
@@ -2285,10 +2289,10 @@ public abstract class EDD {
      */
     public EDV findDataVariableByDestinationName(String tDestinationName) {
 
-        int which = String2.indexOf(dataVariableDestinationNames(), tDestinationName.split("/")[0]);
+        int which = String2.indexOf(dataVariableDestinationNames(), tDestinationName.split("/")[0]);  //why split? why would there be a '/'
         if (which < 0) throw new SimpleException(
-            MessageFormat.format(EDStatic.errorNotFound, 
-                "destinationVariableName=" + tDestinationName));
+            MessageFormat.format(EDStatic.errorNotFoundIn, 
+                "destinationVariableName=" + tDestinationName, "datasetID=" + datasetID));
         return dataVariables[which];
     }
 
@@ -4909,7 +4913,7 @@ public abstract class EDD {
         //  e.g., http://measures.gsfc.nasa.gov/thredds/dodsC/SWDB_aggregation/SWDB_L305.004/SWDB_Aggregation_L305_1997.ncml.ncml
         //and fix any bad characters in sourceAtt names.
         //  e.g. https://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
-        //http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#_naming_conventions
+        //https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#_naming_conventions
         //  says "Variable, dimension and attribute names should begin with a letter
         //  and be composed of letters, digits, and underscores."
         //Technically, starting with _ is not allowed, but it is widely done: 
@@ -7146,7 +7150,7 @@ public abstract class EDD {
         //convert all fgdc_X and fgdc:X metadata to X (if not already set)
         // and fix any bad characters in sourceAtt names.
         //e.g. https://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
-        //http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#_naming_conventions
+        //https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#_naming_conventions
         //  says "Variable, dimension and attribute names should begin with a letter
         //  and be composed of letters, digits, and underscores."
         //Technically, starting with _ is not allowed, but it is widely done: 
@@ -7262,11 +7266,8 @@ public abstract class EDD {
         if (tSourceName.equals("l3m_qual") && tLongName.equals("l3m_qual")) {
             //special case for some podaac datasets
             String gParam = sourceGlobalAtts.getString("Parameter");
-            String gUnits = sourceGlobalAtts.getString("Units");
             if (String2.isSomething2(gParam))
                 tLongName = gParam + " Quality";
-            if (String2.isSomething2(gUnits) && !String2.isSomething2(tUnits))
-                tUnits = gUnits;
         }
 
 
@@ -7561,6 +7562,11 @@ public abstract class EDD {
                 addAtts.set("add_offset", addOffsetPA);
             }
         }
+
+        //isUnsigned
+        //String           uss =    addAtts.getString("_Unsigned");
+        //if (uss == null) uss = sourceAtts.getString("_Unsigned");        
+        //boolean isUnsigned = "true".equals(uss);
 
         //unpack actual_range if packed (using scaleFactorPA and addOffsetPA)
         PrimitiveArray    arPa = addAtts.get(   "actual_range");        
