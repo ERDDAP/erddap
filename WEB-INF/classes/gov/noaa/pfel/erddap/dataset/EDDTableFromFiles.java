@@ -1982,7 +1982,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             String name = ftFileList.get(f);
             if (filesAreLocal) {
                 long lastMod = File2.getLastModified(dir + name);
-                if (lastMod == 0 || ftLastMod.get(f) != lastMod) //0=trouble: unavailable or changed
+                // UPDATE:
+                // mod times don't have to be equal, just check if file has been modified since the table was last updated
+                if (lastMod == 0 || ftLastMod.get(f) < lastMod) //0=trouble: unavailable or changed
                     continue;
                 long size = File2.length(dir + name);
                 if (size < 0 || size == Long.MAX_VALUE || 
@@ -1990,29 +1992,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     continue;
             }
 
-            try {
-                //get the metadata
-                //String2.log("here 1");
-                Table table = getSourceDataFromFile(dir, name,
-                    sourceDataNames, sourceDataTypes, 
-                    -1, Double.NaN, Double.NaN, 
-                    null, null, null, true, false); //getMetadata=true, getData=false
-                //String2.log("here 2");
-
-                //get the expected attributes;     ok if NaN or null
-                for (int dvNec = 0; dvNec < sourceDataNames.size(); dvNec++) {
-                    String tName = sourceDataNames.get(dvNec);
-                    int tableDv = table.findColumnNumber(tName);
-                    Attributes dvAtts = tableDv < 0? new Attributes() : table.columnAttributes(tableDv);
-                    expectedAddOffset[dvNec]    = dvAtts.getDouble("add_offset");  
-                    expectedFillValue[dvNec]    = dvAtts.getDouble("_FillValue");
-                    expectedMissingValue[dvNec] = dvAtts.getDouble("missing_value");
-                    expectedScaleFactor[dvNec]  = dvAtts.getDouble("scale_factor");
-                    expectedUnits[dvNec]        = dvAtts.getString("units");
-                }
-            } catch (Throwable t) {
-                throw new RuntimeException("Unexpected error when getting ExpectedXxx attributes from " + dir + name, t);
-            }
+            // UPDATE:
+            // If we got here, then the file hasn't been modified, and it's the same size.
+            // So don't even try to load it!
 
             //we got what we needed, no need to look at other files
             if (verbose) String2.log("ExpectedXxx attributes were read from " + dir + name);
