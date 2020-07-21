@@ -73,12 +73,12 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 
     /** subclasses call lower version */
     public static String generateDatasetsXml(
-        String tFileDir, String tFileNameRegex, String sampleFileName, 
+        String tFileDir, String tFileNameRegex, String sampleFileName, String tGroup,
         String tDimensionsCSV, int tReloadEveryNMinutes, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         return generateDatasetsXml("EDDGridFromNcFilesUnpacked",
-            tFileDir, tFileNameRegex, sampleFileName, 
+            tFileDir, tFileNameRegex, sampleFileName, tGroup,
             tDimensionsCSV, tReloadEveryNMinutes, tCacheFromUrl,
             externalAddGlobalAttributes);
     }
@@ -242,6 +242,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         //  so here it appears not to be double var with no scale_factor or add_offset
         results = generateDatasetsXml(
             sampleDir, sampleRegex, sampleName,
+            "", //group
             "", DEFAULT_RELOAD_EVERY_N_MINUTES, null, null) + "\n"; //dimensionsCSV, reloadMinutes, cacheFromUrl
         String suggDatasetID = suggestDatasetID(sampleDir + sampleRegex);
 
@@ -249,6 +250,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromNcFilesUnpacked",
             sampleDir, sampleRegex, sampleName,
+            "", //group
             "", "" + DEFAULT_RELOAD_EVERY_N_MINUTES, ""}, //dimensionsCSV, reloadMinutes, cacheFromUrl
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
@@ -731,7 +733,9 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //generateDatasetsXml
-        results = generateDatasetsXml(fileDir, fileName, "", "", -1, "", null);
+        results = generateDatasetsXml(fileDir, fileName, "", 
+            "", //group
+            "", -1, "", null);
         expected = 
 "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"unsigned_55f5_4ca9_09f2\" active=\"true\">\n" + //same id as EDDGridFromNcFiles !!!
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
@@ -1586,7 +1590,8 @@ NcHelper.debugMode = true;
             results = atts.toString();
             expected = 
 //    "    _FillValue=-1b\n" + 
-    "    _Unsigned=true\n"; //disappeared w netcdf-java 5.2, so I added back in with code in getVariableAttributes.
+//    "    _Unsigned=true\n"; //disappeared w netcdf-java 5.2, so I added back in with code in getVariableAttributes. 2020 now gone again because it is just a part of the dataType
+                "";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
@@ -1757,16 +1762,14 @@ NcHelper.debugMode = true;
         atts = new Attributes();
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
-        expected = 
-//"    _FillValue=-1b\n" +
-"    _Unsigned=true\n";  //2020-01-23 added in NcHelper.getVariableAttributes to deal with changes in netcdf-java 5.2
+        expected = "";
+//"    _FillValue=-1b\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
         results = atts.toString();
         expected = "";
 //"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
-//"    _Unsigned=true\n"; //removed
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette as unsigned byte
@@ -1952,34 +1955,6 @@ expected =
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.97916;\n" +
 "    String platform \"Aqua\";\n" +
-"    String processing_control_input_parameters_apply_pal \"yes\";\n" +
-"    String processing_control_input_parameters_central_meridian \"-999\";\n" +
-"    String processing_control_input_parameters_deflate \"4\";\n" +
-"    String processing_control_input_parameters_east \"180.000\";\n" +
-"    String processing_control_input_parameters_fudge \"1.0\";\n" +
-"    String processing_control_input_parameters_ifile \"A2016242.L3b_DAY_POC.nc\";\n" +
-"    String processing_control_input_parameters_interp \"area\";\n" +
-"    String processing_control_input_parameters_north \"90.000\";\n" +
-"    String processing_control_input_parameters_ofile \"A2016242.L3m_DAY_POC_poc_4km.nc\";\n" +
-"    String processing_control_input_parameters_oformat \"2\";\n" +
-"    String processing_control_input_parameters_oformat2 \"png\";\n" +
-"    String processing_control_input_parameters_palette_dir \"$OCDATAROOT/common/palette\";\n" +
-"    String processing_control_input_parameters_par \"A2016242.L3m_DAY_POC_poc_4km.nc.param\";\n" +
-"    String processing_control_input_parameters_product \"poc\";\n" +
-"    String processing_control_input_parameters_product_rgb \"rhos_645,rhos_555,rhos_469\";\n" +
-"    String processing_control_input_parameters_projection \"smi\";\n" +
-"    String processing_control_input_parameters_pversion \"2014.0.1QL\";\n" +
-"    String processing_control_input_parameters_quiet \"false\";\n" +
-"    String processing_control_input_parameters_resolution \"4km\";\n" +
-"    String processing_control_input_parameters_south \"-90.000\";\n" +
-"    String processing_control_input_parameters_threshold \"0\";\n" +
-"    String processing_control_input_parameters_use_quality \"yes\";\n" +
-"    String processing_control_input_parameters_use_rgb \"no\";\n" +
-"    String processing_control_input_parameters_west \"-180.000\";\n" +
-"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String processing_control_software_name \"l3mapgen\";\n" +
-"    String processing_control_software_version \"1.0.1-r13111\";\n" +
-"    String processing_control_source \"A2016242.L3b_DAY_POC.nc\";\n" +
 "    String processing_level \"L3 Mapped\";\n" +
 "    String processing_version \"2014.0.1QL\";\n" +
 "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +

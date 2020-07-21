@@ -861,47 +861,29 @@ public class NcHelper  {
 
     /** This finds the highest dimension variable in the rootGroup,
      * and then finds all similar variables.
-     * @return the similar variables (or null if none have a dimension!)
+     *
+     * @param groupName the name of the group (e.g., "" for any group, 
+     *    "somegroup/someSubGroup
+     *    "[root]" if you want to limit the search to the root group.
+     * @return the similar variables 
+     * @throws RuntimeException if trouble (e.g., group doesn't exist or no vars with dimensions)
      */
-    public static Variable[] findMaxDVariables(NetcdfFile netcdfFile) {
+    public static Variable[] findMaxDVariables(NetcdfFile netcdfFile, String groupName) {
 
         //find dimNames of highest dimension variable
         String dimNames[] = new String[0];
-        Group rootGroup = netcdfFile.getRootGroup();
-        List rootGroupVariables = rootGroup.getVariables(); 
-        List loadVariables = null; 
-        for (int v = 0; v < rootGroupVariables.size(); v++) {
-            Variable variable = (Variable)rootGroupVariables.get(v);
-            boolean isChar = variable.getDataType() == DataType.CHAR;
-            int tnDim = variable.getRank() - (isChar? 1 : 0);
-            if (tnDim > dimNames.length) {
-                //a new winner
-                loadVariables = new ArrayList();
-                loadVariables.add(variable);
-                dimNames = new String[tnDim];
-                for (int d = 0; d < tnDim; d++)
-                    dimNames[d] = variable.getDimension(d).getFullName();
-            } else if (tnDim > 0 && tnDim == dimNames.length) {
-                //a similar variable?
-                boolean ok = true;
-                for (int d = 0; d < tnDim; d++) {
-                    if (!dimNames[d].equals(variable.getDimension(d).getFullName())) {
-                        ok = false;
-                        break;
-                    }
-                }
-                if (ok) 
-                    loadVariables.add(variable);
-            }
+        List<Variable> allVariables;
+        if (String2.isSomething(groupName)) {
+            Group group = groupName.equals("[root]")? 
+                netcdfFile.getRootGroup() : 
+                netcdfFile.findGroup(groupName);
+            if (group == null)
+                throw new RuntimeException(String2.ERROR + 
+                    " in NcHelper.findMaxDVariables: group=\"" + groupName + "\" isn't in the NetCDF file.");
+            allVariables = group.getVariables();
+        } else {
+            allVariables = netcdfFile.getVariables();
         }
-        return variableListToArray(loadVariables);
-    }
-
-/*    public static Variable[] findMaxDVariables(NetcdfFile netcdfFile) {
-
-        //find dimNames of highest dimension variable
-        String dimNames[] = new String[0];
-        List<Variable> allVariables = netcdfFile.getVariables();
         List<Variable> loadVariables = null; 
         for (int v = 0; v < allVariables.size(); v++) {
             Variable variable = allVariables.get(v);
@@ -912,13 +894,19 @@ public class NcHelper  {
                 loadVariables = new ArrayList();
                 loadVariables.add(variable);
                 dimNames = new String[tnDim];
-                for (int d = 0; d < tnDim; d++)
-                    dimNames[d] = variable.getDimension(d).getFullName();
+                for (int d = 0; d < tnDim; d++) {
+                    Dimension tDim = variable.getDimension(d);
+                    dimNames[d] = tDim == null || tDim.getFullName() == null? 
+                        "size=" + variable.getShape(d) : tDim.getFullName();
+                }
             } else if (tnDim > 0 && tnDim == dimNames.length) {
                 //a similar variable?
                 boolean ok = true;
                 for (int d = 0; d < tnDim; d++) {
-                    if (!dimNames[d].equals(variable.getDimension(d).getFullName())) {
+                    Dimension tDim = variable.getDimension(d);
+                    String tName = tDim == null || tDim.getFullName() == null?
+                        "size=" + variable.getShape(d) : tDim.getFullName();
+                    if (!dimNames[d].equals(tName)) {
                         ok = false;
                         break;
                     }
@@ -927,8 +915,12 @@ public class NcHelper  {
                     loadVariables.add(variable);
             }
         }
+        if (loadVariables == null)
+            throw new RuntimeException(String2.ERROR + 
+                " in NcHelper.findMaxDVariables: None of the variables in group=\"" + 
+                groupName + "\" have dimensions.");
         return variableListToArray(loadVariables);
-    } */
+    } 
 
     /** 
      * This finds all variables with dimensions in the rootGroup.
@@ -1151,23 +1143,43 @@ public class NcHelper  {
      * If there is trouble, this logs a warning message and returns.
      * This is low level and isn't usually called directly.
      *
-     * @param att 
+     * @param varName use "Global" for global attributes. This is just used for diagnostic messages.
+     * @param att an nc attribute. If the name is already present, this new att
+     *   takes precedence.
      * @param attributes the Attributes that will be added to. 
      */
     public static void addAttribute(String varName, ucar.nc2.Attribute att, 
         Attributes attributes) {
+        addAttribute(varName, att, attributes, true);
+    }
+
+    /**
+     * Given an attribute, this adds the value to the attributes.
+     * If there is trouble, this logs a warning message and returns.
+     * This is low level and isn't usually called directly.
+     *
+     * @param varName use "Global" for global attributes. This is just used for diagnostic messages.
+     * @param att an nc attribute
+     * @param attributes the Attributes that will be added to. 
+     * @param addIfAlreadyPresent 
+     */
+    public static void addAttribute(String varName, ucar.nc2.Attribute att, 
+        Attributes attributes, boolean addIfAlreadyPresent) {
         if (att == null) {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
             return;
         }
-        if (String2.isSomething(att.getFullName())) {
-            //attributes.set calls String2.canonical (useful since many names are in many datasets)
-            attributes.set(att.getFullName(), getAttributePA(varName, att));
-        } else {
+        String tName = att.getFullName(); //It is the short name! It doesn't include the groupName.
+        if (!String2.isSomething(tName)) {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.addAttribute " + varName + 
-                    " att.getFullName()=" + String2.annotatedString(att.getFullName()));
+                    " att.getFullName()=" + String2.annotatedString(tName));
+        } else if (!addIfAlreadyPresent && attributes.get(tName) != null) {
+            //do nothing
+        } else {
+            //attributes.set calls String2.canonical (useful since many names are in many datasets)
+            attributes.set(tName, getAttributePA(varName, att));
         }
     }
 
@@ -1178,7 +1190,32 @@ public class NcHelper  {
      * @param attributes the Attributes that will be added to.
      */
     public static void getGlobalAttributes(NetcdfFile netcdfFile, Attributes attributes) {
-        getGlobalAttributes(netcdfFile.getGlobalAttributes(), attributes);
+        getGlobalAttributes(netcdfFile, "", attributes);
+    }
+
+    /**
+     * This reads the global attributes for the group and all its parent groups in a netcdf file.
+     *
+     * @param netcdfFile
+     * @param groupName  a specific groupName, or "" or null for the root group
+     * @param attributes the Attributes that will be added to.
+     *     If group was specified but found, this just returns the root group atts.
+     *     If group was specified, the group's (and parent groups) global attributes 
+     *     are not marked with the name of the group -- it's as if all the global atts
+     *     from all levels were thrown in together (with preference for lower level).
+     */
+    public static void getGlobalAttributes(NetcdfFile netcdfFile, String groupName, Attributes attributes) {
+        Group group = String2.isSomething(groupName)?
+            netcdfFile.findGroup(groupName) :
+            netcdfFile.getRootGroup();
+        if (group == null)
+            group = netcdfFile.getRootGroup();
+        while (true) {
+            getGlobalAttributes(group.getAttributes(), attributes);
+            group = group.getParentGroup(); //returns null if this is root group
+            if (group == null) 
+                return;
+        }
     }
 
     /**
@@ -1193,15 +1230,15 @@ public class NcHelper  {
         if (globalAttList == null)
             return;
         int nAtt = globalAttList.size();
-        for (int att = 0; att < nAtt; att++)  //there is also a dods.dap.Attribute
-            addAttribute("global", (ucar.nc2.Attribute)globalAttList.get(att), attributes);
+        for (int att = 0; att < nAtt; att++)  //there is also a dods.dap.Attribute                        
+            addAttribute("global", (ucar.nc2.Attribute)globalAttList.get(att), attributes, false);
     }
 
     /**
      * This adds to the attributes for a netcdf variable.
      *
      * @param variable
-     * @param attributes the Attributes that will be added to
+     * @param attributes the Attributes that will be added to.
      */
     public static void getVariableAttributes(Variable variable, Attributes attributes) {
         if (variable == null)
@@ -1216,7 +1253,7 @@ public class NcHelper  {
             addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
 
         //in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
-        //String2.log(">> getVariableAttributes var=" + variable.getName() + " _Unsigned=" + attributes.getString("_Unsigned"));
+        //String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" + attributes.getString("_Unsigned"));
         if ("true".equals(attributes.getString("_Unsigned")))
             attributes.convertSomeSignedToUnsigned();
     }

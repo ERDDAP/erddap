@@ -30,7 +30,7 @@
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
-      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
       </td> 
   </tr> 
@@ -7632,11 +7632,12 @@ for example, "#" at the start of the file.
     only) This specifies the number of the first row with data in the 
     files. (The first row of the file is "1". Default = 2.) --&gt;
   &lt;dimensionsCSV&gt;...&lt;/dimensionsCSV&gt; &lt;-- (For EDDTableFromNcFiles
-    and EDDTableFromMultidimNcFiles only) This is a 
-    comma-separated list of dimension names. If specified,
-    ERDDAP will only read variables in the source files 
-    which use some or all of these dimensions, plus all of
-    the scalar variables. --&gt;
+    and EDDTableFromMultidimNcFiles only) This is a comma-separated
+    list of dimension fullNames. If specified, ERDDAP will only read
+    variables in the source files which use some or all of these 
+    dimensions, plus all of the scalar variables. If a dimension 
+    is in a group, you must specify its fullName,
+    e.g., "<i>groupName/dimensionName</i>". --&gt;
   &lt;-- The next four tags are DEPRECATED. For more information, see 
     <a rel="help" href="#fileNameSourceNames">File Name Extracts</a>. --&gt;
   &lt;preExtractRegex&gt;...&lt;/preExtractRegex&gt;
@@ -9098,6 +9099,8 @@ on how this class works and how to use this class.
     (or &lt;dimensionsCSV&gt; in the datasets.xml info for one of these datasets), 
     then ERDDAP will only read variables in the source files which use
     some or all of these dimensions, plus all scalar variables.
+    If a dimension is in a group, you must specify its fullName,
+    e.g., "<i>groupName/dimensionName</i>".  
   <li>This class can often reject files very quickly if they don't match a request's constraints.
     So reading data from large collections will often go much faster.
   <li>This class handles true char variables (non-String variables) correctly.
@@ -9126,12 +9129,20 @@ on how this class works and how to use this class.
   what dimensions and variables are in the file.
   Then you can give better answers for the second loop through GenerateDatasetsXml.
 
+  <p>Group -- GenerateDatasetsXml will ask for a "Group". You can enter
+  "" to have it search any/all groups, "<i>someGroup</i>" or "<i>someGroup/someSubGroup</i>"
+  to have it search a specific group, or "[root]" to have it search just the
+  root group. The "Group" string becomes &lt;group&gt; in the datasets.xml 
+  info for the dataset (although "[root]" becomes "").
+
   <p>DimensionsCSV -- GenerateDatasetsXml will ask for a "DimensionsCSV" string.
   This is a comma-separated-value list of source names of a set of dimensions. 
   GenerateDatasetsXml will only read data variables in sample .nc file which use 
   some or all of those dimensions (and no other dimensions),
   plus all of the scalar variables in the file,
   and make the dataset from those data variables. 
+  If a dimension is in a group, you must specify its fullName,
+  e.g., "<i>groupName/dimensionName</i>".  
   <br>If you specify nothing (an empty string), GenerateDatasetsXml will look for 
   the variables with the most dimensions, on the theory that they will be
   the most interesting, but there may be times when you will want to 
