@@ -88,7 +88,6 @@ import ucar.nc2.geotiff.GeotiffWriter;
 import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 import ucar.unidata.geoloc.LatLonRect;
-import ucar.unidata.geoloc.LatLonPointImpl;
 
 /** 
  * This class represents a dataset where the results can be represented as 

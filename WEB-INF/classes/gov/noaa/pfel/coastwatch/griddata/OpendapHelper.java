@@ -1950,7 +1950,7 @@ public class OpendapHelper  {
                                 Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims.get(d).getName()))
+                            if (!dimName.equals(dims.get(d).getFullName()))
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -1991,7 +1991,7 @@ public class OpendapHelper  {
                             //don't make a related variable
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims.get(d).getName()))
+                            if (!dimName.equals(dims.get(d).getFullName()))
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -2042,7 +2042,7 @@ public class OpendapHelper  {
             //write dimension attributes in ncOut
             if (isDGrid) {
                 for (int d = 0; d < nDims; d++) {
-                    String dimName = dims.get(d).getName();               
+                    String dimName = dims.get(d).getFullName();               
                     tAtts.clear();
                     getAttributes(das, dimName, tAtts);
                     NcHelper.setAttributes(nc3Mode, newDimVars[d], tAtts, dimPATypes[d].isUnsigned());
@@ -2064,7 +2064,7 @@ public class OpendapHelper  {
                 for (int d = 0; d < nDims; d++) {
                     String tProjection = "[" + sss[d*3] + ":" + sss[d*3+1] + ":" + sss[d*3+2] + "]"; 
                     PrimitiveArray pas[] = getPrimitiveArrays(dConnect, 
-                        "?" + dims.get(d).getName() + tProjection); 
+                        "?" + dims.get(d).getFullName() + tProjection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     ncOut.write(newDimVars[d], 
                         NcHelper.get1DArray(pas[0].toObjectArray(), pas[0].isUnsigned()));

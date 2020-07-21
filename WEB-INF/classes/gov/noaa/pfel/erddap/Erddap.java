@@ -17855,7 +17855,7 @@ jsonp + "(" +
             "\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
             "\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
             "\"http://localhost:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
-            "\"http://www.globec.org/\", " +
+            "\"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\", " + //was "\"http://www.globec.org/\", " +
             "\"http://localhost:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
             (EDStatic.subscriptionSystemActive? 
                 "\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
@@ -18415,7 +18415,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    },\n" +
 "    \"telephone\": \"+1 831-420-3666\",\n" +
 "    \"email\": \"bob.simons@noaa.gov\",\n" +
-"    \"sameAs\": \"https://swfsc.noaa.gov/textblock.aspx?Division=ERD&id=1315&ParentMenuId=200\"\n" +
+"    \"sameAs\": \"https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center\"\n" +
 "  },\n" +
 "  \"fileFormat\": [\n" +
 "    \"application/geo+json\",\n" +
@@ -18954,7 +18954,7 @@ expected =
 "    \"@type\": \"Organization\",\n" +
 "    \"name\": \"JPL MUR SST project\",\n" +
 "    \"email\": \"ghrsst@podaac.jpl.nasa.gov\",\n" +
-"    \"sameAs\": \"https://climatesciences.jpl.nasa.gov/projects/measures/\"\n" +
+"    \"sameAs\": \"https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1\"\n" +
 "  },\n" +
 "  \"publisher\": {\n" +
 "    \"@type\": \"Organization\",\n" +

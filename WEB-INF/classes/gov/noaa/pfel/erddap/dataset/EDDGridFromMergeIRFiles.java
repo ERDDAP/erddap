@@ -211,6 +211,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param tFullName the name of the decompressed data file
      * @param sourceAxisNames the names of the desired source axis variables.
      *   If there is a special axis0, this will not include axis0's name.
+     * @param sourceDataNames When there are unnamed dimensions, this is
+     *   to find out the shape of the variable to make index values 0, 1, size-1.
      * @return a PrimitiveArray[] with the results (with the requested
      *   sourceDataTypes). It needn't set sourceGlobalAttributes or
      *   sourceDataAttributes (but see getSourceMetadata).
@@ -218,7 +220,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * this doesn't call addBadFile or requestReloadASAP().
      */
     public PrimitiveArray[] lowGetSourceAxisValues(String tFullName,
-            StringArray sourceAxisNames) throws Throwable {
+            StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
         String getWhat = "";
         

@@ -165,7 +165,7 @@ public class TestAll  {
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {                
       // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/melanie/A20191522019181.L3m_MO_CHL_chlor_a_4km-0-360.nc"; 
+//      String tFileName = "/data/kerfoot/ru33_20200715T170022Z_sbd.nc"; 
 //      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
 
 //String tFileName = "/data/biddle/684362_v1_PRS_bacteria_identification.tsv";
@@ -743,6 +743,8 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
       //make e.g., <netcdf location="V2013074.L3m_DAY_NPP_CHL_chlor_a_4km" coordValue="15779"/>
 //    Projects.makeNcmlCoordValues("V*.L3m_DAY_NPP_CHL_chlor_a_4km", "2012-01-02", "2013-12-31", 1, Calendar.DAY_OF_YEAR); 
 //    EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles();
+//    EDDGridFromNcFiles.testGenerateDatasetsXmlGroups();
+//    EDDGridFromNcFiles.testGenerateDatasetsXmlGroups2();
 //    EDDGridFromNcFiles.testSpeed(-1);  //-1 for all
 
 //    String s = EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(
@@ -1138,7 +1140,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 
 //    EDDTableFromNcFiles.testAddVariablesWhere();
 //    EDDTableFromNcFiles.testCacheFiles(false);
-//    EDDTableFromNcFiles.testGlobec(); 
+//    EDDTableFromNcFiles.testHardFlag(); 
 //    EDDTableFromNcFiles.testNThreads(); 
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -5, 5);  //nThreads=-3, 3
 //    EDDTableFromNcFiles.testNThreads2("cwwcNDBCMetSSD", 1, 1); 
@@ -1412,6 +1414,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
          EDDTableFromNcCFFiles.testGenerateDatasetsXml2();
          EDDTableFromNccsvFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml();
+         EDDTableFromNcFiles.testGenerateDatasetsXml2();
          EDDTableFromNcFiles.testGenerateDatasetsXml2();
          EDDTableFromNcFiles.testCopyFilesGenerateDatasetsXml();
          //EDDTableFromNWISDV.testGenerateDatasetsXml(); //inactive

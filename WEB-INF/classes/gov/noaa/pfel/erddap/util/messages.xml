@@ -4646,7 +4646,7 @@ information.
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
-      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
       </td> 
   </tr> 
@@ -4961,7 +4961,7 @@ can serve many types of scientific data, not just oceanographic data.</a></stron
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
       <a title="National Marine Fisheries Service" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
       <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
-      <a title="Environmental Research Division" rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
+      <a title="Environmental Research Division" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>.
     The ERDDAP server at ERD serves oceanographic data,
     but ERDDAP (the program) can access and serve any gridded or tabular data.
   <br>&nbsp;
@@ -6082,6 +6082,9 @@ www.rvdata.us/search/cruise/
 
 http://www.rvdata.us
 https://www.rvdata.us
+
+https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200
+https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
 
 https://tycho.usno.navy.mil/systime.html
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
