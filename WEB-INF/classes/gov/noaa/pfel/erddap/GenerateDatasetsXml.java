@@ -293,27 +293,29 @@ public class GenerateDatasetsXml {
                         s1  = get(args,  1,  s1, "Parent directory");
                         s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
                         s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
-                        s4  = get(args,  4,  s4, "DimensionsCSV (or \"\" for default)");                       
-                        s5  = get(args,  5,  s5, reloadEveryNMinutesMessage);
-                        s6  = get(args,  6,  s6, cacheFromUrlPrompt);
+                        s4  = get(args,  4,  s4, "Group (or \"\" for all/any or \"[root]\" for the root group)");                                         
+                        s5  = get(args,  5,  s5, "DimensionsCSV (or \"\" for default)");                       
+                        s6  = get(args,  6,  s6, reloadEveryNMinutesMessage);
+                        s7  = get(args,  7,  s7, cacheFromUrlPrompt);
                         String2.log("working...");
                         printToBoth(EDDGridFromNcFiles.generateDatasetsXml(s1, 
                             s2.length() == 0? ".*\\.nc" : s2, 
-                            s3, s4, String2.parseInt(s5, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
-                            s6, null));
+                            s3, s4, s5, String2.parseInt(s6, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                            s7, null));
 
                     } else if (eddType.equals("EDDGridFromNcFilesUnpacked")) {
                         s1  = get(args,  1,  s1, "Parent directory");
                         s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
                         s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
-                        s4  = get(args,  4,  s4, "DimensionsCSV (or \"\" for default)");                       
-                        s5  = get(args,  5,  s5, reloadEveryNMinutesMessage);
-                        s6  = get(args,  6,  s6, cacheFromUrlPrompt);
+                        s4  = get(args,  4,  s4, "Group (or \"\" for all/any or \"[root]\" for the root group)");                                         
+                        s5  = get(args,  5,  s5, "DimensionsCSV (or \"\" for default)");                       
+                        s6  = get(args,  6,  s6, reloadEveryNMinutesMessage);
+                        s7  = get(args,  7,  s7, cacheFromUrlPrompt);
                         String2.log("working...");
                         printToBoth(EDDGridFromNcFilesUnpacked.generateDatasetsXml(s1, 
                             s2.length() == 0? ".*\\.nc" : s2, 
-                            s3, s4, String2.parseInt(s5, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
-                            s6, null));
+                            s3, s4, s5, String2.parseInt(s6, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                            s7, null));
 
                     } else if (eddType.equals("EDDGridFromThreddsCatalog")) {
                         s1  = get(args,  1,  s1, "URL (usually ending in \"/catalog.xml\")");         

@@ -714,7 +714,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     sourceAxisNames, sourceDataNames, sourceDataTypes,
                     tSourceGlobalAttributes, tSourceAxisAttributes, tSourceDataAttributes);
                 PrimitiveArray tSourceAxisValues[] = 
-                    getSourceAxisValues(tDir, tName, sourceAxisNames);
+                    getSourceAxisValues(tDir, tName, sourceAxisNames, sourceDataNames);
                 //sets haveValidSourceInfo=true if okay; throws Exception if not
                 validateCompareSet(tDir, tName,
                     tSourceGlobalAttributes, 
@@ -1015,7 +1015,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     nReadFile++;
                     long rfcTime = System.currentTimeMillis();
                     PrimitiveArray[] tSourceAxisValues = getSourceAxisValues(
-                        dirList.get(tDirI), tFileS, sourceAxisNames);
+                        dirList.get(tDirI), tFileS, sourceAxisNames, sourceDataNames);
                     readFileCumTime += System.currentTimeMillis() - rfcTime;
 
                     //test that all axisVariable and dataVariable units are identical
@@ -1565,7 +1565,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     getSourceMetadata(dirName, fileName,
                         sourceAxisNames, sourceDataNames, sourceDataTypes,
                         tSourceGlobalAttributes, tSourceAxisAttributes, tSourceDataAttributes);
-                    tSourceAxisValues = getSourceAxisValues(dirName, fileName, sourceAxisNames);
+                    tSourceAxisValues = getSourceAxisValues(dirName, fileName, 
+                        sourceAxisNames, sourceDataNames);
                     validateCompareSet( //throws Exception (with fileName) if not compatible
                         dirName, fileName,
                         tSourceGlobalAttributes,
@@ -2070,6 +2071,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @param tFileName
      * @param sourceAxisNames the names of the desired source axis variables.
      *   If there is a special axis0, this will still be the full list.
+     * @param sourceDataNames When there are unnamed dimensions, this is
+     *   to find out the shape of the variable to make index values 0, 1, size-1.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -2077,7 +2080,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
     public PrimitiveArray[] getSourceAxisValues(String tFileDir, String tFileName, 
-        StringArray sourceAxisNames) throws Throwable {
+        StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
 
         //common case: nothing special
@@ -2087,7 +2090,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             String decompFullName = FileVisitorDNLS.decompressIfNeeded(
                 tFileDir + tFileName, fileDir, decompressedDirectory(), 
                 EDStatic.decompressedCacheMaxGB, true); //reuseExisting
-            return lowGetSourceAxisValues(decompFullName, sourceAxisNames);
+            return lowGetSourceAxisValues(decompFullName, sourceAxisNames, sourceDataNames);
         }
         
         //special axis0?  ***fileName,       timeFormat=YYYYMMDD, regex, captureGroup
@@ -2123,7 +2126,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     tFileDir + tFileName, fileDir, decompressedDirectory(), 
                     EDStatic.decompressedCacheMaxGB, true); //reuseExisting
                 PrimitiveArray tsav[] = lowGetSourceAxisValues(decompFullName, 
-                    sourceAxisNamesNoAxis0);
+                    sourceAxisNamesNoAxis0, sourceDataNames);
                 System.arraycopy(tsav, 0, nsav, 1, nAxes - 1);            
             }
 
@@ -2170,9 +2173,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *
      * @param tFullName the name of the decompressed data file
      * @param sourceAxisNames If there is a special axis0, this will not include axis0's name.
+     * @param sourceDataNames When there are unnamed dimensions, this is
+     *   to find out the shape of the variable to make index values 0, 1, size-1.
      */
     public abstract PrimitiveArray[] lowGetSourceAxisValues(String tFullName, 
-        StringArray sourceAxisNames) throws Throwable;
+        StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable;
 
     /**
      * This gets source data from one file.

@@ -6747,10 +6747,7 @@ Dataset {
             Variable loadVariables[] = null;
             Dimension loadDims[] = null;
             if (loadVariableNames.length == 0) {
-                loadVariables = NcHelper.findMaxDVariables(ncFile);
-                if (loadVariables == null || loadVariables.length == 0)
-                    throw new RuntimeException(errorInMethod + 
-                       "The file has no variables with dimensions.");
+                loadVariables = NcHelper.findMaxDVariables(ncFile, ""); //throws exception if no vars with dimensions
             } else {
                 ArrayList varList = new ArrayList();
                 ArrayList dimList = new ArrayList(); //just dims that aren't also variables
@@ -6802,7 +6799,7 @@ Dataset {
                 Variable variable = loadVariables[v];
                 boolean isChar = variable.getDataType() == DataType.CHAR;
                 if (debugMode) 
-                    String2.log("var#" + v + "=" + variable.getName());
+                    String2.log("var#" + v + "=" + variable.getFullName());
 
                 //is it a 0D variable?    
                 if (variable.getRank() + (isChar? -1 : 0) == 0) { 
@@ -6812,7 +6809,7 @@ Dataset {
 
                 //is it an axis variable?    
                 if (!isChar && variable.getRank() == 1 &&
-                    variable.getDimension(0).getName().equals(variable.getName())) { //varName = dimName
+                    variable.getDimension(0).getFullName().equals(variable.getFullName())) { //varName = dimName
                     if (debugMode) String2.log("  skipping axisVariable");
                     continue;
                 }
@@ -6829,7 +6826,7 @@ Dataset {
                     List axisList = variable.getDimensions();                        
                     for (int a = 0; a < nAxes; a++) {
                         Dimension dimension = (Dimension)axisList.get(a);
-                        String axisName = dimension.getName();
+                        String axisName = dimension.getFullName();
                         axisLengths[a] = dimension.getLength();
                         if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
                         Attributes atts = new Attributes();
@@ -6903,16 +6900,16 @@ Dataset {
                 if (isChar) {
                     Test.ensureEqual(variable.getRank(), nAxes + 1,
                         errorInMethod + "Unexpected nDimensions for String variable: " + 
-                        variable.getName());
+                        variable.getFullName());
                 } else {
                     Test.ensureEqual(variable.getRank(), nAxes,
                         errorInMethod + "Unexpected nDimensions for numeric variable: " + 
-                        variable.getName());
+                        variable.getFullName());
                 }
                 for (int a = 0; a < nAxes; a++) 
-                    Test.ensureEqual(variable.getDimension(a).getName(), getColumnName(a),
+                    Test.ensureEqual(variable.getDimension(a).getFullName(), getColumnName(a),
                         errorInMethod + "Unexpected axis#" + a + 
-                        " for variable=" + variable.getName());
+                        " for variable=" + variable.getFullName());
 
                 //get the data
                 int tReadOrigin[] = readOrigin;
@@ -6928,10 +6925,10 @@ Dataset {
                 Array array = variable.read(tReadOrigin, tReadShape); 
                 PrimitiveArray pa = PrimitiveArray.factory(NcHelper.getArray(array)); 
                 Test.ensureEqual(pa.size(), nRows(),
-                    errorInMethod + "Unexpected nRows for " + variable.getName() + ".");
+                    errorInMethod + "Unexpected nRows for " + variable.getFullName() + ".");
 
                 //store data
-                addColumn(variable.getName(), pa);
+                addColumn(variable.getFullName(), pa);
                 NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
 
                 //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
@@ -6971,7 +6968,7 @@ Dataset {
 
                     for (int a = 0; a < nAxes; a++) {
                         Dimension dimension = (Dimension)dimensions.get(a);
-                        String axisName = dimension.getName();
+                        String axisName = dimension.getFullName();
                         Attributes atts = new Attributes();
                         axisLengths[a] = dimension.getLength();
                         if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
@@ -7299,11 +7296,9 @@ Dataset {
                     //loadDimNames wasn't specified either
 
                     //find var(s) that use the most dimensions
-                    Variable tVars[] = NcHelper.findMaxDVariables(ncFile);
-                    if (tVars == null || tVars.length == 0) {
-                        //FUTURE: read all static variables
-                        String2.log("Note: The file has no variables with dimensions.");
-                    } else {
+                    try {
+                        Variable tVars[] = NcHelper.findMaxDVariables(ncFile, "");  //throws Exception if no vars with dimensions
+
                         //gather loadDims from the first of those vars 
                         //(so it won't include aliases)
                         Variable tVar = tVars[0];
@@ -7317,6 +7312,9 @@ Dataset {
                             loadDims.add(dim);
                             loadDimNames.add(dim.getFullName());
                         }
+                    } catch (Exception e) {
+                        //FUTURE: read all static variables
+                        String2.log("Table.readMultidimNc caught: " + e.toString());
                     }
 
                 } else {
@@ -9790,7 +9788,7 @@ Dataset {
             int nDims = dimsList.size();
             String dimNames[] = new String[nDims];
             for (int d = 0; d < nDims; d++) {
-                dimNames[d] = ((Dimension)dimsList.get(d)).getName(); //may be null
+                dimNames[d] = ((Dimension)dimsList.get(d)).getFullName(); //may be null
                 if (dimNames[d] == null)
                     dimNames[d] = "";
             } 
@@ -10026,9 +10024,9 @@ Dataset {
             Dimension outerDimDim = outerDim < 0? null : (Dimension)dimsList.get(outerDim);     
             Dimension innerDimDim = innerDim < 0? null : (Dimension)dimsList.get(innerDim);
             Dimension obsDimDim   = obsDim   < 0? null : (Dimension)dimsList.get(obsDim);
-            String outerDimName  = outerDim < 0? "" : outerDimDim.getName(); //may be null
-            String innerDimName  = innerDim < 0? "" : innerDimDim.getName();
-            String obsDimName    = obsDim   < 0? "" : obsDimDim.getName(); 
+            String outerDimName  = outerDim < 0? "" : outerDimDim.getFullName(); //may be null
+            String innerDimName  = innerDim < 0? "" : innerDimDim.getFullName();
+            String obsDimName    = obsDim   < 0? "" : obsDimDim.getFullName(); 
             String scalarDimName = "scalar"; 
             int outerDimSize  = outerDimDim == null? -1 : outerDimDim.getLength();
             int innerDimSize  = innerDimDim == null? -1 : innerDimDim.getLength();
@@ -10119,10 +10117,10 @@ Dataset {
                         "Invalid file: nLevels=2, outerDim=scalarDim, but can't find " +
                         "variable[innerDim][obsDim].  innerDim=" + innerDim + " obsDim=" + obsDim);
                 obsDimDim     = (Dimension)dimsList.get(obsDim);
-                obsDimName    = obsDimDim.getName(); 
+                obsDimName    = obsDimDim.getFullName(); 
                 obsDimSize    = obsDimDim.getLength();
                 innerDimDim   = (Dimension)dimsList.get(innerDim);
-                innerDimName  = innerDimDim.getName();
+                innerDimName  = innerDimDim.getFullName();
                 innerDimSize  = innerDimDim.getLength();
 
                 //now that innerDim and outerDim are known, find 1D vars that use them
@@ -20096,7 +20094,7 @@ String2.log(table.dataToString());
                     Test.ensureEqual(realNDims[v], 1, 
                         "Unexpected number of dimensions for var=" + vNames[v]);
                     Dimension tOuterDim = var.getDimension(0);
-                    String tOuterDimName = tOuterDim.getName();
+                    String tOuterDimName = tOuterDim.getFullName();
                     Test.ensureNotNull(tOuterDimName,  
                         "Unexpected dimensionName=null for var=" + vNames[v]);
                     if (outerDimName == null) {
@@ -20123,7 +20121,7 @@ String2.log(table.dataToString());
                     Test.ensureEqual(realNDims[v], 1, 
                         "Unexpected number of dimensions for var=" + vNames[v]);
                     Dimension tOuterDim = var.getDimension(0);
-                    String tOuterDimName = tOuterDim.getName();
+                    String tOuterDimName = tOuterDim.getFullName();
                     Test.ensureNotNull(tOuterDimName, 
                         "Unexpected dimensionName=null for var=" + vNames[v]);
                     if (outerDimName == null) {
@@ -20187,7 +20185,7 @@ String2.log(table.dataToString());
 
                 } else if (realNDims[v] == 1) {
                     Dimension dim = var.getDimension(0);
-                    String dimName = dim.getName();
+                    String dimName = dim.getFullName();
 
                     //FIX flaws related to Primary_Investigator / numberofpis.
                     //Treat numberofpis differently than other dimNames:
@@ -20346,7 +20344,7 @@ String2.log(table.dataToString());
                 if (realNDims[v] != 1) 
                     continue;
                 Dimension dim = var.getDimension(0);
-                String dimName = dim.getName();
+                String dimName = dim.getFullName();
                 if (outerDimName.equals(dimName) || //already in outer table? 
                     dimName.equals("numberofpis")) 
                     continue;
@@ -24456,7 +24454,7 @@ String2.log(table.dataToString());
         List globalAttList = ncFile.globalAttributes();
         for (int att = 0; att < globalAttList.size(); att++) {
             Attribute gAtt = (Attribute)globalAttList.get(att);
-            globalAttributes.add(gAtt.getName());
+            globalAttributes.add(gAtt.getShortName());
             globalAttributes.add(PrimitiveArray.factory(
                 DataHelper.getArray(gAtt.getValues())));
         }
@@ -24502,7 +24500,7 @@ String2.log(table.dataToString());
                 Variable tVariable = (Variable)variableList.get(i);
                 List tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
-                if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+                if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
                     " type=" + tVariable.getDataType());
                 if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
                     (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) && 
@@ -28418,7 +28416,7 @@ String2.log(table.dataToString());
                 Variable var = vars.get  ;
                 class elementPAType = NcHelper.  var.
                 ArrayList tDims = var.getDimensions ();
-                String colName = var.getName();
+                String colName = var.getFullName();
                 Attributes atts = new Attributes();
                 NcHelper.getAttributes(colName, atts);
                 int col = findColumnNumber(colName);

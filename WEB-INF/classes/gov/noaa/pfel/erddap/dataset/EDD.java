@@ -3914,14 +3914,14 @@ public abstract class EDD {
     }
 
     /**
-     * This chops a csv list into words/phrases and adds them as is to hashSet.
+     * This chops a csv list into words/phrases and adds them as is and their parts to hashSet.
      *
      * @param phrase
      * @param hashset
      * @return the same hashSet for convenience
      */
     public static HashSet<String> chopUpCsvAndAdd(String csv, HashSet<String> hashSet) {
-        //String2.log("chopUpAndAdd " + phrase);
+        //String2.log(">> chopUpAndAdd " + csv);
         if (csv == null || csv.length() == 0)
             return hashSet;
         String tWords[] = StringArray.arrayFromCSV(csv, ",;"); //split at , or ;
@@ -3931,6 +3931,7 @@ public abstract class EDD {
             while (w.endsWith("*") || w.endsWith("_"))
                 w = w.substring(0, w.length() - 1).trim();
             hashSet.add(w);
+            chopUpAndAdd(w, hashSet);
         }
         return hashSet;
     }
@@ -4071,14 +4072,8 @@ public abstract class EDD {
                 }
 
                 //add whole and parts of standard_name
-                if (stdName.indexOf("longitude") < 0 &&
-                    stdName.indexOf("latitude") < 0 &&
-                    //depth is interesting
-                    //altitude is interesting
-                    !stdName.equals("time")) {    //time     is in interesting longer standard_names
-                    keywordHashSet.add(stdName.toLowerCase());  
-                    chopUpAndAdd(stdName, keywordHashSet);  
-                }
+                keywordHashSet.add(stdName.toLowerCase());  
+                chopUpAndAdd(stdName, keywordHashSet);  
             }
 
             //try to find long_name 
@@ -10952,7 +10947,7 @@ public abstract class EDD {
                 try {
                     String xmlChunk = EDDGridFromNcFiles.generateDatasetsXml(
                         tDir, ".*\\" + topExt, tDir + sampleName, 
-                        "", tReloadEveryNMinutes,  //dimensionsCSV
+                        "", "", tReloadEveryNMinutes,  //group, dimensionsCSV
                         null, null); //cacheFromUrl, externalAddGlobalAttributes
                     resultsSB.append(xmlChunk);  //recursive=true
                     for (int diri2 = diri; diri2 < nDirs; diri2++)

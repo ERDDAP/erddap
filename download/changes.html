@@ -30,7 +30,7 @@
       <a title="Southwest Fisheries Science Center" rel="bookmark"
       href="https://swfsc.noaa.gov">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
-      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
       </td> 
   </tr> 
@@ -121,6 +121,18 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         ><kbd>&amp;addVariablesWhere</kbd> documentation</a>.
     Thanks to Aurelie Briand, et al.
     <br>&nbsp;
+
+  <li>CHANGED: ERDDAP now refuses byte range requests to /files/ .nc or .hdf files.
+    Don't try to connect to remote .nc or .hdf files as if they were local files. 
+    It is horribly inefficient and often causes other problems. Instead:
+    <ul>
+    <li>Use (OPeN)DAP client software to connect to ERDDAP's DAP services for this dataset
+       (which have /griddap/ or /tabledap/ in the URL). That's what DAP is for.
+    <li>Use the dataset's Data Access Form to request a subset of data.
+    <li>If you need the entire file or repeated access over a long period of time,
+       use curl, wget, or your browser to download the entire file,
+       then access the data from your local copy of the file.
+    </ul>
 
   <li>IMPROVED: the .odvTxt option has been rewritten to support the 
     new version of ODV .txt files and to support the proper representation
@@ -217,6 +229,11 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv"
              >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv</a> 
       <br>Thanks to Kyle Wilcox and Shane St Savage.
+      <br>&nbsp;
+
+    <li>IMPROVED: GenerateDatasetsXml for EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked
+      now asks for a "group" (e.g., "" for any/all groups, "someGroup", "someGroup/someSubGroup",
+      or "[root]" for just the root group). Thanks to Charles Carleton and Jessica Hausman.
       <br>&nbsp;
 
     <li>NEW: There is a new optional setting in setup.xml, &lt;defaultAccessibleViaFiles&gt;, 

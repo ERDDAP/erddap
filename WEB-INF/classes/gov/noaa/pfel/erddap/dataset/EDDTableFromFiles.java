@@ -2970,12 +2970,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *   <br>With respect to scale_factor and add_offset, this is a source value.
      *   <br>For time, this is the source time, not epochSeconds.
      * @param sourceConVars the source constraint variables.  May be null or size=0. 
+     *    CONSTRAIN_YES constraints MUST be handled here. 
+     *    The CONSTRAIN_NO and CONSTRAIN_PARTIAL constraints may be handled
+     *    here: these constraints are requests here (if convenient for the subclass)
+     *    not obligations. 
      * @param sourceConOps the source constraint operators.
      *    regex is always PrimitiveArray.REGEX_OP, not sourceCanConstrainStringRegex.
      * @param sourceConValues the source constraint values.
      *    timeStamp constraints are numeric source values.
      *    If a timeStamp has String source values or timeStamp op is regex, the constraint has been removed.
-     * @param getMetadata  if true, this should get global and variable metadata, too.
+     * @param getMetadata  if true, this must get global and variable metadata, too.
      * @param mustGetData if true, the caller must get the actual data;
      *   otherwise it can just return all the values of the sorted variable,
      *   and just the ranges of other variables if convenient

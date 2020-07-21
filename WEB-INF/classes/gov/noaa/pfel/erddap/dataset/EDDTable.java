@@ -1457,7 +1457,7 @@ public abstract class EDDTable extends EDD {
             String2.log(msg);
 
         //apply the constraints and finish up
-        applyConstraints(table, false,  //don't apply CONSTRAIN_YES constraints
+        applyConstraints(table, false,  //apply CONSTRAIN_YES constraints?
             resultsVariables, 
             constraintVariables, constraintOps, constraintValues);
 

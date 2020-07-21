@@ -117,7 +117,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      *
      * @param tFullName the name of the decompressed data file
      * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
+     *    If in a group, the name must be the fullName.
      * @param sourceDataNames the names of the desired source data columns.
+     *    If in a group, the name must be the fullName.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
      * @param sourceGlobalAttributes should be an empty Attributes. It will be populated by this method
@@ -135,12 +137,24 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
         String getWhat = "globalAttributes";
         NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
+        String group = "";
+        int groupSlashCount = 0;
         try {
-            NcHelper.getGlobalAttributes(ncFile, sourceGlobalAttributes);
 
             //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 getWhat = "axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi);
+
+                //try to find the lowest level group
+                String tGroup = File2.getDirectory(sourceAxisNames.get(avi));
+                if (tGroup.length() > 0) {
+                    int tGroupSlashCount = String2.countAll(tGroup, "/");
+                    if (group.length() == 0 || tGroupSlashCount > groupSlashCount) {
+                        group = tGroup;
+                        groupSlashCount = tGroupSlashCount;
+                    }
+                }
+
                 Variable var = ncFile.findVariable(sourceAxisNames.get(avi));  
                 Attributes tAtts = sourceAxisAttributes[avi];
                 if (var == null) {
@@ -159,6 +173,17 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
             for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
                 getWhat = "dataAttributes for dvi=" + dvi + " name=" + sourceDataNames.get(dvi);
+
+                //try to find the lowest level group
+                String tGroup = File2.getDirectory(sourceDataNames.get(dvi));
+                if (tGroup.length() > 0) {
+                    int tGroupSlashCount = String2.countAll(tGroup, "/");
+                    if (group.length() == 0 || tGroupSlashCount > groupSlashCount) {
+                        group = tGroup;
+                        groupSlashCount = tGroupSlashCount;
+                    }
+                }
+
                 Variable var = ncFile.findVariable(sourceDataNames.get(dvi));  //null if not found
                 if (var == null) {
                     String2.log("  var not in file: " + getWhat);
@@ -171,6 +196,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
                 }
             }
+
+            NcHelper.getGlobalAttributes(ncFile, group, sourceGlobalAttributes);
 
             //I care about this exception
             ncFile.close();
@@ -193,9 +220,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     /**
      * This gets source axis values from one file.
      *
-     * @param tFullName
+     * @param tFullName  the full file name
      * @param sourceAxisNames the names of the desired source axis variables.
      *    If there is a special axis0, this will not include axis0's name.
+     * @param sourceDataNames When there are unnamed dimensions, this is
+     *   to find out the shape of the variable to make index values 0, 1, size-1.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -203,12 +232,20 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
     public PrimitiveArray[] lowGetSourceAxisValues(String tFullName, 
-        StringArray sourceAxisNames) throws Throwable {
+        StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
         String getWhat = "?";
         NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
+
+            //try to find 1 dataVariable in case needed below
+            Variable dataVariable = null;
+            for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
+                dataVariable = ncFile.findVariable(sourceDataNames.get(dvi));
+                if (dataVariable != null)
+                    break;
+            }
 
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
@@ -217,7 +254,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 if (var == null) {
                     //there is no corresponding coordinate variable; make pa of indices, 0...
                     Dimension dim = ncFile.findDimension(avName);
-                    int dimSize1 = dim.getLength() - 1;
+                    int dimSize1 = dim == null? 
+                        dataVariable.getShape(avi) - 1 : //no dimension (in hdf)
+                        dim.getLength() - 1;             //unnamed dimension
                     avPa[avi] = avi > 0 && dimSize1 < 32000? 
                         new ShortArray(0, dimSize1) :
                         new IntArray(0, dimSize1);
@@ -380,6 +419,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param tFileNameRegex  the regex that each filename (no directory info) must match 
      *    (e.g., ".*\\.nc")  (usually only 1 backslash; 2 here since it is Java code). 
      * @param sampleFileName full file name of one of the files in the collection
+     * @param tGroup the name of the group to be used (else "" for all/any)
      * @param externalAddGlobalAttributes  These are given priority. Use null if none available.
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
@@ -387,15 +427,15 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      */
     public static String generateDatasetsXml(String subclassname,
         String tFileDir, String tFileNameRegex, String sampleFileName, 
-        String tDimensionsCSV,
+        String tGroup, String tDimensionsCSV,
         int tReloadEveryNMinutes, String tCacheFromUrl,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("\n*** " + subclassname + ".generateDatasetsXml" +
             "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
             " sampleFileName=" + sampleFileName + 
-            "\ndimensionsCSV=" + tDimensionsCSV + 
-            "\nreloadEveryNMinutes=" + tReloadEveryNMinutes + 
+            "\ngroup=" + tGroup + " dimensionsCSV=" + tDimensionsCSV + 
+                " reloadEveryNMinutes=" + tReloadEveryNMinutes + 
             "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         boolean tUnpack = "EDDGridFromNcFilesUnpacked".equals(subclassname);
         if (!String2.isSomething(tFileDir))
@@ -436,27 +476,37 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             Table dataAddTable = new Table();
             double maxTimeES = Double.NaN; //epoch seconds
 
-            //get source global Attributes
-            Attributes globalSourceAtts = axisSourceTable.globalAttributes();
-            NcHelper.getGlobalAttributes(ncFile, globalSourceAtts);
-
-            //standardize tDimensionsCSV (useful for suggestDatasetID below
+            //standardize tDimensionsCSV (useful for suggestDatasetID below)
             tDimensionsCSV = String2.isSomething(tDimensionsCSV)?
                 String2.replaceAll(tDimensionsCSV, " ", "") : "";
             //find axisVariables
             List<Dimension> useDims = new ArrayList();            
             if (String2.isSomething(tDimensionsCSV)) {
-                StringArray axisVars = StringArray.fromCSV(tDimensionsCSV);
-                for (int avi = 0; avi < axisVars.size(); avi++)
-                    useDims.add(ncFile.findDimension(axisVars.get(avi)));
+                StringArray tDimNames = StringArray.fromCSVNoBlanks(tDimensionsCSV);
+                for (int i = 0; i < tDimNames.size(); i++) {
+                    Dimension tDim = ncFile.findDimension(tDimNames.get(i));
+                    if (tDim == null)
+                        throw new RuntimeException(String2.ERROR + 
+                            ": dimension=" + tDimNames.get(i) + " not found in the file!");
+                    useDims.add(tDim);
+                }
             } else {
-                Variable maxDVariables[] = NcHelper.findMaxDVariables(ncFile);
-                if (maxDVariables == null || maxDVariables.length == 0)
-                    throw new RuntimeException(String2.ERROR + 
-                        ": NcHelper.findMaxDVariables didn't find any variables with dimensions!");
+                Variable maxDVariables[] = NcHelper.findMaxDVariables(ncFile, tGroup); //throws exception if no such group or no vars with dimensions
                 useDims = maxDVariables[0].getDimensions(); //what is getDimensionsAll()?               
+                if (!String2.isSomething(tGroup)) {
+                    //look for a group (so global atts includes that group below)
+                    for (int i = 0; i < maxDVariables.length; i++) {
+                        tGroup = File2.getDirectory(maxDVariables[0].getFullName());
+                        if (String2.isSomething(tGroup))
+                            break;
+                    }
+                }
             }
             int nUseDims = useDims.size();
+
+            //get source global Attributes
+            Attributes globalSourceAtts = axisSourceTable.globalAttributes();
+            NcHelper.getGlobalAttributes(ncFile, tGroup, globalSourceAtts);
 
             //create the axisVariables for those dimensions
             StringArray dimNames = new StringArray();
@@ -464,7 +514,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 Dimension tDim = useDims.get(avi);
                 //work-around bug in netcdf-java: for anonymous dim,
                 //  getName() returns null, but getFullName() throws Exception. [huh?]
-                String axisName = tDim.getName();
+                String axisName = tDim.getFullName();
                 if (axisName == null) 
                     axisName = tDim.getFullName();  
                 Attributes sourceAtts = new Attributes();
@@ -503,7 +553,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         false, true)); //addColorBarMinMax, tryToFindLLAT
             }
 
-            //add all the variables which use those dimensions
+            //add all the data (non-axis) variables which use those dimensions
             List allVariables = ncFile.getVariables(); 
             int nGridsAtSource = 0;
             for (int v = 0; v < allVariables.size(); v++) {
@@ -515,6 +565,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 //does it use the same dimensions?
                 List<Dimension> dimensions = var.getDimensions();
                 if (dimensions == null || dimensions.size() < 1) 
+                    continue;
+                //is this an axis variable?
+                if (dimensions.size() == 1 && nUseDims == 1 &&
+                    varName.equals(dimNames.get(0)))
                     continue;
                 PAType tPAType = NcHelper.getElementPAType(var.getDataType());
                 if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
@@ -567,7 +621,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             }
 
             if (dataAddTable.nColumns() == 0)
-                throw new RuntimeException("No dataVariables found which match dimensions: " + dimNames.toString());
+                throw new RuntimeException("No dataVariables found which match dimensions: " + tDimensionsCSV);
 
             //after dataVariables known, add global attributes in the axisAddTable
             Attributes globalAddAtts = axisAddTable.globalAttributes();
@@ -582,9 +636,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 globalAddAtts.add(gridMappingAtts);
 
             //gather the results 
-            //It would be nice to have separator before tDimensionsCSV,
-            //  but I don't want to break previous id suggestions.
-            String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex + tDimensionsCSV); 
+            String tDatasetID = suggestDatasetID(tGroup + (String2.isSomething(tGroup)? "/" : "") + 
+                tFileDir + tFileNameRegex + tDimensionsCSV); 
             int tMatchNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
             if (generateDatasetsXmlCoastwatchErdMode) {
