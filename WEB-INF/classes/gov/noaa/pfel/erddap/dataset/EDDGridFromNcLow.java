@@ -251,6 +251,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 String avName = sourceAxisNames.get(avi);
                 getWhat = "axisAttributes for variable=" + avName;
                 Variable var = ncFile.findVariable(avName);  //null if not found
+                //String2.log(">> " + getWhat + "  var==null?" + (var == null));
                 if (var == null) {
                     //there is no corresponding coordinate variable; make pa of indices, 0...
                     Dimension dim = ncFile.findDimension(avName);

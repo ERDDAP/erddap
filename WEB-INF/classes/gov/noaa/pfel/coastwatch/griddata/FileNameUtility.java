@@ -792,7 +792,7 @@ public class FileNameUtility  {
      * @return the array of info related to the dataset
      */
     public String[] getInfo(String fileName) {
-        //future: replace this with Shared which stores the info
+        //FUTURE: replace this with Shared which stores the info
         Test.ensureNotNull(fileName, "getInfo fileName=null");
         //special cases
         String name6 = get6CharName(fileName);

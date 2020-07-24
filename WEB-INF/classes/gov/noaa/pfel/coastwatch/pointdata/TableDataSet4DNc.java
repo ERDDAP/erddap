@@ -160,7 +160,7 @@ public class TableDataSet4DNc extends TableDataSet {
 
                             //interpret time units (e.g., "days since 1985-01-01" or "days since 1985-1-1")
                             //it must be: <units> since <isoDate>   or exception thrown
-                            //future: need to catch time zone information
+                            //FUTURE: need to catch time zone information
                             String tsUnits = timeAttributes.getString("units");
                             double timeBaseAndFactor[] = Calendar2.getTimeBaseAndFactor(tsUnits); //throws exception if trouble
                             timeBaseSeconds = timeBaseAndFactor[0];

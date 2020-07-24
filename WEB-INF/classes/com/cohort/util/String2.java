@@ -5818,7 +5818,7 @@ and zoom and pan with controls in
      * @return the first index of 'find' in s (or -1 if not found).
      */
     public static int indexOf(byte[] s, byte[] find, int jumpTable[]) {
-        //future: is jump table for second character jumpTable[s[endPo]]-1 IFF that value isn't <=0?
+        //FUTURE: is jump table for second character jumpTable[s[endPo]]-1 IFF that value isn't <=0?
 
         //see algorithm in makeJumpTable
         int findLength = find.length;

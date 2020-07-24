@@ -249,7 +249,7 @@ public class TestSSR {
         testEmail();
         
         //getURLResponse (which uses getURLInputStream)
-        //future: test various compressed url's
+        //FUTURE: test various compressed url's
         String2.log("test getURLResponse");
         try {
             sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/erddap/index.html");

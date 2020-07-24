@@ -178,7 +178,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             StringArray sourceFileName  = new StringArray();
             DoubleArray sourceFileLastMod = new DoubleArray();             
             LongArray fSize = new LongArray();
-            boolean completelySuccessful = FileVisitorDNLS.addToHyraxUrlList(
+            String errorMessages = FileVisitorDNLS.addToHyraxUrlList(
                 catalogUrl, fileNameRegex, recursive, pathRegex, false, //dirsToo
                 sourceFileName, sourceFileLastMod, fSize);
 
@@ -190,7 +190,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             //no files will be renamed.
             //!!! This is imperfect. If a remote sub webpage always fails, then
             //  no local files will ever be renamed.
-            if (completelySuccessful && sourceFileName.size() > 0) {
+            if (errorMessages.length() == 0 && sourceFileName.size() > 0) {
                 //make a hashset of theoretical local fileNames that will exist 
                 //  after copying based on getHyraxFileInfo
                 HashSet hashset = new HashSet();
@@ -342,18 +342,22 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
-        //Future: more efficient if !mustGetData is handled differently
-
         //read the file
         Table table = new Table();
         String decompFullName = FileVisitorDNLS.decompressIfNeeded(
             tFileDir + tFileName, fileDir, decompressedDirectory(), 
             EDStatic.decompressedCacheMaxGB, true); //reuseExisting
-        table.readNDNc(decompFullName, sourceDataNames.toArray(), 
-            standardizeWhat,
-            sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-            minSorted, maxSorted);
-        //String2.log("  EDDTableFromHyraxFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
+        if (mustGetData) {
+            table.readNDNc(decompFullName, sourceDataNames.toArray(), 
+                standardizeWhat,
+                sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
+                minSorted, maxSorted);
+            //String2.log("  EDDTableFromHyraxFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
+        } else {
+            //Just return a table with globalAtts, columns with atts, but no rows.
+            table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
+                standardizeWhat);
+        }
 
         return table;
     }

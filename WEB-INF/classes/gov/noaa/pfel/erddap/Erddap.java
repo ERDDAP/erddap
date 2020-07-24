@@ -6590,7 +6590,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 !tVersion.equals("1.3.0"))
                 throw new SimpleException(EDStatic.queryError + "VERSION=" + tVersion + 
                     " must be '1.1.0', '1.1.1', or '1.3.0'.");
-            boolean v130 = tVersion.equals("1.3.0"); //future: or higher
+            boolean v130 = tVersion.equals("1.3.0"); //FUTURE: or higher
 
             String layersCsv    = queryMap.get("layers");
             String stylesCsv    = queryMap.get("styles");
@@ -19212,6 +19212,7 @@ expected =
                     if (test == 25) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV_1.00.html");
                     if (test == 26) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setup.html");
                     if (test == 27) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setupDatasetsXml.html");
+                    if (test == 28) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/TablesAndGrids.html");
 
                     if (test == 30) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/information.html");
                     if (test == 31) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/rest.html");

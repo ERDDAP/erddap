@@ -7498,11 +7498,10 @@ public abstract class EDDTable extends EDD {
             "  If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "  After the data download to the web page has finished, the data is accessible to the JavaScript\n" +
             "  script via that JavaScript function.\n" +
-            "  Here is \n" +
-            "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/mo7cbfz8/\"\n" +
-            "      >an example using jsonp with ERDDAP and jQuery" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + 
-                "</a> (thanks to Jenn Patterson Sevadjian, of CenCOOS/now PolarWatch).\n" +
+            "  Here is an example using \n" +
+            "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/0ycu1zjy/\">jsonp and Javascript with ERDDAP" +
+                EDStatic.externalLinkHtml(tErddapUrl) + 
+                "</a> (thanks to Jenn Patterson Sevadjian of PolarWatch).\n" +
             "\n" +
             //matlab
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.mathworks.com/products/matlab/\">MATLAB" +
@@ -13231,7 +13230,9 @@ public abstract class EDDTable extends EDD {
                         //should be set, but isn't
                         throw new SimpleException("For cdm_data_type=" + cdmType + 
                             ", the global attribute cdm_" + cdmLCNames[cdmi] +
-                            "_variables must be set.");
+                            "_variables must be set." 
+                            // + "\nsourceGlobalAtts=" + sourceGlobalAttributes.toString()
+                            );
                     for (int var = 0; var < cdmVars[cdmi].length; var++) {
                         //unknown variable
                         if (String2.indexOf(dataVariableDestinationNames(), cdmVars[cdmi][var]) < 0) 
@@ -16888,7 +16889,7 @@ public abstract class EDDTable extends EDD {
      * @throws Throwable if trouble (e.g., no latitude and longitude variables)
      */
     protected void writeFGDC(Writer writer) throws Throwable {
-        //future: support datasets with x,y (and not longitude,latitude)
+        //FUTURE: support datasets with x,y (and not longitude,latitude)
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
@@ -17654,7 +17655,7 @@ writer.write(
      * @throws Throwable if trouble (e.g., no latitude and longitude variables)
      */
     public void writeISO19115(Writer writer) throws Throwable {
-        //future: support datasets with x,y (and not longitude,latitude)?
+        //FUTURE: support datasets with x,y (and not longitude,latitude)?
 
         if (lonIndex < 0 || latIndex < 0) 
             throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);

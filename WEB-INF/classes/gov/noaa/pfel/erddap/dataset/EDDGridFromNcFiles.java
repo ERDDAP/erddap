@@ -7493,7 +7493,6 @@ expected =
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n" +
-"            <att name=\"_Unsigned\">true</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">-2.0</att>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 "            <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +
@@ -7522,7 +7521,6 @@ expected =
 "        <destinationName>sst_quality</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_Unsigned\">true</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">-2.0</att>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 "            <att name=\"long_name\">l3m_qual</att>\n" +
@@ -7594,7 +7592,6 @@ expected =
 "    String units \"deg_C\";\n" +
 "  }\n" +
 "  sst_quality {\n" +
-"    String _Unsigned \"true\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Quality\";\n" +

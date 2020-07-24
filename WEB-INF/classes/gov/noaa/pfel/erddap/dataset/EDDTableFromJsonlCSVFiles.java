@@ -119,7 +119,9 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
-        //Future: more efficient if !mustGetData is handled differently
+        if (!mustGetData) 
+            //Just return a table with columns but no rows. There is never any metadata.
+            return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
 
         //read the file
         Table table = new Table();

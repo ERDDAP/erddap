@@ -41,7 +41,7 @@ import com.cohort.util.XML;
  *
  */
 public class EmaStringBox extends EmaAttribute {
-//future: needs minlength and maxlength settings
+//FUTURE: needs minlength and maxlength settings
 
     protected int rows, cols, minlength, maxlength;
     protected String lengthError;

@@ -2108,7 +2108,7 @@ String2.log("5/9=" + (5/9.0));
         if (debugMode)
             String2.log(">> unpackVariableAttributes for varName=" + varName);
 
-        Attributes newAtts = atts;   //so it has a more descriptive name     
+        Attributes newAtts = atts;   //the results, so it has a more descriptive name     
         Attributes oldAtts = new Attributes(atts); //so we have an unchanged copy to refer to
 
         //deal with numeric time units
@@ -2162,7 +2162,19 @@ String2.log("5/9=" + (5/9.0));
                 " valid_min="     + oldAtts.get("valid_min") +
                 " valid_range="   + oldAtts.get("valid_range"));
 
-        //attributes are never unsigned
+        //attributes in nc3 files are never unsigned
+
+        //if scale and/or addOffset, then remove redundant related atts
+        if (scalePA != null || addPA != null) {
+            newAtts.remove("Intercept");
+            newAtts.remove("Slope");
+            String ss = newAtts.getString("Scaling");
+            if ("linear".equals(ss)) {
+                //remove if Scaling=linear
+                newAtts.remove("Scaling");
+                newAtts.remove("Scaling_Equation");
+            }
+        }
 
         //before erddap v1.82, ERDDAP said actual_range had packed values.
         //but CF 1.7 says actual_range is unpacked. 

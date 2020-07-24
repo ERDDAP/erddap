@@ -695,8 +695,8 @@ public class Grid  {
             double desiredMinLat, double desiredMaxLat,
             int desiredNLonPoints, int desiredNLatPoints)
             throws Exception {
-        //future: this cound accept data from files with different data types, e.g., float
-        //future: this cound accept data in different order (stored col-by-col, from lower left
+        //FUTURE: this cound accept data from files with different data types, e.g., float
+        //FUTURE: this cound accept data in different order (stored col-by-col, from lower left
 
         //ensure desired range is acceptable
         if (verbose) String2.log("Grid.readBinary");
@@ -5267,7 +5267,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureTrue(File2.delete(testDir + daveName + ".xyz"), 
             errorIn + " while deleting " + testDir + daveName + ".xyz");
 
-        //future: check metadata
+        //FUTURE: check metadata
     }
 
     /**
@@ -5427,7 +5427,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 //        Test.ensureTrue(File2.delete(testDir + daveName + ".grd"), 
 //            errorIn + " while deleting " + testDir + daveName + ".grd");
 
-        //future: check metadata
+        //FUTURE: check metadata
     }
 */
     /**

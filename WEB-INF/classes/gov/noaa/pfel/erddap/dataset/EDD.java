@@ -382,7 +382,7 @@ public abstract class EDD {
             throw new SimpleException(startError + xmlReader.lineNumber() + 
                 ": Unexpected <dataset> type=" + type + ".");
         try {
-            //future: classes could be added at runtime if I used reflection
+            //FUTURE: classes could be added at runtime if I used reflection
             if (type.equals("EDDGridAggregateExistingDimension")) 
                 return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
             if (type.equals("EDDGridCopy"))             return EDDGridCopy.fromXml(erddap, xmlReader);
@@ -911,7 +911,7 @@ public abstract class EDD {
      * @return "" if same or message if not.
      */
     public String changed(EDD old) {
-        //future: perhaps it would be nice if EDDTable changed showed new data.
+        //FUTURE: perhaps it would be nice if EDDTable changed showed new data.
         //  so it would appear in email subscription and rss.
         //  but for many datasets (e.g., ndbc met) there are huge number of buoys. so not practical.
         if (old == null)

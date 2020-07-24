@@ -1589,7 +1589,7 @@ public class Attributes {
             return null;
         Attributes sourceAtts = this; //so it has a nice name
         if (debugMode)
-            String2.log(">> Attributes.unpackPA(var=" + varName);
+            String2.log(">> Attributes.unpackPA(var=" + varName + ")");
 
         //handle _Unsigned first
         boolean unsigned = lookForUnsigned && "true".equals(sourceAtts.getString("_Unsigned"));         
@@ -1612,7 +1612,7 @@ public class Attributes {
         double dMissingValue   = unsigned?
             sourceAtts.getUnsignedDouble("missing_value") ://so -1b becomes 255
             sourceAtts.getDouble(        "missing_value"); 
-        if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
+        if (debugMode) String2.log(">>   _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
 
         //scale and add_offset -- done first, before check for numeric time
         if (scalePA != null || addPA != null) {
@@ -1646,15 +1646,15 @@ public class Attributes {
                     PrimitiveArray.factory(        tPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
                     PrimitiveArray.rawFactory(     tPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
             if (debugMode) String2.log(
-                ">> source =" + dataPaPAType          + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
-                ">> dataPa2=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+                ">>   source =" + dataPaPAType          + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
+                ">>   dataPa2=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
 
             //dataPa2 is destination data type and now has (if relevant) unsigned values, 
             //but not yet scaleAddOffset.
             //If present, missing_value and _FillValue are packed
             //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
             //and apply before scaleAddOffset
-            //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
+            //String2.log(">>   dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
             if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
                 dataPa2.switchFromTo(      "" + dMissingValue, "");
                 dMissingValue = Double.NaN;  //it's done
@@ -1668,8 +1668,8 @@ public class Attributes {
             dataPa2.scaleAddOffset(scale, add); //it checks for (1,0)
             if (debugMode)
                 String2.log(
-                    ">> Attributes.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
-                    ">> unpacked=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+                    ">>   Attributes.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
+                    ">>   unpacked=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
             return dataPa2;
 
         }
@@ -1712,7 +1712,7 @@ public class Attributes {
             dataPa2 = Calendar2.unitsSinceToEpochSeconds(baseFactor[0], baseFactor[1], dataPa2);
             if (debugMode)
                 String2.log(
-                    ">> numeric time as epochSeconds: " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+                    ">>   numeric time as epochSeconds: " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
             return dataPa2;
         } 
         

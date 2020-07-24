@@ -3330,7 +3330,7 @@ public abstract class PrimitiveArray {
     public static void merge(List table1, List table2,
         int[] keys, boolean ascending[], boolean removeDuplicates) {
         //the current approach is quick, fun, and easy, but uses lots of memory
-        //future: if needed, this could be done in a more space-saving way:
+        //FUTURE: if needed, this could be done in a more space-saving way:
         //   sort each table, then merge table2 into table1, 
         //   but would have to be careful to avoid slowness from inserting rows
         //   of table2 into table1, or space lost to copying to a 3rd table.
