@@ -9449,9 +9449,9 @@ Attributes {
             "  After the data download to the web page has finished, the data is accessible to the\n" +
             "  JavaScript script via that JavaScript function.\n" +
             "  Here is an example using \n" +
-            "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/mo7cbfz8/\">jsonp with ERDDAP and jQuery" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + 
-                "</a> (thanks to Jenn Patterson Sevadjian, of CenCOOS/now PolarWatch).\n" +
+            "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/0ycu1zjy/\">jsonp and Javascript with ERDDAP" +
+                EDStatic.externalLinkHtml(tErddapUrl) + 
+                "</a> (thanks to Jenn Patterson Sevadjian of PolarWatch).\n" +
             "\n" + 
             //matlab
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.mathworks.com/products/matlab/\">MATLAB" +
@@ -12099,7 +12099,7 @@ Attributes {
      * @throws Throwable if trouble  (e.g., no latitude and longitude axis)
      */
     protected void writeFGDC(Writer writer) throws Throwable {
-        //future: support datasets with x,y (and not longitude,latitude)
+        //FUTURE: support datasets with x,y (and not longitude,latitude)
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
@@ -12939,7 +12939,7 @@ writer.write(
      * @throws Throwable if trouble (e.g., no latitude and longitude axes)
      */
     public void writeISO19115(Writer writer) throws Throwable {
-        //future: support datasets with x,y (and not longitude,latitude)
+        //FUTURE: support datasets with x,y (and not longitude,latitude)
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 

@@ -1529,7 +1529,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     Table tTable = getSourceDataFromFile(dirList.get(tDirI), tFileS, 
                         sourceDataNames, sourceDataTypes, 
                         -1, Double.NaN, Double.NaN, 
-                        null, null, null, true, true); //getMetadata, getData
+                        null, null, null, true, true); //getMetadata, mustGetData
                     //String2.log(">> getSourceDataFromFile " + tFileS + "\n" + tTable.toString(5));
                     readFileCumTime += System.currentTimeMillis() - rfcTime;
 
@@ -2765,7 +2765,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 Test.ensureEqual(fileStandardizeWhat, standardizeWhat,
                     "Different value for 'standardizeWhat'.");
 
-                //future: you can also test erddapVersion vs specific standardizeWhat features.
+                //FUTURE: you can also test erddapVersion vs specific standardizeWhat features.
                 //  e.g., If standardizeWhat & 4096 == 4096 and the standardize units system changed in 1.88,
                 //  And erddapVersion<1.88, then throw error to force re-read all files.
                 String tErddapVersion = table.globalAttributes().getString("erddapVersion");
@@ -2981,9 +2981,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *    If a timeStamp has String source values or timeStamp op is regex, the constraint has been removed.
      * @param getMetadata  if true, this must get global and variable metadata, too.
      * @param mustGetData if true, the caller must get the actual data;
-     *   otherwise it can just return all the values of the sorted variable,
-     *   and just the ranges of other variables if convenient
-     *   (and -infinity and +infinity for the others).
+     *   otherwise it may (optional!) just return the global atts, the columns (with 0 rows), 
+     *   and column atts. 
      * @return a table with the results (with the requested sourceDataTypes).
      *   <br>It may have more or fewer columns than sourceDataNames.
      *   <br>These are raw source results: scale_factor and add_offset will not yet have been applied.
@@ -3728,7 +3727,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 //if request is for distinct() values and this file just has 1 value for all requested variables,
                 //then no need to even look in the file
                 if (distinct) {
-                    //future: this could be sped up by keeping the table for a run of qualified files
+                    //FUTURE: this could be sped up by keeping the table for a run of qualified files
                     //  then calling standardizeResultsTable (instead of 1 row at a time).
                     boolean allDistinct = true;
                     for (int rvi = 0; rvi < dvi.length; rvi++) {

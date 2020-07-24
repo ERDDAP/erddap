@@ -51,7 +51,7 @@ import java.util.ArrayList;
  * @author Bob Simons (bob.simons@noaa.gov) 2005-09-01
  */
 public class SdsWriter  {
-    //future: 
+    //FUTURE: 
     //* to save memory, HdfVScientificData could write on object (e.g., the data array)
     //  directly to the stream, value by value, without generating an entire byte[].
     //  Currently the largest files (SST 1km) need 2 * 50 MB of temporary space:

@@ -17,7 +17,7 @@ import java.io.DataOutputStream;
  *
  */
 public class HdfScientificData extends HdfTag {
-    //future: this would be more flexible if data[] could be any primitive array or a String.
+    //FUTURE: this would be more flexible if data[] could be any primitive array or a String.
     //Since Java has bigendian order, values could be written to outstream value 
     //by value, without generating an entire byte[].
 

@@ -401,7 +401,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
                     if (test ==  1) testAWSS3();
                     if (test ==  2) testWAF();
 
-                    //future: FTP?
+                    //FUTURE: FTP?
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

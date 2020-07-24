@@ -501,7 +501,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //simple approach (not most efficient for tiny request, but fine for big requests):
         //  get results for each tDataVariable, one-by-one
-        //future: more efficient to gang together all dataVariables from a given child
+        //FUTURE: more efficient to gang together all dataVariables from a given child
         int nAv = axisVariables.length;
         int nDv = dataVariables.length;
         int tnDv = tDataVariables.length;
@@ -529,7 +529,7 @@ public class EDDGridSideBySide extends EDDGrid {
             double tdvSourceMissingValue = tDataVariables[tdv].sourceMissingValue();
 
             //what is its dataVariable number in this aggregate dataset?
-            //future: faster search with hash, but this is fast unless huge number of dataVars
+            //FUTURE: faster search with hash, but this is fast unless huge number of dataVars
             int dvn = 0;
             while (tDataVariables[tdv] != dataVariables[dvn])
                 dvn++;

@@ -649,7 +649,7 @@ expected =
 "      :_CoordinateAxisType = \"Lon\";\n" +
 "      :standard_name = \"longitude\";\n" +
 "\n" +
-"    byte l3m_qual(time=1, lat=2160, lon=25);\n" +
+"    byte l3m_qual(time=1, lat=2160, lon=25);\n" +  
 "      :_Unsigned = \"true\";\n" +
 "      :long_name = \"l3m_qual\";\n" +
 "      :scale_factor = 7.17185E-4f; // float\n" +  //I suspect that's wrong
@@ -918,22 +918,18 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
-"            <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +
+//"            <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +                                   //this is removed by the unpacking process
 "            <att name=\"long_name\">l3m_data</att>\n" +
-"            <att name=\"Scaling\">linear</att>\n" +
-"            <att name=\"Scaling_Equation\">(Slope*l3m_data) + Intercept = Parameter value</att>\n" +
-"            <att name=\"Slope\" type=\"float\">7.17185E-4</att>\n" +
+//"            <att name=\"Scaling\">linear</att>\n" +                                                  //this is removed by the unpacking process  
+//"            <att name=\"Scaling_Equation\">(Slope*l3m_data) + Intercept = Parameter value</att>\n" + //this is removed by the unpacking process
+//"            <att name=\"Slope\" type=\"float\">7.17185E-4</att>\n" +                                 //this is removed by the unpacking process
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
-"            <att name=\"Intercept\">null</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
-"            <att name=\"Scaling\">null</att>\n" +
-"            <att name=\"Scaling_Equation\">null</att>\n" +
-"            <att name=\"Slope\">null</att>\n" +
 "            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
 "            <att name=\"units\">deg_C</att>\n" +
 "        </addAttributes>\n" +
@@ -945,7 +941,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 "            <att name=\"long_name\">l3m_qual</att>\n" +
-"            <att name=\"valid_range\" type=\"float\">-2.0 -1.9985657</att>\n" + //crazy result of erroneous scale_factor and add_offset
+"            <att name=\"valid_range\" type=\"floatList\">-2.0 -1.9985657</att>\n" + //crazy result of erroneous scale_factor and add_offset
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
@@ -962,8 +958,11 @@ expected =
 
 
         //ensure files are reread
-        File2.deleteAllFiles(datasetDir("testUInt16FileUnpacked"));
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16FileUnpacked"); 
+        //NOTE that testUInt16FileUnpacked uses
+        //  Number_of_Lines   (the 1D var which uses lat dimension) and
+        //  Number_of_Columns (the 1D var which uses lon dimension)
+        File2.deleteAllFiles(datasetDir(                    "testUInt16FileUnpacked")); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16FileUnpacked");  
         //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
 
 //re-pack apparent missing value
@@ -1017,7 +1016,6 @@ expected =
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Sea Surface Temperature Quality\";\n" +
-"    String units \"deg_C\";\n" +   //??? did ERDDAP add that?
 "    Float32 valid_range -2.0, -1.9985657;\n" + //unpacking did that
 "  }\n" +
 "  NC_GLOBAL {\n" +
@@ -1040,10 +1038,9 @@ expected =
 //"2015-10-30T18:17:10Z (local files)
 //2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
 "    String infoUrl \"???\";\n" +
-"    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" +
 "    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
 "    String institution \"???\";\n" +
-"    String keywords \"aqua, data, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modis a, ocean, oceans, quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time\";\n" +
+"    String keywords \"aqua, data, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modisa, ocean, oceans, quality, resolution, science, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String L2_Flag_Names \"LAND,HISOLZ\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
@@ -1113,37 +1110,37 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv data values
-        userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_qual[0][0:100:2159][(-134.95833513)]"; 
+        userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
-"time,latitude,longitude,sst,\n" +
-"UTC,degrees_north,degrees_east,deg_C\n" +
-"2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905\n" +
-"2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044\n" +
-"2002-07-04T00:00:00Z,73.291664,-134.95833,-0.11021753\n" +
-"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN\n" + //shows _FillValue's correctly caught
-"2002-07-04T00:00:00Z,56.625008,-134.95833,NaN\n" +
-"2002-07-04T00:00:00Z,48.291664,-134.95833,12.6406145\n" +
-"2002-07-04T00:00:00Z,39.958336,-134.95833,17.95137\n" +
-"2002-07-04T00:00:00Z,31.625,-134.95833,20.432829\n" +  
-"2002-07-04T00:00:00Z,23.291664,-134.95833,19.664007\n" +
-"2002-07-04T00:00:00Z,14.958336,-134.95833,24.482773\n" + //>23.5 shows unsigned values correctly caught
-"2002-07-04T00:00:00Z,6.625,-134.95833,29.068455\n" +
-"2002-07-04T00:00:00Z,-1.7083359,-134.95833,27.240349\n" +
-"2002-07-04T00:00:00Z,-10.041664,-134.95833,27.210228\n" +
-"2002-07-04T00:00:00Z,-18.375,-134.95833,26.713936\n" +
-"2002-07-04T00:00:00Z,-26.708336,-134.95833,21.580326\n" +
-"2002-07-04T00:00:00Z,-35.041668,-134.95833,15.789774\n" +
-"2002-07-04T00:00:00Z,-43.375,-134.95833,NaN\n" +
-"2002-07-04T00:00:00Z,-51.708336,-134.95833,6.1673026\n" +
-"2002-07-04T00:00:00Z,-60.041668,-134.95833,0.40400413\n" +
-"2002-07-04T00:00:00Z,-68.375,-134.95833,NaN\n" +
-"2002-07-04T00:00:00Z,-76.708336,-134.95833,NaN\n" +
-"2002-07-04T00:00:00Z,-85.04167,-134.95833,NaN\n"; 
+"time,latitude,longitude,sst,sst_quality\n" +
+"UTC,degrees_north,degrees_east,deg_C,\n" +                              //quality values should be 0, 1, 2, 3, 4, 5  
+"2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905,-1.9992828\n" +   //quality values are wrong because file incorrectly has scale_factor, add_offset for them
+"2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044,-2.0\n" +
+"2002-07-04T00:00:00Z,73.291664,-134.95833,-0.11021753,-2.0\n" +
+"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN,-1.8171178\n" +   //shows _FillValue's correctly caught
+"2002-07-04T00:00:00Z,56.625008,-134.95833,NaN,-1.8171178\n" +
+"2002-07-04T00:00:00Z,48.291664,-134.95833,12.6406145,-2.0\n" +
+"2002-07-04T00:00:00Z,39.958336,-134.95833,17.95137,-2.0\n" +
+"2002-07-04T00:00:00Z,31.625,-134.95833,20.432829,-2.0\n" +
+"2002-07-04T00:00:00Z,23.291664,-134.95833,19.664007,-1.9985657\n" +
+"2002-07-04T00:00:00Z,14.958336,-134.95833,24.482773,-2.0\n" + //sst>23.5 shows unsigned values correctly caught
+"2002-07-04T00:00:00Z,6.625,-134.95833,29.068455,-2.0\n" +
+"2002-07-04T00:00:00Z,-1.7083359,-134.95833,27.240349,-2.0\n" +
+"2002-07-04T00:00:00Z,-10.041664,-134.95833,27.210228,-2.0\n" +
+"2002-07-04T00:00:00Z,-18.375,-134.95833,26.713936,-2.0\n" +
+"2002-07-04T00:00:00Z,-26.708336,-134.95833,21.580326,-2.0\n" +
+"2002-07-04T00:00:00Z,-35.041668,-134.95833,15.789774,-2.0\n" +
+"2002-07-04T00:00:00Z,-43.375,-134.95833,45.000717,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-51.708336,-134.95833,6.1673026,-1.9985657\n" +
+"2002-07-04T00:00:00Z,-60.041668,-134.95833,0.40400413,-2.0\n" +
+"2002-07-04T00:00:00Z,-68.375,-134.95833,45.000717,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-76.708336,-134.95833,45.000717,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-85.04167,-134.95833,45.000717,-1.8171178\n"; 
         Test.ensureEqual(results, expected, "\nresults=\n" + results + 
             "\nFIX THIS problem with unsigned values.");
 

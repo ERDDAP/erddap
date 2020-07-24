@@ -63,7 +63,7 @@ import javax.servlet.http.HttpSession;
  *
  */
 public class EmaDouble extends EmaAttribute {
-//future:
+//FUTURE:
 //* specify maxFractionDigits (name from java's DecimalFormat)
 
     protected int size;

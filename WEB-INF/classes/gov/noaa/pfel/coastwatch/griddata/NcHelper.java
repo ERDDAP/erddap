@@ -410,6 +410,7 @@ public class NcHelper  {
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
      *
      * @param nc2Array an nc2Array
+     * @param buildStringsFromChars only applies to source DataType=char variables.
      * @param isUnsigned if true and if the object type isIntegerType, 
      *   the resulting PrimitiveArray will be an unsigned PAType.
      * @return a PrimitiveArray
@@ -1254,7 +1255,8 @@ public class NcHelper  {
 
         //in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
         //String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" + attributes.getString("_Unsigned"));
-        if ("true".equals(attributes.getString("_Unsigned")))
+        PrimitiveArray us = attributes.remove("_Unsigned");
+        if (us != null && "true".equals(us.toString()))
             attributes.convertSomeSignedToUnsigned();
     }
 
@@ -1336,7 +1338,7 @@ public class NcHelper  {
      * @param var this method gets the info it needs
      *   (_Unsigned, scale_factor, add_offset, units, _FillValue, missingvalue)
      *    from the var.
-     * @param dataPa A data pa or a attribute value pa. It isn't an error if dataPa = null.
+     * @param dataPa A data pa or an attribute value pa. It isn't an error if dataPa = null.
      * @param lookForUnsigned should be true for the main PA, but false when converting attribute PA's.
      * @return pa The same pa or a new pa or null (if the pa parameter = null).
      *   missing_value and _FillValue will be converted to PA standard mv 

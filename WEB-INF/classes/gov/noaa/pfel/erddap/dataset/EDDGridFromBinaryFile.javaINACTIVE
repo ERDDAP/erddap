@@ -344,8 +344,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             double desiredMinLat, double desiredMaxLat,
             int desiredNLonPoints, int desiredNLatPoints)
             throws Throwable {
-        //future: this cound accept data from files with different data types, e.g., float
-        //future: this cound accept data in different order (stored col-by-col, from lower left
+        //FUTURE: this cound accept data from files with different data types, e.g., float
+        //FUTURE: this cound accept data in different order (stored col-by-col, from lower left
 
         //ensure desired range is acceptable
         if (verbose) String2.log("Grid.readBinary");

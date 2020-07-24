@@ -129,13 +129,24 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
         
+        //FUTURE: when !mustGetData, much better if get metadata quickly, 
+        //e.g., via: table.readNcMetadata, but can't because readNcCF
+        //adds/changes some global attributes when it reads the file
+        //(see testGenerateDatasetsXml).
+
         //get the data from the source file
         Table table = new Table();
         String decompFullName = FileVisitorDNLS.decompressIfNeeded(
             tFileDir + tFileName, fileDir, decompressedDirectory(), 
             EDStatic.decompressedCacheMaxGB, true); //reuseExisting
-        table.readNcCF(decompFullName, sourceDataNames, standardizeWhat,
-            sourceConVars, sourceConOps, sourceConValues);
+        //if (mustGetData) {
+            table.readNcCF(decompFullName, sourceDataNames, standardizeWhat,
+                sourceConVars, sourceConOps, sourceConValues);
+        //} else {
+        //    //Just return a table with globalAtts, columns with atts, but no rows.
+        //    table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
+        //        standardizeWhat); 
+        //}
         return table;
     }
 
@@ -356,7 +367,6 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         testVerboseOn();
         //debugMode = true;
 
-        try {
             //public static String generateDatasetsXml(
             //    String tFileDir, String tFileNameRegex, String sampleFileName, 
             //    int tReloadEveryNMinutes,
@@ -603,11 +613,6 @@ String expected =
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits", 
                 "");
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
 
     }
 

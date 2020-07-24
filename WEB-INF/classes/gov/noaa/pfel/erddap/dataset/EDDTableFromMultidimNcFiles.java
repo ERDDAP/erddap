@@ -119,10 +119,16 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         String decompFullName = FileVisitorDNLS.decompressIfNeeded(
             tFileDir + tFileName, fileDir, decompressedDirectory(), 
             EDStatic.decompressedCacheMaxGB, true); //reuseExisting
-        table.readMultidimNc(decompFullName, sourceDataNames, null,
-            treatDimensionsAs,
-            getMetadata, standardizeWhat, removeMVRows,  
-            sourceConVars, sourceConOps, sourceConValues);
+        if (mustGetData) {
+            table.readMultidimNc(decompFullName, sourceDataNames, null,
+                treatDimensionsAs,
+                getMetadata, standardizeWhat, removeMVRows,  
+                sourceConVars, sourceConOps, sourceConValues);
+        } else {
+            //Just return a table with globalAtts, columns with atts, but no rows.
+            table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
+                standardizeWhat);
+        }
         return table;
     }
 

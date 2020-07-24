@@ -591,6 +591,8 @@ public class Table  {
      * In any case, the _Unsigned attribute is removed.
      */
     public void convertToUnsignedPAs() {
+/* 2020-07-22 This is no longer needed because NcHelper calls attributes.convertSomeSignedToUnsigned() and removes _Unsigned att.
+
         String attsToCheck[] = {"_FillValue", "missing_value", "actual_range", "data_min", "data_max"};
         int nColumns = columns.size();
         for (int col = 0; col < nColumns; col++) {
@@ -613,13 +615,14 @@ public class Table  {
                 }
             }
         }
+*/
     }
 
     /**
-     * This converts columns with unsigned PA's (e.g. UByteArray) to have _Unsigned=true attributes and signed PA's.
-     * In any case, the _Unsigned attribute is removed.
+     * This converts columns with unsigned PA's (e.g. UByteArray) to have _Unsigned=true attribute and signed PA's
+     * (e.g., for right before storing in nc file).
      */
-    public void convertToUnsignedAttributes() {
+/*    public void convertToSignedPAs() {
         String attsToCheck[] = {"_FillValue", "missing_value", "actual_range", "data_min", "data_max"};
         int nColumns = columns.size();
         for (int col = 0; col < nColumns; col++) {
@@ -642,6 +645,7 @@ public class Table  {
             }
         }
     }
+*/
 
     /**
      * This runs StringArray.convertIsSomething2 (change all e.g., "N/A" to "") 
@@ -6320,8 +6324,8 @@ Dataset {
      *
      * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
      * @param doAltStandardization If true (normally) and if standardizeWhat == 0,
-     *   this creates unsigned PAs when _Unsigned=true
-     *   and converts fakeMissingValues (e.g., -999) to standard PrimitiveArray mv's (e.g., 32767).
+     *   converts fakeMissingValues (e.g., -999) to standard PrimitiveArray mv's (e.g., 32767).
+     *   This always creates unsigned PAs when _Unsigned=true.
      * @param lastRow the last row to be read (inclusive).  
      *    If lastRow = -1, the entire var is read.
      */
@@ -6376,6 +6380,73 @@ Dataset {
         }
 
     }
+
+    /**
+     * This makes a table global with global attributes and columns with attributes, but nRows=0.
+     * 
+     * @param fullName of the nc file
+     * @param sourceColumnNames the list of columns to be loaded. Thus must be specified.
+     *    If one isn't found, it's okay; the column will still be in the results, but with no metadata.
+     * @param sourceDataTypes 
+     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+     *   This always returns _Unsigned=true vars and related atts as unsigned vars and atts.
+     */
+    public void readNcMetadata(String fullName, String sourceColumnNames[], String sourceDataTypes[],
+        int standardizeWhat) throws Exception {
+
+        //get information
+        String msg = "  Table.readNcMetadata " + fullName; 
+        long time = System.currentTimeMillis();
+        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
+        try {
+            //fill the table
+            clear();
+            NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
+            for (int col = 0; col < sourceColumnNames.length; col++) {
+                Attributes atts = new Attributes();
+                addColumn(col, sourceColumnNames[col], 
+                    PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(sourceDataTypes[col]), 0, false), 
+                    atts);
+                Variable var = netcdfFile.findVariable(sourceColumnNames[col]);
+                if (var == null) {
+                    if (verbose) String2.log(String2.WARNING + " in Table.readNcMetadata: variableName=" +
+                        sourceColumnNames[col] + " not found in " + fullName);
+                    continue;
+                }
+
+                NcHelper.getVariableAttributes(var, atts);
+
+                //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
+                if (gridMappingAtts == null) {
+                    gridMappingAtts = NcHelper.getGridMappingAtts(netcdfFile, 
+                        atts.getString("grid_mapping"));
+                    if (gridMappingAtts != null)
+                        globalAttributes.add(gridMappingAtts);
+                }
+            }
+
+            //unpack 
+            decodeCharsAndStrings();
+            if (standardizeWhat > 0) {
+                convertToUnsignedPAs();
+                standardize(standardizeWhat);
+            }
+
+            if (reallyVerbose) 
+                msg += " finished. nColumns=" + nColumns() +  
+                    " TIME=" + (System.currentTimeMillis() - time) + "ms";
+
+        } catch (Throwable t) {
+            if (!reallyVerbose) String2.log(msg); 
+            throw t;
+
+        } finally {
+            netcdfFile.close(); 
+            if (reallyVerbose) String2.log(msg);
+        }
+    }
+
 
     /** 
      * This is commonly used by nc readers to decode any UTF-8 encoded
@@ -20044,7 +20115,7 @@ String2.log(table.dataToString());
             int nVars = varList.size();
             String vNames[]           = new String[nVars];
             Attributes vatts[]        = new Attributes[nVars];
-            PAType varPATypes[]        = new PAType[nVars];
+            PAType varPATypes[]       = new PAType[nVars];
             boolean isCharArray[]     = new boolean[nVars];
             int nDims[]               = new int[nVars];
             int realNDims[]           = new int[nVars];
@@ -23836,7 +23907,7 @@ String2.log(table.dataToString());
         //if (reallyVerbose) String2.log("Table.appendNcRows firstRow=" + firstRow + 
         //    " lastRow=" + lastRow);
         if (loadVariables == null || loadVariables.length == 0) {
-            if (verbose) String2.log("Table.appendNcRows: nVariables = 0 so nothing done");
+            if (verbose) String2.log("Table.appendNcRows: nVariables=0 so nothing done");
             return;
         }
 
@@ -24463,7 +24534,7 @@ String2.log(table.dataToString());
         Dimension mainDimension = null;
         if (loadColumns == null) {
             //assume mainDimension is the biggest dimension
-            //future: better to look for 1d arrays and find the largest?
+            //FUTURE: better to look for 1d arrays and find the largest?
             //   Not really, because lat and lon could have same number 
             //   but they are different dimension.
             List dimensions = ncFile.getDimensions(); //next nc version: rootGroup.getDimensions();
