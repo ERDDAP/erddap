@@ -162,7 +162,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
                 dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(ZoneId.of(timeZoneString));
                 parseISOWithCalendar2 = true;                
             } else {
-                //future: support time zones  
+                //FUTURE: support time zones  
                 dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimeFormat, timeZoneString);
                 parseISOWithCalendar2 = false;
             }

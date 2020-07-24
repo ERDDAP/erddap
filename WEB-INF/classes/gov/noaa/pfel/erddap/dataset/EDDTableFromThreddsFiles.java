@@ -602,18 +602,22 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
-        //Future: more efficient if !mustGetData is handled differently
-
         //read the file
         Table table = new Table();
         String decompFullName = FileVisitorDNLS.decompressIfNeeded(
             tFileDir + tFileName, fileDir, decompressedDirectory(), 
             EDStatic.decompressedCacheMaxGB, true); //reuseExisting
-        table.readNDNc(decompFullName, sourceDataNames.toArray(), 
-            standardizeWhat,
-            sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-            minSorted, maxSorted);
-        //String2.log("  EDDTableFromThreddsFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
+        if (mustGetData) {
+            table.readNDNc(decompFullName, sourceDataNames.toArray(), 
+                standardizeWhat,
+                sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
+                minSorted, maxSorted);
+            //String2.log("  EDDTableFromThreddsFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
+        } else {
+            //Just return a table with globalAtts, columns with atts, but no rows.
+            table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
+                standardizeWhat);
+        }
 
         return table;
     }

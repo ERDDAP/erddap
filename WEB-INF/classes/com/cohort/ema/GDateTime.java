@@ -134,7 +134,7 @@ public abstract class GDateTime extends EmaAttribute {
     public final static int SECOND      = Calendar.SECOND;
     public final static int AM_PM       = Calendar.AM_PM;
     public static String YMDOrder = "Y-M-D"; //permutation of these letters
-//future: set Preferences should modify YMDOrder as desired
+//FUTURE: set Preferences should modify YMDOrder as desired
 //or set automatically based on locale info
 
     //for thread safety, always use:  synchronized(<itself>) {<use...>}

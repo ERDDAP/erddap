@@ -6536,6 +6536,9 @@ https://vocab.nerc.ac.uk
 http://whatismyipaddress.com
 https://whatismyipaddress.com
 
+http://wiki.esipfed.org 
+https://wiki.esipfed.org 
+
 http://winds.jpl.nasa.gov
 https://winds.jpl.nasa.gov
 
@@ -6906,7 +6909,6 @@ https://tds.marine.rutgers.edu/erddap/info/index.html?page=1&amp;itemsPerPage=10
 https://udig.refractions.net
 https://weather.hawaii.edu
 https://west.rssoffice.com
-https://wiki.esipfed.org (has placeholder content! I emailed esip 2020-01-08),   also in setupDatasetsXml.html
 https://wiki.geojson.org 
 https://www.bom.gov.au
 https://www.coml.org

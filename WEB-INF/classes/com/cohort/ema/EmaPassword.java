@@ -52,7 +52,7 @@ import com.cohort.util.XML;
  *
  */
 public class EmaPassword extends EmaAttribute {
-//future: optional regex to ensure a suitable password?
+//FUTURE: optional regex to ensure a suitable password?
 
     protected int size;
     protected int minlength;

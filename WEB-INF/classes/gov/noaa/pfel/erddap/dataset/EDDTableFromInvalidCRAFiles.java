@@ -142,7 +142,12 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
-        
+
+        //FUTURE: when !mustGetData, much better if get metadata quickly, 
+        //e.g., via: table.readNcMetadata, but can't because readInvalidCRA
+        //adds some global attributes (e.g., cdm_profile_variables)
+        //when it reads the file (see testGenerateDatasetsXml).
+
         //get the data from the source file
         Table table = new Table();
         String decompFullName = FileVisitorDNLS.decompressIfNeeded(
@@ -151,6 +156,7 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
         table.readInvalidCRA(decompFullName, sourceDataNames, 
             standardizeWhat,
             sourceConVars, sourceConOps, sourceConValues);
+
         return table;
     }
 

@@ -176,7 +176,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         throws Throwable {
 
         if (!mustGetData) 
-            //Just return an empty table. There is never any metadata.
+            //Just return a table with columns but no rows. There is never any metadata.
             return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
 
         Table table = new Table();

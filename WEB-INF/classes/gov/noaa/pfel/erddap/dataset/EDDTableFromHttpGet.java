@@ -302,6 +302,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
+        if (!mustGetData) 
+            //Just return a table with columns but no rows. There is never any metadata in the underlying jsonlCSV files.
+            return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
+
         boolean process = true;
         double timestampSeconds = Double.MAX_VALUE; //i.e., don't constrain timestamp
         if (sourceConVars != null) {

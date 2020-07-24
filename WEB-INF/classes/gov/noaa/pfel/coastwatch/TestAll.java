@@ -177,9 +177,9 @@ public class TestAll  {
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
 //          0, "", null));
-//   GenerateDatasetsXml.main(new String[0]); //interactive 
+//    GenerateDatasetsXml.main(new String[0]); //interactive 
 
-//      DasDds.main(new String[]{"ncdcOw6hrStrs", "-verbose"});
+//    DasDds.main(new String[]{"pmlEsaCCI42OceanColor8Day", "-verbose"});
 
 //      Table table = new Table();
 //      table.readMultidimNc(tFileName, null, null, null, true, true, null, null, null);
@@ -551,6 +551,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testReplaceFromFileName(true); 
 //    EDDGridFromNcFiles.testMinimalReadSource(); 
 //    EDDGridFromNcFiles.testNccsv();
+//    EDDTableFromNcFiles.testOrderByMean();
 //    EDDGridFromNcFiles.testSpeed(0, 1000);
 //    EDDGridFromNcFiles.testSpecialAxis0Time();
 //    EDDGridFromNcFiles.testSpecialAxis0FileNameInt();
@@ -558,11 +559,12 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //    EDDGridFromNcFiles.testSpecialAxis0GlobalDouble();
 //    EDDGridFromNcFiles.testNThreads(3); 
 //    EDDGridFromNcFiles.testTimePrecisionMillis();
+//    EDDGridFromNcFiles.testUpdate();
 
 //tests of nc3 _Unsigned=true:
 //    EDDGridFromNcFiles.testUInt16File();
 //    EDDGridFromNcFiles.testUnsignedGrid();  //trouble: 255 or NaN?
-//    EDDGridFromNcFilesUnpacked.testUInt16File();  //trouble
+//    EDDGridFromNcFilesUnpacked.testUInt16File();  //trouble with _FillValue
 
 //    EDDGridFromNcFilesUnpacked.testMissingValue();
 
@@ -1137,6 +1139,7 @@ String2.log("captureGroup="+ String2.extractCaptureGroup(s, regex, 1));
 //        "time", //tSortFilesBySourceNames,
 //        null)); //externalAddAttributes) 
 //    EDDTableFromHyraxFiles.testJpl(true); //deleteCachedInfoAndOneFile
+//    EDDTableFromInvalidCRAFiles.testBasic();
 
 //    EDDTableFromNcFiles.testAddVariablesWhere();
 //    EDDTableFromNcFiles.testCacheFiles(false);

@@ -231,11 +231,6 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       <br>Thanks to Kyle Wilcox and Shane St Savage.
       <br>&nbsp;
 
-    <li>IMPROVED: GenerateDatasetsXml for EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked
-      now asks for a "group" (e.g., "" for any/all groups, "someGroup", "someGroup/someSubGroup",
-      or "[root]" for just the root group). Thanks to Charles Carleton and Jessica Hausman.
-      <br>&nbsp;
-
     <li>NEW: There is a new optional setting in setup.xml, &lt;defaultAccessibleViaFiles&gt;, 
       which sets the default <accessibleViaFiles> for each of the datasets.
       The default for this new tag is false, which mimics the previous ERDDAP behavior.
@@ -288,8 +283,17 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     with the prefix grid_mapping_ .
     <br>&nbsp;
 
+  <li>IMPROVED: Support for groups in .nc4 (and to some extent in .hdf5) files. 
+    Generally, an ERDDAP dataset will be constructed from the variables 
+    in one of the file's groups.
+    Also, GenerateDatasetsXml for EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked
+    now asks for a "group" (e.g., "" for any/all groups, "someGroup", "someGroup/someSubGroup",
+    or "[root]" for just the root group).  
+    Thanks to Charles Carleton and Jessica Hausman.
+    <br>&nbsp;
+
   <li>IMPROVED: GenerateDatasetsXml for EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked now 
-    support a "DimensionsCSV" paramater which lets you specify the source names
+    support an optional "DimensionsCSV" paramater which lets you specify the source names
     of the dimensions that you want this dataset to use.
     Use "" to get the variables that use the most dimensions, as before.
     Also, a related small bug that occurred with this type of file is now fixed.
@@ -394,6 +398,13 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
 
   <li>IMPROVED: 'Simplify' is now faster, uses less memory, and may return LongArray or ULongArray.
     Thanks to Unidata.
+    <br>&nbsp;
+
+  <li>IMPROVED: quickRestart is now significantly faster for EDDTableFrom(nc-related)Files
+    (except EDDTableFromNcCFFiles and EDDTableFromInvalidCRAFiles) because makeExpected 
+    (and another place) now just reads the sample file's metadata 
+    instead of reading all of the data. 
+    Thanks to Jessica Austin.
     <br>&nbsp;
 
   <li>IMPROVED: There is now support for time strings with precision 
@@ -3356,7 +3367,7 @@ in ERDDAP version 1.62 (released 2015-06-08)</h2>
     global Conventions and Metadata_Conventions attributes.
     Now, we recommend
     <a rel="bookmark" 
-    href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+    href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
     >ACDD version 1.3</a>
     which was ratified in early 2015 and is referred to as "ACDD-1.3".
     Fortunately, ACDD-1.3 is highly backward compatible with version 1.0.

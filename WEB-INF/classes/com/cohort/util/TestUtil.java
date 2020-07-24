@@ -6018,8 +6018,6 @@ expected =
 
         //test boolean rename(String fullOldName, String fullNewName)
         //sleep first, so the following tests go faster
-        Math2.gc(5000);
-        Math2.gc(5000);
         String2.log("test rename(old, new)");
         File2.rename(utilDir + "temp.gibberish", utilDir + "temp.txt");
         Test.ensureEqual(File2.isFile(utilDir + "temp.txt"), true, "a");
@@ -6027,11 +6025,14 @@ expected =
 
         //test boolean touch(String dirName)  and getLastModified
         String2.log("test touch and getLastModified");
+        Math2.gc(1000);
+        Math2.gc(1000);
+        String2.writeToFile(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
         long time1 = System.currentTimeMillis();
-        Test.ensureTrue(time1 >= fileTime + 10,  "a1 " + time1 + " " + fileTime);
-        Test.ensureTrue(time1 <= fileTime + 100, "a2 " + time1 + " " + fileTime + "\nThis fails when the computer is busy.");
+        Test.ensureTrue(time1 >= fileTime + 10, "a1 " + time1 + " " + fileTime);
+        Test.ensureTrue(time1 <= fileTime + 50, "a2 " + time1 + " " + fileTime + "\nThis fails when the computer is busy.");
         Test.ensureTrue(File2.touch(utilDir + "temp.txt"), "a"); //touch the file
         long time2 = System.currentTimeMillis();
         fileTime = File2.getLastModified(utilDir + "temp.txt");
@@ -6181,7 +6182,11 @@ expected =
         //Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
         //test of .Z is EDDGridFromMergeIR.testMergeIR() which accesses .Z files
-}
+
+        File2.delete(utilDir + "temp.txt");
+        File2.delete(utilDir + "temp2.txt");
+        File2.delete(utilDir + "temp3.txt");
+    }
 
     /**
      * Test storing longs in double.  What range is completely accurate?

@@ -117,6 +117,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
+        //Future: more efficient if !mustGetData is handled differently
+
         Table table = new Table();
         table.readAwsXmlFile(tFileDir + tFileName);
 

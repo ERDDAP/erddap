@@ -205,7 +205,7 @@ public class Grd {
 //     * @param hdfLonAttributes an array of lon hdf Attributes for the HDF file
 //     * @param hdfLatAttributes an array of lat hdf Attributes for the HDF file
 
-        //future: rewrite grd2xyz in Java to eliminate extra file reads
+        //FUTURE: rewrite grd2xyz in Java to eliminate extra file reads
         //but they seem very efficient, so speed gains may be offset by Java speed losses
 
         //Dave's scripts are not thread safe (they often use one fixed temp file name)

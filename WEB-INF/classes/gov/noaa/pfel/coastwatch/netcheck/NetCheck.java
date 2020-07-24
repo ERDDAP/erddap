@@ -63,7 +63,7 @@ import java.util.HashSet;
  *
  */
 public class NetCheck  {
-    //future:
+    //FUTURE:
     //* after failure, immediately try again; require 2 failures to report the error?
     //* support tests of interaction with html forms, e.g., test make hdf file
     //  I would need to accept and hold cookies (e.g., for LAS, too)
