@@ -130,7 +130,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 PrimitiveArray pa = table.getColumn(tc);
                 if (!sourceDataTypes[sd].equals(pa.elementTypeString())) {
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToPAType(sourceDataTypes[sd]), 1, false);
+                        PAType.fromCohortString(sourceDataTypes[sd]), 1, false);
                     newPa.append(pa);
                     table.setColumn(tc, newPa);
                 }
@@ -519,6 +519,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -533,6 +534,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -547,6 +549,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -562,6 +565,7 @@ String expected =
 "            <att name=\"units\">ft</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Altitude</att>\n" +
 "            <att name=\"scale_factor\" type=\"float\">0.3048</att>\n" +
@@ -578,6 +582,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -616,6 +621,7 @@ String expected =
 "            <att name=\"units\">mph</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
@@ -631,6 +637,7 @@ String expected =
 "            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
@@ -647,6 +654,7 @@ String expected =
 "            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
@@ -663,6 +671,7 @@ String expected =
 "            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
@@ -678,6 +687,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
 "            <att name=\"long_name\">Humidity-rate</att>\n" +
 "        </addAttributes>\n" +
@@ -690,6 +700,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -750,6 +761,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Moon-phase</att>\n" +
 "        </addAttributes>\n" +
@@ -822,6 +834,7 @@ String expected =
 "            <att name=\"units\">inches/h</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
 "            <att name=\"long_name\">Rain-rate</att>\n" +
 "        </addAttributes>\n" +
@@ -834,6 +847,7 @@ String expected =
 "            <att name=\"units\">inches/h</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
 "            <att name=\"long_name\">Rain-rate-max</att>\n" +
 "        </addAttributes>\n" +
@@ -846,6 +860,7 @@ String expected =
 "            <att name=\"units\">inches</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
 "            <att name=\"long_name\">Rain-today</att>\n" +
 "        </addAttributes>\n" +
@@ -884,6 +899,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -898,6 +914,7 @@ String expected =
 "            <att name=\"units\">degree_F</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -967,6 +984,7 @@ String expected =
 "            <att name=\"units\">mph</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
@@ -982,6 +1000,7 @@ String expected =
 "            <att name=\"units\">mph</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
@@ -1218,6 +1237,8 @@ String expected =
 "    String long_name \"Moon-phase-moon-phase-img\";\n" +
 "  }\n" +
 "  moon_phase {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 82, 82;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Moon-phase\";\n" +

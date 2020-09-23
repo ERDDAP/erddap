@@ -415,7 +415,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                     }
 
                     //get the sourceType
-                    tDataSourceTypes[dv] = PrimitiveArray.elementTypeToString( 
+                    tDataSourceTypes[dv] = PAType.toCohortString( 
                         OpendapHelper.getElementPAType(ibt.newPrimitiveVector()));
 
                     //get the ibt attributes  
@@ -461,7 +461,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                 isOuterVar[dv] = true;
 
                 //get the sourceDataType
-                tDataSourceTypes[dv] = PrimitiveArray.elementTypeToString( 
+                tDataSourceTypes[dv] = PAType.toCohortString( 
                     OpendapHelper.getElementPAType(obt.newPrimitiveVector()));
 
                 //get the attributes
@@ -506,6 +506,13 @@ public class EDDTableFromDapSequence extends EDDTable{
             String tSourceType = tDataSourceTypes[dv];
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 
+            //if _Unsigned=true or false, change tSourceType
+            if (tSourceAtt == null)
+                tSourceAtt = new Attributes();
+            if (tAddAtt == null)
+                tAddAtt = new Attributes();
+            tSourceType = Attributes.adjustSourceType(tSourceType, tSourceAtt, tAddAtt);
+            
             //ensure the variable was found
             if (tSourceName.startsWith("=")) {
                 //if isFixedValue, sourceType can be inferred
@@ -515,36 +522,36 @@ public class EDDTableFromDapSequence extends EDDTable{
             }
 
             if (EDV.LON_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLon(tSourceName,
+                dataVariables[dv] = new EDVLon(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLat(tSourceName,
+                dataVariables[dv] = new EDVLat(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVAlt(tSourceName,
+                dataVariables[dv] = new EDVAlt(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVDepth(tSourceName,
+                dataVariables[dv] = new EDVDepth(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
-                dataVariables[dv] = new EDVTime(tSourceName,
+                dataVariables[dv] = new EDVTime(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[dv] = new EDV(tSourceName, tDestName, 
+                dataVariables[dv] = new EDV(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //the constructor that reads actual_range
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
@@ -747,12 +754,11 @@ public class EDDTableFromDapSequence extends EDDTable{
         if (tLocalSourceUrl.endsWith(".html"))
             tLocalSourceUrl = tLocalSourceUrl.substring(0, tLocalSourceUrl.length() - 5);
         DConnect dConnect = new DConnect(tLocalSourceUrl, acceptDeflate, 1, 1);
-        DAS das;
+        DAS das = null;
         try {
             das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
-            throw new SimpleException("Error while getting DAS from " + tLocalSourceUrl + ".das .\n" +
-                t.getMessage(), t);
+            throw new RuntimeException("Error while getting DAS from " + tLocalSourceUrl + ".das .", t);
         }
 //String2.log("das.getNames=" + String2.toCSSVString(das.getNames()));
 //AttributeTable att = OpendapHelper.getAttributeTable(das, outerSequenceName);
@@ -815,9 +821,10 @@ public class EDDTableFromDapSequence extends EDDTable{
                                             outerSequenceName + "." + innerSequenceName + "." + varName, 
                                             sourceAtts);
 
-                                    //just need to know String vs numeric for tryToFindLLAT
-                                    PrimitiveArray sourcePA = innerVar instanceof DString? new StringArray() : new DoubleArray();
-                                    PrimitiveArray destPA   = innerVar instanceof DString? new StringArray() : new DoubleArray();
+                                    PrimitiveArray sourcePA = PrimitiveArray.factory(OpendapHelper.getElementPAType(innerVar), 1, false);
+                                    if ("true".equals(sourceAtts.getString("_Unsigned")))
+                                        sourcePA = sourcePA.makeUnsignedPA();
+                                    PrimitiveArray destPA   = (PrimitiveArray)sourcePA.clone();  //!This doesn't handle change in type from scale_factor, add_offset
                                     dataSourceTable.addColumn(dataSourceTable.nColumns(), 
                                         varName, sourcePA, sourceAtts);
                                     dataAddTable.addColumn(dataAddTable.nColumns(), 
@@ -844,9 +851,10 @@ public class EDDTableFromDapSequence extends EDDTable{
                             OpendapHelper.getAttributes(das, 
                                 outerSequenceName + "." + varName, sourceAtts);
 
-                        //just need to know String vs numeric for tryToFindLLAT
-                        PrimitiveArray sourcePA = outerVar instanceof DString? new StringArray() : new DoubleArray(); 
-                        PrimitiveArray destPA   = outerVar instanceof DString? new StringArray() : new DoubleArray(); 
+                        PrimitiveArray sourcePA = PrimitiveArray.factory(OpendapHelper.getElementPAType(outerVar), 1, false);
+                        if ("true".equals(sourceAtts.getString("_Unsigned")))
+                            sourcePA = sourcePA.makeUnsignedPA();
+                        PrimitiveArray destPA   = (PrimitiveArray)sourcePA.clone();  //!This doesn't handle change in type from scale_factor, add_offset
                         Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                             dataSourceTable.globalAttributes(),
                             sourceAtts, null, varName, 
@@ -1311,6 +1319,7 @@ expected =
 "        <destinationName>testByte</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +        //erddap puts this to say "actually it is signed"
 "            <att name=\"actual_range\" type=\"byteList\">-128 126</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"units\">1</att>\n" +
@@ -1325,12 +1334,17 @@ expected =
 "        <sourceName>testUByte</sourceName>\n" +
 "        <destinationName>testUByte</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
-"            <att name=\"actual_range\" type=\"byteList\">0 127</att>\n" +
+//"            <att name=\"_FillValue\" type=\"byte\">-1</att>\n" +  //source is (erd)dap, which treats bytes as signed
+//"            <att name=\"actual_range\" type=\"byteList\">0 -2</att>\n" +
+             //but ERDDAP converts source when read
+"            <att name=\"_FillValue\" type=\"ubyte\">255</att>\n" +  
+"            <att name=\"_Unsigned\">true</att>\n" +                 //erddap puts this to say "no, actually it is unsigned"
+"            <att name=\"actual_range\" type=\"ubyteList\">0 254</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"units\">1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"long_name\">Test UByte</att>\n" +
 "        </addAttributes>\n" +
@@ -1390,7 +1404,7 @@ expected =
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
 "            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
 "&#39;z&quot;?</att>\n" +
-"            <att name=\"testUBytes\" type=\"byteList\">0 127 127</att>\n" +
+"            <att name=\"testUBytes\" type=\"byteList\">0 127 -1</att>\n" +  //var is _Unsigned=true and isn't common un/signed att name, so no way to know it should be ubytes
 "            <att name=\"testUInts\" type=\"uintList\">0 2147483647 4294967295</att>\n" +
 "            <att name=\"testULongs\" type=\"doubleList\">0.0 9.223372036854776E18 1.8446744073709552E19</att>\n" + //long atts appear as double atts
 "            <att name=\"testUShorts\" type=\"ushortList\">0 32767 65535</att>\n" +
@@ -1414,8 +1428,7 @@ expected =
                 "ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst",
                 "");
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nThis test requires datasetID=testNccsvScalar in localhost ERDDAP."); 
+            throw new RuntimeException("This test requires datasetID=testNccsvScalar in localhost ERDDAP.", t); 
         }
 
     }
@@ -2066,9 +2079,9 @@ expected =
                     //if (test ==  0) ...;
 
                 } else {
-                    if (test ==  0) testGenerateDatasetsXml();
+                    //if (test ==  0) testGenerateDatasetsXml(); 2020-08-27 source is gone
                     if (test ==  1) testGenerateDatasetsXml2();  //trouble: unsigned: needs work
-                    if (test ==  2) testPsdac();
+                    //if (test ==  2) testPsdac(); 2020-08-27 source is gone
                     if (test ==  3) testReadDas();
                     if (test ==  4 && doSlowTestsToo) testMemory();
 

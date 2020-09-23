@@ -145,7 +145,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             tStartColumn[col] = startColumn[dv];
             tStopColumn[col] = stopColumn[dv];
             tColPAType[col] = sourceDataTypes[col].equals("boolean")? PAType.BOOLEAN :
-                PrimitiveArray.elementStringToPAType(sourceDataTypes[col]);
+                PAType.fromCohortString(sourceDataTypes[col]);
         }
 
         Table table = new Table();
@@ -1922,7 +1922,7 @@ boolean columnar = false;  // are there any? how detect?
                 if (tTimeZone == null)
                     //time_zone specified in comment (as I suggested)?
                     String2.extractCaptureGroup(tComment, //not LC
-                        ".*time_zone=\"(.*)\".*", 1);
+                        "time_zone=\"(.*)\"", 1);
                 if (tTimeZone == null)
                     tTimeZone = "";
                 else if (tTimeZone.toLowerCase().equals("gmt") ||
@@ -3372,26 +3372,33 @@ String expected =
 "    String long_name \"A Char\";\n" +
 "  }\n" +
 "  aBoolean {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 1;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Boolean\";\n" +
 "  }\n" +
 "  aByte {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 11, 24;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Byte\";\n" +
 "  }\n" +
 "  aShort {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 12001, 24000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Short\";\n" +
 "  }\n" +
 "  anInt {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 12, 24000000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"An Int\";\n" +
 "  }\n" +
 "  aLong {\n" +
+"    Float64 _FillValue 9223372036854775807;\n" +
 "    Float64 actual_range 1200, 240000000000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Long\";\n" +

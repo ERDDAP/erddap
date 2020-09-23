@@ -32,7 +32,15 @@ public class Tally  {
     protected ConcurrentHashMap mainHashMap = new ConcurrentHashMap(); 
 
     /**
-     * This adds a tally mark.
+     * This adds 1 tally mark.
+     */
+    public void add(String categoryName, String attributeName) {
+        add(categoryName, attributeName, 1);
+    }
+
+        
+    /**
+     * This adds n tally marks.
      * If categoryName or attributeName is null, it is treated as "".
      *
      * @param categoryName If no such category exists, one will be created.
@@ -40,8 +48,9 @@ public class Tally  {
      * @param attributeName If no such attribute exists, one will be created.
      *    Case sensitive.  If attributeName is null, it is logged as "(null)".
      *    AttributeName="" is valid.
+     * @param nMarks The number of tally marks to add for this category, almost always 1.
      */
-    public void add(String categoryName, String attributeName) {
+    public void add(String categoryName, String attributeName, int nTimes) {
         if (categoryName == null || categoryName.length() == 0) {
             String2.log(String2.ERROR + " in Tally.add: categoryName not specified.");
             return;
@@ -59,8 +68,8 @@ public class Tally  {
         //get the attribute's intObject
         IntObject intObject = (IntObject)hashMap.get(attributeName);
         if (intObject == null)
-            hashMap.put(attributeName, new IntObject(1));
-        else intObject.i++;
+            hashMap.put(attributeName, new IntObject(nTimes));
+        else intObject.i += nTimes;
 
     }
 

@@ -144,7 +144,7 @@ public class TableWriterNccsv extends TableWriter {
         int nRows = table.nRows();
         totalNRows += nRows;
         //no: avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
-        //no: EDStatic.ensureArraySizeOkay(totalNRows, "NCCSV");
+        //no: Math2.ensureArraySizeOkay(totalNRows, "NCCSV");
 
         //write the data
         PrimitiveArray pas[] = new PrimitiveArray[nColumns];
@@ -158,6 +158,7 @@ public class TableWriterNccsv extends TableWriter {
                         time_precision[col], pas[col].getDouble(row), ""));
                 } else {
                     String ts = pas[col].getNccsvDataString(row);
+String2.log(">> row=" + row + " col=" + col + " ts=" + ts + " maxIsMV=" + pas[col].getMaxIsMV());
                     writer.write(ts);
                     if (isLong[col]) {
                         if (ts.length() > 0)

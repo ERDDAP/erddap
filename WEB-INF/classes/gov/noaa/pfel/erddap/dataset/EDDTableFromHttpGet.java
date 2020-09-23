@@ -266,7 +266,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 if (edv.stringMissingValue().length() > 0) tsa.add(edv.stringMissingValue());
                 if (edv.stringFillValue().length()    > 0) tsa.add(edv.stringFillValue());
                 columnMvFv[dvi] = tsa.size() == 0? null : tsa;
-            } else if (columnPATypes[dvi] == PAType.LONG) {
+            } else if (columnPATypes[dvi] == PAType.LONG ||
+                       columnPATypes[dvi] == PAType.ULONG) {
                 StringArray tsa = new StringArray(2, false);
                 String ts = edv.combinedAttributes().getString("missing_value");
                 if (ts != null) tsa.add(ts);
@@ -1286,7 +1287,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         PrimitiveArray columnMvFv[] = new PrimitiveArray[nCol];               
         String columnTypes[] = new String[nCol];
         for (int col = 0; col < nCol; col++) 
-            columnTypes[col] = PrimitiveArray.elementTypeToString(columnPATypes[col]);
+            columnTypes[col] = PAType.toCohortString(columnPATypes[col]);
         String requiredVariableNames[] = {"stationID","time"};
 
         Table table;
@@ -1347,7 +1348,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "&aDouble=1.2345678901234&aString=\"abcdefghijkl\"" + //string is nBytes long
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
-        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        Test.ensureLinesMatch(results, resultsRegex(1), "results=" + results);
         double timestamp1 = extractTimestamp(results);
         String2.log(">> results=" + results + ">> timestamp1=" + timestamp1);
 
@@ -1373,7 +1374,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "&aDouble=[1.3,1.4]&aString=[\" s\n\tÃ\u20AC123\",\" \\n\\u20AC \"]" + //string is nBytes long, unicode char
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
-        Test.repeatedlyTestLinesMatch(results, resultsRegex(2), "results=" + results);
+        Test.ensureLinesMatch(results, resultsRegex(2), "results=" + results);
         double timestamp2 = extractTimestamp(results);
         String2.log(">> results=" + results + ">> timestamp2=" + timestamp2);
 
@@ -1411,7 +1412,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "&aDouble=1.999&aString=\"\"" + //empty string
             "&author=\"bsimons_aSecret\"",  //author in quotes
             null, null); //Table dirTable, Table fileTable
-        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        Test.ensureLinesMatch(results, resultsRegex(1), "results=" + results);
         double timestamp3 = extractTimestamp(results);
         String2.log(">> results=" + results + ">> timestamp3=" + timestamp3);
 
@@ -1438,7 +1439,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "stationID=\"46088\"&time=3.3&aByte=29.9&aChar=\" \"" + 
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
-        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        Test.ensureLinesMatch(results, resultsRegex(1), "results=" + results);
         double timestamp4 = extractTimestamp(results);
         String2.log(">> results=" + results + ">> timestamp3=" + timestamp4);
 
@@ -1464,7 +1465,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "stationID=\"46088\"&time=3.3" +
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
-        Test.repeatedlyTestLinesMatch(results, resultsRegex(1), "results=" + results);
+        Test.ensureLinesMatch(results, resultsRegex(1), "results=" + results);
         double timestamp5 = extractTimestamp(results);
         String2.log(">> results=" + results + ">> timestamp3=" + timestamp4);
 
@@ -2186,6 +2187,7 @@ String expected =
 "    String long_name \"Author\";\n" +
 "  }\n" +
 "  command {\n" +
+"    String _Unsigned \"false\";\n" +
 "    Byte actual_range 0, 0;\n" +
 "    String flag_meanings \"insert delete\";\n" +
 "    Byte flag_values 0, 1;\n" +
@@ -2290,7 +2292,7 @@ expected =
         expected = 
 "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
 "0,testFromHttpGet.jsonl,1530629894000,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "");
+        Test.ensureLinesMatch(results, expected, "");
 
         //push a bunch of data into the dataset: 2 stations, 2 time periods
         for (int i = 0; i < 4; i++) {
@@ -2329,7 +2331,7 @@ expected =
 "\"stringTimestamp\":\"" + today + "\\d{2}:\\d{2}\\.\\d{3}Z\",\n" +
 "\"numericTimestamp\":1\\.\\d{10,12}+E9\n" +  //possible but unlikely that millis=0 by chance; if so, try again
 "\\}\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "");
+        Test.ensureLinesMatch(results, expected, "");
 
         tFileTable = eddTable.tryToLoadDirFileTable(datasetDir(id) + FILE_TABLE_FILENAME); 
         results = tFileTable.dataToString();
@@ -2337,11 +2339,11 @@ expected =
         expected = 
 "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n" +
 "0,testFromHttpGet.jsonl,15\\d+,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n" +
-"1,station1_2016-03.jsonl,15\\d+,37\\d,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"2,station2_2016-03.jsonl,15\\d+,37\\d,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"1,station1_2016-05.jsonl,15\\d+,37\\d,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
-"2,station2_2016-05.jsonl,15\\d+,37\\d,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.5\\d+E9,1.5\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "");
+"1,station1_2016-03.jsonl,16\\d+,37\\d,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-03.jsonl,16\\d+,37\\d,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"1,station1_2016-05.jsonl,16\\d+,37\\d,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n" +
+"2,station2_2016-05.jsonl,16\\d+,37\\d,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+        Test.ensureLinesMatch(results, expected, "");
 
 
         //.csv  all data 
@@ -2372,7 +2374,7 @@ expected =
 "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
 "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n" +
 "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3," + today + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n";
-        Test.repeatedlyTestLinesMatch(results, versioningExpected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
 
         //overwrite and delete a bunch of data
@@ -2424,14 +2426,14 @@ expected =
 "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n" +
 "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n" + //hours 00 01 deleted
 "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //similar: versioning as of now
         userDapQuery = "&timestamp<=" + (System.currentTimeMillis()/1000.0);    //as millis
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_all3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //similar: versioning as of now
         userDapQuery = "&timestamp<=" + 
@@ -2439,7 +2441,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_all3c", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //raw read a data file 
         results = String2.directReadFromUtf8File(
@@ -2447,13 +2449,13 @@ expected =
         //String2.log(results);
         expected = 
 "\\[\"stationID\",\"time\",\"airTemp\",\"waterTemp\",\"timestamp\",\"author\",\"command\"\\]\n" +
-"\\[\"station2\",\"2016-05-29T00:00:00Z\",16,17,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
-"\\[\"station2\",\"2016-05-29T01:00:00Z\",16.1,17.1,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
-"\\[\"station2\",\"2016-05-29T02:00:00Z\",16.2,17.2,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
-"\\[\"station2\",\"2016-05-29T03:00:00Z\",16.3,17.3,1.5\\d+E9,\"JohnSmith\",0\\]\n" +
-"\\[\"station2\",\"2016-05-29T00:00:00Z\",null,null,1.5\\d+E9,\"JohnSmith\",1\\]\n" +
-"\\[\"station2\",\"2016-05-29T01:00:00Z\",null,null,1.5\\d+E9,\"JohnSmith\",1\\]\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+"\\[\"station2\",\"2016-05-29T00:00:00Z\",16,17,1.6\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T01:00:00Z\",16.1,17.1,1.6\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T02:00:00Z\",16.2,17.2,1.6\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T03:00:00Z\",16.3,17.3,1.6\\d+E9,\"JohnSmith\",0\\]\n" +
+"\\[\"station2\",\"2016-05-29T00:00:00Z\",null,null,1.6\\d+E9,\"JohnSmith\",1\\]\n" +
+"\\[\"station2\",\"2016-05-29T01:00:00Z\",null,null,1.6\\d+E9,\"JohnSmith\",1\\]\n";
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
 
         //.csv  (versioning: as of previous time)
@@ -2462,7 +2464,7 @@ expected =
             eddTable.className() + "_all5", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        Test.repeatedlyTestLinesMatch(results, versioningExpected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
         
         /* */

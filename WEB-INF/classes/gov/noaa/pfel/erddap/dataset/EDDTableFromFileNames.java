@@ -496,36 +496,36 @@ public class EDDTableFromFileNames extends EDDTable{
                     "dataVariable#" + dv + " <sourceType> wasn't specified.");
 
             if (EDV.LON_NAME.equals(destName)) {
-                dataVariables[dv] = new EDVLon(sourceName,
+                dataVariables[dv] = new EDVLon(datasetID, sourceName,
                     sourceAtt, addAtt, 
                     sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(destName)) {
-                dataVariables[dv] = new EDVLat(sourceName,
+                dataVariables[dv] = new EDVLat(datasetID, sourceName,
                     sourceAtt, addAtt, 
                     sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(destName)) {
-                dataVariables[dv] = new EDVAlt(sourceName,
+                dataVariables[dv] = new EDVAlt(datasetID, sourceName,
                     sourceAtt, addAtt, 
                     sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(destName)) {
-                dataVariables[dv] = new EDVDepth(sourceName,
+                dataVariables[dv] = new EDVDepth(datasetID, sourceName,
                     sourceAtt, addAtt, 
                     sourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(destName)) {  //look for TIME_NAME before check hasTimeUnits (next)
-                dataVariables[dv] = new EDVTime(sourceName,
+                dataVariables[dv] = new EDVTime(datasetID, sourceName,
                     sourceAtt, addAtt, 
                     sourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(sourceAtt, addAtt)) {
-                dataVariables[dv] = new EDVTimeStamp(sourceName, destName, 
+                dataVariables[dv] = new EDVTimeStamp(datasetID, sourceName, destName, 
                     sourceAtt, addAtt,
                     sourceType); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[dv] = new EDV(sourceName, destName, 
+                dataVariables[dv] = new EDV(datasetID, sourceName, destName, 
                     sourceAtt, addAtt,
                     sourceType); //the constructor that reads actual_range
                 //dataVariables[dv].setActualRangeFromDestinationMinMax();
@@ -1216,7 +1216,7 @@ public class EDDTableFromFileNames extends EDDTable{
         } else {
             sourceTable = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex,
-                EDStatic.erddapUrl(null) + "/files/" + tDatasetID + "/");
+                EDStatic.preferredErddapUrl + "/files/" + tDatasetID + "/");
         }
 
         if (tFromOnTheFly) {
@@ -1816,7 +1816,7 @@ String expected =
             tedd.className() + "_all", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
-//fvEmptyString wasn't allowed before v2.03
+//fvEmptyString wasn't allowed before v2.10
 "Dataset {\n" +
 "  Sequence {\n" +
 "    Float32 five;\n" +
@@ -1841,23 +1841,24 @@ String expected =
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
         expected = 
-"Attributes \\{\n" +
-" s \\{\n" +
-"  five \\{\n" +
+"Attributes {\n" +
+" s {\n" +
+"  five {\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Five\";\n" +
 "    String units \"m\";\n" +
-"  \\}\n" +
-"  url \\{\n" +
+"  }\n" +
+"  url {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"URL\";\n" +
-"  \\}\n" +
-"  name \\{\n" +
+"  }\n" +
+"  name {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File Name\";\n" +
-"  \\}\n" +
-"  time \\{\n" +
+"  }\n" +
+"  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1865,33 +1866,34 @@ String expected =
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  day \\{\n" +
+"  }\n" +
+"  day {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    String ioos_category \"Time\";\n" +
-"  \\}\n" +
-"  lastModified \\{\n" +
+"  }\n" +
+"  lastModified {\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Last Modified\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  size \\{\n" +
+"  }\n" +
+"  size {\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Size\";\n" +
 "    String units \"bytes\";\n" +
-"  \\}\n" +
-"  fileType \\{\n" +         
+"  }\n" +
+"  fileType {\n" +         
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File Type\";\n" +
-"  \\}\n" +
-"  fixedTime \\{\n" +
-"    Float64 actual_range 9.466848e\\+8, 9.783072e\\+8;\n" +
+"  }\n" +
+"  fixedTime {\n" +
+"    Float64 actual_range 9.466848e+8, 9.783072e+8;\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Fixed Time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  latitude \\{\n" +
+"  }\n" +
+"  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float64 actual_range 20.0, 40.0;\n" +
 "    String axis \"Y\";\n" +
@@ -1899,8 +1901,8 @@ String expected =
 "    String long_name \"Latitude\";\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
-"  \\}\n" +
-"  longitude \\{\n" +
+"  }\n" +
+"  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float64 actual_range 0.0, 45.0;\n" +
 "    String axis \"X\";\n" +
@@ -1908,18 +1910,18 @@ String expected =
 "    String long_name \"Longitude\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
-"  \\}\n" +
-"  mySpecialString \\{\n" +
+"  }\n" +
+"  mySpecialString {\n" +
 "    String ioos_category \"Other\";\n" +
-"  \\}\n" +
-"  fvEmptyString \\{\n" +
+"  }\n" +
+"  fvEmptyString {\n" +
 "    String ioos_category \"Other\";\n" +
-"  \\}\n" +
-"  fromScript \\{\n" +
+"  }\n" +
+"  fromScript {\n" +
 "    String ioos_category \"Other\";\n" +
-"  \\}\n" +
-" \\}\n" +
-"  NC_GLOBAL \\{\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
 "    Float64 Easternmost_Easting 45.0;\n" +
 "    Float64 geospatial_lat_max 40.0;\n" +
@@ -1928,8 +1930,8 @@ String expected =
 "    Float64 geospatial_lon_max 45.0;\n" +
 "    Float64 geospatial_lon_min 0.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \".{19}Z \\(local files\\)\n" +
-".{19}Z http://localhost:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
+"    String history \"[TIME]Z (local files)\n" +
+"[TIME]Z http://localhost:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov/\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"file, images, jpl, modified, mur, name, nasa, size, sst, time, URL\";\n" +
@@ -1941,15 +1943,16 @@ String expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 40.0;\n" +
-"    String sourceUrl \"\\(local files\\)\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 20.0;\n" +
 "    String subsetVariables \"fileType\";\n" +
 "    String summary \"Images from JPL MUR SST Daily.\";\n" +
 "    String title \"JPL MUR SST Images\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
-"  \\}\n" +
-"\\}\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
+"  }\n" +
+"}\n";
+        //Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results); //not suitable for non-interactive testing
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
@@ -2068,56 +2071,57 @@ String expected =
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
         expected = 
-"Attributes \\{\n" +
-" s \\{\n" +
-"  five \\{\n" +
+"Attributes {\n" +
+" s {\n" +
+"  five {\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Five\";\n" +
 "    String units \"m\";\n" +
-"  \\}\n" +
-"  url \\{\n" +
+"  }\n" +
+"  url {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"URL\";\n" +
-"  \\}\n" +
-"  name \\{\n" +
+"  }\n" +
+"  name {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File Name\";\n" +
-"  \\}\n" +
-"  startMonth \\{\n" +
+"  }\n" +
+"  startMonth {\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Start Month\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  endMonth \\{\n" +
+"  }\n" +
+"  endMonth {\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"End Month\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  lastModified \\{\n" +
+"  }\n" +
+"  lastModified {\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Last Modified\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-"  size \\{\n" +
+"  }\n" +
+"  size {\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Size\";\n" +
 "    String units \"bytes\";\n" +
-"  \\}\n" +
-"  fileType \\{\n" +         
+"  }\n" +
+"  fileType {\n" +         
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File Type\";\n" +
-"  \\}\n" +
-" \\}\n" +
-"  NC_GLOBAL \\{\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
 "    String creator_name \"NASA Earth Exchange\";\n" +
 "    String creator_url \"https://nex.nasa.gov/nex/\";\n" +
-"    String history \".{19}Z \\(remote files\\)\n" +
-".{19}Z http://localhost:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
+"    String history \"[TIME]Z (remote files)\n" +
+"[TIME]Z http://localhost:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
 "    String infoUrl \"https://nex.nasa.gov/nex/\";\n" +
 "    String institution \"NASA Earth Exchange\";\n" +
 "    String keywords \"data, earth, exchange, file, great, identifier, lastModified, modified, name, nasa, size, time, title\";\n" +
@@ -2128,13 +2132,14 @@ String expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String sourceUrl \"\\(remote files\\)\";\n" +
+"    String sourceUrl \"(remote files)\";\n" +
 "    String subsetVariables \"fileType\";\n" +
 "    String summary \"File Names from https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
 "    String title \"File Names from Amazon AWS S3 NASA NEX tasmin Files\";\n" +
-"  \\}\n" +
-"\\}\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
+"  }\n" +
+"}\n";
+        //Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);  //not suitable for non-interactive testing
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
@@ -2225,8 +2230,9 @@ String expected =
 "ABI-L1b-RadC, ABI-L1b-RadF";
             Test.ensureEqual(results, expected, "");
             expTime = 100; //ms
-            String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 1.5, "");
+            String msg = "get root dir time=" + time + "ms (expected=" + expTime + "ms)";
+            String2.log(msg);
+            Test.ensureTrue(time < expTime * 1.5, msg);
         }
 
         if (true) {
@@ -2541,14 +2547,14 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1595277424000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+"index.html,1599596049000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
             Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
             expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe13, SUVI-L1b-Fe131, SUVI-L1b-Fe17, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
-            String2.log("get root dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy)");
+            Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy).\n" +
+                "get root dir time=" + time + "ms (expected=" + expTime + "ms)");
         }
 
         if (true) {
@@ -2614,7 +2620,7 @@ String expected =
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-07-20T20:37:04Z,32357.0,.html\n" + //changes sometimes
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-09-08T20:14:09Z,32357.0,.html\n" + //changes sometimes
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +

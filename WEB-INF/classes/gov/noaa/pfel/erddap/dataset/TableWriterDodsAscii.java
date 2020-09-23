@@ -8,6 +8,7 @@ import com.cohort.array.CharArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -114,7 +115,7 @@ public class TableWriterDodsAscii extends TableWriter {
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         totalNRows += nRows;
-        EDStatic.ensureArraySizeOkay(totalNRows, "DODS Ascii sequence");
+        Math2.ensureArraySizeOkay(totalNRows, "DODS Ascii sequence");
 
         //write the data  //DAP 2.0, 7.3.2.3
         //write elements of the sequence, in dds order

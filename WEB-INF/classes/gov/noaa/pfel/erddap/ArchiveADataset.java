@@ -391,6 +391,7 @@ public class ArchiveADataset {
                         try {
                             String fullName = archiveDataDir + fileName + ".nc";
                             eddGrid.saveAsNc(NetcdfFileWriter.Version.netcdf3,
+                                "ArchiveADataset", //pseudo ipAddress
                                 baseRequestUrl + ".nc", query.toString(),                        
                                 fullName, true, 0); //keepUnusedAxes, lonAdjust
                             nDataFilesCreated++;

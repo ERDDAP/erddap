@@ -1061,6 +1061,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"grid_mapping\">null</att>\n" +
@@ -1185,7 +1186,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <att name=\"northernmost_latitude\">null</att>\n" +
 "        <att name=\"publisher_type\">group</att>\n" +
 "        <att name=\"publisher_url\">https://www.ghrsst.org</att>\n" +
-"        <att name=\"references\">https://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
+"        <att name=\"references\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
@@ -1857,7 +1858,7 @@ expected =
 "        <att name=\"CMIPtable\">Amon</att>\n" +
 "        <att name=\"contact\">Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org</att>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +
-"        <att name=\"creation_date\">Wed Sep 12 14:44:44 PDT 2012</att>\n" + //varies a little with sample file
+"        <att name=\"creation_date\">Wed Sep 12 14:44:42 PDT 2012</att>\n" + //varies a little with sample file -- see other similar changes below
 "        <att name=\"DOI\">http://dx.doi.org/10.7292/W0WD3XH4</att>\n" +
 "        <att name=\"downscalingModel\">BCSD</att>\n" +
 "        <att name=\"driving_data_tracking_ids\">N/A</att>\n" +
@@ -1890,7 +1891,7 @@ expected =
 "        <att name=\"resolution_id\">800m</att>\n" +
 "        <att name=\"table_id\">Table Amon</att>\n" +
 "        <att name=\"title\">800m Downscaled NEX CMIP5 Climate Projections for the Continental US</att>\n" +
-"        <att name=\"tracking_id\">e0141f38-af11-11e2-a585-e41f13ef5a36</att>\n" + //varies with sample file
+"        <att name=\"tracking_id\">da8a69d2-af11-11e2-a9d5-e41f134d5304</att>\n" + //varies with sample file
 "        <att name=\"variableName\">tasmin</att>\n" +
 "        <att name=\"version\">1.0</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -1908,7 +1909,7 @@ expected =
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"region_lexicon\">https://en.wikipedia.org/wiki/Contiguous_United_States</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">800m Downscaled NEX Climate Model Intercomparison Project 5 (CMIP5) Climate Projections for the Continental US</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -5453,12 +5454,15 @@ expected =
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
 "    byte bytes(days=2);\n" +
+"      :_FillValue = 127B; // byte\n" +       //important test
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    short shorts(days=2);\n" +
+"      :_FillValue = 32767S; // short\n" +    //important test
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    int ints(days=2);\n" +
+"      :_FillValue = 2147483647; // int\n" +  //important test
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    float floats(days=2);\n" +
@@ -5769,6 +5773,7 @@ expected =
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
 "    byte bytes(days=2);\n" +
+"      :_FillValue = 127B; // byte\n" +
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    double doubles(days=2);\n" +
@@ -6097,6 +6102,9 @@ expected =
                 oldMinTime, "time_coverage_start");
             Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
                 oldMaxTime, "time_coverage_end");
+        } catch (Exception e) {
+            String2.log("Note exception being thrown:\n" + MustBe.throwableToString(e));
+            throw e;
         } finally {
             //rename it back to original
             String2.log("\n*** rename it back to original\n");       
@@ -7524,10 +7532,11 @@ expected =
 "            <att name=\"add_offset\" type=\"float\">-2.0</att>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 "            <att name=\"long_name\">l3m_qual</att>\n" +
-"            <att name=\"scale_factor\" type=\"float\">7.17185E-4</att>\n" +  //but this is crazy error in data file. see notes in datasets.xml
+"            <att name=\"scale_factor\" type=\"float\">7.17185E-4</att>\n" +  //this is crazy error in data file. see notes in datasets.xml
 "            <att name=\"valid_range\" type=\"uintList\">0 2</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"ubyte\">255</att>\n" + //important test of addMvFvAttsIfNeeded
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
@@ -7583,7 +7592,7 @@ expected =
 "    String units \"degrees_east\";\n" +
 "  }\n" +
 "  sst {\n" +
-"    Float32 _FillValue NaN;\n" +   //important test of UInt16. Or should it be 65535*7.17185E-4 - 2 = 45.00071898 ?
+"    Float32 _FillValue 45.000717;\n" +   //important test of UInt16. Or should it be 65535*7.17185E-4 - 2 = 45.00071898 ?   2020-08-04 changed from NaN with change to maxIsMV support
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
@@ -7592,10 +7601,12 @@ expected =
 "    String units \"deg_C\";\n" +
 "  }\n" +
 "  sst_quality {\n" +
+"    String _Unsigned \"true\";\n" + //important test of _Unsigned
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Sea Surface Temperature Quality\";\n" +
+"    Byte missing_value -1;\n" + //important test of _Unsigned
 "    Byte valid_range 0, 2;\n" + //important test: ubyte internally -> byte in DAP which doesn't support ubyte (acually, dap byte is unsigned!)
 "  }\n" +
 "  NC_GLOBAL {\n" +
@@ -7702,8 +7713,8 @@ expected =
 "2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905,1\n" +
 "2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044,0\n" +
 "2002-07-04T00:00:00Z,73.291664,-134.95833,-0.11021753,0\n" +
-"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN,NaN\n" + //important test
-"2002-07-04T00:00:00Z,56.625008,-134.95833,NaN,NaN\n" +
+"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN,NaN\n" + //!!!quality would be 255, but I added missing_value=255, so it appears as NaN
+"2002-07-04T00:00:00Z,56.625008,-134.95833,NaN,NaN\n" + //  but should it be "NaN" 
 "2002-07-04T00:00:00Z,48.291664,-134.95833,12.6406145,0\n" +
 "2002-07-04T00:00:00Z,39.958336,-134.95833,17.95137,0\n" +
 "2002-07-04T00:00:00Z,31.625,-134.95833,20.432829,0\n" +
@@ -7765,7 +7776,7 @@ expected =
 "      :units = \"degrees_east\";\n" +
 "\n" +
 "    float sst(time=1, latitude=22, longitude=1);\n" +
-"      :_FillValue = NaNf; // float\n" +
+"      :_FillValue = 45.000717f; // float\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
 "      :colorBarMinimum = 0.0; // double\n" +
 "      :ioos_category = \"Temperature\";\n" +
@@ -7774,11 +7785,12 @@ expected =
 "      :units = \"deg_C\";\n" +
 "\n" +
 "    byte sst_quality(time=1, latitude=22, longitude=1);\n" +
-"      :_Unsigned = \"true\";\n" +
+"      :_Unsigned = \"true\";\n" +        //technically, dap bytes are unsigned, but historically thredds and erddap treat as signed
 "      :colorBarMaximum = 150.0; // double\n" +
 "      :colorBarMinimum = 0.0; // double\n" +
 "      :ioos_category = \"Quality\";\n" +
 "      :long_name = \"Sea Surface Temperature Quality\";\n" +
+"      :missing_value = -1B; // byte\n" + //technically, dap bytes are unsigned, but historically thredds and erddap treat as signed
 "      :valid_range = 0B, 2B; // byte\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -7848,8 +7860,8 @@ expected =
 "          {-0.84102905},\n" +
 "          {-1.6371044},\n" +
 "          {-0.11021753},\n" +
-"          {NaN},\n" +
-"          {NaN},\n" +
+"          {45.000717},\n" +
+"          {45.000717},\n" +
 "          {12.6406145},\n" +
 "          {17.95137},\n" +
 "          {20.432829},\n" +
@@ -7861,12 +7873,12 @@ expected =
 "          {26.713936},\n" +
 "          {21.580326},\n" +
 "          {15.789774},\n" +
-"          {NaN},\n" +
+"          {45.000717},\n" +
 "          {6.1673026},\n" +
 "          {0.40400413},\n" +
-"          {NaN},\n" +
-"          {NaN},\n" +
-"          {NaN}\n" +
+"          {45.000717},\n" +
+"          {45.000717},\n" +
+"          {45.000717}\n" +
 "        }\n" +
 "      }\n" +
 "    sst_quality = \n" +
@@ -7946,7 +7958,6 @@ expected =
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -89.95834, 89.95834;\n" + //test of descending lat axis
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -7958,7 +7969,6 @@ expected =
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -179.9583, 179.9584;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8167,7 +8177,6 @@ expected =
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -89.95834, 89.95834;\n" + //test of descending lat axis
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8179,7 +8188,6 @@ expected =
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -179.9583, 179.9584;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8376,7 +8384,6 @@ expected =
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -89.95834, 89.95834;\n" + //test of descending lat axis
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8388,7 +8395,6 @@ expected =
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -179.9583, 179.9584;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8955,6 +8961,7 @@ expected =
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"ubyte\">255</att>\n" +        //important test of addMvFvAttsIfNeeded and unsigned var
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -9002,6 +9009,8 @@ expected =
 "    String units \"count\";\n" +
 "  }\n" +
 "  Aquarius_Flags_rad_rfi_flags {\n" +
+"    Byte _FillValue -1;\n" +        //important test of unsigned var  .das doesn't support ubyte, so byte here   
+"    String _Unsigned \"true\";\n" + //important test of unsigned var
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -9297,6 +9306,7 @@ expected =
 "            <att name=\"Wind_foam_contamination\">WIND</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"uint\">4294967295</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -9314,6 +9324,7 @@ expected =
 "            <att name=\"valid_min\" type=\"short\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -9423,6 +9434,7 @@ expected =
 "    String units \"count\";\n" +
 "  }\n" +
 "  Aquarius_Flags_radiometer_flags {\n" +
+"    UInt32 _FillValue 4294967295;\n" +  //important test of _Unsigned.  DAP 2.0 supports UInt32
 "    String Cold_water \"COLDWATER\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -9447,17 +9459,18 @@ expected =
 "    String Sun_glint \"SUNGLINT\";\n" +
 "    String Tb_consistency \"TBCONS\";\n" +
 "    String Unusual_brighness_temperature \"TEMP\";\n" +
-"    UInt32 valid_max 0;\n" +
-"    UInt32 valid_min 0;\n" +
+"    UInt32 valid_max 0;\n" +  //import test of _Unsigned  
+"    UInt32 valid_min 0;\n" +  //import test of _Unsigned
 "    String Wind_foam_contamination \"WIND\";\n" +
 "  }\n" +
 "  Block_Attributes_rad_samples {\n" +
+"    UInt16 _FillValue 65535;\n" +    //import test of _Unsigned.  DAP 2.0 supports UInt16
 "    Float64 colorBarMaximum 100.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Statistics\";\n" +
 "    String long_name \"Number of radiometer samples per average\";\n" +
-"    UInt16 valid_max 0;\n" +
-"    UInt16 valid_min 0;\n" +
+"    UInt16 valid_max 0;\n" + //import test of _Unsigned
+"    UInt16 valid_min 0;\n" + //import test of _Unsigned
 "  }\n" +
 "  Navigation_cellatfoot {\n" +
 "    Float32 _FillValue -9999.0;\n" +
@@ -9652,10 +9665,6 @@ expected =
 "0,0,1,278600,60,-79.08211,-2.3416138,-78.6658,-0.50601196\n" +
 "0,0,2,8,60,-79.41049,-0.060028076,-78.9499,1.28453\n";         
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results.substring(0, 500));
-
-
-
-
     }
 
     /** 
@@ -12129,11 +12138,12 @@ expected =
 "    String references \"AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.\";\n" +
 "    String source \"NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)\";\n" +
 "    String units \"degree_C\";\n" +
-"    Float64 valid_max NaN;\n" +
+"    Float64 valid_max 12.700000000000001;\n" +  //2020-08-04 changed from NaN with change to maxIsMV support
 "    Float64 valid_min -12.700000000000001;\n" +
 "  }\n" +
 "  wind_speed {\n" +
 "    Byte _FillValue -128;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.\";\n" +
@@ -12163,11 +12173,12 @@ expected =
 "    String standard_name \"sea_ice_area_fraction\";\n" +
 "    Float64 time_offset 2.0;\n" +
 "    String units \"percent\";\n" +
-"    Float64 valid_max NaN;\n" +
+"    Float64 valid_max 1.27;\n" +  //2020-08-04 changed from NaN with change to maxIsMV support
 "    Float64 valid_min -1.27;\n" +
 "  }\n" +
 "  quality_level {\n" +
 "    Byte _FillValue 0;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    String ancillary_variables \"pathfinder_quality_level\";\n" +
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 6.0;\n" +
@@ -12195,6 +12206,7 @@ expected =
 "  }\n" +
 "  pathfinder_quality_level {\n" +
 "    Byte _FillValue -1;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 8.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -13353,39 +13365,652 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testUnsignedGrid()");
         testVerboseOn();
 
-        String2.log(NcHelper.ncdump(String2.unitTestBigDataDir + 
-            "nc/V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc", "-h"));
-
         String name, tName, results, tResults, expected;
         String error = "";
         int po;
         EDV edv;        
-        String id = "testUnsignedGrid";
+        String id = "testUnsignedGrid";  
         EDD.deleteCachedDatasetInfo(id);
         EDD edd = oneFromDatasetsXml(null, id); 
+        String dapQuery = "palette[0][146:151]";  //a ubyte variable
+
+        results = NcHelper.ncdump(String2.unitTestBigDataDir + 
+            "nc/V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc", "-h");
+        expected = 
+"netcdf V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc {\n" +
+"  dimensions:\n" +
+"    lat = 4320;\n" +
+"    rgb = 3;\n" +
+"    eightbitcolor = 256;\n" +
+"    lon = 8640;\n" +
+"  variables:\n" +
+"    float chlor_a(lat=4320, lon=8640);\n" +
+"      :long_name = \"Chlorophyll Concentration, OCI Algorithm\";\n" +
+"      :units = \"mg m^-3\";\n" +
+"      :standard_name = \"mass_concentration_chlorophyll_concentration_in_sea_water\";\n" +
+"      :_FillValue = -32767.0f; // float\n" +
+"      :valid_min = 0.001f; // float\n" +
+"      :valid_max = 100.0f; // float\n" +
+"      :reference = \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"      :display_scale = \"log\";\n" +
+"      :display_min = 0.01f; // float\n" +
+"      :display_max = 20.0f; // float\n" +
+"      :_ChunkSizes = 44U, 87U; // uint\n" +
+"\n" +
+"    float lat(lat=4320);\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :_FillValue = -999.0f; // float\n" +
+"      :valid_min = -90.0f; // float\n" +
+"      :valid_max = 90.0f; // float\n" +
+"\n" +
+"    ubyte palette(rgb=3, eightbitcolor=256);\n" +
+"\n" +
+"    float lon(lon=8640);\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :_FillValue = -999.0f; // float\n" +
+"      :valid_min = -180.0f; // float\n" +
+"      :valid_max = 180.0f; // float\n" +
+"\n" +
+"  group: processing_control {\n" +
+"    group: input_parameters {\n" +
+"      // group attributes:\n" +
+"      :par = \"V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\";\n" +
+"      :ifile = \"V20172742017304.L3b_MO_SNPP_CHL.nc\";\n" +
+"      :ofile = \"V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc\";\n" +
+"      :oformat = \"2\";\n" +
+"      :oformat2 = \"png\";\n" +
+"      :deflate = \"4\";\n" +
+"      :product = \"chlor_a\";\n" +
+"      :resolution = \"4km\";\n" +
+"      :projection = \"smi\";\n" +
+"      :central_meridian = \"-999\";\n" +
+"      :interp = \"area\";\n" +
+"      :north = \"90.000\";\n" +
+"      :south = \"-90.000\";\n" +
+"      :east = \"180.000\";\n" +
+"      :west = \"-180.000\";\n" +
+"      :apply_pal = \"yes\";\n" +
+"      :palette_dir = \"$OCDATAROOT/common/palette\";\n" +
+"      :quiet = \"false\";\n" +
+"      :pversion = \"2014.0.2\";\n" +
+"      :use_quality = \"yes\";\n" +
+"      :use_rgb = \"no\";\n" +
+"      :trimNSEW = \"yes\";\n" +
+"      :product_rgb = \"rhos_671,rhos_551,rhos_486\";\n" +
+"      :fudge = \"1.0\";\n" +
+"      :threshold = \"0\";\n" +
+"    }\n" +
+"\n" +
+"    // group attributes:\n" +
+"    :source = \"V20172742017304.L3b_MO_SNPP_CHL.nc\";\n" +
+"    :l2_flag_names = \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    :software_version = \"1.0.1-V2016.4.3\";\n" +
+"    :software_name = \"l3mapgen\";\n" +
+"  }\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :product_name = \"V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc\";\n" +
+"  :instrument = \"VIIRS\";\n" +
+"  :title = \"VIIRSN Level-3 Standard Mapped Image\";\n" +
+"  :project = \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"  :platform = \"Suomi-NPP\";\n" +
+"  :temporal_range = \"month\";\n" +
+"  :processing_version = \"2014.0.2\";\n" +
+"  :date_created = \"2017-11-18T01:49:38.000Z\";\n" +
+"  :history = \"l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param \";\n" +
+"  :l2_flag_names = \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"  :time_coverage_start = \"2017-10-01T00:18:00.000Z\";\n" +
+"  :time_coverage_end = \"2017-11-01T02:23:58.000Z\";\n" +
+"  :start_orbit_number = 30711; // int\n" +
+"  :end_orbit_number = 31151; // int\n" +
+"  :map_projection = \"Equidistant Cylindrical\";\n" +
+"  :latitude_units = \"degrees_north\";\n" +
+"  :longitude_units = \"degrees_east\";\n" +
+"  :northernmost_latitude = 90.0f; // float\n" +
+"  :southernmost_latitude = -90.0f; // float\n" +
+"  :westernmost_longitude = -180.0f; // float\n" +
+"  :easternmost_longitude = 180.0f; // float\n" +
+"  :geospatial_lat_max = 90.0f; // float\n" +
+"  :geospatial_lat_min = -90.0f; // float\n" +
+"  :geospatial_lon_max = 180.0f; // float\n" +
+"  :geospatial_lon_min = -180.0f; // float\n" +
+"  :grid_mapping_name = \"latitude_longitude\";\n" +
+"  :latitude_step = 0.041666668f; // float\n" +
+"  :longitude_step = 0.041666668f; // float\n" +
+"  :sw_point_latitude = -89.979164f; // float\n" +
+"  :sw_point_longitude = -179.97917f; // float\n" +
+"  :geospatial_lon_resolution = 4.6383123f; // float\n" +
+"  :geospatial_lat_resolution = 4.6383123f; // float\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :spatialResolution = \"4.64 km\";\n" +
+"  :number_of_lines = 4320; // int\n" +
+"  :number_of_columns = 8640; // int\n" +
+"  :measure = \"Mean\";\n" +
+"  :suggested_image_scaling_minimum = 0.01f; // float\n" +
+"  :suggested_image_scaling_maximum = 20.0f; // float\n" +
+"  :suggested_image_scaling_type = \"LOG\";\n" +
+"  :suggested_image_scaling_applied = \"No\";\n" +
+"  :_lastModified = \"2017-11-18T01:49:38.000Z\";\n" +
+"  :Conventions = \"CF-1.6\";\n" +
+"  :institution = \"NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group\";\n" +
+"  :standard_name_vocabulary = \"NetCDF Climate and Forecast (CF) Metadata Convention\";\n" +
+"  :Metadata_Conventions = \"Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"  :id = \"V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\";\n" +
+"  :license = \"http://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\";\n" +
+"  :creator_name = \"NASA/GSFC/OBPG\";\n" +
+"  :publisher_name = \"NASA/GSFC/OBPG\";\n" +
+"  :creator_email = \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"  :publisher_email = \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"  :creator_url = \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"  :publisher_url = \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"  :processing_level = \"L3 Mapped\";\n" +
+"  :cdm_data_type = \"grid\";\n" +
+"  :identifier_product_doi_authority = \"http://dx.doi.org\";\n" +
+"  :identifier_product_doi = \"http://dx.doi.org\";\n" +
+"  :keywords = \"Oceans > Ocean Chemistry > Chlorophyll; Oceans > Ocean Optics > Ocean Color\";\n" +
+"  :keywords_vocabulary = \"NASA Global Change Master Directory (GCMD) Science Keywords\";\n" +
+"  :data_bins = 16868629; // int\n" +
+"  :data_minimum = 0.0049333195f; // float\n" +
+"  :data_maximum = 99.27857f; // float\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
 
         results = edd.findDataVariableByDestinationName("palette").combinedAttributes().toString();
         expected = 
-//"    _Unsigned=true\n" +  //not longer needed internally
+//"    _Unsigned=true\n" +  //no longer needed internally
+                            //test that _FillValue wasn't added by EDV constructor. 
 "    ioos_category=Other\n" +
-"    long_name=Palette\n";
+"    long_name=Palette\n";  
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
+        //.asc
         tName = edd.makeNewFileForDapQuery(null, null, 
-            "palette[0][146:151]", //DataType=ubyte
+            dapQuery, //DataType=ubyte
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".asc"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Dataset {\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte palette[rgb = 1][eightbitcolor = 6];\n" +
+"    MAPS:\n" +
+"      Int32 rgb[rgb = 1];\n" +
+"      Int16 eightbitcolor[eightbitcolor = 6];\n" +
+"  } palette;\n" +
+"} testUnsignedGrid;\n" +
+"---------------------------------------------\n" +
+"palette.palette[1][6]\n" +
+"[0], 252, 0, 0, 255, 0, 5\n" +
+"\n" +
+"palette.rgb[1]\n" +
+"0\n" +
+"\n" +
+"palette.eightbitcolor[6]\n" +
+"146, 147, 148, 149, 150, 151\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.csv
+        tName = edd.makeNewFileForDapQuery(null, null, 
+            dapQuery, //DataType=ubyte
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "rgb,eightbitcolor,palette\n" +
 "count,count,\n" +
-"0,146,252\n" + //from -4
+"0,146,252\n" + //from -4, important test of ubyte
 "0,147,0\n" +
 "0,148,0\n" +
-"0,149,255\n" + //from -1
+"0,149,255\n" + //from -1, not a missing value.  This is important test of sourceMaxIsMV=false. 
 "0,150,0\n" +
 "0,151,5\n";
         Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.das
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z ", "[TODAY] ");
+        expected = 
+"Attributes {\n" +
+"  rgb {\n" +
+"    Int32 actual_range 0, 2;\n" +
+"    String ioos_category \"Other\";\n" +
+"    String long_name \"RGB\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  eightbitcolor {\n" +
+"    Int16 actual_range 0, 255;\n" +
+"    String ioos_category \"Other\";\n" +
+"    String long_name \"Eightbitcolor\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  palette {\n" +
+"    String _Unsigned \"true\";\n" +
+"    String ioos_category \"Other\";\n" +
+"    String long_name \"Palette\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _lastModified \"2017-11-18T01:49:38.000Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2017-11-18T01:49:38.000Z\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\n" +
+"[TODAY] (local files)\n" +
+"[TODAY] http://localhost:8080/cwexperimental/griddap/testUnsignedGrid.das\";\n" +
+"    String id \"V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\";\n" +
+"    String identifier_product_doi \"https://dx.doi.org\";\n" +
+"    String identifier_product_doi_authority \"https://dx.doi.org\";\n" +
+"    String infoUrl \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"VIIRS\";\n" +
+"    String keywords \"biology, center, chemistry, chlorophyll, color, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, eightbitcolor, flight, goddard, group, gsfc, image, imager, imager/radiometer, imaging, infrared, L3, level, level-3, mapped, nasa, national, npp, obpg, ocean, oceans, optics, orbiting, palette, partnership, polar, polar-orbiting, processing, radiometer, rgb, smi, space, standard, suite, suite/suomi-npp, suomi, viirs, viirs-n, viirsn, visible\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    String platform \"Suomi-NPP\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"2014.0.2\";\n" +
+"    String product_name \"V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_type \"group\";\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    String spatialResolution \"4.64 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
+"    String summary \"Visible and Infrared Imager/Radiometer Suite/Suomi-NPP (VIIRSN) Level-3 Standard Mapped Image\";\n" +
+"    String temporal_range \"month\";\n" +
+"    String title \"VIIRSN L3 SMI,\";\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.dds
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".dds"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Dataset {\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte palette[rgb = 1][eightbitcolor = 6];\n" +
+"    MAPS:\n" +
+"      Int32 rgb[rgb = 1];\n" +
+"      Int16 eightbitcolor[eightbitcolor = 6];\n" +
+"  } palette;\n" +
+"} testUnsignedGrid;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.esriAscii   //not available because no lat and lon
+
+        //.htmlTable
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".htmlTable"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"<table class=\"erd commonBGColor nowrap\">\n" +
+"<tr>\n" +
+"<th>rgb\n" +
+"<th>eightbitcolor\n" +
+"<th>palette\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>count\n" +
+"<th>count\n" +
+"<th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">146\n" +
+"<td class=\"R\">252\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">147\n" +
+"<td class=\"R\">0\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">148\n" +
+"<td class=\"R\">0\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">149\n" +
+"<td class=\"R\">255\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">150\n" +
+"<td class=\"R\">0\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0\n" +
+"<td class=\"R\">151\n" +
+"<td class=\"R\">5\n" +
+"</tr>\n" +
+"</table>\n";
+        po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);        
+
+        //.itx
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".itx"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = String2.replaceAll(results, '\r', '\n');
+        expected = 
+"IGOR\n" +
+"WAVES/I rgb\n" +
+"BEGIN\n" +
+"0\n" +
+"END\n" +
+"X SetScale d 0,0, \"count\", rgb\n" +
+"\n" +
+"WAVES/W eightbitcolor\n" +
+"BEGIN\n" +
+"146\n" +
+"147\n" +
+"148\n" +
+"149\n" +
+"150\n" +
+"151\n" +
+"END\n" +
+"X SetScale d 146,151, \"count\", eightbitcolor\n" +
+"\n" +
+"WAVES/B/U/N=(1,6) palette\n" +  //B/U is unsigned byte. See Table.writeIgorWave()
+"BEGIN\n" +
+"252\n" +
+"0\n" +
+"0\n" +
+"255\n" +
+"0\n" +
+"5\n" +
+"END\n" +
+"X SetScale d 0,255, \"\", palette\n" +
+"X SetScale /I y, 0,0, \"count\", palette\n" +
+"X SetScale /P x, 146,1.0, \"count\", palette\n" +
+"X Note palette, \"RowsDim:eightbitcolor;ColumnsDim:rgb\"\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.json
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".json"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"{\n" +
+"  \"table\": {\n" +
+"    \"columnNames\": [\"rgb\", \"eightbitcolor\", \"palette\"],\n" +
+"    \"columnTypes\": [\"int\", \"short\", \"ubyte\"],\n" +
+"    \"columnUnits\": [\"count\", \"count\", null],\n" +
+"    \"rows\": [\n" +
+"      [0, 146, 252],\n" + //important test of ubyte
+"      [0, 147, 0],\n" +
+"      [0, 148, 0],\n" +
+"      [0, 149, 255],\n" + //important test of ubyte sourceMaxIsMV=false
+"      [0, 150, 0],\n" +
+"      [0, 151, 5]\n" +
+"    ]\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.jsonlCSV1
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".jsonlCSV1"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"[\"rgb\", \"eightbitcolor\", \"palette\"]\n" +
+"[0, 146, 252]\n" +
+"[0, 147, 0]\n" +
+"[0, 148, 0]\n" +
+"[0, 149, 255]\n" +
+"[0, 150, 0]\n" +
+"[0, 151, 5]\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.jsonlCSV1
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".jsonlKVP"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"{\"rgb\":0, \"eightbitcolor\":146, \"palette\":252}\n" +
+"{\"rgb\":0, \"eightbitcolor\":147, \"palette\":0}\n" +
+"{\"rgb\":0, \"eightbitcolor\":148, \"palette\":0}\n" +
+"{\"rgb\":0, \"eightbitcolor\":149, \"palette\":255}\n" +
+"{\"rgb\":0, \"eightbitcolor\":150, \"palette\":0}\n" +
+"{\"rgb\":0, \"eightbitcolor\":151, \"palette\":5}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.nccsv
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".nccsv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z ", "[TODAY] ");
+        expected = 
+"*GLOBAL*,Conventions,\"CF-1.6, COARDS, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,_lastModified,2017-11-18T01:49:38.000Z\n" +
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,creator_email,data@oceancolor.gsfc.nasa.gov\n" +
+"*GLOBAL*,creator_name,NASA/GSFC/OBPG\n" +
+"*GLOBAL*,creator_type,group\n" +
+"*GLOBAL*,creator_url,https://oceandata.sci.gsfc.nasa.gov\n" +
+"*GLOBAL*,date_created,2017-11-18T01:49:38.000Z\n" +
+"*GLOBAL*,grid_mapping_name,latitude_longitude\n" +
+"*GLOBAL*,history,l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\\n[TODAY] (local files)\\n[TODAY] http://localhost:8080/cwexperimental/griddap/testUnsignedGrid.nccsv?palette[0][146:151]\n" +
+"*GLOBAL*,id,V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\n" +
+"*GLOBAL*,identifier_product_doi,https://dx.doi.org\n" +
+"*GLOBAL*,identifier_product_doi_authority,https://dx.doi.org\n" +
+"*GLOBAL*,infoUrl,https://oceandata.sci.gsfc.nasa.gov\n" +
+"*GLOBAL*,institution,NASA/GSFC OBPG\n" +
+"*GLOBAL*,instrument,VIIRS\n" +
+"*GLOBAL*,keywords,\"biology, center, chemistry, chlorophyll, color, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, eightbitcolor, flight, goddard, group, gsfc, image, imager, imager/radiometer, imaging, infrared, L3, level, level-3, mapped, nasa, national, npp, obpg, ocean, oceans, optics, orbiting, palette, partnership, polar, polar-orbiting, processing, radiometer, rgb, smi, space, standard, suite, suite/suomi-npp, suomi, viirs, viirs-n, viirsn, visible\"\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,l2_flag_names,\"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\"\n" +
+"*GLOBAL*,license,https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"*GLOBAL*,map_projection,Equidistant Cylindrical\n" +
+"*GLOBAL*,measure,Mean\n" +
+"*GLOBAL*,naming_authority,gov.nasa.gsfc.sci.oceandata\n" +
+"*GLOBAL*,platform,Suomi-NPP\n" +
+"*GLOBAL*,processing_level,L3 Mapped\n" +
+"*GLOBAL*,processing_version,\"2014.0.2\"\n" +
+"*GLOBAL*,product_name,V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc\n" +
+"*GLOBAL*,project,Ocean Biology Processing Group (NASA/GSFC/OBPG)\n" +
+"*GLOBAL*,publisher_email,data@oceancolor.gsfc.nasa.gov\n" +
+"*GLOBAL*,publisher_name,NASA/GSFC/OBPG\n" +
+"*GLOBAL*,publisher_type,group\n" +
+"*GLOBAL*,publisher_url,https://oceandata.sci.gsfc.nasa.gov\n" +
+"*GLOBAL*,sourceUrl,(local files)\n" +
+"*GLOBAL*,spatialResolution,4.64 km\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v70\n" +
+"*GLOBAL*,summary,Visible and Infrared Imager/Radiometer Suite/Suomi-NPP (VIIRSN) Level-3 Standard Mapped Image\n" +
+"*GLOBAL*,temporal_range,month\n" +
+"*GLOBAL*,title,\"VIIRSN L3 SMI,\"\n" +
+"rgb,*DATA_TYPE*,int\n" +
+"rgb,actual_range,0i,0i\n" +
+"rgb,ioos_category,Other\n" +
+"rgb,long_name,RGB\n" +
+"rgb,units,count\n" +
+"eightbitcolor,*DATA_TYPE*,short\n" +
+"eightbitcolor,actual_range,146s,151s\n" +
+"eightbitcolor,ioos_category,Other\n" +
+"eightbitcolor,long_name,Eightbitcolor\n" +
+"eightbitcolor,units,count\n" +
+"palette,*DATA_TYPE*,ubyte\n" +
+"palette,ioos_category,Other\n" +
+"palette,long_name,Palette\n" +
+"\n" +
+"*END_METADATA*\n" +
+"rgb,eightbitcolor,palette\n" +
+"0,146,252\n" +
+"0,147,0\n" +
+"0,148,0\n" +
+"0,149,255\n" +
+"0,150,0\n" +
+"0,151,5\n" +
+"*END_DATA*\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.ncml
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".ncml"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/testUnsignedGrid\">\n" +
+"  <attribute name=\"_lastModified\" value=\"2017-11-18T01:49:38.000Z\" />\n" +
+"  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
+"  <attribute name=\"Conventions\" value=\"CF-1.6, COARDS, ACDD-1.3\" />\n" +
+"  <attribute name=\"creator_email\" value=\"data@oceancolor.gsfc.nasa.gov\" />\n" +
+"  <attribute name=\"creator_name\" value=\"NASA/GSFC/OBPG\" />\n" +
+"  <attribute name=\"creator_type\" value=\"group\" />\n" +
+"  <attribute name=\"creator_url\" value=\"https://oceandata.sci.gsfc.nasa.gov\" />\n" +
+"  <attribute name=\"date_created\" value=\"2017-11-18T01:49:38.000Z\" />\n" +
+"  <attribute name=\"grid_mapping_name\" value=\"latitude_longitude\" />\n" +
+"  <attribute name=\"history\" value=\"l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\" />\n" +
+"  <attribute name=\"id\" value=\"V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\" />\n" +
+"  <attribute name=\"identifier_product_doi\" value=\"https://dx.doi.org\" />\n" +
+"  <attribute name=\"identifier_product_doi_authority\" value=\"https://dx.doi.org\" />\n" +
+"  <attribute name=\"infoUrl\" value=\"https://oceandata.sci.gsfc.nasa.gov\" />\n" +
+"  <attribute name=\"institution\" value=\"NASA/GSFC OBPG\" />\n" +
+"  <attribute name=\"instrument\" value=\"VIIRS\" />\n" +
+"  <attribute name=\"keywords\" value=\"biology, center, chemistry, chlorophyll, color, data, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll, Earth Science &gt; Oceans &gt; Ocean Optics &gt; Ocean Color, eightbitcolor, flight, goddard, group, gsfc, image, imager, imager/radiometer, imaging, infrared, L3, level, level-3, mapped, nasa, national, npp, obpg, ocean, oceans, optics, orbiting, palette, partnership, polar, polar-orbiting, processing, radiometer, rgb, smi, space, standard, suite, suite/suomi-npp, suomi, viirs, viirs-n, viirsn, visible\" />\n" +
+"  <attribute name=\"keywords_vocabulary\" value=\"GCMD Science Keywords\" />\n" +
+"  <attribute name=\"l2_flag_names\" value=\"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\" />\n" +
+"  <attribute name=\"license\" value=\"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\" />\n" +
+"  <attribute name=\"map_projection\" value=\"Equidistant Cylindrical\" />\n" +
+"  <attribute name=\"measure\" value=\"Mean\" />\n" +
+"  <attribute name=\"naming_authority\" value=\"gov.nasa.gsfc.sci.oceandata\" />\n" +
+"  <attribute name=\"platform\" value=\"Suomi-NPP\" />\n" +
+"  <attribute name=\"processing_level\" value=\"L3 Mapped\" />\n" +
+"  <attribute name=\"processing_version\" value=\"2014.0.2\" />\n" +
+"  <attribute name=\"product_name\" value=\"V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc\" />\n" +
+"  <attribute name=\"project\" value=\"Ocean Biology Processing Group (NASA/GSFC/OBPG)\" />\n" +
+"  <attribute name=\"publisher_email\" value=\"data@oceancolor.gsfc.nasa.gov\" />\n" +
+"  <attribute name=\"publisher_name\" value=\"NASA/GSFC/OBPG\" />\n" +
+"  <attribute name=\"publisher_type\" value=\"group\" />\n" +
+"  <attribute name=\"publisher_url\" value=\"https://oceandata.sci.gsfc.nasa.gov\" />\n" +
+"  <attribute name=\"sourceUrl\" value=\"(local files)\" />\n" +
+"  <attribute name=\"spatialResolution\" value=\"4.64 km\" />\n" +
+"  <attribute name=\"standard_name_vocabulary\" value=\"CF Standard Name Table v70\" />\n" +
+"  <attribute name=\"summary\" value=\"Visible and Infrared Imager/Radiometer Suite/Suomi-NPP (VIIRSN) Level-3 Standard Mapped Image\" />\n" +
+"  <attribute name=\"temporal_range\" value=\"month\" />\n" +
+"  <attribute name=\"title\" value=\"VIIRSN L3 SMI,\" />\n" +
+"  <dimension name=\"rgb\" length=\"3\" />\n" +
+"  <dimension name=\"eightbitcolor\" length=\"256\" />\n" +
+"  <variable name=\"rgb\" shape=\"rgb\" type=\"int\">\n" +
+"    <attribute name=\"actual_range\" type=\"int\" value=\"0 2\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Other\" />\n" +
+"    <attribute name=\"long_name\" value=\"RGB\" />\n" +
+"    <attribute name=\"units\" value=\"count\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"eightbitcolor\" shape=\"eightbitcolor\" type=\"short\">\n" +
+"    <attribute name=\"actual_range\" type=\"short\" value=\"0 255\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Other\" />\n" +
+"    <attribute name=\"long_name\" value=\"Eightbitcolor\" />\n" +
+"    <attribute name=\"units\" value=\"count\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"palette\" shape=\"rgb eightbitcolor\" type=\"ubyte\">\n" +
+"    <attribute name=\"ioos_category\" value=\"Other\" />\n" +
+"    <attribute name=\"long_name\" value=\"Palette\" />\n" +
+"  </variable>\n" +
+"</netcdf>\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.odvTxt -- must have lat and lon
+
+        //.tsv
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".tsv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"rgb\teightbitcolor\tpalette\n" +
+"count\tcount\t\n" +
+"0\t146\t252\n" +
+"0\t147\t0\n" +
+"0\t148\t0\n" +
+"0\t149\t255\n" +
+"0\t150\t0\n" +
+"0\t151\t5\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.xhtml
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testUnsignedGrid", ".xhtml"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"<table class=\"erd commonBGColor nowrap\">\n" +
+"<tr>\n" +
+"<th>rgb</th>\n" +
+"<th>eightbitcolor</th>\n" +
+"<th>palette</th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>count</th>\n" +
+"<th>count</th>\n" +
+"<th></th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">146</td>\n" +
+"<td class=\"R\">252</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">147</td>\n" +
+"<td class=\"R\">0</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">148</td>\n" +
+"<td class=\"R\">0</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">149</td>\n" +
+"<td class=\"R\">255</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">150</td>\n" +
+"<td class=\"R\">0</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td class=\"R\">0</td>\n" +
+"<td class=\"R\">151</td>\n" +
+"<td class=\"R\">5</td>\n" +
+"</tr>\n" +
+"</table>";
+        po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);        
 
         String2.log("\nEDDGridFromNcFiles.testUnsignedGrid passed the test.");
 

@@ -127,14 +127,15 @@ public class TableWriterAll extends TableWriter {
         //avoid gathering more data than can be processed
         //(although in some cases, perhaps more could be handled)
         long newTotalNRows = totalNRows + table.nRows();
-        EDStatic.ensureArraySizeOkay(newTotalNRows, attributeTo);
-        EDStatic.ensureMemoryAvailable(newTotalNRows * 8, attributeTo); //to process one PA
+        Math2.ensureArraySizeOkay(newTotalNRows, attributeTo);
+        Math2.ensureMemoryAvailable(newTotalNRows * 8, attributeTo); //to process one PA
 
         //do everyTime stuff
         //write the data
         for (int col = 0; col < nColumns; col++) {
             Test.ensureNotNull(columnStreams[col], "columnStreams[" + col + "] is null! nColumns=" + nColumns);
-            table.getColumn(col).writeDos(columnStreams[col]);
+            PrimitiveArray pa = table.getColumn(col);
+            pa.writeDos(columnStreams[col]);
         }
         totalNRows = newTotalNRows;
     }
@@ -187,9 +188,10 @@ public class TableWriterAll extends TableWriter {
             return cumulativeTable.getColumn(col);
 
         //get it from DOSFile
-        EDStatic.ensureArraySizeOkay(totalNRows, "TableWriterAll");
+        Math2.ensureArraySizeOkay(totalNRows, "TableWriterAll");
         PrimitiveArray pa = PrimitiveArray.factory(columnType(col), 
             (int)totalNRows, false);  //safe since checked above
+        pa.setMaxIsMV(columnMaxIsMV[col]);
         DataInputStream dis = dataInputStream(col);
         try {
             pa.readDis(dis, (int)totalNRows); //safe since checked above
@@ -205,7 +207,7 @@ public class TableWriterAll extends TableWriter {
      * @param col   0..
      */
     public PrimitiveArray columnEmptyPA(int col) {
-        return PrimitiveArray.factory(columnType(col), 1, false);  //safe since checked above
+        return PrimitiveArray.factory(columnType(col), 1, false).setMaxIsMV(columnMaxIsMV[col]);  //safe since checked above
     }
 
     /**
@@ -222,9 +224,10 @@ public class TableWriterAll extends TableWriter {
             return cumulativeTable.getColumn(col);
 
         //get it from DOSFile
-        EDStatic.ensureArraySizeOkay(totalNRows, "TableWriterAll");
+        Math2.ensureArraySizeOkay(totalNRows, "TableWriterAll");
         PrimitiveArray pa = PrimitiveArray.factory(columnType(col), 
             (int)totalNRows, false);  //safe since checked above
+        pa.setMaxIsMV(columnMaxIsMV[col]);
         DataInputStream dis = dataInputStream(col);
         try {
             pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
@@ -285,7 +288,7 @@ public class TableWriterAll extends TableWriter {
 
         //ensure memory available    too bad this is after all data is gathered
         int nColumns = nColumns();
-        EDStatic.ensureMemoryAvailable(nColumns * nRows() * table.estimatedBytesPerRow(), //nRows() is a long
+        Math2.ensureMemoryAvailable(nColumns * nRows() * table.estimatedBytesPerRow(), //nRows() is a long
             "TableWriterAll.cumulativeTable");
 
         //actually get the data

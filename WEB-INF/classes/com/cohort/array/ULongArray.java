@@ -23,7 +23,7 @@ import java.util.Set;
  * ULongArray is a thin shell over a long[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses MAX_VALUE to represent a missing value (NaN).
+ * <p>This class uses maxIsMV=true and MAX_VALUE to represent a missing value (NaN).
  */
 public class ULongArray extends PrimitiveArray {
 
@@ -51,6 +51,22 @@ public class ULongArray extends PrimitiveArray {
      * This is the Long.MAX_VALUE+1 stored as a BigInteger.
      */
     public final static BigInteger LONG_MAX_VALUE1 = (new BigInteger("" + Long.MAX_VALUE)).add(BigInteger.ONE);
+
+    /** 
+     * This is the maximum value, stored as a double.
+     */
+    public final static double MAX_VALUE_AS_DOUBLE = MAX_VALUE.doubleValue();
+
+    /** 
+     * This is the minimum value, stored as a double.
+     */
+    public final static double MIN_VALUE_AS_DOUBLE = MIN_VALUE.doubleValue();
+
+    /** 
+     * This is Integer.MAX_VALUE as a BigInteger.
+     */
+    public final static BigInteger INT_MAX_VALUE = new BigInteger("" + Integer.MAX_VALUE);
+
 
     /** This indicates if this class' type (e.g., PAType.SHORT) is an unsigned integer type. 
      * The unsigned integer type classes overwrite this.
@@ -87,14 +103,31 @@ public class ULongArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
-    public boolean isMissingValue(int index) {
+    public boolean isMaxValue(int index) {
         return getPacked(index) == PACKED_MAX_VALUE;
     }
 
     /**
-     * This packs a signed BigInteger holding an ulong as a long.
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMissingValue(int index) {
+        return maxIsMV && isMaxValue(index);
+    }
+
+    /**
+     * This packs a signed BigInteger holding a ulong as a long.
      */
     public static long pack(BigInteger bi) {
         if (bi == null ||
@@ -107,13 +140,51 @@ public class ULongArray extends PrimitiveArray {
     }
 
     /**
-     * This unpacks a ulong stored in a long as a BigInteger.
+     * This packs a signed BigInteger holding a ulong as a long.
+     * If "trouble" (null or out of range) this sets maxIsMV to true.
+     * Use this before setting a value in this ULongArraay.
      */
-    public static BigInteger unpack(long tl) {
+    public long packAndSetMaxIsMV(BigInteger bi) {
+        if (bi == null ||
+            bi.compareTo(BigInteger.ZERO) < 0) {
+            maxIsMV = true;
+            return PACKED_MAX_VALUE;
+        }
+        int com = bi.compareTo(MAX_VALUE);
+        if (com >= 0) {
+            if (com > 0)
+                maxIsMV = true;          
+            return PACKED_MAX_VALUE;
+        }
+
+        //actually pack the value
+        if (bi.compareTo(LONG_MAX_VALUE1) >= 0)
+            return bi.subtract(MAX_VALUE1).longValue();
+        return bi.longValue();  
+    }
+
+    /**
+     * This unpacks a ulong stored in a long as a BigInteger (or null if trouble/NaN).
+     */
+    public BigInteger unpack(long tl) {
+        if (tl == PACKED_MAX_VALUE)
+            return maxIsMV? null : MAX_VALUE;
         BigInteger bi = new BigInteger("" + tl);
         if (tl >= 0)
             return bi;
-        return bi.add(MAX_VALUE1);
+        return bi.add(MAX_VALUE1);  //convert packed signed long to unsigned long stored in BigInteger
+    }
+
+    /**
+     * This unpacks a ulong stored in a long as a BigInteger, as if maxIsMV=false.
+     */
+    public BigInteger unpackIgnoreMaxIsMV(long tl) {
+        if (tl == PACKED_MAX_VALUE)
+            return MAX_VALUE;
+        BigInteger bi = new BigInteger("" + tl);
+        if (tl >= 0)
+            return bi;
+        return bi.add(MAX_VALUE1);  //convert packed signed long to unsigned long stored in BigInteger
     }
 
     /**
@@ -179,7 +250,7 @@ public class ULongArray extends PrimitiveArray {
         Math2.ensureMemoryAvailable(8L * size, "ULongArray");
         array = new long[size];
         for (int i = 0; i < size; i++)
-            array[i] = pack(anArray[i]);
+            array[i] = packAndSetMaxIsMV(anArray[i]);
     }
     
     /**
@@ -276,7 +347,7 @@ public class ULongArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return pa == null? new ULongArray(new long[0]) : pa;
+            return pa == null? new ULongArray(new long[0]) : pa;  //no need to call .setMaxIsMV(maxIsMV) since size=0
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         ULongArray la = null;
@@ -295,7 +366,7 @@ public class ULongArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return la;
+        return la.setMaxIsMV(maxIsMV);
     }
 
     /**
@@ -331,7 +402,7 @@ public class ULongArray extends PrimitiveArray {
     public void add(BigInteger value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
-        array[size++] = pack(value);
+        array[size++] = packAndSetMaxIsMV(value);
     }
 
     /**
@@ -353,11 +424,14 @@ public class ULongArray extends PrimitiveArray {
      *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
-        if (size == array.length) //if we're at capacity
-            ensureCapacity(size + 1L);        
-        array[size++] = value != null && value instanceof Number?
-            pack(new BigInteger("" + ((Number)value).longValue())) :
-            PACKED_MAX_VALUE;
+        if (value != null && value instanceof Number) {
+            Number num = (Number)value;
+            if      (value instanceof Double) addDouble(num.doubleValue());  //supports NaN
+            else if (value instanceof Float)  addFloat( num.floatValue());   //supports NaN
+            else                              addLong(  num.longValue());  
+        } else {
+            addDouble(Double.NaN); //sets maxIsMV
+        }
     }
 
     /**
@@ -369,7 +443,7 @@ public class ULongArray extends PrimitiveArray {
         int arSize = ar.length; 
         ensureCapacity(size + (long)arSize);
         for (int i = 0; i < arSize; i++) 
-            array[size++] = pack(ar[i]);
+            array[size++] = packAndSetMaxIsMV(ar[i]);
     }    
 
     /**
@@ -385,7 +459,7 @@ public class ULongArray extends PrimitiveArray {
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
-        Arrays.fill(array, size, size + n, pack(value));
+        Arrays.fill(array, size, size + n, packAndSetMaxIsMV(value));
         size += n;
     }
 
@@ -405,7 +479,7 @@ public class ULongArray extends PrimitiveArray {
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
         size++;
-        array[index] = pack(value);
+        array[index] = packAndSetMaxIsMV(value);
     }
 
     /**
@@ -416,16 +490,7 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, String2.parseULong(value));   
-    }
-
-    /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? MAX_VALUE : value.getULong());
+        atInsert(index, String2.parseULongObject(value)); 
     }
 
     /**
@@ -436,7 +501,10 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null).
      */
     public void addNPAOnes(int n, PAOne value) {
-        addN(n, value == null? MAX_VALUE : value.getULong());
+        double d = value == null? Double.NaN : value.getDouble();  //with greater range
+        if (Double.isNaN(d) || d < MIN_VALUE_AS_DOUBLE || d > MAX_VALUE_AS_DOUBLE) 
+            addNDoubles(n, Double.NaN);
+        else addN(n, value.getULong()); 
     }
 
     /**
@@ -447,34 +515,20 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, String2.parseULong(value)); 
+        addN(n, String2.parseULongObject(value)); 
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the value, as a String.
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addString(String value) {
-        add(String2.parseULong(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the float value
-     */
-    public void addFloat(float value) {
-        add(Math2.roundToULong(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Math2.roundToULong(value));
+    public void addNFloats(int n, float value) {
+        if (!maxIsMV && (!Float.isFinite(value) || value < MIN_VALUE_AS_DOUBLE || value > MAX_VALUE_AS_DOUBLE)) 
+            maxIsMV = true;
+        addN(n, Math2.roundToULong(value));
     }
 
     /**
@@ -485,16 +539,9 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
+        if (!maxIsMV && (!Double.isFinite(value) || value < MIN_VALUE_AS_DOUBLE || value > MAX_VALUE_AS_DOUBLE)) 
+            maxIsMV = true;
         addN(n, Math2.roundToULong(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(value == Integer.MAX_VALUE? MAX_VALUE : new BigInteger("" + value));
     }
 
     /**
@@ -504,16 +551,12 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, value == Integer.MAX_VALUE? MAX_VALUE : new BigInteger("" + value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {  
-        add(new BigInteger("" + (value < 0 || value == Long.MAX_VALUE? MAX_VALUE : value)));
+        if (value < 0) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, new BigInteger("" + value)); //!!! assumes value=Integer.MAX_VALUE isn't maxIsMV
+        }
     }
 
     /**
@@ -523,7 +566,12 @@ public class ULongArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, new BigInteger("" + (value < 0 || value == Long.MAX_VALUE? MAX_VALUE : value)));
+        if (value < 0) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, new BigInteger("" + value)); //!!! assumes value=Integer.MAX_VALUE isn't maxIsMV
+        }
     }
 
     /**
@@ -546,12 +594,17 @@ public class ULongArray extends PrimitiveArray {
             ensureCapacity(size + nValues);            
             System.arraycopy(((ULongArray)otherPA).array, otherIndex, array, size, nValues);
             size += nValues;
+            if (otherPA.getMaxIsMV()) 
+                maxIsMV = true;
             return this;
         }
 
         //add from different type
-        for (int i = 0; i < nValues; i++)
-            add(otherPA.getULong(otherIndex++)); //does error checking
+        for (int i = 0; i < nValues; i++) {
+            if (!maxIsMV && Double.isNaN(otherPA.getDouble(otherIndex)))
+                maxIsMV = true;
+            add(otherPA.getULong(otherIndex++)); //does error checking   
+        }
         return this;
     }
 
@@ -563,7 +616,10 @@ public class ULongArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        set(index, otherPA.getULong(otherIndex));
+        double d = otherPA.getDouble(otherIndex); //has greater range and NaN
+        if (Double.isNaN(d))
+            maxIsMV = true;
+        set(index, otherPA.getULong(otherIndex)); 
     }
 
     /**
@@ -727,13 +783,15 @@ public class ULongArray extends PrimitiveArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   MAX_VALUE is converted to Double.NaN.
+     *   If maxIsMV, MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "ULongArray.toDoubleArray");
         double dar[] = new double[size];
-        for (int i = 0; i < size; i++) 
-            dar[i] = Math2.ulongToDoubleNaN(unpack(array[i]));
+        for (int i = 0; i < size; i++) {
+            BigInteger j = get(i);
+            dar[i] = j == null? Double.NaN : j.doubleValue();
+        }
         return dar;
     }
 
@@ -748,7 +806,7 @@ public class ULongArray extends PrimitiveArray {
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
             BigInteger tl = unpack(array[i]);
-            sar[i] = tl == MAX_VALUE? "" : String.valueOf(tl);
+            sar[i] = tl == null? "" : String.valueOf(tl);
         }
         return sar;
     }
@@ -757,13 +815,26 @@ public class ULongArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
-     * @return the specified element
+     * @return the specified element (or null if trouble/NaN)
      */
     public BigInteger get(int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in ULongArray.get: index (" + 
                 index + ") >= size (" + size + ").");
         return unpack(array[index]);
+    }
+
+    /**
+     * This gets a specified element.
+     *
+     * @param index 0 ... size-1
+     * @return the specified element (or MAX_VALUE)
+     */
+    public BigInteger getIgnoreMaxIsMV(int index) {
+        if (index >= size)
+            throw new IllegalArgumentException(String2.ERROR + " in ULongArray.get: index (" + 
+                index + ") >= size (" + size + ").");
+        return unpackIgnoreMaxIsMV(array[index]);
     }
 
     /**
@@ -776,7 +847,7 @@ public class ULongArray extends PrimitiveArray {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in ULongArray.set: index (" + 
                 index + ") >= size (" + size + ").");
-        array[index] = pack(value);
+        array[index] = packAndSetMaxIsMV(value);
     }
 
 
@@ -788,7 +859,8 @@ public class ULongArray extends PrimitiveArray {
      */
     public int getInt(int index) {
         BigInteger bi = get(index);
-        return bi.compareTo(new BigInteger("" + Integer.MAX_VALUE)) >= 0 || 
+        return bi == null ||
+               bi.compareTo(INT_MAX_VALUE) >= 0 || 
                bi.compareTo(BigInteger.ZERO) < 0?  
             Integer.MAX_VALUE : bi.intValue();
     }
@@ -812,11 +884,15 @@ public class ULongArray extends PrimitiveArray {
      * Set a value in the array as an int.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. Integer.MAX_VALUE is converted
-     *   to this type's missing value.
+     * @param i the value. Integer.MAX_VALUE doesn't change maxIsMV setting.
      */
     public void setInt(int index, int i) {
-        set(index, i == Integer.MAX_VALUE? MAX_VALUE : new BigInteger("" + i));
+        if (i < 0) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, new BigInteger("" + i));
+        }
     }
 
     /**
@@ -833,19 +909,22 @@ public class ULongArray extends PrimitiveArray {
      * Set a value in the array as a long.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. 
+     * @param i the value. i=MAX_VALUE doesn't change maxIsMV setting.
      */
     public void setLong(int index, long i) {
-        
-        set(index, i == Long.MAX_VALUE? MAX_VALUE : new BigInteger("" + i));
+        if (i < 0) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, new BigInteger("" + i));
+        }
     }
 
     /**
      * Return a value from the array as a ulong.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     * @return the value as a ulong (or null if trouble/NaN). 
      */
     public BigInteger getULong(int index) {
         return get(index);
@@ -870,11 +949,11 @@ public class ULongArray extends PrimitiveArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   MAX_VALUE is returned as Float.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         BigInteger tl = get(index);
-        return tl.equals(MAX_VALUE)? Float.NaN : tl.floatValue();
+        return tl == null? Float.NaN : tl.floatValue();
     }
 
     /**
@@ -885,7 +964,7 @@ public class ULongArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToULong(d).
      */
     public void setFloat(int index, float d) {
-        set(index, Math2.roundToULong(d));
+        set(index, Math2.roundToULongOrNull(d));
     }
 
     /**
@@ -895,11 +974,11 @@ public class ULongArray extends PrimitiveArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   MAX_VALUE is returned as Double.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         BigInteger tl = get(index);
-        return tl.equals(MAX_VALUE)? Double.NaN : tl.doubleValue();
+        return tl == null? Double.NaN : tl.doubleValue();
     }
 
     /**
@@ -920,7 +999,7 @@ public class ULongArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      *
      * <p>All integerTypes overwrite this.
      * 
@@ -929,7 +1008,7 @@ public class ULongArray extends PrimitiveArray {
      *   with String2.parseDouble and so may return Double.NaN.
      */
     public double getRawDouble(int index) {
-        return get(index).doubleValue();
+        return getIgnoreMaxIsMV(index).doubleValue();
     }
 
     /**
@@ -940,7 +1019,7 @@ public class ULongArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToULong(d).
      */
     public void setDouble(int index, double d) {
-        set(index, Math2.roundToULong(d));
+        set(index, Math2.roundToULongOrNull(d));
     }
 
     /**
@@ -950,11 +1029,11 @@ public class ULongArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *  or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
-        long b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
+        BigInteger bi = get(index);
+        return bi == null? "" : String.valueOf(bi);
     }
 
     /**
@@ -966,14 +1045,13 @@ public class ULongArray extends PrimitiveArray {
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
     public String getJsonString(int index) {
-        long b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
+        return "" + get(index);
     }
 
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
      * <p>All integerTypes overwrite this.
@@ -982,7 +1060,7 @@ public class ULongArray extends PrimitiveArray {
      * @return the value as a String. 
      */
     public String getRawString(int index) {
-        return get(index).toString();
+        return getIgnoreMaxIsMV(index).toString();
     }
 
     /**
@@ -993,7 +1071,7 @@ public class ULongArray extends PrimitiveArray {
      *   with String2.parseBigInteger.
      */
     public void setString(int index, String s) {
-        set(index, String2.parseULong(s));
+        set(index, String2.parseULongObject(s));
     }
 
     /**
@@ -1032,7 +1110,7 @@ public class ULongArray extends PrimitiveArray {
     public int indexOf(String lookFor, int startIndex) {
         if (startIndex >= size)
             return -1;
-        return indexOf(String2.parseULong(lookFor), startIndex);
+        return indexOf(String2.parseULongObject(lookFor), startIndex);
     }
 
     /**
@@ -1061,7 +1139,7 @@ public class ULongArray extends PrimitiveArray {
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
-        return lastIndexOf(String2.parseULong(lookFor), startIndex);
+        return lastIndexOf(String2.parseULongObject(lookFor), startIndex);
     }
 
     /**
@@ -1079,15 +1157,7 @@ public class ULongArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof ULongArray)) //handles o==null
-            return false;
-        ULongArray other = (ULongArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -1096,20 +1166,23 @@ public class ULongArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof ULongArray))
             return "The two objects aren't equal: this object is a ULongArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         ULongArray other = (ULongArray)o;
         if (other.size() != size)
             return "The two ULongArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return "The two ULongArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
-                                                      "; other[" + i + "]=" + unpack(other.array[i]) + ".";
+            if (array[i] != other.array[i] || (array[i] == PACKED_MAX_VALUE && maxIsMV != other.maxIsMV)) //handles mv
+                return "The two ULongArrays aren't equal: this[" + i + "]=" + get(i) + 
+                                                      "; other[" + i + "]=" + other.get(i) + ".";
+        //if (maxIsMV != other.maxIsMV)
+        //     return "The two ByteArrays aren't equal: this.maxIsMV=" + maxIsMV + 
+        //                                          "; other.maxIsMV=" + other.maxIsMV + ".";
         return "";
     }
 
@@ -1125,7 +1198,7 @@ public class ULongArray extends PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(unpack(array[i]));
+            sb.append(unpackIgnoreMaxIsMV(array[i]));
         }
         return sb.toString();
     }
@@ -1141,7 +1214,7 @@ public class ULongArray extends PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(",");
-            sb.append(unpack(array[i]) + "uL"); 
+            sb.append(unpackIgnoreMaxIsMV(array[i]) + "uL"); 
         }
         return sb.toString();
     }
@@ -1173,7 +1246,11 @@ public class ULongArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return getULong(index1).compareTo(otherPA.getULong(index2));
+        if (otherPA.elementType() == PAType.ULONG) 
+            return getIgnoreMaxIsMV(index1).compareTo(((ULongArray)otherPA).getIgnoreMaxIsMV(index2));
+
+        //this is approximate (long, ulong, float, double)
+        return Double.compare(getDouble(index1), otherPA.getDouble(index2));  
     }
 
     /**
@@ -1308,12 +1385,14 @@ public class ULongArray extends PrimitiveArray {
         int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof ULongArray) {
+            if (pa.getMaxIsMV())
+                setMaxIsMV(true);
             System.arraycopy(((ULongArray)pa).array, 0, array, size, otherSize);
+            size += otherSize;
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pack(pa.getULong(i)); //this converts mv's
+                addString(pa.getString(i)); //this converts mv's
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1330,13 +1409,16 @@ public class ULongArray extends PrimitiveArray {
         int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof ULongArray) {
-            System.arraycopy(((ULongArray)pa).array, 0, array, size, otherSize);
+            ULongArray ulpa = (ULongArray)pa;
+            System.arraycopy(ulpa.array, 0, array, size, otherSize);
+            if (pa.getMaxIsMV() && ulpa.indexOf(MAX_VALUE) >= 0)  
+                setMaxIsMV(true);
         } else if (pa instanceof StringArray) {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pack(pa.getULong(i)); //just parses the string
+                array[size + i] = packAndSetMaxIsMV(pa.getULong(i)); //just parses the string
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pack(Math2.roundToULong(pa.getRawDouble(i))); //this DOESN'T convert mv's
+                array[size + i] = packAndSetMaxIsMV(Math2.roundToULong(pa.getRawDouble(i))); //this DOESN'T convert smaller mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1358,12 +1440,12 @@ public class ULongArray extends PrimitiveArray {
 
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
-        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
-        BigInteger lastValue = unpack(array[0]); //since lastValue often equals currentValue, cache it
+        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));  //HashMap supports null keys
+        BigInteger lastValue = unpackIgnoreMaxIsMV(array[0]); //since lastValue often equals currentValue, cache it
         hashMap.put(lastValue, dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            BigInteger currentValue = unpack(array[i]);
+            BigInteger currentValue = unpackIgnoreMaxIsMV(array[i]);
             if (currentValue != lastValue) {
                 if (currentValue.compareTo(lastValue) < 0) 
                     alreadySorted = false;
@@ -1405,14 +1487,14 @@ public class ULongArray extends PrimitiveArray {
 
         //convert original values to ranks
         int ranks[] = new int[size];
-        lastValue = unpack(array[0]);
+        lastValue = unpackIgnoreMaxIsMV(array[0]);
         ranks[0] = ((Integer)hashMap.get(lastValue)).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
-            if (get(i).compareTo(lastValue) == 0) {
+            if (unpackIgnoreMaxIsMV(array[i]).compareTo(lastValue) == 0) {
                 ranks[i] = lastRank;
             } else {
-                lastValue = unpack(array[i]);
+                lastValue = unpackIgnoreMaxIsMV(array[i]);
                 ranks[i] = ((Integer)hashMap.get(lastValue)).intValue();
                 lastRank = ranks[i];
             }
@@ -1433,8 +1515,9 @@ public class ULongArray extends PrimitiveArray {
      * @return the number of values switched
      */
     public int switchFromTo(String tFrom, String tTo) {
-        long packedFrom = pack(String2.parseULong(tFrom));
-        long packedTo   = pack(String2.parseULong(tTo));
+        long packedFrom = pack(String2.parseULongObject(tFrom));
+        BigInteger bi =        String2.parseULongObject(tTo);
+        long packedTo   = pack(bi);
         if (packedFrom == packedTo)
             return 0;
         int count = 0;
@@ -1444,6 +1527,8 @@ public class ULongArray extends PrimitiveArray {
                 count++;
             }
         }
+        if (count > 0 && bi == null)
+            maxIsMV = true;
         return count;
     }
 
@@ -1474,11 +1559,12 @@ public class ULongArray extends PrimitiveArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        BigInteger tmin = MAX_VALUE.subtract(BigInteger.ONE);
+        BigInteger tmin = MAX_VALUE;
         BigInteger tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            if (array[i] != PACKED_MAX_VALUE) {
-                BigInteger v = unpack(array[i]);
+            BigInteger v = get(i);
+            if (maxIsMV && v == null) {
+            } else {
                 n++;
                 if (v.compareTo(tmin) <= 0) {tmini = i; tmin = v; }
                 if (v.compareTo(tmax) >= 0) {tmaxi = i; tmax = v; }
@@ -1498,7 +1584,7 @@ public class ULongArray extends PrimitiveArray {
      */
     public void changeSignedToFromUnsigned() {
         for (int i = 0; i < size; i++) {
-            BigInteger i2 = get(i);
+            BigInteger i2 = getIgnoreMaxIsMV(i);
             set(i, i2.compareTo(BigInteger.ZERO) < 0? 
                 i2.add(MAX_VALUE).add(BigInteger.ONE) : 
                 i2.subtract(MAX_VALUE).subtract(BigInteger.ONE)); //order of ops is important
@@ -1513,6 +1599,7 @@ public class ULongArray extends PrimitiveArray {
     public static void basicTest() throws Throwable{
         String2.log("*** ULongArray.basicTest");
 /* for releases, this line should have open/close comment */
+        ULongArray anArray;
 
         Test.ensureEqual(pack(new BigInteger("" + (               0L  ))),                                       0, "");
         Test.ensureEqual(pack(new BigInteger("" + (Long.MAX_VALUE     ))),                          Long.MAX_VALUE, "");
@@ -1520,13 +1607,16 @@ public class ULongArray extends PrimitiveArray {
         Test.ensureEqual(pack(new BigInteger("" + (Long.MAX_VALUE)).multiply(new BigInteger("2"))),             -2, "");
         Test.ensureEqual(pack(new BigInteger("" + (Long.MAX_VALUE)).multiply(new BigInteger("2")).add(BigInteger.ONE)), -1, "");
 
-        Test.ensureEqual(unpack(               0), new BigInteger("" + (                 0L)), "");
-        Test.ensureEqual(unpack(Long.MAX_VALUE  ), new BigInteger("" + (Long.MAX_VALUE     )), "");
-        Test.ensureEqual(unpack(Long.MIN_VALUE  ), LONG_MAX_VALUE1                           , "");
-        Test.ensureEqual(unpack(              -2), MAX_VALUE.subtract(BigInteger.ONE)        , "");
-        Test.ensureEqual(unpack(              -1), MAX_VALUE                                 , "");
+        anArray = ULongArray.fromCSV("0");                          Test.ensureEqual(anArray.get(0), new BigInteger("0"                ),   "");
+        anArray = ULongArray.fromCSV("" + Long.MAX_VALUE);          Test.ensureEqual(anArray.get(0), new BigInteger("" + Long.MAX_VALUE),   "");
+        anArray.add(new BigInteger("1"));                           Test.ensureEqual(anArray.get(0), new BigInteger("9223372036854775807"), "");
+        anArray = ULongArray.fromCSV("" + anArray.MAXEST_VALUE());  Test.ensureEqual(anArray.get(0), anArray.MAXEST_VALUE(),                "");
+        anArray = ULongArray.fromCSV("" + MAX_VALUE);               Test.ensureEqual(anArray.get(0), MAX_VALUE,                             "");
+        anArray = ULongArray.fromCSV("-1");                         Test.ensureEqual(anArray.get(0), null,                                  "");
+        anArray = ULongArray.fromCSV("1e30");                       Test.ensureEqual(anArray.get(0), null,                                  "");
+        anArray = ULongArray.fromCSV("NaN");                        Test.ensureEqual(anArray.get(0), null,                                  "");
 
-        ULongArray anArray = new ULongArray(new long[]{-9223372036854775808L,              -1,     0, 1, 9223372036854775807L}); //packed values
+        anArray = new ULongArray(new long[]{-9223372036854775808L,              -1,     0, 1, 9223372036854775807L}); //packed values
         Test.ensureEqual(anArray.toString(),           "9223372036854775808, 18446744073709551615, 0, 1, 9223372036854775807", "");
         anArray = ULongArray.fromCSV(             " 0,  1,9223372036854775807, 18446744073709551615, -1, 18446744073709551616");
         Test.ensureEqual(anArray.toString(),       "0, 1, 9223372036854775807, 18446744073709551615, 18446744073709551615, 18446744073709551615", "");
@@ -1537,7 +1627,7 @@ public class ULongArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isIntegerType(), true, "");
         Test.ensureEqual(anArray.missingValue().getRawDouble(), MAX_VALUE.doubleValue(), "");  //loss of precision
         anArray.addString("");
-        Test.ensureEqual(anArray.get(0),               MAX_VALUE, "");
+        Test.ensureEqual(anArray.get(0),               null, "");
         Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
         Test.ensureEqual(anArray.getRawDouble(0),      MAX_VALUE.doubleValue(), ""); //loss of precision
         Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
@@ -1547,11 +1637,6 @@ public class ULongArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
         Test.ensureEqual(anArray.getString(0), "", "");
 
-        anArray.set(0, unpack(   0));           Test.ensureEqual(anArray.get(0),                      0, "");
-        anArray.set(0, unpack(Long.MAX_VALUE)); Test.ensureEqual(anArray.get(0), unpack(Long.MAX_VALUE), "");
-        anArray.set(0, unpack(Long.MIN_VALUE)); Test.ensureEqual(anArray.get(0), unpack(Long.MIN_VALUE), "");
-        anArray.set(0, unpack( -2));            Test.ensureEqual(anArray.get(0), unpack(-2), "");
-        anArray.set(0, unpack( -1));            Test.ensureEqual(anArray.get(0), MAX_VALUE, "");
         anArray.clear();
 
         //make from packed values
@@ -1642,7 +1727,7 @@ public class ULongArray extends PrimitiveArray {
         anArray.setFloat( 0, Float.NaN);     Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
         anArray.setFloat( 0, -1e33f);        Test.ensureEqual(anArray.getFloat(0),  Float.NaN,  ""); 
         anArray.setFloat( 0, 3.3f);          Test.ensureEqual(anArray.getFloat(0),  3,          ""); 
-        anArray.setULong(0, MAX_VALUE);      Test.ensureEqual(anArray.getULong(0),  MAX_VALUE, ""); 
+        anArray.setULong(0, MAX_VALUE);      Test.ensureEqual(anArray.getULong(0),  null,       ""); 
         anArray.setULong(0, new BigInteger("9123456789"));
                                              Test.ensureEqual(anArray.getULong(0),  new BigInteger("9123456789"), ""); 
         anArray.setULong(0, new BigInteger("4"));
@@ -1741,6 +1826,8 @@ public class ULongArray extends PrimitiveArray {
         //test equals
         ULongArray anArray2 = new ULongArray();
         anArray2.add(BigInteger.ZERO); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a ULongArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a ULongArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1863,6 +1950,8 @@ public class ULongArray extends PrimitiveArray {
         anArray = new ULongArray(new long[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
         anArray.set(2, MAX_VALUE);
+        Test.ensureEqual(anArray.isAscending(), "", "");
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isAscending(), 
             "ULongArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, new BigInteger("9"));
@@ -1873,6 +1962,7 @@ public class ULongArray extends PrimitiveArray {
         anArray = new ULongArray(new long[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
         anArray.set(2, MAX_VALUE);
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isDescending(), 
             "ULongArray isn't sorted in descending order: [1]=10 < [2]=18446744073709551615.", "");
         anArray.set(1, new BigInteger("35"));
@@ -1914,11 +2004,15 @@ public class ULongArray extends PrimitiveArray {
 
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new ULongArray(new long[] {               })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new ULongArray(new long[] {1, 2           })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new ULongArray(new long[] {0              })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new ULongArray(new long[] {Long.MAX_VALUE  })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new ULongArray(new BigInteger[] {MAX_VALUE})).tryToFindNumericMissingValue(), 1.8446744073709552E19, ""); //trouble: loss of precision 
+        Test.ensureEqual((new ULongArray(new long[] {               })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new ULongArray(new long[] {1, 2           })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new ULongArray(new long[] {0              })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new ULongArray(new long[] {Long.MAX_VALUE })).tryToFindNumericMissingValue(), null, "");
+        anArray = new ULongArray(new BigInteger[] {MAX_VALUE});
+        Test.ensureEqual(anArray.getMaxIsMV(), false, "");
+        Test.ensureEqual(anArray                                       .tryToFindNumericMissingValue(), "18446744073709551615", ""); 
+        anArray.setMaxIsMV(true);
+        Test.ensureEqual(anArray                                       .tryToFindNumericMissingValue(), "18446744073709551615", ""); 
         Test.ensureEqual((new ULongArray(new long[] {1, 99          })).tryToFindNumericMissingValue(),   99, "");
 
         /* */

@@ -2073,7 +2073,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
 <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>)
 currently recommend
   <a rel="bookmark" 
-  href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD version 1.3</a>,
+  href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3">ACDD version 1.3</a>,
   which was ratified in early 2015 
   and which is referred to as "ACDD-1.3" in the global Conventions attribute.
   Prior to ERDDAP version 1.62 (released in June 2015),
@@ -2340,7 +2340,7 @@ currently recommend
       <li><a rel="help" href="#EDDTableFromJsonlCSVFiles">EDDTableFromJsonlCSVFiles</a> 
         aggregates data from 
         <a rel="help"
-          href="http://jsonlines.org/examples/"
+          href="https://jsonlines.org/examples/"
           >JSON Lines CSV files<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>.
@@ -5812,7 +5812,7 @@ handles data from one relational database table or
     <br>For Oracle, use
     <br><kbd>&lt;connectionProperty name="defaultRowPrefetch"&gt;10000&lt;/connectionProperty&gt;</kbd>
     <br>For PostgreSQL, use
-    <br><kbd>&lt;connectionProperty name="defaultFetchSize"&gt;10000&lt;/connectionProperty&gt;</kbd>
+    <br><kbd>&lt;connectionProperty name="defaultRowFetchSize"&gt;10000&lt;/connectionProperty&gt;</kbd>
     <br>but feel free to change the number.  Setting the number too big will
     <br>cause ERDDAP to use lots of memory and be more likely to run out of memory.
 
@@ -6448,7 +6448,7 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
   <li><a rel="help" href="#EDDTableFromJsonlCSVFiles">EDDTableFromJsonlCSVFiles</a> 
         aggregates data from 
         <a rel="help"
-          href="http://jsonlines.org/examples/"
+          href="https://jsonlines.org/examples/"
           >JSON Lines CSV files<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>.
@@ -8188,7 +8188,7 @@ which should be a reliable indication of success.
 simply appends the information to the relevant file in a set of log files, 
 each of which is a table stored in a 
 <a rel="help"
-        href="http://jsonlines.org/examples/"
+        href="https://jsonlines.org/examples/"
         >JSON Lines CSV file<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>. 
@@ -8655,7 +8655,7 @@ Thus, EDDTableFromHttpGet supports all of the fundamental commands for working w
       Much of this is made possible by using a log file approach to storing the 
       data and by using a very simple file type, 
       <a rel="help"
-        href="http://jsonlines.org/examples/"
+        href="https://jsonlines.org/examples/"
         >JSON Lines CSV files<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>,
@@ -8733,7 +8733,7 @@ network.]
 >"Why JSON Lines CSV files?!"</a>
 <br>EDDTableFromHttpGet uses 
 <a rel="help"
-        href="http://jsonlines.org/examples/"
+        href="https://jsonlines.org/examples/"
         >JSON Lines CSV files<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>. 
@@ -9015,7 +9015,7 @@ on how this class works and how to use this class.
 <p><a class="selfLink" id="EDDTableFromJsonlCSVFiles" href="#EDDTableFromJsonlCSVFiles" rel="bookmark"><strong>EDDTableFromJsonlCSVFiles</strong></a> 
   aggregates data from 
   <a rel="help"
-        href="http://jsonlines.org/examples/"
+        href="https://jsonlines.org/examples/"
         >JSON Lines CSV files<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -11838,7 +11838,7 @@ while processing each request.
        improving your datasets' metadata (which is a good thing to do anyway).</strong>
        Most of the dataset metadata attributes which are used to generate the ISO 19115 
        and FGDC metadata are from the 
-       <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD metadata standard<img 
+       <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3">ACDD metadata standard<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         and are so noted below. 
@@ -11875,7 +11875,7 @@ while processing each request.
       <li><a class="selfLink" id="acknowledgement" href="#acknowledgement" rel="bookmark"><strong>acknowledgement</strong></a> and 
           <a class="selfLink" id="acknowledgment"  href="#acknowledgment"  rel="bookmark"><strong>acknowledgment</strong></a>
           (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         metadata standard) 
@@ -11910,7 +11910,7 @@ while processing each request.
 
       <li><a class="selfLink" id="cdm_data_type" href="#cdm_data_type" rel="bookmark"><strong>cdm_data_type</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12217,7 +12217,7 @@ while processing each request.
 
       <li><a class="selfLink" id="contributor_name" href="#contributor_name" rel="bookmark"><strong>contributor_name</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12233,7 +12233,7 @@ while processing each request.
 
       <li><a class="selfLink" id="contributor_role" href="#contributor_role" rel="bookmark"><strong>contributor_role</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12279,7 +12279,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         The current (starting in 2015) 1.3 version of ACDD is identified as 
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD-1.3<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -12309,7 +12309,7 @@ while processing each request.
 
       <li><a class="selfLink" id="creator_name" href="#creator_name" rel="bookmark"><strong>creator_name</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12329,7 +12329,7 @@ while processing each request.
 
       <li><a class="selfLink" id="creator_email" href="#creator_email" rel="bookmark"><strong>creator_email</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12341,7 +12341,7 @@ while processing each request.
 
       <li><a class="selfLink" id="creator_url" href="#creator_url" rel="bookmark"><strong>creator_url</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12356,7 +12356,7 @@ while processing each request.
         
       <li><a class="selfLink" id="date_created" href="#date_created" rel="bookmark"><strong>date_created</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12371,7 +12371,7 @@ while processing each request.
 
       <li><a class="selfLink" id="date_modified" href="#date_modified" rel="bookmark"><strong>date_modified</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12383,7 +12383,7 @@ while processing each request.
         <br>&nbsp;       
 
       <li><a class="selfLink" id="date_issued" href="#date_issued" rel="bookmark"><strong>date_issued</strong></a> (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12441,7 +12441,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         and
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12528,7 +12528,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         and
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12560,7 +12560,7 @@ while processing each request.
 
       <li><a class="selfLink" id="keywords" href="#keywords" rel="bookmark"><strong>keywords</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12594,7 +12594,7 @@ while processing each request.
 
       <li><a class="selfLink" id="keywords_vocabulary" href="#keywords_vocabulary" rel="bookmark"><strong>keywords_vocabulary</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12610,7 +12610,7 @@ while processing each request.
 
       <li><a class="selfLink" id="license" href="#license" rel="bookmark"><strong>license</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12650,7 +12650,7 @@ while processing each request.
 
       <li><a class="selfLink" id="processing_level" href="#processing_level" rel="bookmark"><strong>processing_level</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12669,7 +12669,7 @@ while processing each request.
 
       <li><a class="selfLink" id="project" href="#project" rel="bookmark"><strong>project</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12685,7 +12685,7 @@ while processing each request.
 
       <li><a class="selfLink" id="publisher_name" href="#publisher_name" rel="bookmark"><strong>publisher_name</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12703,7 +12703,7 @@ while processing each request.
 
       <li><a class="selfLink" id="publisher_email" href="#publisher_email" rel="bookmark"><strong>publisher_email</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12717,7 +12717,7 @@ while processing each request.
 
       <li><a class="selfLink" id="publisher_url" href="#publisher_url" rel="bookmark"><strong>publisher_url</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12751,7 +12751,7 @@ while processing each request.
 
       <li><a class="selfLink" id="standard_name_vocabulary" href="#standard_name_vocabulary" rel="bookmark"><strong>standard_name_vocabulary</strong></a> 
         (from the
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12784,8 +12784,24 @@ while processing each request.
           various subsets of the data.
         <ul>
         <li>Each time a dataset is loaded, ERDDAP
-          loads and caches all of the distinct() subsetVariable data.
-          Then, all user requests for distinct() subsetVariable data will be very fast.
+          loads and stores on disk a table with all of the distinct() combinations
+          of the subsetVariable's variable's values.
+          ERDDAP can read that subsetVariables table and process it very quickly (especially
+          compared to reading lots of data files or getting data from 
+          a database or other external service).
+        <li>That allows ERDDAP to do 3 things:
+          <ol>
+          <li>It allows ERDDAP to put a list of possible values in a dropdown list on the
+            Data Access Form, Make A Graph web page, and .subset webpages.
+          <li>It allows ERDDAP to offer a .subset webpage for that dataset. 
+            That page is interesting because it makes it easy to find valid combinations
+            of the values of those variables, which for some datasets and some variables 
+            is very, very hard (almost impossible).
+            Then, all user requests for distinct() subsetVariable data will be very fast.
+          <li>If there is a user request that only refers to a subset of those variables, 
+            ERDDAP can quickly read the subsetVariables table, and respond to the request. 
+            That can save a ton of time and effort for ERDDAP.
+          </ol>
         <li>The order of the destinationNames you specify determines the sort order on the 
           <i>datasetID</i>.subset web page,
           so you will usually specify the most important variables first, 
@@ -12881,12 +12897,16 @@ while processing each request.
             .csv files MUST have column names on the first row and data on subsequent rows.
           </ul>
        <li>For huge datasets or when &lt;subsetVariables&gt; is misconfigured,
-        the table of combinations of values can be large enough to cause OutOfMemoryErrors.
+        the table of combinations of values can be large enough to cause Too Much Data or OutOfMemory errors.
         The solution is to remove variables from the list of &lt;subsetVariables&gt;
         for which there are a large number of values, or remove variables 
         as needed until the size of that table is reasonable.
         Regardless of the error, the parts of ERDDAP that use the subsetVariables system don't work well
-        (e.g., web pages load very slowly) when there are too many rows in that table.
+        (e.g., web pages load very slowly) when there are too many rows (e.g., more than a million)
+        in that table.
+       <li>subsetVariables has nothing to do with specifying which variables users 
+         can use in constraints, i.e., how users can request subsets of the dataset.
+         ERDDAP always allows constraints to refer to any of the variables.
         <br>&nbsp;
 
         </ul>
@@ -12899,7 +12919,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         and 
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -12995,7 +13015,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
         and
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -14162,6 +14182,12 @@ while processing each request.
           "Search for Datasets by Category" on the home page.
           <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000"
           >Try using ioos_category to search for datasets of interest.</a>
+        <li>There was 
+        <a rel="bookmark" 
+href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
+>a discussion about ERDDAP and ioos_category in the ERDDAP Google Group.<img 
+  src="../images/external.png" alt=" (external link)" 
+  title="This is a link to an external website."/></a>
         </ul>
 
         <p>You may be tempted to set <kbd>&lt;variablesMustHaveIoosCategory&gt;</kbd> 
@@ -14222,7 +14248,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
         and
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -14296,6 +14322,57 @@ while processing each request.
           <br>For other output data formats (notably text-like formats like 
             .csv and .htmlTable), 
             ERDDAP will replace these special numbers with NaN or "".
+        <li><a class="selfLink" id="inherentMissingValues" href="#inherentMissingValues" rel="bookmark">Some</a>
+           data types have inherent missing value markers
+           that don't need to be explicitly identified with missing_value or
+           _FillValue attributes: float and double variables have NaN (Not a Number), 
+           String values use the empty string, and char values have character
+           \uffff (character #65535, which is Unicode's value for Not a Character).
+           Integer data types do not have inherent missing value markers.
+        <li>If an integer variable has a missing value (for example, an empty 
+            position in a .csv file), ERDDAP will interpret the value as 
+            the defined missing_value or _FillValue for that variable.
+            If none is defined, ERDDAP will interpret the value as the 
+            default missing value for that data type, which is always
+            the maximum value which can be held by that data type: 
+            127 for byte variables, 32767 for short, 2147483647 for int, 9223372036854775807 for long, 
+            255 for ubyte, 65535 for ushort, 4294967295 for uint, and 18446744073709551615 for ulong.
+        <li><a class="selfLink" id="addFillValueAttributes" href="#addFillValueAttributes" rel="bookmark">ADD _FillValue ATTRIBUTES?</a>                  
+            <br>Each time ERDDAP loads a dataset, it checks if the variables 
+            with integer source data types have a defined missing_value or
+            _FillValue attribute. 
+            If a variable doesn't, then ERDDAP prints a message to the log file
+            (starting with "Add _FillValue Attribute?")
+            recommending that the ERDDAP administrator add a _FillValue
+            attribute for this variable in datasets.xml. 
+            It is very useful for every variable to have a _FillValue or missing_value
+            because missing values are always possible, e.g., 
+            if a given file in a dataset doesn't have a given variable,
+            ERDDAP needs to be able to present that variable as having 
+            all missing values for that variable.
+            If you decide a variable should not have a _FillValue attribute, you can add
+            <br><kbd>&lt;att names="_FillValue"&gt;null&lt;/att&gt;</kbd>
+            instead, which will suppress the message for that datasetID+variable
+            combination in the future. 
+            <p>Each time ERDDAP starts up, it collects all of those recommendations
+            into a message which is written to the log file
+            (starting with "ADD _FillValue ATTRIBUTES?"),
+            emailed to the ERDDAP administrator,
+            and written to a CSV data file in the [bigParentDirectory]/logs/ directory.
+            If you wish to, 
+            you can use the GenerateDatasetsXml program (and the <kbd>AddFillValueAttributes</kbd> option)
+            to apply all the suggestions in the CSV file to the datasets.xml file.
+            For any of the datasetID/variable combinations in that file, 
+            if you decide there is no need to add the attributed, you can
+            change the attribute to <kbd>&lt;att names="_FillValue"&gt;null&lt;/att&gt;</kbd>
+            to suppress the recommendation for that datasetID+variable
+            combination in the future.
+            <p>This is important! 
+            <br>As Bob has often said: it would be bad (and embarassing)
+            if some of the evidence of global warming was caused by 
+            unidentified missing values in the data (e.g., temperatures values 
+            of 99 or 127 degree_C that should have been marked as missing values and thus
+            skewed the mean and/or median statistics higher).
         <li><a class="selfLink" id="consistentMissingValues" href="#consistentMissingValues" rel="bookmark"
           >The _FillValue and missing_value values</a>
           for a given variable in different source files must be consistent;
@@ -14527,7 +14604,7 @@ while processing each request.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
          and
-        <a rel="help" href="https://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
+        <a rel="help" href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3"
         >ACDD<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 

@@ -446,7 +446,7 @@ clear sst2
 
         int nDimensions = ndIndex.nDimensions();
         int nElements = (int)ndIndex.size(); //safe since data is in pa, nElements must be an int
-        int elementSize = type == PAType.STRING? 2 : PrimitiveArray.elementSize(type);
+        int elementSize = type == PAType.STRING? 2 : PAType.elementSize(type);
         long nDataBytes = elementSize * (long)nElements;
         long nBytes = 16 + //array flags nBytes       see pg 1-20
             Math2.hiDiv(8 + nDimensions * 4, 8) * 8L + //dimensions nBytes
@@ -499,7 +499,7 @@ clear sst2
 
         int shape[] = ndIndex.shape();
         int nDimensions = shape.length;
-        int elementSize = isStringArray? 2 : PrimitiveArray.elementSize(paElementType);
+        int elementSize = isStringArray? 2 : PAType.elementSize(paElementType);
         int nElements = (int)ndIndex.size(); //safe since data is in pa, nElements must be an int
         int arrayType, dataType;
         if      (paElementType == PAType.DOUBLE) {arrayType = mxDOUBLE_CLASS; dataType = miDOUBLE; }

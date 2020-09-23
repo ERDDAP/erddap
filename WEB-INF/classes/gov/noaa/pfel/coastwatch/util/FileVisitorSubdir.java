@@ -354,8 +354,10 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         verbose = true;
         StringArray alps;
         long time;
+        try {
 
-        alps = oneStep("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
+        alps = oneStep("https://www.fisheries.noaa.gov/inportserve/waf/", //after 2020-08-03
+            //"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/", //pre 2020-08-03
             ".*/NMFS/(|SWFSC/|NWFSC/)(|inport-xml/)(|xml/)"); //tricky!
         String results = alps.toNewlineString();
         String expected = 
@@ -368,7 +370,9 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** FileVisitorSubdir.testWAF finished.");
-
+        } catch (Exception e) {
+            Test.knownProblem("2020-08-03 New 'directory' in new InPort system isn't a directory but a web page with other info.", e);
+        }
     }
 
     /**

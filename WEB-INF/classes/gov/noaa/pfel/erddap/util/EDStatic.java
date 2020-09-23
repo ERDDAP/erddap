@@ -236,6 +236,8 @@ public static boolean developmentMode = false;
     public static int taskThreadFailedDistributionTotal[]    = new int[String2.DistributionSize];
     public static int taskThreadSucceededDistribution24[]    = new int[String2.DistributionSize];
     public static int taskThreadSucceededDistributionTotal[] = new int[String2.DistributionSize];
+    public static int dangerousMemoryFailures = 0; //since last Major LoadDatasets
+    public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
 
     public static String datasetsThatFailedToLoad = "";
     public static String errorsDuringMajorReload = "";
@@ -272,7 +274,6 @@ public static boolean developmentMode = false;
     public static int nTableThreads                  = DEFAULT_nTableThreads; //will be a valid number 1+
     public static String convertInterpolateRequestCSVExample = null;         //may be null or ""
     public static String convertInterpolateDatasetIDVariableList[] = new String[0]; //may be [0]
-
 
     //things that were in setup.xml (discouraged) and are now in datasets.xml (v2.00+)
     public final static int    DEFAULT_cacheMinutes            = 60;
@@ -3411,14 +3412,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static String htmlTooltipImageLowEDV(String loggedInAs, PAType destinationDataPAType, 
         String destinationName, Attributes attributes) throws Throwable {
 
-        String destType = 
-            //long and char aren't handled by getAtomicType. I don't think ever used.
-            destinationDataPAType == PAType.LONG? "long" :   
-            destinationDataPAType == PAType.CHAR? "char" :  //???   
-            OpendapHelper.getAtomicType(destinationDataPAType);
-
         StringBuilder sb = OpendapHelper.dasToStringBuilder(
-            destType + " " + destinationName, attributes, false); //false, do encoding below
+            OpendapHelper.getAtomicType(false, destinationDataPAType) + " " + destinationName,   //strictDapMode
+            destinationDataPAType,
+            attributes, false, false); //htmlEncoding, strictDapMode
         //String2.log("htmlTooltipImage sb=" + sb.toString());
         return htmlTooltipImage(loggedInAs, 
             "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(sb.toString()) +
@@ -3579,92 +3576,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
 
     /**
-     * This throws an exception if the requested nBytes are unlikely to be
-     * available.
-     * This isn't perfect, but is better than nothing. 
-     * Future: locks? synchronization? ...?
-     *
-     * <p>This is almost identical to Math2.ensureMemoryAvailable, but adds tallying.
-     *
-     * @param nBytes  size of data structure that caller plans to create
-     * @param attributeTo for the Tally system, this is the string (datasetID?) 
-     *   to which this not-enough-memory issue should be attributed.
-     * @throws RuntimeException if the requested nBytes are unlikely to be available.
-     */
-    public static void ensureMemoryAvailable(long nBytes, String attributeTo) {
-
-        //if it is a small request, don't take the time/effort to check 
-        if (nBytes < Math2.ensureMemoryAvailableTrigger) 
-            return;
-        String attributeToParen = 
-            attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
-        
-        //is the request too big under any circumstances?
-        if (nBytes > Math2.maxSafeMemory) {
-            tally.add("Request refused: not enough memory ever (since startup)", attributeTo);
-            tally.add("Request refused: not enough memory ever (since last daily report)", attributeTo);
-            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
-                MessageFormat.format(Math2.memoryThanSafe, "" + (nBytes / Math2.BytesPerMB),  
-                    "" + (Math2.maxSafeMemory / Math2.BytesPerMB)) +
-                attributeToParen); 
-        }
-
-        //request is fine without gc?
-        long memoryInUse = Math2.getMemoryInUse();
-        if (memoryInUse + nBytes <= Math2.maxSafeMemory)  //it'll work
-            return;
-
-        //lots of memory is in use
-        //is the request is too big for right now?
-        Math2.gcAndWait();  //part of ensureMemoryAvailable: lots of memory in use
-        memoryInUse = Math2.getMemoryInUse();
-        if (memoryInUse + nBytes > Math2.maxSafeMemory) {
-            //eek! not enough memory! 
-            //Wait, then try gc again and hope that some other request requiring lots of memory will finish.
-            //If nothing else, this 1 second delay will delay another request by same user (e.g., programmatic re-request)
-            Math2.sleep(1000);
-            Math2.gcAndWait(); //in ensureMemoryIsAvailable, lots of memory in use
-            memoryInUse = Math2.getMemoryInUse();
-        }
-        if (memoryInUse > Math2.maxSafeMemory) { 
-            tally.add("MemoryInUse > MaxSafeMemory (since startup)", attributeTo);
-            tally.add("MemoryInUse > MaxSafeMemory (since last daily report)", attributeTo);
-        }
-        if (memoryInUse + nBytes > Math2.maxSafeMemory) {
-            tally.add("Request refused: not enough memory currently (since startup)", attributeTo);
-            tally.add("Request refused: not enough memory currently (since last daily report)", attributeTo);
-            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
-                MessageFormat.format(Math2.memoryThanCurrentlySafe,
-                    "" + (nBytes / Math2.BytesPerMB), 
-                    "" + ((Math2.maxSafeMemory - memoryInUse) / Math2.BytesPerMB)) +
-                attributeToParen); 
-        }
-    }
-
-    /** 
-     * Even if JavaBits is 64, the limit on an array size is Integer.MAX_VALUE.
-     *
-     * <p>This is almost identical to Math2.ensureArraySizeOkay, but adds tallying.
-     * 
-     * @param tSize
-     * @param attributeTo for the Tally system, this is the string (datasetID?) 
-     *   to which this not-enough-memory issue should be attributed.
-     * @throws Exception if tSize >= Integer.MAX_VALUE.  
-     *  (equals is forbidden for safety since I often use if as missing value / trouble)
-     */
-    public static void ensureArraySizeOkay(long tSize, String attributeTo) { 
-        if (tSize >= Integer.MAX_VALUE) {
-            tally.add("Request refused: array size >= Integer.MAX_VALUE (since startup)", attributeTo);
-            tally.add("Request refused: array size >= Integer.MAX_VALUE (since last daily report)", attributeTo);
-            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
-                MessageFormat.format(Math2.memoryArraySize, 
-                    "" + tSize, "" + Integer.MAX_VALUE) +
-                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")"));
-        }
-    }
-
-
-    /**
      * This sets the request blacklist of numeric ip addresses (e.g., 123.45.67.89)
      * (e.g., to fend of a Denial of Service attack or an overzealous web robot).
      * This sets requestBlacklist to be a HashSet (or null).
@@ -3740,8 +3651,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void addCommonStatistics(StringBuilder sb) {
         if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
             sb.append(
-"Major LoadDatasets Time Series: MLD    Datasets Loaded     Requests (median times in ms)       Number of Threads      Memory (MB)\n" +
-"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median)  tomWait inotify other  inUse highWater\n");
+"Major LoadDatasets Time Series: MLD    Datasets Loaded         Requests (median times in ms)           Number of Threads      Memory (MB)\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater\n");
             sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
         }
@@ -3981,6 +3892,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         try {
             tally.add("Request refused: not authorized (since startup)", datasetID); 
             tally.add("Request refused: not authorized (since last daily report)", datasetID);
+            tally.add("Request refused: not authorized (since last Major LoadDatasets)", datasetID); 
 
             if (datasetID != null && datasetID.length() > 0) 
                 message = MessageFormat.format(

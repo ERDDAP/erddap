@@ -24,7 +24,7 @@ import java.util.Set;
  * UByteArray is a thin shell over a byte[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  * 
- * <p>This class uses Math2.UBYTE_MAX_VALUE (255) to represent a missing value (NaN).
+ * <p>This class uses maxIsMV=true and Math2.UBYTE_MAX_VALUE (255) to represent a missing value (NaN).
  */
 public class UByteArray extends PrimitiveArray {
 
@@ -71,10 +71,27 @@ public class UByteArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMaxValue(int index) {
+        return getPacked(index) == PACKED_MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
     public boolean isMissingValue(int index) {
-        return getPacked(index) == PACKED_MAX_VALUE;
+        return maxIsMV && isMaxValue(index);
     }
 
     /**
@@ -211,7 +228,7 @@ public class UByteArray extends PrimitiveArray {
      * considering the incoming pa as boolean which needs to be  
      * converted to bytes.
      * <ul>
-     * <li>StringArray uses String2.parseBooleanToByte.
+     * <li>StringArray uses String2.parseBooleanToInteger.
      * <li>CharArray uses StandardMissingValue-&gt;StandardMissingValue, 
      *    [0fF]-&gt;false, others-&gt;true.
      * <li>numeric uses StandardMissingValue-&gt;StandardMissingValue, 
@@ -224,42 +241,67 @@ public class UByteArray extends PrimitiveArray {
      */
     public static UByteArray toBooleanToUByte(PrimitiveArray pa) {
         int size = pa.size();
+        boolean paMaxIsMV = pa.getMaxIsMV();
         UByteArray ba = new UByteArray(size, true); //active
         byte bar[] = ba.array;
         byte zero = 0;
         byte one = 1;
-        if (pa instanceof StringArray) {
-            for (int i = 0; i < size; i++)
-                bar[i] = String2.parseBooleanToByte(pa.getString(i));
+        if (pa.elementType() == PAType.STRING) {
+            for (int i = 0; i < size; i++) {
+                int ti = String2.parseBooleanToInt(pa.getString(i)); //returns 0, 1, or Integer.MAX_VALUE
+                if (ti == Integer.MAX_VALUE) {
+                    ba.setMaxIsMV(true);
+                    bar[i] = Byte.MAX_VALUE;
+                } else {
+                    bar[i] = (byte)ti;
+                }
+            }
         } else if (pa instanceof CharArray) {
             CharArray ca = (CharArray)pa;
             for (int i = 0; i < size; i++) {
                 char c = ca.get(i);
-                bar[i] = c == Character.MAX_VALUE? PACKED_MAX_VALUE :
-                    "0fF".indexOf(ca.get(i)) >= 0? zero : one;
+                if (paMaxIsMV && c == Character.MAX_VALUE) {
+                    ba.setMaxIsMV(true);
+                    bar[i] = PACKED_MAX_VALUE;
+                } else {
+                    bar[i] = "0fF".indexOf(ca.get(i)) >= 0? zero : one;
+                }
             }
         } else if (pa instanceof LongArray) {
             LongArray la = (LongArray)pa;
             for (int i = 0; i < size; i++) {
                 long tl = la.get(i);
-                bar[i] = tl == Long.MAX_VALUE? PACKED_MAX_VALUE :
-                    tl == 0? zero : one;
+                if (paMaxIsMV && tl == Long.MAX_VALUE) {
+                    ba.setMaxIsMV(true);
+                    bar[i] = PACKED_MAX_VALUE;
+                } else {
+                    bar[i] = tl == 0? zero : one;
+                }
             }
         } else if (pa instanceof ULongArray) {
-            ULongArray la = (ULongArray)pa;
+            ULongArray ua = (ULongArray)pa;
             for (int i = 0; i < size; i++) {
-                BigInteger bi = la.get(i);
-                bar[i] = bi.equals(ULongArray.MAX_VALUE)? PACKED_MAX_VALUE :
-                    bi.equals(BigInteger.ZERO)? zero : one;
+                BigInteger tul = ua.get(i);
+                if (paMaxIsMV && tul.equals(ULongArray.MAX_VALUE)) {
+                    ba.setMaxIsMV(true);
+                    bar[i] = PACKED_MAX_VALUE;
+                } else {
+                    bar[i] = tul.equals(BigInteger.ZERO)? zero : one;
+                }
             }
         } else {  //byte, ubyte, short, ushort, int, uint, float, double
             for (int i = 0; i < size; i++) {
                 double td = pa.getDouble(i);
-                bar[i] = Double.isNaN(td)? PACKED_MAX_VALUE :
-                    td == 0? zero : one;
+                if (Double.isNaN(td)) {
+                    ba.setMaxIsMV(true);
+                    bar[i] = PACKED_MAX_VALUE;
+                } else {
+                    bar[i] = td == 0? zero : one;
+                }
             }
         }
         return ba;
+
     }
 
     /**
@@ -355,7 +397,7 @@ public class UByteArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return pa == null? new UByteArray(new byte[0]) : pa;
+            return pa == null? new UByteArray(new byte[0]) : pa;  //no need to call .setMaxIsMV(maxIsMV) since size=0
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         UByteArray ba = null;
@@ -374,7 +416,7 @@ public class UByteArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return ba;
+        return ba.setMaxIsMV(maxIsMV);
     }
 
     /**
@@ -411,6 +453,8 @@ public class UByteArray extends PrimitiveArray {
     public void add(short value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
+        if (value < 0)
+            maxIsMV = true;
         array[size++] = pack(value);
     }
 
@@ -435,9 +479,9 @@ public class UByteArray extends PrimitiveArray {
      *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
-        add(value != null && value instanceof Number?
-            pack(((Number)value).longValue()) :
-            PACKED_MAX_VALUE);
+        //double is good intermediate because it has the idea of NaN
+        addDouble(value != null && value instanceof Number?
+            ((Number)value).doubleValue() : Double.NaN); 
     }
 
     /**
@@ -505,16 +549,13 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, Math2.narrowToUByte(String2.parseInt(value)));
-    }
-
-    /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? MAX_VALUE : Math2.narrowToUByte(value.getInt()));
+        int ti = String2.parseInt(value); //NaN -> Integer.MAX_VALUE
+        if (ti < MIN_VALUE || ti > MAX_VALUE) {
+            maxIsMV = true;
+            atInsert(index, MAX_VALUE);
+        } else {
+            atInsert(index, (short)ti);
+        }
     }
 
     /**
@@ -525,7 +566,7 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null).
      */
     public void addNPAOnes(int n, PAOne value) {
-        addN(n, value == null? MAX_VALUE : Math2.narrowToUByte(value.getInt()));
+        addNInts(n, value == null? Integer.MAX_VALUE : value.getInt());  //handles NaN and MV
     }
 
     /**
@@ -536,34 +577,20 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, Math2.narrowToUByte(String2.parseInt(value)));
+        addNInts(n, String2.parseInt(value)); //handles NaN and MV
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the value, as a String.
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addString(String value) {
-        add(Math2.narrowToUByte(String2.parseInt(value)));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the float value
-     */
-    public void addFloat(float value) {
-        add(Math2.roundToUByte(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Math2.roundToUByte(value));
+    public void addNFloats(int n, float value) {
+        if (!maxIsMV && (!Float.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
+            maxIsMV = true;
+        addN(n, Math2.roundToUByte(value));
     }
 
     /**
@@ -574,16 +601,9 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
+        if (!maxIsMV && (!Double.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
+            maxIsMV = true;
         addN(n, Math2.roundToUByte(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(Math2.narrowToUByte(value));
     }
 
     /**
@@ -593,16 +613,12 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, Math2.narrowToUByte(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(Math2.narrowToUByte(value));
+        if (value < MIN_VALUE || value > MAX_VALUE) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, (short)value);
+        }
     }
 
     /**
@@ -612,7 +628,12 @@ public class UByteArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, Math2.narrowToUByte(value));
+        if (value < MIN_VALUE || value > MAX_VALUE) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, (short)value);
+        }
     }
 
     /**
@@ -635,12 +656,14 @@ public class UByteArray extends PrimitiveArray {
             ensureCapacity(size + nValues);            
             System.arraycopy(((UByteArray)otherPA).array, otherIndex, array, size, nValues);
             size += nValues;
+            if (otherPA.getMaxIsMV()) 
+                maxIsMV = true;
             return this;
         }
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            addInt(otherPA.getInt(otherIndex++)); //does error checking
+            addInt(otherPA.getInt(otherIndex++)); //does error checking and handles maxIsMV
         return this;
     }
 
@@ -652,7 +675,7 @@ public class UByteArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        setInt(index, otherPA.getInt(otherIndex));
+        setInt(index, otherPA.getInt(otherIndex)); //handles maxIsMV
     }
 
 
@@ -817,14 +840,14 @@ public class UByteArray extends PrimitiveArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   MAX_VALUE is converted to Double.NaN.
+     *   If maxIsMV, MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UByteArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
             short b = unpack(array[i]);
-            dar[i] = b == MAX_VALUE? Double.NaN : b;
+            dar[i] = maxIsMV && b == MAX_VALUE? Double.NaN : b;
         }
         return dar;
     }
@@ -840,7 +863,7 @@ public class UByteArray extends PrimitiveArray {
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
             short b = unpack(array[i]);
-            sar[i] = b == MAX_VALUE? "" : String.valueOf(b);
+            sar[i] = maxIsMV && b == MAX_VALUE? "" : String.valueOf(b);
         }
         return sar;
     }
@@ -890,17 +913,17 @@ public class UByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as an int. 
-     *   MAX_VALUE is returned as Integer.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
         short b = get(index);
-        return b == MAX_VALUE? Integer.MAX_VALUE : b;
+        return maxIsMV && b == MAX_VALUE? Integer.MAX_VALUE : b;
     }
 
     /**
      * Return a value from the array as an int.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., UByteArray missingValue=255) AS IS.
+     * (e.g., UByteArray missingValue=255) AS IS (even if maxIsMV=true).
      * Floating point values are rounded.
      * 
      * @param index the index number 0 ... size-1
@@ -919,7 +942,12 @@ public class UByteArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToUByte(i).
      */
     public void setInt(int index, int i) {
-        set(index, Math2.narrowToUByte(i));
+        if (i < MIN_VALUE || i > MAX_VALUE) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, (short)i); 
+        }
     }
 
     /**
@@ -927,11 +955,11 @@ public class UByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   MAX_VALUE is returned as Long.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
         short b = get(index);
-        return b == MAX_VALUE? Long.MAX_VALUE : b;
+        return maxIsMV && b == MAX_VALUE? Long.MAX_VALUE : b;
     }
 
     /**
@@ -942,7 +970,12 @@ public class UByteArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToUByte(long).
      */
     public void setLong(int index, long i) {
-        set(index, Math2.narrowToUByte(i));
+        if (i < MIN_VALUE || i > MAX_VALUE) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, (short)i); 
+        }
     }
 
     /**
@@ -950,11 +983,11 @@ public class UByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as null.
      */
     public BigInteger getULong(int index) {
         short b = get(index);
-        return b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+        return maxIsMV && b == MAX_VALUE? null : new BigInteger("" + b);
     }
 
     /**
@@ -965,7 +998,7 @@ public class UByteArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(long).
      */
     public void setULong(int index, BigInteger i) {
-        set(index, Math2.narrowToUByte(i));
+        setDouble(index, i == null? Double.NaN : i.doubleValue()); //easier to work with. handles NaN. wide range
     }
 
     /**
@@ -975,11 +1008,11 @@ public class UByteArray extends PrimitiveArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   MAX_VALUE is returned as Float.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         short b = get(index);
-        return b == MAX_VALUE? Float.NaN : b;
+        return maxIsMV && b == MAX_VALUE? Float.NaN : b;
     }
 
     /**
@@ -990,6 +1023,8 @@ public class UByteArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToUByte(d).
      */
     public void setFloat(int index, float d) {
+        if (!maxIsMV && (!Float.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToUByte(d));
     }
 
@@ -1000,11 +1035,11 @@ public class UByteArray extends PrimitiveArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   MAX_VALUE is returned as Double.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         short b = get(index);
-        return b == MAX_VALUE? Double.NaN : b;
+        return maxIsMV && b == MAX_VALUE? Double.NaN : b;
     }
 
     /**
@@ -1025,7 +1060,7 @@ public class UByteArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., UByteArray missingValue=127) AS IS.
+     * (e.g., UByteArray missingValue=127) AS IS (even if maxIsMV=true).
      *
      * <p>All integerTypes overwrite this.
      * 
@@ -1045,6 +1080,8 @@ public class UByteArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToUByte(d).
      */
     public void setDouble(int index, double d) {
+        if (!maxIsMV && (!Double.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToUByte(d));
     }
 
@@ -1055,11 +1092,11 @@ public class UByteArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *    or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         byte b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
+        return maxIsMV && b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
     }
 
     /**
@@ -1069,18 +1106,18 @@ public class UByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value (never "null").
+     *   If this PA is unsigned, this method returns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
         byte b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
+        return maxIsMV && b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
     }
 
 
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., UByteArray missingValue=127) AS IS.
+     * (e.g., UByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
      * <p>All integerTypes overwrite this.
@@ -1100,7 +1137,7 @@ public class UByteArray extends PrimitiveArray {
      *   with String2.parseInt and narrowed by Math2.narrowToUByte(i).
      */
     public void setString(int index, String s) {
-        set(index, Math2.narrowToUByte(String2.parseInt(s)));
+        setInt(index, String2.parseInt(s)); //handles mv
     }
 
     /**
@@ -1185,15 +1222,7 @@ public class UByteArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof UByteArray)) //handles o==null
-            return false;
-        UByteArray other = (UByteArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -1202,20 +1231,23 @@ public class UByteArray extends PrimitiveArray {
      *
      * @param o The other object
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof UByteArray))
             return "The two objects aren't equal: this object is a UByteArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         UByteArray other = (UByteArray)o;
         if (other.size() != size)
             return "The two UByteArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return "The two UByteArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
-                                                      "; other[" + i + "]=" + unpack(other.array[i]) + ".";
+            if (array[i] != other.array[i] || (array[i] == PACKED_MAX_VALUE && maxIsMV != other.maxIsMV))  //handles mv
+                return "The two UByteArrays aren't equal: this[" + i + "]=" + getInt(i) + 
+                                                      "; other[" + i + "]=" + other.getInt(i) + ".";
+        //if (maxIsMV != other.maxIsMV)
+        //     return "The two ByteArrays aren't equal: this.maxIsMV=" + maxIsMV + 
+        //                                          "; other.maxIsMV=" + other.maxIsMV + ".";
         return "";
     }
 
@@ -1292,7 +1324,7 @@ public class UByteArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return Integer.compare(getInt(index1), otherPA.getInt(index2));
+        return Integer.compare(getInt(index1), otherPA.getInt(index2));  //int handles mv
     }
 
     /**
@@ -1457,13 +1489,14 @@ public class UByteArray extends PrimitiveArray {
         int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof UByteArray) {
+            if (pa.getMaxIsMV())
+                setMaxIsMV(true);
             System.arraycopy(((UByteArray)pa).array, 0, array, size, otherSize);
+            size += otherSize;
         } else {
-            for (int i = 0; i < otherSize; i++) {
-                array[size + i] = pack(pa.getInt(i)); //this converts mv's
-            }
+            for (int i = 0; i < otherSize; i++) 
+                addInt(pa.getInt(i)); //this converts mv's and handles maxIsMV
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1575,7 +1608,8 @@ public class UByteArray extends PrimitiveArray {
      */
     public int switchFromTo(String tFrom, String tTo) {
         byte packedFrom = pack(Math2.roundToUByte(String2.parseDouble(tFrom)));
-        byte packedTo   = pack(Math2.roundToUByte(String2.parseDouble(tTo)));
+        double d = String2.parseDouble(tTo);
+        byte packedTo   = pack(Math2.roundToUByte(d));
         //String2.log(">> UByteArray.switchFromTo " + tFrom + "=" + packedFrom + " to " + tTo + "=" + packedTo);
         if (packedFrom == packedTo)
             return 0;
@@ -1586,6 +1620,8 @@ public class UByteArray extends PrimitiveArray {
                 count++;
             }
         }
+        if (count > 0 && Double.isNaN(d))
+            maxIsMV = true;
         return count;
     }
 
@@ -1617,10 +1653,11 @@ public class UByteArray extends PrimitiveArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        short tmin = MAX_VALUE - 1;
+        short tmin = MAX_VALUE;
         short tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            if (array[i] != PACKED_MAX_VALUE) {
+            if (maxIsMV && array[i] == PACKED_MAX_VALUE) {
+            } else {
                 short v = unpack(array[i]);
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
@@ -1869,6 +1906,8 @@ public class UByteArray extends PrimitiveArray {
         //test equals
         UByteArray anArray2 = new UByteArray();
         anArray2.add((byte)0); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a UByteArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a UByteArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1995,6 +2034,8 @@ public class UByteArray extends PrimitiveArray {
         anArray = new UByteArray(new byte[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
         anArray.set(2, MAX_VALUE);
+        Test.ensureEqual(anArray.isAscending(), "", "");
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isAscending(), 
             "UByteArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, (byte)9);
@@ -2005,6 +2046,7 @@ public class UByteArray extends PrimitiveArray {
         anArray = new UByteArray(new byte[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
         anArray.set(2, MAX_VALUE);
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isDescending(), 
             "UByteArray isn't sorted in descending order: [1]=10 < [2]=255.", "");
         anArray.set(1, (byte)35);
@@ -2045,10 +2087,10 @@ public class UByteArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(1), "254", "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new UByteArray(new byte[] {     })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UByteArray(new byte[] {1, 2 })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UByteArray(new byte[] {-128 })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UByteArray(new byte[] {127  })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UByteArray(new byte[] {     })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UByteArray(new byte[] {1, 2 })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UByteArray(new byte[] {-128 })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UByteArray(new byte[] {127  })).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new UByteArray(new short[]{255  })).tryToFindNumericMissingValue(),        255, "");
         Test.ensureEqual((new UByteArray(new byte[] {1, 99})).tryToFindNumericMissingValue(),         99, "");
 

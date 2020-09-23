@@ -60,6 +60,7 @@ public abstract class TableWriter {
     protected Attributes[] columnAttributes;
     protected Attributes globalAttributes;
 
+    protected boolean[] columnMaxIsMV;  //default is all false. Once 'true', it stays true.
 
     /**
      * The constructor.
@@ -100,6 +101,7 @@ public abstract class TableWriter {
             columnNames = tColumnNames;
             columnTypes = tColumnTypes;
             columnAttributes = new Attributes[nColumns];
+            columnMaxIsMV    = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 Attributes colAttsClone = null;
                 if (edd != null) {
@@ -117,6 +119,12 @@ public abstract class TableWriter {
                 if (colAttsClone == null)
                     colAttsClone = new Attributes(table.columnAttributes(col));
                 columnAttributes[col] = colAttsClone; 
+
+                //if maxIsMV is ever true for a column, it stays true
+                //if ("testULong".equals(columnNames[col])) String2.log(">> ensureCompatible testULong twawm=" + this + " maxIsMV=" + table.getColumn(col).getMaxIsMV());
+                if (table.getColumn(col).getMaxIsMV()) 
+                    columnMaxIsMV[col] = true;   
+
                 //String2.log("\nTableWriter attributes " + columnNames[col] + "\n" + columnAttributes[col]);
             }
             if (edd == null) 
@@ -139,6 +147,12 @@ public abstract class TableWriter {
             if (!columnTypes[c].equals(tColumnTypes[c]))
                 throw new RuntimeException("Internal error in TableWriter: for column#" + c + "=" + columnNames[c] +
                       ", newType=" + tColumnTypes[c] + " != oldType=" + columnTypes[c] + ".");
+
+            //if maxIsMV is ever true for a column, it stays true
+            if (table.getColumn(c).getMaxIsMV())  
+                columnMaxIsMV[c] = true;   
+            //set this column to be like previous
+            table.getColumn(c).setMaxIsMV(columnMaxIsMV[c]);
 
             //restore missing_value and _FillValue attributes 
             //  (if removed via convertToStandardMissingValues() and reuse of the table)
@@ -229,6 +243,16 @@ public abstract class TableWriter {
     public PAType columnType(int col) {return columnTypes[col];}
 
     /**
+     * This returns maxIsMV for the specified column.
+     *
+     * @param col   0..
+     * @return maxIsMV for the specified column.
+     */
+    public boolean columnMaxIsMV(int col) {
+        return columnMaxIsMV[col];
+    }
+
+    /**
      * This returns one of the destination column's columnAttributes.
      * Note that actual_range hasn't been modified for this data subset.
      *
@@ -256,10 +280,11 @@ public abstract class TableWriter {
         int nColumns = columnNames.length;
         Table table = new Table();
         table.globalAttributes().set(globalAttributes);
-        for (int col = 0; col < nColumns; col++) 
-            table.addColumn(col, columnNames[col], 
-                PrimitiveArray.factory(columnTypes[col], 1024, false), 
-                columnAttributes[col]);
+        for (int col = 0; col < nColumns; col++) {
+            PrimitiveArray pa = PrimitiveArray.factory(columnTypes[col], 1024, false);
+            pa.setMaxIsMV(columnMaxIsMV[col]);
+            table.addColumn(col, columnNames[col], pa, columnAttributes[col]);
+        }
         return table;
     }
 

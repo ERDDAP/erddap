@@ -6,7 +6,9 @@ package gov.noaa.pfel.coastwatch.util;
 
 
 /**
- * This class holds in int that can be changed.
+ * This class holds in int that can be changed (without repeatedly
+ * destroying an old object and creating a new object).
+ * Thus, it is mutable, unlike an immutable Java Integer object.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2005-05-18
  *

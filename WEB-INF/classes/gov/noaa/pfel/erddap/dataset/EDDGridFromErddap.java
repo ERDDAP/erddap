@@ -238,7 +238,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         if (accessibleViaFiles) {
             try {
-                //this will only work if remote ERDDAP is v2.03+
+                //this will only work if remote ERDDAP is v2.10+
                 int po = localSourceUrl.indexOf("/griddap/");
                 Test.ensureTrue(po > 0, "localSourceUrl doesn't have /griddap/.");
                 InputStream is = SSR.getUrlBufferedInputStream(
@@ -246,7 +246,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     "/.csv");
                 try {is.close();} catch (Exception e2) {}
             } catch (Exception e) {
-                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.03 (no support for /files/.csv):\n" +
+                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.10 (no support for /files/.csv):\n" +
                     MustBe.throwableToString(e));
                 accessibleViaFiles = false;
             }
@@ -316,7 +316,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 if (dataType.equals("String")) {
                     tSourceAttributes.add(attName, value);
                 } else {
-                    PAType tPAType = PrimitiveArray.elementStringToPAType(dataType);
+                    PAType tPAType = PAType.fromCohortString(dataType);
                     PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
                     tSourceAttributes.add(attName, pa);
                 }
@@ -372,9 +372,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     throw new RuntimeException(errorInMethod +
                         "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
                 else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes)) 
-                    edv = new EDVTimeStamp(varName, varName,
+                    edv = new EDVTimeStamp(datasetID, varName, varName,
                         tSourceAttributes, tAddAttributes, dataType);  
-                else edv = new EDV(varName, varName, 
+                else edv = new EDV(datasetID, varName, varName, 
                     tSourceAttributes, tAddAttributes, dataType, 
                     PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));  //hard to get min and max
                 edv.extractAndSetActualRange();

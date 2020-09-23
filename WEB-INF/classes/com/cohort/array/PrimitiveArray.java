@@ -52,6 +52,7 @@ public abstract class PrimitiveArray {
 
     /** The number of active values (which may be different from the array's capacity). */
     protected int size = 0;
+    protected boolean maxIsMV = false;
 
     /**
      * The constants identify the items in the array returned by calculateStats.
@@ -395,14 +396,56 @@ public abstract class PrimitiveArray {
         return size;
     }
 
+    /** 
+     * This returns true if maxIsMV is supported (i.e., isIntegerType).
+     * This always returns true for CharArray.
+     *
+     * @return true if maxIsMV is supported
+     */
+    public boolean supportsMaxIsMV() {
+        return isIntegerType();
+    }
+
     /**
-     * This sets size to 0.
+     * This sets the maxIsMv setting. This only affects integer types
+     * because they have no inherent missing value (e.g. NaN for float and double,
+     * \\uffff char, or "" for Strings).
+     * When maxIsMV=true, MAX_VALUEs (e.g., 127 for ByteArray) are treated as 
+     * missing values in statistics and are displayed as "" strings.
+     *
+     * <p>Initially, every PA has maxIsMV=false. If a caller adds a missing value
+     * to the PA, the add method changes maxIsMV to 'true'. So the classes
+     * try to handle this automatically. You can also do it explicitly with 
+     * setMaxIsMV(true).
+     *
+     * @param tMaxIsMV The new value of maxIsMV (only settable for Integer types and Character)
+     * @return this for convenience
+     */
+    public PrimitiveArray setMaxIsMV(boolean tMaxIsMV) {
+        if (supportsMaxIsMV())
+            maxIsMV = tMaxIsMV;
+        return this;
+    }
+
+    /**
+     * This gets the maxIsMv setting.
+     *
+     * @return The value of maxIsMV.
+     *   Non-integer types (other than char, which always returns true) will always return false;
+     */
+    public boolean getMaxIsMV() {
+        return maxIsMV;
+    }
+
+    /**
+     * This sets size to 0 and maxIsMV to false.
      * XxxArrays with objects overwrite this to set the no-longer-accessible 
      * elements to null.
      *
      */
     public void clear() {
         size = 0;
+        maxIsMV = false;
     }
 
     /**
@@ -421,126 +464,7 @@ public abstract class PrimitiveArray {
      * of the element type.
      */
     public String elementTypeString() {
-        return elementTypeToString(elementType());
-    }
-
-    /**
-     * This converts an element type (e.g., PAType.FLOAT) to a String (e.g., float).
-     *
-     * @param type an element type (e.g., PAType.FLOAT)
-     * @return the string representation of the element type (e.g., float)
-     */
-    public static String elementTypeToString(PAType type) {
-        if (type == PAType.DOUBLE) return "double";
-        if (type == PAType.FLOAT)  return "float";
-        if (type == PAType.LONG)   return "long";
-        if (type == PAType.INT)    return "int";
-        if (type == PAType.SHORT)  return "short";
-        if (type == PAType.BYTE)   return "byte";
-        if (type == PAType.CHAR)   return "char";
-        if (type == PAType.STRING) return "String";
-        if (type == PAType.ULONG)  return "ulong";
-        if (type == PAType.UINT)   return "uint";
-        if (type == PAType.USHORT) return "ushort";
-        if (type == PAType.UBYTE)  return "ubyte";
-        throw new IllegalArgumentException(
-            "PrimitiveArray.elementTypeToString unsupported type: "  + type.toString());
-    }
-
-    /**
-     * This converts an element type String (e.g., "float") to an element type (e.g., PAType.FLOAT).
-     *
-     * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., PAType.FLOAT) or null if no match
-     */
-    public static PAType safeElementStringToPAType(String type) {
-        if (type.equals("double")) return PAType.DOUBLE;
-        if (type.equals("float"))  return PAType.FLOAT;
-        if (type.equals("long"))   return PAType.LONG;
-        if (type.equals("int"))    return PAType.INT;
-        if (type.equals("short"))  return PAType.SHORT;
-        if (type.equals("byte") ||
-            type.equals("boolean"))return PAType.BYTE; //erddap stores booleans as bytes
-        if (type.equals("char"))   return PAType.CHAR;
-        if (type.equals("String")) return PAType.STRING;
-        if (type.equals("ulong"))  return PAType.ULONG;
-        if (type.equals("uint"))   return PAType.UINT;
-        if (type.equals("ushort")) return PAType.USHORT;
-        if (type.equals("ubyte"))  return PAType.UBYTE; //erddap stores booleans as bytes
-        return null;
-    }
-
-    /**
-     * This converts an element type String (e.g., "float") to an element PAType (e.g., PAType.FLOAT).
-     *
-     * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., PAType.FLOAT)
-     */
-    public static PAType elementStringToPAType(String type) {
-        PAType tType = safeElementStringToPAType(type);
-        if (tType == null) 
-            throw new IllegalArgumentException("PrimitiveArray.elementStringToPAType unsupported type: " + type);
-        return tType;
-    }
-
-    /**
-     * This converts an element type String (e.g., "float") to an element PAType (e.g., PAType.FLOAT).
-     *
-     * @param type an element type string (e.g., "float")
-     * @return the corresponding element type (e.g., PAType.FLOAT)
-     */
-    public static PAType caseInsensitiveElementStringToPAType(String type) {
-        type = type.toLowerCase();
-        if (type.equals("double")) return PAType.DOUBLE;
-        if (type.equals("float"))  return PAType.FLOAT;
-        if (type.equals("long"))   return PAType.LONG;
-        if (type.equals("ulong"))  return PAType.ULONG;
-        if (type.equals("int"))    return PAType.INT;
-        if (type.equals("uint"))   return PAType.UINT;
-        if (type.equals("short"))  return PAType.SHORT;
-        if (type.equals("ushort")) return PAType.USHORT;
-        if (type.equals("byte") ||
-            type.equals("boolean"))return PAType.BYTE; //erddap stores booleans as bytes
-        if (type.equals("ubyte"))  return PAType.UBYTE;
-        if (type.equals("char"))   return PAType.CHAR;
-        if (type.equals("string")) return PAType.STRING;
-        throw new IllegalArgumentException("PrimitiveArray.caseInsensitiveElementStringToPAType unsupported type: " + type);
-    }
-
-    /**
-     * This indicates the number of bytes per element of the given type.
-     * The value for PAType.STRING isn't a constant, so this returns 20.
-     *
-     * @param type an element PAType (e.g., PAType.FLOAT)
-     * @return the corresponding number of bytes
-     */
-    public static int elementSize(PAType type) {
-        if (type == PAType.DOUBLE) return 8;
-        if (type == PAType.FLOAT)  return 4;
-        if (type == PAType.LONG ||
-            type == PAType.ULONG)  return 8;
-        if (type == PAType.INT ||
-            type == PAType.UINT)   return 4;
-        if (type == PAType.SHORT ||
-            type == PAType.USHORT) return 2;
-        if (type == PAType.BYTE ||
-            type == PAType.UBYTE ||
-            type == PAType.BOOLEAN)return 1; //erddap stores booleans as bytes
-        if (type == PAType.CHAR)   return 2;
-        if (type == PAType.STRING) return 20;
-        throw new IllegalArgumentException("PrimitiveArray.sizeOf unsupported type: " + type);
-    }
-
-
-    /**
-     * This indicates the number of bytes per element of the given type.
-     * The value for PAType.STRING isn't a constant, so this returns 20.
-     *
-     * @param type an element type (e.g., "String" or "float")
-     * @return the corresponding number of bytes
-     */
-    public static int elementSize(String type) {
-        return elementSize(elementStringToPAType(type));
+        return PAType.toCohortString(elementType());
     }
 
     /**
@@ -553,43 +477,31 @@ public abstract class PrimitiveArray {
     abstract public int elementSize();
 
     /** 
-     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * This returns the cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
     abstract public double missingValueAsDouble();
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
-     */
-    abstract public boolean isMissingValue(int index);
-
-
-    /** 
-     * This converts a data class into an ESRI Pixel Type.
-     * http://help.arcgis.com/en/arcgismobile/10.0/apis/android/api/com/esri/core/map/ImageServiceParameters.PIXEL_TYPE.html
-     * Currently, PAType.LONG and PAType.ULONG return F64.
-     * Currently, PAType.CHAR returns a numeric U16.
-     * Currently, PAType.STRING and others return UNKNOWN.
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
      *
-     * @param tPAType e.g., PAType.DOUBLE or PAType.STRING
-     * @return the corresponding ESRI pixel type
+     * @param index The index in question
+     * @return true if the value is the data type's MAX_VALUE.
      */
-    public static String paTypeToEsriPixelType(PAType tPAType) {
-        //I can't find definitions of C64 and C128
-        if (tPAType == PAType.DOUBLE) return "F64";
-        if (tPAType == PAType.FLOAT)  return "F32"; 
-        if (tPAType == PAType.LONG)   return "F64"; //not ideal, but no S64
-        if (tPAType == PAType.ULONG)  return "F64"; //not ideal, but no U64
-        if (tPAType == PAType.INT)    return "S32";
-        if (tPAType == PAType.UINT)   return "U32";
-        if (tPAType == PAType.SHORT)  return "S16";
-        if (tPAType == PAType.USHORT) return "U16";
-        if (tPAType == PAType.BYTE)   return "S8"; 
-        if (tPAType == PAType.UBYTE)  return "U8"; 
-        if (tPAType == PAType.CHAR)   return "U16"; //
-        //if (tPAType == PAType.STRING) return ...
-        return "UNKNOWN";
-    }
+    abstract public boolean isMaxValue(int index);
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    abstract public boolean isMissingValue(int index);        
+
 
     /** 
      * This returns the recommended sql data type for this PrimitiveArray.
@@ -688,30 +600,21 @@ public abstract class PrimitiveArray {
 
     /** This indicates if this class' type (e.g., PAType.SHORT) is an unsigned integer type. 
      * The unsigned integer type classes overwrite this.
+     *
+     * @return true if this class' type (e.g., PAType.SHORT) is an unsigned integer type.
      */
     public boolean isUnsigned() {
         return false;
     }
 
-    /** This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
+    /** 
+     * This indicates if this class' type (e.g., PAType.SHORT) is an integer (in the math sense) type. 
      * The integer type classes overwrite this.
+     *
+     * @return true if this class' type (e.g., PAType.SHORT) is an integer type.
      */
     public boolean isIntegerType() {
         return false;
-    }
-
-    /**
-     * This indicates if a given type (e.g., PAType.SHORT) is an integer (in the math sense) type.
-     *
-     * @param type an element type (e.g., PAType.SHORT)
-     * @return true if the given type (e.g., PAType.SHORT) is an integer (in the math sense) type.
-     */
-    public static boolean isIntegerType(PAType type) {
-        return 
-            type == PAType.LONG  || type == PAType.ULONG  ||
-            type == PAType.INT   || type == PAType.UINT   ||
-            type == PAType.SHORT || type == PAType.USHORT ||
-            type == PAType.BYTE  || type == PAType.UBYTE;
     }
 
     /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
@@ -722,40 +625,15 @@ public abstract class PrimitiveArray {
 
     /** 
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
-     * as a new PAOne.  
+     * as a new PAOne.  For integer types, maxIsMV is false.
      */
     public PAOne missingValue() {
         PAOne paOne = new PAOne(elementType());
         paOne.setString("");
+        paOne.pa().setMaxIsMV(false);
         return paOne;
     }
 
-    /**
-     * This returns for missing value for a given element type (e.g., PAType.BYTE),
-     * expressed as a double.
-     *
-     * @param type an element type (e.g., PAType.BYTE)
-     * @return the string representation of the element type (e.g., Byte.MAX_VALUE).
-     *   Note that the mv for float is Float.NaN, but it gets converted
-     *   to Double.NaN when returned by this method.
-     *   StringArray supports several incoming missing values, but
-     *   "" is used as the outgoing missing value.
-     */
-    public static double missingValue(PAType type) {
-        if (type == PAType.DOUBLE) return Double.NaN;
-        if (type == PAType.FLOAT)  return Double.NaN;
-        if (type == PAType.LONG)   return Long.MAX_VALUE;
-        if (type == PAType.ULONG)  return Math2.ULONG_MAX_VALUE_AS_DOUBLE;
-        if (type == PAType.INT)    return Integer.MAX_VALUE;
-        if (type == PAType.UINT)   return UIntArray.MAX_VALUE;
-        if (type == PAType.SHORT)  return Short.MAX_VALUE;
-        if (type == PAType.USHORT) return UShortArray.MAX_VALUE;
-        if (type == PAType.BYTE)   return Byte.MAX_VALUE;
-        if (type == PAType.UBYTE)  return UByteArray.MAX_VALUE;
-        if (type == PAType.CHAR)   return Character.MAX_VALUE;
-        if (type == PAType.STRING) return Double.NaN;
-        return Double.NaN;
-    }
 
     /**
      * This returns the minimum PAType needed to completely and precisely contain 
@@ -774,11 +652,23 @@ public abstract class PrimitiveArray {
     abstract public void atInsertString(int index, String value);
 
     /**
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array.
+     *    This uses an appropriate simple method to do the conversion.
+     *    If you need a specific method, create a DoubleArray or StringArray first,
+     *    then convert that to the desired PrimitiveArray type.
+     */
+    abstract public void addObject(Object value);
+
+    /**
      * This adds PAOne's value to the array.
      *
      * @param value the value, as a PAOne (or null).
      */
-    abstract public void addPAOne(PAOne value);
+    public void addPAOne(PAOne value) {
+        addNPAOnes(1, value);
+    }
 
     /**
      * This adds n PAOne's to the array.
@@ -790,21 +680,13 @@ public abstract class PrimitiveArray {
     abstract public void addNPAOnes(int n, PAOne value);
 
     /**
-     * This adds an element to the array.
+     * This adds the String to the array.
      *
      * @param value the value, as a String.
      */
-    abstract public void addString(String value);
-
-    /**
-     * This adds an item to the array (increasing 'size' by 1).
-     *
-     * @param value the value to be added to the array.
-     *    This uses an appropriate simple method to do the conversion.
-     *    If you need a specific method, create a DoubleArray or StringArray first,
-     *    then convert that to the desired PrimitiveArray type.
-     */
-    abstract public void addObject(Object value);
+    public void addString(String value) {
+        addNStrings(1, value);
+    }
 
     /**
      * This adds n Strings to the array.
@@ -818,16 +700,30 @@ public abstract class PrimitiveArray {
     /**
      * This adds an element to the array.
      *
+     * @param value the value, as a Float.
+     */
+    public void addFloat(float value) {
+        addNFloats(1, value);
+    }
+
+    /**
+     * This adds n floats to the array.
+     *
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
      * @param value the value, as a float.
      */
-    abstract public void addFloat(float value);
+    abstract public void addNFloats(int n, float value);
+
 
     /**
      * This adds an element to the array.
      *
      * @param value the value, as a Double.
      */
-    abstract public void addDouble(double value);
+    public void addDouble(double value) {
+        addNDoubles(1, value);
+    }
 
     /**
      * This adds n doubles to the array.
@@ -843,7 +739,9 @@ public abstract class PrimitiveArray {
      *
      * @param value the value, as an int.
      */
-    abstract public void addInt(int value);
+    public void addInt(int value) {
+        addNInts(1, value);
+    }
 
     /**
      * This adds n ints to the array.
@@ -858,7 +756,9 @@ public abstract class PrimitiveArray {
      *
      * @param value the value, as a long.
      */
-    abstract public void addLong(long value);
+    public void addLong(long value) {
+        addNLongs(1, value);
+    }
 
     /**
      * This adds n longs to the array.
@@ -973,7 +873,7 @@ public abstract class PrimitiveArray {
     /**
      * Return a value from the array as an int.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      * Floating point values are rounded.
      *
      * <p>ByteArray, CharArray, ShortArray overwrite this.
@@ -1020,8 +920,7 @@ public abstract class PrimitiveArray {
      * Floating point values are rounded.
      * 
      * @param index the index number 0 ... size-1
-     * @return the value as a long. String values are parsed
-     *   with String2.parseLong and so may return Long.MAX_VALUE.
+     * @return the value as a BigInteger (which may be null).
      */
     abstract public BigInteger getULong(int index);
 
@@ -1164,7 +1063,7 @@ public abstract class PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     abstract public String getString(int index);
 
@@ -1223,7 +1122,7 @@ public abstract class PrimitiveArray {
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
      * <p>All integer types overwrite this.
@@ -1238,7 +1137,7 @@ public abstract class PrimitiveArray {
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "NaN" if the stored value is NaN.  
      * That's different than getRawString!!!
      *
@@ -1512,7 +1411,7 @@ public abstract class PrimitiveArray {
 
             for (int i = 0; i < size; i++) {
                 BigInteger d = getULong(i);
-                if (d.equals(ULongArray.MAX_VALUE) || d.equals(fv) || d.equals(fv)) {
+                if (d == null || d.equals(fv) || d.equals(fv)) {
                 } else { 
                     n++;
                     tMin = tMin.min(d);
@@ -1523,21 +1422,28 @@ public abstract class PrimitiveArray {
             //if (debugMode) String2.log(">> PrimitiveArray.calculateStats ULong n=" + n + " min=" + tMin + " max=" + tMax);
             return new PAOne[]{
                 PAOne.fromInt(n),
-                PAOne.fromULong(n == 0? ULongArray.MAX_VALUE : tMin),
-                PAOne.fromULong(n == 0? ULongArray.MAX_VALUE : tMax),
+                PAOne.fromULong(n == 0? null : tMin),
+                PAOne.fromULong(n == 0? null : tMax),
                 PAOne.fromULong(tSum)};
         } 
             
         //integer type? calculate as longs
         if (isIntegerType()) { //includes LongArray
-            long mv = Long.MAX_VALUE;
+
+            //2020-07-28 Not Perfect! 
+            //  This handles byte/ubyte/short/ushort/int/uint fv mv correctly 
+            //  (MAX_VALUE isn't assumed to be missing value)
+            //  but long still treats MAX_VALUE as missing value
+
+            long mv = Long.MAX_VALUE;  
             long fv = Long.MAX_VALUE;
-            long tMin = Long.MAX_VALUE;
+            long tMin = Long.MAX_VALUE; 
             long tMax = Long.MIN_VALUE;
             long tSum = 0;
             if (atts != null) {
-                fv = atts.getLong("_FillValue");    //eg byte 127 -> Long.MAX_VALUE
-                mv = atts.getLong("missing_value"); //eg byte 127 -> Long.MAX_VALUE
+                //the atts take precedence if they exist
+                fv = atts.getLong("_FillValue");    //eg byte 127 -> 127
+                mv = atts.getLong("missing_value"); //eg byte 127 -> 127
             }
 
             for (int i = 0; i < size; i++) {
@@ -1917,35 +1823,6 @@ public abstract class PrimitiveArray {
     abstract public void readDis(DataInputStream dis, int n) throws Exception;
 
     /**
-     * This writes a short with the classIndex() of the PA, an int with the 'size',
-     * then the elements to a DataOutputStream.
-     * Only StringArray overwrites this.
-     *
-     * @param dos the DataOutputStream
-     * @throws Exception if trouble
-     */
-/* project not finished or tested
-    public void writeNccsvDos(DataOutputStream dos) throws Exception {
-        dos.writeShort(elementTypeIndex()); 
-        dos.writeInt(size);
-        writeDos(dos);
-    }
-*/
-
-    /**
-     * This writes one element to an NCCSV DataOutputStream.
-     * Only StringArray overwrites this.
-     *
-     * @param dos the DataOutputStream
-     * @throws Exception if trouble
-     */
-/* project not finished or tested
-    public void writeNccsvDos(DataOutputStream dos, int i) throws Exception {
-        writeDos(dos, i); 
-    }
-*/
-
-    /**
      * This writes all the data to a DataOutputStream in the
      * DODS Array format (see www.opendap.org DAP 2.0 standard, section 7.3.2.1).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
@@ -2119,10 +1996,12 @@ public abstract class PrimitiveArray {
 
     /**
      * This tests if the other object is of the same type and has equal values.
+     * Note that for integerTypes, the value of maxIsMV can be different
+     * if there are no relevant values.
      *
      * @param other 
      * @return "" if equal, or message if not.
-     *     other=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     abstract public String testEquals(Object other);
 
@@ -2156,6 +2035,8 @@ public abstract class PrimitiveArray {
      *     other=null throws an exception.
      */
     public String almostEqual(PrimitiveArray other, int matchNDigits) {
+        //trouble: Should this handle different values of maxIsMV?
+
         if (size != other.size())
             return MessageFormat.format(ArrayDifferentSize, "" + size, "" + other.size());
 
@@ -2237,18 +2118,23 @@ public abstract class PrimitiveArray {
             return "";
         }
 
-        if (this instanceof LongArray || other instanceof LongArray) {
-            for (int i = 0; i < size; i++)
-                if (getLong(i) != other.getLong(i))
+        if (this instanceof ULongArray || other instanceof ULongArray) {
+            for (int i = 0; i < size; i++) {
+                BigInteger bi1 = getULong(i);
+                BigInteger bi2 = other.getULong(i);
+                if (bi1 == null && bi2 == null) {}
+                else if (bi1 == null || bi2 == null || !bi1.equals(bi2))
                     return MessageFormat.format(ArrayDifferentValue, "" + i, 
-                        "" + getLong(i), "" + other.getLong(i));
+                        "" + bi1, "" + bi2);
+            }
+            return "";
         }
 
-        //test via int's
+        //test via long's which handles mv in long, int, uint, and smaller classes
         for (int i = 0; i < size; i++)
-            if (getInt(i) != other.getInt(i))
+            if (getLong(i) != other.getLong(i))
                 return MessageFormat.format(ArrayDifferentValue, "" + i, 
-                    "" + getInt(i), "" + other.getInt(i));
+                    "" + getLong(i), "" + other.getLong(i));
         return "";
     }
         
@@ -2747,13 +2633,13 @@ public abstract class PrimitiveArray {
      *   the column will not be converted to an integer type.
      *
      * @param colName is for diagnostics only
-     * @return the simpliest possible PrimitiveArray (possibly this PrimitiveArray) 
+     * @return the simplest possible PrimitiveArray (possibly this PrimitiveArray) 
      *     (although not a CharArray).
      *     If the source isUnsigned, this returns this PA unchanged.
      *     For integer types, this only looks for signed integer types, not unsigned types.
      *     Starting with ERDDAP v2.10, a StringArray with longs will return a LongArray
      *     (even though long ints are often used as String-like identifiers and 
-     *     .nc files don't support longs).
+     *     .nc3 files don't support longs).
      */
     public PrimitiveArray simplify(String colName) {
         //return unsigned arrays as is
@@ -2843,7 +2729,7 @@ public abstract class PrimitiveArray {
                     //String2.log(">> simplify -> LONG because d=" + d);
                     type = PAType.FLOAT;  //not ULONG
                     if (this instanceof FloatArray)  //not ULongArray
-                        return this;  //don't continue; it would just check that a ULongArray contains ulongs
+                        return this;  //don't continue; it would just check that a FloatArray contains floats
                 }
             }
             //Don't do this because:
@@ -3442,32 +3328,31 @@ public abstract class PrimitiveArray {
     public abstract int switchFromTo(String from, String to);
 
     /**
-     * For non-StringArray and non-CharArray, 
-     * if the primitiveArray has fake _FillValue and/or missing_values (e.g., -9999999),
+     * If the primitiveArray has fake _FillValue and/or missing_values (e.g., -9999999),
      * those values are converted to PrimitiveArray-style missing values 
      * (NaN, or MAX_VALUE for integer types).
+     *
+     * <p>2020-07-28 If mv or fv is not null, this calls this.setMaxIsMv(true);
      *
      * @param fakeFillValue (e.g., -9999999) from colAttributes.getDouble("_FillValue"); or null if none
      * @param fakeMissingValue (e.g., -9999999) from colAttributes.getDouble("missing_value"); or null if none
      * @return the number of missing values converted
      */
     public int convertToStandardMissingValues(String fakeFillValue, String fakeMissingValue) { //or use PAOne's?
-        //do nothing to String or char columns
-        if (elementType() == PAType.STRING ||
-            elementType() == PAType.CHAR)
-            return 0;
-
         //is _FillValue used?    switch data to standard mv
         //String2.log(">> PrimitiveArray.convertToStandardMissingValues " + elementType() + " fakeFillValue=" + fakeFillValue + " fakeMissingValue=" + fakeMissingValue);
         int nSwitched = 0;
-        if (fakeFillValue != null)
+        if (fakeFillValue != null) {
             nSwitched += switchFromTo(fakeFillValue, "");
+            setMaxIsMV(true);
+        }
 
         //is missing_value used?    switch data to standard mv
         //String2.log ...
-        if (fakeMissingValue != null && !fakeMissingValue.equals(fakeFillValue))   
-            nSwitched += switchFromTo(
-            fakeMissingValue, "");
+        if (fakeMissingValue != null && !fakeMissingValue.equals(fakeFillValue)) {  
+            nSwitched += switchFromTo(fakeMissingValue, "");
+            setMaxIsMV(true);
+        }
 
         return nSwitched;
     }
@@ -3480,22 +3365,36 @@ public abstract class PrimitiveArray {
      * @return the number of values switched
      */
     public int switchNaNToFakeMissingValue(String fakeMissingValue) {
-        if (elementType() == PAType.STRING || 
-            elementType() == PAType.CHAR ||
-            !String2.isSomething(fakeMissingValue) ||
-            fakeMissingValue.equals("NaN"))
+        PAType paType = elementType();
+        if (paType == PAType.STRING)
             return 0;
-        return switchFromTo("", fakeMissingValue);
+        if (paType == PAType.FLOAT || paType == PAType.DOUBLE) 
+            return switchFromTo("", fakeMissingValue);
+
+        //now just types that support maxIsMV
+        if (!String2.isSomething(fakeMissingValue) &&
+            !fakeMissingValue.equals("NaN")) {
+            int n = switchFromTo("", fakeMissingValue);
+            setMaxIsMV(false);
+            return n;
+        } else {
+            //there may be some if maxIsMV, but no value to switch to,
+            //so leave maxIsMV as is.
+            return 0;            
+        }
     }
 
     /**
      * For FloatArray and DoubleArray, this changes all fakeMissingValues
      * to standard missing values (NaN's).
      *
+     * <p>2020-07-28 This always calls setMaxIsMv(true);
+     *
      * @param fakeMissingValue
      * @return the number of missing values converted
      */
     public int switchFakeMissingValueToNaN(double fakeMissingValue) {
+        setMaxIsMV(true);
         if (Double.isFinite(fakeMissingValue) &&
 //???why just FloatArray and DoubleArray???
             (this instanceof FloatArray || this instanceof DoubleArray))
@@ -3523,7 +3422,7 @@ public abstract class PrimitiveArray {
                     "[" + (i-1) + "]=" + getRawestString(i-1) + " > [" + i + "]=" + getRawestString(i));
             }
         }
-        if (missingValue().equals(this, size-1))  //[size-1] = mv
+        if (isMissingValue(size-1))  
             return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                 "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
         return "";
@@ -3540,7 +3439,7 @@ public abstract class PrimitiveArray {
     public String isDescending() {
         if (size == 0)
             return "";
-        if (missingValue().equals(this, 0)) //[0] = mv 
+        if (isMissingValue(0)) 
             return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                 "[0]=(" + ArrayMissingValue + ")");
         for (int i = 1; i < size; i++) {
@@ -3828,6 +3727,45 @@ public abstract class PrimitiveArray {
 
     /**
      * This tests if 'value1 op value2' is true.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1  ULong.MAX_VALUE is treated as NaN
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of null == null will evaluate to true.
+     *    <br>Tests of "nonNull!= null" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(BigInteger value1, String op, BigInteger value2) {
+         //String2.log("testValueOpValue (long): " + value1 + op + value2);
+         //treat null as MAX_VALUE
+         if (value1 == null)
+             value1 = ULongArray.MAX_VALUE;
+         if (value2 == null)
+             value2 = ULongArray.MAX_VALUE;
+
+         if (op.equals("="))  return  value1.equals(value2);
+         if (op.equals("!=")) return !value1.equals(value2);
+
+         if (value1.equals(ULongArray.MAX_VALUE) || 
+             value2.equals(ULongArray.MAX_VALUE))
+             return false;
+         if (op.equals("<=")) return value1.compareTo(value2) <= 0;
+         if (op.equals(">=")) return value1.compareTo(value2) >= 0;
+         if (op.equals("<"))  return value1.compareTo(value2) <  0;
+         if (op.equals(">"))  return value1.compareTo(value2) >  0;
+
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests if 'value1 op value2' is true.
      * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual9
      *   so there is a little fudge factor.
      * The =~ regex test must be tested with String testValueOpValue, not here,
@@ -3911,7 +3849,7 @@ public abstract class PrimitiveArray {
      * @throws RuntimeException if trouble (e.g., invalid op)
      */
      public static boolean testValueOpValueExtra(double value1, String op, double value2) {
-         //String2.log("testValueOpValue (double): " + value1 + op + value2);
+         //String2.log("testValueOpValueExtra (double): " + value1 + op + value2);
          //if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
          //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters 
          //}
@@ -4022,7 +3960,7 @@ public abstract class PrimitiveArray {
      * <br>The =~ regex test is tested with String testValueOpValue,
      *   because value2 is a regex (not a numeric type).
      *
-     * <p>For integer-type PrimitiveArrays, MAX_VALUE is treated as a NaN.
+     * <p>For integer-type PrimitiveArrays, MAX_VALUE is treated as a NaN when maxIsMV=true.
      * <br>Tests of "NaN = NaN" will evaluate to true.
      * <br>Tests of "nonNaN != NaN" will evaluate to true.
      * <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
@@ -4064,19 +4002,42 @@ public abstract class PrimitiveArray {
             return nStillGood;
         }
 
+        //ulong 
+        if (elementType() == PAType.ULONG) {
+            BigInteger value2l = String2.strictParseULongObject(value2);  //null if has decimal part or ...
+            int nStillGood = 0;
+            if (value2l == null) { //if trouble, do 'exact' test via double
+                double value2d = String2.parseDouble(value2);
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValueExact(getDouble(row), op, value2d)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
+            } else {  //value2 parsed cleanly as a ulong
+                //String2.log("applyConstraint(long)");
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValue(getULong(row), op, value2l)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
+            }
+            return nStillGood;
+        }
+
         //long 
         if (elementType() == PAType.LONG) {
-            long value2l = String2.parseLong(value2);  //error if has decimal part
+            double value2d = String2.parseDouble(value2);
+            long   value2l = String2.parseLong(value2);  //LongArray.MAX_VALUE if trouble
             int nStillGood = 0;
-            if (value2l != Long.MAX_VALUE) {  //value2 parsed cleanly as a long
+            if (value2d == value2l &&
+                value2l != Long.MAX_VALUE) {  //value2 parsed cleanly as a long
                 //String2.log("applyConstraint(long)");
                 for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                     if (testValueOpValue(getLong(row), op, value2l)) 
                         nStillGood++;
                     else keep.clear(row);
                 }
-            } else { //do exact test
-                double value2d = String2.parseDouble(value2);
+            } else { //do 'exact' test via double
                 for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                     if (testValueOpValueExact(getDouble(row), op, value2d)) 
                         nStillGood++;
@@ -4088,11 +4049,11 @@ public abstract class PrimitiveArray {
 
         //int types
         if (isIntegerType()) {
-            long value2l = String2.parseLong(value2);  //error if has decimal part
-            int value2i  = String2.parseInt(value2);
+            double value2d = String2.parseDouble(value2); 
+            int    value2i = String2.parseInt(value2);
             int nStillGood = 0;
-            if (value2l == value2i &&
-                value2i != Integer.MAX_VALUE) {   //value2 parsed cleanly as int
+            if (value2d == value2i &&
+                value2d != Integer.MAX_VALUE) {   //value2 parsed cleanly as int
                 //String2.log("applyConstraint(int)");
                 for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                     if (testValueOpValue(getInt(row), op, value2i)) 
@@ -4100,7 +4061,6 @@ public abstract class PrimitiveArray {
                     else keep.clear(row);
                 }
             } else { //do exact test
-                double value2d = String2.parseDouble(value2);
                 for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                     if (testValueOpValueExact(getDouble(row), op, value2d)) 
                         nStillGood++;
@@ -4125,7 +4085,6 @@ public abstract class PrimitiveArray {
 
         //morePrecise
         if (morePrecise) {
-            //String2.log("applyConstraint(double)");
             int nStillGood = 0;
             double value2d = String2.parseDouble(value2);
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
@@ -4133,6 +4092,7 @@ public abstract class PrimitiveArray {
                     nStillGood++;
                 else keep.clear(row);
             }
+            //String2.log(">> applyConstraint(double, morePrecise) nStillGood=" + nStillGood);
             return nStillGood;
         }
 
@@ -4192,14 +4152,15 @@ public abstract class PrimitiveArray {
         }
 
         //what type is it?
-        if (last2CharSame) {
+        if (last2CharSame) {  //it might be an unsigned type
             if (last2Char.equals("ub")) {
                 if (sa.firstNonMatch(String2.NCCSV_UBYTE_ATT_PATTERN) < 0) {
                     UByteArray uba = new UByteArray(saSize, false);
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         uba.addString(s.substring(0, s.length() - 2));
-                        if (uba.isMissingValue(i) && !"255ub".equals(s))
+                        //ensure that maxValue was correctly specified, not e.g., 999ub
+                        if (uba.isMaxValue(i) && !"255ub".equals(s))
                             throw new SimpleException("Invalid ubyte value: " + s);
                     }
                     return uba;
@@ -4210,7 +4171,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         uba.addString(s.substring(0, s.length() - 2));
-                        if (uba.isMissingValue(i) && !"65535us".equals(s))
+                        if (uba.isMaxValue(i) && !"65535us".equals(s))
                             throw new SimpleException("Invalid ushort value: " + s);
                     }
                     return uba;
@@ -4221,7 +4182,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         uia.addString(s.substring(0, s.length() - 2));
-                        if (uia.isMissingValue(i) && !"4294967295ui".equals(s))
+                        if (uia.isMaxValue(i) && !"4294967295ui".equals(s))
                             throw new SimpleException("Invalid uint value: " + s);
                     }
                     return uia;
@@ -4232,7 +4193,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         ula.addString(s.substring(0, s.length() - 2));
-                        if (ula.isMissingValue(i) && !"18446744073709551615uL".equals(s))
+                        if (ula.isMaxValue(i) && !"18446744073709551615uL".equals(s))
                             throw new SimpleException("Invalid ulong value: " + s);
                     }
                     return ula;
@@ -4247,7 +4208,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         ba.addString(s.substring(0, s.length() - 1));
-                        if (ba.isMissingValue(i) && !"127b".equals(s))
+                        if (ba.isMaxValue(i) && !"127b".equals(s))
                             throw new SimpleException("Invalid byte value: " + s);
                     }
                     return ba;
@@ -4374,64 +4335,72 @@ public abstract class PrimitiveArray {
      * THIS HAS BEEN SUPERSEDED BY EDD.addMvFvAttsIfNeeded(), which works with 
      * existing metadata and can find 2 values (mv and fv).
      *
-     * @return the missing_value (e.g., 9999, 1e37) used by this pa, or Double.NaN if none.
+     * @return the missing_value (e.g., 9999, 1e37) used by this pa, or null if none.
      *    For CharArray, this only looks for 0 and MAX_VALUE.
      *    For StringArray, this currently doesn't look for e.g., "9999".
      */
-    public double tryToFindNumericMissingValue() {
+    public PAOne tryToFindNumericMissingValue() {
+
+        if (size() == 0 || elementType() == PAType.STRING) 
+            return null;
+
         int mmi[] = getNMinMaxIndex();
-        boolean hasCoHortMV = size > 0 && mmi[0] < size;
-        if (mmi[0] == 0) {  //mmi[0] is number of non mv values
+        //String2.log(">> nMinMaxIndex=" + String2.toCSSVString(mmi));
+        boolean hasCoHortMV = mmi[0] < size ||  //maxIsMV=true and there is an mv
+            (mmi[0] > 0 && isMaxValue(mmi[2])); //maxIsMV=false and the max value is the MAX_VALUE 
+        if (mmi[0] == 0) {  //i.e., pa only has missing values
             if (hasCoHortMV) {
-                //pa is only CoHortMV
-                return missingValue().getRawDouble(); //cohort mv
+                //pa is only CoHortMV values
+                return missingValue(); //cohort mv
             }
-            return Double.NaN;
+            return null;
         }
 
-        double min = getDouble(mmi[1]);
-        double max = getDouble(mmi[2]);
+        PAOne min = getPAOne(mmi[1]);
+        PAOne max = getPAOne(mmi[2]);
         //String2.log("> min=" + min);
         if (elementType() == PAType.CHAR) {
-            //just look for 0
-            if (min == 0)
-                return 0;
-            return Double.NaN;
+            //look for 0 or ffff
+            if (min.getInt() == 0)
+                return min;
+            if (hasCoHortMV)
+                return missingValue();  //cohort mv
+            return null;
         }
 
         if (elementType() != PAType.STRING) {
-            int whichMv9 = DoubleArray.MV9.indexOf(min);
+            int whichMv9 = DoubleArray.MV9.indexOf(min.getDouble());
             if (whichMv9 >= 0)
-                return DoubleArray.MV9.get(whichMv9);
-            whichMv9 = DoubleArray.MV9.indexOf(max);
+                return min;
+            whichMv9 = DoubleArray.MV9.indexOf(max.getDouble());
             if (whichMv9 >= 0) 
-                return DoubleArray.MV9.get(whichMv9);
+                return max;
         }
 
         if (elementType() == PAType.DOUBLE) {
-            if (min <= -1e300)
+            if (min.getDouble() <= -1e300)
                 return min;
-            if (max >= 1e300)
+            if (max.getDouble() >= 1e300)
                 return max;
+
         } else if (elementType() == PAType.FLOAT) {
-            if (min < -5e36)
+            if (min.getFloat() < -5e36f)
                 return min;
-            if (max > 5e36)
+            if (max.getFloat() > 5e36f)
                 return max;
-        } else if (elementType() == PAType.STRING) {
 
         } else if (isUnsigned()) {
             if (hasCoHortMV)
-                return missingValue().getRawDouble(); //cohort mv
+                return missingValue(); //cohort mv
 
         } else {
             //signed integer types
-            if (MINEST_VALUE().getDouble() == min)  
+            if (MINEST_VALUE().equals(min))  
                 return min;
             if (hasCoHortMV)
-                return missingValue().getRawDouble(); //cohort mv
+                return missingValue(); //cohort mv
         }
-        return Double.NaN;        
+        return null;        
     }
 
     /**
@@ -4861,6 +4830,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.getInt(2), 12, "");
 
         pa = new IntArray(new int[]{Integer.MAX_VALUE, 100, 12});
+        pa.setMaxIsMV(true);
         pa = pa.simplify("test14");
         Test.ensureTrue(pa instanceof ByteArray, "elementType=" + pa.elementType());
         Test.ensureEqual(pa.getInt(0), Integer.MAX_VALUE, "");
@@ -5373,6 +5343,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(csvFactory(PAType.CHAR,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, \\u0016, !", "");
         Test.ensureEqual(csvFactory(PAType.DOUBLE, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(csvFactory(PAType.FLOAT,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(PAType.INT,    "1.1, 2.2").toString(), "1, 2", "");
         Test.ensureEqual(csvFactory(PAType.INT,    "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
         Test.ensureEqual(csvFactory(PAType.LONG,   "1, 2"    ).addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
         Test.ensureEqual(csvFactory(PAType.SHORT,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");

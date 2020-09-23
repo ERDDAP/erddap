@@ -75,7 +75,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         sosOfferingPrefix = null;
         defaultDataQuery = null;
         defaultGraphQuery = "maxLongitude,maxLatitude";
-        publicSourceUrl = EDStatic.erddapUrl(null); //the public, not-logged-in URL 
+        publicSourceUrl = EDStatic.preferredErddapUrl; 
         setReloadEveryNMinutes(1000000000);  //i.e. never
         localSourceUrl = null;
 
@@ -97,11 +97,11 @@ public class EDDTableFromAllDatasets extends EDDTable{
             Attributes atts = table.columnAttributes(dv);            
             PrimitiveArray pa = table.getColumn(dv);
             if (Calendar2.SECONDS_SINCE_1970.equals(atts.getString("units"))) {
-                 dataVariables[dv] = new EDVTimeStamp(colName, colName, 
+                 dataVariables[dv] = new EDVTimeStamp(datasetID, colName, colName, 
                     atts, null, //sourceAtts, addAtts
                     pa.elementTypeString()); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[dv] = new EDV(colName, colName, 
+                dataVariables[dv] = new EDV(datasetID, colName, colName, 
                     atts, null, //sourceAtts, addAtts
                     pa.elementTypeString()); 
                 //actual_range of vars in this table always NaN,NaN

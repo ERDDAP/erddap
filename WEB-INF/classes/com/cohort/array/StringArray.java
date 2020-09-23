@@ -51,10 +51,10 @@ public class StringArray extends PrimitiveArray {
 
     /**
      * This returns the number of bytes per element for this PrimitiveArray.
-     * The value for "String" isn't a constant, so this returns 20.
+     * The value for "String" isn't a constant, so this returns 20 (a crude estimate).
      *
      * @return the number of bytes per element for this PrimitiveArray.
-     * The value for "String" isn't a constant, so this returns 20.
+     * The value for "String" isn't a constant, so this returns 20 (a crude estimate).
      */
     public int elementSize() {
         return 20;
@@ -69,17 +69,34 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
-    public boolean isMissingValue(int index) {
+    public boolean isMaxValue(int index) {
         if (index >= size)
-            throw new IllegalArgumentException(String2.ERROR + " in StringArray.isMissingValue: index (" + 
+            throw new IllegalArgumentException(String2.ERROR + " in StringArray.isMaxValue: index (" + 
                 index + ") >= size (" + size + ").");
         StringHolder sh = array[index];
         if (sh == null)
             return true;
         char car[] = sh.charArray();
         return car == null || car.length == 0;
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMissingValue(int index) {
+        return isMaxValue(index);
     }
 
     /**
@@ -634,15 +651,6 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? "" : value.getString());
-    }
-
-    /**
      * This adds n PAOne's to the array.
      *
      * @param n the number of times 'value' should be added.
@@ -667,28 +675,10 @@ public class StringArray extends PrimitiveArray {
     /**
      * This adds an element to the array.
      *
-     * @param value the value, as a String.
-     */
-    public void addString(String value) {
-        add(value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
      * @param value the float value
      */
-    public void addFloat(float value) {
-        add(Float.isFinite(value)? String.valueOf(value) : "");
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Double.isFinite(value)? String.valueOf(value) : "");
+    public void addNFloats(int n, float value) {
+        addN(n, Float.isFinite(value)? String.valueOf(value) : "");
     }
 
     /**
@@ -703,41 +693,23 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(value == Integer.MAX_VALUE? "" : String.valueOf(value));
-    }
-
-    /**
      * This adds n ints to the array.
      *
      * @param n the number of times 'value' should be added
-     * @param value the value, as an int.
+     * @param value the value, as an int.  Integer.MAX_VALUE is added as is, not "".
      */
     public void addNInts(int n, int value) {
-        addN(n, value == Integer.MAX_VALUE? "" : String.valueOf(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(value == Long.MAX_VALUE? "" : String.valueOf(value));
+        addN(n, String.valueOf(value));
     }
 
     /**
      * This adds n longs to the array.
      *
      * @param n the number of times 'value' should be added
-     * @param value the value, as an int.
+     * @param value the value, as a long.  Long.MAX_VALUE is added as is, not "".
      */
     public void addNLongs(int n, long value) {
-        addN(n, value == Long.MAX_VALUE? "" : String.valueOf(value));
+        addN(n, String.valueOf(value));
     }
 
     /**
@@ -765,7 +737,7 @@ public class StringArray extends PrimitiveArray {
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            add(otherPA.getString(otherIndex++)); //does error checking
+            add(otherPA.getString(otherIndex++)); //does error checking and handles maxIsMV
         return this;
     }
 
@@ -1057,7 +1029,7 @@ public class StringArray extends PrimitiveArray {
      * @param i the value. 
      */
     public void setInt(int index, int i) {
-        set(index, i == Integer.MAX_VALUE? "" : String.valueOf(i));
+        set(index, String.valueOf(i));
     }
 
     /**
@@ -1077,7 +1049,7 @@ public class StringArray extends PrimitiveArray {
      * @param i the value. 
      */
     public void setLong(int index, long i) {
-        set(index, i == Long.MAX_VALUE? "" : String.valueOf(i));
+        set(index, String.valueOf(i));
     }
 
     /**
@@ -1085,10 +1057,10 @@ public class StringArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   Trouble (e.g., "") is returned as null.
      */
     public BigInteger getULong(int index) {
-        return String2.parseULong(get(index));
+        return String2.parseULongObject(get(index));
     }
 
     /**
@@ -1153,7 +1125,7 @@ public class StringArray extends PrimitiveArray {
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns array[index].
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         return get(index);
@@ -1321,11 +1293,20 @@ public class StringArray extends PrimitiveArray {
         start[1] = -1;
         return start;
     }
+
     /**
      * A simpler form of indexWith that finds the first matching line.
      */
     public int lineContaining(String lookFor) {
-        return indexWith(lookFor, new int[]{0, 0})[0];
+        return lineContaining(lookFor, 0);
+    }
+
+    /**
+     * A simpler form of indexWith that finds the first matching line, starting
+     * the search on startLine (0..).
+     */
+    public int lineContaining(String lookFor, int startLine) {
+        return indexWith(lookFor, new int[]{startLine, 0})[0];
     }
 
 
@@ -1348,15 +1329,7 @@ public class StringArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof StringArray)) //handles o==null
-            return false;
-        StringArray other = (StringArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (!array[i].equals(other.array[i])) //could use == if assume canonical
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -1365,12 +1338,11 @@ public class StringArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof StringArray))
             return "The two objects aren't equal: this object is a StringArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         StringArray other = (StringArray)o;
         if (other.size() != size)
             return "The two StringArrays aren't equal: one has " + size + 
@@ -2346,7 +2318,7 @@ public class StringArray extends PrimitiveArray {
         if (size == 0)
             return "";
         String s = get(0);
-        if (s == null) 
+        if (s == null) //other classes test isMissingValue. StringArray's behavior is intentionally a little different.
             return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                 "[0]=null");
         for (int i = 1; i < size; i++) {
@@ -2376,7 +2348,7 @@ public class StringArray extends PrimitiveArray {
         if (size == 0)
             return "";
         String s = get(0);
-        if (s == null) 
+        if (s == null) //other classes test isMissingValue. StringArray's behavior is intentionally a little different.
             return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                 "[0]=null");
         for (int i = 1; i < size; i++) {
@@ -2848,6 +2820,8 @@ public class StringArray extends PrimitiveArray {
         //test equals
         StringArray anArray2 = new StringArray();
         anArray2.add("0"); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a StringArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a StringArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -3307,10 +3281,10 @@ public class StringArray extends PrimitiveArray {
 
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new StringArray(new String[] {                  })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new StringArray(new String[] {""                })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "2" })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "99"})).tryToFindNumericMissingValue(), Double.NaN, ""); //doesn't catch 99, would be nice if it did?
+        Test.ensureEqual((new StringArray(new String[] {                  })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new StringArray(new String[] {""                })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "2" })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new StringArray(new String[] {"a", "", "1", "99"})).tryToFindNumericMissingValue(), null, ""); //doesn't catch 99. Should it?
 
     }
 

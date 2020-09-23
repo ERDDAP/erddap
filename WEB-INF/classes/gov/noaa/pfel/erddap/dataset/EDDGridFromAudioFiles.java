@@ -333,7 +333,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         if (extractDataType.startsWith("timeFormat=")) {
             tPAType = PAType.STRING;
         } else {
-            tPAType = PrimitiveArray.elementStringToPAType(extractDataType);
+            tPAType = PAType.fromCohortString(extractDataType);
         }
         PrimitiveArray pa = PrimitiveArray.factory(tPAType, 1, false);
         axisSourceTable.addColumn(0, 
@@ -376,7 +376,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 
             //add missing_value and/or _FillValue if needed
             addMvFvAttsIfNeeded(varName, pa, sourceAtts, addAtts);
-
         }
 
         //after dataVariables known, add global attributes in the axisAddTable
@@ -651,6 +650,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "            <att name=\"long_name\">Channel 1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">33000.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-33000.0</att>\n" +
 "            <att name=\"ioos_category\">Other</att>\n" +
@@ -708,6 +708,9 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 
 
         //.dds
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            dir, edd.className() + "_", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 2];\n" +
@@ -720,12 +723,12 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "      Float64 elapsedTime[elapsedTime = 28800000];\n" +
 "  } channel_1;\n" +
 "} testGridWav;\n";
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
-            dir, edd.className() + "_", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //*** .das
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            dir, edd.className() + "_", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes {\n" +
 "  time {\n" +
@@ -745,6 +748,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    String units \"seconds\";\n" +
 "  }\n" +
 "  channel_1 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Float64 colorBarMaximum 33000.0;\n" +
 "    Float64 colorBarMinimum -33000.0;\n" +
 "    String ioos_category \"Other\";\n" +
@@ -763,10 +767,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    String defaultDataQuery \"&time=min(time)\";\n" +
 "    String defaultGraphQuery \"channel_1[0][(0):(1)]&.draw=lines&.vars=elapsedTime|time\";\n" +
 "    String history \"" + today;
-
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
-            dir, edd.className() + "_", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +

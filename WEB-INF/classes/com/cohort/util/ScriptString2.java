@@ -256,10 +256,11 @@ public class ScriptString2  {
      * This returns the specified capture group from s. 
      *
      * @param s the source String
-     * @param regex the regular expression, see java.util.regex.Pattern.
+     * @param regex the regular expression, see java.util.regex.Pattern, which matches
+     *    part of s.
      * @param captureGroupNumber the number of the capture group (0 for entire regex,
      *    1 for first capture group, 2 for second, etc.)
-     * @return the value of the specified capture group,
+     * @return the value of the specified capture group in the first match of the regex,
           or null if the s doesn't match the regex
      * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
@@ -1650,16 +1651,16 @@ public class ScriptString2  {
     }
 
     /**
-     * This converts a string to a boolean and then a byte.
+     * This converts a string to a boolean and then a Int.
      * 
      * @param s the string
-     * @return Byte.MAX_VALUE (i.e., missing value) if s is null or s is "". 
+     * @return Integer.MAX_VALUE (i.e., missing value) if s is null or s is "". 
      *   Return 0 if s is "false", "f", or "0".   
      *   Return 1 if for all other values.
      *   Case and leading/trailing spaces don't matter.
      */
-    public static byte parseBooleanToByte(String s) {
-        return String2.parseBooleanToByte(s);      
+    public static int parseBooleanToInt(String s) {
+        return String2.parseBooleanToInt(s);      
     }
 
     /** This removes leading ch's.

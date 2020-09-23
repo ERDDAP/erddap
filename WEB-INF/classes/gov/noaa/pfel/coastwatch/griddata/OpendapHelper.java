@@ -179,9 +179,6 @@ public class OpendapHelper  {
     /** 
      * This sets attributes from the information in the attributeTable.
      *
-     * <p>Following the getValue return type, DUint16 is treated like short 
-     * and DUInt32 is treated like int.
-     * 
      * Currently this converts url, UNKNOWN, and unknown attributes to Strings.
      *
      * @param attributeTable It isn't an error if this is null; but nothing is done.
@@ -190,9 +187,8 @@ public class OpendapHelper  {
      */
     public static void getAttributes(AttributeTable attributeTable, Attributes attributes) {
 
-        if (attributeTable == null) {
+        if (attributeTable == null) 
             return;
-        }
 
         //get the attributes
         Enumeration names = attributeTable.getNames();
@@ -258,6 +254,16 @@ public class OpendapHelper  {
             }
         }
         attributes.fromNccsvStrings();
+
+        //String2.log("\n>> OpendapHelper.getAttributes pre\n" + attributes.toString());
+        //2020-09-01 in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
+        //String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" + attributes.getString("_Unsigned"));
+        //leave attribute in so caller can tell if _Unsigned.
+        if ("true".equals(attributes.getString("_Unsigned"))) {
+            attributes.convertSomeSignedToUnsigned();
+            //String2.log("\n>> OpendapHelper.getAttributes post\n" + attributes.toString());
+        } 
+
     }
 
     /**
@@ -667,6 +673,11 @@ public class OpendapHelper  {
         return pv;
     }
 
+    /* This variant fo getAtomicType assumes strictDapMode=true. */
+    public static String getAtomicType(PAType paType) throws RuntimeException {
+        return getAtomicType(true, paType);
+    }
+
     /**
      * This returns the atomic-type String (e.g., Int16) corresponding to a 
      * PrimitiveArray's type.
@@ -674,30 +685,35 @@ public class OpendapHelper  {
      * <p>Some Java types don't have exact matches. The closest match is returned,
      * e.g., char becomes String, long becomes double
      *
+     * @param strictDapMode if true, this only returns DAP 2.0 types. If false,
+     *   This returns all PAType types (written in DAP style).
      * @param paType a PAType
      * @return the corresponding atomic-type String
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
-    public static String getAtomicType(PAType paType) throws Exception {
-        if (paType == PAType.LONG ||   // DAP has no long.  This is imperfect; there will be loss of precision
-            paType == PAType.ULONG ||  // DAP has no ulong. This is imperfect; there will be loss of precision
-            paType == PAType.DOUBLE) return "Float64";
+    public static String getAtomicType(boolean strictDapMode, PAType paType) throws RuntimeException {
+        if (paType == PAType.DOUBLE) return "Float64";
         if (paType == PAType.FLOAT)  return "Float32";
+        if (paType == PAType.LONG)   return strictDapMode? "Float64" : "Int64";  // DAP has no long.  This is imperfect; there will be loss of precision
+        if (paType == PAType.ULONG)  return strictDapMode? "Float64" : "UInt64"; // DAP has no ulong. This is imperfect; there will be loss of precision
         if (paType == PAType.INT)    return "Int32";
         if (paType == PAType.UINT)   return "UInt32";
         if (paType == PAType.SHORT)  return "Int16";
         if (paType == PAType.USHORT) return "UInt16";
-        if (paType == PAType.BYTE ||
-            paType == PAType.UBYTE)  return "Byte";
-        if (paType == PAType.CHAR ||    // DAP has no char, so represent it as a String
-            paType == PAType.STRING) return "String";
-        throw new Exception(String2.ERROR + "in OpendapHelper.getAtomicType: The classType=" + 
+        if (paType == PAType.BYTE)   return "Byte";   //! technically, DAP bytes are unsigned, but for name consistency and ERDDAP/THREDDS convention, Byte means signed
+        if (paType == PAType.UBYTE)  return strictDapMode? "Byte"    : "UByte";  // DAP has no ubyte 
+        if (paType == PAType.CHAR)   return strictDapMode? "String"  : "Char";   // DAP has no char, so represent it as a String
+        if (paType == PAType.STRING) return "String";
+        throw new RuntimeException(String2.ERROR + "in OpendapHelper.getAtomicType: The classType=" + 
             paType + " is not supported.");
     }
 
+
     /**
      * This writes the attributes to the writer in the opendap DAS format.
-     * E.g., <pre>
+     * This uses strictDapMode=true.
+     * 
+     * <p>E.g., <pre>
     altitude {
         Float32 actual_range 0.0, 0.0;
         Int32 fraction_digits 0;
@@ -706,16 +722,17 @@ public class OpendapHelper  {
      * </pre>
      * @param varName the variable's name.
      *  For global attributes, ncBrowse and netcdf-java treat "NC_GLOBAL" as special case. (I had used "GLOBAL".)
+     * @param paType The PAType of the variable.
      * @param attributes
      * @param writer
      * @param encodeAsHTML if true, characters like &lt; are converted to their 
      *    character entities and lines wrapped with \n if greater than 78 chars.
      * @throws Exception if trouble
      */
-    public static void writeToDAS(String varName, Attributes attributes,
+    public static void writeToDAS(String varName, PAType paType, Attributes attributes,
         Writer writer, boolean encodeAsHTML) throws Exception {
 
-        writer.append(dasToStringBuilder(varName, attributes, encodeAsHTML));
+        writer.append(dasToStringBuilder(varName, paType, attributes, encodeAsHTML, true)); //strictDapMode
     }
 
     /**
@@ -728,25 +745,48 @@ public class OpendapHelper  {
     }
      * </pre>
      * @param varName the variable's name
+     * @param paType The PAType of the variable.
+     *    If isUnsigned and if the attributes doesn't already include it
+     *    and if strictDapMode=true,
+     *    a new _Unsigned=true attribute will be added to the output.
+     *    Attributes with unsigned data types will always be converted to signed
+     *    when written.
      * @param attributes
      * @param encodeAsHTML if true, characters like &lt; are converted to their 
      *    character entities.
+     * @param strictDapMode if true, this sticks to DAP 2.0 standard. If false, all
+     *    PATypes are supported (with names that look like DAP names).
      * @throws Exception if trouble
      */
-    public static StringBuilder dasToStringBuilder(String varName, Attributes attributes,
-        boolean encodeAsHTML) throws Exception {
+    public static StringBuilder dasToStringBuilder(String varName, PAType paType, 
+        Attributes attributes, boolean encodeAsHTML, boolean strictDapMode) throws Exception {
         StringBuilder sb = new StringBuilder();
         //String2.log(">> dasToString " + varName + " attributes:\n" + attributes.toString());
         //see EOL definition for comments about it
         int firstUEncodedChar = encodeAsHTML? 65536 : 65536;
         sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL); 
-        String names[] = attributes.getNames();
-        for (int ni = 0; ni < names.length; ni++) {
-            PrimitiveArray pa = attributes.get(names[ni]);
+        StringArray names = new StringArray(attributes.getNames());
+        boolean addedUnsigned = false;
+        if (strictDapMode && 
+            (paType == PAType.BYTE || paType == PAType.UBYTE) && //for bytes, explicitly say _Unsigned=true (which DAP defines) or false (which ERDDAP and TDS used as default)
+            attributes.getString("_Unsigned") == null) {
+            addedUnsigned = true;
+            names.atInsert(0, "_Unsigned");  //0 is a good guess at the correct position
+            names.sortIgnoreCase();          //but re-sort to make sure
+        }
+        for (int ni = 0; ni < names.size(); ni++) {
+            String tName = names.get(ni);
+            PrimitiveArray pa = tName.equals("_Unsigned") && addedUnsigned?
+                new StringArray(new String[]{paType == PAType.BYTE? "false" : "true"}) : attributes.get(tName);
             PAType et = pa.elementType();
-            sb.append(XML.encodeAsHTML("    " + getAtomicType(et) + " " + names[ni] + " ", encodeAsHTML));
+            //technically this is wrong because DAP says bytes are unsigned
+            //but THREDDS and ERDDAP have traditionally treated bytes as signed.
+            if (strictDapMode && et == PAType.UBYTE)  //but DAP does support UInt16 and UInt32. 
+                pa = pa.makeSignedPA();  
+            sb.append(XML.encodeAsHTML("    " + getAtomicType(strictDapMode, et) + " " + tName + " ", encodeAsHTML));
             int paSize = pa.size();
             if (et == PAType.CHAR || et == PAType.STRING) {
+                //if (et == PAType.CHAR) String2.log(">> dasToStringBuilder char#=" + pa.getInt(0));
                 String ts = String2.toSVString(pa.toStringArray(), "\n", false);
                 if (encodeAsHTML) {
                     //was ts = String2.noLongLinesAtSpace(ts, 78, "");
@@ -765,14 +805,14 @@ public class OpendapHelper  {
                 sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
             } else if (et == PAType.LONG   ||
                        et == PAType.ULONG) {
-                //the spec says must be like Ansi C printf, %g format, precision=6
+                //print with full precision, even if strictDapMode. No reason not to.
                 for (int pai = 0; pai < paSize; pai++) {
                     sb.append(pa.getRawString(pai) +
                         //String.format("%g.6", (Object)new Double(pa.getDouble(pai))) + 
                         (pai < paSize - 1 ? ", " : ""));  
                 }
             } else if (et == PAType.DOUBLE) {
-                //the spec says must be like Ansi C printf, %g format, precision=6
+                //the spec says must be like Ansi C printf, %g format, precision=6. That is clearly insufficient.
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getDouble(pai);
                     //if (et==PAType.LONG) String2.log(">> Opendap long att #" + pai + " = " + pa.getString(pai) + " => " + ts); 
@@ -822,20 +862,20 @@ public class OpendapHelper  {
             BytePrimitiveVector tpv = (BytePrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
+        } else if (pv instanceof UInt16PrimitiveVector) {  //uint16 is instanceof int16! so must test uint16 first
+            UInt16PrimitiveVector tpv = (UInt16PrimitiveVector)pv;
+            for (int i = 0; i < n; i++)
+                da[i] = tpv.getValue(i);
         } else if (pv instanceof Int16PrimitiveVector) {
             Int16PrimitiveVector tpv = (Int16PrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
-        } else if (pv instanceof UInt16PrimitiveVector) {
-            UInt16PrimitiveVector tpv = (UInt16PrimitiveVector)pv;
+        } else if (pv instanceof UInt32PrimitiveVector) {  //uint32 is instanceof int32! so must test uint32 first
+            UInt32PrimitiveVector tpv = (UInt32PrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
         } else if (pv instanceof Int32PrimitiveVector) {
             Int32PrimitiveVector tpv = (Int32PrimitiveVector)pv;
-            for (int i = 0; i < n; i++)
-                da[i] = tpv.getValue(i);
-        } else if (pv instanceof UInt32PrimitiveVector) {
-            UInt32PrimitiveVector tpv = (UInt32PrimitiveVector)pv;
             for (int i = 0; i < n; i++)
                 da[i] = tpv.getValue(i);
         } else {
@@ -858,14 +898,14 @@ public class OpendapHelper  {
         Test.ensureNotNull(pv, "pv is null");
         if (pv instanceof BytePrimitiveVector) 
             return      ((BytePrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector)   //uint16 is instanceof int16! so must test uint16 first
+            return      ((UInt16PrimitiveVector)pv).getValue(index);
         if (pv instanceof Int16PrimitiveVector) 
             return      ((Int16PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt16PrimitiveVector) 
-            return      ((UInt16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector)   //uint32 is instanceof int32! so must test uint32 first
+            return      ((UInt32PrimitiveVector)pv).getValue(index);
         if (pv instanceof Int32PrimitiveVector) 
             return      ((Int32PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt32PrimitiveVector) 
-            return      ((UInt32PrimitiveVector)pv).getValue(index);
         if (pv instanceof Float32PrimitiveVector) 
             return Math2.roundToInt(((Float32PrimitiveVector)pv).getValue(index));
         if (pv instanceof Float64PrimitiveVector) 
@@ -889,14 +929,14 @@ public class OpendapHelper  {
             return       ((Float64PrimitiveVector)pv).getValue(index);
         if (pv instanceof   BytePrimitiveVector) 
             return        ((BytePrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector)  //uint16 is instanceof int16! so must test uint16 first
+            return      ((UInt16PrimitiveVector)pv).getValue(index);
         if (pv instanceof  Int16PrimitiveVector) 
             return       ((Int16PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt16PrimitiveVector) 
-            return      ((UInt16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector)  //uint32 is instanceof int32! so must test uint32 first 
+            return      ((UInt32PrimitiveVector)pv).getValue(index);
         if (pv instanceof  Int32PrimitiveVector) 
             return       ((Int32PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt32PrimitiveVector) 
-            return      ((UInt32PrimitiveVector)pv).getValue(index);
         throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
     }
 
@@ -916,14 +956,14 @@ public class OpendapHelper  {
             return "" + ((Float64PrimitiveVector)pv).getValue(index);
         if (pv instanceof   BytePrimitiveVector) 
             return "" +   ((BytePrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt16PrimitiveVector)  //uint16 is instanceof int16! so must test uint16 first
+            return "" + ((UInt16PrimitiveVector)pv).getValue(index);
         if (pv instanceof  Int16PrimitiveVector) 
             return "" +  ((Int16PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt16PrimitiveVector) 
-            return "" + ((UInt16PrimitiveVector)pv).getValue(index);
+        if (pv instanceof UInt32PrimitiveVector)  //uint32 is instanceof int32! so must test uint32 first
+            return "" + ((UInt32PrimitiveVector)pv).getValue(index);
         if (pv instanceof  Int32PrimitiveVector) 
             return "" +  ((Int32PrimitiveVector)pv).getValue(index);
-        if (pv instanceof UInt32PrimitiveVector) 
-            return "" + ((UInt32PrimitiveVector)pv).getValue(index);
         //if (pv instanceof StringPrimitiveVector)
         //    return ((StringPrimitiveVector)pv).getValue(index);
         if (pv instanceof BooleanPrimitiveVector)
@@ -991,21 +1031,35 @@ public class OpendapHelper  {
     }
 
     /**
+     * This returns the PrimitiveArray elementPAType of a BaseType.
+     *
+     * @param pv 
+     * @return the PrimitiveArray elementPAType of this BaseType. 
+     *    This treats all Bytes as signed (it doesn't look at _Unsigned attribute).
+     * @throws Exception if trouble
+     */
+    public static PAType getElementPAType(BaseType bt) throws Exception {
+        return getElementPAType(bt.newPrimitiveVector()); //a new PV of suitable type for the BaseType
+    }
+
+    /**
      * This returns the PrimitiveArray elementPAType of a PrimitiveVector.
      *
      * @param pv 
      * @return the PrimitiveArray elementPAType of this BaseType.
+     *    This treats all Bytes as signed (it doesn't look at _Unsigned attribute).
      * @throws Exception if trouble
      */
     public static PAType getElementPAType(PrimitiveVector pv) throws Exception {
         Test.ensureNotNull(pv, "pv is null");
+        //String2.pressEnterToContinue(">> OpendapHelper.getElementPAType(" + pv.toString());
         if (pv instanceof Float32PrimitiveVector)  return PAType.FLOAT;
         if (pv instanceof Float64PrimitiveVector)  return PAType.DOUBLE;
-        if (pv instanceof BytePrimitiveVector)     return PAType.BYTE; //technically should be UByte
+        if (pv instanceof BytePrimitiveVector)     return PAType.BYTE; //technically should be UByte, but ERDDAP and TDS traditionally treat DAP bytes as signed
+        if (pv instanceof UInt16PrimitiveVector)   return PAType.USHORT; //UInt16 is instanceof Int16! so must test uint16 first
+        if (pv instanceof UInt32PrimitiveVector)   return PAType.UINT;   //UInt32 is instanceof Int32! so must test uint32 first
         if (pv instanceof Int16PrimitiveVector)    return PAType.SHORT;
-        if (pv instanceof UInt16PrimitiveVector)   return PAType.USHORT;
         if (pv instanceof Int32PrimitiveVector)    return PAType.INT;
-        if (pv instanceof UInt32PrimitiveVector)   return PAType.UINT;
         if (pv instanceof BaseTypePrimitiveVector) return PAType.STRING; //???
         if (pv instanceof BooleanPrimitiveVector)  return PAType.BOOLEAN;
         throw new Exception(String2.ERROR + ": Unknown PrimitiveVector (" + pv + ").");
@@ -2468,7 +2522,7 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
         } catch (Throwable t) {
             throw new Exception(
                 "\nUnexpected error." +
-                "\nOutOfMememoryError from TDS bug was expected." + 
+                "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is common)." + 
                 "\n(server timed out 2013-10-24)", t); 
         }
 

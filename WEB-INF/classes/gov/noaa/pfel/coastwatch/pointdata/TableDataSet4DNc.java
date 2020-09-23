@@ -139,7 +139,7 @@ public class TableDataSet4DNc extends TableDataSet {
                             dataType == DataType.STRING ||
                             dataType == DataType.STRUCTURE) {
                             if (verbose) String2.log(reject + 
-                                "dataType=" + NcHelper.getElementPAType(dataType).toString());
+                                "dataType=" + NcHelper.getElementPAType(variable).toString());
                             continue;
                         }
 
@@ -280,7 +280,7 @@ public class TableDataSet4DNc extends TableDataSet {
                         Attributes tAttributes = new Attributes();
                         NcHelper.getVariableAttributes(variable, tAttributes);
                         dataAttributes.add(tAttributes);
-                        dataElementType.add(NcHelper.getElementPAType(variable.getDataType()));
+                        dataElementType.add(NcHelper.getElementPAType(variable));
                     }
 
                     //close the file  (do care if exception)
@@ -484,7 +484,7 @@ public class TableDataSet4DNc extends TableDataSet {
         Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
         Test.ensureEqual(table.getDoubleData(9, row), Double.NaN, "");
         Test.ensureEqual(table.getDoubleData(10, row), Double.NaN, "");
-        Test.ensureEqual(table.getDoubleData(11, row), Double.NaN, "");
+        Test.ensureEqual(table.getIntData(11, row), 32767, "");  
         Test.ensureEqual(table.getFloatData(12, row), 1021.1f, "");
         Test.ensureEqual(table.getFloatData(13, row), 19.9f, "");
         Test.ensureEqual(table.getFloatData(14, row), 18.4f, "");

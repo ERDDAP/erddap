@@ -127,7 +127,7 @@ public class PersistentTable {
         //open the file;   
         raf = new RandomAccessFile(fullFileName, mode); 
         long longNRows = raf.length() / nBytesPerRow; //integer division causes partial row at end to be ignored 
-        EDStatic.ensureArraySizeOkay(longNRows, "PersistentTable");
+        Math2.ensureArraySizeOkay(longNRows, "PersistentTable");
         nRows = (int)longNRows; //save since checked above
         if (verbose) String2.log("PersistentTable " + fullFileName + " is open.\n" +
             "mode=" + mode + " nRows=" + nRows);
@@ -722,9 +722,10 @@ public class PersistentTable {
 
             int expected[] = {141,693,1491,1615};
             modeTime = System.currentTimeMillis() - modeTime;
-            String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
-                modeTime + "   (" + expected[mode] + "ms)"); 
-            Test.ensureTrue(modeTime < 2 * expected[mode], "That is too slow!"); 
+            Test.ensureTrue(modeTime < 2 * expected[mode], 
+                modes[mode] + " TOTAL time to read " + n + " items=" + 
+                modeTime + "   (" + expected[mode] + "ms)\n" +
+                "That is too slow!"); 
 
             pt.close();
         }

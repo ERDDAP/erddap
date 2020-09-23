@@ -111,7 +111,9 @@ public class Test {
      */
     public static void ensureEqual(BigInteger i1, BigInteger i2, String message)
         throws RuntimeException {
-        if (!i1.equals(i2)) 
+        if (i1 == null && i2 == null)
+            return;
+        if (i1 == null || !i1.equals(i2)) 
             error("\n" + String2.ERROR + " in Test.ensureEqual(BigInteger):\n" + 
                 message + "\nSpecifically: " + i1 + " != " + i2);
     }  
@@ -128,8 +130,8 @@ public class Test {
         throws RuntimeException {
         if (i1 == null && i2 == null)
             return;
-        if (i1 == null || i2 == null || !i1.equals(i2)) 
-            error("\n" + String2.ERROR + " in Test.ensureEqual(BigInteger):\n" + 
+        if (i1 == null || !i1.equals(i2)) 
+            error("\n" + String2.ERROR + " in Test.ensureEqual(PAOne):\n" + 
                 message + "\nSpecifically: " + i1 + " != " + i2);
     }  
       
@@ -158,7 +160,9 @@ public class Test {
      */
     public static void ensureNotEqual(BigInteger i1, BigInteger i2, String message)
         throws RuntimeException {
-        if (i1.equals(i2)) 
+        if (i1 == null && i2 == null)
+            return;
+        if (i1 == null || i1.equals(i2)) 
             error("\n" + String2.ERROR + " in Test.ensureNotEqual(BigInteger):\n" + 
                 message + "\nSpecifically: " + i1 + " = " + i2);
     }  
@@ -649,7 +653,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (aar[i] != bar[i])
                     Test.error(errorInObjectEquals + message + 
-                        "\na byte[" + i + "]=" + aar[i] + " != b byte[" + i + "]=" + bar[i] + ".");
+                        "\na byte[" + i + "]=" + aar[i] + " != b byte[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof char[] && b instanceof char[]) {
@@ -662,7 +668,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (aar[i] != bar[i])
                     Test.error(errorInObjectEquals + message + 
-                        "\na char[" + i + "]=" + (int)aar[i] + " != b char[" + i + "]=" + (int)bar[i] + ".");
+                        "\na char[" + i + "]=" + (int)aar[i] + " != b char[" + i + "]=" + (int)bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof short[] && b instanceof short[]) {
@@ -675,7 +683,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (aar[i] != bar[i])
                     Test.error(errorInObjectEquals + message + 
-                        "\na short[" + i + "]=" + aar[i] + " != b short[" + i + "]=" + bar[i] + ".");
+                        "\na short[" + i + "]=" + aar[i] + " != b short[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof int[] && b instanceof int[]) {
@@ -688,7 +698,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (aar[i] != bar[i])
                     Test.error(errorInObjectEquals + message + 
-                        "\na int[" + i + "]=" + aar[i] + " != b int[" + i + "]=" + bar[i] + ".");
+                        "\na int[" + i + "]=" + aar[i] + " != b int[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof long[] && b instanceof long[]) {
@@ -701,7 +713,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (aar[i] != bar[i])
                     Test.error(errorInObjectEquals + message + 
-                        "\na long[" + i + "]=" + aar[i] + " != b long[" + i + "]=" + bar[i] + ".");
+                        "\na long[" + i + "]=" + aar[i] + " != b long[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof BigInteger[] && b instanceof BigInteger[]) {
@@ -714,7 +728,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (!aar[i].equals(bar[i]))
                     Test.error(errorInObjectEquals + message + 
-                        "\na BigInteger[" + i + "]=" + aar[i] + " != b BigInteger[" + i + "]=" + bar[i] + ".");
+                        "\na BigInteger[" + i + "]=" + aar[i] + " != b BigInteger[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof float[] && b instanceof float[]) {
@@ -727,7 +743,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (!equal(aar[i], bar[i]))
                     Test.error(errorInObjectEquals + message + 
-                        "\na float[" + i + "]=" + aar[i] + " != b float[" + i + "]=" + bar[i] + ".");
+                        "\na float[" + i + "]=" + aar[i] + " != b float[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof double[] && b instanceof double[]) {
@@ -740,7 +758,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (!equal(aar[i], bar[i]))
                     Test.error(errorInObjectEquals + message + 
-                        "\na double[" + i + "]=" + aar[i] + " != b double[" + i + "]=" + bar[i] + ".");
+                        "\na double[" + i + "]=" + aar[i] + " != b double[" + i + "]=" + bar[i] + ".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof String[] && b instanceof String[]) {
@@ -753,7 +773,9 @@ public class Test {
             for (int i = 0; i < an; i++)
                 if (!aar[i].equals(bar[i]))
                     Test.error(errorInObjectEquals + message + 
-                        "\na String[" + i + "]=\"" + aar[i] + "\" != b String[" + i + "]=\"" + bar[i] + "\".");
+                        "\na String[" + i + "]=\"" + aar[i] + "\" != b String[" + i + "]=\"" + bar[i] + "\".\n" +
+                        "a=" + String2.toCSSVString(aar) + "\n" +
+                        "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
         if (a instanceof StringBuilder && b instanceof StringBuilder) {
@@ -853,9 +875,20 @@ public class Test {
      * This is the standard way to display (during the unit tests) information 
      * about a known problem that won't be fixed soon.
      *
+     * @param title
+     * @param t  a related throwable
+     */
+    public static void knownProblem(String title, Throwable t) throws Exception {
+        knownProblem(title, MustBe.throwableToString(t));
+    }
+
+    /** 
+     * This is the standard way to display (during the unit tests) information 
+     * about a known problem that won't be fixed soon.
+     *
      * @param title usually all caps
      * @param msg
-     * @param t  MustBe.throwableToString is appended to the msg
+     * @param t  a related throwable
      */
     public static void knownProblem(String title, String msg, Throwable t) throws Exception {
         knownProblem(title, msg + "\n" + MustBe.throwableToString(t));

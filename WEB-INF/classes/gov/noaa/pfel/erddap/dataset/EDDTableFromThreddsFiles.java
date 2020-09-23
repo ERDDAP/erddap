@@ -1025,6 +1025,7 @@ String expected =
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1059,6 +1060,7 @@ String expected =
 "            <att name=\"long_name\">Yearday flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1173,6 +1175,8 @@ String expected =
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  Temperature_flag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1431,7 +1435,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  latitude \\{\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -46.45, 70.05856;\n" +
+"    Float32 actual_range -46.45, 71.22;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1818,7 +1822,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String commit_hash \"7524017926524418e6907515721436930f2eb50b\";\n" +
+//"    String commit_hash \"7524017926524418e6907515721436930f2eb50b\";\n" + //disappeared 2020-09-17
 "    String contact_email \"samos@coaps.fsu.edu\";\n" +
 "    String contact_info \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
@@ -1833,9 +1837,9 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
 "    String featureType \"Point\";\n" +
-"    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc\\]\";\n" + //changes, so neutered
+"    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc)\\]\";\n" + //changes, so neutered
 "    String fsu_version \"300\";\n" +
-"    Float64 geospatial_lat_max 70.05856;\n" +
+"    Float64 geospatial_lat_max 71.22;\n" +
 "    Float64 geospatial_lat_min -46.45;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 351.15;\n" +
@@ -1845,7 +1849,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         String seek = "String history \"" + today;
         int tPo = results.indexOf(seek);
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + seek.length()), expected,
+        Test.ensureLinesMatch(results.substring(0, tPo + seek.length()), expected,
             "\nresults=\n" + results);
 
 //+ " https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
@@ -1865,9 +1869,9 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String merger_version \"v001\";\n" +
 "    String Metadata_modification_date \".{19} E.T\";\n" + //changes
-"    String metadata_retrieved_from \"WTEP_202.....v10002.nc\";\n" + //changes
+"    String metadata_retrieved_from \"WTEP_202.....v1000.\\.nc\";\n" + //changes
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
-"    Float64 Northernmost_Northing 70.05856;\n" +
+"    Float64 Northernmost_Northing 71.22;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +

@@ -90,12 +90,12 @@ public class EDVTimeStamp extends EDV {
      *   otherwise some other name.
      * @throws Throwable if trouble
      */
-    public EDVTimeStamp(String tSourceName, String tDestinationName,
+    public EDVTimeStamp(String tDatasetID, String tSourceName, String tDestinationName,
         Attributes tSourceAttributes, Attributes tAddAttributes,
         String tSourceDataType) 
         throws Throwable {
 
-        super(tSourceName, tDestinationName, tSourceAttributes, tAddAttributes,
+        super(tDatasetID, tSourceName, tDestinationName, tSourceAttributes, tAddAttributes,
             tSourceDataType, 
             PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); //destinationMin and max are set below (via actual_range)
 
@@ -264,36 +264,37 @@ public class EDVTimeStamp extends EDV {
                 if (actualRange.elementType() == PAType.STRING && actualRange.size() == 1) 
                     actualRange = new StringArray(String2.split(actualRange.getString(0), '\n'));                  
                 if (actualRange.size() == 2) {
-                    if (destinationMin.isNaN()) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(0)));
-                    if (destinationMax.isNaN()) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(1)));
+                    if (destinationMin.isMissingValue()) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(0)));
+                    if (destinationMax.isMissingValue()) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(actualRange.getString(1)));
                 }
             }
 
             //2nd priority: actual_min actual_max
             String tMin = combinedAttributes.getString("actual_min");
             String tMax = combinedAttributes.getString("actual_max");
-            if (destinationMin.isNaN() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
-            if (destinationMax.isNaN() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
+            if (destinationMin.isMissingValue() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
+            if (destinationMax.isMissingValue() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
 
             //3rd priority: data_min data_max
             tMin = combinedAttributes.getString("data_min");
             tMax = combinedAttributes.getString("data_max");
-            if (destinationMin.isNaN() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
-            if (destinationMax.isNaN() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
+            if (destinationMin.isMissingValue() && tMin != null && tMin.length() > 0) destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
+            if (destinationMax.isMissingValue() && tMax != null && tMax.length() > 0) destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
 
             //swap if wrong order
-            if (!destinationMin.isNaN() && 
-                !destinationMax.isNaN() &&
+            if (!destinationMin.isMissingValue() && 
+                !destinationMax.isMissingValue() &&
                 destinationMin.compareTo(destinationMax) > 0) {
                 PAOne d = destinationMin; 
                 destinationMin = destinationMax; 
                 destinationMax = d; 
             }
         }
-        //String2.log(">> destMin=" + destinationMin + " max=" + destinationMax);
 
         setActualRangeFromDestinationMinMax();
-        //if (reallyVerbose) String2.log("\nEDVTimeStamp created, sourceTimeFormat=" + sourceTimeFormat);  
+        if (reallyVerbose) String2.log("\nEDVTimeStamp created, sourceTimeFormat=" + sourceTimeFormat + "\n " +
+            " destMin=" + destinationMin + "=" + Calendar2.safeEpochSecondsToIsoStringTZ(destinationMin.getDouble(), "") + 
+            " destMax=" + destinationMax + "=" + Calendar2.safeEpochSecondsToIsoStringTZ(destinationMax.getDouble(), "") + "\n"); 
     }
 
     /** 
@@ -522,12 +523,15 @@ public class EDVTimeStamp extends EDV {
      * Here, destination will be double epochSecond values.
      */
     public PrimitiveArray toDestination(PrimitiveArray source) {
+
         //this doesn't support scaleAddOffset
         int size = source.size();
         DoubleArray destPa = source instanceof DoubleArray?
             (DoubleArray)source :        //make changes in place
             new DoubleArray(size, true); //make a new array
         if (sourceTimeIsNumeric) {
+            if (setSourceMaxIsMV)
+                source.setMaxIsMV(true);
             for (int i = 0; i < size; i++)
                 destPa.set(i, sourceTimeToEpochSeconds(source.getDouble(i)));
         } else {
@@ -681,7 +685,7 @@ public class EDVTimeStamp extends EDV {
 
         //***with Z
         String2.log("\n*** EDVTimeStamp.basicTest with Z");
-        EDVTimeStamp eta = new EDVTimeStamp("sourceName", "time",
+        EDVTimeStamp eta = new EDVTimeStamp("sampleDatasetID", "sourceName", "time",
             null, 
             (new Attributes())
                 .add("units", "yyyy-MM-dd'T'HH:mm:ssXXX") //was Calendar2.ISO8601TZ_FORMAT with 'Z'
@@ -703,7 +707,7 @@ public class EDVTimeStamp extends EDV {
 
         //***with 3Z
         String2.log("\n*** EDVTimeStamp.test with 3Z");
-        eta = new EDVTimeStamp("sourceName", "time",
+        eta = new EDVTimeStamp("sampleDatasetID", "sourceName", "time",
             null, 
             (new Attributes()).add("units", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"). //was Calendar2.ISO8601T3Z_FORMAT).
                 add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00.000Z", "2007-01-01T00:00:00.000Z"})),
@@ -724,7 +728,7 @@ public class EDVTimeStamp extends EDV {
 
         //*** no Z
         String2.log("\n*** EDVTimeStamp.test no Z");
-        eta = new EDVTimeStamp("sourceName", "myTimeStamp",
+        eta = new EDVTimeStamp("sampleDatasetID", "sourceName", "myTimeStamp",
             null, (new Attributes()).add("units", Calendar2.ISO8601T_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{
                     "1970-01-01T00:00:00", "2007-01-01T00:00:00"})),  //without Z
@@ -739,7 +743,7 @@ public class EDVTimeStamp extends EDV {
 
         //*** 3, no Z
         String2.log("\n*** EDVTimeStamp.test 3, no Z");
-        eta = new EDVTimeStamp("sourceName", "myTimeStamp",
+        eta = new EDVTimeStamp("sampleDatasetID", "sourceName", "myTimeStamp",
             null, (new Attributes()).add("units", Calendar2.ISO8601T3_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{
                     "1970-01-01T00:00:00.000", "2007-01-01T00:00:00.000"})),  //without Z
