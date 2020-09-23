@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -48,10 +49,27 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMaxValue(int index) {
+        return !Double.isFinite(get(index));
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
     public boolean isMissingValue(int index) {
-        return Double.isNaN(get(index));
+        return isMaxValue(index);
     }
 
     /**
@@ -328,15 +346,6 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? Double.NaN : value.getNiceDouble());
-    }
-
-    /**
      * This adds n PAOne's to the array.
      *
      * @param n the number of times 'value' should be added.
@@ -345,15 +354,6 @@ public class DoubleArray extends PrimitiveArray {
      */
     public void addNPAOnes(int n, PAOne value) {
         addN(n, value == null? Double.NaN : value.getNiceDouble());
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a String.
-     */
-    public void addString(String value) {
-        add(String2.parseDouble(value));
     }
 
     /**
@@ -368,21 +368,14 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the float value
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addFloat(float value) {
-        add(value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(value);
+    public void addNFloats(int n, float value) {
+        addN(n, Math2.floatToDoubleNaN(value));
     }
 
     /**
@@ -397,31 +390,13 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(value == Integer.MAX_VALUE? Double.NaN : value);
-    }
-
-    /**
      * This adds n ints to the array.
      *
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, value == Integer.MAX_VALUE? Double.NaN : value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(value == Long.MAX_VALUE? Double.NaN : value);
+        addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
     /**
@@ -431,7 +406,7 @@ public class DoubleArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, value == Long.MAX_VALUE? Double.NaN : value);
+        addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
     /**
@@ -698,11 +673,11 @@ public class DoubleArray extends PrimitiveArray {
      * Set a value in the array as an int.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. Integer.MAX_VALUE is converted
+     * @param i the value. Integer.MAX_VALUE is NOT converted
      *   to this Double.NaN.
      */
     public void setInt(int index, int i) {
-        set(index, i == Integer.MAX_VALUE? Double.NaN : i);
+        set(index, i);
     }
 
     /**
@@ -720,11 +695,11 @@ public class DoubleArray extends PrimitiveArray {
      * Set a value in the array as a long.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. Long.MAX_VALUE is converted
+     * @param i the value. Long.MAX_VALUE is NOT converted
      *   to Double.NaN.
      */
     public void setLong(int index, long i) {
-        set(index, Math2.longToDoubleNaN(i));
+        set(index, i);
     }
 
     /**
@@ -732,11 +707,11 @@ public class DoubleArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   NaN is returned as null.
      */
     public BigInteger getULong(int index) {
-        double b = get(index);
-        return Double.isFinite(b)? Math2.roundToULong(b) : ULongArray.MAX_VALUE;
+        double d = get(index);
+        return Double.isFinite(d)? Math2.roundToULongOrNull(new BigDecimal(d)) : null;
     }
 
     /**
@@ -747,7 +722,7 @@ public class DoubleArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(long).
      */
     public void setULong(int index, BigInteger i) {
-        set(index, Math2.roundToDouble(i));
+        set(index, Math2.ulongToDoubleNaN(i));
     }
 
     /**
@@ -801,7 +776,7 @@ public class DoubleArray extends PrimitiveArray {
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         double b = get(index);
@@ -823,7 +798,7 @@ public class DoubleArray extends PrimitiveArray {
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "NaN" if the stored value is NaN.  That's different than getRawString!!!
      *
      * <p>Float and DoubleArray overwrite this.
@@ -937,15 +912,7 @@ public class DoubleArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof DoubleArray)) //handles o==null
-            return false;
-        DoubleArray other = (DoubleArray)o;
-        if (other.size() != size) 
-            return false;
-        for (int i = 0; i < size; i++)
-            if (!Math2.equalsIncludingNanOrInfinite(array[i], other.array[i]))
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -955,12 +922,12 @@ public class DoubleArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof DoubleArray))
             return "The two objects aren't equal: this object is a DoubleArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         DoubleArray other = (DoubleArray)o;
         if (other.size() != size) 
             return "The two DoubleArrays aren't equal: one has " + size + 
@@ -1170,7 +1137,7 @@ public class DoubleArray extends PrimitiveArray {
     /**
      * This appends the data in another pa to the current data.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      * WARNING: information may be lost from the incoming pa if this
      * primitiveArray is of a simpler type.
      *
@@ -1666,6 +1633,8 @@ public class DoubleArray extends PrimitiveArray {
         //test equals
         DoubleArray anArray2 = new DoubleArray();
         anArray2.add(0); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a DoubleArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a DoubleArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1883,8 +1852,8 @@ public class DoubleArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(1), "1.7976931348623157E308", "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new DoubleArray(new double[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new DoubleArray(new double[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new DoubleArray(new double[] {       })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new DoubleArray(new double[] {1, 2   })).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new DoubleArray(new double[] {-1e300})).tryToFindNumericMissingValue(), -1e300, "");
         Test.ensureEqual((new DoubleArray(new double[] {1e300 })).tryToFindNumericMissingValue(),  1e300, "");
         Test.ensureEqual((new DoubleArray(new double[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");

@@ -957,12 +957,12 @@ public class EDDTableFromSOS extends EDDTable{
 
         lonIndex = 0;
         PAOne stats[] = stationTable.getColumn(stationLonCol).calculatePAOneStats();
-        dataVariables[lonIndex] = new EDVLon(tLonSourceName, null, null,
+        dataVariables[lonIndex] = new EDVLon(datasetID, tLonSourceName, null, null,
             "double", stats[PrimitiveArray.STATS_MIN], stats[PrimitiveArray.STATS_MAX]);  
 
         latIndex = 1;
         stats = stationTable.getColumn(stationLatCol).calculatePAOneStats();
-        dataVariables[latIndex] = new EDVLat(tLatSourceName, null, null,
+        dataVariables[latIndex] = new EDVLat(datasetID, tLatSourceName, null, null,
             "double", stats[PrimitiveArray.STATS_MIN], stats[PrimitiveArray.STATS_MAX]);  
 
         sosOfferingIndex = 2;   //aka stationID
@@ -973,7 +973,7 @@ public class EDDTableFromSOS extends EDDTable{
             tAtts.add("cf_role", "timeseries_id");
         else if (CDM_TRAJECTORY.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType)) 
             tAtts.add("cf_role", "trajectory_id");
-        dataVariables[sosOfferingIndex] = new EDV(stationIdSourceName, stationIdDestinationName, 
+        dataVariables[sosOfferingIndex] = new EDV(datasetID, stationIdSourceName, stationIdDestinationName, 
             null, tAtts, "String");//the constructor that reads actual_range
         //no need to call setActualRangeFromDestinationMinMax() since they are NaNs
 
@@ -983,7 +983,7 @@ public class EDDTableFromSOS extends EDDTable{
         altAddAtts.set("units", "m");
         if (tAltMetersPerSourceUnit != 1)
             altAddAtts.set("scale_factor", tAltMetersPerSourceUnit);
-        dataVariables[altIndex] = new EDVAlt(tAltSourceName, null, altAddAtts,
+        dataVariables[altIndex] = new EDVAlt(datasetID, tAltSourceName, null, altAddAtts,
             "double", PAOne.fromDouble(tSourceMinAlt), PAOne.fromDouble(tSourceMaxAlt));
 
         timeIndex = 4;  //times in epochSeconds
@@ -996,7 +996,7 @@ public class EDDTableFromSOS extends EDDTable{
             .add("units", tTimeSourceFormat);
         if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType)) 
             tAtts.add("cf_role", "profile_id");
-        EDVTime edvTime = new EDVTime(tTimeSourceName, null, tAtts, 
+        EDVTime edvTime = new EDVTime(datasetID, tTimeSourceName, null, tAtts, 
             "String"); //this constructor gets source / sets destination actual_range
         edvTime.setDestinationMinMax(tTimeMin, tTimeMax);
         edvTime.setActualRangeFromDestinationMinMax();
@@ -1013,10 +1013,10 @@ public class EDDTableFromSOS extends EDDTable{
             String tSourceType = (String)tDataVariables[dv][3];
 
             if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                dataVariables[nFixedVariables + dv] = new EDVTimeStamp(tSourceName, tDestName, 
+                dataVariables[nFixedVariables + dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[nFixedVariables + dv] = new EDV(tSourceName, tDestName, 
+                dataVariables[nFixedVariables + dv] = new EDV(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, tSourceType); //the constructor that reads actual_range
                 dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
             }

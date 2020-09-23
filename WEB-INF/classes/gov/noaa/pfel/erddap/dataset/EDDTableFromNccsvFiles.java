@@ -510,10 +510,10 @@ String expected =
 "            <att name=\"units\">1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test Byte</att>\n" +
-"            <att name=\"missing_value\" type=\"byte\">-128</att>\n" +
+"            <att name=\"missing_value\" type=\"byte\">127</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -537,10 +537,10 @@ String expected =
 "            <att name=\"units\">1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
+"            <att name=\"_FillValue\" type=\"long\">-9223372036854775808</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test Long</att>\n" +
-"            <att name=\"missing_value\" type=\"long\">-9223372036854775808</att>\n" +
+"            <att name=\"missing_value\" type=\"long\">9223372036854775807</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -706,13 +706,15 @@ String expected =
 "  }\n" +
 "  testByte {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range -128, 126;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String units \"1\";\n" +
 "  }\n" +
 "  testUByte {\n" +
-"    Byte _FillValue 255;\n" +
-"    Byte actual_range 0, 254;\n" +
+"    Byte _FillValue -1;\n" +         //important test of _Unsigned, in .das, no ubytes, so 255->-1
+"    String _Unsigned \"true\";\n" +  //important test of _Unsigned
+"    Byte actual_range 0, -2;\n" +    //important test of _Unsigned, in .das, no ubytes, so 254->-2  
 "    String ioos_category \"Unknown\";\n" +
 "    String units \"1\";\n" +
 "  }\n" +
@@ -725,7 +727,7 @@ String expected =
 "    String units \"1\";\n" +
 "  }\n" +
 "  testULong {\n" +
-"    Float64 _FillValue 18446744073709551615;\n" + //ulong MAX_VALUE is written out as ulong (not converted to double or NaN)
+"    Float64 _FillValue 18446744073709551615;\n" + 
 "    Float64 actual_range 0, 18446744073709551614;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Test ULong\";\n" +
@@ -746,13 +748,13 @@ String expected =
 "    Float64 testDoubles -1.7976931348623157e+308, 0.0, 1.7976931348623157e+308;\n" +
 "    Float32 testFloats -3.4028235e+38, 0.0, 3.4028235e+38;\n" +
 "    Int32 testInts -2147483648, 0, 2147483647;\n" +
-"    Float64 testLongs -9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, 9223372036854775807;\n" + //longs written as psuedo doubles
+"    Float64 testLongs -9223372036854775808, -9007199254740992, 9007199254740992, 9223372036854775806, 9223372036854775807;\n" + //longs written as pseudo doubles
 "    Int16 testShorts -32768, 0, 32767;\n" +
-"    String testStrings \" a\\t~\u00fc,\n" + //important tests
+"    String testStrings \" a\\t~\u00fc,\n" + //important tests...
 "'z\\\"?\";\n" + //important test of \\u20ac
-"    Byte testUBytes 0, 127, 255;\n" +  //no UByte    ??? is 255 okay?  Are negative values okay for ByteArray?
+"    Byte testUBytes 0, 127, -1;\n" +    
 "    UInt32 testUInts 0, 2147483647, 4294967295;\n" +
-"    Float64 testULongs 0, 9223372036854775807, 18446744073709551615;\n" +  //no ULong.   Values written as is, will full precision.
+"    Float64 testULongs 0, 9223372036854775807, 18446744073709551615;\n" +  //no ULong in DAP. Values written as is, will full precision.
 "    UInt16 testUShorts 0, 32767, 65535;\n" +
 "    String units \"degree_C\";\n" +
 "  }\n" +
@@ -1886,6 +1888,10 @@ results=
 "zztop";
         Test.ensureEqual(results, expected, "results=\n" + results);        
 */
+
+        //*** display source file (useful for diagnosing problems in next section)
+        String2.log(String2.directReadFrom88591File("/erddapTest/nccsv/testScalar.csv"));
+
         //*** getting nc   and ncHeader
         edv = eddTable.findDataVariableByDestinationName("status");
         PrimitiveArray pa = edv.combinedAttributes().get("actual_range");
@@ -1954,7 +1960,7 @@ results=
 "[10]\n" +
 "    byte testUByte(row=6);[10]\n" +
 "      :_Unsigned = \"true\";[10]\n" +
-"      :_FillValue = -1B; // byte[10]\n" +  //trouble: nc3 doesn't support unsigned attributes, so this ubyte att is stored as byte
+"      :_FillValue = -1B; // byte[10]\n" +  //known problem: nc3 doesn't support unsigned attributes, so this ubyte att is stored as byte
 "      :actual_range = 0B, -2B; // byte[10]\n" +
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :units = \"1\";[10]\n" +
@@ -1962,7 +1968,6 @@ results=
 "    double testLong(row=6);[10]\n" +
 "      :_FillValue = 9.223372036854776E18; // double[10]\n" +
       //trouble: these are largest consecutive longs that can round trip to doubles
-      //2019-04-05 max was 9.2233720368547748E18, now NaN   why???
 "      :actual_range = -9.223372036854776E18, 9.223372036854776E18; // double[10]\n" + //trouble: min/max should be -...854775808L ...854775806L
 "      :ioos_category = \"Unknown\";[10]\n" +
 "      :long_name = \"Test of Longs\";[10]\n" +
@@ -1989,7 +1994,7 @@ results=
 "      :testDoubles = -1.7976931348623157E308, 0.0, 1.7976931348623157E308; // double[10]\n" +
 "      :testFloats = -3.4028235E38f, 0.0f, 3.4028235E38f; // float[10]\n" +
 "      :testInts = -2147483648, 0, 2147483647; // int[10]\n" +
-          //first 2 are the largest consecutive longs that can round trip to doubles,  then max-1, and max
+          //-max, then 2 of the largest consecutive longs that can round trip to doubles,  then max-1, and max
 "      :testLongs = -9.223372036854776E18, -9.007199254740992E15, 9.007199254740992E15, 9.223372036854776E18, 9.223372036854776E18; // double[10]\n" + 
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
@@ -2058,9 +2063,9 @@ expected =
 "      {-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591}[10]\n" +
 "    status =   \"A?[9]\"[252]?\"[10]\n" +  //source status chars are A\u20AC\t"\u00fc\uFFFF
 "    testByte = [10]\n" +
-"      {-128, 0, 126, 127, 127, 127}[10]\n" +
+"      {-128, 0, 126, 127, 127, 127}[10]\n" + //in .nc file, even mv must appear as a value
 "    testUByte = [10]\n" +
-"      {0, 127, -2, -1, -1, -1}[10]\n" +
+"      {0, 127, -2, -1, -1, -1}[10]\n" +      //in .nc file, even mv must appear as a value
 "    testLong = [10]\n" + //-9.007... is largest consecutive long that is perfectly represented in double.
 "      {-9.223372036854776E18, -9.007199254740992E15, 9.223372036854776E18, NaN, NaN, NaN}[10]\n" +
 "    testULong = [10]\n" +
@@ -3126,7 +3131,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2020-07-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2020-09-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3141,7 +3146,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2020-07-01T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2020-09-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3181,7 +3186,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2020-07-01T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2020-09-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -3279,7 +3284,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2020-07-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2020-09-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -3298,7 +3303,7 @@ expected2 =
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2020-07-01T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2020-09-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3460,7 +3465,7 @@ expected2 =
 
                 } else {
                     if (test ==  0) testGenerateDatasetsXml();
-                    if (test ==  1) testBasic(true); //deleteCachedDatasetInfo 
+                    if (test ==  1) testBasic(true);  //deleteCachedDatasetInfo 
                     if (test ==  2) testBasic(false); //deleteCachedDatasetInfo   
                     if (test ==  3) testChar();
                     if (test ==  4) testDap();

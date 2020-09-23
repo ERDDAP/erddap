@@ -56,10 +56,27 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMaxValue(int index) {
+        return !Float.isFinite(get(index));
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
     public boolean isMissingValue(int index) {
-        return Float.isNaN(get(index));
+        return isMaxValue(index);
     }
 
     /**
@@ -326,15 +343,6 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? Float.NaN : value.getFloat());
-    }
-
-    /**
      * This adds n PAOne's to the array.
      *
      * @param n the number of times 'value' should be added.
@@ -357,30 +365,14 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the value, as a String.
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addString(String value) {
-        add(String2.parseFloat(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the float value
-     */
-    public void addFloat(float value) {
-        add(value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Math2.doubleToFloatNaN(value));
+    public void addNFloats(int n, float value) {
+        addN(n, value);
     }
 
     /**
@@ -395,31 +387,13 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(value == Integer.MAX_VALUE? Float.NaN : value);
-    }
-
-    /**
      * This adds n ints to the array.
      *
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, value == Integer.MAX_VALUE? Float.NaN : value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(value == Long.MAX_VALUE? Float.NaN : value);
+        addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
     /**
@@ -429,7 +403,7 @@ public class FloatArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, value == Long.MAX_VALUE? Float.NaN : value);
+        addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
     /**
@@ -703,11 +677,11 @@ public class FloatArray extends PrimitiveArray {
      * Set a value in the array as an int.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. Integer.MAX_VALUE is converted
+     * @param i the value. Integer.MAX_VALUE is NOT converted
      *   to this type's missing value.
      */
     public void setInt(int index, int i) {
-        set(index, i == Integer.MAX_VALUE? Float.NaN : i);
+        set(index, i);
     }
 
     /**
@@ -725,11 +699,11 @@ public class FloatArray extends PrimitiveArray {
      * Set a value in the array as a long.
      * 
      * @param index the index number 0 .. size-1
-     * @param i the value. Long.MAX_VALUE is converted
+     * @param i the value. Long.MAX_VALUE is NOT converted
      *   to Float.NaN.
      */
     public void setLong(int index, long i) {
-        set(index, i == Long.MAX_VALUE? Float.NaN : i);
+        set(index, i);
     }
 
     /**
@@ -737,11 +711,11 @@ public class FloatArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   NaN is returned as null.
      */
     public BigInteger getULong(int index) {
         float b = get(index);
-        return Float.isFinite(b)? Math2.roundToULong(b) : ULongArray.MAX_VALUE;
+        return Float.isFinite(b)? Math2.roundToULongOrNull(b) : null;
     }
 
     /**
@@ -752,7 +726,7 @@ public class FloatArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(long).
      */
     public void setULong(int index, BigInteger i) {
-        setDouble(index, Math2.roundToDouble(i));
+        setDouble(index, Math2.ulongToDoubleNaN(i));
     }
 
     /**
@@ -834,7 +808,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])),
      *   or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         float b = get(index);
@@ -856,7 +830,7 @@ public class FloatArray extends PrimitiveArray {
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "NaN" if the stored value is NaN.  That's different than getRawString!!!
      *
      * <p>Float and DoubleArray overwrite this.
@@ -970,15 +944,7 @@ public class FloatArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof FloatArray)) //handles o==null
-            return false;
-        FloatArray other = (FloatArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (!Math2.equalsIncludingNanOrInfinite(array[i], other.array[i]))
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -987,12 +953,12 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof FloatArray))
             return "The two objects aren't equal: this object is a FloatArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         FloatArray other = (FloatArray)o;
         if (other.size() != size)
             return "The two FloatArrays aren't equal: one has " + size + 
@@ -1052,7 +1018,8 @@ public class FloatArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return Float.compare(getFloat(index1), otherPA.getFloat(index2));
+        //this is approximate when other is bigger (int, uint, long, ulong, double)
+        return Float.compare(getFloat(index1), otherPA.getFloat(index2)); 
     }
 
     /**
@@ -1200,7 +1167,7 @@ public class FloatArray extends PrimitiveArray {
     /**
      * This appends the data in another pa to the current data.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      * WARNING: information may be lost from the incoming pa if this
      * primitiveArray is of a simpler type.
      *
@@ -1679,6 +1646,8 @@ public class FloatArray extends PrimitiveArray {
         //test equals
         FloatArray anArray2 = new FloatArray();
         anArray2.add(0); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a FloatArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a FloatArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1873,8 +1842,8 @@ public class FloatArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(1), "3.4028235E38", "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new FloatArray(new float[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new FloatArray(new float[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new FloatArray(new float[] {       })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new FloatArray(new float[] {1, 2   })).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new FloatArray(new float[] {-1e37f })).tryToFindNumericMissingValue(), -1e37f, "");
         Test.ensureEqual((new FloatArray(new float[] { 1e37f })).tryToFindNumericMissingValue(),  1e37f, "");
         Test.ensureEqual((new FloatArray(new float[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");

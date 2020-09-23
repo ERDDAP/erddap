@@ -556,7 +556,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                                     Calendar2.makeDateTimeFormatter(axis0TimeFormat, axis0TimeZoneString);
                                 tp = "double";
                             } //otherwise it should be a primitive type, e.g., double
-                            axis0PAType = PrimitiveArray.elementStringToPAType(tp);
+                            axis0PAType = PAType.fromCohortString(tp);
                             if (axis0PAType == PAType.STRING)
                                 throw new IllegalArgumentException(
                                     "Axis variables can't be Strings.");
@@ -1192,9 +1192,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 throw new RuntimeException(errorInMethod +
                     "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
             else if (EDVTime.hasTimeUnits(tSourceAtt, tAddAtt)) 
-                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName,
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName,
                     tSourceAtt, tAddAtt, tSourceType);  
-            else dataVariables[dv] = new EDV(tSourceName, tDestName, 
+            else dataVariables[dv] = new EDV(datasetID, tSourceName, tDestName, 
                 tSourceAtt, tAddAtt, tSourceType, 
                 PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             dataVariables[dv].setActualRangeFromDestinationMinMax();
@@ -1334,7 +1334,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 //be less strict?
                 PrimitiveArray exp = sourceAxisValues[av];
                 PrimitiveArray obs = tSourceAxisValues[av];
-                String eqError = exp.almostEqual(obs, matchAxisNDigits);
+                String eqError = obs.almostEqual(exp, matchAxisNDigits);
                 if (eqError.length() > 0)
                     throw new RuntimeException(
                         "axis[" + av + "]=" + sourceAxisNames.get(av) +

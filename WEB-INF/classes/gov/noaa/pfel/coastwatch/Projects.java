@@ -9558,7 +9558,7 @@ towTypesDescription);
 
                     //extract date yyyyddd
                     String tName = File2.getNameAndExtension(names.get(i));
-                    String date = String2.extractCaptureGroup(tName, ".*_(\\d{7})_.*", 1);
+                    String date = String2.extractCaptureGroup(tName, "_(\\d{7})_", 1);
                     if (date == null)
                         continue;
         //19810825023019-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981237_night-v02.0-fv01.0.nc

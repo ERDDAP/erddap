@@ -78,10 +78,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
 
 
 /**
@@ -254,9 +250,9 @@ public abstract class EDDTable extends EDD {
         "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
         "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
         "https://www.json.org/", //json
-        "http://jsonlines.org/", //jsonlCSV
-        "http://jsonlines.org/", //jsonlCSV
-        "http://jsonlines.org/", //jsonlKVP
+        "https://jsonlines.org/", //jsonlCSV
+        "https://jsonlines.org/", //jsonlCSV
+        "https://jsonlines.org/", //jsonlKVP
         "https://www.mathworks.com/", //mat
         "https://www.unidata.ucar.edu/software/netcdf/", //nc
         "https://linux.die.net/man/1/ncdump", //ncHeader
@@ -1328,7 +1324,7 @@ public abstract class EDDTable extends EDD {
                 // sourceValue = (destintationValue - addOffset) / scaleFactor;
                 double td = (constraintValD[cv] - edv.addOffset()) / edv.scaleFactor();
                 PAType tPAType = edv.sourceDataPAType();
-                if (PrimitiveArray.isIntegerType(tPAType))
+                if (PAType.isIntegerType(tPAType))
                      constraintValues.set(cv, "" + Math2.roundToLong(td));
                 else if (tPAType == PAType.FLOAT)  constraintValues.set(cv, "" + (float)td);
                 else                             constraintValues.set(cv, "" + td);
@@ -1405,7 +1401,7 @@ public abstract class EDDTable extends EDD {
         if (table.nRows() == 0) 
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (pre-standardize: nRows = 0)");
         String msg = "    standardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString();
-        //String2.log("table=\n" + table.toString());
+        //String2.log(">> standardizeResultsTable incoming table=\n" + table.toString());
         //String2.log("DEBUG " + MustBe.getStackTrace());
 
         //pick the query apart
@@ -1449,10 +1445,11 @@ public abstract class EDDTable extends EDD {
 
             //convert source values to destination values
             //(source fill&missing values become destination fill&missing values)
-            //String2.log("> srt 3a col=" + col + "=" + columnSourceName);
-            table.setColumn(col, edv.toDestination(table.getColumn(col)));
-            //String2.log("> srt 3b col=" + col + "=" + columnSourceName);
+            //String2.log(">> srt 3a col=" + col + "=" + columnSourceName);
+            table.setColumn(col, edv.toDestination(table.getColumn(col))); //sets maxIsMV
+            //String2.log(">> srt 3b col=" + col + "=" + columnSourceName + " edv.maxIsMV=" + edv.destinationMaxIsMV());
         }
+        //String2.log(">> standardizeResultsTable after toDestination table=\n" + table.toString());
         if (reallyVerbose) 
             String2.log(msg);
 
@@ -1460,6 +1457,7 @@ public abstract class EDDTable extends EDD {
         applyConstraints(table, false,  //apply CONSTRAIN_YES constraints?
             resultsVariables, 
             constraintVariables, constraintOps, constraintValues);
+        //String2.log(">> standardizeResultsTable after applyConstraints table=\n" + table.toString());
 
         if (debugMode) String2.log(table.toString(2));
     }
@@ -1614,8 +1612,10 @@ public abstract class EDDTable extends EDD {
             //Note that Timestamp and Alt values have been converted to standardized units above.
             PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
             //chars and strings aren't converted            
+            //String2.log(">> pre  convert dataPa=" + dataPa.toString());
             int nSwitched = dataPa.convertToStandardMissingValues(
                 "" + edv.destinationFillValue(), "" + edv.destinationMissingValue());            
+            //String2.log(">> post convert  dataPa=" + dataPa.toString());
             //String2.log("    nSwitched=" + nSwitched);
 
             int nStillGood = dataPa.applyConstraint(edv instanceof EDVTimeStamp, 
@@ -2716,6 +2716,7 @@ public abstract class EDDTable extends EDD {
      *   (It is passed to respondToGraphQuery, but not used).
      * @param response may be used by .subset to redirect the response
      *   (if not .subset request, it may be null).
+     * @param ipAddress The IP address of the user (for statistics).
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Normally, this is not used to test if this edd is accessibleTo loggedInAs, 
      *   but in unusual cases (EDDTableFromPost?) it could be.
@@ -2737,7 +2738,7 @@ public abstract class EDDTable extends EDD {
      */
     public void respondToDapQuery(HttpServletRequest request, 
         HttpServletResponse response,
-        String loggedInAs,
+        String ipAddress, String loggedInAs,
         String requestUrl, String userDapQuery, 
         OutputStreamSource outputStreamSource,
         String dir, String fileName, String fileTypeName) throws Throwable {
@@ -3547,7 +3548,7 @@ public abstract class EDDTable extends EDD {
             int nRows = table.nRows();
             for (int sni = 0; sni < scriptNames.size(); sni++) {
                 PrimitiveArray pa = PrimitiveArray.factory(
-                    PrimitiveArray.elementStringToPAType(scriptTypes.get(sni)), nRows, false); //active?
+                    PAType.fromCohortString(scriptTypes.get(sni)), nRows, false); //active?
                 JexlScript jscript = Script2.jexlEngine().createScript(scriptNames.get(sni).substring(1));
                 MapContext jcontext = Script2.jexlMapContext();
                 ScriptRow scriptRow = new ScriptRow(fullFileName, table);
@@ -5003,7 +5004,7 @@ public abstract class EDDTable extends EDD {
     //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
     //    }
                 Attributes atts = twawm.columnAttributes(col); 
-                String tType = PrimitiveArray.elementTypeToString(twawm.columnType(col));
+                String tType = PAType.toCohortString(twawm.columnType(col));
                 boolean isString = tType.equals("String");
                 boolean isChar   = tType.equals("char");
                 int bufferSize = (int)Math.min(isChar? 8192 : 10, nRows);  //this is also nPerLine for all except char
@@ -5025,13 +5026,16 @@ public abstract class EDDTable extends EDD {
                 DataInputStream dis = twawm.dataInputStream(col);
                 try {
                     //create the bufferPA
-                    PrimitiveArray pa = 
-                        PrimitiveArray.factory(twawm.columnType(col), 
-                           bufferSize, false);  //safe since checked above
+                    PrimitiveArray pa = null; 
                     long nRowsRead = 0;
                     while (nRowsRead < nRows) {
                         int nToRead = (int)Math.min(bufferSize, nRows - nRowsRead);
+                        if (pa == null) {
+                            pa = twawm.columnEmptyPA(col);
+                            pa.ensureCapacity(nToRead);
+                        }
                         pa.clear();
+                        pa.setMaxIsMV(twawm.columnMaxIsMV(col)); //reset after clear()
                         pa.readDis(dis, nToRead);
                         if (isChar) {
                             //write it as one string with chars concatenated
@@ -5213,9 +5217,12 @@ public abstract class EDDTable extends EDD {
                     while (nToGo > 0) {
                         bufferSize = Math.min(nToGo, bufferSize); //actual number to be transferred
                         //use of != below (not <) lets toObjectArray below return internal array since size=capacity
-                        if (pa == null || pa.capacity() != bufferSize)
-                            pa = PrimitiveArray.factory(colType, bufferSize, false);
+                        if (pa == null) {
+                            pa = twawm.columnEmptyPA(col);
+                            pa.ensureCapacity(bufferSize);
+                        }
                         pa.clear();
+                        pa.setMaxIsMV(twawm.columnMaxIsMV(col)); //reset it after clear()
                         pa.readDis(dis, bufferSize);                    
                         if (debugMode) String2.log(">> col=" + col + " nToGo=" + nToGo + 
                             " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
@@ -5229,8 +5236,11 @@ public abstract class EDDTable extends EDD {
 
                         } else {
                             if (nc3Mode && 
-                                (pa instanceof LongArray || pa instanceof ULongArray)) 
+                                (pa instanceof LongArray || pa instanceof ULongArray)) {
+                                //String2.log(">> saveAsFlatNc twawm=" + twawm + " colName=" + twawm.columnName(col) + " maxIsMV=" + pa.getMaxIsMV() + " sourcePA=" + pa.toString());                                
                                 pa = new DoubleArray(pa);
+                                //String2.log(">> saveAsFlatNc twawm=" + twawm + " colName=" + twawm.columnName(col) + " doublePA=" + pa.toString());                                
+                            }
 
                             if (pa instanceof CharArray) {
                                 //pa is temporary, so ok to change chars
@@ -5630,7 +5640,8 @@ public abstract class EDDTable extends EDD {
                 pa.reorder(rank);
 
                 //convert LongArray to DoubleArray (since nc3 doesn't support longs)
-                if (pa instanceof LongArray)
+                if (pa instanceof LongArray ||
+                    pa instanceof ULongArray)
                     pa = new DoubleArray(pa);  //    pa = new StringArray(pa);
 
                 if (isFeatureVar[col]) {
@@ -6058,7 +6069,8 @@ public abstract class EDDTable extends EDD {
 
                 //first re-order
                 pa.reorder(rank);
-                if (pa instanceof LongArray)
+                if (pa instanceof LongArray ||
+                    pa instanceof ULongArray)
                     pa = new DoubleArray(pa); // was StringArray(pa);
 
                 if (isFeatureVar[col]) {
@@ -6586,8 +6598,8 @@ public abstract class EDDTable extends EDD {
                     "                <att name=\"colorBarMaximum\" type=\"double\">" + loHi[1] + "</att>\n");
                 }
                 if (makeChanges && 
-                    edv.destinationMin().isNaN() &&
-                    edv.destinationMax().isNaN()) {
+                    edv.destinationMin().isMissingValue() &&
+                    edv.destinationMax().isMissingValue()) {
 
                     edv.setDestinationMinMax(
                         PAOne.fromDouble(twawm.columnMinValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()),
@@ -6634,9 +6646,9 @@ public abstract class EDDTable extends EDD {
         PAOne tMin = twawm.columnMinValue(timeCol); 
         PAOne tMax = twawm.columnMaxValue(timeCol);
         if (verbose) String2.log("  found time min=" + tMin + "=" +
-            (tMin.isNaN()? "" : Calendar2.epochSecondsToIsoStringTZ(tMin.getDouble())) + 
+            (tMin.isMissingValue()? "" : Calendar2.epochSecondsToIsoStringTZ(tMin.getDouble())) + 
             " max=" + tMax + "=" +
-            (tMax.isNaN()? "" : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
+            (tMax.isMissingValue()? "" : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
         dataVariables[timeIndex].setDestinationMinMax(tMin, tMax); //scaleFactor,addOffset not supported
         dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
     }
@@ -7987,7 +7999,7 @@ public abstract class EDDTable extends EDD {
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"\n" +
             "      >encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-            "  <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+            "  <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>&nbsp;\n" +
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
@@ -8004,10 +8016,10 @@ public abstract class EDDTable extends EDD {
             "  The <kbd>#1</kbd> within the output fileName causes the current value of the range or list\n" +
             "  to be put into the output fileName.\n" +
             "  For example, \n" +
-            "<pre>curl --compressed \"https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22{TAML1,41009,46088}%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmp#1.png</pre>\n" +
+            "<pre>curl --compressed \"https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22TAML1%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmp#1.png</pre>\n" +
             "  (That example includes <kbd>--compressed</kbd> because it is a generally useful option,\n" +
             "  but there is little benefit to <kbd>--compressed</kbd> when requesting .png files\n" +
-            "  because they are already compressed.)\n" +
+            "  because they are already compressed internally.)\n" +
             "<li>To access a password-protected, private ERDDAP dataset with curl via https, use this\n" +
             "  two-step process:\n" +
             "  <br>&nbsp;\n" +
@@ -8113,7 +8125,7 @@ public abstract class EDDTable extends EDD {
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"\n" +
             "        >encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-            "       <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+            "       <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "      <li><a class=\"selfLink\" id=\"comparingFloats\" href=\"#comparingFloats\" rel=\"bookmark\">WARNING:</a>\n" +
             "          Numeric queries involving =, !=, &lt;=, or &gt;= may not work as desired with\n" +
@@ -8722,17 +8734,16 @@ public abstract class EDDTable extends EDD {
             "or more rows and one or more columns of data.\n" + 
             "  <ul>\n" +
             "  <li>Each column is also known as a \"data variable\" (or just a \"variable\").\n" +
-            "    Each data variable has data of one specific type.\n" +
-            "    The supported types are: byte (int8), short (int16), char (uint16), int (int32),\n" +
-            "    long (int64), float (float32), double (float64), and String of any length).\n" +
+            "    Each data variable has data of one specific data type.\n" +
+            "    See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
             "    Each data variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n" +
             "    characters (A-Z, a-z, 0-9, _).\n" +
             "    Each data variable has metadata which is a set of Key=Value pairs.\n" +
             "    The maximum number of columns is 2147483647, but datasets with greater than\n" +
             "    about 100 columns will be awkward for users.\n" +
             "  <li>The maximum number of rows for a dataset is probably about 9e18.\n" +
-            "    In some cases, individual sources within a dataset (e.g., files) are limited to\n" +
-            "    2147483647 rows, but that is a limitation of the file type, not ERDDAP.\n" +
+            "    In most cases, individual sources within a dataset (e.g., files) are limited to\n" +
+            "    2147483647 rows.\n" +
             "  <li>Any cell in the table may have no value (i.e., a missing value).\n" +
             "  <li>Each dataset has global metadata which is a set of Key=Value pairs.\n" +
             "  <li>Note about metadata: each variable's metadata and the global metadata is a set of 0\n" +
@@ -8745,6 +8756,7 @@ public abstract class EDDTable extends EDD {
             "      <br>&nbsp;\n" +
             "    </ul>\n" +
             "  </ul>\n" +
+
             "<li><a class=\"selfLink\" id=\"specialVariables\" href=\"#specialVariables\" rel=\"bookmark\"\n" +
             "      ><strong>Special Variables</strong></a>\n" +
             "  <br>ERDDAP is aware of the spatial and temporal features of each dataset. The longitude,\n" +
@@ -8772,6 +8784,103 @@ public abstract class EDDTable extends EDD {
             "      variable but have a different name.\n" +
             "      <br>&nbsp;\n" +
             "  </ul>\n" +
+
+            //this dataTypes section is exactly the same in EDDGrid and EDDTable.
+            "<li><a class=\"selfLink\" id=\"dataTypes\" href=\"#dataTypes\" rel=\"bookmark\"><strong>Data Types</strong></a>\n" +
+            "<br>ERDDAP supports the following data types\n" +
+            "(names from other realms are shown in parentheses; 'u' stands for \"unsigned\"; the number is the number of bits):\n" +
+            "byte (int8), ubyte (uint8), short (int16) and ushort (uint16), int (int32), uint (uint32),\n" +
+            "long (int64), ulong (uint64), float (real, float32), double (float64), char, String.\n" +
+            "<br>Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally\n" +
+            "  and offered limited support in its data readers and writers.\n" +
+            "<br>Internally, an ERDDAP char is a single 16 bit Unicode character.\n" +
+            "<br>Internally, an ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
+            "\n" +
+            "<p>You can think of ERDDAP as a system which reads data from various sources into an internal data model\n" +
+            "and writes data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
+            "  <ul>\n" +
+            "  <li>Each input reader supports a subset of the data types that ERDDAP supports.\n" +
+            "     So reading data into ERDDAP's internal data structures isn't a problem.\n" +
+            "  <li>Each output writer also support a subset of data types. That's a problem because ERDDAP\n" +
+            "    has to squeeze, for example, long data into file types that don't support long data.\n" +
+            "  </ul>\n" +
+            "Below are explanations of the limitations (or none) of various output writers\n" +
+            "and how ERDDAP deals with the problems.\n" +
+            "Such complications are an inherent part of ERDDAP's goal of making disparate system interoperable.\n" +
+            "  <ul>\n" +
+            "  <li><a class=\"selfLink\" id=\"AsciiDataTypes\" href=\"#AsciiDataTypes\" rel=\"bookmark\"\n" +
+            "    >ASCII (.csv, .tsv, etc.) text files</a> -\n" +
+            "    <br>All numeric data is written via its String representation\n" +
+            "    (with missing data values appearing as 0-length strings).\n" +
+            "    Char and String data are written via JSON Strings, which handle all unusual characters\n" +
+            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
+            "  <li><a class=\"selfLink\" id=\"JsonDataTypes\" href=\"#JsonDataTypes\" rel=\"bookmark\"\n" +
+            "    >JSON (.json, .jsonlCSV, etc.) text files</a> -\n" +
+            "    <br>All numeric data is written via its String representation.\n" +
+            "    <br>Char and String data are written via JSON Strings, which handle all unusual characters\n" +
+            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
+            "    <br>Missing values for all data types appear as <tt>null</tt>.\n" +
+            "  <li><a class=\"selfLink\" id=\"nc3DataTypes\" href=\"#nc3DataTypes\" rel=\"bookmark\">.nc3 files -\n" +
+            "    <br>.nc3 files don't natively support any unsigned integer data types.\n" + 
+            "      Before CF v1.9, CF did not support unsigned integer types.\n" +
+            "      To deal with this, ERDDAP 2.10+\n" +
+            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
+            "      to indicate if the data is from an unsigned or signed variable. All integer attributes\n" +
+            "      are written as signed attributes (e.g., byte) with signed values (e.g., a ubyte actual_range attribute\n" +
+            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
+            "      two's compliment value of the out-of-range value). There is no easy way to know which (signed) integer\n" +
+            "      attributes should be read as unsigned attributes.\n" +
+            "    <p>.nc3 files don't support the long or ulong data types.\n" +
+            "      ERDDAP deals with this by temporarily converting them to be double variables.\n" +
+            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
+            "      This is an imperfect solution. Unidata refuses to make a minor\n" +
+            "      upgrade to .nc3 to deal with this and related problems, citing .nc4 (a major change) as the solution.\n" +
+            "    <p>The CF specification (before v1.9) said it supports char (unspecified details)\n" +
+            "      but it is unclear if it is only supported as the building blocks of what are effectively Strings.\n" +
+            "      Questions to their mailing list only yielded confusing answers.\n" +
+            "      Because of these complications, it is best to avoid char variables in ERDDAP and use String variables whenever possible.\n" +
+            "    <p>.nc3 files support strings with ASCII-encoded, characters.\n" +
+            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
+            "      \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
+            "      or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
+            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 and .hdf5 files -\n" +
+            "    <br>These file types support all of ERDDAP's data types.\n" +
+            "  <li><a class=\"selfLink\" id=\"NccsvDataTypes\" href=\"#NccsvDataTypes\" rel=\"bookmark\">NCCSV files -\n" +
+            "    <br>NCCSV 1.0 files don't support any unsigned integer data types.\n" +
+            "    <br>NCCSV 1.1+ files support all unsigned integer data types.\n" +
+            "  <li><a class=\"selfLink\" id=\"OpendapDataTypes\" href=\"#OpendapDataTypes\" rel=\"bookmark\"\n" +
+            "    >(OPeN)DAP (.das, .dds, .asc ASCII files, and .dods binary files)</a> -\n" +
+            "    <br>(OPeN)DAP handles short, ushort, int, uint, float and double values correctly.\n" +
+            "    <p>(OPeN)DAP has a \"byte\" data type that it defines as unsigned, whereas historically,\n" +
+            "      THREDDS and ERDDAP have treated \"byte\" as signed. To deal with this, ERDDAP 2.10+\n" +
+            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
+            "      to indicate if the data is what ERDDAP calls byte or ubyte. All byte and ubyte attributes\n" +
+            "      are written as \"byte\" attributes with signed values (e.g., a ubyte actual_range attribute\n" +
+            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
+            "      two's compliment value of the out-of-range value). There is no easy way to know which \"byte\"\n" +
+            "      attributes should be read as ubyte attributes.\n" +
+            "    <p>The (OPeN)DAP does not support signed or unsigned longs.\n" +
+            "      ERDDAP deals with this by temporarily converting them to be double variables and attributes.\n" +
+            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
+            "      This is an imperfect solution. OPeNDAP (the organization) refuses to make a minor\n" +
+            "      upgrade to DAP 2.0 to deal with this and related problems, citing DAP4 (a major change) as the solution.\n" +
+            //dap char?
+            "    <p>The (OPeN)DAP specification supports strings with ASCII-encoded, characters.\n" +
+            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
+            "     \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
+            "     or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
+            "  </ul>\n" +           
+            "Other comments:\n" +
+            "  <ul>\n" +
+            "  <li>Because of the variable support for long, ulong, and char data, we discourage their use in ERDDAP.\n" +
+            "  <li>Metadata - Because (OPeN)DAP's .das and .dds responses don't suport long or ulong data,\n" +
+            "     you may instead want to use ERDDAP's tabular representation of metadata as seen in the\n" +
+            "     http.../erddap/info/<i>datasetID</i>.html web page (or other file types),\n" +
+            "     which supports all data types in all situations.\n" +
+            "  </ul>\n" + 
+            "\n" +
+            //end of dataTypes section that is duplicated in EDDGrid and EDDTable
+
             "<li><a class=\"selfLink\" id=\"incompatibilities\" href=\"#incompatibilities\" rel=\"bookmark\"\n" +
             "      ><strong>Incompatibilities</strong></a>\n" +
             "  <ul>\n" +
@@ -8788,6 +8897,7 @@ public abstract class EDDTable extends EDD {
             "    tabledap throws an error.\n" + 
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
+
             "<li>" + EDStatic.acceptEncodingHtml("h3", tErddapUrl) +
             "    <br>&nbsp;\n" +
 "<li><a class=\"selfLink\" id=\"citeDataset\" href=\"#citeDataset\" rel=\"bookmark\"\n" +
@@ -8841,8 +8951,13 @@ public abstract class EDDTable extends EDD {
 "    Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
 "  <li>416 Range Not Satisfiable - for invalid byte range requests. Note that ERDDAP's\n" +
 "    \"files\" system does not allow byte range requests to the individual .nc or .hdf files\n" +
-"    because that approach is horribly inefficient -- either download the entire\n" +
-"    file or use the griddap or tabledap services to request a subset of a dataset.\n" +
+"    because that approach is horribly inefficient (tens/hundreds/thousands of requests and\n" +
+"    the transfer of tons of data unnecessarily) and some of the client software is buggy in a way\n" +
+"    that causes problems for ERDDAP (tens/hundreds/thousands of open/broken sockets). Instead, either download the entire\n" +
+"    file (especially if you need repeated use of different parts of the file)\n" +
+"    or use the griddap or tabledap services to request a subset of a dataset via an (OPeN)DAP request.\n" +
+"    That's what DAP was designed for and does so well. Just because you can saw a log with\n " +
+"    a steak knife (sometimes) doesn't make it a good idea -- use your chainsaw.\n" +
 "  <li>500 Internal Server Error - for errors that aren't the user's fault or responsibility.\n" +
 "    For code=500 errors that look like they should use a different code, or for\n" +
 "    errors that look like bugs in ERDDAP, please email the URL and error message to bob.simons at noaa.gov .\n" +
@@ -14460,13 +14575,14 @@ public abstract class EDDTable extends EDD {
      * and ndbcSosWind https://sdf.ndbc.noaa.gov/sos/ .
      *
      * @param sosQuery
+     * @param ipAddress The user's IP address (for statistics).
      * @param loggedInAs  or null if not logged in
      * @param outputStreamSource  if all goes well, this method calls out.close() at the end.
      * @param dir  the directory to use for a cache file
      * @param fileName the suggested name for a file
      * @throws Exception if trouble (e.g., invalid query parameter)
      */
-    public void sosGetObservation(String sosQuery, String loggedInAs,
+    public void sosGetObservation(String sosQuery, String ipAddress, String loggedInAs,
         OutputStreamSource outputStreamSource, 
         String dir, String fileName) throws Throwable {
 
@@ -14540,7 +14656,7 @@ public abstract class EDDTable extends EDD {
                 if (!EDStatic.units_standard.equals("UCUM"))
                     dapQuery += "&units(%22UCUM%22)";
 
-                respondToDapQuery(null, null, loggedInAs, requestUrl, 
+                respondToDapQuery(null, null, ipAddress, loggedInAs, requestUrl, 
                     dapQuery, outputStreamSource, dir, fileName, fileTypeName);
             }
         } finally { 
@@ -16103,7 +16219,7 @@ public abstract class EDDTable extends EDD {
             "<br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "<br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "<br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "\n";
 
@@ -16632,7 +16748,7 @@ public abstract class EDDTable extends EDD {
             "      <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "      <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "      <br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "      <br>The data responseFormats are:<br>");
         charsWritten = 0;
@@ -16895,7 +17011,7 @@ public abstract class EDDTable extends EDD {
         if (lonIndex < 0 || latIndex < 0) 
             throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
-        String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
+        String tErddapUrl = EDStatic.preferredErddapUrl;
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
         String sosUrl     = tErddapUrl + "/sos/" + datasetID() + "/" + sosServer; // "?" at end?
         String wmsUrl     = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
@@ -17660,7 +17776,7 @@ writer.write(
         if (lonIndex < 0 || latIndex < 0) 
             throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
-        String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
+        String tErddapUrl = EDStatic.preferredErddapUrl;
         String datasetUrl = tErddapUrl + "/tabledap/" + datasetID;
         //String wcsUrl     = tErddapUrl + "/wcs/"     + datasetID() + "/" + wcsServer;  // "?" at end?
         String wmsUrl     = tErddapUrl + "/wms/"     + datasetID() + "/" + WMS_SERVER; // "?" at end?
@@ -19008,17 +19124,19 @@ writer.write(
             pa.sort();
             if (pa.elementType() != PAType.STRING) {
                 //find missing value
-                double dmv = pa.tryToFindNumericMissingValue();
+                PAOne tmv = pa.tryToFindNumericMissingValue();
+                if (tmv != null) {
 
-                BitSet keep = new BitSet();
-                keep.set(0, nRows);
-                pa.applyConstraint(false, //morePrecise, 
-                    keep, "!=", "" + dmv);
-                pa.justKeep(keep);
+                    BitSet keep = new BitSet();
+                    keep.set(0, nRows);
+                    pa.applyConstraint(false, //morePrecise, 
+                        keep, "!=", "" + tmv);
+                    pa.justKeep(keep);
 
-                //then add 1 copy back in (if any removed)
-                if (pa.size() < nRows)
-                    pa.addDouble(dmv);
+                    //then add 1 copy back in (if any removed)
+                    if (pa.size() < nRows)
+                        pa.addPAOne(tmv);
+                }
             }
             int tnRows = pa.size();
             pa.removeDuplicates();  //don't worry about mv's: they reduce to 1 value
@@ -20498,7 +20616,7 @@ writer.write(
             "&station=%2241004%22&time>=2008-08-01T00:00:00Z&time<=2008-08-01T01:00:00Z", "");
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1Csv, null, osss, dir, "testSos1Sta");
+        eddTable.sosGetObservation(sosQuery1Csv, "someIPAddress", null, osss, dir, "testSos1Sta");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -20521,7 +20639,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station  XML\n" + sosQuery1);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSos1");
+        eddTable.sosGetObservation(sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -20680,7 +20798,7 @@ writer.write(
         String2.log("\n+++ 1b: GetObservations for 1 station  CSV\n" + sosQuery1b);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1b, null, osss, dir, "testSos1b");
+        eddTable.sosGetObservation(sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected =    //changes when I update ndbc
@@ -20710,7 +20828,7 @@ writer.write(
         String2.log("query: " + sosQuery2);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery2, null, osss, dir, "testSos2");
+        eddTable.sosGetObservation(sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -20740,7 +20858,7 @@ writer.write(
         writer = new java.io.StringWriter();
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery2b, null, osss, dir, "testSos2b");
+        eddTable.sosGetObservation(sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -20771,7 +20889,7 @@ writer.write(
         String2.log("query: " + sosQuery2c);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery2c, null, osss, dir, "testSos2c");
+        eddTable.sosGetObservation(sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -21005,7 +21123,7 @@ writer.write(
         String2.log("query: " + sosQuery3);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery3, null, osss, dir, "testSos3");
+        eddTable.sosGetObservation(sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -21036,7 +21154,7 @@ writer.write(
         String2.log("query: " + sosQuery4);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery4, null, osss, dir, "testSos4");
+        eddTable.sosGetObservation(sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
         results = baos.toString(String2.UTF_8);
         expected = 
 "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
@@ -21074,7 +21192,7 @@ writer.write(
         String2.log("\n+++ 5csv: GetObservations for 1 station, 1 obsProp\n" + sosQuery5csv);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery5csv, null, osss, dir, "testSos5csv");
+        eddTable.sosGetObservation(sosQuery5csv, "someIPAddress", null, osss, dir, "testSos5csv");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -21121,7 +21239,7 @@ writer.write(
             "");
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery6csv, null, osss, dir, "testSos6csv");
+        eddTable.sosGetObservation(sosQuery6csv, "someIPAddress", null, osss, dir, "testSos6csv");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 
@@ -21201,7 +21319,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station (via BBOX)\n" + sosQuery1);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSosCurBB");
+        eddTable.sosGetObservation(sosQuery1, "someIPAddress", null, osss, dir, "testSosCurBB");
 /*from eddTableSos.testNdbcSosCurrents
 "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30", 
 "station_id, longitude, latitude, altitude, time, CurrentDirection, CurrentSpeed\n" +
@@ -21236,7 +21354,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery2);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery2, null, osss, dir, "testSosCurSta");
+        eddTable.sosGetObservation(sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         //expected = same data
@@ -21255,7 +21373,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station (via offering=(station))\n" + sosQuery3);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery3, null, osss, dir, "testSosCurSta2");
+        eddTable.sosGetObservation(sosQuery3, "someIPAddress", null, osss, dir, "testSosCurSta2");
         results = baos.toString(String2.UTF_8);
         //String2.log(results);        
         expected = 
@@ -21402,7 +21520,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station\n" + sosQuery1);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testGomoos");
+        eddTable.sosGetObservation(sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
         results = baos.toString(String2.UTF_8);
         //String2.log(results);        
         expected = 
@@ -21439,7 +21557,7 @@ writer.write(
         String2.log("\n+++ GetObservations for 1 station \n" + sosQuery1);
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
-        eddTable.sosGetObservation(sosQuery1, null, osss, dir, "testSos1Sta");
+        eddTable.sosGetObservation(sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
         results = baos.toString(String2.UTF_8);
         String2.log(results);        
         expected = 

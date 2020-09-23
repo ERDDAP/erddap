@@ -176,7 +176,7 @@ public class PAOne {
      * 
      * @return For numeric types, this returns (String.valueOf(ar[index])) 
      *   or "" (for missing value).
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString() {
         return pa.getString(0);
@@ -269,7 +269,7 @@ public class PAOne {
     /**
      * This gets this PAOne's value as a ULong.
      *
-     * @return this PAOne's value as a ULong.
+     * @return this PAOne's value as a ULong (which may be null)
      */
     public BigInteger getULong() {
         return pa.getULong(0);
@@ -358,10 +358,11 @@ public class PAOne {
     }
 
     /**
-     * This indicates if the PAOne's value is NaN (or the cohort missing value).
+     * This indicates if the PAOne's value is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
      */
-    public boolean isNaN() {
-        return Double.isNaN(getDouble());
+    public boolean isMissingValue() {
+        return pa.isMissingValue(0);
     }
 
     /**
@@ -394,9 +395,9 @@ public class PAOne {
      * If this or other isNaN, this returns the other.
      */
     public PAOne min(PAOne otherPAOne) {
-        if (isNaN())
+        if (isMissingValue())
             return otherPAOne;
-        if (otherPAOne.isNaN())
+        if (otherPAOne.isMissingValue())
             return this;
         return this.compareTo(otherPAOne) <= 0? this : otherPAOne;
     }
@@ -405,9 +406,9 @@ public class PAOne {
      * This returns the max of this or otherPA.
      */
     public PAOne max(PAOne otherPAOne) {
-        if (isNaN())
+        if (isMissingValue())
             return otherPAOne;
-        if (otherPAOne.isNaN())
+        if (otherPAOne.isMissingValue())
             return this;
         return this.compareTo(otherPAOne) > 0? this : otherPAOne;
     }
@@ -464,17 +465,21 @@ public class PAOne {
      */
     public PAOne multiply(PAOne value) {
         PAType paType = paType();
-        if (paType == PAType.ULONG)
-            setULong(getULong().multiply(value.getULong()));
+        if (paType == PAType.ULONG) {
+            BigInteger bi1 = getULong();
+            BigInteger bi2 = value.getULong();
+            setULong(bi1 == null || bi2 == null? null : bi1.multiply(bi2));
 
-        else if (isIntegerType())
+        } else if (isIntegerType()) {
             setLong(getLong() * value.getLong());
 
-        else if (paType == PAType.FLOAT)
+        } else if (paType == PAType.FLOAT) {
             setFloat(getFloat() * value.getFloat());
 
-        else if (paType == PAType.DOUBLE)
+        } else if (paType == PAType.DOUBLE) {
             setDouble(getDouble() * value.getDouble());
+
+        }
 
         //skip String and char
 
@@ -489,17 +494,21 @@ public class PAOne {
      */
     public PAOne add(PAOne value) {
         PAType paType = paType();
-        if (paType == PAType.ULONG)
-            setULong(getULong().multiply(value.getULong()));
+        if (paType == PAType.ULONG) {
+            BigInteger bi1 = getULong();
+            BigInteger bi2 = value.getULong();
+            setULong(bi1 == null || bi2 == null? null : bi1.add(bi2));
 
-        else if (isIntegerType())
-            setLong(getLong() * value.getLong());
+        } else if (isIntegerType()) {
+            setLong(getLong() + value.getLong());
 
-        else if (paType == PAType.FLOAT)
-            setFloat(getFloat() * value.getFloat());
+        } else if (paType == PAType.FLOAT) {
+            setFloat(getFloat() + value.getFloat());
 
-        else if (paType == PAType.DOUBLE)
-            setDouble(getDouble() * value.getDouble());
+        } else if (paType == PAType.DOUBLE) {
+            setDouble(getDouble() + value.getDouble());
+
+        }
 
         //skip String and char
 
@@ -618,7 +627,7 @@ public class PAOne {
         Test.ensureEqual(bo.compareTo(sa, 1), 0, "");
         Test.ensureEqual(bo.compareTo(sa, 2), -1, "");
 
-        Test.ensureEqual(ba.missingValue().getString(), "", "");
+        Test.ensureEqual(ba.missingValue().getString(), "127", "");
         Test.ensureEqual(ba.missingValue().toString(), "127", "");
 
         bo.addTo(sa);

@@ -701,6 +701,7 @@ public class EDDTableCopy extends EDDTable{
 "  bottle_posn {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    Byte actual_range 0, 12;\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 12.0;\n" +
@@ -1096,34 +1097,28 @@ public class EDDTableCopy extends EDDTable{
             //tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             //    edd.className() + "_Data", ".dods"); 
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            try {
-                String2.log("\ndo .dods test");
-                String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
-                    "/tabledap/" + edd.datasetID();
-                //for diagnosing during development:
-                //String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(
-                //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
-                //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseStringUnchanged(tUrl + ".das?" + userDapQuery));
-                //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseStringUnchanged(tUrl + ".dods?" + userDapQuery)));
+            String2.log("\ndo .dods test");
+            String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
+                "/tabledap/" + edd.datasetID();
+            //for diagnosing during development:
+            //String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(
+            //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
+            //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseStringUnchanged(tUrl + ".das?" + userDapQuery));
+            //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseStringUnchanged(tUrl + ".dods?" + userDapQuery)));
 
-                //test if table.readOpendapSequence works with Erddap opendap server
-                //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
-                //!!!THIS IS NOT JUST A LOCAL TEST!!!
-                Table tTable = new Table();
-                tTable.readOpendapSequence(tUrl + "?" + userDapQuery, false);
-                Test.ensureEqual(tTable.globalAttributes().getString("title"), "GLOBEC NEP Rosette Bottle Data (2002)", "");
-                Test.ensureEqual(tTable.columnAttributes(2).getString("units"), EDV.TIME_UNITS, "");
-                Test.ensureEqual(tTable.getColumnNames(), new String[]{"longitude", "NO3", "time", "ship"}, "");
-                Test.ensureEqual(tTable.getFloatData(0, 0), -124.4f, "");
-                Test.ensureEqual(tTable.getFloatData(1, 0), 35.7f, "");
-                Test.ensureEqual(tTable.getDoubleData(2, 0), 1.02833814E9, "");
-                Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
-                String2.log("  .dods test succeeded");
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\nError accessing " + EDStatic.erddapUrl + //in tests, always use non-https url
-                    " and reading erddap as a data source."); 
-            }
+            //test if table.readOpendapSequence works with Erddap opendap server
+            //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
+            //!!!THIS IS NOT JUST A LOCAL TEST!!!
+            Table tTable = new Table();
+            tTable.readOpendapSequence(tUrl + "?" + userDapQuery, false);
+            Test.ensureEqual(tTable.globalAttributes().getString("title"), "GLOBEC NEP Rosette Bottle Data (2002)", "");
+            Test.ensureEqual(tTable.columnAttributes(2).getString("units"), EDV.TIME_UNITS, "");
+            Test.ensureEqual(tTable.getColumnNames(), new String[]{"longitude", "NO3", "time", "ship"}, "");
+            Test.ensureEqual(tTable.getFloatData(0, 0), -124.4f, "");
+            Test.ensureEqual(tTable.getFloatData(1, 0), 35.7f, "");
+            Test.ensureEqual(tTable.getDoubleData(2, 0), 1.02833814E9, "");
+            Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
+            String2.log("  .dods test succeeded");
 
             //test .png
             tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1131,8 +1126,7 @@ public class EDDTableCopy extends EDDTable{
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n*** This EDDTableCopy test requires testTableCopy"); 
+            throw new RuntimeException("*** This EDDTableCopy test requires testTableCopy", t); 
         }
 
     } //end of testBasic

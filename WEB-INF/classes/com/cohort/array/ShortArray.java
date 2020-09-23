@@ -23,7 +23,7 @@ import java.util.Set;
  * ShortArray is a thin shell over a short[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses Short.MAX_VALUE to represent a missing value (NaN).
+ * <p>This class uses maxIsMV=true and Short.MAX_VALUE to represent a missing value (NaN).
  */
 public class ShortArray extends PrimitiveArray {
 
@@ -63,10 +63,27 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMaxValue(int index) {
+        return get(index) == Short.MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
     public boolean isMissingValue(int index) {
-        return get(index) == Short.MAX_VALUE;
+        return maxIsMV && isMaxValue(index);
     }
 
     /**
@@ -231,7 +248,7 @@ public class ShortArray extends PrimitiveArray {
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
     public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
-        if (pa != null)
+        if (pa != null) 
             pa.clear();
         if (startIndex < 0)
             throw new IndexOutOfBoundsException(MessageFormat.format(
@@ -242,7 +259,7 @@ public class ShortArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return pa == null? new ShortArray(new short[0]) : pa;
+            return pa == null? new ShortArray(new short[0]) : pa;  //no need to call .setMaxIsMV(maxIsMV) since size=0
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         ShortArray sa = null;
@@ -261,7 +278,7 @@ public class ShortArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return sa;
+        return sa.setMaxIsMV(maxIsMV);
     }
 
     /**
@@ -315,11 +332,9 @@ public class ShortArray extends PrimitiveArray {
      *    If null or not a Number, this adds Short.MAX_VALUE.
      */
     public void addObject(Object value) {
-        if (size == array.length) //if we're at capacity
-            ensureCapacity(size + 1L);        
-        array[size++] = value != null && value instanceof Number?
-            ((Number)value).shortValue() :
-            Short.MAX_VALUE;
+        //double is good intermediate because it has the idea of NaN
+        addDouble(value != null && value instanceof Number?
+            ((Number)value).doubleValue() : Double.NaN); 
     }
 
     /**
@@ -377,16 +392,13 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, Math2.narrowToShort(String2.parseInt(value)));
-    }
-
-    /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? Short.MAX_VALUE : Math2.narrowToShort(value.getInt()));
+        int ti = String2.parseInt(value); //NaN -> Integer.MAX_VALUE
+        if (ti < Short.MIN_VALUE || ti > Short.MAX_VALUE) {
+            maxIsMV = true;
+            atInsert(index, Short.MAX_VALUE);
+        } else {
+            atInsert(index, (short)ti);
+        }
     }
 
     /**
@@ -397,7 +409,7 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null).
      */
     public void addNPAOnes(int n, PAOne value) {
-        addN(n, value == null? Short.MAX_VALUE : Math2.narrowToShort(value.getInt()));
+        addNInts(n, value == null? Integer.MAX_VALUE : value.getInt());  //handles NaN and MV
     }
 
     /**
@@ -408,34 +420,20 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, Math2.narrowToShort(String2.parseInt(value)));
+        addNInts(n, String2.parseInt(value)); //handles NaN and MV
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the value, as a String.
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addString(String value) {
-        add(Math2.narrowToShort(String2.parseInt(value)));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the float value
-     */
-    public void addFloat(float value) {
-        add(Math2.roundToShort(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Math2.roundToShort(value));
+    public void addNFloats(int n, float value) {
+        if (!maxIsMV && (!Float.isFinite(value) || value < Short.MIN_VALUE || value > Short.MAX_VALUE)) 
+            maxIsMV = true;
+        addN(n, Math2.roundToShort(value));
     }
 
     /**
@@ -446,16 +444,9 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
+        if (!maxIsMV && (!Double.isFinite(value) || value < Short.MIN_VALUE || value > Short.MAX_VALUE)) 
+            maxIsMV = true;
         addN(n, Math2.roundToShort(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(Math2.narrowToShort(value));
     }
 
     /**
@@ -465,16 +456,12 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, Math2.narrowToShort(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(Math2.narrowToShort(value));
+        if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
+            maxIsMV = true;
+            addN(n, Short.MAX_VALUE);
+        } else {
+            addN(n, (short)value);
+        }
     }
 
     /**
@@ -484,7 +471,12 @@ public class ShortArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, Math2.narrowToShort(value));
+        if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
+            maxIsMV = true;
+            addN(n, Short.MAX_VALUE);
+        } else {
+            addN(n, (short)value);
+        }
     }
 
     /**
@@ -507,12 +499,14 @@ public class ShortArray extends PrimitiveArray {
             ensureCapacity(size + nValues);            
             System.arraycopy(((ShortArray)otherPA).array, otherIndex, array, size, nValues);
             size += nValues;
+            if (otherPA.getMaxIsMV()) 
+                maxIsMV = true;
             return this;
         }
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            addInt(otherPA.getInt(otherIndex++)); //does error checking
+            addInt(otherPA.getInt(otherIndex++)); //does error checking and handles maxIsMV
         return this;
     }
 
@@ -524,7 +518,7 @@ public class ShortArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        setInt(index, otherPA.getInt(otherIndex));
+        setInt(index, otherPA.getInt(otherIndex)); //handles maxIsMV
     }
 
     /**
@@ -688,14 +682,14 @@ public class ShortArray extends PrimitiveArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   Short.MAX_VALUE is converted to Double.NaN.
+     *   If maxIsMV, Short.MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "ShortArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
             short s = array[i];
-            dar[i] = s == Short.MAX_VALUE? Double.NaN : s;
+            dar[i] = maxIsMV && s == Short.MAX_VALUE? Double.NaN : s;
         }
         return dar;
     }
@@ -711,7 +705,7 @@ public class ShortArray extends PrimitiveArray {
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
             short s = array[i];
-            sar[i] = s == Short.MAX_VALUE? "" : String.valueOf(s);
+            sar[i] = maxIsMV && s == Short.MAX_VALUE? "" : String.valueOf(s);
         }
         return sar;
     }
@@ -748,18 +742,17 @@ public class ShortArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as an int. 
-     *   Short.MAX_VALUE is returned as Integer.MAX_VALUE.
+     *   If maxIsMV, Short.MAX_VALUE is returned as Integer.MAX_VALUE.
      */
     public int getInt(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Integer.MAX_VALUE : 
-                                     s;
+        return maxIsMV && s == Short.MAX_VALUE? Integer.MAX_VALUE : s;
     }
 
     /**
      * Return a value from the array as an int.
      * This "raw" variant leaves missingValue from smaller data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      * Floating point values are rounded.
      * 
      * @param index the index number 0 ... size-1
@@ -778,7 +771,12 @@ public class ShortArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(i).
      */
     public void setInt(int index, int i) {
-        set(index, Math2.narrowToShort(i));
+        if (i < Short.MIN_VALUE || i > Short.MAX_VALUE) {
+            maxIsMV = true;
+            set(index, Short.MAX_VALUE);
+        } else {
+            set(index, (short)i); 
+        }
     }
 
     /**
@@ -786,11 +784,11 @@ public class ShortArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   Short.MAX_VALUE is returned as Long.MAX_VALUE.
+     *   If maxIsMV, Short.MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Long.MAX_VALUE : s;
+        return maxIsMV && s == Short.MAX_VALUE? Long.MAX_VALUE : s;
     }
 
     /**
@@ -801,7 +799,12 @@ public class ShortArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToShort(long).
      */
     public void setLong(int index, long i) {
-        set(index, Math2.narrowToShort(i));
+        if (i < Short.MIN_VALUE || i > Short.MAX_VALUE) {
+            maxIsMV = true;
+            set(index, Short.MAX_VALUE);
+        } else {
+            set(index, (short)i); 
+        }
     }
 
     /**
@@ -809,11 +812,11 @@ public class ShortArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as null.
      */
     public BigInteger getULong(int index) {
         short b = get(index);
-        return b == Short.MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+        return maxIsMV && b == Short.MAX_VALUE? null : new BigInteger("" + b);
     }
 
     /**
@@ -824,7 +827,7 @@ public class ShortArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(long).
      */
     public void setULong(int index, BigInteger i) {
-        set(index, Math2.narrowToShort(i));
+        setDouble(index, i == null? Double.NaN : i.doubleValue()); //easier to work with. handles NaN. wide range
     }
 
     /**
@@ -834,11 +837,11 @@ public class ShortArray extends PrimitiveArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   Short.MAX_VALUE is returned as Float.NaN.
+     *   If maxIsMV, Short.MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Float.NaN : s;
+        return maxIsMV && s == Short.MAX_VALUE? Float.NaN : s;
     }
 
     /**
@@ -849,6 +852,8 @@ public class ShortArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToShort(d).
      */
     public void setFloat(int index, float d) {
+        if (!maxIsMV && (!Float.isFinite(d) || d < Short.MIN_VALUE || d > Short.MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToShort(d));
     }
 
@@ -859,12 +864,11 @@ public class ShortArray extends PrimitiveArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   Short.MAX_VALUE is returned as Double.NaN.
+     *   If maxIsMV, Short.MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? Double.NaN : 
-                                     s;
+        return maxIsMV && s == Short.MAX_VALUE? Double.NaN : s;
     }
 
     /**
@@ -900,7 +904,7 @@ public class ShortArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      *
      * <p>All integerTypes overwrite this.
      * 
@@ -920,6 +924,8 @@ public class ShortArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToShort(d).
      */
     public void setDouble(int index, double d) {
+        if (!maxIsMV && (!Double.isFinite(d) || d < Short.MIN_VALUE || d > Short.MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToShort(d));
     }
 
@@ -930,11 +936,11 @@ public class ShortArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *   or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? "" : String.valueOf(s);
+        return maxIsMV && s == Short.MAX_VALUE? "" : String.valueOf(s);
     }
 
     /**
@@ -947,13 +953,13 @@ public class ShortArray extends PrimitiveArray {
      */
     public String getJsonString(int index) {
         short s = get(index);
-        return s == Short.MAX_VALUE? "null" : String.valueOf(s);
+        return maxIsMV && s == Short.MAX_VALUE? "null" : String.valueOf(s);
     }
 
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
      * <p>All integerTypes overwrite this.
@@ -973,7 +979,7 @@ public class ShortArray extends PrimitiveArray {
      *   with String2.parseInt and narrowed by Math2.narrowToShort(i).
      */
     public void setString(int index, String s) {
-        set(index, Math2.narrowToShort(String2.parseInt(s)));
+        setInt(index, String2.parseInt(s)); //handles mv
     }
 
     /**
@@ -1057,15 +1063,7 @@ public class ShortArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof ShortArray)) //handles o==null
-            return false;
-        ShortArray other = (ShortArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -1074,20 +1072,23 @@ public class ShortArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof ShortArray))
             return "The two objects aren't equal: this object is a ShortArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         ShortArray other = (ShortArray)o;
         if (other.size() != size)
             return "The two ShortArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return "The two ShortArrays aren't equal: this[" + i + "]=" + array[i] + 
-                                                      "; other[" + i + "]=" + other.array[i] + ".";
+            if (getInt(i) != other.getInt(i)) //handles mv
+                return "The two ShortArrays aren't equal: this[" + i + "]=" + getInt(i) + 
+                                                      "; other[" + i + "]=" + other.getInt(i) + ".";
+        //if (maxIsMV != other.maxIsMV)
+        //     return "The two ByteArrays aren't equal: this.maxIsMV=" + maxIsMV + 
+        //                                          "; other.maxIsMV=" + other.maxIsMV + ".";
         return "";
     }
 
@@ -1141,7 +1142,7 @@ public class ShortArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return Integer.compare(getInt(index1), otherPA.getInt(index2));
+        return Integer.compare(getInt(index1), otherPA.getInt(index2));  //int handles mv
     }
 
     /**
@@ -1306,12 +1307,14 @@ public class ShortArray extends PrimitiveArray {
         int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof ShortArray) {
+            if (pa.getMaxIsMV())
+                setMaxIsMV(true);
             System.arraycopy(((ShortArray)pa).array, 0, array, size, otherSize);
+            size += otherSize;
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = Math2.narrowToShort(pa.getInt(i)); //this converts mv's
+                addInt(pa.getInt(i)); //this converts mv's and handles maxIsMV
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1429,7 +1432,8 @@ public class ShortArray extends PrimitiveArray {
      */
     public int switchFromTo(String tFrom, String tTo) {
         short from = Math2.roundToShort(String2.parseDouble(tFrom));
-        short to   = Math2.roundToShort(String2.parseDouble(tTo));
+        double d = String2.parseDouble(tTo);
+        short to   = Math2.roundToShort(d);
         if (from == to)
             return 0;
         int count = 0;
@@ -1439,6 +1443,8 @@ public class ShortArray extends PrimitiveArray {
                 count++;
             }
         }
+        if (count > 0 && Double.isNaN(d))
+            maxIsMV = true;
         return count;
     }
 
@@ -1467,11 +1473,12 @@ public class ShortArray extends PrimitiveArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        short tmin = Short.MAX_VALUE - 1;
+        short tmin = Short.MAX_VALUE;
         short tmax = Short.MIN_VALUE;
         for (int i = 0; i < size; i++) {
             short v = array[i];
-            if (v != Short.MAX_VALUE) {
+            if (maxIsMV && v == Short.MAX_VALUE) {
+            } else {
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
                 if (v >= tmax) {tmaxi = i; tmax = v; }
@@ -1716,6 +1723,8 @@ public class ShortArray extends PrimitiveArray {
         //test equals
         ShortArray anArray2 = new ShortArray();
         anArray2.add((short)0); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a ShortArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a ShortArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1838,6 +1847,8 @@ public class ShortArray extends PrimitiveArray {
         anArray = new ShortArray(new short[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
         anArray.set(2, Short.MAX_VALUE);
+        Test.ensureEqual(anArray.isAscending(), "", "");
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isAscending(), 
             "ShortArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, (short)9);
@@ -1848,6 +1859,7 @@ public class ShortArray extends PrimitiveArray {
         anArray = new ShortArray(new short[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
         anArray.set(2, Short.MAX_VALUE);
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isDescending(), 
             "ShortArray isn't sorted in descending order: [1]=10 < [2]=32767.", "");
         anArray.set(1, (short)35);
@@ -1888,8 +1900,8 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(1), "32766", "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new ShortArray(new short[] {       })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new ShortArray(new short[] {1, 2   })).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new ShortArray(new short[] {       })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new ShortArray(new short[] {1, 2   })).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new ShortArray(new short[] {Short.MIN_VALUE})).tryToFindNumericMissingValue(), Short.MIN_VALUE, "");
         Test.ensureEqual((new ShortArray(new short[] {Short.MAX_VALUE})).tryToFindNumericMissingValue(), Short.MAX_VALUE, "");
         Test.ensureEqual((new ShortArray(new short[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");

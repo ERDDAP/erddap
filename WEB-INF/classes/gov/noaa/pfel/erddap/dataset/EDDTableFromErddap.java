@@ -227,7 +227,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         if (accessibleViaFiles) {
             try {
-                //this will only work if remote ERDDAP is v2.03+
+                //this will only work if remote ERDDAP is v2.10+
                 int po = localSourceUrl.indexOf("/tabledap/");
                 Test.ensureTrue(po > 0, "localSourceUrl doesn't have /tabledap/.");
                 InputStream is = SSR.getUrlBufferedInputStream(
@@ -235,7 +235,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                     "/.csv");
                 try {is.close();} catch (Exception e2) {}
             } catch (Exception e) {
-                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.03 (no support for /files/.csv):\n" +
+                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.10 (no support for /files/.csv):\n" +
                     MustBe.throwableToString(e));
                 accessibleViaFiles = false;
             }
@@ -378,35 +378,35 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             EDV edv = null;
             if (EDV.LON_NAME.equals(tSourceName)) {
                 lonIndex = tDataVariables.size();
-                edv = new EDVLon(tSourceName,
+                edv = new EDVLon(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.LAT_NAME.equals(tSourceName)) {
                 latIndex = tDataVariables.size();
-                edv = new EDVLat(tSourceName,
+                edv = new EDVLat(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.ALT_NAME.equals(tSourceName)) {
                 altIndex = tDataVariables.size();
-                edv = new EDVAlt(tSourceName,
+                edv = new EDVAlt(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
             } else if (EDV.DEPTH_NAME.equals(tSourceName)) {
                 depthIndex = tDataVariables.size();
-                edv = new EDVDepth(tSourceName,
+                edv = new EDVDepth(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
             } else if (EDV.TIME_NAME.equals(tSourceName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = tDataVariables.size();
-                edv = new EDVTime(tSourceName,
+                edv = new EDVTime(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType);//this constructor gets source / sets destination actual_range
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                edv = new EDVTimeStamp(tSourceName, tSourceName, 
+                edv = new EDVTimeStamp(datasetID, tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                edv = new EDV(tSourceName, tSourceName, 
+                edv = new EDV(datasetID, tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //the constructor that reads actual_range
                 edv.setActualRangeFromDestinationMinMax();
@@ -731,7 +731,7 @@ expected =
             po = results.indexOf(expected.substring(0, 20));
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
         try {
-            Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);  
         } catch (Throwable t) {
             throw new RuntimeException("Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);  
         }
@@ -768,12 +768,11 @@ expected =
         String tID = tRedirect? "rTestNccsvScalar" : "rTestNccsvScalarNoRedirect";
         String url = "http://localhost:8080/cwexperimental/tabledap/" + tID;
 
-        try {
 
 
-            //*** test getting das for entire dataset
-            results = SSR.getUrlResponseStringUnchanged(url + ".nccsvMetadata"); 
-            expected = 
+        //*** test getting das for entire dataset
+        results = SSR.getUrlResponseStringUnchanged(url + ".nccsvMetadata"); 
+        expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -887,13 +886,7 @@ expected =
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
-        try {
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Exception e7) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e7) +
-                "Known trouble: actual_range max should be MV-1.");
-        }
-
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.nccsv all
         userDapQuery = "";
@@ -1031,12 +1024,6 @@ expected =
             tName = "EDDTableFromErddap_GraphM_" + tRedirect + ".png"; 
             SSR.downloadFile(url + ".png?" + mapDapQuery, dir + tName, true);
             SSR.displayInBrowser("file://" + dir + tName);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n*** This EDDTableFromErddap test requires rTestNccsvScalar and rTestNccsvScalarNoRedirect on localhost's erddap.");
-        }
-
 
     } //end of testBasic
 

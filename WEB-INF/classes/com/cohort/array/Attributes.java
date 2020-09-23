@@ -324,14 +324,16 @@ public class Attributes {
      * value PrimitiveArray as a ulong, regardless of the type used to store it.
      *
      * @param name the name of an attribute
-     * @return the attribute as a ulong or ULongArray.MAX_VALUE if trouble (e.g., not found)
+     * @return the attribute as a ulong or null if trouble (e.g., not found).
+     *    This acts like maxIsMV=true and returns MAX_VALUE.
      */
     public BigInteger getULong(String name) {
         try {
             PrimitiveArray pa = get(name);
             if (pa == null || pa.size() == 0)
                 return ULongArray.MAX_VALUE;
-            return pa.getULong(0);
+            BigInteger bi = pa.getULong(0);
+            return bi == null? ULongArray.MAX_VALUE : bi;
         } catch (Exception e) {
             return ULongArray.MAX_VALUE;
         }
@@ -1177,6 +1179,7 @@ public class Attributes {
                 sb.append(String2.toJson(s.substring(0, s.length() - 1))); //remove trailing \n
             } else if (pa.elementType() == PAType.CHAR) {
                 //each char becomes a string, then displayed as newline separated string
+                //if (tName.equals("_FillValue")) String2.pressEnterToContinue(">> ncoJson _FillValue=" + String2.annotatedString((new StringArray(pa)).toString()) + " maxIsMV=" + pa.getMaxIsMV());
                 String s = (new StringArray(pa)).toNewlineString();
                 sb.append(String2.toJson(s.substring(0, s.length() - 1))); //remove trailing \n
             } else {
@@ -1275,8 +1278,8 @@ public class Attributes {
             PrimitiveArray fvPA = oldAtts.get("_FillValue");
             if (mvPA == null && fvPA == null) {
                 //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
-                double mv = dataPa.tryToFindNumericMissingValue();
-                if (!Double.isNaN(mv)) {
+                PAOne mv = dataPa.tryToFindNumericMissingValue();
+                if (mv != null) {
                     dataPa.switchFromTo("" + mv, "");
                     if (debugMode) String2.log(
                         ">> #256: switched mv=" + mv + " to \"standard\" mv.");
@@ -1309,6 +1312,7 @@ public class Attributes {
             double dFillValue    = unsigned?
                 oldAtts.getUnsignedDouble("_FillValue") :    //so -1b becomes 255, works whether source is unsigned or not
                 oldAtts.getDouble(        "_FillValue");    
+            //String2.log(">> oldAtts=\n" + oldAtts.toString() + ">> scalePA=" + scalePA + " addPA=" + addPA + " dFillValue=" + dFillValue);
             double dMissingValue = unsigned?
                 oldAtts.getUnsignedDouble("missing_value") : //so -1b becomes 255, works whether source is unsigned or not
                 oldAtts.getDouble(        "missing_value");                              
@@ -1332,8 +1336,10 @@ public class Attributes {
                     destPAType;  
 
                 //switch data type
-                //String2.log(">> unsigned=" + unsigned + " oPAType=" + oPAType + 
-                //    " destPAType=" + destPAType + " dataPA type=" + dataPa.elementType() + " " + dataPa.toString());
+                if (debugMode) String2.log(">> switch data type: unsigned=" + unsigned + " oPAType=" + oPAType + 
+                    " dMV=" + dMissingValue + " dFV=" + dFillValue + 
+                    " destPAType=" + destPAType + " dataPA type=" + dataPa.elementType() + 
+                    " dataPaMV=" + dataPaMV + " dataPa= " + dataPa.toString());
                 dataPa = 
                     //if stated missing_value or _FillValue is same as cohort missingValue...
                     unsigned? 
@@ -1341,9 +1347,10 @@ public class Attributes {
                         dataPa.isIntegerType() &&
                             (dMissingValue == dataPaMV ||  //e.g., 127 == 127
                              dFillValue    == dataPaMV)?
-                            PrimitiveArray.factory(        destPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
-                            PrimitiveArray.rawFactory(     destPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
+                            PrimitiveArray.factory(        destPAType, dataPa.setMaxIsMV(true)) : //missingValues (e.g., 127) are    changed, e.g., to NaN
+                            PrimitiveArray.rawFactory(     destPAType, dataPa);                   //missingValues (e.g., 127) AREN'T changed
                 //so unsigned values are now properly unsigned
+                //String2.log(">> switch data type2: dataPa= " + dataPa.toString());
 
                 //If present, missing_value and _FillValue are packed
                 //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
@@ -1388,16 +1395,7 @@ public class Attributes {
 
             } else {  //if not unsigned or packed, still need to convert missing values
 
-                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
-                    dataPa.switchFromTo(       "" + dMissingValue, "");
-                    if (debugMode) String2.log(
-                        ">> #1: converted from missing_value=" + dMissingValue);
-                }
-                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
-                    dataPa.switchFromTo(       "" + dFillValue,    "");
-                    if (debugMode) String2.log(
-                        ">> #1: converted from _FillValue=" + dFillValue);
-                }
+                dataPa.convertToStandardMissingValues(oldAtts.getString("_FillValue"), oldAtts.getString("missing_value"));
             }
 
             //For all types other than String, need to specify _FillValue=standard missing value
@@ -1435,14 +1433,11 @@ public class Attributes {
                 ">> #2: converted numeric dateTimes (" + oUnits + ") to epochSeconds \"seconds since 1970-01-01T00:00:00Z\".");
         }
 
-        //if standardizeWhat & 4, convert defined String _FillValue's and missing_value's to ""
+        //if standardizeWhat & 4, convert defined String _FillValue's and missing_value's to standard cohort mv
         if ((standardizeWhat & 4) == 4 && dataPa.elementType() == PAType.STRING) {
-            String sFillValue    = oldAtts.getString("_FillValue");
-            String sMissingValue = oldAtts.getString("missing_value");
-            if (newAtts.remove("_FillValue")    != null)
-                dataPa.switchFromTo(sFillValue, "");
-            if (newAtts.remove("missing_value") != null)
-                dataPa.switchFromTo(sMissingValue, "");
+            newAtts.remove("missing_value");
+            newAtts.remove("_FillValue");
+            dataPa.convertToStandardMissingValues(oldAtts.getString("_FillValue"), oldAtts.getString("missing_value"));
             if (debugMode) String2.log(
                 ">> #4: converted defined String _FillValue's and missing_value's to \"\".");
         }
@@ -1603,7 +1598,7 @@ public class Attributes {
         String tUnits          = sourceAtts.getString("units");         
         double dataPaMV        = dataPa.missingValue().getRawDouble();
         //_FillValue and missing_value should be unsigned if _Unsigned=true, 
-        //  but in practice sometimes aren't
+        //  but in aren't in .nc3 files
         //and they should be packed if var is packed.
         //see EDDGridFromNcFilesUnpacked.testUInt16File()
         double dFillValue      = unsigned?
@@ -1636,15 +1631,18 @@ public class Attributes {
             }
             if (tPAType == null) //might be
                 tPAType = dataPaPAType;
+            boolean willScale = scale != 1 || add != 0;
 
             //switch data type
-            PrimitiveArray dataPa2 = 
-                //if stated missing_value or _FillValue is same as cohort missingValue...
-                dataPa.isIntegerType() &&
-                    (dMissingValue == dataPaMV ||  //e.g., 127 == 127
-                     dFillValue    == dataPaMV)?
-                    PrimitiveArray.factory(        tPAType, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
-                    PrimitiveArray.rawFactory(     tPAType, dataPa);  //missingValues (e.g., 127) AREN'T changed
+            if (dataPa.isIntegerType() && dMissingValue == dataPaMV) {  //e.g., 127 == 127
+                dataPa.setMaxIsMV(true); 
+                dMissingValue = Double.NaN; //it's done
+            }
+            if (dataPa.isIntegerType() && dFillValue == dataPaMV) {  //e.g., 127 == 127
+                dataPa.setMaxIsMV(true); 
+                dFillValue = Double.NaN; //it's done
+            }
+            PrimitiveArray dataPa2 = PrimitiveArray.factory(tPAType, dataPa); //if missing_value is MAX_VALUE, they become NaN
             if (debugMode) String2.log(
                 ">>   source =" + dataPaPAType          + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
                 ">>   dataPa2=" + dataPa2.elementType() + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
@@ -1655,12 +1653,14 @@ public class Attributes {
             //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
             //and apply before scaleAddOffset
             //String2.log(">>   dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
-            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPaMV) {
-                dataPa2.switchFromTo(      "" + dMissingValue, "");
+            if (!Double.isNaN(dMissingValue)) {
+                if (debugMode) String2.log(">>     switchFromTo " + dMissingValue);
+                dataPa2.switchFromTo("" + dMissingValue, "");
                 dMissingValue = Double.NaN;  //it's done
             }
-            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPaMV) {
-                dataPa2.switchFromTo(      "" + dFillValue,    "");
+            if (!Double.isNaN(dFillValue)) {
+                if (debugMode) String2.log(">>     switchFromTo " + dFillValue);
+                dataPa2.switchFromTo("" + dFillValue,    "");
                 dFillValue = Double.NaN;     //it's done
             }
 
@@ -1741,6 +1741,57 @@ public class Attributes {
 
         return dataPa;
     }
+
+    /**
+     * If _Unsigned=true, change tSourceType.
+     * This does not call tSourceAttributes.convertSomeSignedToUnsigned().
+     * 
+     * @param tSourceType the CoHort String name for the type. If !something, this returns
+     *    current value.  If invalid type, this throws exception.
+     * @param tSourceAtts the source attributes.  
+     * @param tAddAtts the add attributes. If _Unsigned existed, _Unsigned=null will be added here.
+     * @return the original tSourceType or the adjusted tSourceType.
+     * @throws Exception if tSourceAtts or tAddAtts is null
+     */
+    public static String adjustSourceType(String tSourceType, Attributes tSourceAtts, 
+        Attributes tAddAtts) {
+        if (!String2.isSomething(tSourceType)) 
+            return tSourceType;
+        PAType paType = PAType.fromCohortStringCaseInsensitive(tSourceType); //throws exception
+
+        PrimitiveArray us = tAddAtts.remove("_Unsigned");
+        if (us == null) 
+            us = tSourceAtts.remove("_Unsigned");
+        if (us == null)
+            return tSourceType;
+        
+        if ("true".equals(us.toString()))
+            paType = PAType.makeUnsigned(paType);
+        else if ("false".equals(us.toString()))
+            paType = PAType.makeSigned(paType);
+        
+        tAddAtts.set("_Unsigned", "null");
+
+        return PAType.toCohortString(paType);
+    }
+
+    /**
+     * This variant of adjustSourceType works with a pa, not sourceType string.
+     * 
+     * @param pa the PrimitiveArray of source values. If null, this throws exception.
+     * @param tSourceAtts the source attributes
+     * @param tAddAtts the add attributes. If _Unsigned existed, _Unsigned=null will be added here.
+     * @return the original tSourceType or the adjusted tSourceType.
+     */
+    public static PrimitiveArray adjustSourceType(PrimitiveArray pa, Attributes tSourceAtts, 
+        Attributes tAddAtts) {
+
+        String tSourceType = adjustSourceType(pa.elementTypeString(), tSourceAtts, tAddAtts);
+        return PrimitiveArray.factory(PAType.fromCohortStringCaseInsensitive(tSourceType), pa);
+    }
+
+        
+
 
     /**
      * Use this when a unsigned variable has been stored in a signed nc3 variable,
@@ -2137,7 +2188,14 @@ public class Attributes {
         atts.set("_FillValue", (short)32767); 
         atts.set("actual_min", (short)-2); 
         atts.set("units", "days since 1900-1-1"); 
+        Test.ensureEqual(atts.toString(), 
+"    _FillValue=32767s\n" +
+"    actual_min=-2s\n" +  
+"    units=days since 1900-1-1\n", "");  
         pa = PrimitiveArray.csvFactory(PAType.SHORT, "-2, 0, 300, 32767");
+        Test.ensureEqual(pa.toString(), "-2, 0, 300, 32767", ""); 
+        Test.ensureEqual(pa.getMaxIsMV(), false, ""); 
+        Test.ensureEqual(atts.getDouble("_FillValue"), 32767.0, ""); 
         pa = atts.standardizeVariable(1 + 2, "test", pa);
         Test.ensureEqual(pa.toString(), "-2.2091616E9, -2.2089888E9, -2.1830688E9, NaN", ""); 
         Test.ensureEqual(atts.toString(), 

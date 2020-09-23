@@ -204,11 +204,11 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                         CharArray ca = new CharArray();
                         int n = pa.size();
                         for (int i = 0; i < n; i++)
-                            ca.add(CharArray.firstChar(pa.getString(i)));
+                            ca.addString(pa.getString(i));
                         newPa = ca;
                     } else {
                         newPa = PrimitiveArray.factory(
-                            PrimitiveArray.elementStringToPAType(sourceDataTypes[sd]), 1, false);
+                            PAType.fromCohortString(sourceDataTypes[sd]), 1, false);
                         newPa.append(pa);
                     }
                     table.setColumn(tc, newPa);
@@ -615,6 +615,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station</att>\n" +
 "        </addAttributes>\n" +
@@ -788,6 +789,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station</att>\n" +
 "        </addAttributes>\n" +
@@ -970,13 +972,13 @@ String expected =
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>aLong</sourceName>\n" +         //note not caught as longs
+"        <sourceName>aLong</sourceName>\n" +        
 "        <destinationName>aLong</destinationName>\n" +
 "        <dataType>long</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Long</att>\n" +
 "        </addAttributes>\n" +
@@ -988,7 +990,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">An Int</att>\n" +
 "        </addAttributes>\n" +
@@ -1000,7 +1002,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Short</att>\n" +
 "        </addAttributes>\n" +
@@ -1012,7 +1014,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Byte</att>\n" +
 "        </addAttributes>\n" +
@@ -1086,6 +1088,7 @@ String expected =
 "  altitude {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    String _CoordinateZisPositive \"up\";\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 0, 0;\n" +
 "    String axis \"Z\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -1110,6 +1113,7 @@ String expected =
 "    String long_name \"Station\";\n" +
 "  }\n" +
 "  wd {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 0, 359;\n" +
 "    Float64 colorBarMaximum 360.0;\n" + 
 "    Float64 colorBarMinimum 0.0;\n" + 
@@ -1331,6 +1335,8 @@ expected =
 "Attributes {\n" +
 " s {\n" +
 "  ship_call_sign {\n" +
+"    String actual_range \"WTDL\n" +
+"WTDL\";\n" +
 "    String cf_role \"trajectory_id\";\n" +
 "    String ioos_category \"Other\";\n" +
 "  }\n" +
@@ -1544,6 +1550,11 @@ expected=
         Test.ensureTrue(eddTable.findVariableByDestinationName("aBoolean").isBoolean(), 
             "Is aBoolean edv.isBoolean() true?");
 
+        //display the source file (useful for diagnosing problems below)
+        String sourceFile = String2.unitTestDataDir + "csvAscii.txt";
+        String2.log("sourceFile=" + sourceFile + ":\n" + 
+            String2.directReadFrom88591File(sourceFile));
+
         //.csv    for all
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
@@ -1595,26 +1606,33 @@ expected=
 "    String long_name \"A Char\";\n" +
 "  }\n" +
 "  aBoolean {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 1;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Boolean\";\n" +
 "  }\n" +
 "  aByte {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 11, 24;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Byte\";\n" +
 "  }\n" +
 "  aShort {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 12001, 24000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Short\";\n" +
 "  }\n" +
 "  anInt {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 12, 24000000;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"An Int\";\n" +
 "  }\n" +
 "  aLong {\n" +
+"    Float64 _FillValue 9223372036854775807;\n" +
 "    Float64 actual_range 1200, 240000000000;\n" + //long values written as float64 because no longs in nc3
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Long\";\n" +
@@ -3771,7 +3789,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <att name=\"platform\">Windows</att>\n" +
 "        <att name=\"sourceUrl\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
-"        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present, Variable, Description, Units</att>\n" +
+"        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present, Variable, Description, Units, min, max</att>\n" + //2020-08-07 added min and max
 "        <att name=\"summary\">This dataset is consists of point data taken from numerous depth surveys from the last century.  These data were processed and imported into a geographic information system (GIS) platform to form a bathymetric map of the ocean floor.  Approximately 18.6 billion depth data points were synthesized from various data sources that have been collected and archived since 1901 and includes lead line surveys, trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF files, XYZ files, and MB-58 multi-beam files.  Bathymetric soundings from these datasets span almost all areas of the Arctic and includes Alaska and the surrounding international waters.  Most of the bathymetry data used for this effort is archived and maintained at the National Center for Environmental Information (National Centers for Environmental Information (NCEI)) https://www.ncei.noaa.gov.\n" +
 "\n" +
 "The purpose of our effort is to develop a high resolution bathymetry dataset for the entire Alaska Exclusive Economic Zone (AEEZ) and surrounding waters by combining and assimilating multiple sets of existing data from historical and recent ocean depth mapping surveys.</att>\n" +
@@ -3785,6 +3803,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station ID</att>\n" +
 "        </addAttributes>\n" +
@@ -3796,6 +3815,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Year</att>\n" +
 "        </addAttributes>\n" +
@@ -3864,6 +3884,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Core</att>\n" +
 "        </addAttributes>\n" +
@@ -3908,6 +3929,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"long_name\">Pcod140 N</att>\n" +
 "        </addAttributes>\n" +
@@ -3919,6 +3941,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Present</att>\n" +
 "        </addAttributes>\n" +
@@ -4284,6 +4307,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"allowed_values\">20041001 - 20095052</att>\n" +
 "            <att name=\"comment\">Unique identifier for each trawl station</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
@@ -4297,6 +4321,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"allowed_values\">2004 - 2009</att>\n" +
 "            <att name=\"comment\">Survey year</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
@@ -4385,6 +4410,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"allowed_values\">0 - 4</att>\n" +
 //"            <att name=\"colorBarMaximum\" type=\"double\">4</att>\n" +
 //"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
@@ -4445,6 +4471,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"allowed_values\">0 - 8438</att>\n" +
 //"            <att name=\"colorBarMaximum\" type=\"double\">9000</att>\n" +
 //"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
@@ -4460,6 +4487,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.10 (contact: bob.simons@noaa.gov) con
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"allowed_values\">0 - 1</att>\n" +
 //"            <att name=\"colorBarMaximum\" type=\"double\">1</att>\n" +
 //"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
@@ -5621,6 +5649,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"description\">station number given by PI</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Sta PI</att>\n" +
@@ -6259,13 +6288,13 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Data</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
-
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //das 
@@ -6288,6 +6317,7 @@ String expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  data {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 1, 4;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Data\";\n" +

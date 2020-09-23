@@ -2514,17 +2514,14 @@ public class SSR {
     public static void testForBrokenLinks(String tUrl) throws Exception{
 
         String2.log("\nSSR.testForBrokenLinks(" + tUrl + ")");
-        String regex = "\"(http.+?)\"";
+        String regex = "\"(https?://.+?)\"";
         Pattern pattern = Pattern.compile(regex);
         String lines[] = getUrlResponseLines(tUrl);
         StringBuilder log = new StringBuilder();
         int errorCount = 0;
         HashSet<String> tried = new HashSet();
         String skip[] = new String[]{
-            "http",  "http:",  "http://", 
-            "https", "https:", "https://",
-            "httpGetDirectoryStructure", "httpGetKeys", "httpGetRequiredVariables", 
-            "httpsOnly", "https://192.168.31.18/",
+            "https://192.168.31.18/",
             "https://localhost:8443/cwexperimental/login.html"};  //the links to log in (upper right of most web pages) will fail on my test computer
             //https://unitsofmeasure.org/ucum.html fails in tests because of certificate, but succeeds in my browser. Others are like this, too.
         for (int linei = 0; linei < lines.length; linei++) {

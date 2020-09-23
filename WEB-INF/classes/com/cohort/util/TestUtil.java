@@ -1220,7 +1220,7 @@ public class TestUtil {
      * Test the methods in String2.
      */
     public static void testString2() throws Throwable {
-        String2.log("\n*** TestUtil.testString2");
+        String2.log("\n*** TestUtil.testString2()");
         String sar[];
         StringBuilder sb;
         double dar[];
@@ -1236,6 +1236,21 @@ public class TestUtil {
         Test.ensureEqual(String2.md5Hex("This is a test01234.ภั"), "b62023b8dffda52f4b1ea48f2cee739e", "");
         Test.ensureEqual(String2.md5Hex(""),                       "d41d8cd98f00b204e9800998ecf8427e", "");
         Test.ensureEqual(String2.md5Hex(null),                     null, "");
+
+        //speed of parseInt success
+        long time = System.currentTimeMillis();
+        long t1 = 0;
+        for (int i = 0; i < 1000000; i++)
+            t1 += String2.parseInt("1023456789");
+        String2.log("time1 for 1000000 parseInt good=" + (System.currentTimeMillis() - time));  //119
+
+        //speed of parseInt fail
+        time = System.currentTimeMillis();
+        long t2 = 0;
+        for (int i = 0; i < 1000000; i++)
+            t2 += String2.parseInt("102345678901");
+        String2.log("time2 for 1000000 parseInt  bad=" + (System.currentTimeMillis() - time));  //1822
+        //String2.pressEnterToContinue();
 
         //digestFile
         s = String2.unitTestDataDir + "simpleTest.nc";
@@ -1676,8 +1691,9 @@ public class TestUtil {
 
         //extractCaptureGroup
         String2.log("test extractRegex");
-        Test.ensureEqual(String2.extractCaptureGroup("bc&a&", "b(\\w+)&.*", 1), "c", "a");
-        Test.ensureEqual(String2.extractCaptureGroup("bedad", "b(.+?)d.*", 1),  "e", "b"); //reluctant
+        Test.ensureEqual(String2.extractCaptureGroup("bc&a&",  "b(\\w+)&.*", 1), "c", "a"); //match all of s
+        Test.ensureEqual(String2.extractCaptureGroup("abc&a&", "b(\\w+)&",   1), "c", "a"); //match part of s
+        Test.ensureEqual(String2.extractCaptureGroup("bedad",  "b(.+?)d.*",  1), "e", "b"); //reluctant
 
         //utf8 conversions
         String os = " s\\\n\tร\u20ac ";
@@ -1686,13 +1702,13 @@ public class TestUtil {
         s = String2.utf8BytesToString(bar); 
         Test.ensureEqual(s, os, "s=" + String2.annotatedString(s));
 
-        long time = System.currentTimeMillis();
+        time = System.currentTimeMillis();
         for (i = 0; i < 1000000; i++) {
             bar = String2.stringToUtf8Bytes(os);
         }
         time = System.currentTimeMillis() - time;
         Test.ensureTrue(time <= 250, 
-            "time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
+            "Too slow!  Time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
 
         time = System.currentTimeMillis();
         for (i = 0; i < 1000000; i++) {
@@ -1700,7 +1716,7 @@ public class TestUtil {
         }
         time = System.currentTimeMillis() - time;
         Test.ensureTrue(time <= 200, 
-            "time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
+            "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
 
         s = String2.stringToUtf8String(os);
         Test.ensureEqual(String2.annotatedString(s), 
@@ -1721,7 +1737,7 @@ public class TestUtil {
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
         Test.ensureTrue(time <= 70, 
-            "time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
+            "Too slow!  Time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
 
         //compareTo times
         time = System.currentTimeMillis();
@@ -2396,7 +2412,8 @@ public class TestUtil {
         Test.ensureEqual(String2.parseInt("9000000000"), Integer.MAX_VALUE, "d");
         Test.ensureEqual(String2.parseInt("0.2"),        0, "e");
         Test.ensureEqual(String2.parseInt("2a"),         Integer.MAX_VALUE, "f");
-        Test.ensureEqual(String2.parseInt("0xFF"),       255, "g");
+        Test.ensureEqual(String2.parseInt("0x0"),        0, "g");
+        Test.ensureEqual(String2.parseInt("0xFF"),       255, "h");
         Test.ensureEqual(String2.parseInt("0x7ffffffe"), 2147483646, "");
         Test.ensureEqual(String2.parseInt("0x7fffffff"), 2147483647, "");
         Test.ensureEqual(String2.parseInt("0x80000000"), -2147483648, "");
@@ -2464,11 +2481,33 @@ public class TestUtil {
         String2.log("test parseLong");
         Test.ensureEqual(String2.parseLong("12"),           12, "a");
         Test.ensureEqual(String2.parseLong(" -12"),         -12, "b");
-        Test.ensureEqual(String2.parseLong(" 1e2 "),        Long.MAX_VALUE, "c");
+        Test.ensureEqual(String2.parseLong(" 1e2 "),        100, "c");
         Test.ensureEqual(String2.parseLong("9000000000000000000000000"), Long.MAX_VALUE, "d");
-        Test.ensureEqual(String2.parseLong("0.2"),          Long.MAX_VALUE, "e");
+        Test.ensureEqual(String2.parseLong("0.2"),          0, "e");
         Test.ensureEqual(String2.parseLong("2a"),           Long.MAX_VALUE, "f");
         Test.ensureEqual(String2.parseLong("0xFFFFFFFFFF"), 0xFFFFFFFFFFL, "g");
+
+        //test speed of native parseLong vs String2.parseLong (now using parseBigDecimal)
+        int n = 10000000;
+        long speedResults[] = new long[2];
+        for (int test = 0; test < 2; test++) {
+            Math2.gc(2000);
+            Math2.gc(2000);
+            long testSum = 0;
+            time = System.currentTimeMillis();
+            for (i = 0; i < n; i++) {
+                String ts = "" + i;
+                testSum += test == 0? Long.parseLong(ts) : String2.parseLong(ts);
+            }
+            speedResults[test] = System.currentTimeMillis() - time;
+            String2.log("sum=" + testSum);
+        }
+        String2.log("test speed of Long.parseLong vs String2.parseLong (now using parseBigDecimal): " + 
+            String2.toCSSVString(speedResults));
+        Test.ensureTrue(speedResults[1] < speedResults[0] * 1.3, 
+            "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0] + " (typical: 3473ms vs 2920ms");
+        Math2.gc(2000);
+        Math2.gc(2000);
 
         //parseFloat
         String2.log("test parseFloat");
@@ -2490,7 +2529,7 @@ public class TestUtil {
         String2.distribute(0, dist);
         String2.distribute(1234, dist);
         String2.distribute(12345678, dist);
-        int n = String2.getDistributionN(dist);
+        n = String2.getDistributionN(dist);
         Test.ensureEqual(n, 5, "");
         Test.ensureEqual(String2.getDistributionMedian(dist, n), 88, "");
         Test.ensureEqual(String2.getDistributionStatistics(dist), 

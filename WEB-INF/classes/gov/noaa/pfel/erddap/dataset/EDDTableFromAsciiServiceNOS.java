@@ -1080,7 +1080,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:48:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:54:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "22:00:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1112,7 +1112,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:09:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + yesterday + "21:10:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n";
 
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1148,7 +1148,7 @@ These datasets were hard to work with:
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
 "9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1184,7 +1184,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),[0|1],(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1216,7 +1216,7 @@ These datasets were hard to work with:
 //eg  8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
 //2020-04-27 was -71.4006,41.8067
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1250,7 +1250,7 @@ These datasets were hard to work with:
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T08:48:00Z,MLLW,-0.03
 //2020-04-27 was -71.4006,41.8067
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1291,7 +1291,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1332,7 +1332,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1370,7 +1370,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1408,7 +1408,7 @@ These datasets were hard to work with:
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1451,7 +1451,7 @@ id + cityLL + daysAgo + "00:42:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "00:48:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "00:54:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
 id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Unexpected error. Sometimes a row is missing from source. Otherwise: Unexpected error.", t); 
@@ -1488,7 +1488,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
 "9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
 "9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1525,7 +1525,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
 "9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1564,7 +1564,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1602,10 +1602,10 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
 "8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4012,41.8071," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem("Small differences (e.g., a missing line) are common.", t); 
         }
         }
 
@@ -1636,7 +1636,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 //8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712,2010-10-24T00:00:00Z,5.4
 //2020-04-27 was Pinto Island, not ...Visibility
 "8737005,Pinto Island Visibility,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
@@ -1672,7 +1672,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:45:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:51:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
 "db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462," + daysAgo + "00:57:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);      
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 

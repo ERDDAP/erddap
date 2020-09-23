@@ -38,12 +38,12 @@ public class EDVAlt extends EDV {
      *   This takes precedence over actual_range, actual_max, or data_max metadata.
      * @throws Throwable if trouble
      */
-    public EDVAlt(String tSourceName, 
+    public EDVAlt(String tDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes,
+        super(tDatasetID, tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
 
         if (destinationDataType().equals("String"))

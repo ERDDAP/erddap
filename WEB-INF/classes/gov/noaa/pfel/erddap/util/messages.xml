@@ -6059,8 +6059,8 @@ https://www.glerl.noaa.gov/review2016/reviewer_docs/NOAA_PARR_Plan_v5.04.pdf
 .pfel.noaa.gov
 .pfeg.noaa.gov
 
-https://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST 
-https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
+//podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST 
+//podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 
 http://podaac.jpl.nasa.gov:8890
 https://podaac.jpl.nasa.gov
@@ -6176,6 +6176,9 @@ https://topex.ucsd.edu/marine_topo/mar_topo.html
 https://www.w3schools.com/xhtml/xhtml_intro.asp
 https://www.w3schools.com/html/html_xhtml.asp
 
+//wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3
+//wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3
+
 http://52north.org/
 https://52north.org/
 
@@ -6202,6 +6205,9 @@ https://coastwatch.noaa.gov
 
 http://coastwatch.pfeg.noaa.gov
 https://coastwatch.pfeg.noaa.gov
+
+http://coralreefwatch.noaa.gov
+https://coralreefwatch.noaa.gov
 
 http://cordc.ucsd.edu
 https://cordc.ucsd.edu
@@ -6302,6 +6308,9 @@ https://gcmd.gsfc.nasa.gov
 http://geo-ide.noaa.gov
 https://geo-ide.noaa.gov
 
+http://geoport.whoi.edu
+https://geoport.whoi.edu
+
 http://github.com/
 https://github.com/
 
@@ -6335,6 +6344,9 @@ https://ioos.noaa.gov
 http://iprc.soest.hawaii.edu
 https://iprc.soest.hawaii.edu
 
+https://iprc.soest.hawaii.edu/users/oleg/oisss/glb/Technical_Notes.pdf
+http://iprc.soest.hawaii.edu/users/oleg/oisss/glb/Technical_Notes.pdf
+
 https://iprc.soest.hawaii.edu/users/
 http://iprc.soest.hawaii.edu/users/
 
@@ -6346,6 +6358,9 @@ https://journals.ametsoc.org
 
 http://jsfiddle.net
 https://jsfiddle.net
+
+http://jsonlines.org
+https://jsonlines.org
 
 http://kgs.uky.edu/arcgis
 https://kgs.uky.edu/arcgis
@@ -6511,6 +6526,9 @@ https://thredds.jpl.nasa.gov
 
 http://thredds1.pfeg.noaa.gov
 https://thredds1.pfeg.noaa.gov
+
+http://tidesandcurrents.noaa.gov
+https://tidesandcurrents.noaa.gov
 
 http://topex.ucsd.edu
 https://topex.ucsd.edu
@@ -6704,6 +6722,9 @@ https://www.linux.org
 http://www.mathworks.com
 https://www.mathworks.com
 
+http://www.meteofrance.com
+https://www.meteofrance.com
+
 http://www.metoffice.gov.uk
 https://www.metoffice.gov.uk
 
@@ -6867,7 +6888,7 @@ https://esgf-node.llnl.gov/projects/cmip5/
 
 http://www.aviso.oceanobs.com to https://www.aviso.altimetry.fr/   no simple fix?
 
-https://apdrc.soest.hawaii.edu works but e.g., http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php  doesn't
+https://apdrc.soest.hawaii.edu works but e.g., https://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php  doesn't
 https://atm-phys.nies.go.jp
 https://bcodata.whoi.edu
 https://bmlsc.ucdavis.edu/erddap/index.html
@@ -6883,12 +6904,10 @@ https://edac-dap.northerngulfinstitute.org
 https://edac-dap3.northerngulfinstitute.org
 https://erddap.incois.gov.in
 https://fgdcxml.sourceforge.net
-https://geoport.whoi.edu/
 https://hadobs.metoffice.com
 https://hudson.dl.stevens-tech.edu/maritimeforecast/
 https://hydromet-thredds.princeton.edu/erddap/index.html  (http uses :8000)
 https://jkorpela.fi
-https://jsonlines.org/
 https://lab.usgin.org
 https://mapserver.refractions.net
 https://meteora.ucsd.edu
@@ -6902,7 +6921,7 @@ https://osmc.noaa.gov/erddap/index.html
 https://postgresql-8.4.sourcearchive.com
 https://rs-data1-mel.csiro.au
 https://rtech-engineering.com/?lang=en
-https://schemas.opengis.net
+https://schemas.opengis.net   //https works but don't change because they are uri's???
 https://sfbaynutrients.sfei.org/erddap/index.html
 https://tds.marine.rutgers.edu/thredds/catalog.html
 https://tds.marine.rutgers.edu/erddap/info/index.html?page=1&amp;itemsPerPage=1000
@@ -6923,7 +6942,6 @@ https://www.j2eeprogrammer.com
 https://www.jdom.org
 https://www.libpng.org
 https://www.marine-geo.org
-https://www.meteofrance.com
 https://www.myocean.eu
 https://www.myroms.org/erddap/index.html https://myroms.org is okay
 https://www.nanoos.org

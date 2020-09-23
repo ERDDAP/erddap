@@ -282,25 +282,25 @@ public class EDDTableFromEDDGrid extends EDDTable{
             PAOne tMax             = new PAOne(gridVar.destinationMax());
             EDV newVar = null;
             if (tSourceName.equals(EDV.LON_NAME)) {
-                newVar = new EDVLon(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 lonIndex = dv;
             } else if (tSourceName.equals(EDV.LAT_NAME)) {
-                newVar = new EDVLat(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 latIndex = dv;
             } else if (tSourceName.equals(EDV.ALT_NAME)) {
-                newVar = new EDVAlt(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 altIndex = dv;
             } else if (tSourceName.equals(EDV.DEPTH_NAME)) {
-                newVar = new EDVDepth(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 depthIndex = dv;
             } else if (tSourceName.equals(EDV.TIME_NAME)) {                
                 tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
                 tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
-                newVar = new EDVTime(tSourceName, tSourceAtts, tAddAtts, 
+                newVar = new EDVTime(datasetID, tSourceName, tSourceAtts, tAddAtts, 
                     tDataType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             //currently, there is no EDVTimeStampGridAxis
-            } else newVar = new EDV(tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+            } else newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
 
             dataVariables[dv] = newVar;
         }
@@ -526,7 +526,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 int nAxis0 = gda.totalIndex().shape()[0];
                 if (maxAxis0 < nAxis0) {
                     String ax0Name = tChildDataset.axisVariableDestinationNames()[0];
-                    throw new SimpleException(MustBe.OutOfMemoryError + 
+                    throw new SimpleException(Math2.memoryTooMuchData + 
                         ": Your request for data from " + nAxis0 + " axis[0] (" + ax0Name +
                         ") values exceeds the maximum allowed for this dataset (" + 
                         maxAxis0 + "). Please add tighter constraints on the " +
@@ -734,7 +734,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         String id = "erdMBsstdmday_AsATable";
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, id);
         String dir = EDStatic.fullTestCacheDirectory;
-
+/* */
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "1", ".das"); 
@@ -1257,7 +1257,7 @@ expected2 =
 "40.775\n" +
 "40.775\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
-
+/* */
         //query error   
         results = "";
         try {
@@ -1270,11 +1270,10 @@ expected2 =
             results = "Caught: " + t.toString();
         }
         expected = 
-            "Caught: com.cohort.util.SimpleException: Out Of Memory Error: Your request for data from " +
-            "2 axis[0] (time) values exceeds the maximum allowed for this dataset (1). " +
+            "Caught: com.cohort.util.SimpleException: Your query produced too much data.  Try to request less data.: " +
+            "Your request for data from 2 axis[0] (time) values exceeds the maximum allowed for this dataset (1). " +
             "Please add tighter constraints on the time variable.";
         Test.ensureEqual(results, expected, "results=\n" + results);      
-
 
         debugMode = oDebugMode;
     }
@@ -1489,6 +1488,9 @@ expected2 =
 "degrees_east\n" +
 "120.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        String2.log("\nLots of intentional errors are coming...");
+        Math2.sleep(1000);
 
         //query 1 axis <min fails immediately
         try {
@@ -1778,7 +1780,7 @@ expected2 =
 
         //query error   
         results = "";
-        String2.log("Here 2 Now!");
+        String2.log("Pre getUrlResponse");
         try {
             results = "";
             results = SSR.getUrlResponseStringNewline(baseQuery + ".csv?" +
@@ -1895,8 +1897,8 @@ expected2 =
     "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?latitude,longitude,altitude,time&latitude%3E0&sst%3E37\n" +
 "(Error {\n" +
 "    code=413;\n" +
-"    message=\"Payload Too Large: Out Of Memory Error: Your request for data from 2 axis[0] (time) " +
-    "values exceeds the maximum allowed for this dataset (1). Please add tighter constraints on the time variable.\";\n" +
+"    message=\"Payload Too Large: Your query produced too much data.  Try to request less data.: " +
+    "Your request for data from 2 axis[0] (time) values exceeds the maximum allowed for this dataset (1). Please add tighter constraints on the time variable.\";\n" +
 "})";
         Test.ensureEqual(results, expected, "results=\n" + results);      
 

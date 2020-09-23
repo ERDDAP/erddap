@@ -601,7 +601,6 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
-        try {
             String results = generateDatasetsXml(
 "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/", 
 "pentad.*\\.nc\\.gz",
@@ -839,11 +838,6 @@ String expected =
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, time, uwnd, vwnd, wspd, upstr, vpstr, nobs", "");
             */
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
 
     }
 

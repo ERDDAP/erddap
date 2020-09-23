@@ -389,6 +389,8 @@ public class EDDGridFromDap extends EDDGrid {
             Attributes tDataSourceAtts = new Attributes();
             OpendapHelper.getAttributes(das, tDataSourceName, tDataSourceAtts);
             Attributes tDataAddAtts = (Attributes)tDataVariables[dv][2];
+            if (tDataAddAtts == null)
+                tDataAddAtts = new Attributes();
 
             //get the variable
             BaseType bt = dds.getVariable(tDataSourceName);  //throws Throwable if not found
@@ -402,9 +404,10 @@ public class EDDGridFromDap extends EDDGrid {
 
             //look at the dimensions
             PrimitiveVector pv = mainDArray.getPrimitiveVector(); //just gets the data type
-            //if (reallyVerbose) String2.log(tDataSourceName + " pv=" + pv);
-            String dvSourceDataType = PrimitiveArray.elementTypeToString( 
+            //if (reallyVerbose) String2.log(tDataSourceName + " pv=" + pv.toString());
+            String dvSourceDataType = PAType.toCohortString( 
                 OpendapHelper.getElementPAType(pv));
+            //String2.loge(">> dvSourceDataType=" + dvSourceDataType);
             int numDimensions = mainDArray.numDimensions();
             if (dv == 0) {
                 axisVariables = new EDVGridAxis[numDimensions];
@@ -469,31 +472,41 @@ public class EDDGridFromDap extends EDDGrid {
                         " not found.  So made from indices 0 - " + dadSize1);
                 } //but other exceptions aren't caught
 
-                //make the axisVariable
                 Attributes tAddAttributes = tAxisVariables == null?
                     new Attributes() : (Attributes)tAxisVariables[av][2];
+
                 String tDestinationAxisName = tAxisVariables == null? null : 
                     (String)tAxisVariables[av][1];
                 if (tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0)
                     tDestinationAxisName = tSourceAxisName;
+
+                //if _Unsigned=true or false, change tSourceType
+                if (tAddAttributes == null)
+                    tAddAttributes = new Attributes();
+                tSourceValues = Attributes.adjustSourceType(tSourceValues, tSourceAttributes, tAddAttributes);            
+
+                //make the axisVariable
                 axisVariables[av] = makeAxisVariable(tDatasetID,
                     av, tSourceAxisName, tDestinationAxisName,
                     tSourceAttributes, tAddAttributes, tSourceValues);
             }
+
+            //if _Unsigned=true or false, change tSourceType
+            dvSourceDataType = Attributes.adjustSourceType(dvSourceDataType, tDataSourceAtts, tDataAddAtts);      
 
             //create the EDV dataVariable
             if (tDataDestName.equals(EDV.TIME_NAME))
                 throw new RuntimeException(errorInMethod +
                     "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
             else if (EDVTime.hasTimeUnits(tDataSourceAtts, tDataAddAtts)) 
-                dataVariables[dv] = new EDVTimeStamp(tDataSourceName, tDataDestName,
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tDataSourceName, tDataDestName,
                     tDataSourceAtts, tDataAddAtts, dvSourceDataType);  
             else dataVariables[dv] = new EDV(
-                tDataSourceName, tDataDestName, 
+                datasetID, tDataSourceName, tDataDestName, 
                 tDataSourceAtts, tDataAddAtts, dvSourceDataType, 
                 PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));  //hard to get min and max
             dataVariables[dv].extractAndSetActualRange();
-
+            //String2.log(">> EDDGridFromDap construct " + tDataDestName + " type=" + dvSourceDataType);
         }
 
         //ensure the setup is valid
@@ -1058,7 +1071,7 @@ public class EDDGridFromDap extends EDDGrid {
 
             //reduce numDimensions by 1 if String var
             PrimitiveVector pv = mainDArray.getPrimitiveVector(); //just gets the data type
-            String dvSourceDataType = PrimitiveArray.elementTypeToString( 
+            String dvSourceDataType = PAType.toCohortString( 
                 OpendapHelper.getElementPAType(pv));           
             if (dvSourceDataType.equals("String"))
                 numDimensions--;
@@ -1301,6 +1314,16 @@ public class EDDGridFromDap extends EDDGrid {
             if (largest > 1e20)
                 throw new SimpleException(String2.ERROR + ": axis has suspect value (abs()=" + largest + ")! " +
                     tLocalSourceUrl + "?" + tSourceName);
+
+            //if there is a defined _FillValue or missing_value, set it to null
+            Attributes tSourceAtts = axisSourceTable.columnAttributes(av);
+            Attributes tAddAtts    =    axisAddTable.columnAttributes(av);
+            String ts = tSourceAtts.getString("_FillValue");
+            if (ts != null) 
+                tAddAtts.set("_FillValue", "null");
+            ts = tSourceAtts.getString("missing_value");
+            if (ts != null) 
+                tAddAtts.set("missing_value", "null");
         }
 
         //suggestReloadEveryNMinutes and add ", startYear-EndYear" to the title
@@ -5051,11 +5074,9 @@ String expected1 =
         Test.ensureEqual(edd.title(), 
             "SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5°, 1958-2008", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-            "temp, salt, u, v", "");
-
-
-    
+            "temp, salt, u, v", "");    
     }
+
 
     /** 
      * This test generateDatasetsXml, especially suggestReloadEveryNMinutes 
@@ -5073,7 +5094,7 @@ String expected1 =
 String expected1 = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_cada_f1d6_7111\" active=\"true\">\n" +
 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday</sourceUrl>\n" +
-"    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" +   //60 or 180, important test of suggestReloadEveryNMinutes
+"    <reloadEveryNMinutes>[VARIES]</reloadEveryNMinutes>\n" +   //60, 180, or ???, test of suggestReloadEveryNMinutes, but varies with time since sample file.
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -5238,30 +5259,25 @@ String expected2 =
 "</dataset>\n" +
 "\n";
 
-        try {
-            String results = generateDatasetsXml(url, 
-                null, null, null, -1, null);
-            
-            Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
-                "results=\n" + results);
+        String results = generateDatasetsXml(url, 
+            null, null, null, -1, null);
+        results = results.replaceAll("<reloadEveryNMinutes>\\d*</reloadEveryNMinutes>",
+                                       "<reloadEveryNMinutes>[VARIES]</reloadEveryNMinutes>");
+        
+        Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
+            "results=\n" + results);
 
-            int po = results.indexOf(expected2.substring(0, 20));
-            Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
+        int po = results.indexOf(expected2.substring(0, 20));
+        Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
 
-            po = results.lastIndexOf("<att name=\"title\">");
-            int po2 = results.indexOf("</att>", po);
-            String tResults = results.substring(po, po2 + 6);
-            String tExpected = "<att name=\"title\">SST, GOES Imager, Day and Night, " +
-                "Western Hemisphere, 2006-present (Hourly) (erdGAsstahday), " +
-                "0.05&#xb0;</att>";  //important test of catching resolution
-            Test.ensureEqual(tResults, tExpected, "results=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." +
-                "\nBut reloadEveryNMinutes varies some based on chance (how recent the last data is).");
-        }
-    
+        po = results.lastIndexOf("<att name=\"title\">");
+        int po2 = results.indexOf("</att>", po);
+        String tResults = results.substring(po, po2 + 6);
+        String tExpected = "<att name=\"title\">SST, GOES Imager, Day and Night, " +
+            "Western Hemisphere, 2006-present (Hourly) (erdGAsstahday), " +
+            "0.05&#xb0;</att>";  //important test of catching resolution
+        Test.ensureEqual(tResults, tExpected, "results=\n" + results);
+   
     }
 
 
@@ -6085,7 +6101,7 @@ expected =
 "    String history \"Mon Apr 28 13:22:51 2008: ncrename crm_vol10.nc -d x,lon -d y,lat -v Band1,topo\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
-//"2013-08-29T17:33:53Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
+//"2013-08-29T17:33:53Z https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
 //"2013-08-29T17:33:53Z 
 expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String infoUrl \"https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
@@ -6166,7 +6182,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//2013-08-29T17:41:13Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc
+//2013-08-29T17:41:13Z https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc
 //2013-08-29T17:41:13Z 
         expected = 
 "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
@@ -7946,7 +7962,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); //2020-08-20 this is now failing with Http 502 Bad Gateway error after a delay
         userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
@@ -8926,13 +8942,31 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      * notably, conversion of units from kelvin to degree_C.
      */
     public static void testGenerateDatasetsXml4() throws Throwable {
-        String2.log("*** EDDGridFromDap.testGenerateDatasetsXml4");
-        try {
-        String results = generateDatasetsXml(
-            "https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc", 
-            null, null, null, 10080, null);
+        String url = "https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc";
+        String2.log("*** EDDGridFromDap.testGenerateDatasetsXml4\n" + 
+            "url=" + url + 
+            "\n.dds:\n");
+        String2.log(SSR.getUrlResponseStringNewline(url + ".dds"));
+        String2.log("\n.das:\n");
+        String2.log(SSR.getUrlResponseStringNewline(url + ".das"));
+
+        String results = generateDatasetsXml(url, null, null, null, 10080, null);
+
+        //KNOWN PROBLEM knownProblem -- these times bounce around -- I don't know why
+        String change[] = new String[]{"date_created", 
+            "start_time", "stop_time", "time_coverage_start", "time_coverage_end",
+            "uuid"};
+        for (int i = 0; i < change.length; i++) {
+            results = results.replaceAll("<att name=\"" + change[i] + "\">.*</att>",
+                                         "<att name=\"" + change[i] + "\">[VARIES]</att>");
+        }
+        results = results.replaceAll(
+            "<att name=\"time_offset\" type=\"double\">.*</att>\n", //changes  12 or 24  (or 0 in another place)
+            "<att name=\"time_offset\" type=\"double\">[TIME_OFFSET]</att>\n");
+
+        String tDatasetID = "nasa_jpl_aa77_f42f_c5ff";
         String expected = 
-"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_aa77_f42f_c5ff\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc</sourceUrl>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -8942,7 +8976,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <att name=\"creator_email\">helpdesk@osi-saf.org</att>\n" +
 "        <att name=\"creator_name\">O&amp;SI SAF</att>\n" +
 "        <att name=\"creator_url\">http://www.osi-saf.org</att>\n" +
-"        <att name=\"date_created\">20140801T195447Z</att>\n" + //this changes, test with regex?
+"        <att name=\"date_created\">[VARIES]</att>\n" + 
 "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
 "        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +
 "        <att name=\"gds_version_id\">2.0</att>\n" +
@@ -8974,48 +9008,49 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
 "        <att name=\"spatial_resolution\">0.05 degree</att>\n" +
 "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n" +
-"        <att name=\"start_time\">20151123T060534Z</att>\n" +  //changes. test with regex?
-"        <att name=\"stop_time\">20151123T175959Z</att>\n" +   //changes. test with regex?
+"        <att name=\"start_time\">[VARIES]</att>\n" +  //changes. test with regex?
+"        <att name=\"stop_time\">[VARIES]</att>\n" +   //changes. test with regex?
 "        <att name=\"summary\">The GLB L3C product derived from METOP A AVHRR brightness temperatures.</att>\n" +
-"        <att name=\"time_coverage_end\">20151123T175959Z</att>\n" + //changes
-"        <att name=\"time_coverage_start\">20151123T060534Z</att>\n" + //changes
+"        <att name=\"time_coverage_end\">[VARIES]</att>\n" + //changes
+"        <att name=\"time_coverage_start\">[VARIES]</att>\n" + //changes
 "        <att name=\"title\">Sea Surface Temperature</att>\n" +
-"        <att name=\"uuid\">A93D777C-921A-11E5-A63C-0024E836CC1A</att>\n" + //changes
+"        <att name=\"uuid\">[VARIES]</att>\n" + //changes
 "        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"acknowledgement\">In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean &amp; Sea Ice  used in this study are accessible through the SAF&#39;s homepage http://www.osi-saf.org</att>\n" +
+"        <att name=\"acknowledgment\">null</att>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"date_created\">[VARIES]</att>\n" +
 "        <att name=\"easternmost_longitude\">null</att>\n" +
-"        <att name=\"gds_version_id\">null</att>\n" +
+"        <att name=\"file_quality_level\">null</att>\n" +
 "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/dataset/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0</att>\n" +
-"        <att name=\"keywords\">10m, adi, adi_dtime_from_sst, advanced, aerosol, aerosol_dynamic_indicator, analysis, angle, application, area, atmosphere,\n" +
-"Atmosphere &gt; Atmospheric Radiation &gt; Incoming Solar Radiation,\n" +
-"Atmosphere &gt; Atmospheric Radiation &gt; Solar Irradiance,\n" +
-"Atmosphere &gt; Atmospheric Radiation &gt; Solar Radiation,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, avhrr, bias, climatology, cryosphere,\n" +
-"Cryosphere &gt; Sea Ice &gt; Ice Extent,\n" +
-"data, deviation, difference, distribution, dt_analysis, dynamic, error, estimate, extent, facility, flags, fraction, glb, glb-osisaf-l3c-v1.0, high, ice, ice distribution, incoming, indicator, irradiance, l2p, l2p_flags, l3c, level, measurement, metop, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"Oceans &gt; Sea Ice &gt; Ice Extent,\n" +
-"optical, optical properties, osisaf, pixel, properties, quality, quality_level, radiation, radiometer, reference, resolution, satellite, satellite_zenith_angle, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_subskin_temperature, sea_surface_temperature, sensor, single, solar, solar_zenith_angle, sources, sources_of_adi, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, subskin, surface, temperature, time, v1.0, very, vhrr, wind, wind_speed, winds, zenith</att>\n" +
+"        <att name=\"keywords\">10m, adi, adi_dtime_from_sst, advanced, aerosol, aerosol_dynamic_indicator, analysis, angle, application, area, atmosphere, atmospheric, avhrr, bias, climatology, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Incoming Solar Radiation, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Solar Irradiance, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Solar Radiation, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Cryosphere &gt; Sea Ice &gt; Ice Extent, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Sea Ice &gt; Ice Extent, error, estimate, extent, facility, flags, fraction, glb, glb-osisaf-l3c-v1.0, high, ice, ice distribution, incoming, indicator, irradiance, l2p, l2p_flags, l3c, latitude, level, longitude, measurement, metop, ocean, oceans, optical, optical properties, osisaf, pixel, properties, quality, quality_level, radiation, radiometer, reference, resolution, satellite, satellite_zenith_angle, science, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_subskin_temperature, sea_surface_temperature, sensor, single, solar, solar_zenith_angle, sources, sources_of_adi, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, subskin, surface, temperature, time, v1.0, very, vhrr, wind, wind_speed, winds, zenith</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"metadata_link\">null</att>\n" +
+"        <att name=\"netcdf_version_id\">null</att>\n" +
 "        <att name=\"northernmost_latitude\">null</att>\n" +
+"        <att name=\"publisher_type\">group</att>\n" +
+"        <att name=\"publisher_url\">https://www.ghrsst.org</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
-"        <att name=\"start_time\">null</att>\n" +
-"        <att name=\"stop_time\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"start_time\">[VARIES]</att>\n" +  //null
+"        <att name=\"stop_time\">[VARIES]</att>\n" +  //null
 "        <att name=\"summary\">Sea Surface Temperature. The GLB L3C product derived from METOP A Advanced Very High Resolution Radiometer (AVHRR) brightness temperatures.</att>\n" +
-"        <att name=\"title\">SST (AVHRR SST METOP A GLB-OSISAF-L3C-v1.0)</att>\n" +
+"        <att name=\"time_coverage_end\">[VARIES]</att>\n" + //null
+"        <att name=\"time_coverage_start\">[VARIES]</att>\n" + //null
+"        <att name=\"title\">SST (AVHRR SST METOP A GLB-OSISAF-L3C-v1.0), 2013-2016</att>\n" +
+"        <att name=\"uuid\">[VARIES]</att>\n" + //null
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">1</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">includes leap seconds since 1981</att>\n" +
 "            <att name=\"long_name\">reference time of sst file</att>\n" +
@@ -9023,15 +9058,16 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"units\">seconds since 1981-01-01 00:00:00</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"units\">seconds since 1981-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>lat</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">3600</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"comment\">geographical coordinates, WGS84 projection</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
@@ -9041,7 +9077,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "        </addAttributes>\n" +
@@ -9050,7 +9086,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>lon</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">7200</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">7200</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"comment\">geographical coordinates, WGS84 projection</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
@@ -9060,7 +9096,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "        </addAttributes>\n" +
@@ -9069,7 +9105,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>sea_surface_temperature</sourceName>\n" +
 "        <destinationName>sea_surface_temperature</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1200 2400</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">273.15</att>\n" +
 "            <att name=\"comment\">Temperature of the subskin of the ocean</att>\n" +
@@ -9083,7 +9119,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-300</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
@@ -9095,7 +9131,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>sst_dtime</sourceName>\n" +
 "        <destinationName>sst_dtime</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1200 2400</att>\n" +
 "            <att name=\"_FillValue\" type=\"int\">-2147483648</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">time plus sst_dtime gives seconds after 00:00:00 UTC January 1, 1981</att>\n" +
@@ -9106,7 +9142,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"int\">-2147483647</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"add_offset\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
@@ -9118,8 +9154,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>sses_bias</sourceName>\n" +
 "        <destinationName>sses_bias</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Bias estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
 "            <att name=\"long_name\">SSES bias estimate</att>\n" +
@@ -9129,31 +9166,34 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Bias estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>sses_standard_deviation</sourceName>\n" +
+"        <sourceName>sses_standard_deviation</sourceName>\n" +          //source var is byte
 "        <destinationName>sses_standard_deviation</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
-"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +   //source is short!  to deal with dap byte being 0..255
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">1.0</att>\n" +
 "            <att name=\"comment\">Standard deviation estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
 "            <att name=\"long_name\">SSES standard deviation</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
 "            <att name=\"units\">kelvin</att>\n" +
 "            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
-"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +  //source is short!   to deal with dap byte being 0..255
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Standard deviation estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
@@ -9162,8 +9202,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>dt_analysis</sourceName>\n" +
 "        <destinationName>dt_analysis</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">The difference between this SST and the previous day&#39;s SST analysis</att>\n" +
 "            <att name=\"long_name\">deviation from SST analysis or reference climatology</att>\n" +
@@ -9174,19 +9215,21 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-5.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
-"            <att name=\"units\">degree_C</att>\n" +
+"            <att name=\"reference\">null</att>\n" +
+"            <att name=\"references\">OSTIA</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>wind_speed</sourceName>\n" +
 "        <destinationName>wind_speed</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">These wind speeds were created by the ECMWF and represent winds at 10 metres above the sea surface</att>\n" +
 "            <att name=\"height\">10 m</att>\n" +
@@ -9194,13 +9237,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
 "            <att name=\"source\">WSP-ECMWF-Forecast</att>\n" +
 "            <att name=\"standard_name\">wind_speed</att>\n" +
-"            <att name=\"time_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">[TIME_OFFSET]</att>\n" +
 "            <att name=\"units\">m s-1</att>\n" +
 "            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"add_offset\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
@@ -9212,20 +9255,21 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>sea_ice_fraction</sourceName>\n" +
 "        <destinationName>sea_ice_fraction</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Fractional sea ice cover from OSISAF ice concentration product</att>\n" +
 "            <att name=\"long_name\">sea ice fraction</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
 "            <att name=\"source\">ICE-OSISAF</att>\n" +
 "            <att name=\"standard_name\">sea_ice_area_fraction</att>\n" +
-"            <att name=\"time_offset\" type=\"double\">-24.0</att>\n" + //changes
+"            <att name=\"time_offset\" type=\"double\">[TIME_OFFSET]</att>\n" + //changes  12 or 24
 "            <att name=\"valid_max\" type=\"byte\">100</att>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Ice Distribution</att>\n" +
@@ -9235,8 +9279,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>aerosol_dynamic_indicator</sourceName>\n" +
 "        <destinationName>aerosol_dynamic_indicator</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"long_name\">aerosol dynamic indicator</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" +
@@ -9245,7 +9290,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Optical Properties</att>\n" +
@@ -9255,8 +9300,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>adi_dtime_from_sst</sourceName>\n" +
 "        <destinationName>adi_dtime_from_sst</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Difference in hours between the ADI and SST data</att>\n" +
 "            <att name=\"long_name\">time difference of ADI data from sst measurement</att>\n" +
@@ -9266,7 +9312,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
@@ -9276,8 +9322,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>sources_of_adi</sourceName>\n" +
 "        <destinationName>sources_of_adi</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"comment\">This variable provides a pixel by pixel description of where aerosol optical depth were derived from.</att>\n" +
 "            <att name=\"flag_meanings\">no_data AOD-NAAPS-ADI SDI-OSISAF-ADI</att>\n" +
 "            <att name=\"flag_values\" type=\"byteList\">0 1 2</att>\n" +
@@ -9286,7 +9333,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Optical Properties</att>\n" +
@@ -9296,7 +9343,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>l2p_flags</sourceName>\n" +
 "        <destinationName>l2p_flags</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1200 2400</att>\n" +
 "            <att name=\"comment\">These flags are important to properly use the data.</att>\n" +
 "            <att name=\"flag_masks\" type=\"shortList\">1 2 4 8</att>\n" +
 "            <att name=\"flag_meanings\">microwave land ice lake</att>\n" +
@@ -9305,7 +9352,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -9315,8 +9362,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>quality_level</sourceName>\n" +
 "        <destinationName>quality_level</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"comment\">These are the overall quality indicators and are used for all GHRSST SSTs</att>\n" +
 "            <att name=\"flag_meanings\">no_data bad_data worst_quality low_quality acceptable_quality best_quality</att>\n" +
 "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5</att>\n" +
@@ -9325,7 +9373,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">6.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -9335,8 +9383,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>satellite_zenith_angle</sourceName>\n" +
 "        <destinationName>satellite_zenith_angle</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">The satellite zenith angle at the time of the SST observations.</att>\n" +
 "            <att name=\"long_name\">satellite zenith angle</att>\n" +
@@ -9346,7 +9395,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-90</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"add_offset\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
@@ -9358,8 +9407,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "        <sourceName>solar_zenith_angle</sourceName>\n" +
 "        <destinationName>solar_zenith_angle</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 1800 3600</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">90.0</att>\n" +
 "            <att name=\"comment\">The solar zenith angle at the time of the SST observations.</att>\n" +
 "            <att name=\"long_name\">solar zenith angle</att>\n" +
@@ -9369,7 +9419,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "            <att name=\"valid_min\" type=\"short\">-90</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -9380,10 +9430,374 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);    
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nSince 2015, date_created keeps bouncing around. I don't know why.\n"); 
-        }
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        String tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_gdx4", ".dds"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 1975];\n" +
+"  Float32 latitude[latitude = 3600];\n" +
+"  Float32 longitude[longitude = 7200];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 sea_surface_temperature[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sea_surface_temperature;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 sst_dtime[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sst_dtime;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 sses_bias[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sses_bias;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 sses_standard_deviation[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sses_standard_deviation;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 dt_analysis[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } dt_analysis;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte wind_speed[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } wind_speed;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 sea_ice_fraction[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sea_ice_fraction;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 aerosol_dynamic_indicator[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } aerosol_dynamic_indicator;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 adi_dtime_from_sst[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } adi_dtime_from_sst;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte sources_of_adi[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } sources_of_adi;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int16 l2p_flags[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } l2p_flags;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte quality_level[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } quality_level;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Byte satellite_zenith_angle[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } satellite_zenith_angle;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 solar_zenith_angle[time = 1975][latitude = 3600][longitude = 7200];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1975];\n" +
+"      Float32 latitude[latitude = 3600];\n" +
+"      Float32 longitude[longitude = 7200];\n" +
+"  } solar_zenith_angle;\n" +
+"} nasa_jpl_aa77_f42f_c5ff;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);    
+
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_gdx4", ".nccsvMetadata"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = results.replaceAll("20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[DATE_TIME] http");
+        results = results.replaceAll("sea_ice_fraction,time_offset,.*d", "sea_ice_fraction,time_offset,[TIME_OFFSET]");
+        expected = 
+"*GLOBAL*,Conventions,\"CF-1.6, COARDS, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,acknowledgement,In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean & Sea Ice  used in this study are accessible through the SAF's homepage http://www.osi-saf.org\n" +
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,creator_email,helpdesk@osi-saf.org\n" +
+"*GLOBAL*,creator_name,O&SI SAF\n" +
+"*GLOBAL*,creator_type,institution\n" +
+"*GLOBAL*,creator_url,http://www.osi-saf.org\n" +
+"*GLOBAL*,date_created,[VARIES]\n" +
+"*GLOBAL*,Easternmost_Easting,179.9746d\n" +
+"*GLOBAL*,gds_version_id,\"2.0\"\n" +
+"*GLOBAL*,geospatial_lat_max,89.97461d\n" +
+"*GLOBAL*,geospatial_lat_min,-89.97461d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,179.9746d\n" +
+"*GLOBAL*,geospatial_lon_min,-179.9746d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,history,METEO-FRANCE/CMS SAFOA processor\n" +
+"*GLOBAL*,id,AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0\n" +
+"*GLOBAL*,infoUrl,https://podaac.jpl.nasa.gov/dataset/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0\n" +
+"*GLOBAL*,institution,OSISAF\n" +
+"*GLOBAL*,keywords,\"10m, adi, adi_dtime_from_sst, advanced, aerosol, aerosol_dynamic_indicator, analysis, angle, application, area, atmosphere, atmospheric, avhrr, bias, climatology, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, earth, Earth Science > Atmosphere > Atmospheric Radiation > Incoming Solar Radiation, Earth Science > Atmosphere > Atmospheric Radiation > Solar Irradiance, Earth Science > Atmosphere > Atmospheric Radiation > Solar Radiation, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Cryosphere > Sea Ice > Ice Extent, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Sea Ice > Ice Extent, error, estimate, extent, facility, flags, fraction, glb, glb-osisaf-l3c-v1.0, high, ice, ice distribution, incoming, indicator, irradiance, l2p, l2p_flags, l3c, latitude, level, longitude, measurement, metop, ocean, oceans, optical, optical properties, osisaf, pixel, properties, quality, quality_level, radiation, radiometer, reference, resolution, satellite, satellite_zenith_angle, science, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_subskin_temperature, sea_surface_temperature, sensor, single, solar, solar_zenith_angle, sources, sources_of_adi, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, subskin, surface, temperature, time, v1.0, very, vhrr, wind, wind_speed, winds, zenith\"\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"All intellectual property rights of the Ocean & Sea Ice SAF products belong to EUMETSAT. The use of these products is granted to every user, free of charge. If users wish to use these products, EUMETSAT's copyright credit must be shown by displaying the words 'Copyright EUMETSAT' under each of the products shown. EUMETSAT offers no warranty and accepts no liability in respect of the Ocean & Sea Ice SAF products. EUMETSAT neither commits to nor guarantees the continuity, availability, or quality or suitability for any purpose of, the Ocean & Sea Ice SAF products.\"\n" +
+"*GLOBAL*,naming_authority,org.ghrsst\n" +
+"*GLOBAL*,Northernmost_Northing,89.97461d\n" +
+"*GLOBAL*,platform,METOP_A\n" +
+"*GLOBAL*,processing_level,L3C\n" +
+"*GLOBAL*,product_version,\"1.0\"\n" +
+"*GLOBAL*,project,Group for High Resolution Sea Surface Temperature\n" +
+"*GLOBAL*,publisher_email,ghrsst-po@nceo.ac.uk\n" +
+"*GLOBAL*,publisher_name,The GHRSST Project Office\n" +
+"*GLOBAL*,publisher_type,group\n" +
+"*GLOBAL*,publisher_url,https://www.ghrsst.org\n" +
+"*GLOBAL*,references,\"Low Earth Orbiter Sea Surface Temperature Product User Manual, http://www.osi-saf.org\"\n" +
+"*GLOBAL*,sensor,AVHRR\n" +
+"*GLOBAL*,source,AVHRR\n" +
+"*GLOBAL*,sourceUrl,https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc\n" +
+"*GLOBAL*,Southernmost_Northing,-89.97461d\n" +
+"*GLOBAL*,spatial_resolution,0.05 degree\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v70\n" +
+"*GLOBAL*,start_time,[VARIES]\n" +
+"*GLOBAL*,stop_time,[VARIES]\n" +
+"*GLOBAL*,summary,Sea Surface Temperature. The GLB L3C product derived from METOP A Advanced Very High Resolution Radiometer (AVHRR) brightness temperatures.\n" +
+"*GLOBAL*,time_coverage_end,2016-02-23T00:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2013-06-04T12:00:00Z\n" +
+"*GLOBAL*,title,\"SST (AVHRR SST METOP A GLB-OSISAF-L3C-v1.0), 2013-2016\"\n" +
+"*GLOBAL*,uuid,[VARIES]\n" +
+"*GLOBAL*,Westernmost_Easting,-179.9746d\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,actual_range,2013-06-04T12:00:00Z\\n2016-02-23T00:00:00Z\n" +
+"time,axis,T\n" +
+"time,comment,includes leap seconds since 1981\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,reference time of sst file\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"latitude,*DATA_TYPE*,float\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-89.97461f,89.97461f\n" +
+"latitude,axis,Y\n" +
+"latitude,comment,\"geographical coordinates, WGS84 projection\"\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Latitude\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,units,degrees_north\n" +
+"latitude,valid_max,90.0f\n" +
+"latitude,valid_min,-90.0f\n" +
+"longitude,*DATA_TYPE*,float\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,-179.9746f,179.9746f\n" +
+"longitude,axis,X\n" +
+"longitude,comment,\"geographical coordinates, WGS84 projection\"\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Longitude\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,units,degrees_east\n" +
+"longitude,valid_max,180.0f\n" +
+"longitude,valid_min,-180.0f\n" +
+"sea_surface_temperature,*DATA_TYPE*,double\n" +
+"sea_surface_temperature,_FillValue,-327.68d\n" +
+"sea_surface_temperature,colorBarMaximum,32.0d\n" +
+"sea_surface_temperature,colorBarMinimum,0.0d\n" +
+"sea_surface_temperature,comment,Temperature of the subskin of the ocean\n" +
+"sea_surface_temperature,depth,1 millimeter\n" +
+"sea_surface_temperature,ioos_category,Temperature\n" +
+"sea_surface_temperature,long_name,sea surface subskin temperature\n" +
+"sea_surface_temperature,source,AVHRR_METOP_A\n" +
+"sea_surface_temperature,standard_name,sea_surface_subskin_temperature\n" +
+"sea_surface_temperature,units,degree_C\n" +
+"sea_surface_temperature,valid_max,45.0d\n" +
+"sea_surface_temperature,valid_min,-3.0d\n" +
+"sst_dtime,*DATA_TYPE*,int\n" +
+"sst_dtime,_FillValue,-2147483648i\n" +
+"sst_dtime,colorBarMaximum,10.0d\n" +
+"sst_dtime,colorBarMinimum,-10.0d\n" +
+"sst_dtime,comment,\"time plus sst_dtime gives seconds after 00:00:00 UTC January 1, 1981\"\n" +
+"sst_dtime,ioos_category,Temperature\n" +
+"sst_dtime,long_name,time difference from reference time\n" +
+"sst_dtime,units,seconds\n" +
+"sst_dtime,valid_max,2147483647i\n" +
+"sst_dtime,valid_min,-2147483647i\n" +
+"sses_bias,*DATA_TYPE*,double\n" +
+"sses_bias,_FillValue,-1.28d\n" +
+"sses_bias,colorBarMaximum,5.0d\n" +
+"sses_bias,colorBarMinimum,0.0d\n" +
+"sses_bias,comment,Bias estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html\n" +
+"sses_bias,ioos_category,Statistics\n" +
+"sses_bias,long_name,SSES bias estimate\n" +
+"sses_bias,units,degree_C\n" +
+"sses_bias,valid_max,1.27d\n" +
+"sses_bias,valid_min,-1.27d\n" +
+"sses_standard_deviation,*DATA_TYPE*,double\n" +
+"sses_standard_deviation,_FillValue,-0.28d\n" +
+"sses_standard_deviation,colorBarMaximum,5.0d\n" +
+"sses_standard_deviation,colorBarMinimum,0.0d\n" +
+"sses_standard_deviation,comment,Standard deviation estimate derived using the techniques described at https://www.ghrsst.org/SSES-Description-of-schemes.html\n" +
+"sses_standard_deviation,ioos_category,Statistics\n" +
+"sses_standard_deviation,long_name,SSES standard deviation\n" +
+"sses_standard_deviation,units,degree_C\n" +
+"sses_standard_deviation,valid_max,2.27d\n" +
+"sses_standard_deviation,valid_min,-0.27d\n" +
+"dt_analysis,*DATA_TYPE*,double\n" +
+"dt_analysis,_FillValue,-12.8d\n" +
+"dt_analysis,colorBarMaximum,5.0d\n" +
+"dt_analysis,colorBarMinimum,-5.0d\n" +
+"dt_analysis,comment,The difference between this SST and the previous day's SST analysis\n" +
+"dt_analysis,ioos_category,Statistics\n" +
+"dt_analysis,long_name,deviation from SST analysis or reference climatology\n" +
+"dt_analysis,references,OSTIA\n" +
+"dt_analysis,units,kelvin\n" +
+"dt_analysis,valid_max,12.700000000000001d\n" +
+"dt_analysis,valid_min,-12.700000000000001d\n" +
+"wind_speed,*DATA_TYPE*,byte\n" +
+"wind_speed,_FillValue,-128b\n" +
+"wind_speed,colorBarMaximum,15.0d\n" +
+"wind_speed,colorBarMinimum,0.0d\n" +
+"wind_speed,comment,These wind speeds were created by the ECMWF and represent winds at 10 metres above the sea surface\n" +
+"wind_speed,height,10 m\n" +
+"wind_speed,ioos_category,Wind\n" +
+"wind_speed,long_name,10m wind speed\n" +
+"wind_speed,source,WSP-ECMWF-Forecast\n" +
+"wind_speed,standard_name,wind_speed\n" +
+"wind_speed,time_offset,0.0d\n" +
+"wind_speed,units,m s-1\n" +
+"wind_speed,valid_max,127b\n" +
+"wind_speed,valid_min,0b\n" +
+"sea_ice_fraction,*DATA_TYPE*,double\n" +
+"sea_ice_fraction,_FillValue,-1.28d\n" +
+"sea_ice_fraction,colorBarMaximum,1.0d\n" +
+"sea_ice_fraction,colorBarMinimum,0.0d\n" +
+"sea_ice_fraction,comment,Fractional sea ice cover from OSISAF ice concentration product\n" +
+"sea_ice_fraction,ioos_category,Ice Distribution\n" +
+"sea_ice_fraction,long_name,sea ice fraction\n" +
+"sea_ice_fraction,source,ICE-OSISAF\n" +
+"sea_ice_fraction,standard_name,sea_ice_area_fraction\n" +
+"sea_ice_fraction,time_offset,[TIME_OFFSET]\n" +  //varies
+"sea_ice_fraction,valid_max,1.0d\n" +
+"sea_ice_fraction,valid_min,0.0d\n" +
+"aerosol_dynamic_indicator,*DATA_TYPE*,double\n" +
+"aerosol_dynamic_indicator,_FillValue,-12.8d\n" +
+"aerosol_dynamic_indicator,colorBarMaximum,15.0d\n" +
+"aerosol_dynamic_indicator,colorBarMinimum,0.0d\n" +
+"aerosol_dynamic_indicator,ioos_category,Optical Properties\n" +
+"aerosol_dynamic_indicator,long_name,aerosol dynamic indicator\n" +
+"aerosol_dynamic_indicator,source,sources_of_adi\n" +
+"aerosol_dynamic_indicator,valid_max,12.700000000000001d\n" +
+"aerosol_dynamic_indicator,valid_min,0.0d\n" +
+"adi_dtime_from_sst,*DATA_TYPE*,double\n" +
+"adi_dtime_from_sst,_FillValue,-12.8d\n" +
+"adi_dtime_from_sst,colorBarMaximum,10.0d\n" +
+"adi_dtime_from_sst,colorBarMinimum,-10.0d\n" +
+"adi_dtime_from_sst,comment,Difference in hours between the ADI and SST data\n" +
+"adi_dtime_from_sst,ioos_category,Temperature\n" +
+"adi_dtime_from_sst,long_name,time difference of ADI data from sst measurement\n" +
+"adi_dtime_from_sst,units,hour\n" +
+"adi_dtime_from_sst,valid_max,12.700000000000001d\n" +
+"adi_dtime_from_sst,valid_min,-12.700000000000001d\n" +
+"sources_of_adi,*DATA_TYPE*,byte\n" +
+"sources_of_adi,_FillValue,-128b\n" +  //note that _Unsigned doesn't appear in .nccsvMetadata
+"sources_of_adi,colorBarMaximum,2.5d\n" +
+"sources_of_adi,colorBarMinimum,0.0d\n" +
+"sources_of_adi,comment,This variable provides a pixel by pixel description of where aerosol optical depth were derived from.\n" +
+"sources_of_adi,flag_meanings,no_data AOD-NAAPS-ADI SDI-OSISAF-ADI\n" +
+"sources_of_adi,flag_values,0b,1b,2b\n" +
+"sources_of_adi,ioos_category,Optical Properties\n" +
+"sources_of_adi,long_name,sources of aerosol dynamic indicator\n" +
+"sources_of_adi,valid_max,2b\n" +
+"sources_of_adi,valid_min,0b\n" +
+"l2p_flags,*DATA_TYPE*,short\n" +
+"l2p_flags,colorBarMaximum,10.0d\n" +
+"l2p_flags,colorBarMinimum,0.0d\n" +
+"l2p_flags,comment,These flags are important to properly use the data.\n" +
+"l2p_flags,flag_masks,1s,2s,4s,8s\n" +
+"l2p_flags,flag_meanings,microwave land ice lake\n" +
+"l2p_flags,ioos_category,Quality\n" +
+"l2p_flags,long_name,L2P flags\n" +
+"l2p_flags,valid_max,15s\n" +
+"l2p_flags,valid_min,0s\n" +
+"quality_level,*DATA_TYPE*,byte\n" +
+"quality_level,_FillValue,-128b\n" +
+"quality_level,colorBarMaximum,6.0d\n" +
+"quality_level,colorBarMinimum,0.0d\n" +
+"quality_level,comment,These are the overall quality indicators and are used for all GHRSST SSTs\n" +
+"quality_level,flag_meanings,no_data bad_data worst_quality low_quality acceptable_quality best_quality\n" +
+"quality_level,flag_values,0b,1b,2b,3b,4b,5b\n" +
+"quality_level,ioos_category,Quality\n" +
+"quality_level,long_name,quality level of SST pixel\n" +
+"quality_level,valid_max,5b\n" +
+"quality_level,valid_min,0b\n" +
+"satellite_zenith_angle,*DATA_TYPE*,byte\n" +
+"satellite_zenith_angle,_FillValue,-128b\n" +
+"satellite_zenith_angle,colorBarMaximum,90.0d\n" +
+"satellite_zenith_angle,colorBarMinimum,-90.0d\n" +
+"satellite_zenith_angle,comment,The satellite zenith angle at the time of the SST observations.\n" +
+"satellite_zenith_angle,ioos_category,Unknown\n" +
+"satellite_zenith_angle,long_name,satellite zenith angle\n" +
+"satellite_zenith_angle,units,angular_degree\n" +
+"satellite_zenith_angle,valid_max,90b\n" +
+"satellite_zenith_angle,valid_min,-90b\n" +
+"solar_zenith_angle,*DATA_TYPE*,double\n" +
+"solar_zenith_angle,_FillValue,-38.0d\n" +
+"solar_zenith_angle,colorBarMaximum,90.0d\n" +
+"solar_zenith_angle,colorBarMinimum,-90.0d\n" +
+"solar_zenith_angle,comment,The solar zenith angle at the time of the SST observations.\n" +
+"solar_zenith_angle,ioos_category,Unknown\n" +
+"solar_zenith_angle,long_name,solar zenith angle\n" +
+"solar_zenith_angle,standard_name,solar_zenith_angle\n" +
+"solar_zenith_angle,units,angular_degree\n" +
+"solar_zenith_angle,valid_max,180.0d\n" +
+"solar_zenith_angle,valid_min,0.0d\n" +
+"\n" +
+"*END_METADATA*\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);    
 
     }
 
@@ -9393,7 +9807,6 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      */
     public static void testGenerateDatasetsXml5() throws Throwable {
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
-        try {
         String results = generateDatasetsXml(
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day", 
             null, null, null, -1, null);
@@ -9433,7 +9846,7 @@ expected =
 "        <att name=\"naming_authority\">org.ghrsst</att>\n" +
 "        <att name=\"netcdf_version_id\">4.1</att>\n" +
 "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
-"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-A</att>\n" +
+"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-A, MetOp-B, Buoys/Ships</att>\n" +
 "        <att name=\"processing_level\">L4</att>\n" +
 "        <att name=\"product_version\">04.1nrt</att>\n" +
 "        <att name=\"project\">NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program</att>\n" +
@@ -9465,7 +9878,7 @@ expected =
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.7, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
-"        <att name=\"creator_url\">https://mur.jpl.nasa.gov</att>\n";
+"        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n";
         po = results.indexOf(expected.substring(0, 80));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 
@@ -9482,7 +9895,7 @@ expected =
 "        <att name=\"northernmost_latitude\">null</att>\n" +
 "        <att name=\"publisher_type\">group</att>\n" +
 "        <att name=\"publisher_url\">https://www.ghrsst.org</att>\n" +
-"        <att name=\"references\">https://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
+"        <att name=\"references\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
@@ -9491,7 +9904,8 @@ expected =
         po = results.indexOf(expected.substring(0, 80));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 
-        try {
+        //ignore
+/*        try {
             expected = "<att name=\"testOutOfDate\">now-4days</att>\n";
             po = results.indexOf(expected.substring(0, 25));
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
@@ -9499,7 +9913,7 @@ expected =
             String2.pressEnterToContinue(MustBe.throwableToString(t3) +
                 "nDays varies slightly."); 
         }
-
+*/
 
 //"        <att name=\"time_coverage_end\">2017-12-18T21:00:00Z</att>\n" +
 //"        <att name=\"time_coverage_start\">2017-12-17T21:00:00Z</att>\n" +
@@ -9713,105 +10127,320 @@ expected =
 "\n";
         po = results.indexOf(expected.substring(0, 100));
         Test.ensureEqual(results.substring(po), expected, "");
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
-
     }
 
 
-    /**
-     * This test UInt16 data.
-     * There was trouble with map with ERDDAP 1.64, but already fixed in 1.65.
-     * 2019-11-21 THIS DATASET IS GONE AND NOT AVAILABLE ELSEWHERE.
-     *
-     * @throws Throwable if trouble
+    /** 
+     * This tests a UInt16 variable in generateDatasetsXml.
      */
-    public static void testUInt16Dap() throws Throwable {
-        String2.log("\n*** EDDGridFromDap.testUInt16");
-        testVerboseOn();
-        String name, tName, results, tResults, expected, userDapQuery;
-        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
-        try {
+    public static void testGenerateDatasetsXmlUInt16() throws Throwable {
+        String2.log("*** EDDGridFromDap.testGenerateDatasetsXmlUInt16");
+        String results = generateDatasetsXml(
+            "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml", 
+            null, null, new String[]{"time", "lat", "lon"}, -1, null);
+        //frequent small changes. I don't know why.
+        results = results.replaceAll("T\\d{2}:\\d{2}:\\d{2}.000Z", "T[TIME].000Z");
+        results = results.replaceAll("<att name=\"data_bins\" type=\"int\">\\d*</att>",        
+                                     "<att name=\"data_bins\" type=\"int\">[DATA_BINS]</att>");
+        results = results.replaceAll("<att name=\"data_maximum\" type=\"float\">.*</att>",     
+                                     "<att name=\"data_maximum\" type=\"float\">[DATA_MAXIMUM]</att>");
+        results = results.replaceAll("<att name=\"data_minimum\" type=\"float\">.*</att>",     
+                                     "<att name=\"data_minimum\" type=\"float\">[DATA_MINIMUM]</att>");
+        results = results.replaceAll("<att name=\"end_orbit_number\" type=\"int\">\\d*</att>", 
+                                     "<att name=\"end_orbit_number\" type=\"int\">[END_ORBIT_NUMBER]</att>");
+        results = results.replaceAll("<att name=\"start_orbit_number\" type=\"int\">\\d*</att>", 
+                                     "<att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>");
+        results = results.replaceAll("20\\d{6}",
+                                     "[DATE]");
+        results = results.replaceAll("<att name=\"time_coverage_end\">.*</att>", 
+                                     "<att name=\"time_coverage_end\">[TCE]</att>");
+        results = results.replaceAll("<att name=\"time_coverage_start\">.*</att>", 
+                                     "<att name=\"time_coverage_start\">[TCS]</att>");
 
-        //.das from source
-        String url = 
-            //2016-10-04 was "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das";
-            //2016-12-06 was "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_BSST_DAILY_DAYTIME_V51.ncml.das";
-            "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_SST_DAILY_DAYTIME_V51.ncml.das";
-        results = SSR.getUrlResponseStringUnchanged(url);
-String2.log("url=" + url);
-String2.log(String2.annotatedString(results));
-        expected = 
-//"Attributes {\n" +
-//"    history {\n" +  //2018-06-20 disappeared, 2018-08-07 returned
-//"        DODS {\n" +
-//"            Int32 strlen 4096;\n" + //sometimes 4096, sometimes 4200. not sure why
-//"        }\n" +
-//"    }\n" +
-    "lat {\n" +
-"        String unit \"degrees_north\";\n" +
-"        String long_name \"latitude\";\n" +
-"        String standard_name \"latitude\";\n" +
-"        String axis \"Y\";\n" +
-"        String units \"degrees_north\";\n" +
-"    }\n" +
-"    lon {\n" +
-"        String unit \"degrees_east\";\n" +
-"        String long_name \"longitude\";\n" +
-"        String standard_name \"longitude\";\n" +
-"        String axis \"X\";\n" +
-"        String units \"degrees_east\";\n" +
-"    }\n" +
-"    time {\n" +
-"        String standard_name \"time\";\n" +
-"        String axis \"T\";\n" +
-"        String units \"days since 1981-01-01\";\n" +
-"    }\n" +
-"    sst {\n" +
-"        String _Unsigned \"true\";\n" +
-"        Byte dsp_PixelType 1;\n" +
-"        Byte dsp_PixelSize 2;\n" +
-"        Int16 dsp_Flag 0;\n" +
-"        Int16 dsp_nBits 16;\n" +
-"        Int32 dsp_LineSize 0;\n" +
-"        String dsp_cal_name \"Temperature\";\n" +
-"        String units \"degree_C\";\n" +
-"        Int16 dsp_cal_eqnNumber 2;\n" +
-"        Int16 dsp_cal_CoeffsLength 8;\n" +
-"        Float32 dsp_cal_coeffs 0.075, -3.0;\n" +
-"        Float32 scale_factor 0.075;\n" +
-"        Float32 add_off -3.0;\n" +
-"        String standard_name \"sea_surface_temperature\";\n" +
-"        Int16 missing_value 0;\n" +
-"    }\n";  //...
-        try {
-            int po = results.indexOf(expected.substring(0, 5));
-            if (po < 0) String2.log("results=\n" +results);
-            Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) +
-                "2019-11-21 THIS DATASET IS GONE AND NOT AVAILABLE ELSEWHERE."); 
-        }
+        String tDatasetID = "nasa_jpl_0d1b_74cd_7593";
+        String expected = 
+"<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
+"    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
+"    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!
+"        <att name=\"cdm_data_type\">grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6 ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" +
+"        <att name=\"creator_name\">NASA/GSFC/OBPG</att>\n" +
+"        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" +
+"        <att name=\"data_bins\" type=\"int\">[DATA_BINS]</att>\n" +   //changes  (often?)
+"        <att name=\"data_maximum\" type=\"float\">[DATA_MAXIMUM]</att>\n" + //changes  (often?)
+"        <att name=\"data_minimum\" type=\"float\">[DATA_MINIMUM]</att>\n" + //changes  (often?)
+"        <att name=\"date_created\">2019-12-17T[TIME].000Z</att>\n" +  //few seconds changes  (often?)
+"        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
+"        <att name=\"end_orbit_number\" type=\"int\">[END_ORBIT_NUMBER]</att>\n" + //changes often?
+"        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"float\">-90.0</att>\n" +
+"        <att name=\"geospatial_lat_resolution\" type=\"float\">0.041666668</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"float\">180.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"float\">-180.0</att>\n" +
+"        <att name=\"geospatial_lon_resolution\" type=\"float\">0.041666668</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"history\">l3mapgen par=AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param</att>\n" +
+"        <att name=\"id\">AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc</att>\n" +
+"        <att name=\"institution\">NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group</att>\n" +
+"        <att name=\"instrument\">MODIS</att>\n" +
+"        <att name=\"l2_flag_names\">LAND,~HISOLZEN</att>\n" +
+"        <att name=\"latitude_step\" type=\"float\">0.041666668</att>\n" +
+"        <att name=\"latitude_units\">degrees_north</att>\n" +
+"        <att name=\"license\">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/</att>\n" +
+"        <att name=\"longitude_step\" type=\"float\">0.041666668</att>\n" +
+"        <att name=\"longitude_units\">degrees_east</att>\n" +
+"        <att name=\"map_projection\">Equidistant Cylindrical</att>\n" +
+"        <att name=\"measure\">Mean</att>\n" +
+"        <att name=\"naming_authority\">gov.nasa.gsfc.sci.oceandata</att>\n" +
+"        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
+"        <att name=\"number_of_columns\" type=\"int\">8640</att>\n" +
+"        <att name=\"number_of_lines\" type=\"int\">4320</att>\n" +
+"        <att name=\"platform\">Aqua</att>\n" +
+"        <att name=\"processing_control_input_parameters_apply_pal\">1</att>\n" +
+"        <att name=\"processing_control_input_parameters_central_meridian\">-999</att>\n" +
+"        <att name=\"processing_control_input_parameters_deflate\">4</att>\n" +
+"        <att name=\"processing_control_input_parameters_east\">180.000</att>\n" +
+"        <att name=\"processing_control_input_parameters_fudge\">1.0</att>\n" +
+"        <att name=\"processing_control_input_parameters_full_latlon\">yes</att>\n" +
+"        <att name=\"processing_control_input_parameters_ifile\">AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc</att>\n" +
+"        <att name=\"processing_control_input_parameters_interp\">area</att>\n" +
+"        <att name=\"processing_control_input_parameters_land\">$OCDATAROOT/common/landmask_GMT15ARC.nc</att>\n" +
+"        <att name=\"processing_control_input_parameters_mask_land\">no</att>\n" +
+"        <att name=\"processing_control_input_parameters_north\">90.000</att>\n" +
+"        <att name=\"processing_control_input_parameters_num_cache\">500</att>\n" +
+"        <att name=\"processing_control_input_parameters_ofile\">AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc</att>\n" +
+"        <att name=\"processing_control_input_parameters_ofile_product_tag\">PRODUCT</att>\n" +
+"        <att name=\"processing_control_input_parameters_oformat\">2</att>\n" +
+"        <att name=\"processing_control_input_parameters_oformat2\">png</att>\n" +
+"        <att name=\"processing_control_input_parameters_par\">AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param</att>\n" +
+"        <att name=\"processing_control_input_parameters_product\">sst4</att>\n" +
+"        <att name=\"processing_control_input_parameters_product_rgb\">rhos_645,rhos_555,rhos_469</att>\n" +
+"        <att name=\"processing_control_input_parameters_projection\">smi</att>\n" +
+"        <att name=\"processing_control_input_parameters_pversion\">R2019.0</att>\n" +
+"        <att name=\"processing_control_input_parameters_quiet\">false</att>\n" +
+"        <att name=\"processing_control_input_parameters_resolution\">4km</att>\n" +
+"        <att name=\"processing_control_input_parameters_south\">-90.000</att>\n" +
+"        <att name=\"processing_control_input_parameters_suite\">SST4</att>\n" +
+"        <att name=\"processing_control_input_parameters_threshold\">0</att>\n" +
+"        <att name=\"processing_control_input_parameters_trimNSEW\">yes</att>\n" +
+"        <att name=\"processing_control_input_parameters_use_quality\">yes</att>\n" +
+"        <att name=\"processing_control_input_parameters_use_rgb\">no</att>\n" +
+"        <att name=\"processing_control_input_parameters_use_transparency\">no</att>\n" +
+"        <att name=\"processing_control_input_parameters_west\">-180.000</att>\n" +
+"        <att name=\"processing_control_l2_flag_names\">LAND,~HISOLZEN</att>\n" +
+"        <att name=\"processing_control_software_name\">l3mapgen</att>\n" +
+"        <att name=\"processing_control_software_version\">2.2.0-V2019.4</att>\n" +
+"        <att name=\"processing_control_source\">AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc</att>\n" +
+"        <att name=\"processing_level\">L3 Mapped</att>\n" +
+"        <att name=\"processing_version\">R2019.0</att>\n" +
+"        <att name=\"product_name\">AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc</att>\n" +
+"        <att name=\"project\">Ocean Biology Processing Group (NASA/GSFC/OBPG)</att>\n" +
+"        <att name=\"publisher_email\">data@oceancolor.gsfc.nasa.gov</att>\n" +
+"        <att name=\"publisher_name\">NASA/GSFC/OBPG</att>\n" +
+"        <att name=\"publisher_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" +
+"        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
+"        <att name=\"spatialResolution\">4.64 km</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v36</att>\n" +
+"        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
+"        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
+"        <att name=\"start_time\">00:00:00 UTC</att>\n" +
+"        <att name=\"stop_date\">2020-02-18 UTC</att>\n" +
+"        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
+"        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
+"        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
+"        <att name=\"suggested_image_scaling_minimum\" type=\"float\">-2.0</att>\n" +
+"        <att name=\"suggested_image_scaling_type\">LINEAR</att>\n" +
+"        <att name=\"sw_point_latitude\" type=\"float\">-89.979164</att>\n" +
+"        <att name=\"sw_point_longitude\" type=\"float\">-179.97917</att>\n" +
+"        <att name=\"temporal_range\">8-day</att>\n" +  //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
+"        <att name=\"time_coverage_end\">[TCE]</att>\n" +
+"        <att name=\"time_coverage_start\">[TCS]</att>\n" +
+"        <att name=\"title\">MODISA Level-3 Standard Mapped Image</att>\n" +
+"        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6 ACDD-1.3, COARDS</att>\n" +
+"        <att name=\"creator_type\">group</att>\n" +
+"        <att name=\"data_bins\">null</att>\n" +
+"        <att name=\"data_maximum\">null</att>\n" +
+"        <att name=\"data_minimum\">null</att>\n" +
+"        <att name=\"easternmost_longitude\">null</att>\n" +
+"        <att name=\"end_orbit_number\">null</att>\n" +
+"        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0</att>\n" +
+"        <att name=\"institution\">NASA/GSFC OBPG</att>\n" +
+"        <att name=\"keywords\">4km, 4um, 8day, aqua, biology, center, color, data, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, flag, flag_values, flight, goddard, group, gsfc, image, imaging, infrared, L3, latitude, level, level-3, levels, longitude, mapped, mid, moderate, modis, modisa, nasa, night, nighttime, obpg, ocean, oceans, processing, qual_sst4, quality, resolution, science, sea, sea_surface_temperature, smi, space, spectroradiometer, sst, sst4, standard, surface, temperature, time, v2019.0, values</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"latitude_step\">null</att>\n" +
+"        <att name=\"latitude_units\">null</att>\n" +
+"        <att name=\"longitude_step\">null</att>\n" +
+"        <att name=\"longitude_units\">null</att>\n" +
+"        <att name=\"northernmost_latitude\">null</att>\n" +
+"        <att name=\"number_of_columns\">null</att>\n" +
+"        <att name=\"number_of_lines\">null</att>\n" +
+"        <att name=\"publisher_type\">group</att>\n" +
+"        <att name=\"southernmost_latitude\">null</att>\n" +
+"        <att name=\"start_date\">null</att>\n" +
+"        <att name=\"start_orbit_number\">null</att>\n" +
+"        <att name=\"start_time\">null</att>\n" +
+"        <att name=\"stop_date\">null</att>\n" +
+"        <att name=\"stop_time\">null</att>\n" +
+"        <att name=\"suggested_image_scaling_applied\">null</att>\n" +
+"        <att name=\"suggested_image_scaling_maximum\">null</att>\n" +
+"        <att name=\"suggested_image_scaling_minimum\">null</att>\n" +
+"        <att name=\"suggested_image_scaling_type\">null</att>\n" +
+"        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
+"        <att name=\"sw_point_latitude\">null</att>\n" +
+"        <att name=\"sw_point_longitude\">null</att>\n" +
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2004-present</att>\n" +
+"        <att name=\"westernmost_longitude\">null</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">timeAxis</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since 2002-01-01</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"units\">days since 2002-01-01T00:00:00Z</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-999.0</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">90.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-999.0</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">180.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sst4</sourceName>\n" +
+"        <destinationName>sst4</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">44 87</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"display_max\" type=\"float\">45.0</att>\n" +
+"            <att name=\"display_min\" type=\"float\">-2.0</att>\n" +
+"            <att name=\"display_scale\">linear</att>\n" +
+"            <att name=\"long_name\">4um Sea Surface Temperature</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.005</att>\n" +
+"            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"            <att name=\"valid_max\" type=\"short\">10000</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-1000</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"display_max\">null</att>\n" +
+"            <att name=\"display_min\">null</att>\n" +
+"            <att name=\"display_scale\">null</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>qual_sst4</sourceName>\n" +
+"        <destinationName>qual_sst4</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">44 87</att>\n" +
+"            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n" +  //important test. originally short = -1
+"            <att name=\"_Unsigned\">true</att>\n" +                    //important test, needs to be left in so EDV paType is correct 
+"            <att name=\"long_name\">Quality Levels, Sea Surface Temperature</att>\n" +
+"            <att name=\"standard_name\">flag_values</att>\n" +
+"            <att name=\"units\">degree_north</att>\n" +
+"            <att name=\"valid_max\" type=\"ubyte\">5</att>\n" +
+"            <att name=\"valid_min\" type=\"ubyte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
+        //ensure it is ready-to-use by making a dataset from it
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
 
-        //ensure files are reread
-        File2.deleteAllFiles(datasetDir("testUInt16Dap"));
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16Dap"); 
-        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
- 
-
-        //.das from erddap dataset    das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".das"); 
+        String tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".dds"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 810];\n" +
+"  Float64 latitude[latitude = 4320];\n" +
+"  Float64 longitude[longitude = 8640];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 810];\n" +
+"      Float64 latitude[latitude = 4320];\n" +
+"      Float64 longitude[longitude = 8640];\n" +
+"  } sst4;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      UInt16 qual_sst4[time = 810][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"    MAPS:\n" +
+"      Float64 time[time = 810];\n" +
+"      Float64 latitude[latitude = 4320];\n" +
+"      Float64 longitude[longitude = 8640];\n" +
+"  } qual_sst4;\n" +
+"} nasa_jpl_0d1b_74cd_7593;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = results.replaceAll("\\d{8}_\\d{8}", "[DATE_DATE]");
+        results = results.replaceAll("2019-12-17T\\d{2}:\\d{2}:\\d{2}.000Z", "2019-12-17T[TIME_VARIES].000Z");
+        results = results.replaceAll("20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[DATE_TIME] http");
         expected = 
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 3.674592e+8, 4.758912e+8;\n" +
+"    Float64 actual_range 1.0888992e+9, 1.6451424e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -9821,48 +10450,689 @@ String2.log(String2.annotatedString(results));
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 89.9780273, -89.97802534;\n" +
+"    Float64 actual_range -89.97916810599999, 89.979166667;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
+"    Float64 valid_max 90.0;\n" +
+"    Float64 valid_min -90.0;\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -179.9780273, 179.978023292;\n" +
+"    Float64 actual_range -179.979166667, 179.979169546;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
+"    Float64 valid_max 180.0;\n" +
+"    Float64 valid_min -180.0;\n" +
 "  }\n" +
-"  bsst {\n" +
+"  sst4 {\n" +
+"    Float32 _FillValue -163.835;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
-"    String long_name \"bsst\";\n" +
-"    Float32 missing_value -3.0;\n" +
+"    String long_name \"4um Sea Surface Temperature\";\n" +
 "    String standard_name \"sea_surface_temperature\";\n" +
 "    String units \"degree_C\";\n" +
+"    Float32 valid_max 50.0;\n" +
+"    Float32 valid_min -5.0;\n" +
+"  }\n" +
+"  qual_sst4 {\n" +                            //important test that _Unsigned was removed from combinedAtta
+"    UInt16 _FillValue 65535;\n" +             //UInt16 is important test
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Quality Levels, Sea Surface Temperature\";\n" +
+"    String standard_name \"flag_values\";\n" +
+"    String units \"degrees_north\";\n" +
+"    UInt16 valid_max 5;\n" +
+"    UInt16 valid_min 0;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
+"    String _lastModified \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
-"    String creator_name \"NASA JPL\";\n" +
-"    String creator_url \"https://www.jpl.nasa.gov/\";\n" +
-"    Float64 Easternmost_Easting 179.978023292;\n" +
-"    Float64 geospatial_lat_max 89.9780273;\n" +
-"    Float64 geospatial_lat_min -89.97802534;\n" +
-"    Float64 geospatial_lat_resolution 0.043945312;\n" +
+"    String Conventions \"CF-1.6 ACDD-1.3, COARDS\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2019-12-17T[TIME_VARIES].000Z\";\n" +
+"    Float64 Easternmost_Easting 179.979169546;\n" +
+"    Float64 geospatial_lat_max 89.979166667;\n" +
+"    Float64 geospatial_lat_min -89.97916810599999;\n" +
+"    Float64 geospatial_lat_resolution 0.041666667;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 179.978023292;\n" +
-"    Float64 geospatial_lon_min -179.9780273;\n" +
-"    Float64 geospatial_lon_resolution 0.043945312;\n" +
-"    String geospatial_lon_units \"degrees_east\";\n";
-        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+"    Float64 geospatial_lon_max 179.979169546;\n" +
+"    Float64 geospatial_lon_min -179.979166667;\n" +
+"    Float64 geospatial_lon_resolution 0.041666667;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"l3mapgen par=AQUA_MODIS.[DATE_DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
+"[DATE_TIME] https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\n" +
+"[DATE_TIME] http://localhost:8080/cwexperimental/griddap/nasa_jpl_0d1b_74cd_7593.das\";\n" +
+"    String id \"AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc\";\n" +
+"    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"MODIS\";\n" +
+"    String keywords \"4km, 4um, 8day, aqua, biology, center, color, data, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, flag, flag_values, flight, goddard, group, gsfc, image, imaging, infrared, L3, latitude, level, level-3, levels, longitude, mapped, mid, moderate, modis, modisa, nasa, night, nighttime, obpg, ocean, oceans, processing, qual_sst4, quality, resolution, science, sea, sea_surface_temperature, smi, space, spectroradiometer, sst, sst4, standard, surface, temperature, time, v2019.0, values\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.979166667;\n" +
+"    String platform \"Aqua\";\n" +
+"    String processing_control_input_parameters_apply_pal \"1\";\n" +
+"    String processing_control_input_parameters_central_meridian \"-999\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_east \"180.000\";\n" +
+"    String processing_control_input_parameters_fudge \"1.0\";\n" +
+"    String processing_control_input_parameters_full_latlon \"yes\";\n" +
+"    String processing_control_input_parameters_ifile \"AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc\";\n" +
+"    String processing_control_input_parameters_interp \"area\";\n" +
+"    String processing_control_input_parameters_land \"$OCDATAROOT/common/landmask_GMT15ARC.nc\";\n" +
+"    String processing_control_input_parameters_mask_land \"no\";\n" +
+"    String processing_control_input_parameters_north \"90.000\";\n" +
+"    String processing_control_input_parameters_num_cache \"500\";\n" +
+"    String processing_control_input_parameters_ofile \"AQUA_MODIS.[DATE_DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"    String processing_control_input_parameters_ofile_product_tag \"PRODUCT\";\n" +
+"    String processing_control_input_parameters_oformat \"2\";\n" +
+"    String processing_control_input_parameters_oformat2 \"png\";\n" +
+"    String processing_control_input_parameters_par \"AQUA_MODIS.[DATE_DATE].L3m.8D.SST4.sst4.4km.nc.param\";\n" +
+"    String processing_control_input_parameters_product \"sst4\";\n" +
+"    String processing_control_input_parameters_product_rgb \"rhos_645,rhos_555,rhos_469\";\n" +
+"    String processing_control_input_parameters_projection \"smi\";\n" +
+"    String processing_control_input_parameters_pversion \"R2019.0\";\n" +
+"    String processing_control_input_parameters_quiet \"false\";\n" +
+"    String processing_control_input_parameters_resolution \"4km\";\n" +
+"    String processing_control_input_parameters_south \"-90.000\";\n" +
+"    String processing_control_input_parameters_suite \"SST4\";\n" +
+"    String processing_control_input_parameters_threshold \"0\";\n" +
+"    String processing_control_input_parameters_trimNSEW \"yes\";\n" +
+"    String processing_control_input_parameters_use_quality \"yes\";\n" +
+"    String processing_control_input_parameters_use_rgb \"no\";\n" +
+"    String processing_control_input_parameters_use_transparency \"no\";\n" +
+"    String processing_control_input_parameters_west \"-180.000\";\n" +
+"    String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"    String processing_control_software_name \"l3mapgen\";\n" +
+"    String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"    String processing_control_source \"AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"R2019.0\";\n" +
+"    String product_name \"AQUA_MODIS.[DATE_DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_type \"group\";\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String sourceUrl \"https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\";\n" +
+"    Float64 Southernmost_Northing -89.97916810599999;\n" +
+"    String spatialResolution \"4.64 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
+"    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
+"    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
+"    String time_coverage_end \"2022-02-18T00:00:00Z\";  THIS IS WRONG!!! \n" +  //WRONG!!! I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String time_coverage_start \"2004-07-04T00:00:00Z\";\n" +
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2004-present\";\n" +
+"    Float64 Westernmost_Easting -179.979166667;\n" +
+"  }\n" +
+"}\n";
+        try {
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Exception e) {
+            Test.knownProblem("time_coverage_end calculated from data source is WRONG!\n" + //I don't know what it should be
+                "2020-08-25 I emailed podaac@... Subject=\"Incorrect time values and _FillValue\"",
+                e);
+        }
+    }
 
-        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+    /**
+     * This test UInt16 data.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testUInt16Dap() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testUInt16");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, url;
+        String baseUrl = "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml"; 
+        try {
+
+        //.dds from source
+        url = baseUrl + ".dds";
+        results = SSR.getUrlResponseStringUnchanged(url);
+        expected = 
+"Dataset {\n" +
+"    Float64 lon[lon = 8640];\n" +
+"    Byte palette[rgb = 3][eightbitcolor = 256];\n" +
+"    Float64 lat[lat = 4320];\n" +
+"    Int32 time[time = 810];\n" +
+"    Grid {\n" +
+"     ARRAY:\n" +
+"        Int16 sst4[time = 810][lat = 4320][lon = 8640];\n" +
+"     MAPS:\n" +
+"        Int32 time[time = 810];\n" +
+"        Float64 lat[lat = 4320];\n" +
+"        Float64 lon[lon = 8640];\n" +
+"    } sst4;\n" +
+"    Grid {\n" +
+"     ARRAY:\n" +
+"        UInt16 qual_sst4[time = 810][lat = 4320][lon = 8640];\n" +
+"     MAPS:\n" +
+"        Int32 time[time = 810];\n" +
+"        Float64 lat[lat = 4320];\n" +
+"        Float64 lon[lon = 8640];\n" +
+"    } qual_sst4;\n" +
+"} ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml;\n"; 
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //.das from source
+        url = baseUrl + ".das";
+        results = SSR.getUrlResponseStringUnchanged(url);
+        results = results.replaceAll("String date_created \".*\";", 
+                                     "String date_created \"[TIME]\";");
+        results = results.replaceAll("String time_coverage_start \".*\";", 
+                                     "String time_coverage_start \"[TIME]\";");
+        results = results.replaceAll("String time_coverage_end \".*\";", 
+                                     "String time_coverage_end \"[TIME]\";");
+        results = results.replaceAll("Int32 start_orbit_number \\d*;", 
+                                     "Int32 start_orbit_number [SON];");
+        results = results.replaceAll("Int32 end_orbit_number \\d*;", 
+                                     "Int32 end_orbit_number [EON];");
+        results = results.replaceAll("Int32 data_bins \\d*;", 
+                                     "Int32 data_bins [DB];");
+        results = results.replaceAll("Float32 data_minimum .*;", 
+                                     "Float32 data_minimum [DM];");
+        results = results.replaceAll("Float32 data_maximum .*;", 
+                                     "Float32 data_maximum [DM];");
+        results = results.replaceAll("20\\d{6}", 
+                                     "[DATE]");
+        results = results.replaceAll("String _lastModified \".*\";", 
+                                     "String _lastModified \"[TIME]\";");
+        expected = 
+"Attributes {\n" +
+"    lon {\n" +
+"        String long_name \"Longitude\";\n" +
+"        String units \"degrees_east\";\n" +
+"        String standard_name \"longitude\";\n" +
+"        Float32 _FillValue -999.0;\n" +
+"        Float32 valid_min -180.0;\n" +
+"        Float32 valid_max 180.0;\n" +
+"        String axis \"X\";\n" +
+"    }\n" +
+"    palette {\n" +
+"        String _Unsigned \"true\";\n" +
+"        Int16 _FillValue -1;\n" +
+"    }\n" +
+"    lat {\n" +
+"        String long_name \"Latitude\";\n" +
+"        String units \"degrees_north\";\n" +
+"        String standard_name \"latitude\";\n" +
+"        Float32 _FillValue -999.0;\n" +
+"        Float32 valid_min -90.0;\n" +
+"        Float32 valid_max 90.0;\n" +
+"        String axis \"Y\";\n" +
+"    }\n" +
+"    time {\n" +
+"        String standard_name \"time\";\n" +
+"        String axis \"timeAxis\";\n" +
+"        String units \"days since 2002-01-01\";\n" +
+"    }\n" +
+"    sst4 {\n" +
+"        String long_name \"4um Sea Surface Temperature\";\n" +
+"        Float32 scale_factor 0.005;\n" +
+"        Float32 add_offset 0.0;\n" +
+"        String units \"degree_C\";\n" +
+"        String standard_name \"sea_surface_temperature\";\n" +
+"        Int16 _FillValue -32767;\n" +
+"        Int16 valid_min -1000;\n" +
+"        Int16 valid_max 10000;\n" +
+"        String display_scale \"linear\";\n" +
+"        Float32 display_min -2.0;\n" +
+"        Float32 display_max 45.0;\n" +
+"        Int32 _ChunkSizes 44, 87;\n" +
+"    }\n" +
+"    qual_sst4 {\n" +
+"        String long_name \"Quality Levels, Sea Surface Temperature\";\n" +
+"        Int16 _FillValue -1;\n" + 
+"        Byte valid_min 0;\n" +
+"        Byte valid_max 5;\n" +
+"        String _Unsigned \"true\";\n" +
+"        Int32 _ChunkSizes 44, 87;\n" +
+"        String standard_name \"flag_values\";\n" +
+"        String units \"degree_north\";\n" +
+"    }\n" +
+"    NC_GLOBAL {\n" +
+"        String product_name \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"        String instrument \"MODIS\";\n" +
+"        String title \"MODISA Level-3 Standard Mapped Image\";\n" +
+"        String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"        String platform \"Aqua\";\n" +
+"        String temporal_range \"8-day\";\n" +      
+"        String processing_version \"R2019.0\";\n" +
+"        String date_created \"[TIME]\";\n" + //2020-08-20 changed by 4 seconds, and other dates
+"        String history \"l3mapgen par=AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param \";\n" +
+"        String l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"        String time_coverage_start \"[TIME]\";\n" +
+"        String time_coverage_end \"[TIME]\";\n" +
+"        Int32 start_orbit_number [SON];\n" +
+"        Int32 end_orbit_number [EON];\n" +
+"        String map_projection \"Equidistant Cylindrical\";\n" +
+"        String latitude_units \"degrees_north\";\n" +
+"        String longitude_units \"degrees_east\";\n" +
+"        Float32 northernmost_latitude 90.0;\n" +
+"        Float32 southernmost_latitude -90.0;\n" +
+"        Float32 westernmost_longitude -180.0;\n" +
+"        Float32 easternmost_longitude 180.0;\n" +
+"        Float32 geospatial_lat_max 90.0;\n" +
+"        Float32 geospatial_lat_min -90.0;\n" +
+"        Float32 geospatial_lon_max 180.0;\n" +
+"        Float32 geospatial_lon_min -180.0;\n" +
+"        Float32 latitude_step 0.041666668;\n" +
+"        Float32 longitude_step 0.041666668;\n" +
+"        Float32 sw_point_latitude -89.979164;\n" +
+"        Float32 sw_point_longitude -179.97917;\n" +
+"        String spatialResolution \"4.64 km\";\n" +
+"        Float32 geospatial_lon_resolution 0.041666668;\n" +
+"        Float32 geospatial_lat_resolution 0.041666668;\n" +
+"        String geospatial_lat_units \"degrees_north\";\n" +
+"        String geospatial_lon_units \"degrees_east\";\n" +
+"        Int32 number_of_lines 4320;\n" +
+"        Int32 number_of_columns 8640;\n" +
+"        String measure \"Mean\";\n" +
+"        Float32 suggested_image_scaling_minimum -2.0;\n" +
+"        Float32 suggested_image_scaling_maximum 45.0;\n" +
+"        String suggested_image_scaling_type \"LINEAR\";\n" +
+"        String suggested_image_scaling_applied \"No\";\n" +
+"        String _lastModified \"[TIME]\";\n" +
+"        String Conventions \"CF-1.6 ACDD-1.3\";\n" +
+"        String institution \"NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group\";\n" +
+"        String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
+"        String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"        String id \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"        String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\";\n" +
+"        String creator_name \"NASA/GSFC/OBPG\";\n" +
+"        String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"        String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"        String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"        String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"        String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"        String processing_level \"L3 Mapped\";\n" +
+"        String cdm_data_type \"grid\";\n" +
+"        Int32 data_bins [DB];\n" +
+"        Float32 data_minimum [DM];\n" +
+"        Float32 data_maximum [DM];\n" +
+"        String start_date \"2002-07-04 UTC\";\n" +
+"        String start_time \"00:00:00 UTC\";\n" +
+"        String stop_date \"2020-02-18 UTC\";\n" +
+"        String stop_time \"23:59:59 UTC\";\n" +
+"        String processing_control_software_name \"l3mapgen\";\n" +
+"        String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"        String processing_control_source \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"        String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"        String processing_control_input_parameters_par \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\";\n" +
+"        String processing_control_input_parameters_suite \"SST4\";\n" +
+"        String processing_control_input_parameters_ifile \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"        String processing_control_input_parameters_ofile \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"        String processing_control_input_parameters_oformat \"2\";\n" +
+"        String processing_control_input_parameters_ofile_product_tag \"PRODUCT\";\n" +
+"        String processing_control_input_parameters_ofile2 \"\";\n" +
+"        String processing_control_input_parameters_oformat2 \"png\";\n" +
+"        String processing_control_input_parameters_deflate \"4\";\n" +
+"        String processing_control_input_parameters_product \"sst4\";\n" +
+"        String processing_control_input_parameters_resolution \"4km\";\n" +
+"        String processing_control_input_parameters_width \"\";\n" +
+"        String processing_control_input_parameters_projection \"smi\";\n" +
+"        String processing_control_input_parameters_central_meridian \"-999\";\n" +
+"        String processing_control_input_parameters_lat_ts \"\";\n" +
+"        String processing_control_input_parameters_lat_0 \"\";\n" +
+"        String processing_control_input_parameters_lat_1 \"\";\n" +
+"        String processing_control_input_parameters_lat_2 \"\";\n" +
+"        String processing_control_input_parameters_azimuth \"\";\n" +
+"        String processing_control_input_parameters_north \"90.000\";\n" +
+"        String processing_control_input_parameters_south \"-90.000\";\n" +
+"        String processing_control_input_parameters_east \"180.000\";\n" +
+"        String processing_control_input_parameters_west \"-180.000\";\n" +
+"        String processing_control_input_parameters_trimNSEW \"yes\";\n" +
+"        String processing_control_input_parameters_interp \"area\";\n" +
+"        String processing_control_input_parameters_apply_pal \"1\";\n" +
+"        String processing_control_input_parameters_palfile \"\";\n" +
+"        String processing_control_input_parameters_use_transparency \"no\";\n" +
+"        String processing_control_input_parameters_datamin \"\";\n" +
+"        String processing_control_input_parameters_datamax \"\";\n" +
+"        String processing_control_input_parameters_scale_type \"\";\n" +
+"        String processing_control_input_parameters_quiet \"false\";\n" +
+"        String processing_control_input_parameters_pversion \"R2019.0\";\n" +
+"        String processing_control_input_parameters_use_quality \"yes\";\n" +
+"        String processing_control_input_parameters_quality_product \"\";\n" +
+"        String processing_control_input_parameters_use_rgb \"no\";\n" +
+"        String processing_control_input_parameters_product_rgb \"rhos_645,rhos_555,rhos_469\";\n" +
+"        String processing_control_input_parameters_fudge \"1.0\";\n" +
+"        String processing_control_input_parameters_threshold \"0\";\n" +
+"        String processing_control_input_parameters_num_cache \"500\";\n" +
+"        String processing_control_input_parameters_mask_land \"no\";\n" +
+"        String processing_control_input_parameters_land \"$OCDATAROOT/common/landmask_GMT15ARC.nc\";\n" +
+"        String processing_control_input_parameters_full_latlon \"yes\";\n" +
+"    }\n" +
+"}\n"; 
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //ensure files are reread
+        File2.deleteAllFiles(datasetDir("testUInt16Dap"));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16Dap"); 
+        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
+ 
+
+        //.nccsvMetadata
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".nccsvMetadata"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = results.replaceAll("2019-12-17T.*.000Z", 
+                                     "2019-12-17T[TIME].000Z");
+        results = results.replaceAll("AQUA_MODIS\\.\\d{8}_\\d{8}\\.L3", 
+                                     "AQUA_MODIS.[DATE]_[DATE].L3");        
+
+expected = 
+"*GLOBAL*,Conventions,\"CF-1.6 ACDD-1.3, COARDS, NCCSV-1.1\"\n" +
+"*GLOBAL*,_lastModified,2019-12-17T[TIME].000Z\n" +  //changes by a few seconds periodically!
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,creator_email,data@oceancolor.gsfc.nasa.gov\n" +
+"*GLOBAL*,creator_name,NASA/GSFC/OBPG\n" +
+"*GLOBAL*,creator_type,group\n" +
+"*GLOBAL*,creator_url,https://oceandata.sci.gsfc.nasa.gov\n" +
+"*GLOBAL*,date_created,2019-12-17T[TIME].000Z\n" +
+"*GLOBAL*,Easternmost_Easting,179.979169546d\n" +
+"*GLOBAL*,geospatial_lat_max,89.979166667d\n" +
+"*GLOBAL*,geospatial_lat_min,-89.97916810599999d\n" +
+"*GLOBAL*,geospatial_lat_resolution,0.041666667d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,179.979169546d\n" +
+"*GLOBAL*,geospatial_lon_min,-179.979166667d\n" +
+"*GLOBAL*,geospatial_lon_resolution,0.041666667d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,history,l3mapgen par=AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
+"*GLOBAL*,id,AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\n" +
+"*GLOBAL*,infoUrl,https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0\n" +
+"*GLOBAL*,institution,NASA/GSFC OBPG\n" +
+"*GLOBAL*,instrument,MODIS\n" +
+"*GLOBAL*,keywords,\"4km, 4um, 8day, aqua, biology, center, color, data, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, flag, flag_values, flight, goddard, group, gsfc, image, imaging, infrared, L3, latitude, level, level-3, levels, longitude, mapped, mid, moderate, modis, modisa, nasa, night, nighttime, obpg, ocean, oceans, processing, qual_sst4, quality, resolution, science, sea, sea_surface_temperature, smi, space, spectroradiometer, sst, sst4, standard, surface, temperature, time, v2019.0, values\"\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,l2_flag_names,\"LAND,~HISOLZEN\"\n" +
+"*GLOBAL*,license,https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"*GLOBAL*,map_projection,Equidistant Cylindrical\n" +
+"*GLOBAL*,measure,Mean\n" +
+"*GLOBAL*,naming_authority,gov.nasa.gsfc.sci.oceandata\n" +
+"*GLOBAL*,Northernmost_Northing,89.979166667d\n" +
+"*GLOBAL*,platform,Aqua\n" +
+"*GLOBAL*,processing_control_input_parameters_apply_pal,\"1\"\n" +
+"*GLOBAL*,processing_control_input_parameters_central_meridian,\"-999\"\n" +
+"*GLOBAL*,processing_control_input_parameters_deflate,\"4\"\n" +
+"*GLOBAL*,processing_control_input_parameters_east,\"180.000\"\n" +
+"*GLOBAL*,processing_control_input_parameters_fudge,\"1.0\"\n" +
+"*GLOBAL*,processing_control_input_parameters_full_latlon,yes\n" +
+"*GLOBAL*,processing_control_input_parameters_ifile,AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\n" +
+"*GLOBAL*,processing_control_input_parameters_interp,area\n" +
+"*GLOBAL*,processing_control_input_parameters_land,$OCDATAROOT/common/landmask_GMT15ARC.nc\n" +
+"*GLOBAL*,processing_control_input_parameters_mask_land,no\n" +
+"*GLOBAL*,processing_control_input_parameters_north,\"90.000\"\n" +
+"*GLOBAL*,processing_control_input_parameters_num_cache,\"500\"\n" +
+"*GLOBAL*,processing_control_input_parameters_ofile,AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\n" +
+"*GLOBAL*,processing_control_input_parameters_ofile_product_tag,PRODUCT\n" +
+"*GLOBAL*,processing_control_input_parameters_oformat,\"2\"\n" +
+"*GLOBAL*,processing_control_input_parameters_oformat2,png\n" +
+"*GLOBAL*,processing_control_input_parameters_par,AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
+"*GLOBAL*,processing_control_input_parameters_product,sst4\n" +
+"*GLOBAL*,processing_control_input_parameters_product_rgb,\"rhos_645,rhos_555,rhos_469\"\n" +
+"*GLOBAL*,processing_control_input_parameters_projection,smi\n" +
+"*GLOBAL*,processing_control_input_parameters_pversion,R2019.0\n" +
+"*GLOBAL*,processing_control_input_parameters_quiet,false\n" +
+"*GLOBAL*,processing_control_input_parameters_resolution,4km\n" +
+"*GLOBAL*,processing_control_input_parameters_south,\"-90.000\"\n" +
+"*GLOBAL*,processing_control_input_parameters_suite,SST4\n" +
+"*GLOBAL*,processing_control_input_parameters_threshold,\"0\"\n" +
+"*GLOBAL*,processing_control_input_parameters_trimNSEW,yes\n" +
+"*GLOBAL*,processing_control_input_parameters_use_quality,yes\n" +
+"*GLOBAL*,processing_control_input_parameters_use_rgb,no\n" +
+"*GLOBAL*,processing_control_input_parameters_use_transparency,no\n" +
+"*GLOBAL*,processing_control_input_parameters_west,\"-180.000\"\n" +
+"*GLOBAL*,processing_control_l2_flag_names,\"LAND,~HISOLZEN\"\n" +
+"*GLOBAL*,processing_control_software_name,l3mapgen\n" +
+"*GLOBAL*,processing_control_software_version,2.2.0-V2019.4\n" +
+"*GLOBAL*,processing_control_source,AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\n" +
+"*GLOBAL*,processing_level,L3 Mapped\n" +
+"*GLOBAL*,processing_version,R2019.0\n" +
+"*GLOBAL*,product_name,AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\n" +
+"*GLOBAL*,project,Ocean Biology Processing Group (NASA/GSFC/OBPG)\n" +
+"*GLOBAL*,publisher_email,data@oceancolor.gsfc.nasa.gov\n" +
+"*GLOBAL*,publisher_name,NASA/GSFC/OBPG\n" +
+"*GLOBAL*,publisher_type,group\n" +
+"*GLOBAL*,publisher_url,https://oceandata.sci.gsfc.nasa.gov\n" +
+"*GLOBAL*,sourceUrl,https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\n" +
+"*GLOBAL*,Southernmost_Northing,-89.97916810599999d\n" +
+"*GLOBAL*,spatialResolution,4.64 km\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v36\n" +
+"*GLOBAL*,summary,Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\n" +
+"*GLOBAL*,temporal_range,8-day\n" +
+"*GLOBAL*,time_coverage_end,2022-02-18T00:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2004-07-04T00:00:00Z\n" +
+"*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\\u00b0, 2004-present\"\n" +
+"*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,actual_range,2004-07-04T00:00:00Z\\n2022-02-18T00:00:00Z\n" +
+"time,axis,T\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,Time\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"latitude,*DATA_TYPE*,double\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-89.97916810599999d,89.979166667d\n" +
+"latitude,axis,Y\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Latitude\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,units,degrees_north\n" +
+"latitude,valid_max,90.0d\n" +
+"latitude,valid_min,-90.0d\n" +
+"longitude,*DATA_TYPE*,double\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,-179.979166667d,179.979169546d\n" +
+"longitude,axis,X\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Longitude\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,units,degrees_east\n" +
+"longitude,valid_max,180.0d\n" +
+"longitude,valid_min,-180.0d\n" +
+"sst4,*DATA_TYPE*,float\n" +
+"sst4,_FillValue,-163.835f\n" +
+"sst4,colorBarMaximum,32.0d\n" +
+"sst4,colorBarMinimum,0.0d\n" +
+"sst4,ioos_category,Temperature\n" +
+"sst4,long_name,4um Sea Surface Temperature\n" +
+"sst4,standard_name,sea_surface_temperature\n" +
+"sst4,units,degree_C\n" +
+"sst4,valid_max,50.0f\n" +
+"sst4,valid_min,-5.0f\n" +
+"qual_sst4,*DATA_TYPE*,ushort\n" +
+"qual_sst4,_FillValue,65535us\n" +  //important test
+"qual_sst4,colorBarMaximum,150.0d\n" +
+"qual_sst4,colorBarMinimum,0.0d\n" +
+"qual_sst4,ioos_category,Quality\n" +
+"qual_sst4,long_name,\"Quality Levels, Sea Surface Temperature\"\n" +
+"qual_sst4,standard_name,flag_values\n" +
+"qual_sst4,units,degrees_north\n" +
+"qual_sst4,valid_max,5us\n" +
+"qual_sst4,valid_min,0us\n" +
+"\n" +
+"*END_METADATA*\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //.das from erddap dataset    das isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[TODAY] http");
+        results = results.replaceAll("20\\d{6}", "[DATE]");
+        results = results.replaceAll("String date_created \".*\";", 
+                                     "String date_created \"[DC]\";");
+        results = results.replaceAll("String _lastModified \".*\";", 
+                                     "String _lastModified \"[LM]\";");
+
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0888992e+9, 1.6451424e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -89.97916810599999, 89.979166667;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float64 valid_max 90.0;\n" +
+"    Float64 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -179.979166667, 179.979169546;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float64 valid_max 180.0;\n" +
+"    Float64 valid_min -180.0;\n" +
+"  }\n" +
+"  sst4 {\n" +
+"    Float32 _FillValue -163.835;\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"4um Sea Surface Temperature\";\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"    Float32 valid_max 50.0;\n" +
+"    Float32 valid_min -5.0;\n" +
+"  }\n" +
+"  qual_sst4 {\n" +
+"    UInt16 _FillValue 65535;\n" +        
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Quality Levels, Sea Surface Temperature\";\n" +
+"    String standard_name \"flag_values\";\n" +
+"    String units \"degrees_north\";\n" +
+"    UInt16 valid_max 5;\n" +
+"    UInt16 valid_min 0;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _lastModified \"[LM]\";\n" + //2020-08-20 changed by 4 seconds
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6 ACDD-1.3, COARDS\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"[DC]\";\n" +
+"    Float64 Easternmost_Easting 179.979169546;\n" +
+"    Float64 geospatial_lat_max 89.979166667;\n" +
+"    Float64 geospatial_lat_min -89.97916810599999;\n" +
+"    Float64 geospatial_lat_resolution 0.041666667;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.979169546;\n" +
+"    Float64 geospatial_lon_min -179.979166667;\n" +
+"    Float64 geospatial_lon_resolution 0.041666667;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"l3mapgen par=AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
+"[TODAY] https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\n" +
+"[TODAY] http://localhost:8080/cwexperimental/griddap/testUInt16Dap.das\";\n" +
+"    String id \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"MODIS\";\n" +
+"    String keywords \"4km, 4um, 8day, aqua, biology, center, color, data, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, flag, flag_values, flight, goddard, group, gsfc, image, imaging, infrared, L3, latitude, level, level-3, levels, longitude, mapped, mid, moderate, modis, modisa, nasa, night, nighttime, obpg, ocean, oceans, processing, qual_sst4, quality, resolution, science, sea, sea_surface_temperature, smi, space, spectroradiometer, sst, sst4, standard, surface, temperature, time, v2019.0, values\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.979166667;\n" +
+"    String platform \"Aqua\";\n" +
+"    String processing_control_input_parameters_apply_pal \"1\";\n" +
+"    String processing_control_input_parameters_central_meridian \"-999\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_east \"180.000\";\n" +
+"    String processing_control_input_parameters_fudge \"1.0\";\n" +
+"    String processing_control_input_parameters_full_latlon \"yes\";\n" +
+"    String processing_control_input_parameters_ifile \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"    String processing_control_input_parameters_interp \"area\";\n" +
+"    String processing_control_input_parameters_land \"$OCDATAROOT/common/landmask_GMT15ARC.nc\";\n" +
+"    String processing_control_input_parameters_mask_land \"no\";\n" +
+"    String processing_control_input_parameters_north \"90.000\";\n" +
+"    String processing_control_input_parameters_num_cache \"500\";\n" +
+"    String processing_control_input_parameters_ofile \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"    String processing_control_input_parameters_ofile_product_tag \"PRODUCT\";\n" +
+"    String processing_control_input_parameters_oformat \"2\";\n" +
+"    String processing_control_input_parameters_oformat2 \"png\";\n" +
+"    String processing_control_input_parameters_par \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\";\n" +
+"    String processing_control_input_parameters_product \"sst4\";\n" +
+"    String processing_control_input_parameters_product_rgb \"rhos_645,rhos_555,rhos_469\";\n" +
+"    String processing_control_input_parameters_projection \"smi\";\n" +
+"    String processing_control_input_parameters_pversion \"R2019.0\";\n" +
+"    String processing_control_input_parameters_quiet \"false\";\n" +
+"    String processing_control_input_parameters_resolution \"4km\";\n" +
+"    String processing_control_input_parameters_south \"-90.000\";\n" +
+"    String processing_control_input_parameters_suite \"SST4\";\n" +
+"    String processing_control_input_parameters_threshold \"0\";\n" +
+"    String processing_control_input_parameters_trimNSEW \"yes\";\n" +
+"    String processing_control_input_parameters_use_quality \"yes\";\n" +
+"    String processing_control_input_parameters_use_rgb \"no\";\n" +
+"    String processing_control_input_parameters_use_transparency \"no\";\n" +
+"    String processing_control_input_parameters_west \"-180.000\";\n" +
+"    String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
+"    String processing_control_software_name \"l3mapgen\";\n" +
+"    String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"    String processing_control_source \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"R2019.0\";\n" +
+"    String product_name \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_type \"group\";\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String sourceUrl \"https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\";\n" +
+"    Float64 Southernmost_Northing -89.97916810599999;\n" +
+"    String spatialResolution \"4.64 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
+"    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
+"    String temporal_range \"8-day\";\n" +
+"    String time_coverage_end \"2022-02-18T00:00:00Z\";\n" +
+"    String time_coverage_start \"2004-07-04T00:00:00Z\";\n" +
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2004-present\";\n" +
+"    Float64 Westernmost_Easting -179.979166667;\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
@@ -9871,54 +11141,61 @@ String2.log(String2.annotatedString(results));
             EDStatic.fullTestCacheDirectory + tName);
         expected = //difference from testUInt16File: lat lon are double here, not float
 "Dataset {\n" +
-"  Float64 time[time = 1245];\n" +
-"  Float64 latitude[latitude = 4096];\n" +
-"  Float64 longitude[longitude = 8192];\n" +
+"  Float64 time[time = 810];\n" +
+"  Float64 latitude[latitude = 4320];\n" +
+"  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 bsst[time = 1245][latitude = 4096][longitude = 8192];\n" +
+"      Float32 sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1245];\n" +
-"      Float64 latitude[latitude = 4096];\n" +
-"      Float64 longitude[longitude = 8192];\n" +
-"  } bsst;\n" +
+"      Float64 time[time = 810];\n" +
+"      Float64 latitude[latitude = 4320];\n" +
+"      Float64 longitude[longitude = 8640];\n" +
+"  } sst4;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      UInt16 qual_sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 810];\n" +
+"      Float64 latitude[latitude = 4320];\n" +
+"      Float64 longitude[longitude = 8640];\n" +
+"  } qual_sst4;\n" +
 "} testUInt16Dap;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //display the image
-        String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "bsst[0][][]&.land=under", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-
         //.csv data values
-        userDapQuery = "bsst[0][0:100:1000][(-132)]"; 
+//same query to source also shows 255's
+//https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml.ascii?qual_sst4%5B0:1:0%5D%5B400:200:800%5D%5B400:200:800%5D
+        userDapQuery = "qual_sst4[0][400:200:800][400:200:800]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
-        expected = //difference from testUInt16File: lat lon are double here, not float
-"time,latitude,longitude,bsst\n" +
-"UTC,degrees_north,degrees_east,degree_C\n" +
-"1981-08-24T00:00:00Z,89.9780273,-131.989746596,NaN\n" +
-"1981-08-24T00:00:00Z,85.58349609999999,-131.989746596,-1.2\n" +
-"1981-08-24T00:00:00Z,81.18896489999999,-131.989746596,-0.825\n" +
-"1981-08-24T00:00:00Z,76.7944337,-131.989746596,-0.6\n" +
-"1981-08-24T00:00:00Z,72.3999025,-131.989746596,1.05\n" +
-"1981-08-24T00:00:00Z,68.0053713,-131.989746596,NaN\n" +         //missing_value's -> NaN
-"1981-08-24T00:00:00Z,63.61084009999999,-131.989746596,NaN\n" +
-"1981-08-24T00:00:00Z,59.216308899999994,-131.989746596,NaN\n" +
-"1981-08-24T00:00:00Z,54.82177769999999,-131.989746596,2.025\n" +
-"1981-08-24T00:00:00Z,50.427246499999995,-131.989746596,15.45\n" +
-"1981-08-24T00:00:00Z,46.03271529999999,-131.989746596,15.9\n";
+        expected = 
+//ugly lat and lon values (clearly float -> double)
+"time,latitude,longitude,qual_sst4\n" +
+"UTC,degrees_north,degrees_east,degrees_north\n" +
+"2004-07-04T00:00:00Z,73.312499867,-163.31249986699999,65535\n" +  //currently appears as 255 (from source) but that's wrong, should be 65535, or _FillValue should be different
+"2004-07-04T00:00:00Z,73.312499867,-154.979166467,65535\n" +       //and same on following lines
+"2004-07-04T00:00:00Z,73.312499867,-146.64583306699998,65535\n" +
+"2004-07-04T00:00:00Z,64.979166467,-163.31249986699999,65535\n" +
+"2004-07-04T00:00:00Z,64.979166467,-154.979166467,65535\n" +
+"2004-07-04T00:00:00Z,64.979166467,-146.64583306699998,65535\n" +
+"2004-07-04T00:00:00Z,56.645833067000005,-163.31249986699999,0\n" +
+"2004-07-04T00:00:00Z,56.645833067000005,-154.979166467,1\n" +
+"2004-07-04T00:00:00Z,56.645833067000005,-146.64583306699998,65535\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        } catch (Throwable t2) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
-                "\n*** Now this is a test of encodings in .das and .dds.\n" +
-                "    This problem occurs for a few JPL datasets.\n" +
-                "    Is this low-byte or UTF-8 encoding being read as ISO-8859-1?"); 
+        //display the image
+        String2.log("\n\n* PNG ");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "qual_sst4[0][][]", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        } catch (Throwable t) {
+            Test.knownProblem("This dataset has problems with time values in future and incorrect qual_sst4 _FillValue (255 vs 65535) and units (degree_north!). \n" +
+                "2020-08-14 I notified podaac, so hopefully this will change.", t);
         }
 
     }
@@ -11537,10 +12814,7 @@ String expected =
                     if (test ==  5) testMap74to434();
                     if (test ==  6) testSurfaceGraph();
                     if (test ==  7) testScaleAddOffset(); //needs new dataset
-                    if (test ==  8) testGenerateDatasetsXml2(); //reloadEveryNMinutes varies
                     if (test ==  9) testGenerateDatasetsXml3(); //data source is gone
-                    if (test == 10) testGenerateDatasetsXml4(); //date_created bounces around
-                    if (test == 11) testGenerateDatasetsXml5(); //testOutOfDate nDays varies
                     if (test == 12) testKml();
                     //if (test == 13) testGridWithDepth(); //test dataset no longer available
                     if (test == 14) testGridWithDepth2(); 
@@ -11556,13 +12830,17 @@ String expected =
                     //if (test ==  7) testPmelOscar(true); DAPPER IS NO LONGER ACTIVE!
 
                     if (test == 10) testGenerateDatasetsXml(); 
-                    if (test == 15) testCrawlThreddsCatalog();
-                    if (test == 16) testGenerateDatasetsXmlFromThreddsCatalog();
-                    if (test == 17) testGetUrlsFromThreddsCatalog();  
-                    if (test == 18) testScaleFactor();
-                    if (test == 19) testSliderCsv();
-                    if (test == 21) testNoAxisVariable();
-                    if (test == 22) testClimatologyTime();
+                    if (test == 11) testGenerateDatasetsXml2(); //reloadEveryNMinutes varies
+                    if (test == 13) testGenerateDatasetsXml4(); //date_created bounces around
+                    if (test == 14) testGenerateDatasetsXml5(); //testOutOfDate nDays varies
+                    if (test == 15) testGenerateDatasetsXmlUInt16(); 
+                    if (test == 17) testCrawlThreddsCatalog();
+                    if (test == 18) testGenerateDatasetsXmlFromThreddsCatalog();
+                    if (test == 19) testGetUrlsFromThreddsCatalog();  
+                    if (test == 20) testScaleFactor();
+                    if (test == 21) testSliderCsv();
+                    if (test == 22) testNoAxisVariable();
+                    if (test == 23) testClimatologyTime();
                     if (test == 26) testBigRequest(2); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
                     if (test == 27) testBigRequest(4); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
                     if (test == 28) testBigRequest(6); //use 6 partial requests  (time axis is now driver for multiple requests)
@@ -11572,7 +12850,7 @@ String expected =
                     if (test == 32) testNetcdfJava();
                     if (test == 35) testTimeErrorMessage();
                     if (test == 37) testValidMinMax();
-                    //if (test == 38) testUInt16Dap();  //2019-11-21 THIS DATASET IS GONE, but I have other testUInt16 tests. 2016-12-06 trouble with syntax.  
+                    if (test == 38) testUInt16Dap();  //known problems with source
                     if (test == 39) testScale1Offset0();
                     if (test == 40) testFromNccsv();
                     if (test == 41) testActualRange();
@@ -11599,7 +12877,5 @@ String expected =
             }
         }
     }
-
-
 
 }

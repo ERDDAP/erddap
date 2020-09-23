@@ -352,7 +352,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 if (dimensions == null || dimensions.size() <= 1) 
                     continue;
                 nGridsAtSource++;
-                Class tClass = NcHelper.getElementPAType(var.getDataType());
+                Class tClass = NcHelper.getElementPAType(var);
                 if      (tClass == PAType.CHAR)    tClass = PAType.STRING;
                 else if (tClass == PAType.BOOLEAN) tClass = PAType.BYTE; 
                 PrimitiveArray sourcePA = PrimitiveArray.factory(tClass, 1, false);

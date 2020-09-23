@@ -850,8 +850,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i105" class="rowColor">
 <td class="colFirst"><code>static byte</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href=".#parseBooleanToByte-java.lang.String-">parseBooleanToByte</a></span>(java.lang.String&nbsp;s)</code>
-<div class="block">This converts a string to a boolean and then a byte.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href=".#parseBooleanToInt-java.lang.String-">parseBooleanToInt</a></span>(java.lang.String&nbsp;s)</code>
+<div class="block">This converts a string to a boolean and then an int.</div>
 </td>
 </tr>
 <tr id="i106" class="altColor">
@@ -1769,11 +1769,11 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>s</code> - the source String</dd>
-<dd><code>regex</code> - the regular expression, see java.util.regex.Pattern.</dd>
+<dd><code>regex</code> - the regular expression which probably matches part of s. See java.util.regex.Pattern.</dd>
 <dd><code>captureGroupNumber</code> - the number of the capture group (0 for entire regex,
     1 for first capture group, 2 for second, etc.)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>the value of the specified capture group,
+<dd>the value of the specified capture group in the first match of the regex,
           or null if the s doesn't match the regex</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.RuntimeException</code> - if trouble, e.g., invalid regex syntax</dd>
@@ -3852,19 +3852,19 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="parseBooleanToByte-java.lang.String-">
+<a name="parseBooleanToInt-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>parseBooleanToByte</h4>
-<pre>public static&nbsp;byte&nbsp;parseBooleanToByte(java.lang.String&nbsp;s)</pre>
-<div class="block">This converts a string to a boolean and then a byte.</div>
+<h4>parseBooleanToInt</h4>
+<pre>public static&nbsp;byte&nbsp;parseBooleanToInt(java.lang.String&nbsp;s)</pre>
+<div class="block">This converts a string to a boolean and then an int.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>s</code> - the string</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Byte.MAX_VALUE (i.e., missing value) if s is null or s is "". 
+<dd>Integer.MAX_VALUE (i.e., missing value) if s is null or s is "". 
    Return 0 if s is "false", "f", or "0".   
    Return 1 if for all other values.
    Case and leading/trailing spaces don't matter.</dd>

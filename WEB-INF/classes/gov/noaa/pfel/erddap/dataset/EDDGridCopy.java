@@ -414,10 +414,10 @@ public class EDDGridCopy extends EDDGrid {
                             }
                         }
                         ncDataVarNames.add(varName);
-                        PAType tPAType = NcHelper.getElementPAType(var.getDataType());
+                        PAType tPAType = NcHelper.getElementPAType(var);
                         if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
                         else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
-                        ncDataVarTypes.add(PrimitiveArray.elementTypeToString(tPAType));
+                        ncDataVarTypes.add(PAType.toCohortString(tPAType));
                     }
                 }
                 ncFile.close();

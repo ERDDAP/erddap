@@ -169,17 +169,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             */
         }
 
-        //adjust destinationMin/Max
-        /* 2015-05-05 I think this is duplicate of EDV, hence wrong because already scaled/offset.
-           and for string source times, scale_factor and add_offset musn't be used
-        if (scaleAddOffset) {
-            setDestinationMinMax(
-                destinationMin * scaleFactor + addOffset,
-                destinationMax * scaleFactor + addOffset);
-        } else if (destinationMin > destinationMax) { //in Java, only true if neither is NaN      
-            double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
-        }*/
-
         units = TIME_UNITS;
         if (destinationName.equals(EDV.TIME_NAME)) {
             combinedAttributes.set("_CoordinateAxisType", "Time"); //unidata-related
@@ -209,18 +198,19 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         setDestinationMinMaxFromSource(
             tSourceValues.getNiceDouble(0), 
             tSourceValues.getNiceDouble(n - 1));
-        if (destinationMin.isNaN())
+        if (destinationMin.isMissingValue())
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
                 "[0]=" + tSourceValues.getString(0) + " => NaN epochSeconds.");
-        if (destinationMax.isNaN())
+        if (destinationMax.isMissingValue())
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
                 "[n-1]=" + tSourceValues.getString(n-1) + " => NaN epochSeconds.");
 
         setActualRangeFromDestinationMinMax();    
         initializeAverageSpacingAndCoarseMinMax();
         if (reallyVerbose) String2.log("\nEDVTimeStampGridAxis created, " + 
-            "sourceTimeFormat=" + sourceTimeFormat +
-            " destMin=" + destinationMin + " destMax=" + destinationMax + "\n"); 
+            "sourceTimeFormat=" + sourceTimeFormat + "\n " +
+            " destMin=" + destinationMin + "=" + Calendar2.safeEpochSecondsToIsoStringTZ(destinationMin.getDouble(), "") + 
+            " destMax=" + destinationMax + "=" + Calendar2.safeEpochSecondsToIsoStringTZ(destinationMax.getDouble(), "") + "\n"); 
     }
 
     /** 
@@ -432,6 +422,8 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             (DoubleArray)source :
             new DoubleArray(size, true);
         if (sourceTimeIsNumeric) {
+            if (setSourceMaxIsMV)
+                source.setMaxIsMV(true);
             for (int i = 0; i < size; i++)
                 destPa.set(i, sourceTimeToEpochSeconds(source.getNiceDouble(i)));
         } else {

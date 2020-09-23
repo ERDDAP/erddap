@@ -236,7 +236,7 @@ public class WatchDirectory {
             Test.ensureTrue(kind == CREATE || kind == MODIFY || kind == DELETE, 
                 "kind=" + kind);
         }
-        Test.ensureBetween(n, 1, 3, "Sometimes nEvents=0 because the dir events weren't caught (because computer busy?).");
+        Test.ensureBetween(n, 1, 3, "*** KNOWN PROBLEM: Sometimes nEvents=0 because the dir events weren't caught (because computer busy?).");
 
 
         //*** test recursive

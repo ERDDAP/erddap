@@ -1208,9 +1208,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv]; //booleans handled correctly below
                 fileTable.addColumn(safeSourceDataNames.get(dv) + "_min_", 
-                    PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(sdt), 8, false));
+                    PrimitiveArray.factory(PAType.fromCohortString(sdt), 8, false));
                 fileTable.addColumn(safeSourceDataNames.get(dv) + "_max_", 
-                    PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(sdt), 8, false));
+                    PrimitiveArray.factory(PAType.fromCohortString(sdt), 8, false));
                 fileTable.addColumn(safeSourceDataNames.get(dv) + "_hasNaN_", 
                     PrimitiveArray.factory(PAType.BYTE, 8, false));
             }
@@ -1694,22 +1694,22 @@ public abstract class EDDTableFromFiles extends EDDTable{
             if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType + " tMin=" + tMin + " tMax=" + tMax);
 
             if (EDV.LON_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLon(tSourceName,
+                dataVariables[dv] = new EDVLon(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, tMin, tMax); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLat(tSourceName,
+                dataVariables[dv] = new EDVLat(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, tMin, tMax); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVAlt(tSourceName,
+                dataVariables[dv] = new EDVAlt(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, tMin, tMax);
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVDepth(tSourceName,
+                dataVariables[dv] = new EDVDepth(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, tMin, tMax);
                 depthIndex = dv;
@@ -1734,7 +1734,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     //String2.log(">> timestamp actual_range=" + actualRange);
                 } else if (!tSourceType.equals("String")) {  //numeric times sort correctly                          
                     PrimitiveArray actualRange = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToPAType(sourceDataTypes[dv]), 2, false);
+                        PAType.fromCohortString(sourceDataTypes[dv]), 2, false);
                     actualRange.addPAOne(minMaxTable.getPAOneData(dv, 0));
                     actualRange.addPAOne(minMaxTable.getPAOneData(dv, 1));
                     tAddAtt.set("actual_range", actualRange);
@@ -1743,19 +1743,19 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
                 if (EDV.TIME_NAME.equals(tDestName)) {
                     //it's the time variable
-                    dataVariables[dv] = new EDVTime(tSourceName,
+                    dataVariables[dv] = new EDVTime(datasetID, tSourceName,
                         tSourceAtt, tAddAtt, 
                         tSourceType); //this constructor gets source / sets destination actual_range
                     timeIndex = dv;
 
                 } else {              
                     //it's a timeStamp variable 
-                    dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
+                    dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName, 
                         tSourceAtt, tAddAtt,
                         tSourceType); //this constructor gets source / sets destination actual_range
                 }
             } else {
-                dataVariables[dv] = new EDV(tSourceName, tDestName, 
+                dataVariables[dv] = new EDV(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, tSourceType, tMin, tMax); 
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
             }
@@ -2299,7 +2299,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         for (int dv = 0; dv < ndv; dv++) {
             //String2.log("dv=" + dv + " " + sourceDataTypes[dv]);
             PrimitiveArray minMaxPa = 
-                PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(sourceDataTypes[dv]), 3, false);
+                PrimitiveArray.factory(PAType.fromCohortString(sourceDataTypes[dv]), 3, false);
             minMaxPa.addString(""); //min    initially "" or NaN
             minMaxPa.addString(""); //max    initially "" or NaN
             minMaxPa.addString(""); //hasNaN initially NaN
@@ -3182,7 +3182,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (columnNameForExtractType != null) {
             String value = extractFromFileName(tFileName);
             PrimitiveArray pa = PrimitiveArray.factory(
-                PrimitiveArray.elementStringToPAType(columnNameForExtractType), nRows, value); 
+                PAType.fromCohortString(columnNameForExtractType), nRows, value); 
             table.addColumn(columnNameForExtract, pa);
 
         }
@@ -3201,7 +3201,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
                     //force column to be specified type
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToPAType(globalTypes.get(gni)), 1, false);
+                        PAType.fromCohortString(globalTypes.get(gni)), 1, false);
                     newPa.append(pa);
                     pa = newPa;
 
@@ -3230,7 +3230,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     //var is in file. Try to get attribute
                     PrimitiveArray pa = table.columnAttributes(col).get(variableAttNames.get(vni));
                     if (pa != null && pa.size() > 0) {
-                        pa = PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(variableTypes.get(vni)), pa);
+                        pa = PrimitiveArray.factory(PAType.fromCohortString(variableTypes.get(vni)), pa);
 
                         //make pa size=1
                         if (pa.size() > 1) {
@@ -3273,7 +3273,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (matcher.matches()) {  
                     String val = matcher.group(fileNameCGs.get(fni)); 
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToPAType(fileNameTypes.get(fni)),
+                        PAType.fromCohortString(fileNameTypes.get(fni)),
                         nRows, val);
                     table.addColumn(fileNameNames.get(fni), newPa);
                 } //if no match, just don't add to results table.  
@@ -3288,7 +3288,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (matcher.matches()) {  
                     String val = matcher.group(pathNameCGs.get(fni)); 
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToPAType(pathNameTypes.get(fni)),
+                        PAType.fromCohortString(pathNameTypes.get(fni)),
                         nRows, val);
                     table.addColumn(pathNameNames.get(fni), newPa);
                 } //if no match, just don't add to results table.  
@@ -3834,6 +3834,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     } else {
                         nReadHaveMatch++;
                         if (debugMode) String2.log(">> task #" + (nProcessed-1) + " is writing to tableWriter.");
+                        //int tc = resultsTable.findColumnNumber("testULong");
+                        //if (tc >= 0) String2.log(">> EDDTableFromFiles testULong.maxIsMV=" + resultsTable.getColumn(tc).getMaxIsMV());
                         tableWriter.writeSome(resultsTable);  //if exception, will be caught below
                         if (tableWriter.noMoreDataPlease) 
                             throw new NoMoreDataPleaseException();

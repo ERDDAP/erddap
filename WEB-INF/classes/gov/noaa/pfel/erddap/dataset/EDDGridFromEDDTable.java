@@ -424,10 +424,10 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 throw new RuntimeException(errorInMethod +
                     "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
             else if (EDVTime.hasTimeUnits(tSourceAtts, tAddAtts)) 
-                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName,
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName,
                     tSourceAtts, tAddAtts, dvSourceDataType);  
             else dataVariables[dv] = new EDV(
-                tSourceName, tDestName, 
+                datasetID, tSourceName, tDestName, 
                 tSourceAtts, tAddAtts, dvSourceDataType, 
                 PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));  //hard to get min and max
             dataVariables[dv].extractAndSetActualRange();
@@ -1087,26 +1087,20 @@ String expected =
 "</dataset>\n" +
 "\n\n";
 
-        try {
-            String results = generateDatasetsXml(tid, -1, null) + "\n";
-            
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        String results = generateDatasetsXml(tid, -1, null) + "\n";        
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //int po = results.indexOf(expected2.substring(0, 40));
-            //Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
+        //int po = results.indexOf(expected2.substring(0, 40));
+        //Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
-                "-verbose", "EDDGridFromEDDTable", tid, 
-                "-1"}, //default reloadEvery, 
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, expected,
-                "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
+            "-verbose", "EDDGridFromEDDTable", tid, 
+            "-1"}, //default reloadEvery, 
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, expected,
+            "Unexpected results from GenerateDatasetsXml.doIt.");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
     
     }
 
@@ -1282,7 +1276,7 @@ String expected =
 "  depth {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    String _CoordinateZisPositive \"down\";\n" +
-"    Float64 _FillValue 9999.0;\n" +
+//"    Float64 _FillValue 9999.0;\n" + //2020-08-10 I removed this via addAttributes because axisVariables can't have missing values
 "    Float64 actual_range -1.8, 16.2;\n" +
 "    String axis \"Z\";\n" +
 "    String description \"Relative to Mean Sea Level (MSL)\";\n" +
@@ -1301,6 +1295,7 @@ String expected =
 "    String units \"%\";\n" +
 "  }\n" +
 "  DataQuality_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1318,6 +1313,7 @@ String expected =
 "    String units \"m s-1\";\n" +
 "  }\n" +
 "  Eastward_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1333,6 +1329,7 @@ String expected =
 "    String units \"m s-1\";\n" +
 "  }\n" +
 "  ErrorVelocity_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1347,6 +1344,7 @@ String expected =
 "    String units \"count\";\n" +
 "  }\n" +
 "  Intensity_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1364,6 +1362,7 @@ String expected =
 "    String units \"m s-1\";\n" +
 "  }\n" +
 "  Northward_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +
@@ -1380,6 +1379,7 @@ String expected =
 "    String units \"m s-1\";\n" +
 "  }\n" +
 "  Upwards_flag {\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
 "    String ioos_category \"Quality\";\n" +

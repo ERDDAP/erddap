@@ -28,16 +28,16 @@ public class EDVLat extends EDV {
      * @param tSourceMax  is pre-scale_factor and add_offset.
      *   This takes precedence over actual_range, actual_max, or data_max metadata.
      */
-    public EDVLat(String tSourceName, 
+    public EDVLat(String tDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, LAT_NAME, tSourceAttributes, tAddAttributes,
+        super(tDatasetID, tSourceName, LAT_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax);
 
         if (destinationDataType().equals("String"))
-            throw new RuntimeException("datasets.xml error: " +
+            throw new RuntimeException("datasets.xml error for datasetID=" + tDatasetID + ": " +
             "The destination dataType for the latitude variable must be a numeric dataType.");
 
         combinedAttributes.set("_CoordinateAxisType", "Lat");  //unidata-related

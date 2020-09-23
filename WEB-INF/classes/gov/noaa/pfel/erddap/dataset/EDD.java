@@ -15,6 +15,7 @@ import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.UByteArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -39,11 +40,14 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,6 +69,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1331,7 +1337,7 @@ public abstract class EDD {
     public static Attributes getAttributesFromXml(SimpleXMLReader xmlReader) throws Throwable {
 
         //process the tags
-        if (reallyVerbose) String2.log("    getAttributesFromXml...");
+        if (debugMode) String2.log("    getAttributesFromXml...");
         Attributes tAttributes = new Attributes();
         int startOfTagsN = xmlReader.stackSize();
         String tName = null, tType =  null;
@@ -1339,7 +1345,7 @@ public abstract class EDD {
             xmlReader.nextTag();
             String topTag = xmlReader.topTag();
             if (xmlReader.stackSize() == startOfTagsN) {
-                if (reallyVerbose) String2.log("      leaving getAttributesFromXml");
+                if (debugMode) String2.log("      leaving getAttributesFromXml");
                 return tAttributes; //the </attributes> tag
             }
             if (xmlReader.stackSize() > startOfTagsN + 1) 
@@ -1378,11 +1384,11 @@ public abstract class EDD {
                     if (tType.equals("unsignedShort")) { //the xml name
                         //parse as ints, then convert to char
                         tType = "char"; //the PrimitiveArray name
-                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToPAType("int"), 
+                        pa = PrimitiveArray.ssvFactory(PAType.fromCohortString("int"), 
                             content); 
                         pa = new CharArray(pa);
                     } else {
-                        pa = PrimitiveArray.ssvFactory(PrimitiveArray.elementStringToPAType(tType), 
+                        pa = PrimitiveArray.ssvFactory(PAType.fromCohortString(tType), 
                             content); 
                     }
                 }
@@ -1414,7 +1420,7 @@ public abstract class EDD {
     public static Object[] getSDAVVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
 
         //process the tags
-        if (reallyVerbose) String2.log("  getSDAVVariableFromXml...");
+        if (debugMode) String2.log("  getSDAVVariableFromXml...");
         String startOfTags = xmlReader.allTags();
         int startOfTagsN = xmlReader.stackSize();
         int startOfTagsLength = startOfTags.length();
@@ -1427,7 +1433,7 @@ public abstract class EDD {
             String content = xmlReader.content();
             //if (reallyVerbose) String2.log("    topTag=" + topTag + " content=" + content);
             if (xmlReader.stackSize() == startOfTagsN) { //the /variable tag
-                if (reallyVerbose) String2.log("    leaving getSDAVVariableFromXml" +
+                if (debugMode) String2.log("    leaving getSDAVVariableFromXml" +
                     " sourceName=" + tSourceName + " destName=" + tDestinationName);
                 return new Object[]{tSourceName, tDestinationName, tAttributes, tValuesPA};
             }
@@ -1451,7 +1457,7 @@ public abstract class EDD {
                     type = "char"; //the PrimitiveArray name
                 else if (type.equals("string")) //the xml name
                     type = "String"; //the PrimitiveArray name
-                PAType elementPAType = PrimitiveArray.elementStringToPAType(type); //throws Throwable if trouble
+                PAType elementPAType = PAType.fromCohortString(type); //throws Throwable if trouble
                 double start      = String2.parseDouble(xmlReader.attributeValue("start"));
                 double increment  = String2.parseDouble(xmlReader.attributeValue("increment"));
                 int n             = String2.parseInt(xmlReader.attributeValue("n"));
@@ -1494,7 +1500,7 @@ public abstract class EDD {
     public static Object[] getSDADVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
 
         //process the tags
-        if (reallyVerbose) String2.log("  getSDADVVariableFromXml...");
+        if (debugMode) String2.log("  getSDADVVariableFromXml...");
         String startOfTags = xmlReader.allTags();
         int startOfTagsN = xmlReader.stackSize();
         int startOfTagsLength = startOfTags.length();
@@ -1506,7 +1512,7 @@ public abstract class EDD {
             String content = xmlReader.content();
             //if (reallyVerbose) String2.log("    topTag=" + topTag + " content=" + content);
             if (xmlReader.stackSize() == startOfTagsN) { //the /variable tag
-                if (reallyVerbose) String2.log("    leaving getSDADVVariableFromXml" +
+                if (debugMode) String2.log("    leaving getSDADVVariableFromXml" +
                     " sourceName=" + tSourceName + " destName=" + tDestinationName + " dataType=" + tDataType);
                 return new Object[]{tSourceName, tDestinationName, tAttributes, tDataType};
             }
@@ -2643,6 +2649,7 @@ public abstract class EDD {
         if (accessibleViaSOS().length()      == 0) sb.append("protocol=SOS\n");
         if (accessibleViaWCS().length()      == 0) sb.append("protocol=WCS\n");
         if (accessibleViaWMS().length()      == 0) sb.append("protocol=WMS\n");
+        if (accessibleViaFiles()                 ) sb.append("protocol=files\n");
         if (accessibleViaFGDC().length()     == 0) sb.append("service=FGDC\n");
         if (accessibleViaISO19115().length() == 0) sb.append("service=ISO19115\n");
         if (accessibleViaMAG().length()      == 0) sb.append("service=MakeAGraph\n");
@@ -2652,6 +2659,7 @@ public abstract class EDD {
             sb.append("variableName=" + dataVariables[dv].destinationName() + "\n");
             sb.append("sourceName="   + dataVariables[dv].sourceName() + "\n");
             sb.append("long_name="    + dataVariables[dv].longName() + "\n");
+            sb.append("type="         + dataVariables[dv].destinationDataType() + "\n");
         }
         sb.append(combinedGlobalAttributes.toString() + "\n");
         for (int dv = 0; dv < dataVariables.length; dv++) 
@@ -3002,7 +3010,8 @@ public abstract class EDD {
      *   the loginStatus in startHtmlBody.
      * @param response may be used by .subset to redirect the response
      *   (if not .subset request, it may be null).
-     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     * @param ipAddress The IP address of the user (for statistics).
+     * @param loggedInAs  The name of the logged in user (or null if not logged in).
      *   Normally, this is not used to test if this edd is accessibleTo loggedInAs, 
      *   but it unusual cases (EDDTableFromPost?) it could be.
      *   Normally, this is just used to determine which erddapUrl to use (http vs https).
@@ -3021,7 +3030,7 @@ public abstract class EDD {
      */
     public abstract void respondToDapQuery(HttpServletRequest request, 
         HttpServletResponse response,
-        String loggedInAs, String requestUrl, String userQuery, 
+        String ipAddress, String loggedInAs, String requestUrl, String userQuery, 
         OutputStreamSource outputStreamSource,
         String dir, String fileName, String fileTypeName) throws Throwable;
 
@@ -3155,7 +3164,8 @@ public abstract class EDD {
         try {
 
             //send the data to the outputStream
-            respondToDapQuery(request, response, loggedInAs,
+            respondToDapQuery(request, response, "lowMakeFileForDapQuery", //ipAddress
+                loggedInAs,
                 "/" + EDStatic.warName +
                 (this instanceof EDDGrid? "/griddap/" :
                  this instanceof EDDTable? "/tabledap/" :
@@ -4596,7 +4606,7 @@ public abstract class EDD {
      *
      * @param destVarName just for diagnostics
      * @param pa  the pa for a column of data from a sample file
-     *   (if null or size==0 or StringArray, nothing will be done).
+     *   (if null or StringArray, nothing will be done).
      *   For strongly typed source (e.g., .nc files), use sourcePA
      *   (so if packed, _FillValue and missing_value will be packed, too!),
      *   else use destPA (which for e.g., EDDTableFromAsciiFiles is the correct dest type). 
@@ -4608,17 +4618,19 @@ public abstract class EDD {
         Attributes sourceAtts, Attributes addAtts) {
 
         // !!! This method is tricky. BE CAREFUL when making changes !!!
+        //String2.pressEnterToContinue(">> addMvFvAttsIfNeeded " + destVarName + " " + pa.elementType() + " size=" + pa.size() +
+        //    "\nsourceAtts=\n" + sourceAtts.toString() + "\naddAtts=\n" + addAtts.toString());
 
         if (pa == null || addAtts == null)
             return false;
 
-        //skip string or char pa's
+        //skip string pa's
         PAType ePAType = pa.elementType(); 
         int size = pa.size();
-        if (size == 0 || ePAType == PAType.STRING)
+        if (ePAType == PAType.STRING)
             return false;
 
-        //skip if mv and fv already defined and different.  No slots for other values.
+        //are mv and fv are both already defined and same?
         String ofv = getAddOrSourceAtt(addAtts, sourceAtts, "_FillValue",    null); //original. may be null
         String omv = getAddOrSourceAtt(addAtts, sourceAtts, "missing_value", null); //original. may be null
         String sfv = ofv; //null means not yet set
@@ -4630,64 +4642,70 @@ public abstract class EDD {
 
         if (ePAType == PAType.CHAR) {
 
-            int ti = (int)pa.missingValueAsDouble(); //cohort mv is MAX_VALUE, e.g., 65536
-            String ts = "" + ti;             //as String, e.g., "65536"
-            if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                else if (smv == null && !ts.equals(sfv)) smv = ts; 
-            }
-
-            ti = 0;        //e.g., 0
-            ts = "" + ti;  //e.g., "0"
+            String ts = "0";
             if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
                 if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
                 else if (smv == null && !ts.equals(sfv)) smv = ts; 
             }
 
         } else if (pa.isIntegerType()) {
+
             //get cohort missingValue (MAX_VALUE) as string that looks like an integer
-            pa.addString("");
-            String ts = pa.getRawString(pa.size() - 1);  //e.g., "127" for ByteArray
-            pa.remove(pa.size() - 1);
-            //String2.log(">> ts=" + ts + " sfv=" + sfv + " smv=" + smv);
-            if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                else if (smv == null && !ts.equals(sfv)) smv = ts; 
-            }
+            String cohortMV = pa.missingValue().toString();  //e.g., "127" for ByteArray
+            //String2.pressEnterToContinue(">> pa.type=" + pa.elementType() + " cohortMV=" + cohortMV);
 
-            if (!pa.isUnsigned()) {
+            //look for Unidata default _FillValue
+            if (sfv == null && smv == null && !pa.isUnsigned() && pa.size() > 0) {
                 //test 1 up from min of primitive type, e.g., "-127". Unidata uses these
-                ts = "-" + ts;  
-                if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                    if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                    else if (smv == null && !ts.equals(sfv)) smv = ts; 
-                }
-
-                ts = pa.MINEST_VALUE().toString();  //e.g., "-128"
-                if ((sfv == null || smv == null) && !ts.equals(sfv) && !ts.equals(smv) && pa.indexOf(ts) >= 0) {
-                    if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                    else if (smv == null && !ts.equals(sfv)) smv = ts; 
+                String ts = "-" + cohortMV;  
+                if (pa.indexOf(ts) >= 0) { //only if value is observed
+                    sfv = ts; 
+                } else { 
+                    ts = pa.MINEST_VALUE().toString();  //e.g., "-128"
+                    if (pa.indexOf(ts) >= 0)  //only if value is observed
+                        sfv = ts; 
                 }
             }
 
             //min or max (but just one) is e.g. 99?
-            if (sfv == null || smv == null) {
+            if (sfv == null && smv == null && pa.size() > 0) {
                 //This is okay for longs because we're only looking for values
                 //that aren't huge (e.g., 9999999), so they are exactly represented as doubles.
                 double stats[] = pa.calculateStats();
-                int whichMv9 = DoubleArray.MV9.indexOf(stats[PrimitiveArray.STATS_MIN]); //this will only match integer MV9's
-                if (whichMv9 < 0)
-                    whichMv9 = DoubleArray.MV9.indexOf(stats[PrimitiveArray.STATS_MAX]);
-                if (whichMv9 >= 0) {
-                    double td = DoubleArray.MV9.getDouble(whichMv9);
-                    int ti = Math2.roundToInt(td);
-                    if (td == ti) { //double check: only care about integer MV9's
-                        ts = "" + ti;
-                        if      (sfv == null && !ts.equals(smv)) sfv = ts; //sfv unset and new value isn't =smv
-                        else if (smv == null && !ts.equals(sfv)) smv = ts; 
+                if (stats[PrimitiveArray.STATS_N] > 0) {
+                    int whichMv9 = DoubleArray.MV9.indexOf(stats[PrimitiveArray.STATS_MIN]); //this will only match integer MV9's
+                    if (whichMv9 < 0)
+                        whichMv9 = DoubleArray.MV9.indexOf(stats[PrimitiveArray.STATS_MAX]);
+                    if (whichMv9 >= 0) {
+                        double td = DoubleArray.MV9.getDouble(whichMv9);
+                        int ti = Math2.roundToInt(td);
+                        if (td == ti)  //double check: only care about integer MV9's
+                            sfv = "" + ti; 
                     }
                 }
             }
+
+            //cohort mv, if present
+            if (sfv == null || smv == null) {  //yes, ||
+                //get cohort missingValue (MAX_VALUE) as a string that looks like an integer
+                String ts = cohortMV;  //e.g., "127" for ByteArray
+                if ("palette".equals(destVarName) || "rgb".equals(destVarName) || "eightbitcolor".equals(destVarName)) { //common vars which have no missing values
+                } else if (pa.getMaxIsMV() || pa.indexOf(ts) >= 0) {
+                    if      (sfv == null && !ts.equals(smv)) sfv = ts;
+                    else if (smv == null && !ts.equals(sfv)) smv = ts;
+                }
+            }
+
+            //last: cohort mv, even if not present
+            if (sfv == null && smv == null) {
+                //get cohort missingValue (MAX_VALUE) as a string that looks like an integer
+                String ts = cohortMV;  //e.g., "127" for ByteArray
+                //String2.pressEnterToContinue(">> addMvFvAttsIfNeeded integerType max_value=" + ts + " sfv=" + sfv + " smv=" + smv);
+                //even if value is not observed
+                if ("palette".equals(destVarName) || "rgb".equals(destVarName) || "eightbitcolor".equals(destVarName)) {} //common vars which have no missing values
+                else sfv = ts; 
+            }
+
         } else {  //float or double
 
             //this is good because it uses the observed min or max,
@@ -4746,6 +4764,7 @@ public abstract class EDD {
             apa =    addAtts.get("_FillValue");
         if (apa == null && sourceAtts != null) 
             apa = sourceAtts.get("_FillValue");
+        //String2.log("\n>> destVarName=" + destVarName + " ofv=" + ofv + " sfv=" + sfv + " ePAType=" + ePAType + " apa=" + (apa == null? "" : apa.toString()));
         if (sfv != null && (!sfv.equals(ofv) || (apa != null && apa.elementType() != ePAType))) {
             addAtts.set("_FillValue", PrimitiveArray.factory(ePAType, 1, sfv));
             madeChange = true;
@@ -4753,7 +4772,7 @@ public abstract class EDD {
             apa =    addAtts.get("missing_value");
         if (apa == null && sourceAtts != null)
             apa = sourceAtts.get("missing_value");
-        //String2.pressEnterToContinue("\n>> destVarName=" + destVarName + " omv=" + omv + " smv=" + smv + " ePAType=" + ePAType + " apa=" + (apa == null? "" : apa.toString()));
+        //String2.log("\n>> destVarName=" + destVarName + " omv=" + omv + " smv=" + smv + " ePAType=" + ePAType + " apa=" + (apa == null? "" : apa.toString()));
         if (smv != null && (!smv.equals(omv) || (apa != null && apa.elementType() != ePAType))) {
             addAtts.set("missing_value", PrimitiveArray.factory(ePAType, 1, smv));
             madeChange = true;
@@ -5691,7 +5710,7 @@ public abstract class EDD {
                     if (!String2.isSomething2(creator_url))   creator_url   = "https://podaac.jpl.nasa.gov/"; 
                 }
             //geoport WHOI  (Rich Signell is a good contact; unfortunately, many datasets are from other sources)
-            } else if (tPublicSourceUrl.startsWith("http://geoport.whoi.edu/thredds/")) {
+            } else if (tPublicSourceUrl.indexOf("://geoport.whoi.edu/thredds/") >= 0) {
                 if (!String2.isSomething2(creator_email)) creator_email = "rsignell@usgs.gov"; 
                 if (!String2.isSomething2(creator_name))  creator_name  = "USGS, WHCMSC Sediment Transport Group";
                 if (!String2.isSomething2(tInstitution))  tInstitution  = "USGS, WHCMSC Sediment Transport Group";
@@ -6349,7 +6368,7 @@ public abstract class EDD {
                     //if (!String2.isSomething2(creator_email)) creator_email = "";                   
                     if (!String2.isSomething2(creator_name))  creator_name  = "Meteo France"; 
                     if (!String2.isSomething2(tInstitution))  tInstitution  = "Meteo France";
-                    if (!String2.isSomething2(creator_url))   creator_url   = "http://www.meteofrance.com";
+                    if (!String2.isSomething2(creator_url))   creator_url   = "https://www.meteofrance.com";
                     break;
                 }
                 if (lc.indexOf("ifremer") >= 0) {
@@ -7653,8 +7672,8 @@ public abstract class EDD {
             tStandardName = EDV.TIME_NAME;
         }
 
-        //if Sea Data Net P01 exists, generate P02 and standard_name (if none already)
-        //sdn_parameter_urn = "SDN:P01::PSLTZZ01"
+        //if Sea Data Net SeaDataNet P01 exists, generate P02 and standard_name (if none already)
+        //sdn_parameter_urn = "SDN:P01::PSLTZZ01"  (BODC-related)
         String p01 = addAtts.getString("sdn_parameter_urn");
         String p02 = addAtts.getString("sdn_P02_urn");
         if (p01 == null)
@@ -8922,7 +8941,7 @@ public abstract class EDD {
                     tMin = pa.getDouble(0);
                     tMax = pa.getDouble(1);
                 } 
-                if (Double.isNaN(tMin)) tMin = addAtts.getRawDouble("valid_min"); //often too wide
+                if (Double.isNaN(tMin)) tMin = addAtts.getRawDouble("valid_min"); //often too wide   //better: getUnsignedDouble? 
                 if (Double.isNaN(tMax)) tMax = addAtts.getRawDouble("valid_max");
                 if (Double.isNaN(tMin)) tMin = sourceAtts.getRawDouble("valid_min"); //often too wide
                 if (Double.isNaN(tMax)) tMax = sourceAtts.getRawDouble("valid_max");
@@ -12188,8 +12207,8 @@ if (nSuccess >= 2)
     }
             
     /** 
-	 * This calls sparql to convert one SDN P01 term into one P02 term.
-	 * See the form at https://vocab.nerc.ac.uk/sparql/
+     * This calls sparql to convert one SDN P01 term into one P02 term.
+     * See the form at https://vocab.nerc.ac.uk/sparql/
      * Put this text in the box:  (and Shift submit shows the URL in a separate window)
 prefix skos:<https://www.w3.org/2004/02/skos/core#> prefix rdf:<https://www.w3.org/1999/02/22-rdf-syntax-ns#> prefix owl:<https://www.w3.org/2002/07/owl#> prefix dc:<http://purl.org/dc/terms/> 
  
@@ -12318,6 +12337,533 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         }
     }
 
+    /** 
+     * This does the work for the "addFillValueAttributes" option in GenerateDatasetsXml.
+     * It adds _FillValue attributes to addAttributes in datasets.xml to integer variables
+     * that don't have _FillValue or missing_value attributes.
+     *
+     * <p>This assumes that the XML for each dataset uses the same style 
+     * (usually 1 XML tag per line) and parameter order that GenerateDatasetsXml creates. 
+     * If that is not true, the results may be imperfect.
+     *
+     * <p>This doesn't assume that datasets.xml file is valid XML.
+     * This just does simple regex matching. 
+     * This isn't aware of comment vs not a comment. 
+     * This approach has advantages and disadvantages.
+     * 
+     * @param datasetsXmlFileName the full file name of the datasets.xml file.
+     * @param csvChangesFileName the full file name of the csv file with 3 columns: 
+     *    datasetID, sourceName, and toBeAdded.
+     * @return results and error messages
+     * @throws Exception if serious trouble
+     */
+    public static String addFillValueAttributes(String datasetsXmlFileName, String csvChangesFileName) throws Exception {
+
+        try {
+
+        String2.log("\n*** addFillValuesAttributes");
+        String dateTime = Calendar2.getCurrentISODateTimeStringLocal();   
+        String compactDateTime = String2.replaceAll(dateTime, ":", "");
+               compactDateTime = String2.replaceAll(compactDateTime, "T", "");
+               compactDateTime = String2.replaceAll(compactDateTime, "-", "");
+
+        //read datasets.xml file
+        StringArray dxLines = StringArray.fromFile(datasetsXmlFileName, "ISO-8859-1");
+
+        //read csvChangesFileName
+        Table table = new Table();
+        table.readASCII(csvChangesFileName, String2.ISO_8859_1,
+            "", "", 0, 1, null, null, null, null, null, false); //simplify?     
+        int nChanges = table.nRows();
+        if (table.nColumns() != 3 ||
+            !table.getColumnName(0).equals("datasetID") ||
+            !table.getColumnName(1).equals("variableSourceName") ||
+            !table.getColumnName(2).equals("attribute"))
+            throw new RuntimeException(
+              "The csvChanges file should have 3 columns: datasetID,variableSourceName,attribute (not " +
+              table.getColumnNamesCSVString() + ").");
+        StringArray datasetIDs  = (StringArray)table.getColumn(0);
+        StringArray sourceNames = (StringArray)table.getColumn(1);
+        StringArray fillValues  = (StringArray)table.getColumn(2);
+
+        //make the changes
+        StringBuilder errors = new StringBuilder();
+        for (int change = 0; change < nChanges; change++) {
+            String error = "ERROR on line #" + (change+1) + " of addFillValueAttributes file: ";
+
+            //find datasetID
+            int dPo = dxLines.lineContaining(datasetIDs.get(change), 0);
+            if (dPo < 0) {
+                errors.append(error + "datasetID=" + String2.toJson(datasetIDs.get(change)) + " wasn't found in datasets.xml!\n");
+                continue;
+            }
+
+            //find next <dataset> tag
+            int ndPo = dxLines.lineContaining("<dataset ", dPo+1);
+            if (ndPo < 0) //this is the last dataset
+                ndPo = dxLines.size();
+            
+            //find sourceName (must be before another <dataset>)
+            int snPo = dxLines.lineContaining("<sourceName>" + sourceNames.get(change), dPo+1);
+            if (snPo < 0 || snPo >= ndPo) {
+                errors.append(error +
+                    "for datasetID=" + String2.toJson(datasetIDs.get(change)) + 
+                    ", sourceName=" + String2.toJson(sourceNames.get(change)) +
+                    " wasn't found in datasets.xml!\n");
+                continue;
+            }
+
+            //find next start/end axis/data Variable> tag
+            int nvPo = dxLines.lineContaining("Variable>", snPo+1);
+            if (nvPo < 0 || nvPo > ndPo) //this is the last variable in datasets.xml or last in this dataset
+                nvPo = ndPo;
+            
+            //find <addAttributes> before next var or next dataset
+            int aaPo = dxLines.lineContaining("<addAttributes>", snPo+1);
+            if (aaPo < 0 || aaPo >= nvPo) {
+                errors.append(error +
+                    "for datasetID=" + String2.toJson(datasetIDs.get(change)) + 
+                    " sourceName=" + String2.toJson(sourceNames.get(change)) +
+                    ": <addAttributes> wasn't found in datasets.xml!\n");
+                continue;
+            }
+
+            //insert it right after <addAttributes> line
+            dxLines.atInsert(aaPo+1, "            " + fillValues.get(change).trim() + 
+                " <!-- added by addFillValueAttributes at " + dateTime + " -->");
+        }
+
+        //save changed dxLines 
+        dxLines.toFile(datasetsXmlFileName + "temp");
+
+        //save errors to file
+        String errorLogName = File2.getDirectory(csvChangesFileName) + "addFillValueAttributesErrors" + compactDateTime + ".txt";
+        if (errors.length() > 0) 
+            String2.writeToFile(errorLogName, errors.toString());
+
+        //rename files
+        File2.rename(datasetsXmlFileName,          datasetsXmlFileName + compactDateTime); //exception if trouble
+        File2.rename(datasetsXmlFileName + "temp", datasetsXmlFileName);                   //exception if trouble
+
+        return
+            "*** addFillValues finished successfully.\n" +
+            "The original datasets.xml file is now named " + datasetsXmlFileName + compactDateTime + " .\n" +
+            "The revised datasets.xml file is named " + datasetsXmlFileName + " .\n" +
+            (errors.length() > 0? "The error log file is named " + errorLogName : "No errors (so no error log file).");
+        } catch (Exception e) {
+
+            //delete the temp file, if any
+            File2.delete(datasetsXmlFileName + "temp");
+
+            //rethrow the exception
+            throw e;
+        }
+    }
+
+    /** 
+     * This tests addFillValueAttributes.
+     *
+     * @throws Exception if trouble
+     */
+    public static void testAddFillValueAttributes() throws Throwable {
+        String2.log("\n*** EDD.testAddFillValueAttributes()");
+        String dir = EDStatic.unitTestDataDir + "addFillValueAttributes/";
+
+        try {
+            //make temp copy of datasets.xml 
+            File2.copy(dir + "datasets.xml", dir + "tempDatasets.xml");
+
+            //alter that temp copy
+            //String results = addFillValueAttributes(  //throws exception
+            //    dir + "tempDatasets.xml", dir + "addFillValueAttributes.csv");
+            //String2.log(results);
+
+            //same thing but done via generateDatasetsXml
+            String results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "addFillValueAttributes",
+                 dir + "tempDatasets.xml", dir + "addFillValueAttributes.csv"},
+                false); //doIt loop?
+
+            if (results.indexOf("failed") > 0) 
+                throw new RuntimeException(results);
+
+            //*** addFillValues finished successfully.
+            //The original datasets.xml file is now named /erddapTest/addFillValueAttributes/tempDatasets.xml20200915144031 .
+            //The revised datasets.xml file is named /erddapTest/addFillValueAttributes/tempDatasets.xml .
+            //The error log file is named addFillValueAttributeErrors20200915144031.txt
+            Test.ensureEqual(results.indexOf("*** addFillValues finished successfully.\nThe original datasets.xml file is now named"), 0, "");
+            Test.ensureTrue(results.indexOf("The revised datasets.xml file is named") > 0, "");
+            String logFile = String2.extractCaptureGroup(results, "The error log file is named (.*\\.txt)", 1);
+            String2.log("logFile=" + logFile);
+            String log = String2.readFromFile(logFile)[1];
+            String expected = 
+"ERROR on line #3 of addFillValueAttributes file: datasetID=\"noSuchDataset\" wasn't found in datasets.xml!\n" +
+"ERROR on line #4 of addFillValueAttributes file: for datasetID=\"dataset1\", sourceName=\"noSuchVariable\" wasn't found in datasets.xml!\n" +
+"ERROR on line #5 of addFillValueAttributes file: for datasetID=\"dataset1\" sourceName=\"var1\": <addAttributes> wasn't found in datasets.xml!\n";
+            Test.ensureEqual(log, expected, "log=\n" + log);
+
+            //check results
+            results = String2.readFromFile(dir + "tempDatasets.xml")[1];
+            results = results.replaceAll(" \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} ", " [COMPACT_TIME] ");
+            expected = 
+"<startOfFile (but with nonstandard tag)>\n" +
+"\n" +
+"<dataset type=\"EDDTableFromNcFiles\" datasetID=\"dataset1\" active=\"false\">\n" +
+"    junk line 2\n" +
+"    <dataVariable>\n" +
+"        <sourceName>var1</sourceName>\n" +
+"        <!-- no addAttributes -->\n" +
+"    </dataVariable>\n" +
+"    <addAttributes>\n" +
+"    no closing tag\n" +
+"\n" +
+"</dataset>\n" +
+"\n" +
+"<!-- I removed a lot of unnecessary (for this test) info from this <dataset> definition -->\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nceiPH53sstd1day\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"title\">AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417&deg;, 1981-present, Daytime (1 Day Composite)</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>***replaceFromFileName,timeFormat=yyyyDDD,.*_Pathfinder-PFV5\\.3_NOAA\\d\\d_G_(\\d{7})_day.*\\.nc,1</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"comment\">This is the centered, reference time.</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Centered Time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T12:00:00Z</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_surface_temperature</sourceName>\n" +
+"        <destinationName>sea_surface_temperature</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"add_offset\" type=\"double\">0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wind_speed</sourceName>\n" +
+"        <destinationName>windSpeed</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">99</att> <!-- added by addFillValueAttributes at [COMPACT_TIME] -->\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>quality_level</sourceName>\n" +
+"        <destinationName>qualityLevel</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at [COMPACT_TIME] -->\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n" +
+"\n" +
+"<dataset type=\"EDDTableFromNcFiles\" datasetID=\"dataset3\">\n" +
+"    junk line 2\n" +
+"    <addAttributes>\n" +
+"    no closing tag\n" +
+"\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>flag</sourceName>\n" +
+"        <destinationName>flag</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">110</att> <!-- added by addFillValueAttributes at [COMPACT_TIME] -->\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n" +
+"<endOfFile (with nonstandard tag)>\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            String2.log("\n*** testAddFillValueAttributes finished successfully.");
+
+        } finally {
+
+            //delete any file other than original datasets.xml and addFillValueAttributes.csv file
+            File files[] = new File(dir).listFiles();
+            for (int i = 0; i < files.length; i++) {
+                String name = files[i].getName();
+                if (name.equals("datasets.xml") ||
+                    name.equals("addFillValueAttributes.csv")) {
+                } else {
+                    File2.delete(dir + name);
+                }
+            }
+        }
+    }
+
+
+/* UNFINISHED. NOT USED.
+    public static String addFillValuesForV210(String datasetsXmlFullName, String erddapUrl) throws Exception {
+        String2.log("\n*** EDD.addFillValuesForV210()");
+
+        BufferedReader oldXmlReader = null;
+        BufferedWriter newXmlWriter = null;
+        BufferedWriter notes = null;
+        String dateTime = Calendar2.getCurrentISODateTimeStringLocal();   
+        String compactDateTime = String2.replaceAll(dateTime, ":", "");
+               compactDateTime = String2.replaceAll(dateTime, "-", "");
+        String notesName = datasetsXmlFullName + compactDateTime + "Notes.txt";
+        String2.log("\n*** EDD.addFillValuesForV210()  compactDateTime=" + compactDateTime);
+        if (erddapUrl == null || !erddap.endsWith("/erddap/"))
+            throw new RuntimeException("The erddapUrl must end with \"/erddap/\".");
+
+        try {
+            //open oldXmlReader
+            oldXmlReader = File2.getDecompressedBufferedFileReader(
+                datasetsXmlFullName, String2.ISO_8859_1);
+            
+            //open newXmlWriter
+//newXmlWriter = getBufferedOutputStreamWriter88591(new FileOutputStream(datasetsXmlFullName + compactDateTime));
+
+            //open notes
+            notes = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(notesName));
+
+            //go through lines of oldXml
+            String datasetType        = null; //null if not currently in a dataset
+            String datasetID          = null; //null if not currently in a dataset
+            EDDGrid  eddGrid          = null; //null if not currently in an EDDGrid dataset
+            EDDTable eddTable         = null; //null if not currently in an EDDGrid dataset
+            boolean inAxisVar         = false;
+            boolean inDataVar         = false;
+            String sourceName         = null;
+            String destName           = null;
+            boolean inAddAttributes   = false;
+            
+            Pattern startDatasetPattern  = Pattern.compile(".*<\\s*dataset.*type=\"(.*)\".*datasetID=\"(.*)\".*(|active=\"(.*)\").*>.*");
+            Pattern   endDatasetPattern  = Pattern.compile(".*</\\s*dataset.*>.*");
+            Pattern startAxisVarPattern  = Pattern.compile(".*<\\s*axisVariable\\s*>.*");
+            Pattern   endAxisVarPattern  = Pattern.compile(".*</\\s*axisVariable\\s*>.*");
+            Pattern startDataVarPattern  = Pattern.compile(".*<\\s*dataVariable\\s*>.*");
+            Pattern   endDataVarPattern  = Pattern.compile(".*</\\s*dataVariable\\s*>.*");
+            Pattern sourceNamePattern    = Pattern.compile(".*<\\s*sourceName\\s*>(.*)</\\s*sourceName\\s*>.*");
+            Pattern   destNamePattern    = Pattern.compile(".*<\\s*destinationName\\s*>(.*)</\\s*destinationName\\s*>.*");
+            Pattern startAddAttsPattern  = Pattern.compile(".*<\\s*addAttributes.*>.*");
+            Pattern   endAddAttsPattern  = Pattern.compile(".*</\\s*addAttributes.*>.*");
+
+            String line = oldXmlReader.readLine();
+            int lineNumber = 0;
+            Matcher matcher;
+            while (line != null) {
+                lineNumber++;
+                if ((lineNumber % 1000) == 0) String2.log("line #" + lineNumber); 
+if ((lineNumber % 1000) == 0) break; 
+            
+                //try to match a pattern
+                //(this assumes 1 thing = 1 line)
+                if ((matcher = startDatasetPattern.matcher(line)).matches()) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected <dataset> tag.\n");
+                    datasetType   = matcher.group(1);
+                    datasetID     = matcher.group(2);
+                    String active = matcher.group(4);
+                    boolean bActive = active == null || "true".equals(active);
+                    if (debugMode)
+                        notes.write("<dataset datasetType=" + datasetType + " datasetID=" + datasetID + " active=" + bActive + " >\n");
+                    EDD edd = null;
+                    if (datasetType == null) {
+                        notes.write("ERROR: For datasetID=" + datasetID + ", datasetType wasn't specified.\n");
+
+                    } else (bActive) {
+                        try {
+                            //make an EDDGrid/TableFromErddap dataset 
+                            String gt = datasetType.startsWith("EDDGrid")? "Grid" : "Table";
+                            String snippet = 
+                                "<dataset type=\"EDD" + gt + "FromErddap\" datasetID=\"" + datasetID + "\">\n" +
+                                "  <sourceUrl>" + erddapUrl + gt.toLowerCase() + "dap/" + datasetID + "</sourceUrl>\n" +
+                                "</dataset>\n";
+                            EDD edd = oneFromXml(null, snippet);   //erddap=null
+                            if ((gt.equals("Grid"))
+                                 eddGrid = (EDDGrid)edd;
+                            else eddTable = (EDDTable)edd;
+
+                        } catch (Exception e) {
+                            notes.write("ERROR: Unable to access datasetID=" + datasetID + " in local ERDDAP. Caught:\n" + 
+                                MustBe.throwableToString(e));
+                            datasetID = null;  //so skip this dataset
+                        }
+                    }
+
+                } else if ((matcher = endDatasetPattern.matcher(line)).matches()) {  
+                    //datasetID may already be null if trouble above
+                    datasetType = null;
+                    datasetID   = null;  //that locks out other options
+                    if (debugMode)
+                        notes.write("</dataset>\n");
+
+                //axisVariable or dataVariable 
+                } else if (datasetID != null && startAxisVarPattern.matcher(line).matches()) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected <axisVariable> tag.\n");
+                    inAxisVar = true;
+                    inDataVar = false;
+                    sourceName = null;
+                    destName   = null;
+                    inAddAttributes = false;
+                    if (debugMode)
+                        notes.write("  <axisVariable>\n");
+
+                } else if (datasetID != null && startDataVarPattern.matcher(line).matches()) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected <dataVariable> tag.\n");
+                    inAxisVar = false;
+                    inDataVar = true;
+                    sourceName = null;
+                    destName   = null;
+                    inAddAttributes = false;
+                    if (debugMode)
+                        notes.write("  <dataVariable>\n");
+
+                } else if (datasetID != null && 
+                    (endAxisVarPattern.matcher(line).matches() ||
+                     endDataVarPattern.matcher(line).matches())) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected </axisVariable> or </dataVariable> tag.\n");
+                    inAxisVar = false;  //that locks out things below
+                    inDataVar = false;  //that locks out things below
+                    if (debugMode)
+                        notes.write("  </axis|dataVariable>\n");
+                
+                } else if (datasetID != null && (inAxisVar || inDataVar) && (matcher = sourceNamePattern.matcher(line)).matches()) { 
+                    sourceName = matcher.group(1);
+                    if (debugMode)
+                        notes.write("    sourceName=" + sourceName + "\n");
+
+                } else if (datasetID != null && (inAxisVar || inDataVar) && (matcher = destNamePattern.matcher(line)).matches()) { 
+                    destName = matcher.group(1);
+                    if (debugMode)
+                        notes.write("    destName=" + destName + "\n");
+
+                //addAttributes
+                } else if (datasetID != null && (inAxisVar || inDataVar) && startAddAttsPattern.matcher(line).matches()) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected <addAttributes> tag.\n");
+                    inAddAttributes = true;
+                    if (debugMode)
+                        notes.write("    <addAttributes>\n");
+
+                } else if (datasetID != null && (inAxisVar || inDataVar) && endAddAttsPattern.matcher(line).matches()) { 
+                    if (datasetID != null)
+                        notes.write("SYNTAX WARNING on line #" + lineNumber + ": Unexpected </addAttributes> tag.\n");
+                    inAddAttributes = false;
+
+                    //check var in dataset: does it have mv or fv (including in sourceAtts or addAtts since scale/offset --> double may obsure it) ?
+                    if (destName == null) 
+                        destName = sourceName;
+                    try {
+                        EDV edv = destName != null && inAxisVar?  eddGrid.findAxisVariableByDestinationName(destName) : //throws exception if not found
+                            eddGrid != null?                      eddGrid.findDataVariableByDestinationName(destName) :
+                                                                 eddTable.findDataVariableByDestinationName(destName);
+                        PrimitiveArray mv = edv.sourceAttributes().get("missing_value");
+                        if (mv == null || mv.toString().equals("null"))
+                            mv = edv.addAttributes().get("missing_value");
+                        if (mv == null || mv.toString().equals("null"))
+                            mv = edv.combinedAttributes().get("missing_value");
+                        if (mv == null && mv.toString().equals("null"))
+                            mv = null;
+
+                        PrimitiveArray fv = edv.sourceAttributes().get("_FillValue");
+                        if (fv == null || fv.toString().equals("null"))
+                            fv = edv.addAttributes().get("_FillValue");
+                        if (fv == null || fv.toString().equals("null"))
+                            fv = edv.combinedAttributes().get("_FillValue");
+                        if (fv == null && fv.toString().equals("null"))
+                            fv = null;
+                            
+                        //is destination type an integerType?
+                        boolean isIntegerType = PAType.isIntegerType(edv.sourceDataPAType());
+
+                        //add fv?
+                        if (isIntegerType && mv == null && fv == null) {
+                            notes.write("ADDED: For datasetID=" + datasetID + " destinationName=" + destName + ", there is no defined mv or fv!\n");
+//newXmlReader.write(line + "\n");
+                        }
+                    } catch (Exception e) {
+                        notes.write("CAUGHT EXCEPTION on line #" + lineNumber + ": " + MustBe.throwableToString(e));
+                    }
+
+                    if (debugMode)
+                        notes.write("    </addAttributes>\n");
+
+                }
+
+                //write line to newXmlWriter
+//newXmlReader.write(line + "\n");
+
+                //read next line from oldXmlReader
+                line = oldXmlReader.readLine();
+            }           
+
+            //close reader and writer
+            oldXmlReader.close();
+            if (newXmlWriter != null) newXmlWriter.close();
+
+//rename files
+
+            notes.append("EDD.addFillValuesForV210() finished successfully\n");
+
+        } finally {
+            //close oldXmlReader
+            if (oldXmlReader != null) try {oldXmlReader.close(); } catch (Exception e) {}
+            
+            //close newXmlWriter
+            if (newXmlWriter != null) try {newXmlWriter.close(); } catch (Exception e) {}
+
+            //close notes
+            if (notes != null) try {notes.close(); } catch (Exception e) {}
+
+        }
+
+        return notesName;
+    }
+    */
+
     public static void testAddMvFvAttsIfNeeded() throws Throwable {
         String2.log("\n*** EDD.testAddMvFvAttsIfNeeded()");
 
@@ -12334,125 +12880,126 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         sourceAtts = new Attributes();
         Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, null), false, "");
 
-        //size=0 -> false
-        pa = new ByteArray(new byte[]{});
-        sourceAtts = new Attributes();
-        addAtts    = new Attributes();
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
-
         //StringArray -> false
         pa = new StringArray(new String[]{"99"});
         sourceAtts = new Attributes();
         addAtts    = new Attributes();
         Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
 
-        //99
+
+        //***
+        //99 is caught if observed and nothing defined
         pa = new ByteArray(new byte[]{12,99});
         sourceAtts = new Attributes();
         addAtts    = new Attributes();
         Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
         Test.ensureEqual(addAtts.get("_FillValue"), new ByteArray(new byte[]{99}), "");
 
-        //99 -> false if already defined
-        pa = new ByteArray(new byte[]{12,99});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{99}));
-        addAtts    = new Attributes();
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
-
-        //99 -> false if already defined
-        pa = new ByteArray(new byte[]{12,99});
-        sourceAtts = (new Attributes()).add("_FillValue", new ByteArray(new byte[]{99}));
-        addAtts    = new Attributes();
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
-
-        //99 -> false if already defined
-        pa = new ByteArray(new byte[]{12,99});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{99}));
-        addAtts    = new Attributes();
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
-
-        //99 -> true if mv fv already defined different but identical
-        pa = new ByteArray(new byte[]{12,99});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{127}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{127}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
-        Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{99}), "");
-
-        //-128 -> true if mv fv already defined different but identical
-        pa = new ByteArray(new byte[]{12,-128});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{127}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{127}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
-        Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{-128}), "");
-
-        //-127 -> true if mv fv already defined different but identical
+        //-127 is caught if observed and nothing defined
         pa = new ByteArray(new byte[]{12,-127});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{127}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{127}));
-        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{-127}), "");
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new ByteArray(new byte[]{-127}), "");
 
-        //127 -> true if mv fv already defined different but identical
+        //-128 is caught if observed and nothing defined
+        pa = new ByteArray(new byte[]{12,-128});
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new ByteArray(new byte[]{-128}), "");
+
+        //127 is caught even if no values 
+        pa = new ByteArray();
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new ByteArray(new byte[]{127}), "");
+
+        //127 is caught even if no values
+        pa = new ByteArray().setMaxIsMV(true);
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new ByteArray(new byte[]{127}), "");
+
+        //127 is caught if present, even if something else is defined (duplicate)
         pa = new ByteArray(new byte[]{12,127});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{-127}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{-127}));
-        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{127}), "");
-
-        //99 -> false if mv fv already defined but identical
-        pa = new ByteArray(new byte[]{12,99});
         sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{99}));
         addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{99}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), true, "");
+        Test.ensureEqual(addAtts.get("missing_value"), new ByteArray(new byte[]{127}), "");
+
          
-        //99 -> false if mv fv already defined
-        pa = new ByteArray(new byte[]{12,99,127});
-        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{-127}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ByteArray(new byte[]{ 127}));
-        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
-         
-        //short -32767 -> true if mv fv already defined different but identical
+        //ubyte 255 -> true if nothing defined
+        pa = new UByteArray(new short[]{12});
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
+        Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new UByteArray(new short[]{255}), "");
+
+        //short -32767 -> true if nothing defined
         pa = new ShortArray(new short[]{12,-32767,32767});
-        sourceAtts = (new Attributes()).add("missing_value", new ShortArray(new short[]{32767}));
-        addAtts    = (new Attributes()).add("_FillValue",    new ShortArray(new short[]{32767}));
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new ShortArray(new short[]{-32767}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new ShortArray(new short[]{-32767}), "");
 
-        //int -2147483647 -> true if mv fv already defined different but identical
+        //int -2147483647 -> true if nothing defined
         pa = new IntArray(new int[]{12,-2147483647,2147483647});
-        sourceAtts = (new Attributes()).add("missing_value", new IntArray(new int[]{2147483647}));
-        addAtts    = (new Attributes()).add("_FillValue",    new IntArray(new int[]{2147483647}));
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new IntArray(new int[]{-2147483647}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new IntArray(new int[]{-2147483647}), "");
 
-
-        //long -9223372036854775808 -> true if mv fv already defined different but identical
+        //long -9223372036854775808 -> true if nothing defined
         pa = new LongArray(new long[]{12,-9223372036854775808L});
-        sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
-        addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{-9223372036854775808L}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new LongArray(new long[]{-9223372036854775808L}), "");
 
-        //long -9223372036854775807 -> true if mv fv already defined different but identical
+        //long -9223372036854775807 -> true if nothing defined
         pa = new LongArray(new long[]{12,-9223372036854775807L});
-        sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
-        addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{-9223372036854775807L}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new LongArray(new long[]{-9223372036854775807L}), "");
 
-        //long 9223372036854775807 -> true if mv fv already defined different but identical
-        pa = new LongArray(new long[]{12,9223372036854775807L});
-        sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{-9223372036854775807L}));
-        addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{-9223372036854775807L}));
+        //long 9223372036854775807 -> true nothing defined
+        pa = new LongArray(new long[]{12});
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{9223372036854775807L}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new LongArray(new long[]{9223372036854775807L}), "");
 
-        //long 9999 -> true if mv fv already defined different but identical
-        pa = new LongArray(new long[]{12,999,9223372036854775807L});
-        sourceAtts = (new Attributes()).add("missing_value", new LongArray(new long[]{9223372036854775807L}));
-        addAtts    = (new Attributes()).add("_FillValue",    new LongArray(new long[]{9223372036854775807L}));
+        //long 9999 -> true if nothing defined
+        pa = new LongArray(new long[]{12,9999});
+        sourceAtts = new Attributes();
+        addAtts    = new Attributes();
         Test.ensureTrue(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), "");
-        Test.ensureEqual(addAtts.get("missing_value"), new LongArray(new long[]{999}), "");
+        Test.ensureEqual(addAtts.get("_FillValue"), new LongArray(new long[]{9999}), "");
+
+
+        //***
+        //99 not caught if something already defined
+        pa = new ByteArray(new byte[]{12,99});
+        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{120}));
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
+
+        //-127 not caught if something already defined
+        pa = new ByteArray(new byte[]{12,-127});
+        sourceAtts = new Attributes();
+        addAtts    = (new Attributes()).add("_FillValue", new ByteArray(new byte[]{120}));
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
+
+        //-128 not caught if something already defined
+        pa = new ByteArray(new byte[]{12,-128});
+        sourceAtts = (new Attributes()).add("missing_value", new ByteArray(new byte[]{120}));
+        addAtts    = new Attributes();
+        Test.ensureEqual(addMvFvAttsIfNeeded("testVar", pa, sourceAtts, addAtts), false, "");
+
 
 
         //float -9223372036854775807 -> true if mv fv already defined different but identical
@@ -12538,7 +13085,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 2;
+            lastTest = interactive? -1 : 3;
         String msg = "\n^^^ EDD.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -12553,6 +13100,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
                     if (test ==  0) testSuggestInstitutionParts();
                     if (test ==  1) testSparqlP01toP02();
                     if (test ==  2) testAddMvFvAttsIfNeeded();
+                    if (test ==  3) testAddFillValueAttributes();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

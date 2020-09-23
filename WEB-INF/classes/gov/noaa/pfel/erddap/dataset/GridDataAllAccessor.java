@@ -125,7 +125,7 @@ public class GridDataAllAccessor {
      */
     public PrimitiveArray getPrimitiveArray(int dv) throws Exception {
         long n = gridDataAccessor.totalIndex.size();
-        EDStatic.ensureArraySizeOkay(n, "GridDataAllAccessor");
+        Math2.ensureArraySizeOkay(n, "GridDataAllAccessor");
         PrimitiveArray pa = PrimitiveArray.factory(dataPAType[dv], (int)n, false);
         DataInputStream dis = getDataInputStream(dv);
         try {

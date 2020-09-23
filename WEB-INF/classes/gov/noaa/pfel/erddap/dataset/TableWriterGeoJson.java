@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -182,7 +183,7 @@ public class TableWriterGeoJson extends TableWriter {
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
         totalNRows += nRows;
-        EDStatic.ensureArraySizeOkay(totalNRows, "GeoJson");
+        Math2.ensureArraySizeOkay(totalNRows, "GeoJson");
 
         //write the data
         if (nColumns == 2 ||

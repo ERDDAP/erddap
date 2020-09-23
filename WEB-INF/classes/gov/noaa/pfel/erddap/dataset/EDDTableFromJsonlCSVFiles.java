@@ -32,7 +32,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 /** 
  * This class represents a table of data from a collection of jsonlCSV files.
- * See http://jsonlines.org/examples/
+ * See https://jsonlines.org/examples/
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2018-04-09
  */
@@ -508,10 +508,10 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
+"            <att name=\"_FillValue\" type=\"long\">-9223372036854775808</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Test Long</att>\n" +
-"            <att name=\"missing_value\" type=\"long\">-9223372036854775808</att>\n" +
+"            <att name=\"missing_value\" type=\"long\">9223372036854775807</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -656,7 +656,7 @@ String expected =
 
 expected =
 "http://localhost:8080/cwexperimental/tabledap/testJsonlCSV.das\";\n" +
-"    String infoUrl \"http://jsonlines.org/examples/\";\n" +
+"    String infoUrl \"https://jsonlines.org/examples/\";\n" +
 "    String institution \"jsonlines.org\";\n" +
 "    String keywords \"data, latitude, local, long, longitude, sea, ship, source, sst, status, surface, temperature, test, testLong, time\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +

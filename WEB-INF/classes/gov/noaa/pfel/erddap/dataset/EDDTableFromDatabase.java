@@ -12,6 +12,7 @@ import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -33,6 +34,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -524,36 +526,36 @@ public class EDDTableFromDatabase extends EDDTable{
                 scriptNeedsColumns.put(tSourceName, Script2.jexlScriptNeedsColumns(tSourceName)); //needsColumns.size() may be 0
 
             if (EDV.LON_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLon(tSourceName,
+                dataVariables[dv] = new EDVLon(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLat(tSourceName,
+                dataVariables[dv] = new EDVLat(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVAlt(tSourceName,
+                dataVariables[dv] = new EDVAlt(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVDepth(tSourceName,
+                dataVariables[dv] = new EDVDepth(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
-                dataVariables[dv] = new EDVTime(tSourceName,
+                dataVariables[dv] = new EDVTime(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[dv] = new EDV(tSourceName, tDestName, 
+                dataVariables[dv] = new EDV(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); 
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
@@ -922,23 +924,25 @@ public class EDDTableFromDatabase extends EDDTable{
                 PAType tPAType = edv.sourceDataPAType();
                 String val = constraintValues.get(cv);
                 //String2.log("cv=" + cv + " tPAType=" + tPAType);
+//???Do I need to parse numeric val's to check for NaN (which is not allowed(?))
                 if (edv instanceof EDVTimeStamp &&
                     !constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP)) statement.setTimestamp(nActiveCV, 
                                                   //round to nearest milli
                                                   new Timestamp(Math.round(String2.parseDouble(val)*1000)));
-                else if (edv.isBoolean())         statement.setBoolean(nActiveCV, String2.parseBoolean(val)); //special case
-                else if (tPAType == PAType.STRING)  statement.setString( nActiveCV, val);
-                else if (tPAType == PAType.DOUBLE)  statement.setDouble( nActiveCV, String2.parseDouble(val));
-                else if (tPAType == PAType.FLOAT)   statement.setFloat(  nActiveCV, String2.parseFloat(val));
-                else if (tPAType == PAType.LONG)    statement.setLong(   nActiveCV, String2.parseLong(val));
-                else if (tPAType == PAType.ULONG)   statement.setDouble( nActiveCV, String2.parseDouble(val));  //???
-                else if (tPAType == PAType.INT)     statement.setInt(    nActiveCV, String2.parseInt(val));  //???NaN???
-                else if (tPAType == PAType.UINT)    statement.setLong(   nActiveCV, String2.parseLong(val)); //???NaN???
-                else if (tPAType == PAType.SHORT)   statement.setShort(  nActiveCV, Math2.narrowToShort(String2.parseInt(val))); 
-                else if (tPAType == PAType.USHORT)  statement.setInt(    nActiveCV, String2.parseInt(val)); //???
-                else if (tPAType == PAType.BYTE)    statement.setByte(   nActiveCV, Math2.narrowToByte(String2.parseInt(val))); 
-                else if (tPAType == PAType.UBYTE)   statement.setShort(  nActiveCV, Math2.narrowToShort(String2.parseInt(val))); //???
-                else if (tPAType == PAType.CHAR)    statement.setString( nActiveCV, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
+                else if (edv.isBoolean())           statement.setBoolean(   nActiveCV, String2.parseBoolean(val)); //special case
+                else if (tPAType == PAType.STRING)  statement.setString(    nActiveCV, val);
+                //for Unsigned types, go to next bigger data type.
+                else if (tPAType == PAType.DOUBLE)  statement.setDouble(    nActiveCV, String2.parseDouble(val));
+                else if (tPAType == PAType.FLOAT)   statement.setFloat(     nActiveCV, String2.parseFloat(val));
+                else if (tPAType == PAType.LONG)    statement.setLong(      nActiveCV, String2.parseLong(val));
+                else if (tPAType == PAType.ULONG)   statement.setBigDecimal(nActiveCV, String2.parseBigDecimalObject(val));  
+                else if (tPAType == PAType.INT)     statement.setInt(       nActiveCV, String2.parseInt(val));  
+                else if (tPAType == PAType.UINT)    statement.setLong(      nActiveCV, String2.parseLong(val)); 
+                else if (tPAType == PAType.SHORT)   statement.setShort(     nActiveCV, Math2.narrowToShort(String2.parseInt(val))); 
+                else if (tPAType == PAType.USHORT)  statement.setInt(       nActiveCV, String2.parseInt(val)); 
+                else if (tPAType == PAType.BYTE)    statement.setByte(      nActiveCV, Math2.narrowToByte(String2.parseInt(val))); 
+                else if (tPAType == PAType.UBYTE)   statement.setShort(     nActiveCV, Math2.narrowToShort(String2.parseInt(val))); //???
+                else if (tPAType == PAType.CHAR)    statement.setString(    nActiveCV, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
                 else throw new RuntimeException("Prepared statements don't support class type=" + edv.sourceDataType() + ".");            
             }
             if (verbose) String2.log("  statement=" + statement.toString() + "\n" +
@@ -988,12 +992,24 @@ public class EDDTableFromDatabase extends EDDTable{
                         } else if (tPAType == PAType.FLOAT) {
                             float f = rs.getFloat(rsCol);
                             paArray[rv].addFloat(rs.wasNull()? Float.NaN : f); 
-                        } else if (tPAType == PAType.LONG) {
+                        } else if (tPAType == PAType.ULONG) {
+                            BigDecimal bd = rs.getBigDecimal(rsCol);
+                            ((ULongArray)paArray[rv]).add(rs.wasNull()? null : Math2.roundToULongOrNull(bd));
+                        } else if (tPAType == PAType.LONG ||
+                                   tPAType == PAType.UINT) {
                             long tl = rs.getLong(rsCol);
-                            paArray[rv].addLong(rs.wasNull()? Long.MAX_VALUE : tl); 
+                            if (rs.wasNull()) {
+                                paArray[rv].setMaxIsMV(true);
+                                tl = Long.MAX_VALUE;
+                            }
+                            paArray[rv].addLong(tl); 
                         } else {
                             int ti = rs.getInt(rsCol);
-                            paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : ti); 
+                            if (rs.wasNull()) {
+                                paArray[rv].setMaxIsMV(true);
+                                ti = Integer.MAX_VALUE;
+                            }
+                            paArray[rv].addInt(ti); 
                         }
                     }
                 }
@@ -1472,7 +1488,6 @@ pgAdmin3
      * @throws Throwable if trouble
      */
     public static void testGenerateDatasetsXml() throws Throwable {
-        try {
 
             String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
             testVerboseOn();
@@ -1690,10 +1705,6 @@ expected =
 "5,Betty,Bach,161,54.2,1967-07-08T09:10:11Z,B\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.testGenerateDatasetsXml error."); 
-        }
 
     }
 
@@ -1715,44 +1726,46 @@ expected =
         String results, expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-        try {
-            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null,
-                tDatasetID); 
-            String tName = tedd.makeNewFileForDapQuery(null, null, "", 
-                dir, tedd.className() + "_Basic", ".das"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
-"Attributes \\{\n" +
-" s \\{\n" +
-"  category \\{\n" +
+        EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null,
+            tDatasetID); 
+        String tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            dir, tedd.className() + "_Basic", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  category {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Category\";\n" +
-"  \\}\n" +
-"  first \\{\n" +
+"  }\n" +
+"  first {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"First Name\";\n" +
-"  \\}\n" +
-"  last \\{\n" +
+"  }\n" +
+"  last {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Last Name\";\n" +
-"  \\}\n" +
-"  height \\{\n" +
+"  }\n" +
+"  height {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 161, 191;\n" +
 "    String ioos_category \"Biology\";\n" +
 "    String long_name \"Height\";\n" +
 "    String units \"cm\";\n" +
-"  \\}\n" +
-"  weight_kg \\{\n" +
+"  }\n" +
+"  weight_kg {\n" +
 "    String ioos_category \"Biology\";\n" +
 "    String long_name \"Weight\";\n" +
 "    String units \"kg\";\n" +
-"  \\}\n" +
-"  weight_lb \\{\n" +
+"  }\n" +
+"  weight_lb {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    String ioos_category \"Biology\";\n" +
 "    String long_name \"Weight\";\n" +
 "    String units \"lb\";\n" +
-"  \\}\n" +
-"  time \\{\n" +
+"  }\n" +
+"  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1760,13 +1773,13 @@ expected =
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  \\}\n" +
-" \\}\n" +
-"  NC_GLOBAL \\{\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"    String history \"" + today + "T.{8}Z \\(source database\\)\n" +
-today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
+"    String history \"[TIME]Z (source database)\n" +
+"[TIME]Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
 "    String infoUrl \"https://swfsc.noaa.gov/erd.aspx\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"birthdate, category, first, height, last, weight\";\n" +
@@ -1778,21 +1791,22 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String sourceUrl \"\\(source database\\)\";\n" +
+"    String sourceUrl \"(source database)\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"category\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
-"  \\}\n" +
-"\\}\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
-  
-            //.dds 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
-                dir, 
-                tedd.className() + "_peb_Data", ".dds"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
+"  }\n" +
+"}\n";
+        //Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results); //not suitable for non-interactive testing
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.dds 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            dir, 
+            tedd.className() + "_peb_Data", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
 "    String category;\n" +
@@ -1804,15 +1818,15 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "    Float64 time;\n" +
 "  } s;\n" +
 "} s;\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 /* */
 
-            //all      check dataset's orderBy
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
-                tedd.className() + "_all", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //all      check dataset's orderBy
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+            tedd.className() + "_all", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
 "A,Bob,Bucher,182,83.2,183,1966-01-31T16:16:17Z\n" +
@@ -1820,78 +1834,78 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n" +
 "B,Stan,Smith,177,81.1,179,1971-10-12T23:24:25Z\n" +
 ",Zele,Zule,NaN,NaN,NaN,\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  all time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  all time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //subset
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "time,last&time=1967-07-08T09:10:11Z",
-                dir, tedd.className() + "_subset", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //subset
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "time,last&time=1967-07-08T09:10:11Z",
+            dir, tedd.className() + "_subset", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "time,last\n" +
 "UTC,\n" +
 "1967-07-08T09:10:11Z,Bach\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //just script variable
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&time=1967-07-08T09:10:11Z",
-                dir, tedd.className() + "_script2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //just script variable
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&time=1967-07-08T09:10:11Z",
+            dir, tedd.className() + "_script2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "weight_lb\n" +
 "lb\n" +
 "119\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //constraint just script variable
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119",
-                dir, tedd.className() + "_script3", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //constraint just script variable
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119",
+            dir, tedd.className() + "_script3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
 "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //constrain script variable (first, not passed to database) and non-script
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119&category=\"B\"",
-                dir, tedd.className() + "_script4", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //constrain script variable (first, not passed to database) and non-script
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119&category=\"B\"",
+            dir, tedd.className() + "_script4", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
 "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
-            //distinct()   subsetVariables
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category&distinct()",
-                dir, tedd.className() + "_subset", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //distinct()   subsetVariables
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "category&distinct()",
+            dir, tedd.className() + "_subset", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category\n" +
 "\n" +
 "\n" +
 "A\n" +
 "B\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //distinct()   subsetVariables
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&distinct()",
-                dir, tedd.className() + "_subset2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //distinct()   subsetVariables
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&distinct()",
+            dir, tedd.className() + "_subset2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "weight_lb\n" +
 "lb\n" +
 "119\n" +
@@ -1899,16 +1913,16 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "183\n" +
 "195\n" +
 "NaN\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //distinct()  2 vars (one of which is script)
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,weight_lb&distinct()",
-                dir, tedd.className() + "_distinct1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = //tDatasetID.equals("testMyDatabaseNo") ||
-                       //tDatasetID.equals("testMyDatabasePartial")?
+        //distinct()  2 vars (one of which is script)
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "category,weight_lb&distinct()",
+            dir, tedd.className() + "_distinct1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = //tDatasetID.equals("testMyDatabaseNo") ||
+                   //tDatasetID.equals("testMyDatabasePartial")?
 //ERDDAP sorts category="" at top.   
 //2019-12-10 now ERDDAP always does distinct (even if database does, too)
 "category,weight_lb\n" +
@@ -1928,15 +1942,15 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Stan\n" +
 ",Zele\n"; 
 */
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //distinct()  2 vars, different order
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "first,weight_lb&distinct()",
-                dir, tedd.className() + "_distinct2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //distinct()  2 vars, different order
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "first,weight_lb&distinct()",
+            dir, tedd.className() + "_distinct2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "first,weight_lb\n" +
 ",lb\n" +
 "Betty,119\n" +
@@ -1944,29 +1958,29 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "John,195\n" +
 "Stan,179\n" +
 "Zele,NaN\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderBy()  subsetVars
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category&orderBy(\"category\")",
-                dir, tedd.className() + "_orderBy1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //orderBy()  subsetVars
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "category&orderBy(\"category\")",
+            dir, tedd.className() + "_orderBy1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category\n" +
 "\n" +
 "\n" +
 "A\n" +
 "B\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderBy()  subsetVars
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&orderBy(\"weight_lb\")",
-                dir, tedd.className() + "_orderBy1a", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //orderBy()  subsetVars
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&orderBy(\"weight_lb\")",
+            dir, tedd.className() + "_orderBy1a", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "weight_lb\n" +
 "lb\n" +
 "119\n" +
@@ -1974,15 +1988,15 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "183\n" +
 "195\n" +
 "NaN\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderBy()  
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"last,category\")",
-                dir, tedd.className() + "_orderBy2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected =  
+        //orderBy()  
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"last,category\")",
+            dir, tedd.className() + "_orderBy2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
 "category,last,first\n" +
 ",,\n" +
 "B,Bach,Betty\n" +
@@ -1990,18 +2004,18 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "A,Johnson,John\n" +
 "B,Smith,Stan\n" +
 ",Zule,Zele\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderBy()  
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, 
-                "category,last,first,weight_lb&orderBy(\"category,weight_lb,last\")",
-                dir, tedd.className() + "_orderBy3", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = //tDatasetID.equals("testMyDatabaseNo") ||
-                       //tDatasetID.equals("testMyDatabasePartial")?
-                       //2019-12-12 now ERDDAP always does orderBy (even if database does, too)
+        //orderBy()  
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "category,last,first,weight_lb&orderBy(\"category,weight_lb,last\")",
+            dir, tedd.className() + "_orderBy3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = //tDatasetID.equals("testMyDatabaseNo") ||
+                   //tDatasetID.equals("testMyDatabasePartial")?
+                   //2019-12-12 now ERDDAP always does orderBy (even if database does, too)
 //ERDDAP sorts category="" at top.
 "category,last,first,weight_lb\n" +
 ",,,lb\n" +
@@ -2020,16 +2034,16 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Smith,Stan\n" +
 ",Zule,Zele\n"; */
 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderBy() and distinct()
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, 
-                "category,last,first&orderBy(\"category,last\")&distinct()",
-                dir, tedd.className() + "_orderBy4", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
-            expected = 
+        //orderBy() and distinct()
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "category,last,first&orderBy(\"category,last\")&distinct()",
+            dir, tedd.className() + "_orderBy4", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
 //ERDDAP's distinct() is always done and it sorts "" at top.
 "category,last,first\n" +
 ",,\n" + //units
@@ -2038,14 +2052,14 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "A,Johnson,John\n" +
 "B,Bach,Betty\n" +
 "B,Smith,Stan\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderBy + distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderBy + distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderByMax()  and distinct()
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
-                dir, tedd.className() + "_orderBy5", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+        //orderByMax()  and distinct()
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
+            dir, tedd.className() + "_orderBy5", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
 //ERDDAP sorts "" at top and it is ERDDAP's orderByMax that is done last
 expected = 
 "category,last,first\n" +
@@ -2053,75 +2067,71 @@ expected =
 ",Zule,Zele\n" +
 "A,Johnson,John\n" +
 "B,Smith,Stan\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderByMax + distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderByMax + distinct time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-            //orderByMax()  and orderBy()
-            eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, 
-                "category,last,first&orderByMax(\"category,last\")&orderBy(\"first\")",
-                dir, tedd.className() + "_orderBy6", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+        //orderByMax()  and orderBy()
+        eTime = System.currentTimeMillis();
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "category,last,first&orderByMax(\"category,last\")&orderBy(\"first\")",
+            dir, tedd.className() + "_orderBy6", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
 expected = 
 "category,last,first\n" +
 ",,\n" + //units
 "A,Johnson,John\n" +
 "B,Smith,Stan\n" +
 ",Zule,Zele\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("  orderByMax + orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+
+        //no matching data (database determined)
+        eTime = System.currentTimeMillis();
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height=170",
+                dir, tedd.className() + "_subset", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected = "Shouldn't get here";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  orderByMax + orderBy time=" + (System.currentTimeMillis() - eTime) + "ms"); 
-
-            //no matching data (database determined)
-            eTime = System.currentTimeMillis();
-            try {
-                tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height=170",
-                    dir, tedd.className() + "_subset", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
-                expected = "Shouldn't get here";
-                Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            } catch (Throwable t) {
-                String msg = MustBe.throwableToString(t); 
-                String2.log(msg +
-                    "  no matching data time=" + (System.currentTimeMillis() - eTime) + "ms"); 
-                if (msg.indexOf("Your query produced no matching results.") < 0)
-                    throw new RuntimeException("Unexpected error.", t); 
-            }
-
-            //quick reject -> orderBy var not in results vars
-            //orderBy()  
-            try {
-                tName = tedd.makeNewFileForDapQuery(null, null, "category,last&orderBy(\"category,last,first\")",
-                    dir, tedd.className() + "_qr1", ".csv"); 
-                throw new SimpleException("Shouldn't get here");
-            } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
-                results = t.toString(); 
-                expected = "com.cohort.util.SimpleException: Query error: orderBy " +
-                    "variable=first isn't in the list of results variables.";
-                Test.ensureEqual(results, expected, "\nresults=\n" + results); 
-            }
-
-            //quick reject -> no matching data
-            eTime = System.currentTimeMillis();
-            try {
-                tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height>1000",
-                    dir, tedd.className() + "_qr2", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
-                expected = "Shouldn't get here";
-                Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            } catch (Throwable t) {
-                String msg = t.toString(); 
-                String2.log(msg +
-                    "  quick reject time=" + (System.currentTimeMillis() - eTime) + "ms"); 
-                Test.ensureEqual(msg, 
-                    "com.cohort.util.SimpleException: Your query produced no matching results. " +
-                    "(height>1000 is outside of the variable's actual_range: 161 to 191)", "");
-            }
-
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.test(" + tDatasetID + ") error."); 
+            String msg = MustBe.throwableToString(t); 
+            String2.log(msg +
+                "  no matching data time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+            if (msg.indexOf("Your query produced no matching results.") < 0)
+                throw new RuntimeException("Unexpected error.", t); 
         }
+
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,last&orderBy(\"category,last,first\")",
+                dir, tedd.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=first isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> no matching data
+        eTime = System.currentTimeMillis();
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height>1000",
+                dir, tedd.className() + "_qr2", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected = "Shouldn't get here";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        } catch (Throwable t) {
+            String msg = t.toString(); 
+            String2.log(msg +
+                "  quick reject time=" + (System.currentTimeMillis() - eTime) + "ms"); 
+            Test.ensureEqual(msg, 
+                "com.cohort.util.SimpleException: Your query produced no matching results. " +
+                "(height>1000 is outside of the variable's actual_range: 161 to 191)", "");
+        }
+
     }
 
     /**

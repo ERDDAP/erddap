@@ -39,6 +39,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.net.URL;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
@@ -397,7 +398,7 @@ public class Table  {
         for (int i = 0; i < n; i++) {
             table.addColumn(colName[i], 
                 PrimitiveArray.factory(
-                    PrimitiveArray.elementStringToPAType(dataType == null? "String" : dataType[i]), 
+                    PAType.fromCohortString(dataType == null? "String" : dataType[i]), 
                     8, false));
         }
         return table;
@@ -1118,8 +1119,9 @@ public class Table  {
         for (int col = 0; col < tnCols; col++) {  
             //this is very similar to lastRowWithData
             PrimitiveArray pa = columns.get(col);
+            PAType paType = pa.elementType();
             Attributes atts = columnAttributes(col); 
-            if (pa.elementType() == PAType.STRING) {
+            if (paType == PAType.STRING) {
                 String mv = atts.getString("missing_value"); //may be null
                 String fv = atts.getString("_FillValue"); 
                 if (mv == null) mv = "";
@@ -1131,7 +1133,7 @@ public class Table  {
                         keep.set(row);
                     }
                 }
-            } else if (pa.elementType() == PAType.DOUBLE) {
+            } else if (paType == PAType.DOUBLE) {
                 double mv = atts.getDouble("missing_value"); //may be NaN
                 double fv = atts.getDouble("_FillValue"); 
                 for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
@@ -1143,7 +1145,7 @@ public class Table  {
                         keep.set(row);
                     }
                 }
-            } else if (pa.elementType() == PAType.FLOAT) {
+            } else if (paType == PAType.FLOAT) {
                 float mv = atts.getFloat("missing_value"); //may be NaN
                 float fv = atts.getFloat("_FillValue"); 
                 for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
@@ -1155,12 +1157,23 @@ public class Table  {
                         keep.set(row);
                     }
                 }
+            } else if (paType == PAType.ULONG) {
+                BigInteger mv = atts.getULong("missing_value"); //may be null
+                BigInteger fv = atts.getULong("_FillValue"); 
+                for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
+                    BigInteger t = pa.getULong(row);
+                    if (t == null || t.equals(mv) || t.equals(fv)) { 
+                    } else {
+                        keepN++;
+                        keep.set(row);
+                    }
+                }
             } else {
                 long mv = atts.getLong("missing_value"); //may be Long.MAX_VALUE
                 long fv = atts.getLong("_FillValue"); 
                 for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
                     float t = pa.getLong(row);
-                    if (t < Long.MAX_VALUE && t != mv && t != fv) {
+                    if (t < Long.MAX_VALUE && t != mv && t != fv) { //trouble: for LongArray, this assumes maxIsMV
                         keepN++;
                         keep.set(row);
                     }
@@ -1206,8 +1219,9 @@ public class Table  {
         for (int col = 0; col < tnCols; col++) {  
             //this is very similar to rowsWithData
             PrimitiveArray pa = columns.get(col);
+            PAType paType = pa.elementType();
             Attributes atts = columnAttributes(col); 
-            if (pa.elementType() == PAType.STRING) {
+            if (paType == PAType.STRING) {
                 String mv = atts.getString("missing_value"); //may be null
                 String fv = atts.getString("_FillValue"); 
                 if (mv == null) mv = "";
@@ -1219,7 +1233,7 @@ public class Table  {
                         break;
                     }
                 }
-            } else if (pa.elementType() == PAType.DOUBLE) {
+            } else if (paType == PAType.DOUBLE) {
                 double mv = atts.getDouble("missing_value"); //may be NaN
                 double fv = atts.getDouble("_FillValue"); 
                 for (int row = tnRows - 1; row > lastRowWithData; row--) {
@@ -1231,7 +1245,7 @@ public class Table  {
                         break;
                     }
                 }
-            } else if (pa.elementType() == PAType.FLOAT) {
+            } else if (paType == PAType.FLOAT) {
                 float mv = atts.getFloat("missing_value"); //may be NaN
                 float fv = atts.getFloat("_FillValue"); 
                 for (int row = tnRows - 1; row > lastRowWithData; row--) {
@@ -1243,12 +1257,24 @@ public class Table  {
                         break;
                     }
                 }
+            } else if (paType == PAType.ULONG) {
+                BigInteger mv = atts.getULong("missing_value"); //may be null
+                BigInteger fv = atts.getULong("_FillValue"); 
+                boolean paMaxIsMV = pa.getMaxIsMV();
+                for (int row = tnRows - 1; row > lastRowWithData; row--) {
+                    BigInteger t = pa.getULong(row);
+                    if (t == null || t.equals(mv) || t.equals(fv)) {
+                    } else {
+                        lastRowWithData = row;
+                        break;
+                    }
+                }
             } else {
                 long mv = atts.getLong("missing_value"); //may be Long.MAX_VALUE
                 long fv = atts.getLong("_FillValue"); 
                 for (int row = tnRows - 1; row > lastRowWithData; row--) {
-                    float t = pa.getLong(row);
-                    if (t < Long.MAX_VALUE && t != mv && t != fv) {
+                    long t = pa.getLong(row);
+                    if (t != Long.MAX_VALUE && t != mv && t != fv) { //trouble: for LongArray, this works as if maxIsMV=true
                         lastRowWithData = row;
                         break;
                     }
@@ -3080,14 +3106,12 @@ public class Table  {
             //create the columns
             PrimitiveArray pa[] = new PrimitiveArray[nCols];
             ByteArray arBool[] = new ByteArray[nCols]; //ByteArray (from boolean) if boolean, else null
-            CharArray arChar[] = new CharArray[nCols]; //CharArray if char, else null
             for (int col = 0; col < nCols; col++) {
                 pa[col] = PrimitiveArray.factory(
                     columnPAType[col] == PAType.BOOLEAN? PAType.BYTE : columnPAType[col], 
                     128, false);
                 addColumn(loadColumns[col], pa[col]);
                 arBool[col] = columnPAType[col] == PAType.BOOLEAN? (ByteArray)(pa[col]) : null;
-                arChar[col] = columnPAType[col] == PAType.CHAR?    (CharArray)(pa[col]) : null;
             }
 
             //skipHeaderToRegex
@@ -3113,9 +3137,7 @@ public class Table  {
                         String s = tLength > startPo[col]? 
                             tLine.substring(startPo[col], Math.min(tLength, endPo[col])).trim() : "";
                         if (columnPAType[col] == PAType.BOOLEAN)                     
-                            arBool[col].add(String2.parseBooleanToByte(s));
-                        else if (arChar[col] != null)
-                            arChar[col].add(s.length() > 0? s.charAt(0) : Character.MAX_VALUE);
+                            arBool[col].addInt(String2.parseBooleanToInt(s));
                         else pa[col].addString(s);
                         //if (row < dataStartLine + 3) String2.log(">> row=" + row + " col=" + col + " s=" + s);
                     }
@@ -3355,7 +3377,7 @@ public class Table  {
                         if (columns.get(col).capacity() == 0) //i.e., the dummy pa
                             //new PrimitiveArray with capacity=1024
                             setColumn(col, PrimitiveArray.factory(
-                                PrimitiveArray.caseInsensitiveElementStringToPAType(sa.get(0)), 
+                                PAType.fromCohortStringCaseInsensitive(sa.get(0)), 
                                 1024, false)); //active?
                         //String2.log(">> " + getColumnName(col) + " " + getColumn(col).elementType());
                         expectedDCols.add(varName);
@@ -5275,13 +5297,14 @@ Attributes {
         writer.write("Attributes {" + OpendapHelper.EOL); //see EOL definition for comments
         writer.write(" " + XML.encodeAsHTML(sequenceName, encodeAsHtml) + " {" + OpendapHelper.EOL); //see EOL definition for comments
         for (int v = 0; v < nColumns(); v++) 
-            OpendapHelper.writeToDAS(getColumnName(v),
-                columnAttributes(v), writer, encodeAsHtml);
+            OpendapHelper.writeToDAS(getColumnName(v), getColumn(v).elementType(),
+                columnAttributes(v), writer, encodeAsHtml); 
         writer.write(" }" + OpendapHelper.EOL); //see EOL definition for comments 
 
         //how do global attributes fit into opendap view of attributes?
         OpendapHelper.writeToDAS(
             "NC_GLOBAL", //DAP 2.0 spec doesn't talk about global attributes, was "GLOBAL"; ncBrowse and netcdf-java treat NC_GLOBAL as special case
+            PAType.DOUBLE, //isUnsigned doesn't apply to global atts. double won't trigger "_Unsigned"
             globalAttributes, writer, encodeAsHtml);
         writer.write("}" + OpendapHelper.EOL); //see EOL definition for comments 
         writer.flush(); //essential
@@ -5948,44 +5971,45 @@ Dataset {
         for (int i = 0; i < n; i++) {
             if (names[i].startsWith("_encoded")) {
                 PrimitiveArray pa = atts.get(names[i]);
-                if (pa instanceof ShortArray &&
+                PAType paType = pa.elementType();
+                if (paType == PAType.SHORT &&
                     names[i].startsWith("_encodedCharArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(18), 
                         CharArray.fromShortArrayBytes((ShortArray)pa));
 
-                } else if (pa instanceof ByteArray &&
+                } else if (paType == PAType.BYTE &&
                     names[i].startsWith("_encodedUByteArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(19), 
                         new UByteArray(((ByteArray)pa).toArray()));
 
-                } else if (pa instanceof ShortArray &&
+                } else if (paType == PAType.SHORT &&
                     names[i].startsWith("_encodedUShortArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(20), 
                         new UShortArray(((ShortArray)pa).toArray()));
 
-                } else if (pa instanceof IntArray &&
+                } else if (paType == PAType.INT &&
                     names[i].startsWith("_encodedUIntArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(18), 
                         new UIntArray(((IntArray)pa).toArray()));
 
-                } else if (pa instanceof StringArray &&
+                } else if (paType == PAType.STRING &&
                     names[i].startsWith("_encodedLongArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(18), 
                         PrimitiveArray.csvFactory(PAType.LONG, pa.getString(0)));
 
-                } else if (pa instanceof StringArray &&
+                } else if (paType == PAType.STRING &&
                     names[i].startsWith("_encodedULongArray_")) {
                     atts.remove(names[i]);
                     atts.set(names[i].substring(19), 
                         PrimitiveArray.csvFactory(PAType.ULONG, pa.getString(0)));
 
                 //Even nc3 saves attributes via utf-8
-                //} else if (pa instanceof StringArray &&
+                //} else if (paType == PAType.STRING &&
                 //    names[i].startsWith("_encodedStringArray_")) {
                 //    atts.remove(names[i]);
                 //    atts.set(names[i].substring(20), 
@@ -6017,22 +6041,27 @@ Dataset {
         int nRows = nRows();
         for (int col = 0; col < nCols; col++) {
             PrimitiveArray pa = getColumn(col);
+            PAType paType = pa.elementType();
             Attributes atts = (Attributes)(columnAttributes(col).clone());
             newTable.addColumn(col, getColumnName(col), pa, atts);
 
-            if        (pa instanceof CharArray) {
+            //for backwardcompatibility, always set it 
+            if (pa.supportsMaxIsMV())
+                atts.set("_MaxIsMV", "" + pa.getMaxIsMV());
+
+            if        (paType == PAType.CHAR) {
                 atts.set("_encoded_", "fromChar");
                 newTable.setColumn(col, ShortArray.fromCharArrayBytes((CharArray)pa));               
 
-            } else if (pa instanceof LongArray) {  //otherwise, stored as doubles (lossy)
+            } else if (paType == PAType.LONG) {  //otherwise, stored as doubles (lossy)
                 atts.set("_encoded_", "fromLong");
                 newTable.setColumn(col, new StringArray(pa));                
 
-            } else if (pa instanceof ULongArray) { //otherwise, stored as doubles (lossy)
+            } else if (paType == PAType.ULONG) { //otherwise, stored as doubles (lossy)
                 atts.set("_encoded_", "fromULong");
                 newTable.setColumn(col, new StringArray(pa));                
 
-            } else if (pa instanceof StringArray) {
+            } else if (paType == PAType.STRING) {
                 atts.set("_encoded_", String2.JSON); //not _Encoding because encodeEnhancedAtts will change it
                 newTable.setColumn(col, (new StringArray(pa)).toJson()); //change a copy of pa
             }
@@ -6086,6 +6115,12 @@ Dataset {
             Attributes atts = columnAttributes(col);
             decodeEnhancedAttributes(sourceVersion, atts);
 
+            //maxIsMV
+            PrimitiveArray tpa = atts.remove("_MaxIsMV");  
+            if (pa.supportsMaxIsMV()) 
+                pa.setMaxIsMV(tpa == null || tpa.size() == 0 ||  //for backwards compatibility
+                    "true".equals(tpa.getString(0)));  // will be ignored if DoubleArray or FloatArray
+
             if (pa instanceof CharArray) {
                 //trouble! significant info loss. There shouldn't be any CharArray 
                 String2.log(String2.ERROR + ": Table.readEnhancedFlatNc(" + fullName + ") contained a CharArray variable.");
@@ -6095,13 +6130,11 @@ Dataset {
                 "true".equals(atts.getString("_Unsigned"))) { //netcdf recommendation
                 //convert sourceVersion=3 unsigned short to char
                 atts.remove("_Unsigned");
-                atts.remove("_FillValue");  //was standardized short=32768   remove or set to FFFF???
                 setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
 
             } else if (sourceVersion >= 4 && pa instanceof ShortArray &&
                 "fromChar".equals(atts.getString("_encoded_"))) {
                 atts.remove("_encoded_");
-                atts.remove("_FillValue");  //was standardized short=32768   remove or set to FFFF???
                 setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
 
             } else if (pa instanceof StringArray) {
@@ -6158,35 +6191,35 @@ Dataset {
             (new Attributes()).add("test", '\u00fc'));
 
         table.addColumn(2, "aByte", //min,         med, fv, max-1,  max
-            new ByteArray(new byte[]{Byte.MIN_VALUE, 0, 99, 126, Byte.MAX_VALUE}),
+            new ByteArray(new byte[]{Byte.MIN_VALUE, 0, 99, 126, Byte.MAX_VALUE}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", ByteArray.fromCSV("99"))
                               .add("test",       ByteArray.fromCSV("-128, 127")));
         table.addColumn(3, "aUByte", 
-            new UByteArray(new short[]{0, 127, 99, 254, 255}),
+            new UByteArray(new short[]{0, 127, 99, 254, 255}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", UByteArray.fromCSV("99"))
                               .add("test",       UByteArray.fromCSV("0, 255")));
         table.addColumn(4, "aShort", 
-            new ShortArray(new short[]{Short.MIN_VALUE, 0, 9999, 32766, Short.MAX_VALUE}),
+            new ShortArray(new short[]{Short.MIN_VALUE, 0, 9999, 32766, Short.MAX_VALUE}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", ShortArray.fromCSV("9999"))
                               .add("test",       ShortArray.fromCSV("-32768, 32767")));
         table.addColumn(5, "aUShort", 
-            UShortArray.fromCSV("0, 32767, 9999, 65534, 65535"),
+            UShortArray.fromCSV("0, 32767, 9999, 65534, 65535").setMaxIsMV(true),
             (new Attributes()).add("_FillValue", UShortArray.fromCSV("9999"))
                               .add("test",       UShortArray.fromCSV("0, 65535")));
         table.addColumn(6, "anInt", 
-            new IntArray(new int[]{Integer.MIN_VALUE, 0, 999999999, Integer.MAX_VALUE-1, Integer.MAX_VALUE}),
+            new IntArray(new int[]{Integer.MIN_VALUE, 0, 999999999, Integer.MAX_VALUE-1, Integer.MAX_VALUE}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", IntArray.fromCSV("999999999"))
                               .add("test",       IntArray.fromCSV("-2147483648, 2147483647")));
         table.addColumn(7, "aUInt", 
-            new UIntArray(new long[]{0, 7, Integer.MAX_VALUE, Math2.UINT_MAX_VALUE-1, Math2.UINT_MAX_VALUE}),
+            new UIntArray(new long[]{0, 7, Integer.MAX_VALUE, Math2.UINT_MAX_VALUE-1, Math2.UINT_MAX_VALUE}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", UIntArray.fromCSV("999999999"))
                               .add("test",       UIntArray.fromCSV("0, 4294967295")));
         table.addColumn(8, "aLong", 
-            new LongArray(new long[]{Long.MIN_VALUE, 0, 8, Long.MAX_VALUE-1, Long.MAX_VALUE}),
+            new LongArray(new long[]{Long.MIN_VALUE, 0, 8, Long.MAX_VALUE-1, Long.MAX_VALUE}).setMaxIsMV(true),
             (new Attributes()).add("_FillValue", LongArray.fromCSV("999999999999"))
                               .add("test",       LongArray.fromCSV("-9223372036854775808, 9223372036854775807")));
         table.addColumn(9, "aULong", 
-            ULongArray.fromCSV("0,  1, 9223372036854775807, 18446744073709551614, 18446744073709551615"),
+            ULongArray.fromCSV("0,  1, 9223372036854775807, 18446744073709551614, 18446744073709551615").setMaxIsMV(true),
             (new Attributes()).add("_FillValue", ULongArray.fromCSV("999999999999"))
                               .add("test",       ULongArray.fromCSV("0, 18446744073709551615")));
         table.addColumn(10, "aFloat", 
@@ -6406,7 +6439,7 @@ Dataset {
             for (int col = 0; col < sourceColumnNames.length; col++) {
                 Attributes atts = new Attributes();
                 addColumn(col, sourceColumnNames[col], 
-                    PrimitiveArray.factory(PrimitiveArray.elementStringToPAType(sourceDataTypes[col]), 0, false), 
+                    PrimitiveArray.factory(PAType.fromCohortString(sourceDataTypes[col]), 0, false), 
                     atts);
                 Variable var = netcdfFile.findVariable(sourceColumnNames[col]);
                 if (var == null) {
@@ -6672,10 +6705,10 @@ Dataset {
                     zLength = axisPA[1].size();
                     tLength = axisPA[0].size();
                     int totalNValues = tLength * zLength * yLength * xLength;
-                    PrimitiveArray xColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[3].getDataType()), totalNValues, false);
-                    PrimitiveArray yColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[2].getDataType()), totalNValues, false);
-                    PrimitiveArray zColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[1].getDataType()), totalNValues, false);
-                    PrimitiveArray tColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[0].getDataType()), totalNValues, false);
+                    PrimitiveArray xColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[3]), totalNValues, false);
+                    PrimitiveArray yColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[2]), totalNValues, false);
+                    PrimitiveArray zColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[1]), totalNValues, false);
+                    PrimitiveArray tColumn = PrimitiveArray.factory(NcHelper.getElementPAType(axisVariables[0]), totalNValues, false);
                     addColumn(0, dimensionNames[3], xColumn, axisAtts[3]); 
                     addColumn(1, dimensionNames[2], yColumn, axisAtts[2]); 
                     addColumn(2, dimensionNames[1], zColumn, axisAtts[1]); 
@@ -7699,24 +7732,28 @@ Dataset {
 
                 //gather the missing_value and _FillValue values for each column
                 boolean isDouble[] = new boolean[nColumns];
+                boolean isULong[]  = new boolean[nColumns];
                 boolean isLong[]   = new boolean[nColumns];
                 boolean isChar[]   = new boolean[nColumns];
                 double doubleMvs[] = new double[nColumns];
                 double doubleFvs[] = new double[nColumns];
+                BigInteger ulongMvs[] = new BigInteger[nColumns];
+                BigInteger ulongFvs[] = new BigInteger[nColumns];
                 long   longMvs[]   = new long[nColumns];
                 long   longFvs[]   = new long[nColumns];
                 for (int c = nLoadDims; c < nColumns; c++) {
                     PrimitiveArray pa = columns.get(c);
                     isDouble[c] = pa instanceof FloatArray ||
                                   pa instanceof DoubleArray;
-                    isLong[c]   = pa instanceof ByteArray  ||
-                                  pa instanceof ShortArray ||
-                                  pa instanceof IntArray   ||
-                                  pa instanceof LongArray;
+                    isULong[c]  = pa instanceof ULongArray;
+                    isLong[c]   = pa.isIntegerType() && !(pa instanceof ULongArray);
                     isChar[c]   = pa instanceof CharArray;
                     if (isDouble[c]) {
                         doubleMvs[c] = columnAttributes(c).getDouble("missing_value");
                         doubleFvs[c] = columnAttributes(c).getDouble("_FillValue");
+                    } else if (isULong[c]) {
+                        ulongMvs[c] = columnAttributes(c).getULong("missing_value");
+                        ulongFvs[c] = columnAttributes(c).getULong("_FillValue");
                     } else if (isLong[c]) {
                         longMvs[c] = columnAttributes(c).getLong("missing_value");
                         longFvs[c] = columnAttributes(c).getLong("_FillValue");
@@ -7743,9 +7780,18 @@ Dataset {
                                 hasData = true;
                                 break;
                             }
+                        } else if (isULong[c]) {
+                            BigInteger ul = columns.get(c).getULong(row);
+                            if (ul.equals(ULongArray.MAX_VALUE) ||  //trouble: should test maxIsMV
+                                ul.equals(ulongMvs[c]) ||
+                                ul.equals(ulongFvs[c])) { 
+                            } else {
+                                hasData = true;
+                                break;
+                            }
                         } else if (isLong[c]) {
                             long tl = columns.get(c).getLong(row);
-                            if (tl == Long.MAX_VALUE ||
+                            if (tl == Long.MAX_VALUE ||   //trouble: should test maxIsMV
                                 tl == longMvs[c] ||
                                 tl == longFvs[c]) { 
                             } else {
@@ -7756,7 +7802,7 @@ Dataset {
                             int tc = columns.get(c).getInt(row);
                             if (tc == 0 ||
                                 tc == 32 ||
-                                tc == Integer.MAX_VALUE) { 
+                                tc == Integer.MAX_VALUE) {  //trouble: should test maxIsMV
                             } else {
                                 hasData = true;
                                 break;
@@ -11128,7 +11174,7 @@ Dataset {
                 }
                 innerTableNColumns = innerTable.nColumns();  //It has no index columns
                 innerTableNRows    = innerTable.nRows();
-                globalAttributes.set(cdmInnerName, cdmInnerVars.toString());      //may be "", that's okay
+                globalAttributes.set(cdmInnerName, cdmInnerVars.toString());    //may be "", that's okay
                 subsetVars.append(cdmInnerVars);
                 globalAttributes.set("subsetVariables", subsetVars.toString()); //may be "", that's okay 
 
@@ -11202,6 +11248,7 @@ Dataset {
                 if (debugMode) 
                     String2.log("  Debug: multidim innerTable has nCols=" + innerTableNColumns + 
                         " nRows=" + innerTableNRows + " nKeepRows=" + nInnerGood); 
+                //String2.log("outer=\n" + outerTable.dataToString() + "\ninner=\n" + innerTable.dataToString());
 
                 //Are we done? Are those all the variables we need that are in the file?
                 if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + 
@@ -13188,8 +13235,9 @@ String2.log(table.toString());
             //from EDDTableFromNcFiles.testNcCF2b() and testNcCFMA2b();
             String fileName = String2.unitTestDataDir + "nccf/" + 
                 (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
+            String msg = "ERROR when type=" + type + ": ";
 
-            String2.log("\n\n** Testing nLevels=2/" + fileType + "\n" +
+            String2.log("\n\n** Testing type=" + type + " nLevels=2/" + fileType + "\n" +
                 "  " + fileName);
             String2.log(NcHelper.ncdump(fileName, "-h"));
 /* */
@@ -13206,25 +13254,28 @@ String2.log(table.toString());
 "33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,30.0,-1.83,35.64\n" +
 "33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,49.0,-1.83,35.64\n" +
 "...\n";
-            Test.ensureEqual(results, expected, "");
-            Test.ensureEqual(table.nRows(), 53, table.toString());
+            Test.ensureEqual(results, expected, msg);
+            Test.ensureEqual(table.nRows(), 53, msg + table.toString());
             results = table.columnAttributes(0).toString();
             expected = 
 "    comment=See the list of platform codes (sorted in various ways) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\n" +
 "    ioos_category=Identifier\n" +
 "    long_name=GTSPP Platform Code\n" +
 "    references=http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                "platform, cruise", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), "platform, cruise", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "org, type, station_id, longitude, latitude, time", gatts.toString());
+                "org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
+                "platform, cruise, org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
-                String2.pressEnterToContinue(fileType + " #3a " + pauseMessage); 
+                String2.pressEnterToContinue("type=" + type + ": " + fileType + " #3a " + pauseMessage); 
 
                 //
                 table.readNcCF(fileName, 
@@ -13233,8 +13284,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("cruise"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, 
                     StringArray.fromCSV("cruise,latitude,depth,temperature"), 
@@ -13242,8 +13293,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("latitude"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, 
                     StringArray.fromCSV("cruise,latitude,depth,temperature"), 
@@ -13251,8 +13302,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("depth"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, 
                     StringArray.fromCSV("cruise,latitude,depth,temperature"), 
@@ -13260,8 +13311,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("temperature"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 //
                 table.readNcCF(fileName, 
@@ -13270,8 +13321,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("latitude"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, 
                     StringArray.fromCSV("latitude,depth,temperature"), 
@@ -13279,8 +13330,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("depth"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, 
                     StringArray.fromCSV("latitude,depth,temperature"), 
@@ -13288,8 +13339,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("temperature"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 //
                 table.readNcCF(fileName, StringArray.fromCSV("depth,temperature"), 
@@ -13297,8 +13348,8 @@ String2.log(table.toString());
                     StringArray.fromCSV("depth"), 
                     StringArray.fromCSV("="),
                     StringArray.fromCSV("-12345"));
-                Test.ensureEqual(table.nRows(), 0, "");
-                Test.ensureEqual(table.nColumns(), 0, "");
+                Test.ensureEqual(table.nRows(), 0, msg);
+                Test.ensureEqual(table.nColumns(), 0, msg);
 
                 table.readNcCF(fileName, StringArray.fromCSV("depth,temperature"), 
                     0,  //standardizeWhat=0
@@ -13422,17 +13473,18 @@ String2.log(table.toString());
             expected = 
 "platform,cruise\n" +
 "33P2,Q990046312\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                "platform, cruise", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "platform, cruise", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile",
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), "platform, cruise", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_profile_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("subsetVariables"), "platform, cruise", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
-                String2.pressEnterToContinue(fileType + " #3b " + pauseMessage); 
+                String2.pressEnterToContinue("type=" + type + ": " + fileType + " #3b " + pauseMessage); 
 
             //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -13450,25 +13502,32 @@ String2.log(table.toString());
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just innerTable loadVars, no constraints");
+            String2.log("ncdump of " + fileName + "\n" +  NcHelper.ncdump(fileName, "-v station_id;type"));
             table.readNcCF(fileName, 
                 StringArray.fromCSV("station_id,zztop,type"), 
                 0,  //standardizeWhat=0
                 null, null, null);
             results = table.dataToString();
             expected = 
+//before: 4th row with mv's is removed
+//2020-08-03 now it isn't removed for type=1 because station_id is int with no defined _FillValue or missing_value and [3]=2147483647!
+//  In other words: this is a flaw in the data file.
+//  note type0=ragged, type1=multidimensional
 "station_id,type\n" +
 "13968849,TE\n" +
 "13968850,TE\n" +
-"13933177,BA\n"; //4th row with mv's is removed
-            Test.ensureEqual(results, expected, "results=\n" + results);
+"13933177,BA\n" +
+(type == 0? "" : "2147483647,\n"); 
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "type, station_id", gatts.toString());
-            Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "type, station_id", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_profile_variables"), "type, station_id", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("subsetVariables"), "type, station_id", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3d " + pauseMessage); 
 
@@ -13485,15 +13544,16 @@ String2.log(table.toString());
             expected = 
 "station_id,type\n" +
 "13933177,BA\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "type, station_id", gatts.toString());
-            Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "type, station_id", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_profile_variables"), "type, station_id", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("subsetVariables"), "type, station_id", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3e " + pauseMessage); 
 
@@ -13522,16 +13582,20 @@ String2.log(table.toString());
 "cruise,org,type,station_id,longitude,latitude,time,platform\n" +
 "Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,33P2\n" +
 "Q990046312,ME,TE,13968850,176.64,-75.43,1.335216E9,33P2\n" +
-"SHIP    12,ME,BA,13933177,173.54,-34.58,1.33514142E9,9999\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+"SHIP    12,ME,BA,13933177,173.54,-34.58,1.33514142E9,9999\n" +
+(type == 0? "" : "SHIP    12,,,2147483647,,,,9999\n"); //2020-08-03 this also appeared. See 2020-08-03 comments above
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                "platform, cruise", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), "platform, cruise", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "org, type, station_id, longitude, latitude, time", gatts.toString());
+                "org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
+                "platform, cruise, org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3g " + pauseMessage); 
 
@@ -13548,15 +13612,18 @@ String2.log(table.toString());
             expected = 
 "cruise,org,type,station_id,longitude,latitude,time,platform\n" +
 "Q990046312,ME,TE,13968850,176.64,-75.43,1.335216E9,33P2\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                "platform, cruise", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), "platform, cruise", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "org, type, station_id, longitude, latitude, time", gatts.toString());
+                "org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
+                "platform, cruise, org, type, station_id, longitude, latitude, time", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3h " + pauseMessage); 
 
@@ -13589,15 +13656,16 @@ String2.log(table.toString());
 "35.99,33P2,Q990046312\n" +
 "36.0,33P2,Q990046312\n" +
 "35.98,33P2,Q990046312\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                "platform, cruise", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "platform, cruise", gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), "platform, cruise", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_profile_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("subsetVariables"), "platform, cruise", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3j " + pauseMessage); 
 
@@ -13682,15 +13750,18 @@ if (fileType.equals("ragged"))
 "-34.58,173.54,1.33514142E9,\n" +
 "-34.58,173.54,1.33514142E9,\n" +
 "-34.58,173.54,1.33514142E9,\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                null, gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), null, 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "longitude, latitude, time", gatts.toString());
+                "longitude, latitude, time", 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "longitude, latitude, time", gatts.toString());
+                "longitude, latitude, time", 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3l " + pauseMessage); 
 
@@ -13707,15 +13778,16 @@ if (fileType.equals("ragged"))
             expected = 
 "latitude,longitude,time,salinity\n" +
 "-75.43,176.64,1.335216E9,35.77\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                null, gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), null, 
+                msg + gatts.toString());
             Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                "longitude, latitude, time", gatts.toString());
+                "longitude, latitude, time", msg + gatts.toString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
-                "longitude, latitude, time", gatts.toString());
+                "longitude, latitude, time", msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3m " + pauseMessage); 
 
@@ -13746,15 +13818,16 @@ if (fileType.equals("ragged"))
 "temperature,salinity\n" +
 "-1.1,35.77\n" +
 "-1.12,35.77\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(results, expected, msg + "results=\n" + results);
             gatts = table.globalAttributes();
-            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("cdm_profile_variables"), 
-                null, gatts.toString());
-            Test.ensureEqual(gatts.getString("subsetVariables"), 
-                null, gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_trajectory_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("cdm_profile_variables"), null, 
+                msg + gatts.toString());
+            Test.ensureEqual(gatts.getString("subsetVariables"), null, 
+                msg + gatts.toString());
             if (pauseAfterEach) 
                 String2.pressEnterToContinue(fileType + " #3o " + pauseMessage); 
 
@@ -20136,7 +20209,7 @@ String2.log(table.dataToString());
                         globalAttributes.add(gridMappingAtts);
                 }
 
-                varPATypes[v] = NcHelper.getElementPAType(var.getDataType()); //exception if trouble
+                varPATypes[v] = NcHelper.getElementPAType(var); //exception if trouble
                 nDims[v] = var.getRank();
                 isCharArray[v] = nDims[v] > 0 &&  varPATypes[v] == PAType.CHAR; 
                 if (varPATypes[v] == PAType.CHAR)
@@ -23295,9 +23368,10 @@ String2.log(table.dataToString());
             }
 
             //clean up the data
+            //2020-08-11 I tried reading directly into unsigned PAs, but trouble (didn't pursue it), so I reverted
             if (isPcmUnsigned) {
                 //what were read as signed:    0  127 -128  -1
-                //should become   unsigned: -128   -1    0 255
+                //should become   unsigned: -128   -1    0 127
                 for (int c = 0; c < nChannels; c++) 
                     pa[c].changeSignedToFromUnsigned();
             }
@@ -23764,7 +23838,7 @@ String2.log(table.dataToString());
         AudioFormat.Encoding encoding = isFloat? 
             AudioFormat.Encoding.PCM_FLOAT : 
             AudioFormat.Encoding.PCM_SIGNED;
-        int nBits = PrimitiveArray.elementSize(tPAType) * 8; //bits per element
+        int nBits = PAType.elementSize(tPAType) * 8; //bits per element
         AudioFormat af = new AudioFormat(encoding,
             sampleRate, nBits, nCol, (nCol * nBits) / 8, frameRate, 
             true, //bigEndian. My data is bigEndian, but I think Java always swaps and writes littleEndian
@@ -24104,48 +24178,49 @@ String2.log(table.dataToString());
     public void convertToFakeMissingValues(int column) {
         //String2.log("Table.convertToFakeMissingValues column=" + column);
         PrimitiveArray pa = getColumn(column);
-        if (pa.elementType() == PAType.STRING ||
-            pa.elementType() == PAType.CHAR) 
+        PAType paType = pa.elementType();
+        if (paType == PAType.STRING ||
+            paType == PAType.CHAR) 
             return;
         //boolean removeMVF = false;  //commented out 2010-10-26 so NDBC files have consistent _FillValue
-        if        (pa instanceof CharArray) {
+        if        (paType == PAType.CHAR) {
             columnAttributes(column).set("missing_value", Character.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Character.MAX_VALUE);
             //removeMVF = ((CharArray)pa).indexOf(Character.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof ByteArray) {
+        } else if (paType == PAType.BYTE) {
             columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Byte.MAX_VALUE);
             //removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof UByteArray) {
+        } else if (paType == PAType.UBYTE) {
             columnAttributes(column).set("missing_value", UByteArray.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    UByteArray.MAX_VALUE);
-        } else if (pa instanceof ShortArray) {
+        } else if (paType == PAType.SHORT) {
             columnAttributes(column).set("missing_value", Short.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Short.MAX_VALUE);
             //removeMVF = ((ShortArray)pa).indexOf(Short.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof UShortArray) {
+        } else if (paType == PAType.USHORT) {
             columnAttributes(column).set("missing_value", UShortArray.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    UShortArray.MAX_VALUE);
-        } else if (pa instanceof IntArray) {
+        } else if (paType == PAType.INT) {
             columnAttributes(column).set("missing_value", Integer.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Integer.MAX_VALUE);
             //removeMVF = ((IntArray)pa).indexOf(Integer.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof UIntArray) {
+        } else if (paType == PAType.UINT) {
             columnAttributes(column).set("missing_value", UIntArray.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    UIntArray.MAX_VALUE);
-        } else if (pa instanceof LongArray) {
+        } else if (paType == PAType.LONG) {
             columnAttributes(column).set("missing_value", Long.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    Long.MAX_VALUE);
             //removeMVF = ((LongArray)pa).indexOf(Long.MAX_VALUE, 0) < 0;
-        } else if (pa instanceof ULongArray) {
+        } else if (paType == PAType.ULONG) {
             columnAttributes(column).set("missing_value", ULongArray.MAX_VALUE);
             columnAttributes(column).set("_FillValue",    ULongArray.MAX_VALUE);
-        } else if (pa instanceof FloatArray) {
+        } else if (paType == PAType.FLOAT) {
             columnAttributes(column).set("missing_value", (float)DataHelper.FAKE_MISSING_VALUE);
             columnAttributes(column).set("_FillValue",    (float)DataHelper.FAKE_MISSING_VALUE);
             pa.switchFromTo("", "" + DataHelper.FAKE_MISSING_VALUE);
             //removeMVF = ((FloatArray)pa).indexOf((float)DataHelper.FAKE_MISSING_VALUE, 0) < 0; //safer to search, in case values were already fake mv
-        } else if (pa instanceof DoubleArray) {
+        } else if (paType == PAType.DOUBLE) {
             columnAttributes(column).set("missing_value", DataHelper.FAKE_MISSING_VALUE);
             columnAttributes(column).set("_FillValue",    DataHelper.FAKE_MISSING_VALUE);
             pa.switchFromTo("", "" + DataHelper.FAKE_MISSING_VALUE);
@@ -26082,8 +26157,20 @@ String2.log(table.dataToString());
         String safeMV = colAtt.getString("_FillValue"); //fill has precedence
         if (safeMV == null || safeMV.equals("NaN"))
             safeMV = colAtt.getString("missing_value"); 
-        if (safeMV == null || safeMV.equals("NaN"))
+        if (safeMV == null || safeMV.equals("NaN")) {
+            //no term was defined
+            //for integerType and CharArray, if there are missing values...
+            if (pa.getMaxIsMV()) {
+                int which = pa.indexOf("");
+                if (which >= 0) {
+                    colAtt.set("_FillValue", pa.missingValue().pa());
+                } else {
+                    //there are no missing values, so maxIsMV is set unnecessarily
+                    pa.setMaxIsMV(false);
+                }
+            }
             return false;
+        }
         return pa.switchNaNToFakeMissingValue(safeMV) > 0;
     }
 
@@ -27694,8 +27781,8 @@ String2.log(table.dataToString());
             "b", "b", "b",        "b", "b", "b", "c", "a",  "d",  "a", "c", "a",  ""});
         DoubleArray dar = new DoubleArray(new double[]{
             -121,-100, Double.NaN, 110, 132, -2, 1e30,  132, 1e30,125, 1.1, 1.2, 1.3});
-        ByteArray    bar = new    ByteArray(new byte[]{ //127=NaN
-            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12});  
+        ByteArray    bar = (ByteArray) new    ByteArray(new byte[]{ //127=NaN
+            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12}).setMaxIsMV(true);  
         Table table = new Table();
         table.addColumn("shar",shar);
         table.addColumn("bar", bar);
@@ -27733,8 +27820,8 @@ String2.log(table.dataToString());
             "b", "b", "b",        "b", "b", "b", "c", "a",  "d",  "a", "c", "a",  ""});
         dar = new DoubleArray(new double[]{
             -121,-100, Double.NaN, 110, 132, -2, 1e30,  132, 1e30,125, 1.1, 1.2, 1.3});
-        bar = new    ByteArray(new byte[]{ //127=NaN
-            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12});  
+        bar = (ByteArray)new    ByteArray(new byte[]{ //127=NaN
+            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12}).setMaxIsMV(true);  
         table = new Table();
         table.addColumn("bar", bar);
         table.addColumn("sar", sar);
@@ -28943,7 +29030,7 @@ String2.log(table.dataToString());
             else if (colType == Types.DATE ||
                      colType == Types.TIMESTAMP) getDate[col] = true;
             else if (tPAType == PAType.DOUBLE) getDouble[col] = true;
-            else if (tPAType == PAType.LONG)   getLong[col] = true;
+            else if (tPAType == PAType.LONG)     getLong[col] = true;
             else getInt[col] = true;
 
             //actually add the column
@@ -30189,7 +30276,7 @@ String2.log(table.dataToString());
                 boolean isString[] = new boolean[nCol]; //all false  (includes UTC times -- initially Strings)
                 boolean isUTC[] = new boolean[nCol]; //all false
                 for (int col = 0; col < nCol; col++) {
-                    PAType elementPAType = cTypes == null? PAType.STRING : PrimitiveArray.elementStringToPAType(cTypes[col]);
+                    PAType elementPAType = cTypes == null? PAType.STRING : PAType.fromCohortString(cTypes[col]);
                     isString[col] = elementPAType == PAType.STRING;
                     Attributes atts = new Attributes();
                     if (cUnits != null) {
@@ -30300,7 +30387,7 @@ String2.log(table.dataToString());
     
     /**
      * This reads a table from a Reader from a jsonLinesCsv file (or other source).
-     * http://jsonlines.org/examples/
+     * https://jsonlines.org/examples/
      * The first line must be column names.
      * The second line must be data values.
      * This stops (perhaps with error) at the first line that doesn't start with [
@@ -30355,7 +30442,7 @@ String2.log(table.dataToString());
                     if (colTypes == null) {
                         pa = new StringArray();
                     } else {
-                        PAType tPAType = PrimitiveArray.elementStringToPAType(colTypes[which]); //it handles boolean
+                        PAType tPAType = PAType.fromCohortString(colTypes[which]); //it handles boolean
                         pa = PrimitiveArray.factory(tPAType, 8, false);
                         fromJsonString[c] = tPAType == PAType.STRING || tPAType == PAType.CHAR;
                         isBoolean[c] = "boolean".equals(colTypes[which]);
@@ -30467,7 +30554,7 @@ String2.log(table.dataToString());
 
     /**
      * This writes a table to a jsonlCSV UTF-8 file.
-     * http://jsonlines.org/examples/
+     * https://jsonlines.org/examples/
      *
      * @param fullFileName This is just used for error messages.
      * @param append  If false, any existing file is deleted and a new file is created.
@@ -30815,10 +30902,10 @@ String2.log(table.dataToString());
                 "X SetScale d " + //d=specifying data full scale, ',' after d???
                 (Double.isNaN(colMin)? "0,0" :  //???no non-MV data values; 0,0 is used in their examples
                  pa instanceof DoubleArray || 
-                 pa instanceof LongArray? colMin + "," + colMax :
+                 pa instanceof ULongArray?  colMin + "," + colMax :
                  pa instanceof FloatArray? Math2.doubleToFloatNaN(colMin) + "," +
                                            Math2.doubleToFloatNaN(colMax) :
-                 Math2.roundToInt(colMin) + "," + Math2.roundToInt(colMax)) + 
+                 Math2.roundToLong(colMin) + "," + Math2.roundToLong(colMax)) + 
                 ", " + String2.toJson(units) + 
                 ", " + safeColName +
                 IgorEndOfLine);
@@ -30937,7 +31024,7 @@ String2.log(table.dataToString());
             String rowType = infoTable.getStringData(rowTypeCol, row);
             String variableName = infoTable.getStringData(variableNameCol, row);
             String javaType = infoTable.getStringData(javaTypeCol, row);
-            PAType tPAType = PrimitiveArray.elementStringToPAType(javaType);
+            PAType tPAType = PAType.fromCohortString(javaType);
             if (rowType.equals("attribute")) {
                 String attributeName = infoTable.getStringData(attributeNameCol, row);
                 String value = infoTable.getStringData(valueCol, row);
@@ -31935,7 +32022,7 @@ String2.log(table.dataToString());
 
         //1=lon
         int[] ai = {-3, -2, -1, Integer.MAX_VALUE};
-        col = table.addColumn("Longitude", new IntArray(ai));
+        col = table.addColumn("Longitude", new IntArray(ai).setMaxIsMV(true));
         table.columnAttributes(col).set("units", "degrees_east");
         table.columnAttributes(col).set("lon_att2", new IntArray(new int[]{-2000000000, 2000000000}));
 
@@ -31954,33 +32041,33 @@ String2.log(table.dataToString());
         //4=long  
         if (includeLongs) {
             long[] al = {-2000000000000000L, 2, 2000000000000000L, Long.MAX_VALUE};
-            col = table.addColumn("Long Data", new LongArray(al));
+            col = table.addColumn("Long Data", new LongArray(al).setMaxIsMV(true));
             table.columnAttributes(col).set("units", new StringArray(new String[]{"longs"}));
             table.columnAttributes(col).set("long_att2", new LongArray(new long[]{-2000000000000000L, 2000000000000000L}));
         }
 
         //5=int
         ai = new int[]{-2000000000, 2, 2000000000, Integer.MAX_VALUE};
-        col = table.addColumn("Int Data", new IntArray(ai));
+        col = table.addColumn("Int Data", new IntArray(ai).setMaxIsMV(true));
         table.columnAttributes(col).set("units", new StringArray(new String[]{"ints"}));
         table.columnAttributes(col).set("int_att2", new IntArray(new int[]{-2000000000, 2000000000}));
 
         //6=short
         short[] as = {(short)-32000, (short)7, (short)32000, Short.MAX_VALUE};
-        col = table.addColumn("Short Data", new ShortArray(as));
+        col = table.addColumn("Short Data", new ShortArray(as).setMaxIsMV(true));
         table.columnAttributes(col).set("units", new StringArray(new String[]{"shorts"}));
         table.columnAttributes(col).set("short_att2", new ShortArray(new short[]{(short)-30000, (short)30000}));
 
         //7=byte
         byte[] ab = {(byte)-120, (byte)8, (byte)120, Byte.MAX_VALUE};
-        col = table.addColumn("Byte Data", new ByteArray(ab));
+        col = table.addColumn("Byte Data", new ByteArray(ab).setMaxIsMV(true));
         table.columnAttributes(col).set("units", "bytes");
         table.columnAttributes(col).set("byte_att2", new ByteArray(new byte[]{(byte)-120, (byte)120}));
 
         //8=String
         if (includeStrings) {
             char[] ac = {',', '"', '\u20ac', '\uffff'};
-            col = table.addColumn("Char Data", new CharArray(ac));
+            col = table.addColumn("Char Data", new CharArray(ac).setMaxIsMV(true));
             table.columnAttributes(col).set("units", "chars");
             table.columnAttributes(col).set("char_att2", new CharArray(new char[]{',', '"', '\u00fc', '\u20ac'}));
 
@@ -32334,15 +32421,11 @@ String2.log(table.dataToString());
         table2.columns.get(7).setString(2, "\u20ac");
         if (table2.columns.get(7).getString(3).equals("?"))
             table2.columns.get(7).setString(3, "");
-        try {
-            String t1 = table.dataToString();
-            String t2 = table.dataToString();
-            String2.log("\nt1=\n" + t1 + "\nt2=\n" + t2);
-            Test.ensureEqual(t1, t2, "");
-            Test.ensureTrue(table.equals(table2), "Test table equality");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e));
-        }
+        String t1 = table.dataToString();
+        String t2 = table.dataToString();
+        String2.log("\nt1=\n" + t1 + "\nt2=\n" + t2);
+        Test.ensureEqual(t1, t2, "");
+        Test.ensureTrue(table.equals(table2), "Test table equality");
         
         //test if data types are the same
         int n = table.nColumns();
@@ -33403,6 +33486,7 @@ expected =
         String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc"; 
         Table table = new Table();
         long time = 0;
+        String2.log(NcHelper.ncdump(fileName, "-h"));
 
         for (int attempt = 0; attempt < 3; attempt++) {
             String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
@@ -33418,9 +33502,9 @@ expected =
             String results = table.dataToString(3);
             String expected =  //before 2011-06-14 was 32.31, -75.35,
 "TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
-"2.678004E8,0.0,32.501,-79.099,255,1.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.5,27.2,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,1.3,0.3,41004\n" +
-"2.67804E8,0.0,32.501,-79.099,247,6.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.6,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.1,2.6,41004\n" +
-"2.678076E8,0.0,32.501,-79.099,249,7.0,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1020.4,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.5,2.5,41004\n" +
+"2.678004E8,0.0,32.501,-79.099,255,1.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,32767,1020.5,27.2,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,1.3,0.3,41004\n" +
+"2.67804E8,0.0,32.501,-79.099,247,6.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,32767,1020.6,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.1,2.6,41004\n" +
+"2.678076E8,0.0,32.501,-79.099,249,7.0,-9999999.0,-9999999.0,-9999999.0,-9999999.0,32767,1020.4,26.8,27.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,6.5,2.5,41004\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
@@ -33457,9 +33541,9 @@ expected =
             String results = table.dataToString(3);            
             String expected = //before 2011-06-14 was -80.17, 28.5
 //"station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
-//"41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
-//"41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
-//"41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n" +
+//"41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,32767,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
+//"41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,32767,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
+//"41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,32767,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n" +
 
 //source ASCII file has:  (note 2 rows for ever hour)
 //YYYY MM DD hh WD   WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS  [in EditPlus, the first row of data is here, to right of col names -- screwy line endings?!]
@@ -33472,9 +33556,9 @@ expected =
 
 //2020-03-03 this data changed significantly after big changes to processing system/ dealing with duplicate lines (prefer newer data/later in file)
 "station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
-"41009,-80.166,28.519,9.151488E8,21,1.4,3.4,1.1,11.11,6.82,,1020.9,20.4,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.5,-1.3\n" + //1999-01-01T00:00
-"41009,-80.166,28.519,9.151524E8,53,1.5,2.6,1.1,11.11,6.97,,1021.1,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" + //1999-01-01T01:00
-"41009,-80.166,28.519,9.15156E8,73,2.5,3.8,1.09,11.11,6.87,,1021.2,20.7,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-2.4,-0.7\n" + //1999-01-01T02:00
+"41009,-80.166,28.519,9.151488E8,21,1.4,3.4,1.1,11.11,6.82,32767,1020.9,20.4,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.5,-1.3\n" + //1999-01-01T00:00
+"41009,-80.166,28.519,9.151524E8,53,1.5,2.6,1.1,11.11,6.97,32767,1021.1,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" + //1999-01-01T01:00
+"41009,-80.166,28.519,9.15156E8,73,2.5,3.8,1.09,11.11,6.87,32767,1021.2,20.7,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-2.4,-0.7\n" + //1999-01-01T02:00
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -33538,7 +33622,7 @@ expected =
                 break;
         }
         if (time >= 450)
-            throw new SimpleException("saveAsJson took too long. Expected=~281 for 17117 rows.");
+            throw new SimpleException("saveAsJson took too long (" + time + "ms). Expected=~281 for 17117 rows.");
 
         //saveAsFlatNc
         for (int attempt = 0; attempt < 3; attempt++) {
@@ -33972,7 +34056,7 @@ expected =
         Attributes dAtts = new Attributes(); dAtts.add("_FillValue", -99.0);
         Attributes sAtts = new Attributes(); sAtts.add("_FillValue", "99");
 
-        IntArray    ia = new IntArray(  new int[]    {1,   99,  999, Integer.MAX_VALUE});
+        IntArray    ia = (IntArray)new IntArray(  new int[]    {1,   99,  999, Integer.MAX_VALUE}).setMaxIsMV(true);
         FloatArray  fa = new FloatArray(new float[]  {2,   -99, -99, Float.NaN});
         DoubleArray da = new DoubleArray(new double[]{3,   -99, -99, Double.NaN});
         StringArray sa = new StringArray(new String[]{"4", null,"99",""});

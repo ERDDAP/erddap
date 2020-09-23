@@ -187,7 +187,8 @@ public class GenerateDatasetsXml {
                 "EDDTableFromThreddsFiles",
                 "EDDTableFromWFSFiles",
                 "EDDsFromFiles",
-                "ncdump"};
+                "ncdump",
+                "addFillValueAttributes"};
             StringBuilder sb = new StringBuilder();
             int net = eddTypes.length;
             int net2 = Math2.hiDiv(net, 2);
@@ -805,6 +806,12 @@ public class GenerateDatasetsXml {
     //"\"-k\" (type), \"-t\" (human-readable times), )\n"); //don't work!?
                         String2.log("working...");
                         printToBoth(NcHelper.ncdump(s1, s2));
+
+                    } else if (eddType.equals("addFillValueAttributes")) {
+                        s1  = get(args,  1,  s1, "datasets.xml file name");
+                        s2  = get(args,  2,  s2, "addFillValueAttributes .csv file name");
+                        String2.log("working...");
+                        printToBoth(EDD.addFillValueAttributes(s1, s2));
 
                     } else {
                         String2.log("ERROR: eddType=" + eddType + " is not an option.");

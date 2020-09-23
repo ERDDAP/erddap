@@ -768,7 +768,7 @@ public class String2 {
      * This returns the specified capture group from s. 
      *
      * @param s the source String
-     * @param regex the regular expression, see java.util.regex.Pattern.
+     * @param regex the regular expression which hopefully matches part of s, see java.util.regex.Pattern.
      * @param captureGroupNumber the number of the capture group (0 for entire regex,
      *    1 for first capture group, 2 for second, etc.)
      * @return the value of the specified capture group,
@@ -783,16 +783,16 @@ public class String2 {
      * This returns the specified capture group from s. 
      *
      * @param s the source String
-     * @param regexPattern the regexPattern must match the entire string
+     * @param regexPattern the regexPattern which hopefully matches part of s
      * @param captureGroupNumber the number of the capture group (0 for entire regex,
      *    1 for first capture group, 2 for second, etc.)
-     * @return the value of the specified capture group,
+     * @return the value of the specified capture group in the first match of the regex,
           or null if the s doesn't match the regex
      * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
     public static String extractCaptureGroup(String s, Pattern regexPattern, int captureGroupNumber) {
         Matcher m = regexPattern.matcher(s);
-        if (m.matches()) 
+        if (m.find()) 
             return m.group(captureGroupNumber);
         else return null; 
     }
@@ -1190,7 +1190,7 @@ public class String2 {
      
     /**
      * This saves some text in a file named fileName.
-     * This uses the default character encoding.
+     * This uses the default character encoding (ISO-8859-1).
      * 
      * <P>This method uses try/catch to ensure that all possible
      * exceptions are caught and returned as the error String
@@ -1239,7 +1239,7 @@ public class String2 {
      *     Currently, this method purposely does not convert \n to the 
      *     operating-system-appropriate end-of-line characters when writing 
      *     to the file (see lineSeparator).
-     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1 ?)
+     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1)
      * @param lineSeparator is the desired lineSeparator for the outgoing file.
      * @param append if you want to append any existing fileName;
      *   otherwise any existing file is deleted first.
@@ -4433,20 +4433,20 @@ and zoom and pan with controls in
     }
 
     /**
-     * This converts a string to a boolean and then a byte.
+     * This converts a string to a boolean and then an Int.
      * 
      * @param s the string
-     * @return Byte.MAX_VALUE (i.e., missing value) if s is null or s is "". 
+     * @return Integer.MAX_VALUE (i.e., missing value) if s is null or s is "". 
      *   Return 0 if s is "false", "f", or "0".   
      *   Return 1 if for all other values.
      *   Case and leading/trailing spaces don't matter.
      */
-    public static byte parseBooleanToByte(String s) {
+    public static int parseBooleanToInt(String s) {
         if (s == null)
-            return Byte.MAX_VALUE;
+            return Integer.MAX_VALUE;
         s = s.toLowerCase().trim();
         if (s.length() == 0)
-            return Byte.MAX_VALUE;
+            return Integer.MAX_VALUE;
         return (s.equals("false") || s.equals("f") || s.equals("0"))? (byte)0 : (byte)1;
     }
 
@@ -4503,9 +4503,16 @@ and zoom and pan with controls in
             return Integer.MAX_VALUE;
 
         //try to parse hex or regular int        
+        if (s.startsWith("0x") || s.startsWith("0X")) {
+            try {
+                return (int)Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int of lowest 32 bits
+            } catch (Exception e) {      
+                return Integer.MAX_VALUE;
+            }
+        } 
+
+        //try to parse as regular int        
         try {
-            if (s.startsWith("0x") || s.startsWith("0X")) 
-                return (int)Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int
             return Integer.parseInt(s);
         } catch (Exception e) {      
             //falls through
@@ -4513,13 +4520,60 @@ and zoom and pan with controls in
 
         //round from double?
         try {
-            //2011-02-09 Bob Simons added to avoid Java hang bug.
-            //But now, latest version of Java is fixed.
-            //if (isDoubleTrouble(s)) return 0;  
-
             return Math2.roundToInt(Double.parseDouble(s));
         } catch (Exception e) {
             return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Convert a string to an Integer object (or null if trouble).
+     * Exactly like parseInt, except it returns null if trouble (so MAX_VALUE
+     * is a legitimate value).
+     *
+     * @param s is the String representation of a number.
+     * @return the Integer value from the String 
+     *    (or null if error).
+     */
+    public static Integer parseIntObject(String s) {
+        //*** XML.decodeEntities relies on leading 0's being ignored 
+        //    and number treated as decimal (not octal)
+
+        //quickly reject most non-numbers
+        //This is a huge speed improvement when parsing ASCII data files
+        //  because Java is very slow at filling in the stack trace when an exception is thrown.
+        if (s == null)
+            return null;
+        s = s.trim();
+        if (s.length() == 0)
+            return null;
+        char ch = s.charAt(0);
+        if ((ch < '0' || ch > '9') && ch != '-' && ch != '+' && ch != '.')
+            return null;
+
+        //try to parse hex        
+        if (s.startsWith("0x") || s.startsWith("0X")) {
+            try {
+                return (int)Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int of lowest 32 bits
+            } catch (Exception e) {      
+                return null;
+            }
+        }
+
+        //try to parse regular int        
+        try {
+            return new Integer(Integer.parseInt(s));
+        } catch (Exception e) {      
+            //fall through
+        }
+
+        //round from double?
+        try {
+            double d = Double.parseDouble(s);
+            return !Double.isFinite(d) || d > Integer.MAX_VALUE + 0.4999999999 || d <= Integer.MIN_VALUE - 0.4999999999? 
+                null : new Integer((int)Math.round(d)); //safe since checked for larger values above
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -4563,9 +4617,14 @@ and zoom and pan with controls in
     }
 
     /** 
-     * This parses the string to a BigDecimal (or null if trouble).
+     * This parses the string to a BigDecimalObject (or null if trouble).
      */
-    public static BigDecimal parseBigDecimal(String s) {
+    public static BigDecimal parseBigDecimalObject(String s) {
+        if (s == null)
+            return null;
+        s = s.trim();
+        if (s.length() == 0)
+            return null;
         try {
             return new BigDecimal(s);
         } catch (Exception e) {
@@ -4586,14 +4645,63 @@ and zoom and pan with controls in
             return Math2.ULONG_MAX_VALUE;
 
         try {
-            BigInteger bi = new BigDecimal(s).round(MathContext.UNLIMITED).toBigInteger();
+            BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
             if (bi.compareTo(Math2.ULONG_MIN_VALUE) < 0 ||
-                bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0)
+                bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0) //not >
                 return Math2.ULONG_MAX_VALUE;
             return bi;
 
         } catch (Exception e) {
             return Math2.ULONG_MAX_VALUE;
+        }
+    }
+  
+    /**
+     * This converts the string into a BigInteger in the ULong range (or null if trouble). 
+     *
+     * return a BigInteger (or null if trouble). 
+     */
+    public static BigInteger parseULongObject(String s) {
+        if (s == null) 
+            return null;
+        s = s.trim();
+        if (s.length() == 0)
+            return null;
+
+        try {
+            BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
+            if (bi.compareTo(Math2.ULONG_MIN_VALUE) < 0 ||
+                bi.compareTo(Math2.ULONG_MAX_VALUE) > 0) //not >=
+                return null;
+            return bi;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+  
+    /**
+     * This converts the string into a BigInteger in the ULong range 
+     * (or null if decimal part or other trouble). 
+     *
+     * return a BigInteger (or null if trouble). 
+     */
+    public static BigInteger strictParseULongObject(String s) {
+        if (s == null) 
+            return null;
+        s = s.trim();
+        if (s.length() == 0)
+            return null;
+
+        try {
+            BigInteger bi = new BigInteger(s);
+            if (bi.compareTo(Math2.ULONG_MIN_VALUE) < 0 ||
+                bi.compareTo(Math2.ULONG_MAX_VALUE) > 0) //not >=
+                return null;
+            return bi;
+
+        } catch (Exception e) {
+            return null;
         }
     }
   
@@ -4637,7 +4745,7 @@ and zoom and pan with controls in
     /** 
      * This converts String representation of a long. 
      * Leading or trailing spaces are automatically removed.
-     * THIS DOESN'T ROUND! So floating point values lead to Long.MAX_VALUE.
+     * 2020-07-31 THIS DOES ROUND!
      *
      * @param s a valid String representation of a long value
      * @return a long (or Long.MAX_VALUE if trouble).
@@ -4658,9 +4766,43 @@ and zoom and pan with controls in
         try {
             if (s.startsWith("0x") || s.startsWith("0X"))
                 return Long.parseLong(s.substring(2), 16);
-            return Long.parseLong(s);
+            BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
+            return bi.compareTo(Math2.LONG_MIN_VALUE) < 0 || bi.compareTo(Math2.LONG_MAX_VALUE) >= 0?
+                Long.MAX_VALUE : bi.longValueExact(); //should succeed, but throws exception if failure
         } catch (Exception e) {
             return Long.MAX_VALUE;
+        }
+    }
+
+    /** 
+     * This converts String representation of a Long (or null if trouble). 
+     * Leading or trailing spaces are automatically removed.
+     * 2020-07-31 THIS DOES ROUND!
+     *
+     * @param s a valid String representation of a long value
+     * @return a long (or null if trouble).
+     */
+    public static Long parseLongObject(String s) {
+        //quickly reject most non-numbers
+        //This is a huge speed improvement when parsing ASCII data files
+        //  because Java is very slow at filling in the stack trace when an exception is thrown.
+        if (s == null)
+            return null;
+        s = s.trim();
+        if (s.length() == 0)
+            return null;
+        char ch = s.charAt(0);
+        if ((ch < '0' || ch > '9') && ch != '-' && ch != '+')
+            return null;
+
+        try {
+            if (s.startsWith("0x") || s.startsWith("0X"))
+                return new Long(Long.parseLong(s.substring(2), 16));
+            BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
+            return bi.compareTo(Math2.LONG_MIN_VALUE) < 0 || bi.compareTo(Math2.LONG_MAX_VALUE) >= 0?
+                null : new Long(bi.longValueExact()); //should succeed, but throws exception if failure
+        } catch (Exception e) {
+            return null;
         }
     }
 

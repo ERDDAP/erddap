@@ -387,19 +387,18 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
-        try {
-            String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "nc", ".*_prof\\.nc", "",
-                "N_PROF, N_LEVELS",
-                1440,
-                "^", "_prof.nc$", ".*", "fileNumber", //just for test purposes
-                true, //removeMVRows
-                "FLOAT_SERIAL_NO JULD", //sort files by 
-                "", "", "", "", 
-                -1, //defaultStandardizeWhat
-                "", //treatDimensionsAs
-                null, //cacheFromUrl
-                null) + "\n";
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "nc", ".*_prof\\.nc", "",
+            "N_PROF, N_LEVELS",
+            1440,
+            "^", "_prof.nc$", ".*", "fileNumber", //just for test purposes
+            true, //removeMVRows
+            "FLOAT_SERIAL_NO JULD", //sort files by 
+            "", "", "", "", 
+            -1, //defaultStandardizeWhat
+            "", //treatDimensionsAs
+            null, //cacheFromUrl
+            null) + "\n";
 
 String expected = 
 "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_65cd_4c8a_93f3\" active=\"true\">\n" +
@@ -1198,11 +1197,6 @@ String expected =
 "fileNumber, DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, CYCLE_NUMBER, DIRECTION, DATA_CENTRE, DC_REFERENCE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, time, JULD_QC, JULD_LOCATION, latitude, longitude, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, CONFIG_MISSION_NUMBER, PRES, PRES_QC, PRES_ADJUSTED, PRES_ADJUSTED_QC, PRES_ADJUSTED_ERROR, TEMP, TEMP_QC, TEMP_ADJUSTED, TEMP_ADJUSTED_QC, TEMP_ADJUSTED_ERROR, PSAL, PSAL_QC, PSAL_ADJUSTED, PSAL_ADJUSTED_QC, PSAL_ADJUSTED_ERROR", 
                 "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
-
     }
 
     /**
@@ -1827,27 +1821,26 @@ expected=
 
     /**
      * testGenerateDatasetsXml with a SeaDataNet file, specifically the 
-	 * generation of sdn_P02_urn from sdn_parameter_urn attributes.
+     * generation of sdn_P02_urn from sdn_parameter_urn attributes.
      */
     public static void testGenerateDatasetsXmlSeaDataNet() throws Throwable {
         testVerboseOn();
         //debugMode = true;
 
-        try {
-            String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "sdn/", 
-                "netCDF_timeseries_tidegauge\\.nc", "", 
-                "INSTANCE, MAXT", //dimensions
-                1440,
-                "", "", "", "", //just for test purposes; station is already a column in the file
-                true, //removeMVRows
-                "", //sortFilesBy 
-                "", "", "", "", 
-                -1, //defaultStandardizeWhat
-                "", //treatDimensionsAs
-                null, //cacheFromUrl
-                null);
-            String2.setClipboardString(results);
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "sdn/", 
+            "netCDF_timeseries_tidegauge\\.nc", "", 
+            "INSTANCE, MAXT", //dimensions
+            1440,
+            "", "", "", "", //just for test purposes; station is already a column in the file
+            true, //removeMVRows
+            "", //sortFilesBy 
+            "", "", "", "", 
+            -1, //defaultStandardizeWhat
+            "", //treatDimensionsAs
+            null, //cacheFromUrl
+            null);
+        String2.setClipboardString(results);
 
 String expected = 
 "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"sdn_3be0_2b1d_fd71\" active=\"true\">\n" +
@@ -1897,6 +1890,7 @@ String expected =
 "            <att name=\"long_name\">European Directory of Marine Organisations code for the CDI supplier</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2045,6 +2039,7 @@ String expected =
 "            <att name=\"semi_major_axis\" type=\"double\">6378137.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">CRS</att>\n" +
 "        </addAttributes>\n" +
@@ -2265,14 +2260,9 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError in testGenerateDatasetsXmlSeaDataNet."); 
-        }
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
     }
 
@@ -2741,6 +2731,7 @@ String expected =
 "  }\n" +
 "  TIME_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 1, 1;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -2774,6 +2765,7 @@ String expected =
 "  }\n" +
 "  DEPTH_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"OceanSites reference table 2\";\n" +
@@ -2829,6 +2821,7 @@ String expected =
 "  }\n" +
 "  TEMP_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 1, 1;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -2863,6 +2856,7 @@ String expected =
 "  }\n" +
 "  ATPT_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -2897,6 +2891,7 @@ String expected =
 "  }\n" +
 "  ATMS_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3081,6 +3076,7 @@ expected =
 "  }\n" +
 "  TIME_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 1, 1;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3144,6 +3140,7 @@ expected =
 "  }\n" +
 "  DEPH_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 7, 7;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3178,6 +3175,7 @@ expected =
 "  }\n" +
 "  RELH_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3211,6 +3209,7 @@ expected =
 "  }\n" +
 "  ATMS_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 9, 9;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3245,6 +3244,7 @@ expected =
 "  }\n" +
 "  DRYT_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3279,6 +3279,7 @@ expected =
 "  }\n" +
 "  DEWT_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3313,6 +3314,7 @@ expected =
 "  }\n" +
 "  WSPD_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3348,6 +3350,7 @@ expected =
 "  }\n" +
 "  WDIR_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -3382,6 +3385,7 @@ expected =
 "  }\n" +
 "  GSPD_QC {\n" +
 "    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 9;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +

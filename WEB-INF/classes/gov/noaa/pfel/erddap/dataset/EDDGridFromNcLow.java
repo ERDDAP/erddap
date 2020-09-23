@@ -165,7 +165,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
                     //unpack?
                     if (unpack()) {
-                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var.getDataType())); 
+                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var)); 
                         //shouldn't be any mv or fv
                     }
                 }
@@ -193,7 +193,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
                     //unpack?
                     if (unpack()) 
-                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+                        Units2.unpackVariableAttributes(tAtts, var.getFullName(), NcHelper.getElementPAType(var));
                 }
             }
 
@@ -524,7 +524,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     if (axisVar != null) {//it will be null for dimension without same-named coordinate axis variable
                         NcHelper.getVariableAttributes(axisVar, sourceAtts);
                         if (tUnpack)  
-                            Units2.unpackVariableAttributes(sourceAtts, axisVar.getFullName(), NcHelper.getElementPAType(axisVar.getDataType()));
+                            Units2.unpackVariableAttributes(sourceAtts, axisVar.getFullName(), NcHelper.getElementPAType(axisVar));
 
                         //if time, try to get maxTimeES
                         String tUnits = sourceAtts.getString("units");
@@ -571,7 +571,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 if (dimensions.size() == 1 && nUseDims == 1 &&
                     varName.equals(dimNames.get(0)))
                     continue;
-                PAType tPAType = NcHelper.getElementPAType(var.getDataType());
+                PAType tPAType = NcHelper.getElementPAType(var);
                 if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
                 else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
                 int nDim = dimensions.size() - (tPAType == PAType.STRING? 1 : 0);
@@ -604,7 +604,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     sourcePA = sourceAtts.unpackPA(var.getFullName(), sourcePA, 
                         true, true); //lookForStringTime, lookForUnsigned
                     Units2.unpackVariableAttributes(sourceAtts,   //after unpackPA
-                        var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+                        var.getFullName(), NcHelper.getElementPAType(var));
                 }
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, 
                     sourceAtts);
