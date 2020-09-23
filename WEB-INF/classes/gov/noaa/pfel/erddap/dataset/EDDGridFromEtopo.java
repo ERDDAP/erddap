@@ -212,7 +212,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         dAtt.set("colorBarPalette", "Topography");
         dAtt.set("units", "m");
         dataVariables = new EDV[1];
-        dataVariables[0] = new EDV("altitude", "", dAtt, new Attributes(), "short");  
+        dataVariables[0] = new EDV(datasetID, "altitude", "", dAtt, new Attributes(), "short");  
         dataVariables[0].setActualRangeFromDestinationMinMax();
 
         //ensure the setup is valid

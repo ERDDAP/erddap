@@ -214,12 +214,13 @@ public class EDV {
      */
     protected double sourceMissingValue = Double.NaN;
     protected double sourceFillValue = Double.NaN;
+    protected boolean setSourceMaxIsMV = false; 
     protected double destinationMissingValue = Double.NaN;
     protected double destinationFillValue = Double.NaN;
     protected double safeDestinationMissingValue = Double.NaN;
-    protected String stringMissingValue = "";     //destination.  won't be null  
-    protected String stringFillValue = "";        //destination.  won't be null
-    protected String safeStringMissingValue = ""; //destination.  won't be null. If not "", then there is probably no 1 source MV 
+    protected String stringMissingValue = "";     //for String variables. destination.  won't be null  
+    protected String stringFillValue = "";        //for String variables. destination.  won't be null
+    protected String safeStringMissingValue = ""; //for String variables. destination.  won't be null. If not "", then there is probably no 1 source MV 
     protected boolean hasColorBarMinMax = false;
     protected byte[] sliderCsvValues = null; //stored as utf8Bytes
 
@@ -249,6 +250,7 @@ public class EDV {
      *
      * <p>Call setActualRangeFromDestinationMinMax() sometime after this returns.
      *
+     * @param datasetID for diagnostic messages
      * @param tSourceName the name of the variable in the dataset source
      *    (usually with no spaces)
      *    or a derived variable (e.g., "=0").
@@ -283,7 +285,7 @@ public class EDV {
      *    <br>data_min, or data_max attribute! 
      * @throws Throwable if trouble
      */
-    public EDV(String tSourceName, String tDestinationName,
+    public EDV(String tDatasetID, String tSourceName, String tDestinationName,
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
@@ -318,9 +320,10 @@ public class EDV {
         }
         sourceDataType = String2.canonical(sourceDataType);
         try {
-            sourceDataPAType = PrimitiveArray.elementStringToPAType(sourceDataType);
+            sourceDataPAType = PAType.fromCohortString(sourceDataType);
         } catch (Throwable t) {
-            throw new IllegalArgumentException("datasets.xml error: Invalid source dataType=" + 
+            throw new IllegalArgumentException("datasets.xml error: For datasetID=" + tDatasetID + 
+                ": Invalid source dataType=" + 
                 sourceDataType + " for sourceName=" + sourceName);
         }
 
@@ -355,7 +358,6 @@ public class EDV {
 
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
-        //???eek!!! can there be String missing_value or _FillValue?
         //
         //ERDDAP policy: a variable can have one/both/neither of 
         //missing_value (CF deprecated) and _FillValue metadata. 
@@ -375,12 +377,14 @@ public class EDV {
                     stringMissingValue == null? "" : stringMissingValue);
                 combinedAttributes.remove("missing_value");
             } else {
+                //trouble: needs support for PAType.LONG (LongArray) and PAType.ULONG (ULongArray) 
                 stringMissingValue = "";
                 PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
                 pa2.addDouble(destinationMissingValue);
                 combinedAttributes.set("missing_value", pa2);
             }
         }
+
         pa = combinedAttributes.get("_FillValue"); 
         if (pa != null) {
             //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
@@ -395,6 +399,7 @@ public class EDV {
                     stringFillValue == null? "" : stringFillValue);
                 combinedAttributes.remove("_FillValue");
             } else {
+                //trouble: needs support for PAType.LONG and PAType.ULONG 
                 stringFillValue = "";
                 PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
                 pa2.addDouble(destinationFillValue);
@@ -404,8 +409,12 @@ public class EDV {
         }
         safeDestinationMissingValue = Double.isNaN(destinationFillValue)? //fill has precedence
             destinationMissingValue : destinationFillValue;
+        //String2.log(">> EDV destName=" + destinationName + " safeDestinationMissingValue=" + safeDestinationMissingValue);
         safeStringMissingValue = String2.isSomething(stringFillValue)?
             stringFillValue : stringMissingValue;
+
+        //call after 'safe' values set
+        suggestAddFillValue(tDatasetID);
 
         //after extractScaleAddOffset, adjust valid_range
         PrimitiveArray vr = combinedAttributes.remove("unpacked_valid_range"); 
@@ -439,6 +448,7 @@ public class EDV {
             combinedAttributes.set("valid_max", vMax);
         }
 
+
     }
 
 
@@ -456,12 +466,12 @@ public class EDV {
      *
      * <p>See the other constructor for more information.
      */
-    public EDV(String tSourceName, String tDestinationName,
+    public EDV(String tDatasetID, String tSourceName, String tDestinationName,
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType) 
         throws Throwable {
 
-        this(tSourceName, tDestinationName, 
+        this(tDatasetID, tSourceName, tDestinationName, 
             tSourceAttributes, tAddAttributes, tSourceDataType,
             PAOne.fromDouble(Double.NaN),  //it's NaN, so type doesn't matter
             PAOne.fromDouble(Double.NaN));
@@ -531,7 +541,7 @@ public class EDV {
         PrimitiveArray un = combinedAttributes.remove("_Unsigned");
         sourceIsUnsigned = 
             un != null && "true".equals(un.toString()) &&
-            PrimitiveArray.isIntegerType(sourceDataPAType);
+            PAType.isIntegerType(sourceDataPAType);
 
         if (sf != null) {
             scaleFactor = sf.getNiceDouble(0);
@@ -552,7 +562,7 @@ public class EDV {
             sourceIsUnsigned = false;
             if (un != null && "true".equals(un.toString()) &&
                 //if floating type, '_Unsigned'=true is nonsense
-                PrimitiveArray.isIntegerType(sourceDataPAType)) 
+                PAType.isIntegerType(sourceDataPAType)) 
                 combinedAttributes.set("_Unsigned", un); //re-set it
             //but destinationDataType(Class) is left as new data type
         }
@@ -653,7 +663,7 @@ will show NaN).
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        if (destinationMin.isNaN() && destinationMax.isNaN()) {
+        if (destinationMin.isMissingValue() && destinationMax.isMissingValue()) {
             combinedAttributes.remove("actual_range");
         } else {
             PrimitiveArray pa = PrimitiveArray.factory(destinationDataPAType(), 2, false);
@@ -678,6 +688,19 @@ will show NaN).
         setActualRangeFromDestinationMinMax();
     }
 
+    /**
+     * This returns true if the destination is an integer or char type with a 
+     * defined _FillValue or missing_value, so that (as with PrimitiveArray.maxIsMV)
+     * the max value (e.g., 127 for bytes) should be interpreted
+     * as a missing value when the missing values are standardized.
+     *
+     * @return true if the destination is an integer or char type with a 
+     * defined _FillValue or missing_value.
+     */
+    public boolean destinationMaxIsMV() {
+        return !Double.isNaN(safeDestinationMissingValue) &&
+            (PAType.isIntegerType(destinationDataPAType) || destinationDataPAType == PAType.CHAR);
+    }
 
     /**
      * This is used by the EDD constructor to determine if this
@@ -704,14 +727,14 @@ will show NaN).
         Test.ensureSomethingUnicode(longName, errorInMethod + "longName");
         try {
             //should already by set, but ensure consistent and valid
-            sourceDataPAType = PrimitiveArray.elementStringToPAType(sourceDataType); 
+            sourceDataPAType = PAType.fromCohortString(sourceDataType); 
         } catch (Throwable t) {
             throw new IllegalArgumentException(errorInMethod + 
                 "sourceDataType=" + sourceDataType + " isn't supported.");
         }
         try {
             //should already by set, but ensure consistent and valid
-            destinationDataPAType = PrimitiveArray.elementStringToPAType(destinationDataType); 
+            destinationDataPAType = PAType.fromCohortString(destinationDataType); 
         } catch (Throwable t) {
             throw new IllegalArgumentException(errorInMethod + 
                 "destinationDataType=" + destinationDataType + " isn't supported.");
@@ -1055,14 +1078,14 @@ will show NaN).
      * 
      * @return the number of bytes per element of source data (Strings arbitrarily return 20)
      */
-    public int sourceBytesPerElement() {return PrimitiveArray.elementSize(sourceDataPAType);}
+    public int sourceBytesPerElement() {return PAType.elementSize(sourceDataPAType);}
 
     /**
      * The number of bytes per element of destination data (Strings arbitrarily return 20).
      * 
      * @return the number of bytes per element of destination data (Strings arbitrarily return 20)
      */
-    public int destinationBytesPerElement() {return PrimitiveArray.elementSize(destinationDataPAType);}
+    public int destinationBytesPerElement() {return PAType.elementSize(destinationDataPAType);}
 
     /** 
      * This returns true if this is a fixedValue variable.
@@ -1160,7 +1183,7 @@ will show NaN).
             tMin = new PAOne(tMax.paType(), "");  //same type, but mv
         if (tMax == null)
             tMax = new PAOne(tMin.paType(), "");
-        if (tMin.isNaN() && tMax.isNaN())
+        if (tMin.isMissingValue() && tMax.isMissingValue())
             return;
         if (tMin.compareTo(tMax) > 0) { //if either is NaN, result in Java is false
             PAOne d = tMin; tMin = tMax; tMax = d;}
@@ -1275,13 +1298,18 @@ will show NaN).
             if (String2.isSomething(stringFillValue) && 
                 !stringMissingValue.equals(stringFillValue))
                 source.switchFromTo(stringFillValue, "");
+        } else if (destinationDataPAType == PAType.CHAR) {
+            //do something?
+        } else if (setSourceMaxIsMV) {
+            source.setMaxIsMV(true);
         }
 
         //change to destType and scaleAddOffset if needed
-        return scaleAddOffset?
+        PrimitiveArray pa = scaleAddOffset?
             source.scaleAddOffset(sourceIsUnsigned, destinationDataPAType,
                 scaleFactor, addOffset):
-            PrimitiveArray.factory(destinationDataPAType, source); 
+            PrimitiveArray.factory(destinationDataPAType, source); //if already correct type, maxIsMV setting won't be changed
+        return pa; 
     }
 
     /**
@@ -1518,6 +1546,83 @@ will show NaN).
      */
     public double safeDestinationMissingValue() {return safeDestinationMissingValue;}
 
+    /**
+     * This indicates if the variable may have missing values.
+     * Call this after safeDestinationMissingValue has been set.
+     * Added 2020-09-07 
+     * 
+     * <p>For integer (in the math sense) and CHAR variables, 
+     * if no missing_value or _FillValue attribute was been specified
+     * in the sourceAttributes or addAttributes,
+     * ERDDAP has always assumed that there is still an implied missing value: 
+     * the maximum value of the data type, e.g., 127 for BYTE variables.
+     * Now, if you want to specify that ERDDAP must not treat any value as
+     * a missing value, you can specify 
+     * &lt;att name="mayHaveMissingValues"&gt;false&lt;/att&gt; (the default is "true").
+     * This is rarely needed, but is essential for variables where
+     * every possible value is valid and where there can never be any missing values.
+     * From now on, for integer and char variables where 
+     * <kbd>mayHaveMissingValues</kbd> hasn't been set to "false",
+     * ERDDAP will now add the appropriate "missing_value" attribute to the
+     * dataset when it instantiates the dataset.
+     *
+     * <p>Results PrimitiveArrays with integerType and char data from this var should
+     * use setMaxIsMV(hasMv()).
+     *
+     * @param tDatasetID for diagnostic messages
+     */
+    public void suggestAddFillValue(String tDatasetID) {
+
+        //AxisVariables can't have missing values
+        if (this instanceof EDVGridAxis) {
+            for (int i = 0; i < 2; i++) {
+                String attName = i == 0? "_FillValue" : "missing_value";
+                //just look at combinedAtts because addAtts may have e.g., _FillValue=null to cancel erroneous sourceAtts attribute
+                if (String2.isSomething(combinedAttributes.getString(attName)))
+                throw new IllegalArgumentException(
+                    String2.ERROR + " in datasets.xml for datasetID=\"" + tDatasetID + 
+                    "\", for variable sourceName=" + String2.toJson(sourceName) + 
+                    ": AxisVariables can't have missing values. If there actually " +
+                    "are missing values, you need to fix that problem; " +
+                    "otherwise, in the variable's <addAttributes>, add <att name=\"" + attName + "\">null</att> .");
+            }
+            return;
+        }
+
+        //char, String, double and float types never need _FillValue attributes
+        if (!PAType.isIntegerType(sourceDataPAType)) 
+            return;
+
+        //now just integer source types
+//String2.pressEnterToContinue(">> sourceName=" + sourceName + 
+//    " destFV=" + destinationFillValue + " destMV=" + destinationMissingValue + 
+//    " safeDestMV=" + safeDestinationMissingValue);
+
+        //The default for all PrimitiveArray's is maxIsMV=false.
+        //If source mv or fv is defined, then set maxIsMV=true in toDestination(sourcePA).
+        setSourceMaxIsMV = !Double.isNaN(sourceMissingValue) || !Double.isNaN(sourceFillValue);
+
+        //if it has mv or fv, source or add attributes (even if "null"), we're done
+        if (String2.isSomething(sourceAttributes.getString("_FillValue"))    ||
+            String2.isSomething(   addAttributes.getString("_FillValue"))    ||  //"null" is okay - it shows admin is aware of issue
+            String2.isSomething(sourceAttributes.getString("missing_value")) ||
+            String2.isSomething(   addAttributes.getString("missing_value"))) {  //"null" is okay - it shows admin is aware of issue
+            return;
+        }
+
+        //suggest adding it to the variable's addAttributes
+        PAOne tmv = PrimitiveArray.factory(sourceDataPAType, 1, false).missingValue();
+        EDStatic.suggestAddFillValueCSV.append(
+            String2.toJson(tDatasetID) + "," +
+            String2.toJson(sourceName) + "," +
+            String2.toJson("<att name=\"_FillValue\" type=\"" + tmv.pa().elementTypeString() + "\">" + tmv.toString() + "</att>") + "\n");
+        String2.log("Add _FillValue Attribute?  " + //This exact message is noted in setupDatasetsXml.html
+            "If appropriate, in datasets.xml for datasetID=\"" + tDatasetID + 
+            "\", for the variable with sourceName=" + String2.toJson(sourceName) + 
+            ", in the <addAttributes> section, add <att name=\"_FillValue\" type=\"" + 
+            tmv.pa().elementTypeString() + "\">" + tmv.toString() + "</att> .");
+
+    }
 
     /** 
      * This returns true if the variable has valid combinedAttributes for 

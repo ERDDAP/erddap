@@ -461,12 +461,12 @@ public class EDDTableFromOBIS extends EDDTable{
         nFixedVariables = 5;
         dataVariables = new EDV[tVarNames.length + nFixedVariables - 3];  //-3(Longitude, Latitude, MinimumDepth) 
         lonIndex = 0;
-        dataVariables[lonIndex] = new EDVLon("darwin:Longitude",
+        dataVariables[lonIndex] = new EDVLon(datasetID, "darwin:Longitude",
             null, null, "double", 
             PAOne.fromDouble(Double.isNaN(tLonMin)? -180 : tLonMin), 
             PAOne.fromDouble(Double.isNaN(tLonMax)?  180 : tLonMax));
         latIndex = 1;
-        dataVariables[latIndex] = new EDVLat("darwin:Latitude",
+        dataVariables[latIndex] = new EDVLat(datasetID, "darwin:Latitude",
             null, null, "double",
             PAOne.fromDouble(Double.isNaN(tLatMin)? -90 : tLatMin), 
             PAOne.fromDouble(Double.isNaN(tLatMax)?  90 : tLatMax));
@@ -475,17 +475,17 @@ public class EDDTableFromOBIS extends EDDTable{
         altAtts.add("comment", "Created from the darwin:MinimumDepth variable.");
         altAtts.add("scale_factor", -1.0);
         altAtts.add("units", "m");
-        dataVariables[altIndex] = new EDVAlt("darwin:MinimumDepth", altAtts,
+        dataVariables[altIndex] = new EDVAlt(datasetID, "darwin:MinimumDepth", altAtts,
             null, "double", PAOne.fromDouble(-tAltMin), PAOne.fromDouble(-tAltMax));
         timeIndex = 3;
-        dataVariables[timeIndex] = new EDVTime("TIME",
+        dataVariables[timeIndex] = new EDVTime(datasetID, "TIME",
             (new Attributes())
                 .add("actual_range", new StringArray(new String[]{tTimeMin, tTimeMax}))
                 .add("comment", "Created from the darwin:YearCollected-darwin:MonthCollected-darwin:DayCollected and darwin:TimeOfDay variables.")
                 .add("units", EDV.TIME_UNITS), 
                 //estimate actual_range?
             null, "double");  //this constructor gets source / sets destination actual_range
-        dataVariables[4] = new EDV("ID", null, 
+        dataVariables[4] = new EDV(datasetID, "ID", null, 
             (new Attributes())
                 .add("comment", "Created from the [darwin:InstitutionCode]:[darwin:CollectionCode]:[darwin:CatalogNumber] variables.") 
                 .add("ioos_category", "Identifier"), 
@@ -542,12 +542,12 @@ public class EDDTableFromOBIS extends EDDTable{
 
             //make the variable
             if (isTimeStamp) {
-                dataVariables[tv] = new EDVTimeStamp(prefix + tSourceName, tDestName, 
+                dataVariables[tv] = new EDVTimeStamp(datasetID, prefix + tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //this constructor gets source / sets destination actual_range
                 tv++;
             } else {
-                dataVariables[tv] = new EDV(prefix + tSourceName, tDestName, 
+                dataVariables[tv] = new EDV(datasetID, prefix + tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, tSourceType); //the constructor that reads source actual_range
                 dataVariables[tv].setActualRangeFromDestinationMinMax();
                 tv++;

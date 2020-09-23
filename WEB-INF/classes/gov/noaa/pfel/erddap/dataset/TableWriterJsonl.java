@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.CharArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -22,7 +23,7 @@ import java.io.OutputStreamWriter;
 /**
  * TableWriterJsonl provides a way to write a table 
  * to JSON (https://www.json.org/) file
- * in a JSON Lines (http://jsonlines.org/) format
+ * in a JSON Lines (https://jsonlines.org/) format
  * in chunks so that the whole table doesn't have to be in memory 
  * at one time.
  * This is used by EDDTable.
@@ -51,7 +52,7 @@ public class TableWriterJsonl extends TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      * @param tWriteKVP if true, this writes colName=value. If false, this writes
-     *     just the values (the "Better than CSV" example at http://jsonlines.org/examples/)
+     *     just the values (the "Better than CSV" example at https://jsonlines.org/examples/)
      * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results 
      *     (or null if none).
      *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
@@ -143,7 +144,7 @@ public class TableWriterJsonl extends TableWriter {
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
         totalNRows += nRows;
-        EDStatic.ensureArraySizeOkay(totalNRows, "jsonl"); 
+        Math2.ensureArraySizeOkay(totalNRows, "jsonl"); 
 
         //write the data
         for (int row = 0; row < nRows; row++) {

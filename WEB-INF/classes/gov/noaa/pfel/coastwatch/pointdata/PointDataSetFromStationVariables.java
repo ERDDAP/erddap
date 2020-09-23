@@ -281,7 +281,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                         //just for first station
                         dataAttributes[0] = new Attributes();
                         NcHelper.getVariableAttributes(dataVariable, dataAttributes[0]); //other var atts read below
-                        elementPATypes[0] = NcHelper.getElementPAType(dataVariable.getDataType());
+                        elementPATypes[0] = NcHelper.getElementPAType(dataVariable);
                     }
 
                     //get the sourceMissingValue for var0
@@ -507,7 +507,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                             dataAttributes[var] = new Attributes();
                             NcHelper.getVariableAttributes(dataVariable2, 
                                 dataAttributes[var]); 
-                            elementPATypes[var] = NcHelper.getElementPAType(dataVariable2.getDataType());
+                            elementPATypes[var] = NcHelper.getElementPAType(dataVariable2);
                         }
 
                         //get the sourceMissingValue for this var

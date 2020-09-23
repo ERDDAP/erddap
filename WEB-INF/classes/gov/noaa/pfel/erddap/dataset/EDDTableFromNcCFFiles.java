@@ -581,6 +581,7 @@ String expected =
 "            <att name=\"long_name\">Observed Value</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">25.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
@@ -773,6 +774,7 @@ String expected =
 "            <att name=\"cf_role\">profile_id</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Wod Unique Cast</att>\n" +
 "        </addAttributes>\n" +
@@ -832,6 +834,7 @@ String expected =
 "            <att name=\"long_name\">date</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -856,6 +859,7 @@ String expected =
 "            <att name=\"units_wod\">NODC_code</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -910,6 +914,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -982,6 +987,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1047,6 +1053,7 @@ String expected =
 "            <att name=\"flag_definitions\">WODfd</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1060,6 +1067,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Z Sigfig</att>\n" +
 "        </addAttributes>\n" +
@@ -1073,6 +1081,7 @@ String expected =
 "            <att name=\"sample_dimension\">Temperature_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1086,6 +1095,7 @@ String expected =
 "            <att name=\"flag_definitions\">WODfp</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1124,6 +1134,7 @@ String expected =
 "            <att name=\"sample_dimension\">Salinity_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1137,6 +1148,7 @@ String expected =
 "            <att name=\"flag_definitions\">WODfp</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1175,6 +1187,7 @@ String expected =
 "            <att name=\"sample_dimension\">Oxygen_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1188,6 +1201,7 @@ String expected =
 "            <att name=\"flag_definitions\">WODfp</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1227,6 +1241,7 @@ String expected =
 "            <att name=\"sample_dimension\">Pressure_obs</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -1245,6 +1260,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1255,6 +1271,7 @@ String expected =
 "            <att name=\"flag_definitions\">WODfp</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1287,6 +1304,7 @@ String expected =
 "            <att name=\"colorBarScale\">Log</att>\n" +
 "            <att name=\"ioos_category\">Ocean Color</att>\n" +
 "            <att name=\"long_name\">Concentration Of Chlorophyll In Sea Water</att>\n" +
+"            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1303,6 +1321,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1320,6 +1339,7 @@ String expected =
 "            <att name=\"_FillValue\" type=\"int\">-2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">CRS</att>\n" +
+"            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1336,6 +1356,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1352,6 +1373,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1368,6 +1390,7 @@ String expected =
 "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +

@@ -71,12 +71,6 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
-
-
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
@@ -210,9 +204,9 @@ public abstract class EDDGrid extends EDD {
         "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
         "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
         "https://www.json.org/", //json
-        "http://jsonlines.org/", //jsonlCSV
-        "http://jsonlines.org/", //jsonlCSV
-        "http://jsonlines.org/", //jsonlKVP
+        "https://jsonlines.org/", //jsonlCSV
+        "https://jsonlines.org/", //jsonlCSV
+        "https://jsonlines.org/", //jsonlKVP
         "https://www.mathworks.com/", //mat
         "https://www.unidata.ucar.edu/software/netcdf/", //nc3
         "https://linux.die.net/man/1/ncdump", //nc4Header
@@ -471,6 +465,7 @@ public abstract class EDDGrid extends EDD {
             sb.append("variableName=" + axisVariables[av].destinationName() + "\n");
             sb.append("sourceName="   + axisVariables[av].sourceName() + "\n");
             sb.append("long_name="    + axisVariables[av].longName() + "\n");
+            sb.append("type="         + axisVariables[av].destinationDataType() + "\n");
         }
         for (int av = 0; av < axisVariables.length; av++) 
             sb.append(axisVariables[av].combinedAttributes().toString() + "\n");
@@ -2250,6 +2245,7 @@ public abstract class EDDGrid extends EDD {
      * @param request may be null. Currently, it is not used.
      *    (It is passed to respondToGraphQuery, but it doesn't use it.)
      * @param response Currently, not used. It may be null.
+     * @param ipAddress The IP address of the user (for statistics).
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Normally, this is not used to test if this edd is accessibleTo loggedInAs, 
      *   but in unusual cases (EDDTableFromPost?) it could be.
@@ -2269,7 +2265,7 @@ public abstract class EDDGrid extends EDD {
      */
     public void respondToDapQuery(HttpServletRequest request, 
         HttpServletResponse response,
-        String loggedInAs,
+        String ipAddress, String loggedInAs,
         String requestUrl, String userDapQuery, 
         OutputStreamSource outputStreamSource,
         String dir, String fileName, String fileTypeName) throws Throwable {
@@ -2570,7 +2566,7 @@ public abstract class EDDGrid extends EDD {
 
                 } else if (fileTypeName.equals(".nc") || fileTypeName.equals(".ncHeader")) {
                     //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-                    saveAsNc(NetcdfFileWriter.Version.netcdf3,
+                    saveAsNc(NetcdfFileWriter.Version.netcdf3, ipAddress,
                         requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
                     File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
@@ -2580,7 +2576,7 @@ public abstract class EDDGrid extends EDD {
                         throw new SimpleException(EDStatic.queryError + EDStatic.accessibleViaNC4);
         
                     //if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
-                    saveAsNc(NetcdfFileWriter.Version.netcdf4,
+                    saveAsNc(NetcdfFileWriter.Version.netcdf4, ipAddress,
                         requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
                     File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
@@ -2597,7 +2593,7 @@ public abstract class EDDGrid extends EDD {
                         OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);
                         
                         if (fileTypeName.equals(".geotif")) {
-                            ok = saveAsGeotiff(requestUrl, userDapQuery, osss, dir, fileName);
+                            ok = saveAsGeotiff(ipAddress, requestUrl, userDapQuery, osss, dir, fileName);
 
                         } else if (fileTypeName.equals(".kml")) {
                             ok = saveAsKml(loggedInAs, requestUrl, userDapQuery, osss);
@@ -4507,7 +4503,7 @@ public abstract class EDDGrid extends EDD {
             tDataVariables[0].destinationName() + arrayQuery, 
             true, false);   //rowMajor, convertToNaN
         long tSize = partialGda.totalIndex().size();
-        EDStatic.ensureArraySizeOkay(tSize, "OPeNDAP limit");
+        Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
         Writer writer = String2.getBufferedOutputStreamWriter88591(
@@ -4658,10 +4654,12 @@ Attributes {
         int nDataVariables = dataVariables.length;
         writer.write("Attributes {" + OpendapHelper.EOL); //see EOL definition for comments
         for (int av = 0; av < nAxisVariables; av++) 
-            OpendapHelper.writeToDAS(axisVariables[av].destinationName(),
+            OpendapHelper.writeToDAS(axisVariables[av].destinationName(), 
+                axisVariables[av].destinationDataPAType(),
                 axisVariables[av].combinedAttributes(), writer, encodeAsHtml);
         for (int dv = 0; dv < nDataVariables; dv++) 
             OpendapHelper.writeToDAS(dataVariables[dv].destinationName(),
+                dataVariables[dv].destinationDataPAType(),
                 dataVariables[dv].combinedAttributes(), writer, encodeAsHtml);
 
         //how do global attributes fit into opendap view of attributes?
@@ -4674,6 +4672,7 @@ Attributes {
 
         OpendapHelper.writeToDAS(
             "NC_GLOBAL", //.nc files say NC_GLOBAL; ncBrowse and netcdf-java treat NC_GLOBAL as special case
+            PAType.DOUBLE, //isUnsigned doesn't apply to global atts. double won't trigger "_Unsigned"
             gAtts, writer, encodeAsHtml);
         writer.write("}" + OpendapHelper.EOL); //see EOL definition for comments
         writer.flush(); //essential
@@ -4995,7 +4994,7 @@ Attributes {
         GridDataAccessor partialGda = new GridDataAccessor(this, requestUrl, 
             tDataVariables[0].destinationName() + arrayQuery, true, false);
         long tSize = partialGda.totalIndex().size();
-        EDStatic.ensureArraySizeOkay(tSize, "OPeNDAP limit");
+        Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
         OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
@@ -5273,6 +5272,7 @@ Attributes {
      * (0 - 255) to the original data allows programs to reconstruct (crudely) the 
      * original data values, something that is not possible with color GeoTIFFS.
      *
+     * @param ipAddress The IP address of the user (for statistics).
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
      *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
      * @param outputStreamSource the source of an outputStream (usually already 
@@ -5284,7 +5284,7 @@ Attributes {
      * @return true of written ok; false if exception occurred (and written on image)
      * @throws Throwable 
      */
-    public boolean saveAsGeotiff(String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource,
+    public boolean saveAsGeotiff(String ipAddress, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource,
         String directory, String fileName) throws Throwable {
 
         if (reallyVerbose) String2.log("Grid.saveAsGeotiff " + fileName);
@@ -5437,7 +5437,7 @@ Attributes {
         //???The GeotiffWriter seems to be detecting lat and lon and reacting accordingly.
         String ncFullName = directory + fileName + "_tiff.nc";  //_tiff is needed because unused axes aren't saved
         if (!File2.isFile(ncFullName))
-            saveAsNc(NetcdfFileWriter.Version.netcdf3, requestUrl, userDapQuery, ncFullName, 
+            saveAsNc(NetcdfFileWriter.Version.netcdf3, ipAddress, requestUrl, userDapQuery, ncFullName, 
                 false, //keepUnusedAxes=false  this is necessary 
                 lonAdjust);
         //String2.log(NcHelper.ncdump(ncFullName, "-h"));
@@ -6176,8 +6176,8 @@ Attributes {
                     yAxisIndex > xAxisIndex, //Grid needs column-major order (so depends on axis order)  //??? what if xAxisIndex < 0???
                 true); //convertToNaN
             long requestNL = gda.totalIndex().size();
-            EDStatic.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage"); 
-            EDStatic.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage"); 
+            Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage"); 
+            Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage"); 
             int requestN = (int)requestNL; //safe since checked above
             Grid grid = null;
             Table table = null;
@@ -6927,7 +6927,7 @@ Attributes {
 
     /**
      * This writes the axis or grid data to the outputStream in JSON Lines
-     * (http://jsonlines.org/) KVP format.
+     * (https://jsonlines.org/) KVP format.
      * If no exception is thrown, the data was successfully written.
      * 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
@@ -7912,7 +7912,7 @@ Attributes {
      * @throws Throwable 
      */
     public void saveAsNc(NetcdfFileWriter.Version ncVersion, 
-        String requestUrl, String userDapQuery, 
+        String ipAddress, String requestUrl, String userDapQuery, 
         String fullFileName, boolean keepUnusedAxes,
         double lonAdjust) throws Throwable {
         if (reallyVerbose) String2.log("  EDDGrid.saveAsNc"); 
@@ -8028,6 +8028,11 @@ Attributes {
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".nc", ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
 
+        if (gda.totalNBytes() > 1000000000) { //1GB
+            EDStatic.tally.add("Large Request, IP address (since last Major LoadDatasets)", ipAddress);
+            EDStatic.tally.add("Large Request, IP address (since last daily report)",       ipAddress);
+            EDStatic.tally.add("Large Request, IP address (since startup)",                 ipAddress);
+        }
 
         //** Then get gridDataAllAccessor
         //AllAccessor so max length of String variables will be known.
@@ -9877,7 +9882,7 @@ Attributes {
             "     and JavaScript's\n" +
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-            "   <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+            "   <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>&nbsp;\n" +
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
@@ -10079,8 +10084,9 @@ Attributes {
             "     <br>&nbsp;\n" +
 
             //Graphics Commands
-            "   <li><a class=\"selfLink\" id=\"GraphicsCommands\" href=\"#GraphicsCommands\" rel=\"bookmark\"><strong>Graphics Commands</strong></a> - <a class=\"selfLink\" id=\"MakeAGraph\" href=\"#MakeAGraph\" rel=\"bookmark\">griddap</a> extends the OPeNDAP standard by allowing graphics commands\n" +
-            "     in the query. \n" +
+            "   <li><a class=\"selfLink\" id=\"GraphicsCommands\" href=\"#GraphicsCommands\" rel=\"bookmark\"><strong>Graphics Commands</strong></a> -\n" +
+            "       <a class=\"selfLink\" id=\"MakeAGraph\" href=\"#MakeAGraph\" rel=\"bookmark\">griddap</a> extends the OPeNDAP standard by allowing graphics commands\n" +
+            "     in the query.\n" +
             "     The Make A Graph web pages simplify the creation of URLs with these graphics commands\n" + 
             "     (see the \"graph\" links in the table of <a href=\"" + 
                 dapBase + "index.html\">griddap datasets</a>). \n" +
@@ -10271,11 +10277,11 @@ Attributes {
             "  <li>An ordered list of one or more 1-dimensional axis variables, each of which has an\n" +
             "      associated dimension with the same name.\n" +
             "      <ul>\n" +
-            "      <li>Each axis variable has data of one specific type.\n" +
+            "      <li>Each axis variable has data of one specific data type.\n" +
             "        If the data source has a dimension with a size but no values, ERDDAP uses the values\n" +
             "        0, 1, 2, ...\n" +
-            "        The supported types are byte (int8), short (int16), char (uint16), int (int32),\n" +
-            "        long (int64), float (float32), double (float64), and String.\n" +
+            "        See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
+            "        Axis variables can't contain char or String data.\n" +
             "      <li>The maximum number of axis variables is 2147483647, but most datasets have 4 or fewer.\n" +
             "      <li>The maximum size of a dimension is 2147483647 values.\n" +
             "      <li>The maximum product of all dimension sizes is, in theory, about ~9e18.\n" +
@@ -10295,10 +10301,8 @@ Attributes {
             "  <li>A set of one or more n-dimensional data variables.\n" +
             "      <ul>\n" +
             "      <li>All data variables use all of the axis variables, in order, as their dimensions.\n" +
-            "      <li>Each data variable has data of one specific type.\n" +
-            "        The supported types are byte (int8), short (int16), char (uint16),\n" +
-            "        int (int32), long (int64), float (float32), double (float64), and\n" +
-            "        String of any length).\n" +
+            "      <li>Each data variable has data of one specific data type.\n" +
+            "        See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
             "      <li>Missing values are allowed.\n" +
             "      <li>Each data variable has a name composed of a letter (A-Z, a-z) and then 0\n" +
             "        or more characters (A-Z, a-z, 0-9, _).\n" +
@@ -10317,6 +10321,7 @@ Attributes {
             "      <br>&nbsp;\n" +
             "      </ul>\n" +            
             "  </ul>\n" +
+
             "<li><a class=\"selfLink\" id=\"specialVariables\" href=\"#specialVariables\" rel=\"bookmark\"><strong>Special Variables</strong></a>\n" +
             "  <br>ERDDAP is aware of the spatial and temporal features of each dataset. The longitude,\n" +
             "  latitude, altitude, depth, and time axis variables (when present) always have specific\n" +
@@ -10341,6 +10346,103 @@ Attributes {
             "    or as a String value (e.g., \"2002-12-25T07:00:00Z\" in the GMT/Zulu time zone).\n" +
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
+
+            //this dataTypes section is exactly the same in EDDGrid and EDDTable.
+            "<li><a class=\"selfLink\" id=\"dataTypes\" href=\"#dataTypes\" rel=\"bookmark\"><strong>Data Types</strong></a>\n" +
+            "<br>ERDDAP supports the following data types\n" +
+            "(names from other realms are shown in parentheses; 'u' stands for \"unsigned\"; the number is the number of bits):\n" +
+            "byte (int8), ubyte (uint8), short (int16) and ushort (uint16), int (int32), uint (uint32),\n" +
+            "long (int64), ulong (uint64), float (real, float32), double (float64), char, String.\n" +
+            "<br>Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally\n" +
+            "  and offered limited support in its data readers and writers.\n" +
+            "<br>Internally, an ERDDAP char is a single 16 bit Unicode character.\n" +
+            "<br>Internally, an ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
+            "\n" +
+            "<p>You can think of ERDDAP as a system which reads data from various sources into an internal data model\n" +
+            "and writes data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
+            "  <ul>\n" +
+            "  <li>Each input reader supports a subset of the data types that ERDDAP supports.\n" +
+            "     So reading data into ERDDAP's internal data structures isn't a problem.\n" +
+            "  <li>Each output writer also support a subset of data types. That's a problem because ERDDAP\n" +
+            "    has to squeeze, for example, long data into file types that don't support long data.\n" +
+            "  </ul>\n" +
+            "Below are explanations of the limitations (or none) of various output writers\n" +
+            "and how ERDDAP deals with the problems.\n" +
+            "Such complications are an inherent part of ERDDAP's goal of making disparate system interoperable.\n" +
+            "  <ul>\n" +
+            "  <li><a class=\"selfLink\" id=\"AsciiDataTypes\" href=\"#AsciiDataTypes\" rel=\"bookmark\"\n" +
+            "    >ASCII (.csv, .tsv, etc.) text files</a> -\n" +
+            "    <br>All numeric data is written via its String representation\n" +
+            "    (with missing data values appearing as 0-length strings).\n" +
+            "    Char and String data are written via JSON Strings, which handle all unusual characters\n" +
+            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
+            "  <li><a class=\"selfLink\" id=\"JsonDataTypes\" href=\"#JsonDataTypes\" rel=\"bookmark\"\n" +
+            "    >JSON (.json, .jsonlCSV, etc.) text files</a> -\n" +
+            "    <br>All numeric data is written via its String representation.\n" +
+            "    <br>Char and String data are written via JSON Strings, which handle all unusual characters\n" +
+            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
+            "    <br>Missing values for all data types appear as <tt>null</tt>.\n" +
+            "  <li><a class=\"selfLink\" id=\"nc3DataTypes\" href=\"#nc3DataTypes\" rel=\"bookmark\">.nc3 files -\n" +
+            "    <br>.nc3 files don't natively support any unsigned integer data types.\n" + 
+            "      Before CF v1.9, CF did not support unsigned integer types.\n" +
+            "      To deal with this, ERDDAP 2.10+\n" +
+            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
+            "      to indicate if the data is from an unsigned or signed variable. All integer attributes\n" +
+            "      are written as signed attributes (e.g., byte) with signed values (e.g., a ubyte actual_range attribute\n" +
+            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
+            "      two's compliment value of the out-of-range value). There is no easy way to know which (signed) integer\n" +
+            "      attributes should be read as unsigned attributes.\n" +
+            "    <p>.nc3 files don't support the long or ulong data types.\n" +
+            "      ERDDAP deals with this by temporarily converting them to be double variables.\n" +
+            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
+            "      This is an imperfect solution. Unidata refuses to make a minor\n" +
+            "      upgrade to .nc3 to deal with this and related problems, citing .nc4 (a major change) as the solution.\n" +
+            "    <p>The CF specification (before v1.9) said it supports char (unspecified details)\n" +
+            "      but it is unclear if it is only supported as the building blocks of what are effectively Strings.\n" +
+            "      Questions to their mailing list only yielded confusing answers.\n" +
+            "      Because of these complications, it is best to avoid char variables in ERDDAP and use String variables whenever possible.\n" +
+            "    <p>.nc3 files support strings with ASCII-encoded, characters.\n" +
+            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
+            "      \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
+            "      or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
+            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 and .hdf5 files -\n" +
+            "    <br>These file types support all of ERDDAP's data types.\n" +
+            "  <li><a class=\"selfLink\" id=\"NccsvDataTypes\" href=\"#NccsvDataTypes\" rel=\"bookmark\">NCCSV files -\n" +
+            "    <br>NCCSV 1.0 files don't support any unsigned integer data types.\n" +
+            "    <br>NCCSV 1.1+ files support all unsigned integer data types.\n" +
+            "  <li><a class=\"selfLink\" id=\"OpendapDataTypes\" href=\"#OpendapDataTypes\" rel=\"bookmark\"\n" +
+            "    >(OPeN)DAP (.das, .dds, .asc ASCII files, and .dods binary files)</a> -\n" +
+            "    <br>(OPeN)DAP handles short, ushort, int, uint, float and double values correctly.\n" +
+            "    <p>(OPeN)DAP has a \"byte\" data type that it defines as unsigned, whereas historically,\n" +
+            "      THREDDS and ERDDAP have treated \"byte\" as signed. To deal with this, ERDDAP 2.10+\n" +
+            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
+            "      to indicate if the data is what ERDDAP calls byte or ubyte. All byte and ubyte attributes\n" +
+            "      are written as \"byte\" attributes with signed values (e.g., a ubyte actual_range attribute\n" +
+            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
+            "      two's compliment value of the out-of-range value). There is no easy way to know which \"byte\"\n" +
+            "      attributes should be read as ubyte attributes.\n" +
+            "    <p>The (OPeN)DAP does not support signed or unsigned longs.\n" +
+            "      ERDDAP deals with this by temporarily converting them to be double variables and attributes.\n" +
+            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
+            "      This is an imperfect solution. OPeNDAP (the organization) refuses to make a minor\n" +
+            "      upgrade to DAP 2.0 to deal with this and related problems, citing DAP4 (a major change) as the solution.\n" +
+            //dap char?
+            "    <p>The (OPeN)DAP specification supports strings with ASCII-encoded, characters.\n" +
+            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
+            "     \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
+            "     or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
+            "  </ul>\n" +           
+            "Other comments:\n" +
+            "  <ul>\n" +
+            "  <li>Because of the variable support for long, ulong, and char data, we discourage their use in ERDDAP.\n" +
+            "  <li>Metadata - Because (OPeN)DAP's .das and .dds responses don't suport long or ulong data,\n" +
+            "     you may instead want to use ERDDAP's tabular representation of metadata as seen in the\n" +
+            "     http.../erddap/info/<i>datasetID</i>.html web page (or other file types),\n" +
+            "     which supports all data types in all situations.\n" +
+            "  </ul>\n" + 
+            "\n" +
+            //end of dataTypes section that is duplicated in EDDGrid and EDDTable
+
             "<li><a class=\"selfLink\" id=\"incompatibilities\" href=\"#incompatibilities\" rel=\"bookmark\"><strong>Incompatibilities</strong></a>\n" +
             "  <ul>\n" +
             "  <li>File Types - Some results file types have restrictions.\n" +
@@ -10349,6 +10451,7 @@ Attributes {
             "    If a given request is incompatible with the requested file type, griddap throws an error.\n" +
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
+
             "<li>" + EDStatic.acceptEncodingHtml("h3", tErddapUrl) +
             "    <br>&nbsp;\n" +
 "<li><a class=\"selfLink\" id=\"citeDataset\" href=\"#citeDataset\" rel=\"bookmark\"><strong>How to Cite a Dataset in a Paper</strong></a>\n" +
@@ -10401,8 +10504,13 @@ Attributes {
 "    Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
 "  <li>416 Range Not Satisfiable - for invalid byte range requests. Note that ERDDAP's\n" +
 "    \"files\" system does not allow byte range requests to the individual .nc or .hdf files\n" +
-"    because that approach is horribly inefficient -- either download the entire\n" +
-"    file or use the griddap or tabledap services to request a subset of a dataset.\n" +
+"    because that approach is horribly inefficient (tens/hundreds/thousands of requests and\n" +
+"    the transfer of tons of data unnecessarily) and some of the client software is buggy in a way\n" +
+"    that causes problems for ERDDAP (tens/hundreds/thousands of open/broken sockets). Instead, either download the entire\n" +
+"    file (especially if you need repeated use of different parts of the file)\n" +
+"    or use the griddap or tabledap services to request a subset of a dataset via an (OPeN)DAP request.\n" +
+"    That's what DAP was designed for and does so well. Just because you can saw a log with\n " +
+"    a steak knife (sometimes) doesn't make it a good idea -- use your chainsaw.\n" +
 "  <li>500 Internal Server Error - for errors that aren't the user's fault or responsibility.\n" +
 "    For code=500 errors that look like they should use a different code, or for\n" +
 "    errors that look like bugs in ERDDAP, please email the URL and error message to bob.simons at noaa.gov .\n" +
@@ -11153,12 +11261,13 @@ Attributes {
      *    (so redirected to login, instead of getting an error here);
      *    this doesn't check.
      *
+     * @param ipAddress The IP address of the user (for statistics).
      * @param loggedInAs  or null if not logged in
      * @param wcsQuery a getCoverage query
      * @param outputStreamSource  if all goes well, this method calls out.close() at the end.
      * @throws Exception if trouble (e.g., invalid query parameter)
      */
-    public void wcsGetCoverage(String loggedInAs, String wcsQuery, 
+    public void wcsGetCoverage(String ipAddress, String loggedInAs, String wcsQuery, 
         OutputStreamSource outputStreamSource) throws Throwable {
 
         if (reallyVerbose) String2.log("\nrespondToWcsQuery q=" + wcsQuery);
@@ -11172,7 +11281,7 @@ Attributes {
         String dapQuery[] = wcsQueryToDapQuery(EDD.userQueryHashMap(wcsQuery, true));
 
         //get the data
-        respondToDapQuery(null, null, loggedInAs, 
+        respondToDapQuery(null, null, ipAddress, loggedInAs, 
             requestUrl, dapQuery[0], 
             outputStreamSource,
             cacheDirectory(), 
@@ -11750,7 +11859,7 @@ Attributes {
             "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "   <br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
@@ -11798,7 +11907,7 @@ Attributes {
             "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "   <br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
@@ -11932,7 +12041,7 @@ Attributes {
             "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
             "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
             "   <br>(ask a programmer for help). There are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
@@ -12013,7 +12122,7 @@ Attributes {
         //*** check netcdf response        
         String2.log("\n+++ GetCoverage\n" + wcsQuery1);
         fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_2.nc";
-        eddGrid.wcsGetCoverage(loggedInAs, wcsQuery2, 
+        eddGrid.wcsGetCoverage("someIPAddress", loggedInAs, wcsQuery2, 
             new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
         results = NcHelper.ncdump(fileName, "");
         String2.log(results);        
@@ -12023,7 +12132,7 @@ Attributes {
         //*** check png response        
         String2.log("\n+++ GetCoverage\n" + wcsQuery1);
         fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
-        eddGrid.wcsGetCoverage(loggedInAs, wcsQuery3, 
+        eddGrid.wcsGetCoverage("someIPAddress", loggedInAs, wcsQuery3, 
             new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
         SSR.displayInBrowser("file://" + fileName);
 
@@ -12105,7 +12214,7 @@ Attributes {
         if (lonIndex < 0 || latIndex < 0) 
             throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
-        String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
+        String tErddapUrl = EDStatic.preferredErddapUrl;
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
         String wcsUrl     = tErddapUrl + "/wcs/" + datasetID() + "/" + wcsServer;  // "?" at end?
         String wmsUrl     = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
@@ -12945,7 +13054,7 @@ writer.write(
         if (lonIndex < 0 || latIndex < 0) 
             throw new SimpleException(EDStatic.queryError + EDStatic.noXxxNoLL);
 
-        String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
+        String tErddapUrl = EDStatic.preferredErddapUrl;
         String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
         //String wcsUrl     = tErddapUrl + "/wcs/"     + datasetID() + "/" + wcsServer;  // "?" at end?
         String wmsUrl     = tErddapUrl + "/wms/"     + datasetID() + "/" + WMS_SERVER; // "?" at end?

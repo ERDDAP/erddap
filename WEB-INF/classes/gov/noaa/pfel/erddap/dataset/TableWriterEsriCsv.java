@@ -8,6 +8,7 @@ import com.cohort.array.CharArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -152,7 +153,7 @@ public class TableWriterEsriCsv extends TableWriter {
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
         totalNRows += nRows;
-        EDStatic.ensureArraySizeOkay(totalNRows, "ESRI CSV");
+        Math2.ensureArraySizeOkay(totalNRows, "ESRI CSV");
 
         //write the data
         for (int row = 0; row < nRows; row++) {

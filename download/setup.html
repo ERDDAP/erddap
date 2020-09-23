@@ -176,7 +176,7 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="https://pae-paha.pacioos.hawaii.edu/erddap/index.html">NOAA IOOS PacIOOS</a> 
   (Pacific Islands Ocean Observing System) at the University of Hawaii (UH) 
   <!-- 2015-03-16 John Maurer, 2015-03-17 James Potemra -->
-<li><a rel="bookmark" href="https://sccoos.org/erddap/index.html">NOAA IOOS SCCOOS</a> 
+<li><a rel="bookmark" href="https://erddap.sccoos.org/erddap/index.html">NOAA IOOS SCCOOS</a> 
 (Southern California Coastal Ocean Observing System) 
   <!-- 2015-05-26 Sarah Heim -->
 <li><a rel="bookmark" href="https://erddap.secoora.org/erddap/index.html">NOAA IOOS SECOORA</a> 
@@ -642,7 +642,7 @@ or Mac server instead.
         <ul>
         <li>As user "tomcat", run <kbd><i>tomcat</i>/bin/startup.sh</kbd>
         <li>View your URL + ":8080/" in your browser (e.g., 
-          <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
+          <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
         <li>You should see the Tomcat "Congratulations" page. 
           <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
         </ul>
@@ -650,7 +650,7 @@ or Mac server instead.
         <ul>
         <li>Run <kbd><i>tomcat</i>/bin/startup.sh</kbd>
         <li>View your URL + ":8080/" in your browser (e.g., 
-          <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
+          <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
           Note that by default, your Tomcat is only accessible by you. It is not publicly accessible.
         <li>You should see the Tomcat "Congratulations" page. 
           <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
@@ -658,7 +658,9 @@ or Mac server instead.
       <li>Windows localhost: 
         <ul>
         <li>Right click on the Tomcat icon in the system tray, and choose "Start service".
-        <li>View <a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> in your browser.
+        <li>View <a rel="bookmark" href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> (or perhaps
+                 <a rel="bookmark" href="http://localhost:8080/">http://localhost:8080/</a>) 
+          in your browser.
           Note that by default, your Tomcat is only accessible by you. It is not publicly accessible.
         <li>You should see the Tomcat "Congratulations" page. 
           <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
@@ -1955,8 +1957,8 @@ If you repeatedly use Tomcat Manager to <kbd>Reload</kbd> (or <kbd>Stop</kbd> an
   <li>RunLoadDatasets starts a LoadDatasets thread to do a "majorLoad".  
     You can see information about the current/previous majorLoad at the top of 
     your ERDDAP's 
-    <br><a rel="help" href="#statusPage">/erddap/status.html page</a>
-    (<a href="https://coastwatch.pfeg.noaa.gov/erddap/status.html">status&nbsp;page&nbsp;example</a>).
+    <br><a rel="help" href="#statusPage">/erddap/status.html page</a> (for example, 
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/status.html">status&nbsp;page&nbsp;example</a>).
     <ol>
     <li>LoadDatasets makes a copy of datasets.xml.
     <li>LoadDatasets reads through the copy of datasets.xml and, for each dataset,
@@ -2200,7 +2202,7 @@ notably, it takes a long time for ERDDAP to open all those data files
 when responding to a user request for data. 
 In this case, the solution may be to aggregate the files to that there are fewer data files.
 For tabular datasets, it is often great if you save the data from the current dataset in
-<a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -3217,13 +3219,15 @@ These are details that you don't need to know until a need arises.
     <ol>
     <li>Do the installation one step at a time. Get Tomcat up and running first.
       <br>When Tomcat is running, the Tomcat Manager should be at 
-      <br><a rel="help" href="http://127.0.0.1:8080/manager/html/">http://127.0.0.1:8080/manager/html/</a>
+      <br><a rel="bookmark" href="http://127.0.0.1:8080/manager/html/">http://127.0.0.1:8080/manager/html/</a> (or perhaps
+          <a rel="bookmark" href="http://localhost:8080/manager/html/">http://localhost:8080/manager/html/</a>)
     <li>Install ERDDAP.
     <li>Don't use ProxyPass to eliminate the port number from the ERDDAP URL.
     <li>In <a rel="help" href="#setup.xml">setup.xml</a>, set <kbd>baseUrl</kbd> 
       to <kbd>http://127.0.0.1:8080</kbd> 
     <li>After you start up this ERDDAP, you should be able to see it at 
-      <br><a rel="help" href="http://127.0.0.1:8080/erddap/status.html">http://127.0.0.1:8080/erddap/status.html</a> 
+      <br><a rel="help" href="http://127.0.0.1:8080/erddap/status.html">http://127.0.0.1:8080/erddap/status.html</a>  (or perhaps
+          <a rel="help" href="http://localhost:8080/erddap/status.html">http://localhost:8080/erddap/status.html</a>)
     </ol>
   <li> <a class="selfLink" id="secondTomcat" href="#secondTomcat" rel="bookmark">(Second Best) Install another Tomcat on the same computer as your public ERDDAP.</a>
     <ol>
@@ -3411,7 +3415,7 @@ These are details that you don't need to know until a need arises.
 with the dataset (e.g., an error while reading data from the file, or an error accessing
 a remote dataset). WaitThenTryAgain signals to ERDDAP that the request failed (so far)
 but that ERDDAP should try to reload the dataset quickly (it calls
-<a href="#RequestReloadASAP" rel="bookmark">RequestReloadASAP</a>) and retry the request.
+<a rel="bookmark" href="#RequestReloadASAP">RequestReloadASAP</a>) and retry the request.
 Often, this succeeds, and the user just sees that the response to the request was slow.
 Other times, the reload fails or is too slow, or the subsequent attempt to deal with the 
 request also fails and throws another WaitThenTryAgain. 
@@ -3448,7 +3452,7 @@ or download all the files from the remote source and serve the data from the loc
 
 <li><a class="selfLink" id="RequestReloadASAP" href="#RequestReloadASAP" rel="bookmark"><strong>RequestReloadASAP</strong></a>
 <br>You may see <kbd>RequestReloadASAP</kbd> in the log.txt file right after an error message
-and often near a <a href="#waitThenTryAgain" rel="bookmark">WaitThenTryAgain Exception</a>.
+and often near a <a rel="bookmark" href="#waitThenTryAgain">WaitThenTryAgain Exception</a>.
 It is basically an internal, programmatic way for ERDDAP to set a <a href="#flag" rel="help">flag</a>
 to signal that the dataset should be reloaded ASAP.
 <br>&nbsp;
@@ -3968,6 +3972,10 @@ Government or the National Oceanic and Atmospheric Administration.</strong>
 <p>Other Presentations:
 <ul>
 <li><a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/ErddapFeatures2.10.pptx"
+  >2020 EDM: New Features in ERDDAP v2.10</a>
+
+<li><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/ErddapDataIngest.pptx"
   >2020-05-19 DMIT: Data Ingest</a> (Or 
   <a rel="help" 
@@ -4349,7 +4357,7 @@ ERDDAP is a product of the
 <p>Bob Simons is the original and still the main author of ERDDAP 
 (the designer and software developer who wrote the ERDDAP-specific code). 
 The starting point was Roy Mendelssohn's suggestion
-that Bob turn his ConvertTable (a small utility which converts tabular data
+that Bob turn his ConvertTable program (a small utility which converts tabular data
 from one format to another and which was largely code from Bob's
 pre-NOAA work that Bob re-licensed to be open source) into a web service.
 
@@ -4370,7 +4378,7 @@ that has made this project possible and enabled its growth.
 <p>The bulk of the funding for work on ERDDAP has come from NOAA,
 in that it pays Bob Simons' salary (he is a full time government employee with 
 "hard"-money/full funding).
-In the early days of ERDDAP, when he was a government contractor, 
+For the two years of ERDDAP, when he was a government contractor, 
 funding came from the
 <a rel="bookmark" href="https://coastwatch.noaa.gov/">NOAA CoastWatch<img 
       src="../images/external.png" alt=" (external link)" 

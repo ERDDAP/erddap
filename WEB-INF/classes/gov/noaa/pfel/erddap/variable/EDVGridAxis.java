@@ -76,12 +76,12 @@ public class EDVGridAxis extends EDV {
         PrimitiveArray tSourceValues) 
         throws Throwable {
 
-        super(tSourceName, tDestinationName,
+        super(tParentDatasetID, tSourceName, tDestinationName,
             tSourceAttributes, tAddAttributes, 
             tSourceValues.elementTypeString(), 
             new PAOne(tSourceValues, 0).min(new PAOne(tSourceValues, tSourceValues.size() - 1)),
             new PAOne(tSourceValues, 0).max(new PAOne(tSourceValues, tSourceValues.size() - 1)));
-        
+      
         parentDatasetID = tParentDatasetID;
         sourceValues = tSourceValues;  //but continue to work with stable tSourceValues
         setActualRangeFromDestinationMinMax();

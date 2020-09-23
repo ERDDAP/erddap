@@ -334,29 +334,29 @@ public class EDDTableAggregateRows extends EDDTable{
             //make the variable
             EDV newVar = null;
             if (tSourceName.equals(EDV.LON_NAME)) {
-                newVar = new EDVLon(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 lonIndex = dv;
             } else if (tSourceName.equals(EDV.LAT_NAME)) {
-                newVar = new EDVLat(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 latIndex = dv;
             } else if (tSourceName.equals(EDV.ALT_NAME)) {
-                newVar = new EDVAlt(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 altIndex = dv;
             } else if (tSourceName.equals(EDV.DEPTH_NAME)) {
-                newVar = new EDVDepth(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+                newVar = new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 depthIndex = dv;
             } else if (tSourceName.equals(EDV.TIME_NAME)) { //do time before timeStamp
                 tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
                 tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
-                newVar = new EDVTime(tSourceName, tSourceAtts, tAddAtts, 
+                newVar = new EDVTime(datasetID, tSourceName, tSourceAtts, tAddAtts, 
                     tDataType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtts, tAddAtts)) {
                 tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
                 tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
-                newVar = new EDVTimeStamp(tSourceName, "", tSourceAtts, tAddAtts,
+                newVar = new EDVTimeStamp(datasetID, tSourceName, "", tSourceAtts, tAddAtts,
                     tDataType); //this constructor gets source / sets destination actual_range
-            } else newVar = new EDV(tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+            } else newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
 
             newVar.setActualRangeFromDestinationMinMax();
             dataVariables[dv] = newVar;

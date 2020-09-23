@@ -622,9 +622,9 @@ expected =
 "    short l3m_data(time=1, lat=2160, lon=25);\n" +
 "      :_Unsigned = \"true\";\n" +
 "      :long_name = \"l3m_data\";\n" +
-"      :scale_factor = 7.17185E-4f; // float\n" + //32768-> 23.50071808, so, many data values are higher
+"      :scale_factor = 7.17185E-4f; // float\n" + //halfway=32768-> 23.50071808, so, many data values are higher
 "      :add_offset = -2.0f; // float\n" +
-"      :_FillValue = -1S; // short\n" + //wrong: cf says it should be actual value: 65535(int)
+"      :_FillValue = -1S; // short\n" + //In a sense wrong: cf says it should be actual value: 65535(ushort)
 "      :Scaling = \"linear\";\n" +
 "      :Scaling_Equation = \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
 "      :Slope = 7.17185E-4f; // float\n" +
@@ -916,13 +916,14 @@ expected =
 "        <destinationName>sst</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +  //a result of unpacking
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 //"            <att name=\"Intercept\" type=\"float\">-2.0</att>\n" +                                   //this is removed by the unpacking process
 "            <att name=\"long_name\">l3m_data</att>\n" +
 //"            <att name=\"Scaling\">linear</att>\n" +                                                  //this is removed by the unpacking process  
 //"            <att name=\"Scaling_Equation\">(Slope*l3m_data) + Intercept = Parameter value</att>\n" + //this is removed by the unpacking process
 //"            <att name=\"Slope\" type=\"float\">7.17185E-4</att>\n" +                                 //this is removed by the unpacking process
+//             scale_factor and add_offset are also removed by the unpacking process            
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
@@ -941,7 +942,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"coordinates\">time Number_of_Lines Number_of_Columns lat lon</att>\n" +
 "            <att name=\"long_name\">l3m_qual</att>\n" +
-"            <att name=\"valid_range\" type=\"floatList\">-2.0 -1.9985657</att>\n" + //crazy result of erroneous scale_factor and add_offset
+"            <att name=\"valid_range\" type=\"floatList\">-2.0 -1.9985657</att>\n" + //trouble: incorrect files -> crazy result of erroneous scale_factor and add_offset
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
@@ -1122,7 +1123,7 @@ expected =
 "2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905,-1.9992828\n" +   //quality values are wrong because file incorrectly has scale_factor, add_offset for them
 "2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044,-2.0\n" +
 "2002-07-04T00:00:00Z,73.291664,-134.95833,-0.11021753,-2.0\n" +
-"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN,-1.8171178\n" +   //shows _FillValue's correctly caught
+"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN,-1.8171178\n" +   //NaN shows _FillValue=-1S was correctly caught
 "2002-07-04T00:00:00Z,56.625008,-134.95833,NaN,-1.8171178\n" +
 "2002-07-04T00:00:00Z,48.291664,-134.95833,12.6406145,-2.0\n" +
 "2002-07-04T00:00:00Z,39.958336,-134.95833,17.95137,-2.0\n" +
@@ -1135,12 +1136,12 @@ expected =
 "2002-07-04T00:00:00Z,-18.375,-134.95833,26.713936,-2.0\n" +
 "2002-07-04T00:00:00Z,-26.708336,-134.95833,21.580326,-2.0\n" +
 "2002-07-04T00:00:00Z,-35.041668,-134.95833,15.789774,-2.0\n" +
-"2002-07-04T00:00:00Z,-43.375,-134.95833,45.000717,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-43.375,-134.95833,NaN,-1.8171178\n" +
 "2002-07-04T00:00:00Z,-51.708336,-134.95833,6.1673026,-1.9985657\n" +
 "2002-07-04T00:00:00Z,-60.041668,-134.95833,0.40400413,-2.0\n" +
-"2002-07-04T00:00:00Z,-68.375,-134.95833,45.000717,-1.8171178\n" +
-"2002-07-04T00:00:00Z,-76.708336,-134.95833,45.000717,-1.8171178\n" +
-"2002-07-04T00:00:00Z,-85.04167,-134.95833,45.000717,-1.8171178\n"; 
+"2002-07-04T00:00:00Z,-68.375,-134.95833,NaN,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-76.708336,-134.95833,NaN,-1.8171178\n" +
+"2002-07-04T00:00:00Z,-85.04167,-134.95833,NaN,-1.8171178\n"; 
         Test.ensureEqual(results, expected, "\nresults=\n" + results + 
             "\nFIX THIS problem with unsigned values.");
 
@@ -1570,7 +1571,7 @@ NcHelper.debugMode = true;
     "    valid_min=-180.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
             results = atts.toString();
             expected = 
     "    _FillValue=NaNf\n" +  //converted to PA standard mv
@@ -1591,7 +1592,7 @@ NcHelper.debugMode = true;
                 "";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
             results = atts.toString();
             expected = 
                 "";
@@ -1637,7 +1638,7 @@ NcHelper.debugMode = true;
     "    valid_min=0.0f\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
             results = atts.toString();
             expected = 
     "    _ChunkSizes=64i,64i\n" +
@@ -1744,7 +1745,7 @@ NcHelper.debugMode = true;
 "    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
         results = atts.toString();
         expected = 
 "    _FillValue=NaNf\n" + //converted to PA standard mv
@@ -1763,7 +1764,7 @@ NcHelper.debugMode = true;
 //"    _FillValue=-1b\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
         results = atts.toString();
         expected = "";
 //"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
@@ -1807,7 +1808,7 @@ NcHelper.debugMode = true;
 "    valid_min=-32000s\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var.getDataType()));
+        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
         results = atts.toString();
         expected = 
 "    _ChunkSizes=40i,1729i\n" +

@@ -28,16 +28,16 @@ public class EDVLon extends EDV {
      * @param tSourceMax  is pre-scale_factor and add_offset.
      *   This takes precedence over actual_range, actual_max, or data_max metadata.
      */
-    public EDVLon(String tSourceName, 
+    public EDVLon(String tDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, LON_NAME, tSourceAttributes, tAddAttributes,
+        super(tDatasetID, tSourceName, LON_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax);
 
         if (destinationDataType().equals("String"))
-            throw new RuntimeException("datasets.xml error: " +
+            throw new RuntimeException("datasets.xml error for datasetID=" + tDatasetID + ": " +
             "The destination dataType for the longitude variable must be a numeric dataType.");
 
         combinedAttributes.set("_CoordinateAxisType", "Lon");  //unidata-related

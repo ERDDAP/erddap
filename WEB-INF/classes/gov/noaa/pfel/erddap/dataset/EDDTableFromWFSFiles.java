@@ -354,7 +354,6 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         testVerboseOn();
         boolean oDevelopmentMode = developmentMode;
         developmentMode = tDevelopmentMode;
-        try {
 
         Attributes externalAddAttributes = new Attributes();
         externalAddAttributes.add("title", "Old Title!");
@@ -429,6 +428,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">APINo</att>\n" +
 "        </addAttributes>\n" +
@@ -462,6 +462,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Label</att>\n" +
 "        </addAttributes>\n" +
@@ -745,6 +746,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Elevation GL</att>\n" +
 "        </addAttributes>\n" +
@@ -844,6 +846,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Depth Of Measurement</att>\n" +
 "        </addAttributes>\n" +
@@ -1165,9 +1168,6 @@ String expected =
             pa2 = new FloatArray(table.getColumn("aasg:BoreholeTemperature/aasg:Shape/gml:Point/longitude"));
             Test.ensureEqual(pa1, pa2, "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
         developmentMode = oDevelopmentMode;
 
     }
@@ -1347,6 +1347,7 @@ String expected =
 "    String long_name \"Elevation DF\";\n" +
 "  }\n" +
 "  ElevationGL {\n" +
+"    Int16 _FillValue 32767;\n" + 
 "    Int16 actual_range 568, 4333;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Elevation GL\";\n" +
@@ -1385,6 +1386,7 @@ String expected =
 "    String long_name \"Measurement Procedure\";\n" +
 "  }\n" +
 "  DepthOfMeasurement {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 23, 36885;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Depth Of Measurement\";\n" +
@@ -1469,6 +1471,7 @@ String expected =
 "    String long_name \"Lease No\";\n" +
 "  }\n" +
 "  TimeSinceCirculation {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 2, 2301;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Time Since Circulation\";\n" +

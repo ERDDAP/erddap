@@ -540,6 +540,7 @@ String expected =
 "            <att name=\"cf_role\">profile_id</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Wod Unique Cast</att>\n" +
 "        </addAttributes>\n" +
@@ -599,6 +600,7 @@ String expected =
 "            <att name=\"long_name\">date</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -715,6 +717,7 @@ String expected =
 "            <att name=\"long_name\">WOD_profile_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -742,6 +745,7 @@ String expected =
 "            <att name=\"long_name\">WOD_profile_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -769,6 +773,7 @@ String expected =
 "            <att name=\"long_name\">WOD_profile_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -839,6 +844,7 @@ String expected =
 "            <att name=\"standard_name\">depth status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -852,6 +858,7 @@ String expected =
 "            <att name=\"long_name\">depth significant figures   </att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -888,6 +895,7 @@ String expected =
 "            <att name=\"long_name\">sea_water_temperature significant_figures</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
@@ -904,6 +912,7 @@ String expected =
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
@@ -1031,11 +1040,11 @@ String expected =
 "            <att name=\"long_name\">volume_fraction_of_oxygen_in_sea_water significant_figures</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
-"            <att name=\"missing_value\" type=\"byte\">-127</att>\n" +
+"            <att name=\"missing_value\" type=\"byte\">127</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1049,11 +1058,11 @@ String expected =
 "            <att name=\"standard_name\">volume_fraction_of_oxygen_in_sea_water status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-127</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
-"            <att name=\"missing_value\" type=\"byte\">-127</att>\n" +
+"            <att name=\"missing_value\" type=\"byte\">127</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -1166,6 +1175,7 @@ String expected =
 "    String long_name \"Originators Cruise Identifier\";\n" +
 "  }\n" +
 "  wod_unique_cast {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 10899854, 17921929;\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -1204,6 +1214,7 @@ String expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  date {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 20050101, 20061231;\n" +
 "    String comment \"YYYYMMDD\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1259,6 +1270,8 @@ String expected =
 "    String long_name \"Ocean Vehicle\";\n" +
 "  }\n" +
 "  Temperature_WODprofileflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1273,6 +1286,8 @@ String expected =
 "    String long_name \"Instrument\";\n" +
 "  }\n" +
 "  Salinity_WODprofileflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1291,6 +1306,8 @@ String expected =
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  Oxygen_WODprofileflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1330,6 +1347,8 @@ String expected =
 "    String units \"m\";\n" +
 "  }\n" +
 "  z_WODflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 2.5;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1340,6 +1359,8 @@ String expected =
 "    String standard_name \"depth status_flag\";\n" +
 "  }\n" +
 "  z_sigfigs {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 2, 7;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"depth significant figures   \";\n" +
@@ -1357,11 +1378,15 @@ String expected =
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  Temperature_sigfigs {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 4, 5;\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"sea_water_temperature significant_figures\";\n" +
 "  }\n" +
 "  Temperature_WODflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 0, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1384,6 +1409,8 @@ String expected =
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  Salinity_sigfigs {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range -127, 6;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
@@ -1393,6 +1420,8 @@ String expected =
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  Salinity_WODflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range -127, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1415,6 +1444,8 @@ String expected =
 "    String units \"dbar\";\n" +
 "  }\n" +
 "  Pressure_sigfigs {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range 2, 4;\n" +
 "    String ioos_category \"Pressure\";\n" +
 "    String long_name \"sea_water_pressure significant_figures\";\n" +
@@ -1432,6 +1463,8 @@ String expected =
 "    String units \"ml/l\";\n" +
 "  }\n" +
 "  Oxygen_sigfigs {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range -127, 7;\n" +
 "    Float64 colorBarMaximum 1.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1439,6 +1472,8 @@ String expected =
 "    String long_name \"volume_fraction_of_oxygen_in_sea_water significant_figures\";\n" +
 "  }\n" +
 "  Oxygen_WODflag {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" + //ERDDAP adds
 "    Byte actual_range -127, 0;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +

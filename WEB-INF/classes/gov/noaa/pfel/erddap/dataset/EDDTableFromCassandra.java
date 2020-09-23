@@ -609,36 +609,36 @@ public class EDDTableFromCassandra extends EDDTable{
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 
             if (EDV.LON_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLon(tSourceName,
+                dataVariables[dv] = new EDVLon(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 lonIndex = dv;
             } else if (EDV.LAT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVLat(tSourceName,
+                dataVariables[dv] = new EDVLat(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN)); 
                 latIndex = dv;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVAlt(tSourceName,
+                dataVariables[dv] = new EDVAlt(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 altIndex = dv;
             } else if (EDV.DEPTH_NAME.equals(tDestName)) {
-                dataVariables[dv] = new EDVDepth(tSourceName,
+                dataVariables[dv] = new EDVDepth(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType, PAOne.fromDouble(Double.NaN), PAOne.fromDouble(Double.NaN));
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
-                dataVariables[dv] = new EDVTime(tSourceName,
+                dataVariables[dv] = new EDVTime(datasetID, tSourceName,
                     tSourceAtt, tAddAtt, 
                     tSourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
+                dataVariables[dv] = new EDVTimeStamp(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); //this constructor gets source / sets destination actual_range
             } else {
-                dataVariables[dv] = new EDV(tSourceName, tDestName, 
+                dataVariables[dv] = new EDV(datasetID, tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
                     tSourceType); 
                 dataVariables[dv].setActualRangeFromDestinationMinMax();

@@ -118,7 +118,7 @@ public class XML {
                 }
                 //save href from <a> or <img>
                 String tag = htmlString.substring(po1, po);
-                String href = String2.extractCaptureGroup(tag, ".*href=\"(.*?)\".*", 1);
+                String href = String2.extractCaptureGroup(tag, "href=\"(.*?)\"", 1);
                 if (String2.isUrl(href))  //just show if it is a complete URL, not if relative fragment
                     sb.append(
                         (sb.length() > 0 && !String2.isWhite(sb.charAt(sb.length() - 1)) ? " " : "") + 

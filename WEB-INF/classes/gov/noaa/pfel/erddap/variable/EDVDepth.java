@@ -34,16 +34,16 @@ public class EDVDepth extends EDV {
      *   This takes precedence over actual_range, actual_max, or data_max metadata.
      * @throws Throwable if trouble
      */
-    public EDVDepth(String tSourceName, 
+    public EDVDepth(String tDatasetID, String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, PAOne tSourceMin, PAOne tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes,
+        super(tDatasetID, tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
 
         if (destinationDataType().equals("String"))
-            throw new RuntimeException("datasets.xml error: " +
+            throw new RuntimeException("datasets.xml error for datasetID=" + tDatasetID + ": " +
             "The destination dataType for the depth variable must be a numeric dataType.");
 
         units = DEPTH_UNITS; 

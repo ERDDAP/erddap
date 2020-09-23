@@ -1945,7 +1945,7 @@ String2.log("5/9=" + (5/9.0));
         set.add("minutes since 1980-1-1");
         set.add("years since 02-JAN-1985");
 
-        Pattern pattern = Pattern.compile(".*<att name=\"units\">(.*)</att>.*");
+        Pattern pattern = Pattern.compile("<att name=\"units\">(.*)</att>");
         for (int f = 0; f < 3; f++) {
             String fileName = bobsErddapContentDir + 
                 (f == 0? "datasetsFED31UAF.xml" :
@@ -2060,7 +2060,7 @@ String2.log("5/9=" + (5/9.0));
         HashSet reject = new HashSet();
         HashSet set = new HashSet();
         set.add("degree_C");  //test it, too
-        Pattern pattern = Pattern.compile(".*<canonical_units>(.*)</canonical_units>.*");
+        Pattern pattern = Pattern.compile("<canonical_units>(.*)</canonical_units>");
         int nLines = lines.size();
         for (int i = 0; i < nLines; i++) {
             String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); //captureGroupNumber

@@ -489,7 +489,15 @@ public class NcHelper  {
      * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer primitives)
      * @throws RuntimeException if dataType is null or unexpected.
      */
-     public static PAType getElementPAType(DataType dataType) {
+     public static PAType getElementPAType(Variable var) {
+         DataType dataType = var.getDataType(); //nc3 doesn't return signed types
+         boolean unsigned = isUnsigned(var);    //so ask separately
+         if (unsigned) {                        //and deal with
+             if (dataType == DataType.BYTE)   return PAType.UBYTE;
+             if (dataType == DataType.SHORT)  return PAType.USHORT;
+             if (dataType == DataType.INT)    return PAType.UINT;
+             if (dataType == DataType.LONG)   return PAType.LONG;
+         }
          if (dataType == DataType.BOOLEAN) return PAType.BOOLEAN;
          if (dataType == DataType.BYTE)    return PAType.BYTE;
          if (dataType == DataType.UBYTE)   return PAType.UBYTE;

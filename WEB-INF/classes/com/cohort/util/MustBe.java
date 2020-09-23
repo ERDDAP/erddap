@@ -323,11 +323,11 @@ public class MustBe {
     public static String throwableWithMessage(String classAndMethodName,
         String message, Throwable throwable) {
 
-        if (throwable instanceof OutOfMemoryError)
+        if (throwable instanceof java.lang.OutOfMemoryError)
             //unfortunately, there isn't (ever?) a stack trace for out of memory errors
             return classAndMethodName + ":" + lineSeparator + 
                 message + lineSeparator +
-                OutOfMemoryError + lineSeparator +
+                MustBe.OutOfMemoryError + lineSeparator +
                 throwableStackTrace(throwable, 0, true, true, true) +
                 "\nMustBe.throwableWithMessage detected OutOfMemoryError at\n" +
                 getStackTrace();  
@@ -451,7 +451,7 @@ public class MustBe {
 
                 //further modify the message?
                 if (tError.startsWith("OutOfMemoryError")) //the Java message
-                    tError = OutOfMemoryError + ": " + Math2.memoryTooMuchData;
+                    tError = MustBe.OutOfMemoryError + ": " + Math2.memoryTooMuchData;
                 else if (tError.startsWith("Exception:") ||
                     tError.startsWith("RuntimeException:")) {
                     //completely remove bland exceptions

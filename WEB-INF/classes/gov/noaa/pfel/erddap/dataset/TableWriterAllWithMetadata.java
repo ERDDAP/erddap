@@ -132,7 +132,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 //String2.log(">> twawm " + String2.left(columnNames[col], 12) + " " + PrimitiveArray.displayPAOneStats(stats) + "\n    " + pa.toString());
                 if (stats[PrimitiveArray.STATS_N].getInt() > 0) {
                     //there were some valid values
-                    if (columnMinValue[col].isNaN()) { //first valid values?
+                    if (columnMinValue[col].isMissingValue()) { //first valid values?
                         columnMinValue[col] = stats[PrimitiveArray.STATS_MIN];
                         columnMaxValue[col] = stats[PrimitiveArray.STATS_MAX];
                     } else {
@@ -186,7 +186,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
             minMax.addPAOne(tMin);
             minMax.addPAOne(tMax);
 
-            if (tMin.isNaN()) 
+            if (tMin.isMissingValue()) 
                  columnAttributes(col).remove("actual_range");
             else columnAttributes(col).set("actual_range", minMax);
 
@@ -198,7 +198,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
             int    iMin = tMin.getInt();
             int    iMax = tMax.getInt();
             if (col == lonCol) {
-                if (tMin.isNaN()) {
+                if (tMin.isMissingValue()) {
                     //"geospatial_lon_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_lon_min",  fMin);
@@ -212,7 +212,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                     globalAttributes.set("Easternmost_Easting", dMax);
                 }
             } else if (col == latCol) {
-                if (tMin.isNaN()) {
+                if (tMin.isMissingValue()) {
                     //"geospatial_lat_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_lat_min",    fMin);

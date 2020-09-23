@@ -565,13 +565,13 @@ public class Erddap extends HttpServlet {
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
             if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
-                doDap(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
+                doDap(request, response, ipAddress, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("files")) {
                 doFiles(request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (protocol.equals("sos")) {
-                doSos(request, response, loggedInAs, protocolEnd + 1, userQuery); 
+                doSos(request, response, ipAddress, loggedInAs, protocolEnd + 1, userQuery); 
             //} else if (protocol.equals("wcs")) {
-            //    doWcs(request, response, loggedInAs, protocolEnd + 1, userQuery); 
+            //    doWcs(request, response, ipAddress, loggedInAs, protocolEnd + 1, userQuery); 
             } else if (protocol.equals("wms")) {
                 doWms(request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
@@ -677,10 +677,31 @@ public class Erddap extends HttpServlet {
                 else slowdown = EDStatic.slowDownTroubleMillis;
 
                 //"failure" includes clientAbort and there is no data
+                String msg = t.getMessage();
+                if (msg == null) {
+                } else if (msg.indexOf(Math2.memoryArraySize) >= 0) {
+                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since last daily report)",       ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since startup)",                 ipAddress);
+                } else if (msg.indexOf("OutOfMemoryError") >= 0 ||  //java's words
+                           msg.indexOf(Math2.memoryThanCurrentlySafe) >= 0) {
+                    EDStatic.dangerousMemoryFailures++;
+                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since last daily report)",       ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since startup)",                 ipAddress);
+                } else if (msg.indexOf(MustBe.OutOfMemoryError) >= 0 || 
+                           msg.indexOf(Math2.memoryThanSafe)    >= 0 ||
+                           msg.indexOf(Math2.memoryTooMuchData) >= 0) {
+                    //catchall for remaining possibilities
+                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since last daily report)",       ipAddress);
+                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since startup)",                 ipAddress);
+                }
+
                 long responseTime = System.currentTimeMillis() - doGetTime;
                 EDStatic.tally.add("Requester's IP Address (Failed) (since last Major LoadDatasets)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Failed) (since last daily report)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Failed) (since startup)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Failed) (since last daily report)",       ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Failed) (since startup)",                 ipAddress);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionLoadDatasets);
                 String2.distribute(responseTime, EDStatic.failureTimesDistribution24);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
@@ -3503,7 +3524,7 @@ writer.write(
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and JavaScript's\n" +
                 "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
-                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "\n" +  
 
@@ -3528,13 +3549,13 @@ writer.write(
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> or\n" +
                     "<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html#json\">ERDDAP-specific info</a>)\n" +
                 "<li>.jsonlCSV1 - a \"Better than CSV\" JSON Lines file with column names on the first line.\n" +
-                    "(<a rel=\"help\" href=\"http://jsonlines.org/\">more&nbsp;info" +
+                    "(<a rel=\"help\" href=\"https://jsonlines.org/\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.jsonlCSV - a \"Better than CSV\" JSON Lines file with no column names.\n" +
-                    "(<a rel=\"help\" href=\"http://jsonlines.org/\">more&nbsp;info" +
+                    "(<a rel=\"help\" href=\"https://jsonlines.org/\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.jsonlKVP - a JSON Lines file with Key:Value pairs.\n" +
-                    "(<a rel=\"help\" href=\"http://jsonlines.org/\">more&nbsp;info" +
+                    "(<a rel=\"help\" href=\"https://jsonlines.org/\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.mat - a MATLAB binary file.\n" +
                     "(<a rel=\"help\" href=\"https://www.mathworks.com/\">more&nbsp;info" +
@@ -4077,13 +4098,16 @@ writer.write(
     /**
      * Process a grid or table OPeNDAP DAP-style request.
      *
+     * @param request The request from the user.
+     * @param response The response to be written to.
+     * @param ipAddress The ipAddress of the user (for statistics).
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("griddap" or "tabledap") in the requestUrl
      * @param userDapQuery  post "?".  Still percentEncoded.  May be "".  May not be null.
      */
     public void doDap(HttpServletRequest request, HttpServletResponse response,
-        String loggedInAs,
+        String ipAddress, String loggedInAs,
         String protocol, int datasetIDStartsAt, String userDapQuery) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);       
@@ -4373,7 +4397,7 @@ writer.write(
 
             //respond to the request
             dataset.respondToDapQuery(request, response,
-                loggedInAs, requestUrl, userDapQuery, 
+                ipAddress, loggedInAs, requestUrl, userDapQuery, 
                 outputStreamSource, 
                 cacheDir, fileName, fileTypeName);            
 
@@ -4408,7 +4432,7 @@ writer.write(
 
                     try {
                         //note that this will fail if the previous response is already committed
-                        dataset2.respondToDapQuery(request, response, loggedInAs,
+                        dataset2.respondToDapQuery(request, response, ipAddress, loggedInAs,
                             requestUrl, userDapQuery, outputStreamSource, 
                             dataset2.cacheDirectory(), fileName, //dir is created by EDD.ensureValid
                             fileTypeName);
@@ -5069,15 +5093,16 @@ writer.write(
      *
      * <p>This assumes request was for /erddap/sos.
      *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param datasetIDStartsAt is the position right after the / at the end of the protocol
+     * @param ipAddress The user's IP address (for statistics).
+     * @param loggedInAs The name of the logged in user (or null if not logged in)
+     * @param datasetIDStartsAt This is the position right after the / at the end of the protocol
      *    ("sos") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      *   This has name=value pairs. The name is case-insensitive. The value is case-sensitive.
      *   This must include service="SOS", request=[aValidValue like GetCapabilities].
      */
     public void doSos(HttpServletRequest request, HttpServletResponse response,
-        String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
+        String ipAddress, String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.sosActive) {
             sendResourceNotFoundError(request, response, 
@@ -5340,7 +5365,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 OutputStreamSource oss = 
                     new OutputStreamFromHttpResponse(request, response, 
                         fileName, fileTypeName, extension);
-                eddTable.sosGetObservation(userQuery, loggedInAs, oss, dir, fileName); //it calls out.close()
+                eddTable.sosGetObservation(userQuery, ipAddress, loggedInAs, oss, dir, fileName); //it calls out.close()
                 return;
 
             } else {
@@ -5474,13 +5499,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      *
      * <p>This assumes request was for /erddap/wcs.
      *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param ipAddress The ip address of the user (for statistics).
+     * @param loggedInAs  The name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("wcs") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
     public void doWcs(HttpServletRequest request, HttpServletResponse response,
-        String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
+        String ipAddress, String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.wcsActive) {
             sendResourceNotFoundError(request, response, 
@@ -5666,7 +5692,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     "wcs_" + eddGrid.datasetID() + "_" + tCoverage + "_" +
                         String2.md5Hex12(userQuery), //datasetID is already in file name
                     erddapFormat, fileExtension);
-                eddGrid.wcsGetCoverage(loggedInAs, userQuery, outSource);
+                eddGrid.wcsGetCoverage(ipAddress, loggedInAs, userQuery, outSource);
                 return;
 
             } else {
@@ -6155,7 +6181,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "   HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
                 "   Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
                 "   (ask a programmer for help). There are\n" +
-                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
                 "  <br>&nbsp;\n" +
@@ -6322,7 +6348,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
                 "  Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
                 "   (ask a programmer for help). There are\n" +
-                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com/\">websites that percent encode/decode for you" +
+                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
                 "<p>(Revised from Table 8 of the WMS 1.3.0 specification)\n" +
@@ -6920,10 +6946,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     false, //Grid needs column-major order
                     true); //convertToNaN
                 long requestNL = gda.totalIndex().size();
-                EDStatic.ensureArraySizeOkay(requestNL, "doWmsGetMap");
+                Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
                 int nBytesPerElement = 8;
                 int requestN = (int)requestNL; //safe since checked by ensureArraySizeOkay above
-                EDStatic.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap"); 
+                Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap"); 
                 Grid grid = new Grid();
                 grid.data = new double[requestN];
                 int po = 0;
@@ -8670,7 +8696,7 @@ breadCrumbs + endBreadCrumbs +
         String serviceDataType = "altitude".equals(tEdv.combinedAttributes().getString("standard_name"))? 
             "esriImageServiceDataTypeElevation" : 
             "esriImageServiceDataTypeProcessed";
-        String pixelType = PrimitiveArray.paTypeToEsriPixelType(tEdv.destinationDataPAType());
+        String pixelType = PAType.toEsriPixelType(tEdv.destinationDataPAType());
         String spatialReference = "GEOGCS[\"unnamed\",DATUM[\"WGS_1984\"," +  //found on sample server
             "SPHEROID[\"WGS 84\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0]," +
             "UNIT[\"degree\",0.0174532925199433]]";
@@ -18745,7 +18771,7 @@ expected =
 "        {\n" +
 "          \"@type\": \"PropertyValue\",\n" +
 "          \"name\": \"valid_max\",\n" +
-"          \"value\": null\n" +
+"          \"value\": 57.767\n" +
 "        },\n" +
 "        {\n" +
 "          \"@type\": \"PropertyValue\",\n" +
@@ -18795,7 +18821,7 @@ expected =
 "        {\n" +
 "          \"@type\": \"PropertyValue\",\n" +
 "          \"name\": \"valid_max\",\n" +
-"          \"value\": null\n" +
+"          \"value\": 327.67\n" +
 "        },\n" +
 "        {\n" +
 "          \"@type\": \"PropertyValue\",\n" +

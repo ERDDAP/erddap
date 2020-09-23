@@ -23,7 +23,7 @@ import java.util.Set;
  * UIntArray is a thin shell over an int[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  *
- * <p>This class uses MAX_VALUE to represent a missing value (NaN).
+ * <p>This class uses maxIsMV=true and MAX_VALUE to represent a missing value (NaN).
  */
 public class UIntArray extends PrimitiveArray {
 
@@ -69,10 +69,27 @@ public class UIntArray extends PrimitiveArray {
     }
 
     /**
-     * This tests if the value at the specified index equals the cohort missingValue. 
+     * This tests if the value at the specified index equals the data type's MAX_VALUE 
+     * (for integerTypes, which may or may not indicate a missing value,
+     * depending on maxIsMV), NaN (for Float and Double), \\uffff (for CharArray),
+     * or "" (for StringArray).
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
+     */
+    public boolean isMaxValue(int index) {
+        return getPacked(index) == PACKED_MAX_VALUE;
+    }
+
+    /**
+     * This tests if the value at the specified index is a missing value.
+     * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
+     *
+     * @param index The index in question
+     * @return true if the value is a missing value.
      */
     public boolean isMissingValue(int index) {
-        return getPacked(index) == PACKED_MAX_VALUE;
+        return maxIsMV && isMaxValue(index);
     }
 
     /**
@@ -268,7 +285,7 @@ public class UIntArray extends PrimitiveArray {
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
-            return pa == null? new UIntArray(new int[0]) : pa;
+            return pa == null? new UIntArray(new int[0]) : pa;  //no need to call .setMaxIsMV(maxIsMV) since size=0
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         UIntArray ia = null;
@@ -287,7 +304,7 @@ public class UIntArray extends PrimitiveArray {
             for (int i = startIndex; i <= stopIndex; i+=stride) 
                 tar[po++] = array[i];
         }
-        return ia;
+        return ia.setMaxIsMV(maxIsMV);
     }
 
     /**
@@ -329,6 +346,8 @@ public class UIntArray extends PrimitiveArray {
     public void add(long value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
+        if (value < 0)
+            maxIsMV = true;
         array[size++] = pack(value);
     }
 
@@ -353,11 +372,9 @@ public class UIntArray extends PrimitiveArray {
      *    If null or not a Number, this adds MAX_VALUE.
      */
     public void addObject(Object value) {
-        if (size == array.length) //if we're at capacity
-            ensureCapacity(size + 1L);        
-        array[size++] = value != null && value instanceof Number?
-            pack(((Number)value).longValue()) :
-            PACKED_MAX_VALUE;
+        //double is good intermediate because it has the idea of NaN
+        addDouble(value != null && value instanceof Number?
+            ((Number)value).doubleValue() : Double.NaN); 
     }
 
     /**
@@ -416,16 +433,13 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void atInsertString(int index, String value) {
-        atInsert(index, String2.parseLong(value));
-    }
-
-    /**
-     * This adds PAOne's value to the array.
-     *
-     * @param value the value, as a PAOne (or null == MISSING_VALUE).
-     */
-    public void addPAOne(PAOne value) {
-        add(value == null? MAX_VALUE : value.getLong());
+        long tl = String2.parseLong(value); //NaN -> Long.MAX_VALUE
+        if (tl < MIN_VALUE || tl > MAX_VALUE) {
+            maxIsMV = true;
+            atInsert(index, MAX_VALUE);
+        } else {
+            atInsert(index, tl);
+        }
     }
 
     /**
@@ -436,7 +450,7 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as a PAOne (or null).
      */
     public void addNPAOnes(int n, PAOne value) {
-        addN(n, value == null? MAX_VALUE : value.getLong());
+        addNLongs(n, value == null? Long.MAX_VALUE : value.getLong());  //handles NaN and MV
     }
 
     /**
@@ -447,34 +461,20 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as a String.
      */
     public void addNStrings(int n, String value) {
-        addN(n, String2.parseLong(value));
+        addNLongs(n, String2.parseLong(value)); //handles NaN and MV
     }
 
     /**
-     * This adds an element to the array.
+     * This adds n floats to the array.
      *
-     * @param value the value, as a String.
+     * @param n the number of times 'value' should be added.
+     *    If less than 0, this throws Exception.
+     * @param value the value, as a float.
      */
-    public void addString(String value) {
-        add(String2.parseLong(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the float value
-     */
-    public void addFloat(float value) {
-        add(Math2.roundToUInt(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a double.
-     */
-    public void addDouble(double value) {
-        add(Math2.roundToUInt(value));
+    public void addNFloats(int n, float value) {
+        if (!maxIsMV && (!Float.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
+            maxIsMV = true;
+        addN(n, Math2.roundToUInt(value));
     }
 
     /**
@@ -485,16 +485,9 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
+        if (!maxIsMV && (!Double.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
+            maxIsMV = true;
         addN(n, Math2.roundToUInt(value));
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as an int.
-     */
-    public void addInt(int value) {
-        add(value);
     }
 
     /**
@@ -504,16 +497,12 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNInts(int n, int value) {
-        addN(n, value);
-    }
-
-    /**
-     * This adds an element to the array.
-     *
-     * @param value the value, as a long.
-     */
-    public void addLong(long value) {
-        add(Math2.narrowToUInt(value));
+        if (value < MIN_VALUE) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, value);
+        }
     }
 
     /**
@@ -523,7 +512,12 @@ public class UIntArray extends PrimitiveArray {
      * @param value the value, as an int.
      */
     public void addNLongs(int n, long value) {
-        addN(n, Math2.narrowToUInt(value));
+        if (value < MIN_VALUE || value > MAX_VALUE) {
+            maxIsMV = true;
+            addN(n, MAX_VALUE);
+        } else {
+            addN(n, value);
+        }
     }
 
     /**
@@ -546,12 +540,14 @@ public class UIntArray extends PrimitiveArray {
             ensureCapacity(size + nValues);            
             System.arraycopy(((UIntArray)otherPA).array, otherIndex, array, size, nValues);
             size += nValues;
+            if (otherPA.getMaxIsMV()) 
+                maxIsMV = true;
             return this;
         }
 
         //add from different type
         for (int i = 0; i < nValues; i++)
-            add(otherPA.getLong(otherIndex++)); //does error checking
+            addLong(otherPA.getLong(otherIndex++)); //does error checking and handles maxIsMV
         return this;
     }
 
@@ -563,7 +559,7 @@ public class UIntArray extends PrimitiveArray {
      * @param otherIndex the index of the item in otherPA
      */
     public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
-        set(index, otherPA.getLong(otherIndex));
+        set(index, otherPA.getLong(otherIndex)); //handles maxIsMV
     }
 
     /**
@@ -748,14 +744,14 @@ public class UIntArray extends PrimitiveArray {
      * This returns a double[] (perhaps 'array') which has 'size' elements.
      *
      * @return a double[] (perhaps 'array') which has 'size' elements.
-     *   MAX_VALUE is converted to Double.NaN.
+     *   If maxIsMV, MAX_VALUE is converted to Double.NaN.
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UIntArray.toDoubleArray");
         double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
             long j = unpack(array[i]);
-            dar[i] = j == MAX_VALUE? Double.NaN : j;
+            dar[i] = maxIsMV && j == MAX_VALUE? Double.NaN : j;
         }
         return dar;
     }
@@ -771,7 +767,7 @@ public class UIntArray extends PrimitiveArray {
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
             long j = unpack(array[i]);
-            sar[i] = j == MAX_VALUE? "" : String.valueOf(j);
+            sar[i] = maxIsMV && j == MAX_VALUE? "" : String.valueOf(j);
         }
         return sar;
     }
@@ -836,7 +832,12 @@ public class UIntArray extends PrimitiveArray {
      * @param i the value.
      */
     public void setInt(int index, int i) {
-        set(index, i);
+        if (i < MIN_VALUE) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, i); 
+        }
     }
 
     /**
@@ -844,11 +845,11 @@ public class UIntArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
-     *   MAX_VALUE is returned as Long.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as Long.MAX_VALUE.
      */
     public long getLong(int index) {
         long i = get(index);
-        return i == MAX_VALUE? Long.MAX_VALUE : i;
+        return maxIsMV && i == MAX_VALUE? Long.MAX_VALUE : i;
     }
 
     /**
@@ -859,7 +860,12 @@ public class UIntArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToUInt(long).
      */
     public void setLong(int index, long i) {
-        set(index, i);
+        if (i < MIN_VALUE || i > MAX_VALUE) {
+            maxIsMV = true;
+            set(index, MAX_VALUE);
+        } else {
+            set(index, i); 
+        }
     }
 
     /**
@@ -867,11 +873,11 @@ public class UIntArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a ulong. 
-     *   MISSING_VALUE is returned as ULong.MAX_VALUE.
+     *   If maxIsMV, MAX_VALUE is returned as null.
      */
     public BigInteger getULong(int index) {
         long b = get(index);
-        return b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
+        return maxIsMV && b == MAX_VALUE? null : new BigInteger("" + b);
     }
 
     /**
@@ -882,7 +888,7 @@ public class UIntArray extends PrimitiveArray {
      *   if needed by methods like Math2.narrowToByte(long).
      */
     public void setULong(int index, BigInteger i) {
-        set(index, Math2.narrowToUInt(i));
+        setDouble(index, i == null? Double.NaN : i.doubleValue()); //easier to work with. handles NaN. wide range
     }
 
 
@@ -893,11 +899,11 @@ public class UIntArray extends PrimitiveArray {
      * @return the value as a float. 
      *   String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     *   MAX_VALUE is returned as Float.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Float.NaN.
      */
     public float getFloat(int index) {
         long i = get(index);
-        return i == MAX_VALUE? Float.NaN : i;
+        return maxIsMV && i == MAX_VALUE? Float.NaN : i;
     }
 
     /**
@@ -908,6 +914,8 @@ public class UIntArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToUInt(d).
      */
     public void setFloat(int index, float d) {
+        if (!maxIsMV && (!Float.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToUInt(d));
     }
 
@@ -918,11 +926,11 @@ public class UIntArray extends PrimitiveArray {
      * @return the value as a double. 
      *   String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     *   MAX_VALUE is returned as Double.NaN.
+     *   If maxIsMV, MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
         long i = get(index);
-        return i == MAX_VALUE? Double.NaN : i;
+        return maxIsMV && i == MAX_VALUE? Double.NaN : i;
     }
 
     /**
@@ -942,7 +950,7 @@ public class UIntArray extends PrimitiveArray {
     /**
      * Return a value from the array as a double.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS (even if maxIsMV=true).
      *
      * <p>All integerTypes overwrite this.
      * 
@@ -962,6 +970,8 @@ public class UIntArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToUInt(d).
      */
     public void setDouble(int index, double d) {
+        if (!maxIsMV && (!Double.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
+            maxIsMV = true;
         set(index, Math2.roundToUInt(d));
     }
 
@@ -972,11 +982,11 @@ public class UIntArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), 
      *   or "" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value.
+     *   If this PA is unsigned, this method returns the unsigned value.
      */
     public String getString(int index) {
         int b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
+        return maxIsMV && b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
     }
 
     /**
@@ -986,17 +996,17 @@ public class UIntArray extends PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
-     *   If this PA is unsigned, this method retuns the unsigned value (never "null").
+     *   If this PA is unsigned, this method returns the unsigned value (never "null").
      */
     public String getJsonString(int index) {
         int b = getPacked(index);
-        return b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
+        return maxIsMV && b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
     }
 
     /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
-     * (e.g., ByteArray missingValue=127) AS IS.
+     * (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
      * <p>All integerTypes overwrite this.
@@ -1016,7 +1026,7 @@ public class UIntArray extends PrimitiveArray {
      *   with String2.parseLong.
      */
     public void setString(int index, String s) {
-        set(index, String2.parseLong(s));
+        set(index, String2.parseLong(s)); //handles mv
     }
 
 
@@ -1102,15 +1112,7 @@ public class UIntArray extends PrimitiveArray {
      * @return true if equal.  o=null returns false.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof UIntArray)) //handles o==null
-            return false;
-        UIntArray other = (UIntArray)o;
-        if (other.size() != size)
-            return false;
-        for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return false;
-        return true;
+        return testEquals(o).length() == 0;
     }
 
     /**
@@ -1119,20 +1121,23 @@ public class UIntArray extends PrimitiveArray {
      *
      * @param o
      * @return a String describing the difference (or "" if equal).
-     *   o=null throws an exception.
+     *   o=null doesn't throw an exception.
      */
     public String testEquals(Object o) {
         if (!(o instanceof UIntArray))
             return "The two objects aren't equal: this object is a UIntArray; the other is a " + 
-                o.getClass().getName() + ".";
+                (o == null? "null" : o.getClass().getName()) + ".";
         UIntArray other = (UIntArray)o;
         if (other.size() != size)
             return "The two UIntArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
         for (int i = 0; i < size; i++)
-            if (array[i] != other.array[i])
-                return "The two UIntArrays aren't equal: this[" + i + "]=" + unpack(array[i]) + 
-                                                     "; other[" + i + "]=" + unpack(other.array[i]) + ".";
+            if (array[i] != other.array[i] || (array[i] == PACKED_MAX_VALUE && maxIsMV != other.maxIsMV)) //handles mv
+                return "The two UIntArrays aren't equal: this[" + i + "]=" + getLong(i) + 
+                                                     "; other[" + i + "]=" + other.getLong(i) + ".";
+        //if (maxIsMV != other.maxIsMV)
+        //     return "The two ByteArrays aren't equal: this.maxIsMV=" + maxIsMV + 
+        //                                          "; other.maxIsMV=" + other.maxIsMV + ".";
         return "";
     }
 
@@ -1193,7 +1198,7 @@ public class UIntArray extends PrimitiveArray {
      *   Think "array[index1] - array[index2]".
      */
     public int compare(int index1, PrimitiveArray otherPA, int index2) {
-        return Long.compare(getLong(index1), otherPA.getLong(index2));
+        return Long.compare(getLong(index1), otherPA.getLong(index2));  //long handles mv
     }
 
     /**
@@ -1388,12 +1393,14 @@ public class UIntArray extends PrimitiveArray {
         int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof UIntArray) {
+            if (pa.getMaxIsMV())
+                setMaxIsMV(true);
             System.arraycopy(((UIntArray)pa).array, 0, array, size, otherSize);
+            size += otherSize;
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = pack(pa.getLong(i));  //this converts mv's
+                add(pa.getLong(i)); //this converts mv's and handles maxIsMV
         }
-        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1511,7 +1518,8 @@ public class UIntArray extends PrimitiveArray {
      */
     public int switchFromTo(String tFrom, String tTo) {
         int packedFrom = pack(Math2.roundToUInt(String2.parseDouble(tFrom)));
-        int packedTo   = pack(Math2.roundToUInt(String2.parseDouble(tTo)));
+        double d = String2.parseDouble(tTo);
+        int packedTo   = pack(Math2.roundToUInt(d));
         if (packedFrom == packedTo)
             return 0;
         int count = 0;
@@ -1521,6 +1529,8 @@ public class UIntArray extends PrimitiveArray {
                 count++;
             }
         }
+        if (count > 0 && Double.isNaN(d))
+            maxIsMV = true;
         return count;
     }
 
@@ -1551,10 +1561,11 @@ public class UIntArray extends PrimitiveArray {
      */
     public int[] getNMinMaxIndex() {
         int n = 0, tmini = -1, tmaxi = -1;
-        long tmin = MAX_VALUE - 1;
+        long tmin = MAX_VALUE;
         long tmax = MIN_VALUE;
         for (int i = 0; i < size; i++) {
-            if (array[i] != PACKED_MAX_VALUE) {
+            if (maxIsMV && array[i] == PACKED_MAX_VALUE) {
+            } else {
                 long v = unpack(array[i]);
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
@@ -1827,6 +1838,8 @@ public class UIntArray extends PrimitiveArray {
         //test equals
         UIntArray anArray2 = new UIntArray();
         anArray2.add(0); 
+        Test.ensureEqual(anArray.testEquals(null), 
+            "The two objects aren't equal: this object is a UIntArray; the other is a null.", "");
         Test.ensureEqual(anArray.testEquals("A String"), 
             "The two objects aren't equal: this object is a UIntArray; the other is a java.lang.String.", "");
         Test.ensureEqual(anArray.testEquals(anArray2), 
@@ -1953,6 +1966,8 @@ public class UIntArray extends PrimitiveArray {
         anArray = new UIntArray(new int[] {10,10,30});
         Test.ensureEqual(anArray.isAscending(), "", "");
         anArray.set(2, MAX_VALUE);
+        Test.ensureEqual(anArray.isAscending(), "", "");
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isAscending(), 
             "UIntArray isn't sorted in ascending order: [2]=(missing value).", "");
         anArray.set(1, 9);
@@ -1963,6 +1978,7 @@ public class UIntArray extends PrimitiveArray {
         anArray = new UIntArray(new int[] {30,10,10});
         Test.ensureEqual(anArray.isDescending(), "", "");
         anArray.set(2, MAX_VALUE);
+        anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray.isDescending(), 
             "UIntArray isn't sorted in descending order: [1]=10 < [2]=4294967295.", "");
         anArray.set(1, 35);
@@ -2005,10 +2021,10 @@ public class UIntArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(1), "" + (MAX_VALUE-1), "");
 
         //tryToFindNumericMissingValue() 
-        Test.ensureEqual((new UIntArray(new int[] {                 })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UIntArray(new int[] {1, 2             })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UIntArray(new int[] {0                })).tryToFindNumericMissingValue(), Double.NaN, "");
-        Test.ensureEqual((new UIntArray(new int[] {Integer.MAX_VALUE})).tryToFindNumericMissingValue(), Double.NaN, "");
+        Test.ensureEqual((new UIntArray(new int[] {                 })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UIntArray(new int[] {1, 2             })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UIntArray(new int[] {0                })).tryToFindNumericMissingValue(), null, "");
+        Test.ensureEqual((new UIntArray(new int[] {Integer.MAX_VALUE})).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new UIntArray(new long[]{MAX_VALUE        })).tryToFindNumericMissingValue(),  MAX_VALUE, "");
         Test.ensureEqual((new UIntArray(new int[] {1, 99            })).tryToFindNumericMissingValue(),         99, "");
 

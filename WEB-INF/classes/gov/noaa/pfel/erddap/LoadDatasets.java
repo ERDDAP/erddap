@@ -180,6 +180,7 @@ public class LoadDatasets extends Thread {
             StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
             HashSet datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
             StringArray duplicateDatasetIDs = new StringArray(); //list of duplicates
+            EDStatic.suggestAddFillValueCSV.setLength(0);
 
 
             //ensure EDDTableFromAllDatasets exists
@@ -878,11 +879,50 @@ public class LoadDatasets extends Thread {
                     "  " + memoryString + " " + Math2.xmxMemoryString() +
                     "\n  change for this run of major Load Datasets (MB) = " + ((Math2.getMemoryInUse() - memoryInUse) / Math2.BytesPerMB) + "\n");
 
+                if (EDStatic.initialLoadDatasets()) {
+                    if (EDStatic.suggestAddFillValueCSV.length() > 0) {
+                        String tFileName = EDStatic.fullLogsDirectory + 
+                                "addFillValueAttributes" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".csv";
+                        String contents = 
+                            "datasetID,variableSourceName,attribute\n" + 
+                            EDStatic.suggestAddFillValueCSV.toString();
+                        String2.writeToFile(tFileName, contents);
+                        String afva =
+                            "ADD _FillValue ATTRIBUTES?\n" +
+                            "The datasets/variables in the table below have integer source data, but no\n" +
+                            "_FillValue or missing_value attribute. We recommend adding the suggested\n" +
+                            "attributes to the variable's <addAttributes> in datasets.xml to identify\n" +
+                            "the default _FillValue used by ERDDAP. You can do this by hand or with the\n" +
+                            "addFillValueAttributes option in GenerateDatasetsXml.\n" +
+                            "If you don't make these changes, ERDDAP will treat those values (e.g., 127\n" +
+                            "for byte variables), if any, as valid data values (for example, on graphs\n" +
+                            "and when calculating statistics).\n" +
+                            "Or, if you decide a variable should not have a _FillValue attribute, you can add\n" +
+                            "  <att name=\"_FillValue\">null</att>\n" +
+                            "instead, which will suppress this message for that datasetID+variable\n" +
+                            "combination in the future.\n" +
+                            "The list below is created each time you start up ERDDAP.\n" +
+                            "The list was just written to a CSV file\n" + 
+                            tFileName + "\n" +
+                            "and is shown here:\n" + 
+                            contents + "\n";
+                        String2.log("\n" + afva);
+                        EDStatic.email(
+                            String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
+                            "ADD _FillValue ATTRIBUTES?", //this exact string is in setupDatasetsXml.html
+                            afva);
+
+                    } else {
+                        String2.log(
+                            "ADD _FillValue ATTRIBUTES?  There are none to report.\n");
+                    }
+                }
+
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
-//"Major LoadDatasets Time Series: MLD    Datasets Loaded    Requests (medianTime in seconds)     Number of Threads      Memory (MB)\n" +
-//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median)  tomWait inotify other  inUse highWater\n");
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded        Requests (medianTime in seconds)         Number of Threads      Memory (MB)\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater\n");
                     "  " + cDateTimeLocal +  
                     String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
                     String2.right("" + nTry, 7) + 
@@ -891,11 +931,15 @@ public class LoadDatasets extends Thread {
                     String2.right("" + nResponseSucceeded, 10) + " (" +
                     String2.right("" + Math.min(999999, medianResponseSucceeded), 6) + ")" +
                     String2.right("" + nResponseFailed, 8) + " (" +
-                    String2.right("" + Math.min(999999, medianResponseFailed), 6) + ") " +
+                    String2.right("" + Math.min(999999, medianResponseFailed), 6) + ")" +
+                    String2.right("" + Math.min(99999999, EDStatic.dangerousMemoryFailures), 8) + 
                     threadCounts + 
                     String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
                     String2.right("" + maxUsingMemory/Math2.BytesPerMB, 10) + //highWater
                     "\n");
+                
+                //reset
+                EDStatic.dangerousMemoryFailures = 0;
 
                 //email daily report?
                 GregorianCalendar reportCalendar = Calendar2.newGCalendarLocal();
@@ -904,7 +948,7 @@ public class LoadDatasets extends Thread {
                 //if (true) {  //uncomment to test daily report 
 
                 if (!reportDate.equals(erddap.lastReportDate) && hour >= 7) {
-                    //major reload and daily report!
+                    //major reload after 7 of new day, so do daily report!  
 
                     erddap.lastReportDate = reportDate;
                     String stars = String2.makeString('*', 70);
@@ -947,21 +991,21 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Home Page (since last daily report)");
                     EDStatic.tally.remove("Info (since last daily report)");
                     EDStatic.tally.remove("Info File Type (since last daily report)");
+                    EDStatic.tally.remove("Large Request, IP address (since last daily report)");
                     EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
                     EDStatic.tally.remove("Log in failed (since last daily report)");
                     EDStatic.tally.remove("Log in succeeded (since last daily report)");
                     EDStatic.tally.remove("Log out (since last daily report)");
                     EDStatic.tally.remove("Main Resources List (since last daily report)");
-                    EDStatic.tally.remove("MemoryInUse > MaxSafeMemory (since last daily report)");
                     EDStatic.tally.remove("Metadata requests (since last daily report)");
                     EDStatic.tally.remove("OpenSearch For (since last daily report)");
+                    EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last daily report)");
+                    EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last daily report)");
+                    EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last daily report)");
                     EDStatic.tally.remove("POST (since last daily report)");
                     EDStatic.tally.remove("Protocol (since last daily report)");
                     EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
-                    EDStatic.tally.remove("Request refused: array size >= Integer.MAX_VALUE (since last daily report)");
                     EDStatic.tally.remove("Request refused: not authorized (since last daily report)");
-                    EDStatic.tally.remove("Request refused: not enough memory currently (since last daily report)");
-                    EDStatic.tally.remove("Request refused: not enough memory ever (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
@@ -1031,10 +1075,7 @@ public class LoadDatasets extends Thread {
                     String2.log(subject + ":");
                     String2.log(content);
                     EDStatic.email(
-                        EDStatic.emailEverythingToCsv + //won't be null
-                        ((EDStatic.emailEverythingToCsv.length()  > 0 &&
-                          EDStatic.emailDailyReportToCsv.length() > 0)? "," : "") +
-                        EDStatic.emailDailyReportToCsv, //won't be null
+                        String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
                         subject, content);
                 } else {
                     //major load, but not daily report
@@ -1046,9 +1087,13 @@ public class LoadDatasets extends Thread {
 
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
+                    sb.append(EDStatic.tally.toString("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
+
                     sb.append(threadList);
                     String2.log(sb.toString());
 
@@ -1064,9 +1109,15 @@ public class LoadDatasets extends Thread {
                 }
 
                 //after every major loadDatasets
+                EDStatic.tally.remove("Large Request, IP address (since last Major LoadDatasets)");
+                EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)");
+                EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)");
+                EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)");
+                EDStatic.tally.remove("Request refused: not authorized (since last Major LoadDatasets)"); //datasetID (not IP address)
                 EDStatic.tally.remove("Requester's IP Address (Allowed) (since last Major LoadDatasets)");
                 EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)");
                 EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
+
                 EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
                 EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];
                 int tpo = 13200; //132 char/line * 100 lines 
@@ -1095,6 +1146,7 @@ public class LoadDatasets extends Thread {
         } finally {
             if (xmlReader != null) 
                 try {xmlReader.close();} catch (Exception e) {}
+            EDStatic.suggestAddFillValueCSV.setLength(0);
         }
     }
 
@@ -1147,7 +1199,7 @@ public class LoadDatasets extends Thread {
                                 EDStatic.urlIsThisComputer(tAction)) { 
                                 //a dataset on this ERDDAP! just set the flag
                                 //e.g., https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
-                                String trDatasetID = String2.extractCaptureGroup(tAction, ".*datasetID=(.+?)&.*", 1);
+                                String trDatasetID = String2.extractCaptureGroup(tAction, "datasetID=(.+?)&", 1);
                                 if (trDatasetID == null)
                                     SSR.touchUrl(tAction, 60000); //fall back; just do it
                                 else EDD.requestReloadASAP(trDatasetID);
