@@ -856,7 +856,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             elapsedTime = System.currentTimeMillis();
             fileTable.leftToRightSort(2);   //lexical sort so can walk through below
             tFileTable.leftToRightSort(2);  //lexical sort so can walk through below
-            if (verbose) String2.log("sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
+            if (reallyVerbose) String2.log("sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
             //remove any files in fileTable not in tFileTable  (i.e., the file was deleted)
             //I can step through fileTable and tFileTable since both sorted same way
@@ -1067,7 +1067,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             //sort fileTable by FT_MIN_COL
             elapsedTime = System.currentTimeMillis();
             fileTable.sort(new int[]{FT_MIN_COL}, new boolean[]{true});
-            if (verbose) String2.log("2nd sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
+            if (reallyVerbose) String2.log("2nd sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
             msg = "\n  tFileNamePA.size=" + tFileNamePA.size() + 
                 "\n  dirTable.nRows=" + dirTable.nRows() +
@@ -2335,9 +2335,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
-                //if too much data, rethrow t
+                //if OutOfMemory or too much data, rethrow t so request fails
                 String tToString = t.toString();
-                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (t instanceof java.lang.OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                     throw t;
 
                 //sleep and give it one more try

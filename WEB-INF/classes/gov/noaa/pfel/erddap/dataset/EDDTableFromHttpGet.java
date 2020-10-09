@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -68,6 +69,21 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 //COMMAND needs CF FLAG attributes 0=insert, 1=delete
     public final static byte INSERT_COMMAND = 0;
     public final static byte DELETE_COMMAND = 1;
+    public final static String NO_PROCESS_COMMANDS[] = {">", ">=", "="};
+
+    public static String DATASET_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
+        "This is an unusual dataset in that the data files are actually log files. " +
+        "Normally, when you request data from this dataset, " +
+        "ERDDAP processes the insert (comand=0) and delete (command=1) commands " +
+        "in the log files to return data from the current version of this dataset. " +
+        "However, if you make a request which includes &timestamp<= , " +
+        "then ERDDAP will return the dataset as it was at that point in time. " +
+        "Or, if you make a request which includes &timestamp> (or >= or =), " +
+        "e.g., &timestamp>0, then ERDDAP will return the raw data from the log files.";
+    public static String AUTHOR_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
+        "The values in this column identify the author who added each row of data to the dataset.";
+    public static String TIMESTAMP_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
+        "The values in this column are added by ERDDAP to identify when each row of data was added to the data file.";
 
     public final static String  NUMERIC_TIMESTAMP_REGEX = "numericTimestamp\":(\\d\\.\\d{2,12}E9),?\\n";
     public final static Pattern NUMERIC_TIMESTAMP_PATTERN = Pattern.compile(NUMERIC_TIMESTAMP_REGEX);
@@ -308,56 +324,94 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
 
         boolean process = true;
-        double timestampSeconds = Double.MAX_VALUE; //i.e., don't constrain timestamp
+        double maxTimestampSeconds = Double.MAX_VALUE; //i.e., don't constrain timestamp
         if (sourceConVars != null) {
             for (int i = 0; i < sourceConVars.size(); i++) {
                 String scVar = sourceConVars.get(i);
                 if (TIMESTAMP.equals(scVar)) {
-                    if (sourceConOps.get(i).indexOf('<') < 0) {  //timestamp= or >= or leads to no processing
+                    String tOp = sourceConOps.get(i);
+                    if (String2.indexOf(NO_PROCESS_COMMANDS, tOp) >= 0) {  //timestamp> >= or = leads to no processing
                         process = false;
                         break;
+                    } else if (tOp.equals(PrimitiveArray.REGEX_OP)) {
+                        throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
+                            " (" + TIMESTAMP + PrimitiveArray.REGEX_OP + " isn't allowed)");
                     } else {
                         double td = String2.parseDouble(sourceConValues.get(i));
                         if (Double.isNaN(td))
-                            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (" + TIMESTAMP + " constraint)");
-                        timestampSeconds = Math.min(timestampSeconds - (sourceConOps.get(i).equals("<")?1:0), td);                     
+                            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
+                                " (" + TIMESTAMP + " constraint)");
+                        // <1000 is the same as <=999.999 since timestamp precision is 0.001
+                        if (tOp.equals("<"))
+                            td -= 0.001; 
+                        maxTimestampSeconds = Math.min(maxTimestampSeconds, td);                     
                     }
-                } else if (AUTHOR.equals(scVar) ||
-                    COMMAND.equals(scVar)) {
-                    process = false;
-                    break;
                 }
             }
         }              
 
         return readFile(tFileDir + tFileName, sourceDataNames, sourceDataTypes, 
-            httpGetRequiredVariableNames, process, timestampSeconds); 
+            httpGetRequiredVariableNames, httpGetRequiredVariableTypes,
+            process, maxTimestampSeconds); 
     }
 
 
     /**
-     * This gets the data from one file and processes it (edits and deletes are applied)
+     * This gets the data from one file and perhaps processes it (edits and deletes are applied)
      * up to and including rows with the specified timestampSeconds value.
      *
+     * @param fullFileName the full file name.
      * @param sourceDataNames must be fully specified (not null or length=0)
      * @param sourceDataPATypes must be fully specified (not null or length=0)
      * @param tRequiredVariableNames are the dataset's requiredVariableNames, e.g., stationID, time
+     * @param tRequiredVariableTypes are the types for each of the tRequiredVariableNames.
      * @param process If true, the log is processed.  If false, the raw data is returned.
-     * @param timestampSeconds the maximum timestampSeconds to be kept if process=true. 
+     * @param maxTimestampSeconds This is the maximum timestampSeconds to be kept
+     *   (regardless of process setting). 
      *   Use Double.MAX_VALUE or Double.NaN to keep all rows.
-     * @return the processed data table from one file.
+     * @return the processed or unprocessed data table from one file.
      *   Char vars are stored as shorts in the file, but returned as chars here.
      */
     public static Table readFile(String fullFileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
-        String[] tRequiredVariableNames, boolean process, double timestampSeconds) throws Throwable {
+        String[] tRequiredVariableNames, String[] tRequiredVariableTypes,
+        boolean process, double maxTimestampSeconds) throws Throwable {
 
         //String2.log(">> EDDTableFromHttpGet.readFile process=" + process + " timestampSeconds=" + timestampSeconds);
         //String2.directReadFrom88591File(fullFileName)); 
 
+        //ensure required columns are included (if needed)
+        int nRCN = tRequiredVariableNames.length;
+        boolean removeLaterTimestampRows = maxTimestampSeconds < Double.MAX_VALUE; //NaN -> false
+        if (removeLaterTimestampRows || process) {
+            StringArray sourceDataTypesSA = new StringArray(sourceDataTypes);
+
+            //need required columns and timestamp and command to know which rows are for the same data final row / to apply add/delete
+            if (sourceDataNames.indexOf(TIMESTAMP) < 0) {
+                sourceDataNames.add(TIMESTAMP);
+                sourceDataTypesSA.add("double");
+            }
+            if (process) {
+                if (sourceDataNames.indexOf(COMMAND) < 0) {
+                    sourceDataNames.add(COMMAND);
+                    sourceDataTypesSA.add("byte");
+                }
+                for (int i = 0; i < nRCN; i++) {
+                    String tName = tRequiredVariableNames[i];
+                    if (sourceDataNames.indexOf(tName) < 0) {
+                        sourceDataNames.add(tName);
+                        sourceDataTypesSA.add(tRequiredVariableTypes[i]);
+                    }
+                }
+            }
+
+            sourceDataTypes = sourceDataTypesSA.toArray();
+        }
+
         //read needed columns of the file (so UPDATE's and DELETE's can be processed)
         Table table = new Table();
         //synchronized: don't read from file during a file write in insertOrDelete
+        fullFileName = String2.canonical(fullFileName);
         synchronized (fullFileName) {  //fullFileName is canonical: from ArrayString, so good to synchronize on
             //but probably not too bad if in middle of write
             table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
@@ -368,20 +422,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         //gather info about the table
         int nCols = table.nColumns();
         int nRows = table.nRows();
-        PrimitiveArray pas[] = new PrimitiveArray[nCols];
-        for (int col = 0; col < nCols; col++) 
-            pas[col] = table.getColumn(col);
-        int timestampColi = table.findColumnNumber(TIMESTAMP);
-        int commandColi   = table.findColumnNumber(COMMAND);
-        if (timestampColi < 0 ||
-            commandColi   < 0) 
-            throw new SimpleException(
-                String2.ERROR + " while reading " + fullFileName + ": " +
-                "columnName=" + (timestampColi < 1? TIMESTAMP : COMMAND) + 
-                " not found in " + table.getColumnNamesCSVString() + ".");
+        int timestampColi = table.findColumnNumber(TIMESTAMP);  //may be -1 if not needed so not present
 
-        if (timestampSeconds < Double.MAX_VALUE) {  //NaN -> false
-            //remove rows with timestamp > requested timestamp (whether process or not)
+        //remove rows with timestamp > requested timestamp (whether process=true or not)
+        if (removeLaterTimestampRows) {  
  
             //timestampPA should be sorted in ascending order (perhaps with ties)
             //BUT if computer's clock is rolled back, there is possibility of out-of-order.
@@ -391,7 +435,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             //String2.log(">>  timestamp values=" + table.getColumn(timestampColi));
 
             int row = table.getColumn(timestampColi).binaryFindFirstGE(0, nRows - 1, 
-                PAOne.fromDouble(timestampSeconds + 0.0005)); // 1/2 milli later to avoid rounding problems, and because I just want > (not GE)
+                PAOne.fromDouble(maxTimestampSeconds + 0.0005)); // 1/2 milli later to avoid rounding problems, and because I want to remove > (not GE)
             //String2.log("  timestamp constraint removed " + (nRows-row) + " rows. Now nRows=" + row);
             if (row < nRows) {
                 table.removeRows(row, nRows);  //exclusive
@@ -402,10 +446,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (!process || nRows == 0)
             return table;
 
-        //process the file
+        //process the file (apply add/delete for groups of rows that have same required variable values)
         //sort based on requiredVariableNames+timestamp  (e.g., stationID, time, timestamp)
         //Except for revisions, the data should already be in this order or very close to it.
-        int nRCN = tRequiredVariableNames.length;
+        int commandColi   = table.findColumnNumber(COMMAND);
+        PrimitiveArray pas[] = new PrimitiveArray[nCols];
+        for (int col = 0; col < nCols; col++) 
+            pas[col] = table.getColumn(col);
         int sortBy[] = new int[nRCN + 1];
         for (int i = 0; i < nRCN; i++) {
             sortBy[i] = table.findColumnNumber(tRequiredVariableNames[i]);
@@ -761,6 +808,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         boolean columnIsFixed[]  = new boolean[nColumns];
         boolean columnIsString[] = new boolean[nColumns];
         boolean columnIsLong[]   = new boolean[nColumns];
+        boolean columnIsULong[]  = new boolean[nColumns];
         int timeColumn = -1;         
         String timeFormat = null;               //used if time variable is string
         double timeBaseAndFactor[] = null;      //used if time variable is numeric
@@ -771,6 +819,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             columnIsFixed[ col] = columnNames[col].charAt(0) == '=';
             columnIsString[col] = columnPATypes[col] == PAType.STRING; //char treated as numeric
             columnIsLong[  col] = columnPATypes[col] == PAType.LONG;
+            columnIsULong[ col] = columnPATypes[col] == PAType.ULONG;
 
             if (!String2.isSomething(columnUnits[col]))
                 columnUnits[col] = "";
@@ -951,17 +1000,19 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         //append each input row to the appropriate file
         int row = 0;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-        String  columnMinString[] = new String[nColumns];
-        String  columnMaxString[] = new String[nColumns];
-        long    columnMinLong[]   = new long[nColumns];
-        long    columnMaxLong[]   = new long[nColumns];
-        double  columnMinDouble[] = new double[nColumns];
-        double  columnMaxDouble[] = new double[nColumns];
-        boolean columnHasNaN[]    = new boolean[nColumns];
+        String     columnMinString[] = new String[nColumns];
+        String     columnMaxString[] = new String[nColumns];
+        long       columnMinLong[]   = new long[nColumns];
+        long       columnMaxLong[]   = new long[nColumns];
+        BigInteger columnMinULong[]  = new BigInteger[nColumns];
+        BigInteger columnMaxULong[]  = new BigInteger[nColumns];
+        double     columnMinDouble[] = new double[nColumns];
+        double     columnMaxDouble[] = new double[nColumns];
+        boolean    columnHasNaN[]    = new boolean[nColumns];
         while (row < maxSize) {
             //figure out which file
             //EFFICIENT: Code below handles all rows that use this fullFileName.               
-            String fullFileName = fullFileNames.get(row); //it is canonical
+            String fullFileName = fullFileNames.get(row); 
             //String2.log(">> writing to " + fullFileName);
 
             //figure out which rows go to this fullFileName
@@ -1023,8 +1074,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 //  (since from StringArray) so same object in different threads
                 //There were rare problems when writing to file with 4+ threads
                 //  before switching to this system of full prep, then full write.
+                fullFileName = String2.canonical(fullFileName);
                 synchronized (fullFileName) { //it is canonical, so synchronizing on it works across threads
-                    //No buffering
                     BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(fullFileName, !fileIsNew)); //append?  
                     try {
                         fos.write(bar, 0, bar.length);  //entire write in 1 low level command
@@ -1038,9 +1089,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     }
                 }
 
-                //adjust min/max in fileTable if .insert
+                //adjust min/max in fileTable
                 //(only .insert because only it adds values (and .delete only has required variables))
-                if (fileTable != null && command == INSERT_COMMAND) {
+                if (fileTable != null) {
 
                     //prepare to calculate statistics
                     Arrays.fill(columnMinString, "\uFFFF"); 
@@ -1074,6 +1125,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                                 else {
                                     if (d < columnMinLong[col]) columnMinLong[col] = d;
                                     if (d > columnMaxLong[col]) columnMaxLong[col] = d;
+                                }
+                            } else if (columnIsULong[col]) {
+                                BigInteger d = columnValues[col].getULong(tRow); 
+                                if (d.equals(Math2.ULONG_MAX_VALUE) ||
+                                    (columnMvFv[col] != null && 
+                                     columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0)) 
+                                    columnHasNaN[col] = true;
+                                else {
+                                    if (d.compareTo(columnMinULong[col]) < 0) columnMinULong[col] = d;
+                                    if (d.compareTo(columnMaxULong[col]) > 0) columnMaxULong[col] = d;
                                 }
                             } else {
                                 double d = columnValues[col].getDouble(tRow); 
@@ -1289,6 +1350,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         for (int col = 0; col < nCol; col++) 
             columnTypes[col] = PAType.toCohortString(columnPATypes[col]);
         String requiredVariableNames[] = {"stationID","time"};
+        String requiredVariableTypes[] = {"String",   "double"};
 
         Table table;
 
@@ -1327,7 +1389,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (hammer == 0) {
             //test the read time
             String name = startDir + "46088/46088_1980-01.jsonl";
-            table = readFile(name, columnNamesSA, columnTypes, requiredVariableNames, 
+            table = readFile(name, columnNamesSA, columnTypes, 
+                requiredVariableNames, requiredVariableTypes,
                 true, Double.NaN); 
 
             File2.copy(name, name + ".txt");
@@ -1354,7 +1417,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, Double.NaN);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, Double.NaN);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1380,8 +1444,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, 
-            System.currentTimeMillis()/1000.0);
+            columnNamesSA, columnTypes, requiredVariableNames,  requiredVariableTypes,
+            true, System.currentTimeMillis()/1000.0);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1392,7 +1456,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data with timestamp from first insert
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, timestamp1);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, timestamp1);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1418,8 +1483,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, 
-            System.currentTimeMillis()/1000.0);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, System.currentTimeMillis()/1000.0);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1445,8 +1510,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, 
-            System.currentTimeMillis()/1000.0);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, System.currentTimeMillis()/1000.0);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1471,8 +1536,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, 
-            System.currentTimeMillis()/1000.0);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, System.currentTimeMillis()/1000.0);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1482,7 +1547,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read the data with timestamp from first insert
         table = readFile(startDir + "46088/46088_1980-01.jsonl", 
-            columnNamesSA, columnTypes, requiredVariableNames, true, timestamp1);
+            columnNamesSA, columnTypes, requiredVariableNames, requiredVariableTypes,
+            true, timestamp1);
         results = table.dataToString();
         expected = 
 "stationID,time,aByte,aChar,aShort,anInt,aFloat,aDouble,aString,timestamp,author,command\n" +
@@ -1765,13 +1831,17 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 destAtts.add("units", "m");
                 destPA = new DoubleArray(sourcePA);
             } else if (colName.equals("timestamp")) {
+                destAtts.add("comment", 
+                    TIMESTAMP_DESCRIPTION + " " + EDStatic.note + " " + DATASET_DESCRIPTION);
                 destAtts.add("units", Calendar2.SECONDS_SINCE_1970);
                 destAtts.add("time_precision", "1970-01-01T00:00:00.000Z");
                 destPA = new DoubleArray(sourcePA);
             } else if (colName.equals("author")) {
+                destAtts.add("comment", AUTHOR_DESCRIPTION);
                 destAtts.add("ioos_category", "Identifier");
                 destPA = new StringArray(sourcePA);
             } else if (colName.equals("command")) {
+                destAtts.add("comment", DATASET_DESCRIPTION);
                 destAtts.add("flag_values", new byte[]{0, 1});
                 destAtts.add("flag_meanings", "insert delete");
                 destAtts.add("ioos_category", "Other");
@@ -1829,6 +1899,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
         
+        String ttSummary = getAddOrSourceAtt(addGlobalAtts, dataSourceTable.globalAttributes(), 
+            "summary", "");
+        addGlobalAtts.set("summary", String2.ifSomethingConcat(
+            ttSummary, "\n\n", EDStatic.note + " " + DATASET_DESCRIPTION));
         if (String2.isSomething(tHttpGetRequiredVariables))  {
             StringArray sa = StringArray.fromCSV(tHttpGetRequiredVariables);
             if (sa.size() > 0)
@@ -1962,7 +2036,8 @@ String expected =
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">stationID</att>\n" +
-"        <att name=\"summary\">This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
+"        <att name=\"summary\">This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source." +
+"\n\nNOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "        <att name=\"testOutOfDate\">now-1day</att>\n" +
 "        <att name=\"title\">My Great Title</att>\n" +
 "    </addAttributes>\n" +
@@ -2024,6 +2099,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"comment\">The values in this column are added by ERDDAP to identify when each row of data was added to the data file. NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Timestamp</att>\n" +
 "            <att name=\"missing_value\" type=\"double\">NaN</att>\n" +
@@ -2038,6 +2114,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"comment\">The values in this column identify the author who added each row of data to the dataset.</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Author</att>\n" +
 "        </addAttributes>\n" +
@@ -2049,6 +2126,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"comment\">This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "            <att name=\"flag_meanings\">insert delete</att>\n" +
 "            <att name=\"flag_values\" type=\"byteList\">0 1</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2057,7 +2135,7 @@ String expected =
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n\n\n";
-
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
             String tDatasetID = "testFromHttpGet_25bf_9033_586b";
             EDD.deleteCachedDatasetInfo(tDatasetID);
@@ -2443,7 +2521,72 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
-        //raw read a data file 
+        //.csv  all data (without processing)
+        userDapQuery = "&timestamp>-1";  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_all3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log("dataset without processing:\n" + results);
+/* without neutered timestamps (neutered because they change each time):
+stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command
+,UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,
+myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0
+station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,2020-10-09T19:12:43.819Z,JohnSmith,0
+station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,2020-10-09T19:12:46.325Z,JohnSmith,0
+station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,2020-10-09T19:12:48.633Z,JohnSmith,0
+station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,2020-10-09T19:12:51.001Z,JohnSmith,0
+station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,2020-10-09T19:12:53.427Z,JohnSmith,0
+station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,2020-10-09T19:12:55.785Z,JohnSmith,0
+station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,2020-10-09T19:12:44.485Z,JohnSmith,0
+station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,2020-10-09T19:12:46.880Z,JohnSmith,0
+station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,2020-10-09T19:12:49.216Z,JohnSmith,0
+station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,2020-10-09T19:12:51.552Z,JohnSmith,0
+station2,2016-04-29T00:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:54.052Z,JohnSmith,1
+station2,2016-04-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:56.389Z,JohnSmith,1
+station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,2020-10-09T19:12:45.134Z,JohnSmith,0
+station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,2020-10-09T19:12:47.474Z,JohnSmith,0
+station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,2020-10-09T19:12:49.828Z,JohnSmith,0
+station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,2020-10-09T19:12:52.146Z,JohnSmith,0
+station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,2020-10-09T19:12:54.606Z,JohnSmith,0
+station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,2020-10-09T19:12:56.984Z,JohnSmith,0
+station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,2020-10-09T19:12:45.765Z,JohnSmith,0
+station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,2020-10-09T19:12:48.068Z,JohnSmith,0
+station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,2020-10-09T19:12:50.439Z,JohnSmith,0
+station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,2020-10-09T19:12:52.743Z,JohnSmith,0
+station2,2016-05-29T00:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:55.178Z,JohnSmith,1
+station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnSmith,1 
+*/
+        expected = 
+"stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
+",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
+"myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n" +
+"station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n" +
+"station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n" +
+"station2,2016-04-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n" +
+"station2,2016-04-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n" +
+"station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n" +
+"station2,2016-05-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n" +
+"station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n";
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+
+        //direct read a data file 
         results = String2.directReadFromUtf8File(
             "/u00/data/points/testFromHttpGet/station2/station2_2016-05.jsonl");
         //String2.log(results);
@@ -2467,6 +2610,99 @@ expected =
         Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
         
+        //2020-10-09 There were errors related to a request not including some required variables, so test that
+        userDapQuery = "airTemp";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_withProcessing", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"airTemp\n" +
+"degree_C\n" +
+"14.2\n" +
+"20.0\n" +
+"20.1\n" +
+"10.2\n" +
+"10.3\n" +
+"12.2\n" +
+"12.3\n" +
+"22.0\n" +
+"22.1\n" +  //22.1 is visible and previous 14.1 for same station and time 2016-05-29T01:00:00Z isn't visible 
+"14.2\n" +
+"14.3\n" +
+"16.2\n" +
+"16.3\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //view the raw data for the station1 and time=2016-05-29T01:00:00Z 'row' 
+        userDapQuery = "&stationID=\"station1\"&time=2016-05-29T01:00:00Z&timestamp>-1"; 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_1RawRow", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
+",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n" +
+"station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"; //so 22.1 is visible above, not 14.1
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
+
+        //e.g.,  max(timestamp)-0.001 -> 2020-10-09T19:29:31.667Z
+        userDapQuery = "airTemp&timestamp<max(timestamp)-0.001";  //without the final change above
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_miniRollback", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"airTemp\n" +
+"degree_C\n" +
+"14.2\n" +
+"20.0\n" +
+"20.1\n" +
+"10.2\n" +
+"10.3\n" +
+"12.2\n" +
+"12.3\n" +
+"22.0\n" +
+"22.1\n" +
+"14.2\n" +
+"14.3\n" +
+"16.1\n" +  //final change to dataset deleted this row 2016-05-29T01:00:00Z, so now it is visible again
+"16.2\n" +
+"16.3\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        userDapQuery = "airTemp&timestamp>-1";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_withoutProcessing", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"airTemp\n" +
+"degree_C\n" +
+"14.2\n" +
+"10.0\n" +
+"10.1\n" +
+"10.2\n" +
+"10.3\n" +
+"20.0\n" +
+"20.1\n" +
+"12.0\n" +
+"12.1\n" +
+"12.2\n" +
+"12.3\n" +
+"NaN\n" +
+"NaN\n" +
+"14.0\n" +
+"14.1\n" +
+"14.2\n" +
+"14.3\n" +
+"22.0\n" +
+"22.1\n" +
+"16.0\n" +
+"16.1\n" +
+"16.2\n" +
+"16.3\n" +
+"NaN\n" +
+"NaN\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
         /* */
         reallyVerbose = oReallyVerbose;
 

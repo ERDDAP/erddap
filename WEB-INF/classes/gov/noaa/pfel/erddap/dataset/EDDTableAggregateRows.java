@@ -100,7 +100,7 @@ public class EDDTableAggregateRows extends EDDTable{
             if (localTags.equals("<dataset>")) {
                 if ("false".equals(xmlReader.attributeValue("active"))) {
                     //skip it - read to </dataset>
-                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                    if (verbose) String2.log("  skipping datasetID=" + xmlReader.attributeValue("datasetID") + 
                         " because active=\"false\".");
                     while (xmlReader.stackSize() != startOfTagsN + 1 ||
                            !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {

@@ -5337,9 +5337,9 @@ expected =
             //String tInfoUrl, String tInstitution, String tSummary, String tTitle,
             //Attributes externalAddGlobalAttributes) 
         String2.log(generateDatasetsXml(
-            "c:/data/erddapBPD/copy/tcPostDet3/",
+            "c:/data/_erddapBPD/copy/tcPostDet3/",
             ".*\\.nc", 
-            "c:/data/erddapBPD/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
+            "c:/data/_erddapBPD/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
             "",
             100000000, 
             "", "", "", "", "unique_tag_id",
@@ -13812,7 +13812,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testBigRequest(int firstTest) throws Throwable {
-        String2.log("\n*** EDDTableFromNcFiles.testBigRequest()\n");
+        String2.log("\n*** EDDTableFromNcFiles.testBigRequest(" + firstTest + ")\n");
         Table.verbose = false;
         testVerboseOff();
         boolean oReallyVerbose = reallyVerbose;
@@ -13831,77 +13831,86 @@ expected =
         String extensions[] = new String[] {  //.help not available at this level            
             //geoJson and .odvTxt require lon, lat (and time) data
             ".asc", ".csv", ".csvp", ".dods", ".esriCsv", 
-            ".geoJson", ".htmlTable", ".json", ".mat", ".nc", 
+            ".geoJson", ".htmlTable", ".json", ".jsonlCSV",
+            ".mat", ".nc", ".nccsv",
             ".ncHeader", ".odvTxt", ".tsv", ".tsvp", ".xhtml",
             ".kml", ".smallPdf", ".pdf", ".largePdf", ".smallPng", //image file types
             ".png", ".largePng"};  
-        int kmli = 15; //first image fileType.  kmli+1 is first displayable image type
-        long bytes[]    = new long[] { //these will change as buoys get added (monthly)
-            699049662, 1286009013, 1286009015, 734862352, 1362557418,    
-            3247007700L, 18789440, 1959632896, 489908488, 489913680,     //.htmlTable is size-limited
-            5417, 796336246, 1286009013, 1286009015, 2793605900L,
-            280755, 489518, 2017546, 4589852, 34144, //I think redundant markers are not drawn
-            71236, 277607};
-        //2015-02-25 I give up doing timings. Timings vary greatly on different days.
+        int kmli = String2.indexOf(extensions, ".kml"); //first image fileType.  kmli+1 is first displayable image type
+        long bytes[]    = new long[] { 
+            //2020-10-02 I revamped this test to make requests smaller and faster
+            //  because previous request now yielded MUCH LARGER files and MUCH SLOWER than expected
+            //  (because cwwcNdbcMet is more dense? I don't know)
+            82764106, 161599986, 161599988, 92342908, 171218936, 
+            1326772815, 19527920, 246247712, 192380925, 
+            61562192, 61568964, 161607148, 
+            6982, 378284819, 161599986, 161599988, 315505304,
+            162573, 668848, 3985435, 10040671, 42474,
+            108684, 429717};
+        //2015-02-25 Timings vary greatly on different days.
         //  I think McAfee AV slows it down a lot. Its settings are not under my control.
         int expectedMs[] = new int[] { 
-            //Java 1.7 M4700
-            16941, 61839, 58656, 10686, 141881,    
-            145004, 1352, 165740, 24779, 26390, 
-            12752, 44120, 61769, 61620, 178000,
-            15604, 16732, 14489, 41531, 40000, //2014-09-22 changed kml and smallPdf to be much faster
-            46265, 20891};  //2014-09-02 both changed to be much faster
+            6335, 16300, 15364, 6257, 20926, 
+            45968, 1226, 17262, 17407, 
+            5589, 8233, 15616, 
+            7078, 34200, 16359, 15677, 18807, 
+            18773, 29706, 18031, 22215, 15509,
+            13347, 15592}; 
 
         //warm up
         tName = eddTable.makeNewFileForDapQuery(null, null, 
-            "time&time<2013-09-01", 
+            "time&station=~\"4....\"&time<2000-01-01", 
             dir, baseName, ".nc");
         File2.delete(dir + tName);
 
+        StringBuilder errors = new StringBuilder();
         for (int i = firstTest; i < extensions.length; i++) {
             if (extensions[i].equals(".ncHeader"))
                 File2.delete(dir + baseName + ".nc");
 
             long time = 0;
-            for (int chance = 0; chance < 1; chance++) { //was 3 when testing time
+            int nChances = 1; //was 3 when testing time
+            String msg = "";
+            for (int chance = 0; chance < nChances; chance++) { 
                 Math2.gcAndWait();  //in a test
                 time = System.currentTimeMillis();
                 tName = eddTable.makeNewFileForDapQuery(null, null, 
                     extensions[i].equals(".geoJson") || extensions[i].equals(".odvTxt")?
-                        "longitude,latitude,time,atmp&time<2000-01-01" :
+                        "longitude,latitude,time,atmp&station=~\"4....\"&time<2000-01-01" :
                     i >= kmli?
-                        "longitude,latitude,wd,time&time<2000-01-01&.draw=markers" :
-                    "time&time<=2013-06-25T15", 
+                        "longitude,latitude,wd,time&station=~\"4....\"&time<2000-01-01&.draw=markers" :
+                    "time&station=~\"4....\"&time<=2000-01-01", 
                     dir, baseName + extensions[i].substring(1) + chance, 
                     extensions[i]); 
                 resultLength = File2.length(dir + tName);
                 time = System.currentTimeMillis() - time;
 
-                String2.log(
-                    "\n*** fileName=" + dir + tName + "\n" +
-                    "ext#" + i + " chance#" + chance + ": " + extensions[i] + 
-                    ", length=" + resultLength + " expected=" + bytes[i] + ", " +
-                    "time=" + time + "ms expected=" + expectedMs[i] + "ms");
+                msg = 
+                    "ext#" + i + "=" + extensions[i] + " chance#" + chance + 
+                    ": length=" + resultLength + " expected=" + bytes[i] + ", " +
+                    "time=" + time + "ms expected=" + expectedMs[i] + "ms\n";
+                String2.log(msg);
 
                 //if not too slow or too fast, break
-                //if (time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
-                //    //give it another chance
-                //} else {
-                //    break;
-                //}
+                if (time > expectedMs[i] / 2 && time < expectedMs[i] * 2) 
+                    break;
             }
             
 
             if (i >= kmli + 1)
                 SSR.displayInBrowser("file://" + dir + tName);
-            if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i])
-                //|| time < expectedMs[i] / 2 || time > expectedMs[i] * 2) 
-                String2.pressEnterToContinue(
-                    "Unexpected length or time."); 
+            if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i] ||
+                time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
+                msg = "Unexpected length or time: " + msg;
+                String2.log(msg); 
+                errors.append(msg);
+            }
         }
 
         testVerboseOn();
         reallyVerbose = oReallyVerbose;
+        if (errors.length() > 0)
+            throw new RuntimeException("EDDTableFromNcFiles.testBigRequest:\n" + errors.toString());
     }
 
 
@@ -17095,8 +17104,8 @@ expected =
 
         //test that the dirTable and fileTable weren't found    after that
         expected = 
-"dir/file table doesn't exist: /data/erddapBPD/dataset/01/testTimeSince19000101/dirTable.nc\n" +
-"dir/file table doesn't exist: /data/erddapBPD/dataset/01/testTimeSince19000101/fileTable.nc\n" +
+"dir/file table doesn't exist: /data/_erddapBPD/dataset/01/testTimeSince19000101/dirTable.nc\n" +
+"dir/file table doesn't exist: /data/_erddapBPD/dataset/01/testTimeSince19000101/fileTable.nc\n" +
 "creating new dirTable and fileTable (dirTable=null?true fileTable=null?true badFileMap=null?false)";
         int po4 = tLog.indexOf(expected.substring(0, 29), po);
         Test.ensureTrue(po4 > 0, "\n\n************************************\n\"" + 
@@ -17284,9 +17293,9 @@ nThreads=4 time=26
         
         //this dataset and this request are a good test that the results are always in the same order
         //For testing by hand:
-        //  https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.htmlTable?station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10
+        //  https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.htmlTable?station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10&station=~"4...."&time<2020-01-01
         String id = tDatasetID; 
-        userDapQuery = "station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10";
+        userDapQuery = "station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10&station=~\"4....\"&time<2020-01-01";
 
         EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, id); 
         for (int i = startNThreads; i <= endNThreads; i++) {  
@@ -17329,28 +17338,22 @@ nThreads=4 time=26
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         }
-        String2.pressEnterToContinue(bigResults.toString() +
-"(2019-10-21 2 core Lenovo, HDD dataset, -5,5 after warmup: 9,8,10,14,14,14,13,9,7,7 truncated s)");
-/* 2018-08-14 lenovo bigResults (truncated to s):    
-                ssd     hdd        
-nThreads=5 time=13      80
-nThreads=4 time=10     111
-nThreads=3 time=11     114
-nThreads=2 time=15      38
-nThreads=1 time=16      16
-nThreads=1 time=15      15
-nThreads=2 time=15      15
-nThreads=3 time=10      10
-nThreads=4 time= 9       9
-//clearly, the bigger issue is OS caching of the files
-*/
-
         Table.verbose = true;
         Table.reallyVerbose = true;
         EDD.verbose = true;
         EDD.reallyVerbose = true;
         EDD.debugMode = false;
         EDDTableFromFilesCallable.debugMode = false;
+
+        throw new RuntimeException("\n*** Not necessarily a problem, just logging the results:\n" +
+            bigResults.toString() +
+"2018-08-14 was for lenovo, ssd: -5,5: 13, 10, 11, 15, 16, 15, 15, 10, 9 s\n" +
+"2018-08-14 was for lenovo, hdd: -5,5: 80, 111, 114, 38, 16, 15, 15, 10, 9\n" +
+"2019-10-21 2 core Lenovo, HDD dataset, -5,5 after warmup: 9,8,10,14,14,14,13,9,7,7 truncated s)\n" +
+"2020-10-01 with revised, denser dataset, hdd, -3,3: 539, 192, 303, 304, 321, 422 s\n" +
+"  clearly, a bigger issue is OS caching of the files\n" +
+"  So slow now, so I revised test to be a much smaller test (just 410.. stations)\n" +
+"2020-10-02 hdd -3,3, now: 75,8, 7, 8, 8, 5\n");
     }
 
     /**
@@ -18136,7 +18139,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 39194156;\n" + //changes
+"    Int32 actual_range 1, 39863575;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18181,7 +18184,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.5931686e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.5986178e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18243,7 +18246,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2020-07-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2020-09-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -18764,7 +18767,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 13 : 73;
+            lastTest = interactive? 13 : 72;
         String msg = "\n^^^ EDDTableFromNcFiles.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -18848,14 +18851,14 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 62) testTimeSince19000101();
                     if (test == 63) testHardFlag();
 
-                    if (test == 66) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
-                    if (test == 67) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
-                    if (test == 68) testNThreads();
+                    if (test == 65) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
+                    if (test == 66) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
+                    if (test == 67) testNThreads();
+                    if (test == 68) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
 
-                    if (test == 70 && doSlowTestsToo) testCacheFiles(false);     //deleteDataFiles?  //requires gtsppBest
-                    if (test == 71 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads
-                    if (test == 72 && doSlowTestsToo) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
-                    if (test == 73 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo?   //requires gtsppBest,  very slow, not usually run
+                    if (test == 70 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads    very slow
+                    if (test == 71 && doSlowTestsToo) testCacheFiles(false); //deleteDataFiles?  //requires gtsppBest, very slow, not usually run    
+                    if (test == 72 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo? //requires gtsppBest, very slow, not usually run
 
                     /* */
 

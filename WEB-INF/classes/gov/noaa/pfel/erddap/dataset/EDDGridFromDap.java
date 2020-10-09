@@ -871,9 +871,10 @@ public class EDDGridFromDap extends EDDGrid {
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
-                //if too much data, rethrow t
+                //if OutOfMemoryError or too much data, rethrow t
                 String tToString = t.toString();
-                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (t instanceof java.lang.OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                     throw t;
 
                 String2.log(MustBe.throwableToString(t));
@@ -8102,11 +8103,12 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      */
     public static void testBigRequestSpeed(int nTimePoints, String fileType, int expectedMs) throws Throwable {
         testVerboseOn();
-        String2.log("\n*** EDDGridFromDap.testbigRequest  partialRequestMaxBytes=" +
+        String msg = "\n*** EDDGridFromDap.testbigRequest  partialRequestMaxBytes=" +
             EDStatic.partialRequestMaxBytes + 
             "\n nTimePoints=" + nTimePoints +
             " estimated nPartialRequests=" + 
-            Math2.hiDiv(nTimePoints * 22000000, EDStatic.partialRequestMaxBytes));
+            Math2.hiDiv(nTimePoints * 22000000, EDStatic.partialRequestMaxBytes);
+        String2.log(msg);
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "nceiPH53sstd1day"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String tName = eddGrid.makeNewFileForDapQuery(null, null, 
@@ -8118,10 +8120,12 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         tName = eddGrid.makeNewFileForDapQuery(null, null, 
             "sst[0:" + (nTimePoints - 1) + "][][][]", 
             dir, eddGrid.className() + "_testBigRequest2", fileType); 
-        String2.pressEnterToContinue("fileType=" + fileType + 
+        msg += "\n*** Not necessarily a problem, just logging the results:\n" +
+            "fileType=" + fileType + 
             " finished. size=" + File2.length(dir + tName) +
             " time=" + (System.currentTimeMillis() - time) +
-            "ms expected=" + expectedMs + "ms");
+            "ms expected=" + expectedMs + "ms";
+        throw new RuntimeException(msg);
     }
 
     /** Test speed of Data Access Form.
@@ -10139,7 +10143,8 @@ expected =
             "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml", 
             null, null, new String[]{"time", "lat", "lon"}, -1, null);
         //frequent small changes. I don't know why.
-        results = results.replaceAll("T\\d{2}:\\d{2}:\\d{2}.000Z", "T[TIME].000Z");
+        results = results.replaceAll("T\\d{2}:\\d{2}:\\d{2}.000Z", 
+                                     "T[TIME].000Z");
         results = results.replaceAll("<att name=\"data_bins\" type=\"int\">\\d*</att>",        
                                      "<att name=\"data_bins\" type=\"int\">[DATA_BINS]</att>");
         results = results.replaceAll("<att name=\"data_maximum\" type=\"float\">.*</att>",     
@@ -10156,12 +10161,14 @@ expected =
                                      "<att name=\"time_coverage_end\">[TCE]</att>");
         results = results.replaceAll("<att name=\"time_coverage_start\">.*</att>", 
                                      "<att name=\"time_coverage_start\">[TCS]</att>");
+        results = results.replaceAll("<att name=\"testOutOfDate\">now-\\d*days</att>", 
+                                     "<att name=\"testOutOfDate\">now-[N_DAYS]days</att>");
 
         String tDatasetID = "nasa_jpl_0d1b_74cd_7593";
         String expected = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
-"    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
+"    <reloadEveryNMinutes>5760</reloadEveryNMinutes>\n" + //changes
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!
 "        <att name=\"cdm_data_type\">grid</att>\n" +
@@ -10248,7 +10255,7 @@ expected =
 "        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
 "        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
 "        <att name=\"start_time\">00:00:00 UTC</att>\n" +
-"        <att name=\"stop_date\">2020-02-18 UTC</att>\n" +
+"        <att name=\"stop_date\">2020-08-12 UTC</att>\n" +
 "        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
 "        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
 "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
@@ -10296,7 +10303,8 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2004-present</att>\n" +
+"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2002-present</att>\n" +
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -10383,16 +10391,14 @@ expected =
 "            <att name=\"_Unsigned\">true</att>\n" +                    //important test, needs to be left in so EDV paType is correct 
 "            <att name=\"long_name\">Quality Levels, Sea Surface Temperature</att>\n" +
 "            <att name=\"standard_name\">flag_values</att>\n" +
-"            <att name=\"units\">degree_north</att>\n" +
-"            <att name=\"valid_max\" type=\"ubyte\">5</att>\n" +
-"            <att name=\"valid_min\" type=\"ubyte\">0</att>\n" +
+"            <att name=\"valid_max\">5</att>\n" +  //2020-09-28 had type=ubyte (good), now nothing (bad)
+"            <att name=\"valid_min\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
-"            <att name=\"units\">degrees_north</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -10408,22 +10414,22 @@ expected =
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 810];\n" +
+"  Float64 time[time = 828];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = 828][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 810];\n" +
+"      Float64 time[time = 828];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 810][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"      UInt16 qual_sst4[time = 828][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
 "    MAPS:\n" +
-"      Float64 time[time = 810];\n" +
+"      Float64 time[time = 828];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
@@ -10440,7 +10446,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0888992e+9, 1.6451424e+9;\n" +
+"    Float64 actual_range 1.0257408e+9, 1.5971904e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -10488,7 +10494,6 @@ expected =
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Quality Levels, Sea Surface Temperature\";\n" +
 "    String standard_name \"flag_values\";\n" +
-"    String units \"degrees_north\";\n" +
 "    UInt16 valid_max 5;\n" +
 "    UInt16 valid_min 0;\n" +
 "  }\n" +
@@ -10575,9 +10580,10 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-"    String time_coverage_end \"2022-02-18T00:00:00Z\";  THIS IS WRONG!!! \n" +  //WRONG!!! I reported to podaac@... Subject="Incorrect time values and _FillValue"
-"    String time_coverage_start \"2004-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2004-present\";\n" +
+"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //because it was changed above in datasets.xml fragment
+"    String time_coverage_end \"2020-08-12T00:00:00Z\";\n" +  //2020-10-02 fixed. Was wrong at source: 2022-02-18 I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
@@ -10606,25 +10612,26 @@ expected =
         //.dds from source
         url = baseUrl + ".dds";
         results = SSR.getUrlResponseStringUnchanged(url);
+        results = results.replaceAll("\\[time = \\d*\\]", "[time = [N_TIME]]");
         expected = 
 "Dataset {\n" +
 "    Float64 lon[lon = 8640];\n" +
 "    Byte palette[rgb = 3][eightbitcolor = 256];\n" +
 "    Float64 lat[lat = 4320];\n" +
-"    Int32 time[time = 810];\n" +
+"    Int32 time[time = [N_TIME]];\n" +  //changes
 "    Grid {\n" +
 "     ARRAY:\n" +
-"        Int16 sst4[time = 810][lat = 4320][lon = 8640];\n" +
+"        Int16 sst4[time = [N_TIME]][lat = 4320][lon = 8640];\n" +
 "     MAPS:\n" +
-"        Int32 time[time = 810];\n" +
+"        Int32 time[time = [N_TIME]];\n" +
 "        Float64 lat[lat = 4320];\n" +
 "        Float64 lon[lon = 8640];\n" +
 "    } sst4;\n" +
 "    Grid {\n" +
 "     ARRAY:\n" +
-"        UInt16 qual_sst4[time = 810][lat = 4320][lon = 8640];\n" +
+"        UInt16 qual_sst4[time = [N_TIME]][lat = 4320][lon = 8640];\n" +
 "     MAPS:\n" +
-"        Int32 time[time = 810];\n" +
+"        Int32 time[time = [N_TIME]];\n" +
 "        Float64 lat[lat = 4320];\n" +
 "        Float64 lon[lon = 8640];\n" +
 "    } qual_sst4;\n" +
@@ -10700,12 +10707,11 @@ expected =
 "    qual_sst4 {\n" +
 "        String long_name \"Quality Levels, Sea Surface Temperature\";\n" +
 "        Int16 _FillValue -1;\n" + 
-"        Byte valid_min 0;\n" +
-"        Byte valid_max 5;\n" +
+"        String valid_min \"0\";\n" +  //source problem: should be Byte
+"        String valid_max \"5\";\n" +  //source problem: should be Byte
 "        String _Unsigned \"true\";\n" +
 "        Int32 _ChunkSizes 44, 87;\n" +
 "        String standard_name \"flag_values\";\n" +
-"        String units \"degree_north\";\n" +
 "    }\n" +
 "    NC_GLOBAL {\n" +
 "        String product_name \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc\";\n" +
@@ -10769,7 +10775,7 @@ expected =
 "        Float32 data_maximum [DM];\n" +
 "        String start_date \"2002-07-04 UTC\";\n" +
 "        String start_time \"00:00:00 UTC\";\n" +
-"        String stop_date \"2020-02-18 UTC\";\n" +
+"        String stop_date \"2020-08-12 UTC\";\n" +
 "        String stop_time \"23:59:59 UTC\";\n" +
 "        String processing_control_software_name \"l3mapgen\";\n" +
 "        String processing_control_software_version \"2.2.0-V2019.4\";\n" +
@@ -10919,13 +10925,13 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v36\n" +
 "*GLOBAL*,summary,Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\n" +
 "*GLOBAL*,temporal_range,8-day\n" +
-"*GLOBAL*,time_coverage_end,2022-02-18T00:00:00Z\n" +
-"*GLOBAL*,time_coverage_start,2004-07-04T00:00:00Z\n" +
-"*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\\u00b0, 2004-present\"\n" +
+"*GLOBAL*,time_coverage_end,2020-08-12T00:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2002-07-04T00:00:00Z\n" +
+"*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\\u00b0, 2002-present\"\n" +
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,2004-07-04T00:00:00Z\\n2022-02-18T00:00:00Z\n" +
+"time,actual_range,2002-07-04T00:00:00Z\\n2020-08-12T00:00:00Z\n" +
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +
@@ -10991,7 +10997,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0888992e+9, 1.6451424e+9;\n" +
+"    Float64 actual_range 1.0257408e+9, 1.5971904e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -11126,9 +11132,9 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +
-"    String time_coverage_end \"2022-02-18T00:00:00Z\";\n" +
-"    String time_coverage_start \"2004-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2004-present\";\n" +
+"    String time_coverage_end \"2020-08-12T00:00:00Z\";\n" +
+"    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
@@ -11139,24 +11145,25 @@ expected =
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
+        results = results.replaceAll("\\[time = \\d*\\]", "[time = [N_TIME]]");
         expected = //difference from testUInt16File: lat lon are double here, not float
 "Dataset {\n" +
-"  Float64 time[time = 810];\n" +
+"  Float64 time[time = [N_TIME]];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = [N_TIME]][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 810];\n" +
+"      Float64 time[time = [N_TIME]];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 810][latitude = 4320][longitude = 8640];\n" +
+"      UInt16 qual_sst4[time = [N_TIME]][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 810];\n" +
+"      Float64 time[time = [N_TIME]];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
@@ -11176,15 +11183,15 @@ expected =
 //ugly lat and lon values (clearly float -> double)
 "time,latitude,longitude,qual_sst4\n" +
 "UTC,degrees_north,degrees_east,degrees_north\n" +
-"2004-07-04T00:00:00Z,73.312499867,-163.31249986699999,65535\n" +  //currently appears as 255 (from source) but that's wrong, should be 65535, or _FillValue should be different
-"2004-07-04T00:00:00Z,73.312499867,-154.979166467,65535\n" +       //and same on following lines
-"2004-07-04T00:00:00Z,73.312499867,-146.64583306699998,65535\n" +
-"2004-07-04T00:00:00Z,64.979166467,-163.31249986699999,65535\n" +
-"2004-07-04T00:00:00Z,64.979166467,-154.979166467,65535\n" +
-"2004-07-04T00:00:00Z,64.979166467,-146.64583306699998,65535\n" +
-"2004-07-04T00:00:00Z,56.645833067000005,-163.31249986699999,0\n" +
-"2004-07-04T00:00:00Z,56.645833067000005,-154.979166467,1\n" +
-"2004-07-04T00:00:00Z,56.645833067000005,-146.64583306699998,65535\n";
+"2002-07-04T00:00:00Z,73.312499867,-163.31249986699999,65535\n" +  //currently appears as 255 (from source) but that's wrong, should be 65535, or _FillValue should be different
+"2002-07-04T00:00:00Z,73.312499867,-154.979166467,65535\n" +       //and same on following lines
+"2002-07-04T00:00:00Z,73.312499867,-146.64583306699998,65535\n" +
+"2002-07-04T00:00:00Z,64.979166467,-163.31249986699999,65535\n" +
+"2002-07-04T00:00:00Z,64.979166467,-154.979166467,65535\n" +
+"2002-07-04T00:00:00Z,64.979166467,-146.64583306699998,65535\n" +
+"2002-07-04T00:00:00Z,56.645833067000005,-163.31249986699999,0\n" +
+"2002-07-04T00:00:00Z,56.645833067000005,-154.979166467,1\n" +
+"2002-07-04T00:00:00Z,56.645833067000005,-146.64583306699998,65535\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //display the image
@@ -11194,7 +11201,7 @@ expected =
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            Test.knownProblem("This dataset has problems with time values in future and incorrect qual_sst4 _FillValue (255 vs 65535) and units (degree_north!). \n" +
+            Test.knownProblem("This dataset has problems with time values in future and incorrect qual_sst4 _FillValue (255 vs 65535) and units (degree_north! -- now fixed). \n" +
                 "2020-08-14 I notified podaac, so hopefully this will change.", t);
         }
 

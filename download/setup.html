@@ -126,9 +126,6 @@ which offers coding and technology training for students and adults
 <li>INCOIS 
   (Indian National Centre for Ocean Information Services)
   <!-- 2017-08-08 email Devender Raju, was http://erddap.incois.gov.in/erddap/index.html  -->
-<li>IPSC JRC EC (Maritime Affairs Unit, Institute for the Protection and Security of the Citizen,
-Joint Research Centre of the European Commission)
-  <!-- 2014-11-19 and 2015-03-18 Conor Delaney, https://bluehub.jrc.ec.europa.eu/erddap/index.html  -->
 <li>IRD (Institut de Recherche pour le Développement, France)
   <br>CNRS (Centre National de la Recherche Scientifique, France)
   <br>UPMC (Université Pierre et Marie CURIE, Paris, France)
@@ -139,6 +136,11 @@ Joint Research Centre of the European Commission)
   <br>LMI ECLAIRS (Laboratoire Mixte International «Etude du Climat en Afrique de l’Ouest
     et de ses Interactions avec l’Environnement Régional, et appui aux services climatiques») 
   <!-- 2015-03-17 Thierry Valero -->
+<li>JRC (European Commission - Joint Research Centre, European Union)
+<!-- 2020-09-25 paul.hasenohr@ext.ec.europa.eu
+was IPSC JRC EC (Maritime Affairs Unit, Institute for the Protection and Security of the Citizen,
+Joint Research Centre of the European Commission)
+   was 2014-11-19 and 2015-03-18 Conor Delaney, https://bluehub.jrc.ec.europa.eu/erddap/index.html  -->
 <li><a rel="bookmark" href="https://erddap.marine.ie/erddap/index.html">The Marine Institute</a>  
   (Ireland)
   <!-- 2015-03-19 Damian Smyth -->
@@ -1174,15 +1176,19 @@ Our plan to avoid problems is:
       or see any sign of things getting bogged down and responding slowly, 
       then look in ERDDAP's <a rel="help" href="#log">log.txt file</a>
       to see what's going on.
-  <li>If it is clear that some user is making more than one simultaneous request, 
+      <br>&nbsp;
+  <li><a class="selfLink" id="multipleSimultaneousRequests" href="#multipleSimultaneousRequests" rel="bookmark"
+     ><strong>Blacklist users making multiple simultaneous requests!</strong></a>
+    <br>If it is clear that some user is making more than one simultaneous request, 
     repeatedly and continuously, then add their IP address to ERDDAP's 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
-      >&lt;requestBlacklist&gt; in your datasets.xml file</a>.  
+      >&lt;requestBlacklist&gt;</a> in your datasets.xml file.  
     Sometimes the requests are all from one IP address. 
     Sometimes they are from multiple IP addresses, but clearly the same user.
     You can also blacklist people making tons of invalid requests 
     or tons of mind-numbingly inefficient requests.
-  <li>Then, for each request they make, ERDDAP returns:
+    
+    <p>Then, for each request they make, ERDDAP returns:
     <blockquote>HTTP ERROR 403 - Access Forbidden -- 
     <br>Your IP address is on this ERDDAP's request blacklist.
     <br>Did you often submit more than one request at a time?
@@ -1190,18 +1196,77 @@ Our plan to avoid problems is:
     <br>Did you submit a large number of invalid requests?
     <br>If you are ready to avoid these problems, please email 
     [ERDDAP administrator's email address] to request to be taken off of the blacklist.</blockquote>
-  <li>Hopefully the user sees this message and contacts you
+
+    <p>Hopefully the user will see this message and contact you
     to find out how to fix the problem and get off the blacklist. 
     Sometimes, they just switch IP addresses and try again.
-    <br>&nbsp;
-  </ul>
-  Just doing those things solves the problem most of the time. 
-  It lets things start to simmer, but rarely boil over.
 
-  <p>Also, it is good if your server has a lot of cores and, most importantly, a lot of memory,
-    so you can allocate a lot of memory to ERDDAP, more than it ever needs. 
-    Then, memory is rarely or never a limiting factor. 
-    Network bandwidth is a more common limiting factor. 
+    <p>It is like the balance of power between offensive and defensive weapons in war.
+      Here, the defensive weapons (ERDDAP) have a fixed capacity, limited by 
+      the number of cores in the CPU, the disk access bandwidth, and the
+      network bandwidth.
+      But the offensive weapons (users, notably scripts) have unlimited 
+      capacity:
+      <ul>
+      <li>A single request for data from a lot of time points may cause ERDDAP
+        to open a huge number of files (in sequence or partly multi-threaded).
+        In extreme cases, one "simple" request can easily tie up the RAID attached to ERDDAP for a 
+        minute, effectively blocking the handling of other requests.
+        <br>&nbsp;
+      <li>A single request may consume a large chunk of memory (even though
+        ERDDAP is coded to minimize the memory needed to handle large requests).
+        <br>&nbsp;
+      <li>Parallelization -
+        <br>It is easy for a clever user to parallelize a big task by generating
+        lots of threads, each of which submits a separate request (which may be large
+        or small). This behavior is encouraged by the computer science community
+        as an efficient way to deal with a large problem
+        (and parallelizing is efficient in other circumstances).
+        Going back to the war analogy: users can make an essentially unlimited
+        number of simultaneous requests with the cost of each being essentially zero, 
+        but the cost of each request coming into ERDDAP can be large and ERDDAP's response
+        capability is finite. Clearly, ERDDAP will lose this battle,
+        unless the ERDDAP administrator blacklists users who are making
+        multiple simultaneous requests which are unfairly crowding out other users.
+        <br>&nbsp;
+      <li>Multiple Scripts -
+        <br>Now think about what happens when there are several clever users each running 
+        parallelized scripts. If one user can generate so many requests that
+        other users are crowded out, then multiple such users can generate so many
+        requests that ERDDAP becomes overwhelmed and seemingly unresponsive. It is effectively a 
+        <a rel="help" href="https://en.wikipedia.org/wiki/Denial-of-service_attack">DDOS attack<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>      
+        Again, the only defense for ERDDAP is to blacklist users making 
+        multiple simultaneous requests which are unfairly crowding out other users.
+        <br>&nbsp;
+      <li>Inflated Expectations -
+        <br>In this world of massive tech companies (Amazon, Google, Facebook, ...),
+        users have come to expect essentially unlimited capabilities 
+        from the providers. 
+        Since these companies are money making operations, the more users they have,
+        the more revenue they have to expand their IT infrastructure.
+        So they can afford a massive IT infrastructure 
+        to handle requests. And they cleverly limit the number of requests
+        and cost of each request from users by limiting the kinds of requests that users can make so
+        that no single request is burdensome, and there is never a reason 
+        (or a way) for users to make multiple simultaneous requests. 
+        So these huge tech companies may have far more users than ERDDAP, but
+        they have massively more resources and clever ways to limit 
+        the requests from each user. It's a manageable situation for 
+        the big IT companies (and they get rich!) but not for ERDDAP installations.
+        Again, the only defense for ERDDAP is to blacklist users making 
+        multiple simultaneous requests which are unfairly crowding out other users.
+        <br>&nbsp;
+      </ul>
+      So users: Don't make multiple simultaneous requests or you will be blacklisted!      
+  </ul>
+
+  <p>Clearly, it is best if your server has a lot of cores, a lot of memory
+    (so you can allocate a lot of memory to ERDDAP, more than it ever needs),
+    and a high bandwidth internet connection. 
+    Then, memory is rarely or never a limiting factor, 
+    but network bandwidth becomes the more common limiting factor. 
     Basically, as there are more and more simultaneous requests, 
     the speed to any given user decreases. 
     That naturally slows down the number of requests coming in if each user 
@@ -4451,7 +4516,7 @@ credit where credit is due.)
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     (license: LGPL).
-<li>NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written with code in the
+<li>NetCDF files (.nc), GMT-style NetCDF files (.grd), GRIB, and BUFR are read and written with code in the
   <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf-java/"
   >NetCDF Java Library<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4462,20 +4527,6 @@ credit where credit is due.)
     from <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-<li>The NetCDF Java Library reads GRIB files via the Unidata
-    <a rel="help" href="https://www.unidata.ucar.edu/software/decoders/">GRIB decoder (grib-6.0.jar)<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (license: <a rel="bookmark" href="https://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-<li>The NetCDF Java Library reads BUFR files via the Unidata
-    <a rel="help" href="https://www.unidata.ucar.edu/software/decoders/">BUFR decoder <img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (license: <a rel="bookmark" href="https://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
 <li>The NetCDF Java Library and Cassandra need <a rel="help" href="http://www.slf4j.org/"
   >slf4j from the Simple Logging Facade for Java</a> project.
   Currently, ERDDAP uses the slf4j-simple-xxx.jar renamed as slf4j.jar to meet this need.

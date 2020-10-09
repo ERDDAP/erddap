@@ -532,7 +532,7 @@ String expected =
 "        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
-"        <att name=\"keywords\">altitude, atmosphere, atmospheric, atmp, buoy, center, data, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, height, identifier, latitude, longitude, national, ndbc, newer, noaa, science, speed, station, stationID, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
+"        <att name=\"keywords\">altitude, atmosphere, atmospheric, atmp, buoy, center, data, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, end, height, identifier, latitude, longitude, national, ndbc, newer, noaa, not, parens, science, speed, station, stationID, surface, temperature, test, test_parens_not_at_end, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -674,6 +674,30 @@ String expected =
 "            <att name=\"long_name\">Water Temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wtmp (test dup name and remove parens)</sourceName>\n" +
+"        <destinationName>wtmp_2</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Water Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>test (parens) not at end</sourceName>\n" +
+"        <destinationName>test_parens_not_at_end</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Test (parens) Not At End</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
 
@@ -689,7 +713,7 @@ String expected =
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), "The Newer Title!", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-            "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp",
+            "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp, wtmp_2, test_parens_not_at_end",
             "");
 
 //2014-12-24 no longer occurs

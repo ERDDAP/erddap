@@ -174,6 +174,7 @@ public class TableWriterDataTable extends TableWriter {
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
+        boolean flushAfterward = totalNRows == 0; //flush initial chunk so info gets to user quickly
         totalNRows += nRows;
         Math2.ensureArraySizeOkay(totalNRows, "json");
 
@@ -227,10 +228,8 @@ public class TableWriterDataTable extends TableWriter {
         }
         if (nRows > 0) rowsWritten = true;
 
-        //ensure it gets to user right away
-        if (nRows > 1) //some callers work one row at a time; avoid excessive flushing
+        if (flushAfterward)
             writer.flush();
-
     }
 
     /**

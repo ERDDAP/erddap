@@ -137,7 +137,7 @@ public class NcHelper  {
         int sLength = s.length();
 
         //remove dir name from first line (since this is sometimes sent to ERDDAP users)    
-        //"netcdf /data/erddapBPD/cache/_test/EDDGridFromDap_Axis.nc {\n" +
+        //"netcdf /data/_erddapBPD/cache/_test/EDDGridFromDap_Axis.nc {\n" +
         int po = 0;
         int brPo = s.indexOf(" {"); 
         if (brPo >= 0) {

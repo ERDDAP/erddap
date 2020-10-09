@@ -677,9 +677,10 @@ public class EDDTableFromOBIS extends EDDTable{
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
-            //if too much data, rethrow t
+            //if OutOfMemoryError or too much data, rethrow t
             String tToString = t.toString();
-            if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+            if (t instanceof java.lang.OutOfMemoryError ||
+                tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                 throw t;
 
             throw new Throwable(EDStatic.errorFromDataSource + tToString, t);

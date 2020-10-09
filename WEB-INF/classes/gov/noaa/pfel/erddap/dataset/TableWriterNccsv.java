@@ -142,6 +142,7 @@ public class TableWriterNccsv extends TableWriter {
         //no: convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
 
         int nRows = table.nRows();
+        boolean flushAfterward = totalNRows == 0;  //flush initial chunk so info gets to user quickly
         totalNRows += nRows;
         //no: avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         //no: Math2.ensureArraySizeOkay(totalNRows, "NCCSV");
@@ -158,12 +159,12 @@ public class TableWriterNccsv extends TableWriter {
                         time_precision[col], pas[col].getDouble(row), ""));
                 } else {
                     String ts = pas[col].getNccsvDataString(row);
-String2.log(">> row=" + row + " col=" + col + " ts=" + ts + " maxIsMV=" + pas[col].getMaxIsMV());
+                    //String2.log(">> row=" + row + " col=" + col + " ts=" + ts + " maxIsMV=" + pas[col].getMaxIsMV());
                     writer.write(ts);
                     if (isLong[col]) {
                         if (ts.length() > 0)
                             writer.write('L'); //special case not handled by getNccsvDataString
-                    } else if (isLong[col]) {
+                    } else if (isULong[col]) {
                         if (ts.length() > 0)
                             writer.write("uL"); //special case not handled by getNccsvDataString
                     }
@@ -172,8 +173,7 @@ String2.log(">> row=" + row + " col=" + col + " ts=" + ts + " maxIsMV=" + pas[co
             }
         }       
 
-        //ensure it gets to user right away
-        if (nRows > 1) //some callers work one row at a time; avoid excessive flushing
+        if (flushAfterward) 
             writer.flush(); 
     }
 
