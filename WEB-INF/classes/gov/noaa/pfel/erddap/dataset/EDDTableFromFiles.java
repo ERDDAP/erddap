@@ -162,6 +162,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
     public final static String HTTP_GET_KEYS                = "httpGetKeys";
 
     protected String[] httpGetRequiredVariableNames;  //e.g., stationID, time
+    protected String[] httpGetRequiredVariableTypes;  //e.g., String, double
     protected HashSet<String> httpGetKeys = new HashSet();
 
     //this has the parsed httpGetDirectoryStructure specification
@@ -948,9 +949,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //class-specific things
         if (className.equals("EDDTableFromHttpGet")) {
-            setHttpGetRequiredVariables( tAddGlobalAttributes.getString(HTTP_GET_REQUIRED_VARIABLES));
-            setHttpGetDirectoryStructure(tAddGlobalAttributes.getString(HTTP_GET_DIRECTORY_STRUCTURE));
-            setHttpGetKeys(              tAddGlobalAttributes.getString(HTTP_GET_KEYS));
+            setHttpGetRequiredVariableNames( tAddGlobalAttributes.getString(HTTP_GET_REQUIRED_VARIABLES));
+            setHttpGetDirectoryStructure(    tAddGlobalAttributes.getString(HTTP_GET_DIRECTORY_STRUCTURE));
+            setHttpGetKeys(                  tAddGlobalAttributes.getString(HTTP_GET_KEYS));
             tAddGlobalAttributes.remove(HTTP_GET_KEYS);
 
         } else if (className.equals("EDDTableFromMultidimNcFiles")) {
@@ -1760,8 +1761,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
             }
 
-        //String2.pressEnterToContinue("!!!sourceName=" + dataVariables[dv].sourceName() + 
-        //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMinDouble());
+            //String2.pressEnterToContinue("!!!sourceName=" + dataVariables[dv].sourceName() + 
+            //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMinDouble());
+        }
+
+        //more class-specific things (after variables have been created)
+        if (className.equals("EDDTableFromHttpGet")) {
+            setHttpGetRequiredVariableTypes();
         }
 
         //Try to gather information to serve this dataset via ERDDAP's SOS server.
@@ -2011,22 +2017,23 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     expectedUnits[dvNec]        = dvAtts.getString("units");
                 }
             } catch (Throwable t) {
-                throw new RuntimeException("Unexpected error when getting ExpectedXxx attributes from " + dir + name, t);
+                throw new RuntimeException("Unexpected error when getting expected attributes from " + dir + name, t);
             }
 
             //we got what we needed, no need to look at other files
-            if (verbose) String2.log("ExpectedXxx attributes were read from " + dir + name);
+            if (verbose) String2.log("expected attributes were read from " + dir + name);
             return true;
         }
         if (verbose) String2.log(
-            "Didn't get expectedXxx attributes because there were no previously valid files,\n" +
+            "Didn't get expected attributes because there were no previously valid files,\n" +
             "  or none of the previously valid files were unchanged!");
         return false;
     }
 
-    /** The constructor for EDDTableFromHttpGet calls this to set httpGetRequiredVariables. */
-    private void setHttpGetRequiredVariables(String tRequiredVariablesCSV) {
-
+    /** 
+     * The constructor for EDDTableFromHttpGet calls this to set httpGetRequiredVariableNames. 
+     */
+    private void setHttpGetRequiredVariableNames(String tRequiredVariablesCSV) {
         if (!String2.isSomething(tRequiredVariablesCSV))
             throw new RuntimeException(
                 String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" +
@@ -2036,6 +2043,30 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (verbose) String2.log("  " + HTTP_GET_REQUIRED_VARIABLES + "=" + 
             String2.toCSSVString(httpGetRequiredVariableNames));
     }
+
+    /** 
+     * The constructor for EDDTableFromHttpGet calls this after the variables are
+     * created to set httpGetRequiredVariableTypes. 
+     */
+    private void setHttpGetRequiredVariableTypes() {
+        int n = httpGetRequiredVariableNames.length;
+        if (n == 0)
+            throw new RuntimeException(
+                String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" +
+                datasetID + ": " + HTTP_GET_REQUIRED_VARIABLES + " MUST have one or more variable names.");
+        httpGetRequiredVariableTypes = new String[n];
+        for (int i = 0; i < n; i++) {
+            String tSourceName = httpGetRequiredVariableNames[i];
+            int col = String2.indexOf(dataVariableSourceNames(), tSourceName);
+            if (col < 0)
+                throw new RuntimeException(
+                    String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" +
+                    datasetID + ": all " + HTTP_GET_REQUIRED_VARIABLES + " MUST be in the dataset (" + tSourceName + ").");
+            httpGetRequiredVariableTypes[i] = dataVariables[col].sourceDataType();
+        }
+    }
+
+
 
     /** The constructor for EDDTableFromHttpGet calls this to set httpGetDirectoryStructure variables. */
     private void setHttpGetDirectoryStructure(String tDirStructure) {
@@ -3867,9 +3898,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             EDStatic.rethrowClientAbortException(t);  //first throwable type handled
 
-            //if interrupted or too much data, rethrow t
+            //if interrupted, OutOfMemoryError or too much data, rethrow t
             String tToString = t.toString();
             if (t instanceof InterruptedException ||
+                t instanceof java.lang.OutOfMemoryError ||
                 tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                 throw t;
 

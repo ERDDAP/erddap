@@ -748,7 +748,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    String units \"seconds\";\n" +
 "  }\n" +
 "  channel_1 {\n" +
-"    Int16 _FillValue 32767;\n" +
 "    Float64 colorBarMaximum 33000.0;\n" +
 "    Float64 colorBarMinimum -33000.0;\n" +
 "    String ioos_category \"Other\";\n" +

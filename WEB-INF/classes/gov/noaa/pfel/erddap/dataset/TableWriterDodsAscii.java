@@ -114,6 +114,7 @@ public class TableWriterDodsAscii extends TableWriter {
         //leave missing values as destinationMissingValues or destinationFillValues
 
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
+        boolean flushAfterward = totalNRows == 0; //flush initial chunk so info gets to user quickly
         totalNRows += nRows;
         Math2.ensureArraySizeOkay(totalNRows, "DODS Ascii sequence");
 
@@ -132,9 +133,8 @@ public class TableWriterDodsAscii extends TableWriter {
             }
         }
 
-        //so data gets to user right away
-        writer.flush(); 
-
+        if (flushAfterward)
+            writer.flush(); 
     }
 
     

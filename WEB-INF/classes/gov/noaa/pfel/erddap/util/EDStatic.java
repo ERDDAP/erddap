@@ -1208,6 +1208,7 @@ public static boolean developmentMode = false;
         notAuthorized,
         notAuthorizedForData,
         notAvailable,
+        note,
         noXxx,
         noXxxBecause,
         noXxxBecause2,
@@ -2261,6 +2262,10 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDTableMapExample         = messages.getNotNothingString("EDDTableMapExample",         errorInMethod);
         EDDTableMatlabPlotExample  = messages.getNotNothingString("EDDTableMatlabPlotExample",  errorInMethod);
 
+        EDDTableFromHttpGet.DATASET_DESCRIPTION   = messages.getNotNothingString("EDDTableFromHttpGetDescription", errorInMethod);
+        EDDTableFromHttpGet.AUTHOR_DESCRIPTION    = messages.getNotNothingString("EDDTableFromHttpGetAuthor",      errorInMethod);
+        EDDTableFromHttpGet.TIMESTAMP_DESCRIPTION = messages.getNotNothingString("EDDTableFromHttpGetTimestamp",   errorInMethod);
+
         //admin provides EDDGrid...Example
         EDDTableErddapUrlExample   = setup.getString("EDDTableErddapUrlExample",   EDDTableErddapUrlExample);
         EDDTableIdExample          = setup.getString("EDDTableIdExample",          EDDTableIdExample);
@@ -2587,6 +2592,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         notAuthorized              = messages.getNotNothingString("notAuthorized",              errorInMethod);
         notAuthorizedForData       = messages.getNotNothingString("notAuthorizedForData",       errorInMethod);
         notAvailable               = messages.getNotNothingString("notAvailable",               errorInMethod);
+        note                       = messages.getNotNothingString("note",                       errorInMethod);
         noXxx                      = messages.getNotNothingString("noXxx",                      errorInMethod);
         noXxxBecause               = messages.getNotNothingString("noXxxBecause",               errorInMethod);
         noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              errorInMethod);

@@ -5697,18 +5697,20 @@ handles data from one relational database table or
   </ul>
 
 <li><a class="selfLink" id="databaseNulls" href="#databaseNulls" rel="bookmark">Integer nulls</a> -- 
-  Databases support nulls in integer (int, smallint, tinyint) columns, but ERDDAP doesn't.
-  <br>By default (at least with PostgreSQL), database nulls will be converted in ERDDAP 
-   to 2147483647 for int columns or 32767 for short columns.
+  Databases support nulls in integer (int, smallint, tinyint) columns, but ERDDAP doesn't support true nulls.
+  <br>Database nulls will be converted in ERDDAP 
+   127 for byte columns, 255 for ubyte columns,  
+   32767 for short columns, 65535 for ushort columns,
+   2147483647 for int columns, 4294967295 for uint columns,
+   9,223,372,036,854,775,807 for long columns, or 18446744073709551615 for ulong columns.
    If you use those defaults, please identify those missing_values for the 
    dataset's users in ERDDAP with 
-  <br><kbd>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;2147483647&lt;/att&gt;</kbd>
+  <br><kbd>    &lt;att name="_FillValue" <a rel="help" href="#attributeType">type="int"</a>&gt;2147483647&lt;/att&gt;</kbd>
   <br>or
-  <br><kbd>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="short"</a>&gt;32767&lt;/att&gt;</kbd>
-  <p>If the integer nulls in your database cause error messages in ERDDAP (they don't in PostgreSQL), 
-    you need to convert them to some actual number (for example, -32000) 
-    and identify that value in datasets.xml:
-  <br><kbd>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;-32000&lt;/att&gt;</kbd>
+  <br><kbd>    &lt;att name="_FillValue" <a rel="help" href="#attributeType">type="short"</a>&gt;32767&lt;/att&gt;</kbd>
+  <br>Alternatively, you can use the "missing_value" attribute instead of "_FillValue".
+  <br>GenerateDatasetsXml automatically adds these _FillValue attributes when it generates the
+    suggested datasets.xml for database datasets.
   <p>For database floating point columns, nulls get converted to NaNs in ERDDAP.
   <br>For database data types that are converted to Strings in ERDDAP, 
     nulls get converted to empty Strings.
@@ -8483,28 +8485,26 @@ Here are the recommended steps to setting up an EDDTableFromHttpGet dataset:
 
 <li>After real data has been inserted into the dataset, you can and should 
   delete the original sample data file.
+  <br>&nbsp;
 
 <li>Users can request data from the dataset as they do for any other EDDTable dataset in ERDDAP.
-  If the request doesn't include constraints on timestamp, author, or command columns,
+  If the request doesn't include a constraint on the timestamp column,
   then the request gets data from the current version of the dataset (the log file
-  after all insertions and deletions are applied and the data is re-sorted by the 
+  after processing all of the insertion and deletion commands and re-sorting by the 
   <kbd>httpGetRequiredVariables</kbd>).
   <br>&nbsp;
 
 <li>Users can also make requests which are specific to EDDTableFromHttpGet datasets:
-  <br>If the request includes a timestamp &lt; or &lt;= constraint, 
-  e.g., <kbd>&amp;timestamp&lt;=2015-06-01</kbd>,
-  (but no author or command constraint), then 
-  a user can get data from the dataset as of a specific point in time.
+  <ul>
+  <li>If the request includes a &lt; or &lt;= constraint of the timestamp column,
+  then ERDDAP processes rows of the log file up until the specified timestamp.
+  In effect, this temporarily deletes all of the changes made to the dataset since that timestamp value. 
   For more info, see <a rel="help" href="#HttpGetVersioning">Versioning</a>.
 
-  <p>Or, if the request includes a non &lt; or &lt;= constraint on timestamp,
-  or any constraint on the author and/or command column,
-  then the request gets data from the raw log files.  If the request includes a 
-  constraint that is always true (e.g., <kbd>&amp;command&gt;!=-1</kbd>) 
-  then you can get raw log file data (usually with other constraints, e.g.,
-  to get data for a specific station).
-  <br>&nbsp;
+  <li>If the request includes a &gt;, &gt;=, or = constraint of the timestamp column, 
+  e.g., <kbd>&amp;timestamp&lt;=0</kbd>, then ERDDAP returns the data from 
+  the data files as is, without processing the insertion and deletion commands.
+  </ul>
 
 <li>In the future, we envision that tools will be built (by us? by you?) for
   working with these datasets. For example, there could be a script which 

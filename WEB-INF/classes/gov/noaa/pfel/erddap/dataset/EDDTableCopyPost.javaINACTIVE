@@ -130,7 +130,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             else if (localTags.equals("<dataset>")) {
                 if ("false".equals(xmlReader.attributeValue("active"))) {
                     //skip it - read to </dataset>
-                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                    if (verbose) String2.log("  skipping datasetID=" + xmlReader.attributeValue("datasetID") + 
                         " because active=\"false\".");
                     while (xmlReader.stackSize() != startOfTagsN + 1 ||
                            !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
@@ -1358,7 +1358,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
         //find activation_time is after surgery_time
         TableWriterAll twa = new TableWriterAll(tedd, null, 
-            "c:/data/erddapBPD/cache/cPostSurg3/", "findSurgeryBeforeActivation");
+            "c:/data/_erddapBPD/cache/cPostSurg3/", "findSurgeryBeforeActivation");
         tedd.getDataForDapQuery(loggedInAs, "requestUrl", 
             "unique_tag_id,activation_time,surgery_time,PI", twa);
         Table table = twa.cumulativeTable();

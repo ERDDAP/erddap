@@ -479,6 +479,9 @@ public abstract class PrimitiveArray {
     /** 
      * This returns the cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
+     *
+     * @return  the cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * expressed as a double.
      */
     abstract public double missingValueAsDouble();
 
@@ -617,15 +620,21 @@ public abstract class PrimitiveArray {
         return false;
     }
 
-    /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
+    /** 
+     * This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
+     *
+     * @return true if this class' type is PAType.FLOAT or PAType.DOUBLE. 
      */
     public boolean isFloatingPointType() {
         return false;
     }
 
     /** 
-     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * This returns the cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * as a new PAOne.  For integer types, maxIsMV is false.
+     *
+     * @return the cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     *   as a new PAOne. 
      */
     public PAOne missingValue() {
         PAOne paOne = new PAOne(elementType());
@@ -636,9 +645,12 @@ public abstract class PrimitiveArray {
 
 
     /**
-     * This returns the minimum PAType needed to completely and precisely contain 
-     * the values in this PA's PAType and tPAType.
+     * This returns the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      *
+     * @param tPAType the PAType of the other PA that will be merged
+     * @return the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
     abstract public PAType needPAType(PAType tPAType);
 
@@ -778,7 +790,13 @@ public abstract class PrimitiveArray {
      */
     abstract public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues);
 
-    /** This is like the other addFromPA, with nValues=1. */
+    /** 
+     * This is like the other addFromPA, with nValues=1. 
+     *
+     * @param otherPA the source PA
+     * @param otherIndex the start index in otherPA
+     * @return 'this' for convenience
+     */
     public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex) {
         return addFromPA(otherPA, otherIndex, 1);
     }
@@ -3344,14 +3362,14 @@ public abstract class PrimitiveArray {
         int nSwitched = 0;
         if (fakeFillValue != null) {
             nSwitched += switchFromTo(fakeFillValue, "");
-            setMaxIsMV(true);
+            setMaxIsMV(true);  //just the presence of _FillValue means maxIsMV should be true
         }
 
         //is missing_value used?    switch data to standard mv
         //String2.log ...
         if (fakeMissingValue != null && !fakeMissingValue.equals(fakeFillValue)) {  
             nSwitched += switchFromTo(fakeMissingValue, "");
-            setMaxIsMV(true);
+            setMaxIsMV(true);  //just the presence of missing_value means maxIsMV should be true
         }
 
         return nSwitched;
@@ -3588,10 +3606,10 @@ public abstract class PrimitiveArray {
             } else if (diff > big)   {bigi = i;   big = diff; 
             }
         }
-        return "  smallest spacing=" + small + 
+        return "    smallest spacing=" + small + 
              ": [" + (smalli-1) + "]=" + getDouble(smalli-1) + 
              ", [" + smalli     + "]=" + getDouble(smalli) + "\n" +
-               "  biggest  spacing=" + big   + 
+               "    biggest  spacing=" + big   + 
              ": [" + (bigi-1)   + "]=" + getDouble(bigi-1) + 
              ", [" + bigi       + "]=" + getDouble(bigi);
     }

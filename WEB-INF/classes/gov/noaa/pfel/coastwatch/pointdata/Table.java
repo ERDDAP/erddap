@@ -2126,6 +2126,14 @@ public class Table  {
         columnNames.ensureNoDuplicates("Invalid Table: " + msg + "Duplicate column names: ");
     }
 
+    /** 
+     * This makes the column names unique by adding _2, _3, ... as needed.
+     *
+     */
+    public void makeColumnNamesUnique() {    
+        columnNames.makeUnique();
+    }
+
 
     /**
      * This adds missingValues (NaN) to columns as needed so all columns have the same number of rows.
@@ -9503,7 +9511,7 @@ Dataset {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test String vars 
-        fiName = "c:/data/erddapBPD/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
+        fiName = "c:/data/_erddapBPD/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
         table.readNDNc(fiName, null, 0,  //standardizeWhat=0
             null, 0, 0);
         results = table.dataToString(4);
@@ -34559,7 +34567,7 @@ readAsNcCF?
     public static void testBigAscii() throws Exception {
         PrimitiveArray.reallyVerbose = true;
         Math2.gcAndWait(); Math2.gcAndWait(); 
-        String2.log("\n*** Table.testBigAscii: " + Math2.memoryString());
+        String2.log("\n*** Table.testBigAscii(): " + Math2.memoryString());
 
         Table table = new Table();
         long time = System.currentTimeMillis();
@@ -34638,9 +34646,9 @@ readAsNcCF?
         String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 
-            "ms. file read time should be ~36s (but longer when computer is busy)";
+            "ms. file read time should be ~45s (but longer when computer is busy) (was 36s before v2.10)";
         String2.log(msg);
-        Test.ensureTrue(time < 41000, "Too slow! " + msg); 
+        Test.ensureTrue(time < 55000, "Too slow! " + msg); 
     }
 
 

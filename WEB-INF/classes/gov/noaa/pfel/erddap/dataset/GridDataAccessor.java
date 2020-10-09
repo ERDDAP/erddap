@@ -601,9 +601,10 @@ public class GridDataAccessor {
 
             EDStatic.rethrowClientAbortException(t);  //first throwable type handled
 
-            //if interrupted or too much data, rethrow t
+            //if interrupted, OutOfMemoryError or too much data, rethrow t
             String tToString = t.toString();
             if (t instanceof InterruptedException ||
+                t instanceof java.lang.OutOfMemoryError ||
                 tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                 throw t;
 
@@ -868,6 +869,17 @@ class GetChunkCallable implements Callable {
      */
     public double getDataValueAsDouble(int dv) {
         return partialDataValues[dv].getDouble((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
+    }
+
+    /**
+     * Call this after increment() to get the current data value (as a String) 
+     * from the specified dataVariable.
+     *
+     * @param dv a dataVariable number in the query 
+     * @return the data value
+     */
+    public String getDataValueAsString(int dv) {
+        return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
     }
 
     /**

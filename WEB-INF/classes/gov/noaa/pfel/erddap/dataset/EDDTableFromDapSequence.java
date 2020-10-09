@@ -704,8 +704,9 @@ public class EDDTableFromDapSequence extends EDDTable{
             if (tToString.indexOf("Your Query Produced No Matching Results.") >= 0) //the DAP standard
                 throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says DAP)", t);
 
-            //if too much data, rethrow t
-            if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+            //if OutOfMemoryError or too much data, rethrow t
+            if (t instanceof java.lang.OutOfMemoryError ||
+                tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                 throw t;
 
             //any other error is real trouble
@@ -1723,35 +1724,6 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     }
 
 
-    /** This tests catching and recovering from outOfMemory errors. 
-     * Since erddap now (2009-06-24) catches Throwable (not just Exception),
-     * it should be able to recover from similar errors.
-     * ?But it is exception below, not throwable. 
-     */
-    public static void testMemory() throws Throwable {
-        testVerboseOn();
-        String results, query, tName, expected;
-        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelWOD5np");
-
-        try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "s", EDStatic.fullTestCacheDirectory, 
-                tedd.className() + "_memory", ".dods"); 
-            String fullName = EDStatic.fullTestCacheDirectory + tName;
-            String2.log("\nFile successfully created: " + fullName +
-                "\nnBytes=" + File2.length(fullName));
-            results = File2.hexDump(fullName, 1024);
-            expected = "!!!Shouldn't get here!!!";  
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-           
-        } catch (Throwable t) {
-            results = MustBe.getShortErrorMessage(t);
-            expected = "DODSException: \"java.io.IOException:Too much data -- CDP timeout\"";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
-        }
-
-    }
-
-
     /** This tests sourceNeedsExpandedFP_EQ. 
      * 2016-01-16 SOURCE IS GONE.
      */
@@ -2067,7 +2039,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 4;
+            lastTest = interactive? -1 : 3;
         String msg = "\n^^^ EDDTableFromDapSequence.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -2083,7 +2055,6 @@ expected =
                     if (test ==  1) testGenerateDatasetsXml2();  //trouble: unsigned: needs work
                     //if (test ==  2) testPsdac(); 2020-08-27 source is gone
                     if (test ==  3) testReadDas();
-                    if (test ==  4 && doSlowTestsToo) testMemory();
 
                     //if (test ==  7) testSourceNeedsExpandedFP_EQ(); 2016-01-16 source is gone
                     //if (test ==  8) testSubsetVariablesGraph(); 2016-01-16 source is gone

@@ -41,7 +41,9 @@ public class Math2 {
     public static final BigInteger ULONG_MIN_VALUE = BigInteger.ZERO;  
     public static final short  UBYTE_MAX_VALUE  = 255;
     public static final int    USHORT_MAX_VALUE = 65535;
+    //int MAX_VALUE is 2147483647
     public static final long   UINT_MAX_VALUE   = 4294967295L;
+    //long MAX_VALUE is 
     public static final BigInteger LONG_MAX_VALUE  = new BigInteger("" + Long.MAX_VALUE);  
     public static final BigInteger ULONG_MAX_VALUE = new BigInteger("18446744073709551615");
     public static final double ULONG_MAX_VALUE_AS_DOUBLE = 18446744073709551615.0; //trouble: won't be stored exactly

@@ -487,8 +487,10 @@ public class StringArray extends PrimitiveArray {
 
     /**
      * This returns the minimum PAType needed to completely and precisely contain
-     * the values in this PA's PAType and tPAType.
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      *
+     * @return the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
     public PAType needPAType(PAType tPAType) {
         return PAType.STRING;
@@ -591,6 +593,37 @@ public class StringArray extends PrimitiveArray {
         for (int i = 0; i < size; i++)
             array[i] = String2.canonicalStringHolder(array[i]);
     }
+
+    /**
+     * This appends _2, _3, ..., to strings as needed to make all of the strings unique.
+     * This will be slow if size is huge and many are duplicates. 
+     *
+     * @return the number of values changed
+     */
+    public int makeUnique() {
+        int n = size();
+        int nChanged = 0;
+        HashSet<String> hs = toHashSet();
+        for (int i = 0; i < n - 1; i++) {
+            String si = get(i);
+            int add = 2;
+
+            //see if there are any duplicates of si
+            for (int j = i + 1; j < n; j++) {
+                String sj = get(j);
+                if (!si.equals(sj))
+                    continue;
+
+                //find unique add number
+                while (!hs.add(sj + "_" + add))
+                    add++;
+                set(j, sj + "_" + add);
+                nChanged++;
+            }
+        }
+        return nChanged;
+    }
+
 
     /**
      * This adds all the strings from sar.
@@ -2976,8 +3009,8 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), 
             "StringArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
         Test.ensureEqual(anArray.smallestBiggestSpacing(),
-            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
-            "  biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1", "");
+            "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "    biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1", "");
 
         //fromCSV
         Test.ensureEqual(fromCSV(null).toString(), "", "");
@@ -3279,6 +3312,10 @@ public class StringArray extends PrimitiveArray {
         }
         Test.ensureEqual(s, "com.cohort.util.SimpleException: A string in the JSON array lacks a closing double quote.", "");
 
+        //makeUnique
+        anArray = fromCSV("a_3, a, b_2, b, b, a, a_2, a");
+        Test.ensureEqual(anArray.makeUnique(), 3, "");
+        Test.ensureEqual(anArray.toString(), "a_3, a, b_2, b, b_3, a_4, a_2, a_5", "");
 
         //tryToFindNumericMissingValue() 
         Test.ensureEqual((new StringArray(new String[] {                  })).tryToFindNumericMissingValue(), null, "");

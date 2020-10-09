@@ -4531,7 +4531,6 @@ public abstract class EDDGrid extends EDD {
 
             //write the data  //OPeNDAP 2.0, 7.3.2.4
             //write elements of the array, in dds order
-            PAOne tPAOne = new PAOne(PAType.STRING);
             int nDataVariables = tDataVariables.length;
             for (int dv = 0; dv < nDataVariables; dv++) {
                 String dvDestName = tDataVariables[dv].destinationName();
@@ -4554,7 +4553,7 @@ public abstract class EDDGrid extends EDD {
                         for (int av = 0; av < nAv - 1; av++)
                             writer.write("[" + current[av] + "]");
                     }
-                    writer.write(", " + partialGda.getDataValueAsPAOne(0, tPAOne));
+                    writer.write(", " + partialGda.getDataValueAsString(0));  
                 }
 
                 //send the axis data
@@ -10278,10 +10277,12 @@ Attributes {
             "      associated dimension with the same name.\n" +
             "      <ul>\n" +
             "      <li>Each axis variable has data of one specific data type.\n" +
-            "        If the data source has a dimension with a size but no values, ERDDAP uses the values\n" +
+            "        See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
+            "        If the data source has a dimension with a size but no values, ERDDAP uses the integer values\n" +
             "        0, 1, 2, ...\n" +
             "        See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
             "        Axis variables can't contain char or String data.\n" +
+            "      <li>The minimum number of axis variables is 1.\n" +
             "      <li>The maximum number of axis variables is 2147483647, but most datasets have 4 or fewer.\n" +
             "      <li>The maximum size of a dimension is 2147483647 values.\n" +
             "      <li>The maximum product of all dimension sizes is, in theory, about ~9e18.\n" +
@@ -10350,16 +10351,45 @@ Attributes {
             //this dataTypes section is exactly the same in EDDGrid and EDDTable.
             "<li><a class=\"selfLink\" id=\"dataTypes\" href=\"#dataTypes\" rel=\"bookmark\"><strong>Data Types</strong></a>\n" +
             "<br>ERDDAP supports the following data types\n" +
-            "(names from other realms are shown in parentheses; 'u' stands for \"unsigned\"; the number is the number of bits):\n" +
-            "byte (int8), ubyte (uint8), short (int16) and ushort (uint16), int (int32), uint (uint32),\n" +
-            "long (int64), ulong (uint64), float (real, float32), double (float64), char, String.\n" +
+            "(names from other realms are shown in parentheses, where 'u' stands for \"unsigned\" and the number is the number of bits):\n" +
+            "  <ul>\n" +
+            "  <li>byte (int8) with a range of -128 to 127.\n" +
+            "  <li>ubyte (uint8) with a range of 0 to 255.\n" +
+            "  <li>short (int16) with a range of -32768 to 32767.\n" +
+            "  <li>ushort (uint16) with a range of 0 to 65535.\n" +
+            "  <li>int (int32) with a range of -2147483648 to 2147483647.\n" +
+            "  <li>uint (uint32) with a range of 0 to 4294967295.\n" +
+            "  <li>long (int64) with a range of -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807.\n" +
+            "  <li>ulong (uint64) with a range of 0 to 18446744073709551615.\n" +
+            "  <li>float (real, float32) supports numbers with a range of\n" +
+            "      1.40129846432481707e-45 to 3.40282346638528860e+38 (positive or negative),\n" +
+            "      as well as 0, and NaN (Not a Number, an inherent missing value).\n" +
+            "      IEEE floats support positive and negative infinity, but ERDDAP\n" +
+            "      converts them to NaN.\n" +
+            "  <li>double (float64) with a range of\n" +
+            "      4.94065645841246544e-324 to 1.79769313486231570e+308 (positive or negative),\n" +
+            "      as well as 0, and NaN (Not a Number, an inherent missing value).\n" +
+            "      IEEE floats support positive and negative infinity, but ERDDAP\n" +
+            "      converts them to NaN.\n" +
+            "  <li>char. An ERDDAP char is a single 16 bit Unicode character.\n" +
+            "      Char #65535 is defined by Unicode as \"Not A Char\" (an inherent missing value, like NaN for floats and doubles).\n" +
+            "  <li>String. An ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
+            "       ERDDAP treats a string with 0 characters (\"an empty string\") as the inherent missing value for strings.\n" + 
+            "  </ul>\n" +
             "<br>Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally\n" +
             "  and offered limited support in its data readers and writers.\n" +
-            "<br>Internally, an ERDDAP char is a single 16 bit Unicode character.\n" +
-            "<br>Internally, an ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
             "\n" +
-            "<p>You can think of ERDDAP as a system which reads data from various sources into an internal data model\n" +
-            "and writes data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
+            "<p><a class=\"selfLink\" id=\"maxIsMV\" href=\"#maxIsMV\" rel=\"bookmark\">Missing Values for Integer Data Types</a>\n" +
+            "<br>In the list above, note that the integer data types in ERDDAP don't have inherent missing values in the way\n" +
+            "   that float, double, char and String do. Instead, if a given variable in a given dataset may have\n" +            
+            "   missing values, you must pick some integer to be the stand in for those missing values and identify\n" +
+            "   that value with a \"missing_value\" or \"_FillValue\" attribute.\n" +  //link to it !!!
+//Internally ERDDAP uses the max value....
+            "\n" +
+            "<p><a class=\"selfLink\" id=\"readerWriterLimitations\" href=\"#readerWriterLimitations\" rel=\"bookmark\">You can think of ERDDAP</a>\n" +
+            "as a system which has virtual datasets,\n" +
+            "and which works by reading data from a dataset's source (e.g., files or an external service) into an internal data model\n" +
+            "and writing data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
             "  <ul>\n" +
             "  <li>Each input reader supports a subset of the data types that ERDDAP supports.\n" +
             "     So reading data into ERDDAP's internal data structures isn't a problem.\n" +
@@ -10405,8 +10435,8 @@ Attributes {
             "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
             "      \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
             "      or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
-            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 and .hdf5 files -\n" +
-            "    <br>These file types support all of ERDDAP's data types.\n" +
+//            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 and .hdf5 files -\n" +
+//            "    <br>These file types support all of ERDDAP's data types.\n" +
             "  <li><a class=\"selfLink\" id=\"NccsvDataTypes\" href=\"#NccsvDataTypes\" rel=\"bookmark\">NCCSV files -\n" +
             "    <br>NCCSV 1.0 files don't support any unsigned integer data types.\n" +
             "    <br>NCCSV 1.1+ files support all unsigned integer data types.\n" +

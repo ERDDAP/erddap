@@ -53,7 +53,7 @@ to requesting compressed .png files since the files' contents are already compre
   <a href="https://www.rgagnon.com/javadetails/java-HttpUrlConnection-with-GZIP-encoding.html">Java example&externalLinkHtml;</a>.
   <br>Here is a 
   <a href="https://coderwall.com/p/eyadkg/http-request-response-with-compressed-body-in-python">Python example&externalLinkHtml;</a>
-  (although you should either handle "deflate"'d responses or not request "deflate").
+  (although you should either handle <kbd>deflate</kbd>'d responses or not request <kbd>deflate</kbd>).
 </ul>
 ]]></acceptEncodingHtml>
 
@@ -2459,6 +2459,9 @@ If you want the examples to point to your ERDDAP, the easiest method is:
      Note the Matlab notation datasetName.variableName.  -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
 
+<EDDTableFromHttpGetDescription>This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</EDDTableFromHttpGetDescription>
+<EDDTableFromHttpGetAuthor>The values in this column identify the author who added each row of data to the dataset.</EDDTableFromHttpGetAuthor>
+<EDDTableFromHttpGetTimestamp>The values in this column are added by ERDDAP to identify when each row of data was added to the data file.</EDDTableFromHttpGetTimestamp>
 
 
 <!-- These messages are displayed when an error message is shown. -->
@@ -3849,6 +3852,8 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <notAuthorized>loggedInAs={0} isn''t authorized to access datasetID={1}.</notAuthorized>
 <notAuthorizedForData>loggedInAs={0} isn''t authorized to access data from datasetID={1}, but is authorized to access graphs and metadata.</notAuthorizedForData>
 <notAvailable>Currently, datasetID={0} isn''t available.</notAvailable>
+
+<note>NOTE!</note>
 
 <!-- Xxx is Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
 <noXxx>This dataset isn''t available via {0}.</noXxx>
@@ -6083,6 +6088,9 @@ www.rvdata.us/search/cruise/
 http://www.rvdata.us
 https://www.rvdata.us
 
+https://sfbeams.sfsu.edu/
+https://coastalobservations.sfsu.edu
+
 https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200
 https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
 
@@ -6368,6 +6376,9 @@ https://kgs.uky.edu/arcgis
 http://leafletjs.com
 https://leafletjs.com
 
+http://linkinghub.elsevier.com
+https://linkinghub.elsevier.com
+
 http://linux.die.net
 https://linux.die.net
 
@@ -6391,6 +6402,9 @@ https://marine.rutgers.edu
 
 http://measures.gsfc.nasa.gov
 https://measures.gsfc.nasa.gov
+
+http://modis.gsfc.nasa.gov
+https://modis.gsfc.nasa.gov
 
 http://motherlode.ucar.edu:8080
 https://motherlode.ucar.edu
@@ -6683,6 +6697,9 @@ https://portal.hdfgroup.org/display/HDF4/HDF4
 http://www.hermetic.ch
 https://www.hermetic.ch
 
+http://www.hycom.org
+https://www.hycom.org
+
 http://www.iana.org
 https://www.iana.org
 
@@ -6766,6 +6783,9 @@ https://www.noaa.gov/protecting-your-privacy
 
 http://www.nodc.noaa.gov
 https://www.nodc.noaa.gov
+
+http://www.nps.gov
+https://www.nps.gov
 
 http://www.nrl.navy.mil
 https://www.nrl.navy.mil
@@ -6862,6 +6882,9 @@ https://www.whoi.edu
 
 http://www.wussu.com
 https://www.wussu.com
+
+http://www.wvgs.wvnet.edu
+https://www.wvgs.wvnet.edu
 
 http://www.xml.com
 https://www.xml.com

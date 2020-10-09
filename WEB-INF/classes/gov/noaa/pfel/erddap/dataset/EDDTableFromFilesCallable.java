@@ -107,12 +107,15 @@ public class EDDTableFromFilesCallable implements Callable {
                     false, true);  //getMetadata, mustGetData  //???what about global att promoted to var?
 
             } catch (Throwable t2) {
+
+                //if OutOfMemory or too much data (or some other reasons), rethrow t so request fails
                 String t2String = t2.toString();
                 String2.log(identifier + ": caught while reading file=" + 
                     fileDir + fileName + ": " + t2String);
                 if (t2 instanceof WaitThenTryAgainException ||
                     t2 instanceof InterruptedException ||
                     EDStatic.isClientAbortException(t2) ||
+                    t2 instanceof java.lang.OutOfMemoryError ||                    
                     t2String.indexOf(Math2.memoryTooMuchData) >= 0) {
                     throw t2;
                 }
@@ -134,6 +137,7 @@ public class EDDTableFromFilesCallable implements Callable {
                     if (t3 instanceof WaitThenTryAgainException ||
                         t3 instanceof InterruptedException ||
                         EDStatic.isClientAbortException(t3) ||
+                        t3 instanceof java.lang.OutOfMemoryError ||
                         t3String.indexOf(Math2.memoryTooMuchData) >= 0) {
                         throw t3;
                     }

@@ -801,9 +801,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
-                //if too much data, rethrow t
+                //if OutOfMemoryError or too much data, rethrow t
                 String tToString = t.toString();
-                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (t instanceof java.lang.OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                     throw t;
 
                 //request should be valid, so any other error is trouble with dataset
