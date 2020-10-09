@@ -2045,7 +2045,7 @@ expected =
             eddGrid.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
-        expected = 
+        expected = //2020-10-02 lots of small changes to source metadata
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
@@ -2079,16 +2079,16 @@ expected =
 "  }\n" +
 "  tasmin {\n" +
 "    Float32 _FillValue 1.0e+20;\n" +
-"    String associated_files \"baseURL: baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_bcc-csm1-1_rcp26_r0i0p0.nc areacella: areacella_fx_bcc-csm1-1_rcp26_r0i0p0.nc\";\n" +
+"    String associated_files \"baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_bcc-csm1-1_rcp26_r0i0p0.nc areacella: areacella_fx_bcc-csm1-1_rcp26_r0i0p0.nc\";\n" +
 "    String cell_measures \"area: areacella\";\n" +
-"    String cell_methods \"time: minimum (interval: 30 days) within days time: mean over days\";\n" +
+"    String cell_methods \"time: minimum (interval: 20 mintues) within days time: mean over days\";\n" +  //mintues [sic]
 "    Float64 colorBarMaximum 313.0;\n" +
 "    Float64 colorBarMinimum 263.0;\n" +
-"    String comment \"TREFMNAV no change, CMIP5_table_comment: monthly mean of the daily-minimum near-surface air temperature.\";\n" +
-"    String history \"2012-06-09T00:36:32Z altered by CMOR: Treated scalar dimension: 'height'. 2012-06-09T00:36:32Z altered by CMOR: Reordered dimensions, original order: lat lon time. 2012-06-09T00:36:32Z altered by CMOR: replaced missing value flag (-1e+32) with standard missing value (1e+20).\";\n" +
+"    String comment \"monthly mean of the daily-minimum near-surface air temperature.\";\n" +
+"    String history \"2011-06-27T08:46:27Z altered by CMOR: Treated scalar dimension: 'height'.\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Daily Minimum Near-Surface Air Temperature\";\n" +
-"    Float32 missing_value 1.0E20;\n" +
+"    Float32 missing_value 1.0e+20;\n" +
 "    String original_name \"TREFMNAV\";\n" +
 "    String standard_name \"air_temperature\";\n" +
 "    String units \"K\";\n" +
@@ -2098,17 +2098,17 @@ expected =
 "    String CMIPtable \"Amon\";\n" +
 "    String contact \"Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org\";\n" +
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
-"    String creation_date \"Wed Sep 12 14:44:43 PDT 2012\";\n" +
+"    String creation_date \"Thu Sep  6 19:48:06 PDT 2012\";\n" +
 "    String creator_email \"rama.nemani@nasa.gov\";\n" +
 "    String creator_name \"Rama Nemani\";\n" +
 "    String creator_url \"https://www.nasa.gov/\";\n" +
-"    String DOI \"http://dx.doi.org/10.7292/W0WD3XH4\";\n" +
+"    String DOI \"https://dx.doi.org/10.7292/W0WD3XH4\";\n" +
 "    String downscalingModel \"BCSD\";\n" +
 "    String driving_data_tracking_ids \"N/A\";\n" +
 "    String driving_experiment \"historical\";\n" +
 "    String driving_experiment_name \"historical\";\n" +
-"    String driving_model_ensemble_member \"r3i1p1\";\n" +
-"    String driving_model_id \"CESM1-CAM5\";\n" +
+"    String driving_model_ensemble_member \"r1i1p1\";\n" +
+"    String driving_model_id \"bcc-csm1-1\";\n" +
 "    Float64 Easternmost_Easting 293.51249997659;\n" +
 "    String experiment \"RCP2.6\";\n" +
 "    String experiment_id \"rcp26\";\n" +
@@ -2131,14 +2131,11 @@ expected =
 
 expected = 
 //"2015-06-24T17:36:33Z http://localhost:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
-    "String infoUrl \"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
+    "String infoUrl \"https://registry.opendata.aws/nasanex/\";\n" +
 "    String initialization_method \"1\";\n" +
 "    String institute_id \"NASA-Ames\";\n" +
 "    String institution \"NASA Earth Exchange, NASA Ames Research Center, Moffett Field, CA 94035\";\n" +
-"    String keywords \"800m, air, air_temperature, ames, atmosphere,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
-"atmospheric, center, climate, cmip5, continental, daily, data, day, downscaled, earth, exchange, field, intercomparison, minimum, model, moffett, nasa, near, near-surface, nex, project, projections, research, surface, tasmin, temperature, time, US\";\n" +
+"    String keywords \"800m, air, air_temperature, ames, atmosphere, atmospheric, center, climate, cmip5, continental, daily, data, day, downscaled, earth, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Surface Air Temperature, exchange, field, intercomparison, minimum, model, moffett, nasa, near, near-surface, nex, project, projections, research, surface, tasmin, temperature, time, US\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2163,17 +2160,17 @@ expected =
 " Reference period obs: PRISM (http://www.prism.oregonstate.edu/)\";\n" +
 "    String region \"CONUS\";\n" +
 "    String region_id \"CONUS\";\n" +
-"    String region_lexicon \"http://en.wikipedia.org/wiki/Contiguous_United_States\";\n" +
+"    String region_lexicon \"https://en.wikipedia.org/wiki/Contiguous_United_States\";\n" +
 "    String resolution_id \"800m\";\n" +
-"    String sourceUrl \"(remote files)\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 24.0625;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"800m Downscaled NEX Climate Model Intercomparison Project 5 (CMIP5) Climate Projections for the Continental US\";\n" +
 "    String table_id \"Table Amon\";\n" +
 "    String time_coverage_end \"2099-12-16T12:00:00Z\";\n" +
 "    String time_coverage_start \"2006-01-16T12:00:00Z\";\n" +
 "    String title \"800m Downscaled NEX CMIP5 Climate Projections for the Continental US\";\n" +
-"    String tracking_id \"d62220e2-af11-11e2-bdc9-e41f13ef5cee\";\n" +
+"    String tracking_id \"2b55c74a-aec1-11e2-a0c6-e41f13ef4fd4\";\n" +
 "    String variableName \"tasmin\";\n" +
 "    String version \"1.0\";\n" +
 "    Float64 Westernmost_Easting 234.97916666666998;\n" +
@@ -2214,6 +2211,7 @@ expected =
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
+/*2020-10-02 was:      [ WTF?! the models run in 2012 just changed since this test last run so now they predict 4-6deg_c hotter in 2099?! ]
 "time,latitude,longitude,tasmin\n" +
 "UTC,degrees_north,degrees_east,K\n" +
 "2099-12-16T12:00:00Z,40.00416666029,260.00416665666,263.7364\n" +
@@ -2231,7 +2229,25 @@ expected =
 "2099-12-16T12:00:00Z,42.50416665929,260.00416665666,263.9838\n" +
 "2099-12-16T12:00:00Z,42.50416665929,260.83749998966,262.93536\n" +
 "2099-12-16T12:00:00Z,42.50416665929,261.67083332266,262.64273\n" +
-"2099-12-16T12:00:00Z,42.50416665929,262.50416665566,261.5762\n";         
+"2099-12-16T12:00:00Z,42.50416665929,262.50416665566,261.5762\n";         */
+"time,latitude,longitude,tasmin\n" +
+"UTC,degrees_north,degrees_east,K\n" +
+"2099-12-16T12:00:00Z,40.00416666029,260.00416665666,267.82053\n" +
+"2099-12-16T12:00:00Z,40.00416666029,260.83749998966,267.94974\n" +
+"2099-12-16T12:00:00Z,40.00416666029,261.67083332266,268.42017\n" +
+"2099-12-16T12:00:00Z,40.00416666029,262.50416665566,269.35843\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,260.00416665666,267.59042\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,260.83749998966,267.9106\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,261.67083332266,268.75568\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,262.50416665566,269.03436\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,260.00416665666,266.94617\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,260.83749998966,266.56305\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,261.67083332266,267.4424\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,262.50416665566,267.81042\n" +
+"2099-12-16T12:00:00Z,42.50416665929,260.00416665666,268.1312\n" +
+"2099-12-16T12:00:00Z,42.50416665929,260.83749998966,267.71857\n" +
+"2099-12-16T12:00:00Z,42.50416665929,261.67083332266,267.5857\n" +
+"2099-12-16T12:00:00Z,42.50416665929,262.50416665566,267.41855\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
@@ -4667,13 +4683,13 @@ expected =
             //2017-10-13 I added 200 ms with change from getFile to curl
             //2018-05-17 I adjusted (e.g., small files 200ms faster) with switch to SSR.downloadFile
             //now Lenovo was Java 1.8/M4700 //was Java 1.6 times            //was java 1.5 times
-            303, 1759, 1635, 1544,        //734, 6391, 6312, ?            //1250, 9750, 9562, ?                                  
+            550, 1759, 1635, 1544,        //734, 6391, 6312, ?            //1250, 9750, 9562, ?                                  
             //why is esriAscii so slow??? was ~9000 for a long time. Then jumped to 23330.
             15, 15, 663, 12392,           //15, 15, 109/156, 16875        //15, 15, 547, 18859
-            40, 25, 603,                  //63, 47, 2032,                 //93, 31, ...,
+            40, 25, 477,                  //63, 47, 2032,                 //93, 31, ...,
             1843, 1568, 1568, 2203, 666,  //6422, ., ., 203,              //9621, ., ., 625,  
             173, 117,                     //234, 250,                     //500, 500, 
-            1798, 16, 390,
+            3485, 16, 390,
             2446, 13,                     //9547, ?                       //13278, ?
             1411, 1411, 1411,             //6297, 6281, ?,                //8766, 8844, ?,
             2204,  //but really slow if hard drive is busy!   //8625,     //11469, 
@@ -6112,7 +6128,7 @@ expected =
                 //put things back to initial state
                 File2.rename(dataDir, "bad.nc", "bad.notnc");
             } catch (Exception e) {
-                throw new RuntimeException("2020-05-15 This failed. Why? Because the original rename failed?");
+                throw new RuntimeException("2020-05-15 This fails half(?) the time. Why? Because the original rename failed?");
             }
             for (int i = 0; i < 5; i++) {
                 String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update());
@@ -7106,7 +7122,7 @@ expected =
         String2.log("\n *** EDDGridFromNcFiles.testMatchAxisNDigits() ***");
 
         //force reload files
-        File2.delete("/data/erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
+        File2.delete("/data/_erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
 
         //load dataset
         testVerboseOn();
@@ -8570,6 +8586,13 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDVGridAxis edvga;
+
+        //ncdump a source .nc file
+        tName = "/u00/satellite/SW1/mday/S19980321998059.L3m_MO_CHL_chlor_a_9km.nc";
+        String2.log("\n*** ncdump of " + tName);
+        String2.log(NcHelper.ncdump(tName, "-h"));
+
+        //make the dataset
         String id = "testSpecialAxis0GlobalDouble";
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -8591,7 +8614,6 @@ expected =
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -89.95834, 89.95834;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8603,7 +8625,6 @@ expected =
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 _FillValue -32767.0;\n" +
 "    Float32 actual_range -179.9583, 179.9584;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -8674,31 +8695,6 @@ expected =
 "    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
 "    Float64 Northernmost_Northing 89.95834;\n" +
 "    String platform \"Orbview-2\";\n" +
-"    String processing_control_input_parameters_datamax \"20.000000\";\n" +
-"    String processing_control_input_parameters_datamin \"0.010000\";\n" +
-"    String processing_control_input_parameters_deflate \"4\";\n" +
-"    String processing_control_input_parameters_gap_fill \"0\";\n" +
-"    String processing_control_input_parameters_ifile \"S19980011998031.L3b_MO_CHL.nc\";\n" +
-"    String processing_control_input_parameters_latnorth \"90.000000\";\n" +
-"    String processing_control_input_parameters_latsouth \"-90.000000\";\n" +
-"    String processing_control_input_parameters_loneast \"180.000000\";\n" +
-"    String processing_control_input_parameters_lonwest \"-180.000000\";\n" +
-"    String processing_control_input_parameters_meas \"1\";\n" +
-"    String processing_control_input_parameters_minobs \"0\";\n" +
-"    String processing_control_input_parameters_ofile \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
-"    String processing_control_input_parameters_oformat \"netCDF4\";\n" +
-"    String processing_control_input_parameters_palfile \"/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal\";\n" +
-"    String processing_control_input_parameters_precision \"F\";\n" +
-"    String processing_control_input_parameters_processing \"2014.0\";\n" +
-"    String processing_control_input_parameters_prod \"chlor_a\";\n" +
-"    String processing_control_input_parameters_projection \"RECT\";\n" +
-"    String processing_control_input_parameters_resolution \"9km\";\n" +
-"    String processing_control_input_parameters_seam_lon \"-180.000000\";\n" +
-"    String processing_control_input_parameters_stype \"2\";\n" +
-"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String processing_control_software_name \"smigen\";\n" +
-"    String processing_control_software_version \"5.04\";\n" +
-"    String processing_control_source \"S19980011998031.L3b_MO_CHL.nc\";\n" +
 "    String processing_level \"L3 Mapped\";\n" +
 "    String processing_version \"2014.0\";\n" +
 "    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
@@ -10961,17 +10957,20 @@ expected =
      * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
      * partialRequestMaxBytes=10^8 stays well under that.
      * 
+     * @param extectedTimeS the expected time in seconds
      */
     public static void testBigRequestSpeed(int nTimePoints, String fileType, 
-        int expectedBytes, int expectedMs) throws Throwable {
+        int expectedBytes, int expectedTimeS) throws Throwable {
         testVerboseOn();
         Math2.gcAndWait();  //in a test
         Math2.gcAndWait();  //in a test
-        String2.log("\n*** EDDGridFromDap.testBigRequestSpeed  partialRequestMaxBytes=" +
-            EDStatic.partialRequestMaxBytes + 
-            "\n nTimePoints=" + nTimePoints +
-            " estimated nPartialRequests=" + 
-            Math2.hiDiv(nTimePoints * 4320 * 8640, EDStatic.partialRequestMaxBytes));
+        String msg ="\n*** EDDGridFromDap.testBigRequestSpeed(nTimePoints=" + nTimePoints + ", " + fileType + ")" +
+            "\n  partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes + 
+                " estimated nPartialRequests=" + 
+            Math2.hiDiv(nTimePoints * 4320 * 8640, EDStatic.partialRequestMaxBytes) +
+            "\n  expected size=" + expectedBytes + "  expected time=" + expectedTimeS + "s but it can be 10x slower\n";
+        String2.log(msg);
+        StringBuilder results = new StringBuilder(msg);
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "nceiPH53sstd1day"); 
         String query = "sea_surface_temperature[0:" + (nTimePoints - 1) + "][][]";
@@ -10983,8 +10982,7 @@ expected =
 
         //debugMode AFTER first request
         GridDataAccessor.debugMode = true;
-        StringBuilder results = new StringBuilder();
-        for (int i = 3; i >= -3; i--) {  
+        for (int i = 3; i >= -3; i--) {  //usually +3 -3
             if (i == 0)
                 continue;
             try {
@@ -10993,24 +10991,23 @@ expected =
                 long time = System.currentTimeMillis();
                 tName = eddGrid.makeNewFileForDapQuery(null, null, query,
                     dir, eddGrid.className() + "_testBigRequest2", fileType); 
-                String msg = "\n*** nThreads=" + eddGrid.nThreads + " fileType=" + fileType + " finished.\n" +
-                    "size=" + File2.length(dir + tName) + " (expected=" + expectedBytes + ")\n" + 
-                    "time=" + (System.currentTimeMillis() - time) +
-                    "ms (expected=" + expectedMs + "ms but it can be 10x slower)\n";
+                msg = "  nThreads=" + eddGrid.nThreads + " size=" + File2.length(dir + tName) +  
+                    " time=" + (System.currentTimeMillis() - time)/1000 + "ms\n";
+                String2.log(msg);
                 results.append(msg);
             } catch (Throwable t) {
                 String2.log("caught:\n" + MustBe.throwableToString(t));
             }
         }
         GridDataAccessor.debugMode = false;
-        String2.pressEnterToContinue(results.toString());
-
+        throw new RuntimeException("\n*** Not a problem, just a diagnostic:\n" + 
+            results.toString());
 /* 2018-08-14 results  
-*** nThreads=3 time= 57431ms 
-*** nThreads=2 time=109532ms
-*** nThreads=1 time= 94720ms 
-*** nThreads=1 time= 79662ms 
-*** nThreads=2 time= 82075ms 
+*** nThreads=3 time= 57ms 
+*** nThreads=2 time=109ms
+*** nThreads=1 time= 94ms 
+*** nThreads=1 time= 79ms 
+*** nThreads=2 time= 82ms 
 */
     }
 
@@ -12552,11 +12549,12 @@ expected =
 "    String references \"AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.\";\n" +
 "    String source \"NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)\";\n" +
 "    String units \"degree_C\";\n" +
-"    Float64 valid_max NaN;\n" +
+"    Float64 valid_max 12.700000000000001;\n" +  //good test of maxIsMV=false
 "    Float64 valid_min -12.700000000000001;\n" +
 "  }\n" +
 "  wind_speed {\n" +
 "    Byte _FillValue -128;\n" +
+"    String _Unsigned \"false\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.\";\n" +
@@ -12586,11 +12584,12 @@ expected =
 "    String standard_name \"sea_ice_area_fraction\";\n" +
 "    Float64 time_offset 2.0;\n" +
 "    String units \"percent\";\n" +
-"    Float64 valid_max NaN;\n" +
+"    Float64 valid_max 1.27;\n" +  //good test of maxIsMV=false
 "    Float64 valid_min -1.27;\n" +
 "  }\n" +
 "  quality_level {\n" +
 "    Byte _FillValue 0;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String ancillary_variables \"pathfinder_quality_level\";\n" +
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 6.0;\n" +
@@ -12618,6 +12617,7 @@ expected =
 "  }\n" +
 "  pathfinder_quality_level {\n" +
 "    Byte _FillValue -1;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 8.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -13201,6 +13201,9 @@ expected =
             "", //group
             "", -1, "", null); //dimensionsCSV, reloadMinutes, cacheFromUrl
         String2.log(results);
+        //remove testOutOfDate (varies or missing)
+        results = results.replaceAll("        <att name=\"testOutOfDate\">now-\\d*days</att>\n",
+                                     "");
         expected = 
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"long2_fb1b_899d_dde4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
@@ -13234,7 +13237,6 @@ expected =
 "        <att name=\"NCO\">netCDF Operators version 4.7.6 (Homepage = http://nco.sf.net, Code = https://github.com/nco/nco)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Data from a local source.</att>\n" +
-"        <att name=\"testOutOfDate\">now-32days</att>\n" +
 "        <att name=\"title\">Data from a local source.</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -13322,13 +13324,8 @@ expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
-        try {
-            po = results.indexOf(expected.substring(0,15));
-            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nThe testOutOfDate recommendatation changes. That's okay."); 
-        }
+        po = results.indexOf(expected.substring(0,15));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
         
         //ensure it is ready-to-use by making a dataset from it
         String tDatasetID = "long2_fb1b_899d_dde4";
@@ -14405,7 +14402,7 @@ expected =
                     if (test == 46) testBadNcFile(false);  //runIncrediblySlowTest?
                     if (test == 47) testInvalidShortenedNcFile();
 
-                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 20000); //expected bytes, ms. Also testNThreads.
+                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 20); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
                     if (test == 51 && doSlowTestsToo) testNThreads(3);
                     if (test == 52 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
                     if (test == 53 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?

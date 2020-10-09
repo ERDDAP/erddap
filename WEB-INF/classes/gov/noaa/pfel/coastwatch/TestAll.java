@@ -121,7 +121,7 @@ public class TestAll  {
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
 //      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"cwwcNDBCMet", "-verbose"});
+//      DasDds.main(new String[]{"nesdisVHNkd490Daily", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -234,10 +234,10 @@ public class TestAll  {
 //         GenerateDatasetsXml converts to https when possible via EDD.updateUrls.
 //      1) run:
 //           EDDGridFromDap.testUAFSubThreddsCatalog(0); //0= entire official clean catalog  ~16hrs
-//      2) Results file is /data/erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml          
-//         Log file is     /data/erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml.log.txt
+//      2) Results file is /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml          
+//         Log file is     /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml.log.txt
 //      3) Look at problems, creator_, title, .... Make improvements.
-//         from /data/erddapBPD/logs:
+//         from /data/_erddapBPD/logs:
 //         grep "SimpleException: Error while getting DAS from" 
 //         grep "unable to get axis" 
 //         grep "unsorted axis" 
@@ -274,6 +274,7 @@ public class TestAll  {
 //  and of course all of the tests of GenerateDatasetsXml.
 //    EDD.testAddMvFvAttsIfNeeded();     //in service to GenerateDatasetsXml
 //    EDD.testAddFillValueAttributes();  //add to datasets.xml
+//    EDDGridFromDap.testGenerateDatasetsXmlUInt16(); 
 //    EDDGridFromNcFiles.testUInt16File(); 
 //    EDDGridFromNcFiles.testUnsignedGrid();  
 //    EDDGridFromNcFiles.testGenerateDatasetsXmlGroups();
@@ -284,7 +285,6 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testSimpleTestNc2Table(); //suggestAddFillValue
 //    //known problems that are not my problem, so still good tests:
 //    EDDGridFromNcFiles.testSimpleTestNc();        //suggestAddFillValue  //Known Problem  Sgt doesn't support 2 time axes
-//    EDDGridFromDap.testGenerateDatasetsXmlUInt16();  //Known Problem with source 
 //    EDDGridFromDap.testUInt16Dap(); //trouble with source 255 or 65535
 //    EDDGridFromNcFilesUnpacked.testMissingValue();
 
@@ -361,7 +361,7 @@ public class TestAll  {
 
       /* 
       //This downloads AWS S3 directory into to a jsonlCSV file 
-      //The lower level copy (written to file as it is downloaded) is in erddapBPD/datasets/_GenerateDatasetsXml
+      //The lower level copy (written to file as it is downloaded) is in _erddapBPD/datasets/_GenerateDatasetsXml
       FileVisitorDNLS.verbose=true; 
       FileVisitorDNLS.reallyVerbose=true;
       FileVisitorDNLS.debugMode=true;
@@ -379,7 +379,7 @@ public class TestAll  {
       String2.log(String2.directReadFrom88591File(outName));
       String2.log("The Results are in " + outName + "\n" +
           "The lower level (partial?) copy (written to file as it is downloaded)\n" +
-          "is in erddapBPD/datasets/_GenerateDatasetsXml .");
+          "is in _erddapBPD/datasets/_GenerateDatasetsXml .");
       /* */      
    
 //    Do this periodically to update the local cache of InPort xml files
@@ -611,9 +611,9 @@ public class TestAll  {
 
       //Run the GenerateDatasetsXml program in interactive mode:
 //    GenerateDatasetsXml.main(null);
-/* 
+/*  
          //the tests below need 
-         //  <datasetsRegex>(etopo.*|testNccsvScalar|rGlobecBottle|erdGlobecBottle|erdBAssta5day|rMHchla8day|testGridWav)</datasetsRegex>
+         //  <datasetsRegex>(etopo.*|testNccsvScalar|rGlobecBottle|erdGlobecBottle|erdBAssta5day|rMHchla8day|testGridWav|erdMWchla1day)</datasetsRegex>
          //  and cassandra running.
          EDD.testAddMvFvAttsIfNeeded(); 
 
@@ -1038,10 +1038,11 @@ TableWriterUnits twu;
 TaskThread tt;
 WaitThenTryAgainException wttae;
 
+//Shared.basicTest();
+
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = false;
-
+        boolean doSlowTestsToo = true;
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

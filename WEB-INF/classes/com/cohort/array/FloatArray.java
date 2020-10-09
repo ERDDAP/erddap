@@ -238,8 +238,10 @@ public class FloatArray extends PrimitiveArray {
 
     /**
      * This returns the minimum PAType needed to completely and precisely contain
-     * the values in this PA's PAType and tPAType.
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      *
+     * @return the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
     public PAType needPAType(PAType tPAType) {
         //if tPAType is smaller or same, return this.PAType
@@ -1770,8 +1772,8 @@ public class FloatArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), 
             "FloatArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
         Test.ensureEqual(anArray.smallestBiggestSpacing(),
-            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
-            "  biggest  spacing=10.100000381469727: [1]=20.0, [2]=30.100000381469727", "");
+            "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "    biggest  spacing=10.100000381469727: [1]=20.0, [2]=30.100000381469727", "");
 
         //these are unevenly spaced, but the secondary precision test allows it
         //should fail first test, but pass second test

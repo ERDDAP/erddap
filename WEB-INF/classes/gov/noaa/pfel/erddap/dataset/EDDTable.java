@@ -2271,6 +2271,7 @@ public abstract class EDDTable extends EDD {
                             "')' not found after \"" + mmString + "(\".");
                     String mVarName = tValue.substring(4, cpo);
                     EDV mVar = findDataVariableByDestinationName(mVarName); //throws Exception
+                    boolean mVarIsTimestamp = mVar instanceof EDVTimeStamp;
                     conValueD = tValue.startsWith("min(")?
                         mVar.destinationMinDouble() : //time will be epochSeconds
                         mVar.destinationMaxDouble(); 
@@ -2281,8 +2282,10 @@ public abstract class EDDTable extends EDD {
                     if (cpo != tValue.length() - 1) {
                         //there's more, e.g., min(var1)-25days
                         conValueD = Calendar2.parseMinMaxString( //throws Exception
-                            tValue, conValueD, mVar instanceof EDVTimeStamp);
+                            tValue, conValueD, mVarIsTimestamp);
                     }
+                    if (verbose) String2.log("  " + tValue + " -> " + 
+                        (mVarIsTimestamp? Calendar2.safeEpochSecondsToIsoStringT3Z(conValueD, "NaN"): conValueD));
                     constraintValues.set(constraintValues.size() - 1, "" + conValueD);
                 } catch (Exception me) {
                     if (repair) {
@@ -7575,7 +7578,7 @@ public abstract class EDDTable extends EDD {
             "  access a remote ERDDAP .nc file.  It won't work.  Instead, use\n" +
             "  <a href=\"#netcdfjava\">this approach</a>.\n" +
             "\n" +
-            //nc4
+/*            //nc4
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc4" +
@@ -7593,7 +7596,7 @@ public abstract class EDDTable extends EDD {
             "  access a remote ERDDAP .nc file.  It won't work.  Instead, use\n" +
             "  <a href=\"#netcdfjava\">this approach</a>.\n" +
             "\n" +
-            //ncHeader
+            //nc4Header
             "  <p><strong>.ncHeader</strong> and <strong>.nc4Header</strong>\n" +
             "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a>\n" +
             "      for .ncHeader and .nc4Header files will return the header information (text)\n" +
@@ -7603,6 +7606,7 @@ public abstract class EDDTable extends EDD {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding NetCDF-3 or NetCDF-4 .nc file.\n" +
             "\n" +
+*/
             //ncCF
             "  <p><a class=\"selfLink\" id=\"ncCF\" href=\"#ncCF\" rel=\"bookmark\"><strong>.ncCF</strong></a>\n" +
             "     - Requests for a .ncCF file will return a version 3, 32-bit,\n" +
@@ -8790,14 +8794,15 @@ public abstract class EDDTable extends EDD {
             "<br>ERDDAP supports the following data types\n" +
             "(names from other realms are shown in parentheses; 'u' stands for \"unsigned\"; the number is the number of bits):\n" +
             "byte (int8), ubyte (uint8), short (int16) and ushort (uint16), int (int32), uint (uint32),\n" +
-            "long (int64), ulong (uint64), float (real, float32), double (float64), char, String.\n" +
+            "long (int64), ulong (uint64), float (real, float32), double (float64), char (a single character), and String.\n" +
             "<br>Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally\n" +
             "  and offered limited support in its data readers and writers.\n" +
             "<br>Internally, an ERDDAP char is a single 16 bit Unicode character.\n" +
             "<br>Internally, an ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
             "\n" +
-            "<p>You can think of ERDDAP as a system which reads data from various sources into an internal data model\n" +
-            "and writes data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
+            "<p>You can think of ERDDAP as a system which has virtual datasets,\n" +
+            "and which works by reading data from a dataset's source into an internal data model\n" +
+            "and writing data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
             "  <ul>\n" +
             "  <li>Each input reader supports a subset of the data types that ERDDAP supports.\n" +
             "     So reading data into ERDDAP's internal data structures isn't a problem.\n" +
@@ -8843,8 +8848,8 @@ public abstract class EDDTable extends EDD {
             "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
             "      \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
             "      or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
-            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 and .hdf5 files -\n" +
-            "    <br>These file types support all of ERDDAP's data types.\n" +
+//            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 files\n" +
+//            "    support all of ERDDAP's data types.\n" +
             "  <li><a class=\"selfLink\" id=\"NccsvDataTypes\" href=\"#NccsvDataTypes\" rel=\"bookmark\">NCCSV files -\n" +
             "    <br>NCCSV 1.0 files don't support any unsigned integer data types.\n" +
             "    <br>NCCSV 1.1+ files support all unsigned integer data types.\n" +

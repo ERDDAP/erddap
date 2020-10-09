@@ -1249,7 +1249,7 @@ public class SSR {
         //  so use new Properties to make System properties just the defaults
         //  so this is thread safe.
         //The Oracle example uses System.getProperties, but I think it is
-        //  unneccessary and exposes information needlessly.
+        //  unnecessary and exposes information needlessly.
         //Properties props = new Properties(System.getProperties()); 
         Properties props = new Properties(); 
         if (properties != null && properties.trim().length() > 0) {

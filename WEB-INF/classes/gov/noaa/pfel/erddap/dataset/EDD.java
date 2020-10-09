@@ -1058,7 +1058,7 @@ public abstract class EDD {
                 "If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.";
             if (!tryToSubscribe) {
                 String2.log(EDStatic.warning + 
-                    " <tryToSubscribeToRemoteErddapDataset> is false.\n" +
+                    " <tryToSubscribeToRemoteErddapDataset> is false. If that is permanent, then:\n" +
                     keepUpToDate);
             } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
                 String2.log(EDStatic.warning + 
@@ -9900,7 +9900,7 @@ public abstract class EDD {
                 "The number of columns in sourceTable and addTable isn't equal!");
             sourceTable.ensureNoDuplicateColumnNames(variableType + " source table: ");
         }
-        addTable.ensureNoDuplicateColumnNames(variableType + " add table: ");
+        addTable.makeColumnNamesUnique();
 
         String indent = "    ";
         StringBuilder sb = new StringBuilder();
@@ -9999,10 +9999,16 @@ public abstract class EDD {
         Attributes tSourceAtts, Attributes tAddAtts, String tUnits, 
         String tPositive, float tScaleFactor, boolean tryToFindLLAT) {
 
-        //remove (units) from SOS sourceNames, e.g., "name (units)"
         String oSourceName = tSourceName;
+
+        //remove (units) from SOS sourceNames, e.g., "name (units)"
         int po = tSourceName.indexOf(" (");
-        if (po > 0)
+        if (po > 0 && tSourceName.endsWith(")"))
+            tSourceName = tSourceName.substring(0, po);
+
+        //remove [units] from sourceNames, e.g., "name [units]"
+        po = tSourceName.indexOf(" [");
+        if (po > 0 && tSourceName.endsWith("]"))
             tSourceName = tSourceName.substring(0, po);
 
         //if from readXml (e.g., .../.../aaas:time), be brave and just use last part of the name
@@ -10237,7 +10243,7 @@ public abstract class EDD {
                 EDStatic.baseUrl + requestUrl + 
                 (userDapQuery == null || userDapQuery.length() == 0? "" : "?" + userDapQuery));
         } catch (Exception e) {
-            String2.log("Caught: " + MustBe.throwableToString(e));
+            String2.log("getNewHistory returning null because it caught: " + MustBe.throwableToString(e));
             return null;
         }
     }

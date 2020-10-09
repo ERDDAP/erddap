@@ -430,8 +430,10 @@ public class UByteArray extends PrimitiveArray {
 
     /**
      * This returns the minimum PAType needed to completely and precisely contain
-     * the values in this PA's PAType and tPAType.
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      *
+     * @return the minimum PAType needed to completely and precisely contain
+     * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
     public PAType needPAType(PAType tPAType) {
         //if tPAType is smaller or same, return this.PAType
@@ -2027,8 +2029,8 @@ public class UByteArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), 
             "UByteArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.5.", "");
         Test.ensureEqual(anArray.smallestBiggestSpacing(),
-            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
-            "  biggest  spacing=11.0: [1]=20.0, [2]=31.0", "");
+            "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "    biggest  spacing=11.0: [1]=20.0, [2]=31.0", "");
 
         //isAscending
         anArray = new UByteArray(new byte[] {10,10,30});

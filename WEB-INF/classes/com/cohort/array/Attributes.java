@@ -58,7 +58,7 @@ public class Attributes {
      */
     public Attributes(Attributes tAtts) {
         if (tAtts == null) 
-            String2.log("!WARNING: tAtts is null in Attributes(tAtts).");  //do nothing
+            String2.log("WARNING! tAtts is null in Attributes(tAtts).");  //do nothing
         else tAtts.copyTo(this);
     }
     

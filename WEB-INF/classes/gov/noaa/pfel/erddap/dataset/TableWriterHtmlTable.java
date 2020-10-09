@@ -418,10 +418,10 @@ public class TableWriterHtmlTable extends TableWriter {
             writer.write("</tr>\n");
             rowsShown++;
         }       
+        boolean flushAfterward = totalRows == 0; //flush initial chunk so info gets to user quickly
         totalRows += nRows;
 
-        //ensure it gets to user right away
-        if (nRows > 1) //some callers work one row at a time; avoid excessive flushing
+        if (flushAfterward)
             writer.flush(); 
     }
 

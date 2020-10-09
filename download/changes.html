@@ -184,8 +184,8 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
           Now it doesn't. In order to avoid having these values shown as
           data values (not missing values), you need to explicitly state
           these via _FillValue attributes. 
-          From now on, each time you start up ERDDAP, it will send you an 
-          email with a list of integer source variables which don't have _FillValue or
+          From now on, each time you start up ERDDAP, it will send the administrator
+          an email with a list of integer source variables which don't have _FillValue or
           missing_value attributes, and the suggested new _FillValue attributes.
           See
           <a rel="help"
@@ -200,7 +200,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       </ul>
 
   <li>Tomcat 9 is now the recommended version of Tomcat for ERDDAP.
-    The latest version of Tomcat 8.5+ is also fine.
+    The latest version of Tomcat 8.5+ is also fine for now.
     We cleaned up ERDDAP's 
     <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#tomcat"
@@ -211,6 +211,8 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
       remains the recommended version of Java for ERDDAP. 
+      Java 8 has Long Term Support from AdoptOpenJDK so it remains safe to use,
+      but remember to get the latest version of it periodically for security reasons.
     <br>&nbsp;
 
   <li>NEW: Script SourceNames / Derived Variables in Tabular Datasets
@@ -239,8 +241,8 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#dataTypes"
         >Data Type documentation</a> for details about how ERDDAP deals with these differences.
     Notably, since (OPeN)DAP, notably the .dds response, doesn't support+
-      signed bytes, longs, ulongs, or any unsigned attributes, you may want to use ERDDAP's tabular representation
-      of .das and .das as seen in the http.../erddap/info/<i>datasetID</i>.html web page (or other file type)
+      signed bytes, longs, or ulongs, you may want to use ERDDAP's tabular representation
+      of .das and .das as seen in the http.../erddap/<strong>info</strong>/<i>datasetID</i>.html web page (or other file type)
       or the .nccsvMetadata response, both of which supports all data types in all situations.
 
     <p>WARNING: For datasets that are affected by this change, it is possible that you will 
@@ -470,9 +472,22 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Thanks to Yibo Jiang.
     <br>&nbsp;
 
+  <li>IMPROVED: GenerateDatasetsXml's EDD.suggestDestinationName 
+    used to remove '(' and everything after.
+    Now it removes (.*) only if that is the end of the sourceName.
+    Now it also removes [.*] only if that is the end of the sourceName.
+    Thanks to Julien Paul.
+    <br>&nbsp;
+
+  <liIMPROVED: GenerateDatasetsXml now makes the variable destinationNames unique
+    by added _2, _3, ..., as needed.
+    Thanks to Julien Paul.
+    <br>&nbsp;
+
   <li>BROKEN LINKS FIX: I made a proper system for testing for broken links
     in ERDDAP web pages, so there should now be very few broken links (at least
     as of each release date -- new broken links arise often).
+    <br>&nbsp;
     
   <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
     requested variable, with a file name ending in the variable's name.
@@ -499,10 +514,16 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
      EDD...FromErddap dataset was a child dataset.
      Now it is.
      Thanks to Chris Romsos.
+    <br>&nbsp;
 
   <li>BUG FIX: GenerateDatasetsXml no longer thinks a source variable name 
     starting with "latin" might be latitude.
     Thanks to Vincent Luzzo.
+    <br>&nbsp;
+
+  <li>BUG FIX: Now, an OutOfMemoryError while reading a data file 
+    while processing a user's request isn't a reason to add a file to the BadFiles list:
+    Thanks to Bob Simons.
     <br>&nbsp;
 
   </ul>

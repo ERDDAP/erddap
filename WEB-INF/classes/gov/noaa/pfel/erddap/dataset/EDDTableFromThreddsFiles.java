@@ -1435,7 +1435,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  latitude \\{\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -46.45, 71.22;\n" +
+"    Float32 actual_range -46.45, 72.51;\n" +  //changed a little
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1654,7 +1654,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  windSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 2850253.2;\n" +  //really?  2020-05-05 was 2850253.0
+"    Float32 actual_range 0.0, 2850253.0;\n" +  //really?  2020-05-05 to .2, was 2850253.0.  2020-10-05 is .0 again
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1838,8 +1838,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 elev 0;\n" +
 "    String featureType \"Point\";\n" +
 "    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc)\\]\";\n" + //changes, so neutered
-"    String fsu_version \"300\";\n" +
-"    Float64 geospatial_lat_max 71.22;\n" +
+"    String fsu_version \"301\";\n" +  //changes 
+"    Float64 geospatial_lat_max 72.51;\n" +
 "    Float64 geospatial_lat_min -46.45;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 351.15;\n" +
@@ -1871,7 +1871,7 @@ expected =
 "    String Metadata_modification_date \".{19} E.T\";\n" + //changes
 "    String metadata_retrieved_from \"WTEP_202.....v1000.\\.nc\";\n" + //changes
 "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
-"    Float64 Northernmost_Northing 71.22;\n" +
+"    Float64 Northernmost_Northing 72.51;\n" +  //changes
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +

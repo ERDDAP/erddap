@@ -6473,7 +6473,7 @@ and zoom and pan with controls in
      * <br>See TestUtil.testString2canonical().
      *
      * <p>Using this increases memory use by ~6 bytes per canonical string
-     * (4 for pointer * ~.5 hashMap load factor).
+     * (4 for pointer, and hashMap load factor = 0.75).
      * <br>So it only saves memory if many strings would otherwise be duplicated.
      * <br>But if lots of strings are originally duplicates, it saves *lots* of memory.
      *
