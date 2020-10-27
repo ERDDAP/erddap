@@ -2622,7 +2622,6 @@ public class StringArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** StringArray.basicTest");
-/* for releases, this line should have open/close comment */
         String sar[];
         StringArray anArray = new StringArray();
 

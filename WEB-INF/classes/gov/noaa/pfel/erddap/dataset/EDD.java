@@ -64,6 +64,8 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2445,15 +2447,17 @@ public abstract class EDD {
         //if another thread is currently updating this dataset, wait for it then return
         String msg = "update(" + datasetID + "): ";
         if (!updateLock.tryLock()) {
-            updateLock.lock();   //block until other thread's update finishes and I get the lock
+            //block until other thread's update finishes and I get the lock
+            if (!updateLock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS)) {
+                if (verbose) String2.log(msg + "gave up waiting for another thread to do the update.");
+                return false;  //give up trying        //better to throw exception?
+            }
             updateLock.unlock(); //immediately unlock and return (since other thread did the update)
             if (verbose) String2.log(msg + "waited " + 
                 (System.currentTimeMillis() - startUpdateMillis) +
                 "ms for another thread to do the update.");
             return false; 
-        }
-
-        //updateLock is locked by this thread.   Do the update!
+        } //else: this thread got the lock. Do the update!
         try {
             return lowUpdate(msg, startUpdateMillis);
 
@@ -10680,14 +10684,17 @@ public abstract class EDD {
      * @param yMax  the double-value range of the graph
      */
     public void writePngInfo(String loggedInAs, String userDapQuery, String fileTypeName, ArrayList mmal) {
-
-        String infoFileName = getPngInfoFileName(loggedInAs, userDapQuery, fileTypeName);
-        synchronized (infoFileName) {
-            if (File2.isFile(infoFileName)) {
-                if (verbose) String2.log("  writePngInfo succeeded (file already existed)"); 
-                return;
-            }
+        String infoFileName = String2.canonical(getPngInfoFileName(loggedInAs, userDapQuery, fileTypeName));
+        try {
+            ReentrantLock lock = String2.canonicalLock(infoFileName);
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock in EDD.writePngInfo.");
             try {
+                if (File2.isFile(infoFileName)) {
+                    if (verbose) String2.log("  writePngInfo succeeded (file already existed)"); 
+                    return;
+                }
+
                 StringBuilder sb = new StringBuilder();
                 sb.append("{\n");
                 PrimitiveArray pa;
@@ -10711,13 +10718,15 @@ public abstract class EDD {
                         "    infoFileName=" + infoFileName + "\n" + 
                         sb.toString());
 
-            } catch (Throwable t) {
-                String2.log(String2.ERROR + " while writing pngInfo image information for\n" +
-                    "  userDapQuery=" + userDapQuery + "\n" +
-                    "  fileTypeName=" + fileTypeName + "\n" +
-                    "  infoFileName=" + infoFileName + "\n" + 
-                    MustBe.throwableToString(t));
+            } finally {
+                lock.unlock();
             }
+        } catch (Throwable t) {
+            String2.log(String2.ERROR + " while writing pngInfo image information for\n" +
+                "  userDapQuery=" + userDapQuery + "\n" +
+                "  fileTypeName=" + fileTypeName + "\n" +
+                "  infoFileName=" + infoFileName + "\n" + 
+                MustBe.throwableToString(t));
         }
     }
 

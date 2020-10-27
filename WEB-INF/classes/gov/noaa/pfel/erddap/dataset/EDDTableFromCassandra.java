@@ -17,23 +17,23 @@ INSTALL CASSANDRA on Lenovo in 2018:
   2018: downloaded apache-cassandra-3.11.3-bin.tar.gz
     decompressed into \programs\apache-cassandra-3.11.3
 * Make a snapshot of Dell M4700 data: 
-  cd c:\Program Files\DataStax-DDC\apache-cassandra\bin\
+  cd c:\Program Files\DataStax-DDC\apache-cassandra...\bin\
   run: cqlsh.bat
     DESCRIBE KEYSPACE bobKeyspace          //copy and paste that into text document
     COPY bobkeyspace.statictest TO 'c:\backup\cassandra_statictest.txt';
     COPY bobkeyspace.bobtable TO 'c:\backup\cassandra_bobtable.txt';
 * Recreate the keyspace and data
-  cd C:\programs\apache-cassandra-3.11.4\bin
+  cd C:\programs\apache-cassandra-3.11.8\bin
     was cd c:\Program Files\DataStax-DDC\apache-cassandra\bin\
   run: cqlsh.bat
     1) copy and paste c:\backup\cassandra_bobKeyspace.txt into shell
     2) COPY bobkeyspace.statictest FROM 'c:\backup\cassandra_statictest.txt';
     3) COPY bobkeyspace.bobtable FROM 'c:\backup\cassandra_bobtable.txt';
 
-RUN CASSANDRA on Lenovo in 2018:
-* Start it up: cd \programs\apache-cassandra-3.11.3\bin
+RUN CASSANDRA on Lenovo in 2020:
+* Start it up: cd \programs\apache-cassandra-3.11.4\bin
   For Java version changes: change JAVA_HOME in cassandra.bat, e.g., 
-    set "JAVA_HOME=C:\Program Files\Java\jre1.8.0_211"
+    set "JAVA_HOME=C:\programs\jdk8u242-b08_KeepForCassandra\"
   type: cassandra.bat -f
 * Shut it down: ^C
   There is still something running in the background. Restart computer?

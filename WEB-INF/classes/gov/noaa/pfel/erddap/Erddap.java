@@ -665,7 +665,8 @@ public class Erddap extends HttpServlet {
             String2.distribute(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
             String2.distribute(responseTime, EDStatic.responseTimesDistribution24);
             String2.distribute(responseTime, EDStatic.responseTimesDistributionTotal);
-            if (verbose) String2.log("}}}}#" + requestNumber + " SUCCESS. TIME=" + responseTime + "ms\n");
+            if (verbose) String2.log("}}}}#" + requestNumber + " SUCCESS. TIME=" + responseTime + "ms" + 
+                (responseTime >= 10000? "  (>10s!)" : "") + "\n");
 
         } catch (Throwable t) {
 
@@ -707,7 +708,8 @@ public class Erddap extends HttpServlet {
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
                 if (slowdown > 0) //before log FAILURE, so sendErrorCode logged info is close by
                     Math2.sleep(slowdown);
-                if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime + "ms");
+                if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime + "ms" + 
+                    (responseTime >= 10000? "  (>10s!)" : "") + "");
 
             } catch (Throwable t2) {
                 String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
@@ -716,8 +718,9 @@ public class Erddap extends HttpServlet {
             //if sendErrorCode fails because response.isCommitted(), it throws ServletException
             EDStatic.sendError(request, response, t); 
 
+            long tTime = System.currentTimeMillis() - doGetTime;
             if (verbose) String2.log("}}}}#" + requestNumber + " sendErrorCode done. Total TIME=" + 
-                (System.currentTimeMillis() - doGetTime) + "ms\n");
+                tTime + "ms" + (tTime >= 10000? "  (>10s!)" : "") + "\n");
         }
 
     }
@@ -9790,7 +9793,7 @@ breadCrumbs + endBreadCrumbs +
 
             //addConstraints
             writer.write(
-                "<h3>" + EDStatic.options + "</h3>\n" +
+                "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">" + EDStatic.options + "</a></h3>\n" +
                 XML.encodeAsHTML(EDStatic.addConstraints) +
                 "<br><a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + start + 
                     "html?&amp;outOfDate%3E=0.5\">"  + tErddapUrl + "/" + start +
@@ -14989,7 +14992,7 @@ writer.write(
                              "d.f1.fileType.options[d.f1.fileType.selectedIndex].text + " + 
                              "'?TimeLatLonTable=' + encodeURIComponent(d.f1.TimeLatLonTable.value) + " + 
                              "'&requestCSV=' + encodeURIComponent(d.f1.requestCSV.value);\"") + //\" is end of onclick
-                "</td></tr>\n" +
+                "</td><td></td></tr>\n" +
 
 
                 widgets.endTable());

@@ -9341,7 +9341,6 @@ Dataset {
         String2.log("\n*** Table.testReadNDNc");
         Table table = new Table();
         String results, expected;
-        try {
 
         //test  no vars specified,  4D,  only 2nd dim has >1 value,  getMetadata
         String fiName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
@@ -9542,11 +9541,7 @@ Dataset {
 "-162.279,23.445,1.2052008E9\n" +
 "...\n";   //and 2008 was 1936
         Test.ensureEqual(results, expected, "results=\n" + results);
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
-        
+       
     }
 
         
@@ -25773,7 +25768,7 @@ String2.log(table.dataToString());
                         }
                     }
 
-                    //test of value=NaN must use "NaN", not somthing just a badly formatted number
+                    //test of value=NaN must use "NaN", not something just a badly formatted number
                     conValueD = String2.parseDouble(tValue);
                     if (!Double.isFinite(conValueD) && !tValue.equals("NaN")) {
                         if (repair) {

@@ -1432,7 +1432,6 @@ public class FloatArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** FloatArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         float f1, f2;
         f1 = Float.NaN;

@@ -30,7 +30,7 @@ import java.util.Arrays;
  * <p>PersistentTable is NOT synchronized.
  * <br> If more than 1 thread may be working with the table, use 
  * <pre>
-    synchronized (persistentTable) {  
+    synchronized(persistentTable) {  
         //do several things here
         //...
         //if "rw" mode and you wrote some changes, perhaps use persistentTable.flush() at end

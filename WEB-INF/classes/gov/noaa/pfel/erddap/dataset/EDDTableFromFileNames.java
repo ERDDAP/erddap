@@ -2520,9 +2520,9 @@ String expected =
         EDDTableFromFileNames edd = (EDDTableFromFileNames)oneFromDatasetsXml(null, id);
         time = System.currentTimeMillis() - time;
         long expTime = 3563;
-        String2.log("loadDataset time=" + time + "ms (expected=" + expTime + "ms)");
-        if (time > expTime * 2) 
-            String2.pressEnterToContinue("Too slow.");
+        String msg = "loadDataset time=" + time + "ms (expected=" + expTime + "ms)";
+        String2.log(msg);
+        Test.ensureTrue(time < expTime * 2, "Too slow: " + msg);
         Object o2[];
         String dir = EDStatic.fullTestCacheDirectory;
         Table fileTable;
@@ -2576,8 +2576,9 @@ String expected =
 "2018, 2019, 2020";  
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
-            String2.log("get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 2, "too slow");
+            msg = "get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)";
+            String2.log(msg);
+            Test.ensureTrue(time < expTime * 2, "too slow: " + msg);
         }
 
         if (true) {
@@ -2604,12 +2605,9 @@ String expected =
             expected = "";
             Test.ensureEqual(results, expected, "");
             expTime = 693; //ms
-            String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            try {
-                Test.ensureTrue(time < expTime * 2, "too slow");
-            } catch (Exception e7) {
-                String2.pressEnterToContinue(MustBe.throwableToString(e7));
-            }
+            msg = "get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)";
+            String2.log(msg);
+            Test.ensureTrue(time < expTime * 2, "too slow: " + msg);
         }
 
         

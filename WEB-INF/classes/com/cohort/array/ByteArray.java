@@ -1607,7 +1607,6 @@ public class ByteArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable {
         String2.log("*** ByteArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         ByteArray anArray = ByteArray.fromCSV(     " -128, -1, 0, 126, ,     127, 200 ");
         Test.ensureEqual(anArray.toString(),         "-128, -1, 0, 126, 127, 127, 127", "");

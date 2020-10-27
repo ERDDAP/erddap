@@ -1877,8 +1877,7 @@ String expected2 =
         String2.log("\ntestGenerateDatasetsXmlFromThreddsCatalog passed the test.");
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl); //in tests, always non-https url
+            throw new RuntimeException("Error using generateDatasetsXml on " + EDStatic.erddapUrl, t); //in tests, always non-https url
         }
 
     }
@@ -4837,8 +4836,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
             //check error...
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError accessing " + EDStatic.erddapUrl); //in tests, always non-https url
+            throw new RuntimeException("Error accessing " + EDStatic.erddapUrl, t); //in tests, always non-https url
         }
     }
 
@@ -5453,8 +5451,8 @@ String expected2 =
 "}\n"; 
             Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "2017-04-05 Test dataset changed. No longer has scale factor -- find a new dataset."); 
+            Test.knownProblem( 
+                "2017-04-05 Test dataset changed. No longer has scale factor -- find a new dataset.", t); 
         }
 
     }     
@@ -7808,16 +7806,11 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      */
     public static void testNoAxisVariable() throws Throwable {
 
-
-        String2.log("\n*** EDDGridFromDap.testNoAxisVariable\n" +
-            "!!!!!!  This test is inactive because the test dataset disappeared.");
-
-        /*
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z"
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
-        try{
+        try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testNoAxisVariable"); 
 
         //.das     das isn't affected by userDapQuery
@@ -7950,10 +7943,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError in EDDGridFromDap.testNoAxisVariable."); 
+            Test.knownProblem("!!!!!!  This test dataset has disappeared.", t); 
         }
-        */
     }
      
 
@@ -8070,10 +8061,11 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
                 int cpo = dapResult[1].lastIndexOf(",");
                 String ncTest = pa.getFloat(0) == -9999999? "NaN" : "" + pa.getFloat(0);
                 String dapTest = dapResult[1].substring(cpo + 1, dapResult[1].length() - 1);
-                String2.log("\ntp=" + tp + 
-                            "\n   ncTest=" + ncTest +
-                            "\n  dapTest=" + dapTest + "\n");
-                Test.ensureEqual(ncTest, dapTest, "sst values don't match!");
+                String msg = "tp=" + tp + 
+                    "\n   ncTest=" + ncTest +
+                    "\n  dapTest=" + dapTest;
+                String2.log(msg);
+                Test.ensureEqual(ncTest, dapTest, "sst values don't match!\n" + msg);
             }
  
             //always
@@ -8083,8 +8075,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             //ensure:
             if (ncFile != null)
                 ncFile.close();
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using testBigRequest."); 
+            throw new RuntimeException("Error using testBigRequest.", t); 
         } 
 
     }
@@ -8719,7 +8710,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingBAD", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        String2.pressEnterToContinue("\nANTIALIASING PROBLEM SOLVED ITSELF 2018-06-20"); 
+        String2.log("\nANTIALIASING PROBLEM SOLVED ITSELF 2018-06-20"); 
     }
 
     /**
@@ -10157,6 +10148,8 @@ expected =
                                      "<att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>");
         results = results.replaceAll("20\\d{6}",
                                      "[DATE]");
+        results = results.replaceAll("<reloadEveryNMinutes>\\d*</reloadEveryNMinutes>", 
+                                     "<reloadEveryNMinutes>[RELOAD]</reloadEveryNMinutes>");
         results = results.replaceAll("<att name=\"time_coverage_end\">.*</att>", 
                                      "<att name=\"time_coverage_end\">[TCE]</att>");
         results = results.replaceAll("<att name=\"time_coverage_start\">.*</att>", 
@@ -10168,7 +10161,7 @@ expected =
         String expected = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
-"    <reloadEveryNMinutes>5760</reloadEveryNMinutes>\n" + //changes
+"    <reloadEveryNMinutes>[RELOAD]</reloadEveryNMinutes>\n" + //changes
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!
 "        <att name=\"cdm_data_type\">grid</att>\n" +
@@ -10303,7 +10296,7 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +
+//"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 gone because end date now long ago
 "        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2002-present</att>\n" +
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
@@ -10580,7 +10573,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //because it was changed above in datasets.xml fragment
+//"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //because it was changed above in datasets.xml fragment  //2020-10-21 gone because end date now long ago
 "    String time_coverage_end \"2020-08-12T00:00:00Z\";\n" +  //2020-10-02 fixed. Was wrong at source: 2022-02-18 I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
@@ -11410,19 +11403,12 @@ String expected =
 "</dataset>\n" +
 "\n";
 
-        try {
-            String results = generateDatasetsXml(url, 
-                null, null, null, -1, null);
-            
-            Test.ensureEqual(results, expected, 
-                "results=\n" + results);
-
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
-    
+        String results = generateDatasetsXml(url, 
+            null, null, null, -1, null);
+        
+        Test.ensureEqual(results, expected, 
+            "results=\n" + results);
+   
     }
 
     /**

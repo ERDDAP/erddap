@@ -367,31 +367,30 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
         boolean oEDDDebugMode = EDD.debugMode;
         //EDD.debugMode = true;
 
-        try {
-            String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "audio/wav", //test no trailing /
-                ".*\\.wav",
-                "",
-                1440,
-                "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
-                "", "", "", "", "", 
-                -1, null, //defaultStandardizeWhat
-                null) + "\n";
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "audio/wav", //test no trailing /
+            ".*\\.wav",
+            "",
+            1440,
+            "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
+            "", "", "", "", "", 
+            -1, null, //defaultStandardizeWhat
+            null) + "\n";
 
-            String2.log(results);
+        String2.log(results);
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromAudioFiles",
-                EDStatic.unitTestDataDir + "audio/wav", 
-                ".*\\.wav",
-                "",
-                "1440",
-                "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
-                "", "", "", "", "", 
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromAudioFiles",
+            EDStatic.unitTestDataDir + "audio/wav", 
+            ".*\\.wav",
+            "",
+            "1440",
+            "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
+            "", "", "", "", "", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"wav_56d5_230d_1887\" active=\"true\">\n" +
@@ -473,23 +472,19 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            String tDatasetID = "wav_56d5_230d_1887";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "wav_56d5_230d_1887", "");
-            Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "time, elapsedTime, channel_1", 
-                "");
+        String tDatasetID = "wav_56d5_230d_1887";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), "wav_56d5_230d_1887", "");
+        Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "time, elapsedTime, channel_1", 
+            "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
         EDD.debugMode = oEDDDebugMode;
 
     }

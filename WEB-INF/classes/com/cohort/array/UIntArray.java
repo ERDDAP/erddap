@@ -1600,7 +1600,6 @@ public class UIntArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** UIntArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         Test.ensureEqual(pack(                  0L  ),                 0, "");
         Test.ensureEqual(pack(Integer.MAX_VALUE     ), Integer.MAX_VALUE, "");

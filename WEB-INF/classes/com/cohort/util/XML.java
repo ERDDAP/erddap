@@ -847,7 +847,6 @@ public class XML {
      */
     public static void basicTest() throws Exception {
         String2.log("\n*** XML.basicTest");
-/* for releases, this line should have open/close comment */
 
         //test removeHTMLTags
         String2.log("test removeHTMLTags");

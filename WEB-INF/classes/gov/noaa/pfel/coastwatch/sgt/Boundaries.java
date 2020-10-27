@@ -22,6 +22,9 @@ import gov.noaa.pmel.sgt.dm.*;
 import java.io.File;
 import java.io.*;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.Map;
 
 
@@ -183,7 +186,10 @@ public class Boundaries  {
             //  If there are almost simultaneous requests for the same one, 
             //  only one thread will make it.
             //Cache is thread-safe so synch on cachedName, not cache.
-            synchronized(cachedName) {
+            ReentrantLock lock = String2.canonicalLock(cachedName);
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock on Boundaries cachedName.");
+            try {
 
                 //*** is SGTLine in cache?
                 sgtLine = (SGTLine)cache.get(cachedName);
@@ -212,6 +218,8 @@ public class Boundaries  {
                     nSuccesses++;
                     tSuccess = "*(alreadyInCache)";
                 }
+            } finally {
+                lock.unlock();
             }
         }
 

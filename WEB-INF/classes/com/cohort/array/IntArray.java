@@ -1515,7 +1515,6 @@ public class IntArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** IntArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         IntArray anArray = IntArray.fromCSV(         " -2147483648, -1, 0, 2147483646, ,          2147483647, 9999999999 ");
         Test.ensureEqual(anArray.toString(),         "-2147483648, -1, 0, 2147483646, 2147483647, 2147483647, 2147483647", "");

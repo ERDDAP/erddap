@@ -700,7 +700,7 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   if 3D, to one time index unit). 
   If this is inappropriate for a given datasetID/variable,
   use one of the other algorithm options or see
-  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+  <a rel="help" href="#NotWhatYouWant">Not what you want?</a> below.
   <br>&nbsp;
 <li><kbd>nearby</kbd> specifies the number of points to be used by the algorithm. 
   <br>Only certain numbers are allowed. 
@@ -721,13 +721,13 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   Instead, it duplicates the points at the minimum or maximum longitude value,
   as needed. This is technically not correct behavior, but it only affects
   some people, some of the time. If this affects you and is not acceptable, see
-  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+  <a rel="help" href="#NotWhatYouWant">Not what you want?</a> below.
 <li>Other Dimensions 
   <br>If a specified dataset has dimensions other than latitude, longitude,
   and time (for example, depth), this converter will request the
   dimension value closest to 0 for each of those other dimensions.
   If this is not the desired behavior, see
-  <a rel="help" href="#NotWhatYouWant" rel="help">Not what you want?</a> below.
+  <a rel="help" href="#NotWhatYouWant">Not what you want?</a> below.
   <br>&nbsp;
 <li>The interpolation methods used here are from 
   Davis, J.C. 1986. Statistics and Data Analysis in Geology, 2nd Ed. John Wiley and Sons. New York, New York.
@@ -1260,7 +1260,7 @@ minutes with leap seconds have 61 seconds.  Note that database programs like
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
 and languages like 
-<a rel="bookmark" href="https://bytes.com/topic/c-sharp/answers/231842-datetime-accounts-leap-seconds"
+<a rel="bookmark" href="https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/"
 >C#<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
@@ -2459,9 +2459,9 @@ If you want the examples to point to your ERDDAP, the easiest method is:
      Note the Matlab notation datasetName.variableName.  -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
 
-<EDDTableFromHttpGetDescription>This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</EDDTableFromHttpGetDescription>
-<EDDTableFromHttpGetAuthor>The values in this column identify the author who added each row of data to the dataset.</EDDTableFromHttpGetAuthor>
-<EDDTableFromHttpGetTimestamp>The values in this column are added by ERDDAP to identify when each row of data was added to the data file.</EDDTableFromHttpGetTimestamp>
+<EDDTableFromHttpGetDatasetDescription>This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</EDDTableFromHttpGetDatasetDescription>
+<EDDTableFromHttpGetAuthorDescription>The values in this column identify the author who added each row of data to the dataset.</EDDTableFromHttpGetAuthorDescription>
+<EDDTableFromHttpGetTimestampDescription>The values in this column are added by ERDDAP to identify when each row of data was added to the data file.</EDDTableFromHttpGetTimestampDescription>
 
 
 <!-- These messages are displayed when an error message is shown. -->
@@ -4937,10 +4937,7 @@ This video shows:
   <a rel="bookmark" href="https://www.ncddc.noaa.gov/">NODC/NCDDC<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
-  (facilitated by NOAA's 
-  <a rel="bookmark" href="https://geo-ide.noaa.gov/">UAF project<img 
-    src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="This link to an external website does not constitute an endorsement."></a>).
+  (facilitated by NOAA's UAF project).
 <li>ERDDAP makes <a href="#scientificData">scientific data</a> more easily available 
   to help scientists (and others) do their work more efficiently.
 <li>Using ERDDAP isn't hard. (Yes, Rich Signell is really smart, but anyone can use ERDDAP.)
@@ -5908,8 +5905,14 @@ schemas.opengis.net/
 www.csc.noaa.gov
 www.coast.noaa.gov
 
+www.cencoos.org/data/models/habs
+www.cencoos.org/observations/models-forecasts/
+
 http://www.eppleylab.com/PrdPrecInfRadmtr.htm
 http://www.eppleylab.com/instrument-list/precision-infared-radiometer/
+
+www.esa-oceancolour-cci.org
+esa-oceancolour-cci.org
 
 http://www.esdswg.org/spg/
 https://earthdata.nasa.gov/about/esdis-project/eso/standards-and-references#ed-standards
@@ -6307,6 +6310,9 @@ https://erddap.secoora.org
 http://erddap.sensors.ioos.us/erddap/
 https://erddap.sensors.ioos.us/erddap/
 
+http://esa-oceancolour-cci.org
+https://esa-oceancolour-cci.org
+
 http://ferret.pmel.noaa.gov
 https://ferret.pmel.noaa.gov
 
@@ -6600,6 +6606,9 @@ https://www.chiark.greenend.org.uk
 
 http://www.caricoos.org/
 https://www.caricoos.org/
+
+http://www.cencoos.org
+https://www.cencoos.org
 
 http://www.cgd.ucar.edu
 https://www.cgd.ucar.edu

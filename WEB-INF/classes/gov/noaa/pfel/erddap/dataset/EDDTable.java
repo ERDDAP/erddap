@@ -67,6 +67,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2403,7 +2406,7 @@ public abstract class EDDTable extends EDD {
                         }
                     }
 
-                    //test of value=NaN must use "NaN", not somthing just a badly formatted number
+                    //test of value=NaN must use "NaN", not something just a badly formatted number
                     conValueD = String2.parseDouble(tValue);
                     if (!Double.isFinite(conValueD) && !tValue.equals("NaN")) {
                         if (repair) {
@@ -3103,12 +3106,15 @@ public abstract class EDDTable extends EDD {
             fileTypeName.equals(".nc4Header") ||
             fileTypeName.equals(".ncCFHeader") ||
             fileTypeName.equals(".ncCFMAHeader");
-        String cacheFullName = ncXHeader? dir + fileName + ".nc" : fullName;
+        String cacheFullName = String2.canonical(ncXHeader? dir + fileName + ".nc" : fullName);
         int random = Math2.random(Integer.MAX_VALUE);
 
         //thread-safe creation of the file 
         //(If there are almost simultaneous requests for the same one, only one thread will make it.)
-        synchronized(String2.canonical(cacheFullName)) {
+        ReentrantLock lock = String2.canonicalLock(cacheFullName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock on EDDTable .ncHeader cacheFullName.");
+        try {
 
             if (File2.isFile(cacheFullName)) { //don't 'touch()'; files for latest data will change
                 if (verbose) String2.log("  reusing cached " + cacheFullName);
@@ -3239,13 +3245,20 @@ public abstract class EDDTable extends EDD {
 
                 File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
             } 
+        } finally {
+            lock.unlock();
         }
 
         //if ncXHeader (.ncHeader, .nc4Header, .ncCFHeader, .ncCFMAHeader), create the underlying .nc file
         if (ncXHeader) {
             //thread-safe creation of the file 
             //(If there are almost simultaneous requests for the same one, only one thread will make it.)
-            synchronized(String2.canonical(fullName)) {
+            fullName = String2.canonical(fullName);
+            ReentrantLock lock2 = String2.canonicalLock(fullName);
+            if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock on EDDTable ncXHeader fullName.");
+            try {
+
                 if (!File2.isFile(fullName)) {
                     String error = String2.writeToFile(fullName + random, 
                         NcHelper.ncdump(cacheFullName, "-h"), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
@@ -3256,6 +3269,8 @@ public abstract class EDDTable extends EDD {
                         throw new RuntimeException(error);
                     }
                 }
+            } finally {
+                lock2.unlock();
             }
         }
 
@@ -8341,7 +8356,7 @@ public abstract class EDDTable extends EDD {
             "      a query, ERDDAP will add all of the variables in the dataset which have\n" +
             "      <kbd><i>attributeName=attributeValue</i></kbd>\n" +
             "      to the list of requested variables. For example, if you add\n"+
-            "      <kbd>&amp;addVariablesWhere(\"ioos_category\",\"Wind\"</i>)</kbd> to a query, ERDDAP\n" +
+            "      <kbd>&amp;addVariablesWhere(\"ioos_category\",\"Wind\")</kbd> to a query, ERDDAP\n" +
             "      will add all of the variables in the dataset that have an <kbd>ioos_category=Wind</kbd> attribute\n" +
             "      to the list of requested variables (for example, windSpeed, windDirection, windGustSpeed).\n" +
             "      <i>attributeName</i> and <i>attributeValue</i> are case-sensitive.\n" +
@@ -8738,8 +8753,8 @@ public abstract class EDDTable extends EDD {
             "or more rows and one or more columns of data.\n" + 
             "  <ul>\n" +
             "  <li>Each column is also known as a \"data variable\" (or just a \"variable\").\n" +
-            "    Each data variable has data of one specific data type.\n" +
-            "    See the <a rel=\"help\" href=\"#dataTypes\">Data Type documentation</a> for details.\n" +
+            "    Each data variable has data of one\n" +
+            "    <a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataTypes\">data type</a>.\n" +
             "    Each data variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n" +
             "    characters (A-Z, a-z, 0-9, _).\n" +
             "    Each data variable has metadata which is a set of Key=Value pairs.\n" +
@@ -8755,8 +8770,8 @@ public abstract class EDDTable extends EDD {
             "    <ul>\n" +
             "    <li>Each Key is a String consisting of a letter (A-Z, a-z) and then 0 or more other\n" +
             "      characters (A-Z, a-z, 0-9, '_').\n" +
-            "    <li>Each Value is an array of either one (usually) or more numbers (of one Java type),\n" +
-            "      or one or more Strings of any length (using \\n as the separator).\n" +
+            "    <li>Each Value is an array of one (usually) or more values of one\n" +
+            "      <a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataTypes\">data type</a>.\n" +
             "      <br>&nbsp;\n" +
             "    </ul>\n" +
             "  </ul>\n" +
@@ -8788,103 +8803,6 @@ public abstract class EDDTable extends EDD {
             "      variable but have a different name.\n" +
             "      <br>&nbsp;\n" +
             "  </ul>\n" +
-
-            //this dataTypes section is exactly the same in EDDGrid and EDDTable.
-            "<li><a class=\"selfLink\" id=\"dataTypes\" href=\"#dataTypes\" rel=\"bookmark\"><strong>Data Types</strong></a>\n" +
-            "<br>ERDDAP supports the following data types\n" +
-            "(names from other realms are shown in parentheses; 'u' stands for \"unsigned\"; the number is the number of bits):\n" +
-            "byte (int8), ubyte (uint8), short (int16) and ushort (uint16), int (int32), uint (uint32),\n" +
-            "long (int64), ulong (uint64), float (real, float32), double (float64), char (a single character), and String.\n" +
-            "<br>Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally\n" +
-            "  and offered limited support in its data readers and writers.\n" +
-            "<br>Internally, an ERDDAP char is a single 16 bit Unicode character.\n" +
-            "<br>Internally, an ERDDAP String is a variable length string composed of 16 bit Unicode characters.\n" +
-            "\n" +
-            "<p>You can think of ERDDAP as a system which has virtual datasets,\n" +
-            "and which works by reading data from a dataset's source into an internal data model\n" +
-            "and writing data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.\n" +
-            "  <ul>\n" +
-            "  <li>Each input reader supports a subset of the data types that ERDDAP supports.\n" +
-            "     So reading data into ERDDAP's internal data structures isn't a problem.\n" +
-            "  <li>Each output writer also support a subset of data types. That's a problem because ERDDAP\n" +
-            "    has to squeeze, for example, long data into file types that don't support long data.\n" +
-            "  </ul>\n" +
-            "Below are explanations of the limitations (or none) of various output writers\n" +
-            "and how ERDDAP deals with the problems.\n" +
-            "Such complications are an inherent part of ERDDAP's goal of making disparate system interoperable.\n" +
-            "  <ul>\n" +
-            "  <li><a class=\"selfLink\" id=\"AsciiDataTypes\" href=\"#AsciiDataTypes\" rel=\"bookmark\"\n" +
-            "    >ASCII (.csv, .tsv, etc.) text files</a> -\n" +
-            "    <br>All numeric data is written via its String representation\n" +
-            "    (with missing data values appearing as 0-length strings).\n" +
-            "    Char and String data are written via JSON Strings, which handle all unusual characters\n" +
-            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
-            "  <li><a class=\"selfLink\" id=\"JsonDataTypes\" href=\"#JsonDataTypes\" rel=\"bookmark\"\n" +
-            "    >JSON (.json, .jsonlCSV, etc.) text files</a> -\n" +
-            "    <br>All numeric data is written via its String representation.\n" +
-            "    <br>Char and String data are written via JSON Strings, which handle all unusual characters\n" +
-            "    (e.g., the Euro character appears as \"\\u20ac\".\n" +
-            "    <br>Missing values for all data types appear as <tt>null</tt>.\n" +
-            "  <li><a class=\"selfLink\" id=\"nc3DataTypes\" href=\"#nc3DataTypes\" rel=\"bookmark\">.nc3 files -\n" +
-            "    <br>.nc3 files don't natively support any unsigned integer data types.\n" + 
-            "      Before CF v1.9, CF did not support unsigned integer types.\n" +
-            "      To deal with this, ERDDAP 2.10+\n" +
-            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
-            "      to indicate if the data is from an unsigned or signed variable. All integer attributes\n" +
-            "      are written as signed attributes (e.g., byte) with signed values (e.g., a ubyte actual_range attribute\n" +
-            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
-            "      two's compliment value of the out-of-range value). There is no easy way to know which (signed) integer\n" +
-            "      attributes should be read as unsigned attributes.\n" +
-            "    <p>.nc3 files don't support the long or ulong data types.\n" +
-            "      ERDDAP deals with this by temporarily converting them to be double variables.\n" +
-            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
-            "      This is an imperfect solution. Unidata refuses to make a minor\n" +
-            "      upgrade to .nc3 to deal with this and related problems, citing .nc4 (a major change) as the solution.\n" +
-            "    <p>The CF specification (before v1.9) said it supports char (unspecified details)\n" +
-            "      but it is unclear if it is only supported as the building blocks of what are effectively Strings.\n" +
-            "      Questions to their mailing list only yielded confusing answers.\n" +
-            "      Because of these complications, it is best to avoid char variables in ERDDAP and use String variables whenever possible.\n" +
-            "    <p>.nc3 files support strings with ASCII-encoded, characters.\n" +
-            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
-            "      \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
-            "      or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
-//            "  <li><a class=\"selfLink\" id=\"nc4DataTypes\" href=\"#nc4DataTypes\" rel=\"bookmark\">.nc4 files\n" +
-//            "    support all of ERDDAP's data types.\n" +
-            "  <li><a class=\"selfLink\" id=\"NccsvDataTypes\" href=\"#NccsvDataTypes\" rel=\"bookmark\">NCCSV files -\n" +
-            "    <br>NCCSV 1.0 files don't support any unsigned integer data types.\n" +
-            "    <br>NCCSV 1.1+ files support all unsigned integer data types.\n" +
-            "  <li><a class=\"selfLink\" id=\"OpendapDataTypes\" href=\"#OpendapDataTypes\" rel=\"bookmark\"\n" +
-            "    >(OPeN)DAP (.das, .dds, .asc ASCII files, and .dods binary files)</a> -\n" +
-            "    <br>(OPeN)DAP handles short, ushort, int, uint, float and double values correctly.\n" +
-            "    <p>(OPeN)DAP has a \"byte\" data type that it defines as unsigned, whereas historically,\n" +
-            "      THREDDS and ERDDAP have treated \"byte\" as signed. To deal with this, ERDDAP 2.10+\n" +
-            "      follows the NUG standard and always adds an \"_Unsigned\" attribute with a value of \"true\" or \"false\"\n" +
-            "      to indicate if the data is what ERDDAP calls byte or ubyte. All byte and ubyte attributes\n" +
-            "      are written as \"byte\" attributes with signed values (e.g., a ubyte actual_range attribute\n" +
-            "      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the\n" +
-            "      two's compliment value of the out-of-range value). There is no easy way to know which \"byte\"\n" +
-            "      attributes should be read as ubyte attributes.\n" +
-            "    <p>The (OPeN)DAP does not support signed or unsigned longs.\n" +
-            "      ERDDAP deals with this by temporarily converting them to be double variables and attributes.\n" +
-            "      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.\n" +
-            "      This is an imperfect solution. OPeNDAP (the organization) refuses to make a minor\n" +
-            "      upgrade to DAP 2.0 to deal with this and related problems, citing DAP4 (a major change) as the solution.\n" +
-            //dap char?
-            "    <p>The (OPeN)DAP specification supports strings with ASCII-encoded, characters.\n" +
-            "      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute \"_Encoding\" with a value of\n" +
-            "     \"ISO-8859-1\" (an extension of ASCII which defines all 256 values of each 8-bit character)\n" +
-            "     or \"UTF-8\" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.\n" +
-            "  </ul>\n" +           
-            "Other comments:\n" +
-            "  <ul>\n" +
-            "  <li>Because of the variable support for long, ulong, and char data, we discourage their use in ERDDAP.\n" +
-            "  <li>Metadata - Because (OPeN)DAP's .das and .dds responses don't suport long or ulong data,\n" +
-            "     you may instead want to use ERDDAP's tabular representation of metadata as seen in the\n" +
-            "     http.../erddap/info/<i>datasetID</i>.html web page (or other file types),\n" +
-            "     which supports all data types in all situations.\n" +
-            "  </ul>\n" + 
-            "\n" +
-            //end of dataTypes section that is duplicated in EDDGrid and EDDTable
 
             "<li><a class=\"selfLink\" id=\"incompatibilities\" href=\"#incompatibilities\" rel=\"bookmark\"\n" +
             "      ><strong>Incompatibilities</strong></a>\n" +

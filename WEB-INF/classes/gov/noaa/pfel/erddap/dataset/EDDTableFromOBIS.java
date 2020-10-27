@@ -857,10 +857,8 @@ expected =
                 "TypeStatus, YearCollected, YearIdentified", 
 "");
 
-
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromOBIS.testGenerateDatasetsXml error."); 
+            throw new RuntimeException("Unexpected EDDTableFromOBIS.testGenerateDatasetsXml error.", t); 
         }
 
     }
@@ -1245,9 +1243,10 @@ so standardize results table removes all but 1 record.
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+            throw new RuntimeException("Unexpected error",
                 //2010-07-27 to 2011-01 failed with\n" +
-                //"  java.net.ConnectException: Connection refused: connect\n" +
+                //"  java.net.ConnectException: Connection refused: connect",
+                t);
         }
     }
 
@@ -1425,8 +1424,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected dukeSeamap error."); 
+            throw new RuntimeException("Unexpected dukeSeamap error.", t); 
         }
 
     }

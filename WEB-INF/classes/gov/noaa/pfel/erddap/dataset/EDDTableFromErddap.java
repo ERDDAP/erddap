@@ -1064,10 +1064,9 @@ expected =
         String query = "?&time%3E=2008-12-10T19%3A41%3A00Z"; //"?&time>2008-12-10T19:41:00Z";
 
 
-        try {
-            //*** test getting csv
-            results = SSR.getUrlResponseStringUnchanged(url + ".csv" + query); 
-            expected = 
+        //*** test getting csv
+        results = SSR.getUrlResponseStringUnchanged(url + ".csv" + query); 
+        expected = 
 "trajectory,time,depth,latitude,longitude,temperature,conductivity,salinity,density,pressure\n" +
 ",UTC,m,degrees_north,degrees_east,Celsius,S m-1,1e-3,kg m-3,dbar\n" +
 "sg114_3,2008-12-10T19:41:02Z,-7.02,21.238798,-157.86617,25.356133,5.337507,34.952133,1023.1982,7.065868\n" +
@@ -1083,12 +1082,12 @@ expected =
 "sg114_3,2008-12-10T19:41:59Z,-0.75,21.238853,-157.86624,25.2926,2.8720038,17.5902,1010.1601,0.7549004\n" +
 "sg114_3,2008-12-10T19:42:04Z,-0.72,21.23885,-157.86623,25.25033,3.0869908,19.06109,1011.27466,0.7247044\n" +
 "sg114_3,2008-12-10T19:42:10Z,-0.7,21.238853,-157.86624,25.225939,-3.494945,21.86908,1013.3882,0.70457375\n";
-            String2.log(results);
-            Test.ensureEqual(results, expected, "");
+        String2.log(results);
+        Test.ensureEqual(results, expected, "");
 
-            //*** test getting jsonlCSV when (until they update) they don't offer it
-            results = SSR.getUrlResponseStringUnchanged(url + ".jsonlCSV" + query); 
-            expected = 
+        //*** test getting jsonlCSV when (until they update) they don't offer it
+        results = SSR.getUrlResponseStringUnchanged(url + ".jsonlCSV" + query); 
+        expected = 
 "[\"sg114_3\", \"2008-12-10T19:41:02Z\", -7.02, 21.238798, -157.86617, 25.356133, 5.337507, 34.952133, 1023.1982, 7.065868]\n" +
 "[\"sg114_3\", \"2008-12-10T19:41:08Z\", -6.39, 21.238808, -157.86618, 25.353163, 5.337024, 34.951065, 1023.1983, 6.4317517]\n" +
 "[\"sg114_3\", \"2008-12-10T19:41:14Z\", -5.7, 21.238813, -157.86618, 25.352034, 5.337048, 34.95233, 1023.1996, 5.737243]\n" +
@@ -1102,12 +1101,9 @@ expected =
 "[\"sg114_3\", \"2008-12-10T19:41:59Z\", -0.75, 21.238853, -157.86624, 25.2926, 2.8720038, 17.5902, 1010.1601, 0.7549004]\n" +
 "[\"sg114_3\", \"2008-12-10T19:42:04Z\", -0.72, 21.23885, -157.86623, 25.25033, 3.0869908, 19.06109, 1011.27466, 0.7247044]\n" +
 "[\"sg114_3\", \"2008-12-10T19:42:10Z\", -0.7, 21.238853, -157.86624, 25.225939, -3.494945, 21.86908, 1013.3882, 0.70457375]\n";
-            String2.log(results);
-            Test.ensureEqual(results, expected, "");
+        String2.log(results);
+        Test.ensureEqual(results, expected, "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t));
-        }
     }
 
     /** This tests quotes in an attribute. */

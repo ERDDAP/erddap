@@ -3117,8 +3117,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 //+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux."); 
+            throw new RuntimeException("Unexpected(?) error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux.", t); 
         }
     }
 
@@ -3485,14 +3484,14 @@ alues: air_temperature, air_pressure, sea_water_electrical_conductivity, current
 rface_height_above_reference_datum, sea_surface_height_amplitude_due_to_equilibrium_ocean_tide, sea_water_tempe
 rature, winds, harmonic_constituents, datums, relative_humidity, rain_fall, visibility".
 */
-            String msg = MustBe.throwableToString(t);
-            String2.pressEnterToContinue(msg + 
-                "\nThis started failing ~Feb 2013. Then okay.\n" +
+            throw new RuntimeException( 
+                "This started failing ~Feb 2013. Then okay.\n" +
                 "2015-12-10 failing: Was observedProperty=currents\n" +
                 "  now GetCapabilities says direction_of_sea_water_velocity, sea_water_speed\n" +
                 "  but using those in datasets.xml says it must be one of ... currents\n" +
                 "  Ah! I see there are 2 group procedures (not separate stations)\n" +
-                "  but ERDDAP doesn't support such groups right now."); 
+                "  but ERDDAP doesn't support such groups right now.",
+                t); 
 //FUTURE: add support for this new approach.    Changes are endless!!!!
         }
     }
@@ -3691,9 +3690,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosSalinity." +
-                "\nNOS SOS Server is in flux."); 
+            throw new RuntimeException("Unexpected(?) error " + datasetIdPrefix + "nosSosSalinity." +
+                "\nNOS SOS Server is in flux.", t); 
         }
     }
 
@@ -5094,7 +5092,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "RESULTS=\n" + results.substring(0, nb));
         } catch (Throwable t) {
-            throw new RuntimeException(
+            Test.knownProblem(
                 "NDBC SOS is still limited to 31 days of data per request."); 
         }
 
@@ -5123,9 +5121,8 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1417)    
 */
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n\nAs of 2012-04-09, this fails because requests again limited to 30 days." +
-                "\nNDBC SOS Server is in flux."); 
+            throw new RuntimeException("As of 2012-04-09, this fails because requests again limited to 30 days." +
+                "\nNDBC SOS Server is in flux.", t); 
         }
     }
 
@@ -7320,8 +7317,7 @@ String expected2 =
 
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml. This frequently changes a little."); 
+            throw new RuntimeException("Error using generateDatasetsXml. This frequently changes a little.", t); 
         }
 
     }
@@ -8468,8 +8464,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "166.62,19.29,27.9\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nTHIS TEST REQUIRES THAT SOS SERVICES BE TURNED ON IN LOCAL ERDDAP."); 
+            throw new RuntimeException("THIS TEST REQUIRES THAT SOS SERVICES BE TURNED ON IN LOCAL ERDDAP.", t); 
         }
 
     }

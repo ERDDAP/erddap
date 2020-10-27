@@ -42,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -986,22 +989,32 @@ public abstract class Browser extends HttpServlet {
         //allow only one response per user to be processed at once
         //see Java Servlet Programming 2nd Ed., pg 38
         User user = getUser(request);
-        synchronized(user) {   
+        ReentrantLock lock = String2.canonicalLock(user);
+        try {
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for user's lock.");
+            try {
 
-            //reset (look for new data) if needed
-            resetIfNeeded();
+                //reset (look for new data) if needed
+                resetIfNeeded();
 
-            //process the form so user settings are noted (don't care if valid)
-            processRequest(request);
+                //process the form so user settings are noted (don't care if valid)
+                processRequest(request);
 
-            //for testing purposes, uncomment this to force reset to defaults
-            //addDefaultsToSession(request.getSession()); 
-            out.println(getStartHtmlHead());
-            out.println(getJavaScript());
-            out.println("</head>");
+                //for testing purposes, uncomment this to force reset to defaults
+                //addDefaultsToSession(request.getSession()); 
+                out.println(getStartHtmlHead());
+                out.println(getJavaScript());
+                out.println("</head>");
 
-            out.println(getHtmlBody(request, false));
-        } //end of synchronization 
+                out.println(getHtmlBody(request, false));
+            } finally {
+                lock.unlock();
+            } 
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,  //a.k.a. Error 500
+                MustBe.throwableToString(e)); 
+        }
 
         out.println("</html>");
     }
@@ -1802,7 +1815,10 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     //same file, so there would be two simultaneous attempts to create it.
                     //(Think of Dave demoing the program to a class with 20 users on 20 computers.)
                     cleanQuery = String2.canonical(cleanQuery);
-                    synchronized(cleanQuery) {
+                    ReentrantLock lock = String2.canonicalLock(cleanQuery);
+                    if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                        throw new TimeoutException("Timeout waiting for lock on cleanQuery.");
+                    try {
 
                         //create the file
                         String2.log("  GET query is clean. create the .nc file...");
@@ -3478,7 +3494,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                             return true;
                         }
 
-                    } //end synchronized lock
+                    } finally {
+                        lock.unlock(); //essential                        
+                    }
                 } 
             } catch (Exception e) {
                 String subject = "Unexpected " + String2.ERROR + " in " + oneOf.shortClassName() + "?get"; 

@@ -838,7 +838,7 @@ public class Test {
         int po = String2.findInvalidUnicode(s, "\r\n\t");
         if (po >= 0) {
             int max = Math.min(po + 20, s.length());
-            error("\n" + String2.ERROR + " in Test.ensureSomthingUnicode():\n" + 
+            error("\n" + String2.ERROR + " in Test.ensureSomethingUnicode():\n" + 
                 message + " has an invalid Unicode character (#" + 
                 (int)s.charAt(po) + ") at position=" + po + 
                 (po > 80? 
@@ -878,7 +878,7 @@ public class Test {
      * @param title
      * @param t  a related throwable
      */
-    public static void knownProblem(String title, Throwable t) throws Exception {
+    public static void knownProblem(String title, Throwable t) throws RuntimeException {
         knownProblem(title, MustBe.throwableToString(t));
     }
 
@@ -890,8 +890,12 @@ public class Test {
      * @param msg
      * @param t  a related throwable
      */
-    public static void knownProblem(String title, String msg, Throwable t) throws Exception {
+    public static void knownProblem(String title, String msg, Throwable t) throws RuntimeException {
         knownProblem(title, msg + "\n" + MustBe.throwableToString(t));
+    }
+
+    public static void knownProblem(String title) throws Exception {
+        knownProblem(title, "");
     }
 
     /** 
@@ -901,7 +905,7 @@ public class Test {
      * @param title usually all caps
      * @param msg
      */
-    public static void knownProblem(String title, String msg) throws Exception {
+    public static void knownProblem(String title, String msg) throws RuntimeException {
         throw new RuntimeException( 
             msg + /* String2.beep(1) + */ "\n" +
             (msg.endsWith("\n")? "" : "\n") + 

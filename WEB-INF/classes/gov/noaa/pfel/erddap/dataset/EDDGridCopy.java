@@ -888,9 +888,8 @@ expected =
             //  */
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\nThis EDDGridCopy test only works on Bob's computer." +
-                "\n" + MustBe.throwableToString(t)); 
+            throw new RuntimeException(
+                "This EDDGridCopy test only works on Bob's computer.", t); 
         }
 
         defaultCheckSourceData = true;

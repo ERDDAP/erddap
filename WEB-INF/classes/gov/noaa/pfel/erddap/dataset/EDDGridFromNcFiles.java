@@ -3049,7 +3049,6 @@ tsvExpected;
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        try {
 
         //generateDatasetsXml
         
@@ -3233,9 +3232,6 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
     }
 
     /**
@@ -3255,7 +3251,6 @@ expected =
             "geosgrib/multi_1.glo_30m.all.grb2", "-h"));
 
         //generateDatasetsXml
-        try {   
         String id = "testGrib2_42";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
@@ -3754,9 +3749,6 @@ expected=
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
     }
 
     /**
@@ -3771,7 +3763,6 @@ expected=
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        try {
 
         //generateDatasetsXml
         
@@ -3873,7 +3864,6 @@ today;
 
 //+ " (local files)\n" +
 //today + 
-try {
 expected = 
 "http://localhost:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
@@ -3902,14 +3892,11 @@ expected =
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-            int tPo = results.indexOf(expected.substring(0, 17));
-            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-                expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -3960,9 +3947,6 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
     }
 
     /**
@@ -6724,6 +6708,8 @@ expected =
         //2018-08-08 used to work with /catalog/. Now needs /fileServer/
         String dir = "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/"; //catalog.html
 
+if (true) Test.knownProblem("2020-10-26 This needs a new test url. The current one is unreliable: " + dir);
+
       try {
         //dir  is a /thredds/catalog/.../  [implied catalog.html] URL!
         //file is a /thredds/fileServer/... not compressed data file.
@@ -6900,12 +6886,13 @@ String2.setClipboardString(results);
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles() finished successfully\n");
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+            throw new RuntimeException("Unexpected error", 
                 //"\n2018-06-20 FIXED ?! \n" +
                 //"2016-02-29 This started failing with netcdf-java 4.6.4 with\n" +
                 //"message about End of File at position 20.\n" +
                 //"I reported to netcdf-java github BugTracker,\n" +
-                //"but they aren't interested in pursuing if I'm not."); 
+                //"but they aren't interested in pursuing if I'm not."
+                t); 
         }        
   
     }
@@ -10824,7 +10811,7 @@ expected =
             for (int i = 0; i < 1000000; i++) {
                 try {
                     EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
-                    String2.pressEnterToContinue("Shouldn't get here!");
+                    throw new RuntimeException("Shouldn't get here!");
                 } catch (Throwable t) {
                     //expected
                     if (i == 0) 
@@ -14058,7 +14045,7 @@ expected =
 "2009-10-10T12:00:00Z,0.0,30.0,330.0,-0.0355719\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
-            String msg = "nThreads=" + Math.abs(nt) + " time=" + (System.currentTimeMillis() - tTime) + "\n";
+            String msg = "nThreads=" + Math.abs(nt) + " time=" + (System.currentTimeMillis() - tTime) + "ms\n";
             String2.log(msg);
             bigResults.append(msg);
         }
@@ -14349,6 +14336,9 @@ expected =
                     if (test == 10) testCopyFiles(true);  //deleteDataFiles  //does require localhost erddap
                     if (test == 11) testCopyFiles(false); //uses cachePartialPathRegex  //doesn't require localhost erddap
 
+                    //not usually run
+                    //if (test == 1000) testQuickRestart2();
+
                 } else {
                     if (test ==  0) testNc(deleteCachedDatasetInfo);
                     if (test ==  1) testCwHdf(deleteCachedDatasetInfo);
@@ -14407,9 +14397,6 @@ expected =
                     if (test == 52 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
                     if (test == 53 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
                     if (test == 54 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
-
-                    //not usually run
-                    //if (test == 1000) testQuickRestart2();
 
                     //NOT FINISHED
                     //none
