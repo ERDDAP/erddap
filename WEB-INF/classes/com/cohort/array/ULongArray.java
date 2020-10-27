@@ -1600,7 +1600,6 @@ public class ULongArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** ULongArray.basicTest");
-/* for releases, this line should have open/close comment */
         ULongArray anArray;
 
         Test.ensureEqual(pack(new BigInteger("" + (               0L  ))),                                       0, "");

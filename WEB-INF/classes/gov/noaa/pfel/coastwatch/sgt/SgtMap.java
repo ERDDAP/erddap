@@ -43,6 +43,9 @@ import java.io.File;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -1970,7 +1973,10 @@ public class SgtMap  {
         String fullTopoFileName = fullPrivateDirectory + topoFileName + ".grd";
 
         //synchronize on canonical topoFileName, so >1 simultaneous request won't be duplicated
-        synchronized(topoFileName) {
+        ReentrantLock lock = String2.canonicalLock(topoFileName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock on topoFileName in SgtMap.");
+        try {
 
             //these get reused a lot, so cache them
             //does the file already exist?
@@ -2027,6 +2033,8 @@ public class SgtMap  {
                 " nFromCache=" + topoFromCache + " nNotFromCache=" + topoNotFromCache + "*");
 
             return grid;
+        } finally {
+            lock.unlock();
         }
     }
 

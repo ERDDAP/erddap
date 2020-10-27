@@ -1424,7 +1424,6 @@ public class DoubleArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** DoubleArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         DoubleArray anArray = DoubleArray.fromCSV(-Double.MAX_VALUE + ", " + Double.MAX_VALUE + ", , NaN, 1e400 ");
         Test.ensureEqual(anArray.toString(),         "-1.7976931348623157E308, 1.7976931348623157E308, NaN, NaN, NaN", "");

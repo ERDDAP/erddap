@@ -951,9 +951,9 @@ public class File2 {
      * @throws Exception if trouble
      */
     public static String hexDump(String fullFileName, int nBytes) throws Exception {
-        InputStream fis = File2.getDecompressedBufferedInputStream(fullFileName);
+        InputStream fis = getDecompressedBufferedInputStream(fullFileName);
         try {
-            nBytes = Math.min(nBytes, fis.available());
+            nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); //max 2GB
             byte ba[] = new byte[nBytes];
             int bytesRead = 0;
             while (bytesRead < nBytes)

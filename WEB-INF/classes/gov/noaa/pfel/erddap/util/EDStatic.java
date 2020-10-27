@@ -58,6 +58,9 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -169,7 +172,7 @@ public class EDStatic {
      * <br>2.00 released on 2019-06-26
      * <br>2.01 released on 2019-07-02
      * <br>2.02 released on 2019-08-21
-     * <br>2.10 released ... (version jump because of new PATypes)
+     * <br>2.10 released on 2020-10-27 (version jump because of new PATypes)
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -500,6 +503,10 @@ public static boolean developmentMode = false;
         EDDGridDataTimeExampleHA,
         EDDGridGraphExampleHA,
         EDDGridMapExampleHA,
+
+        EDDTableFromHttpGetDatasetDescription,
+        EDDTableFromHttpGetAuthorDescription,
+        EDDTableFromHttpGetTimestampDescription,
 
         //the unencoded EDDTable...Example attributes
         EDDTableErddapUrlExample,
@@ -2227,24 +2234,24 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDGridMapExampleHA        = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridMapExample)); 
 
 
-        EDDTableConstraints        = messages.getNotNothingString("EDDTableConstraints",        errorInMethod);
-        EDDTableDapDescription     = messages.getNotNothingString("EDDTableDapDescription",     errorInMethod);
-        EDDTableDapLongDescription = messages.getNotNothingString("EDDTableDapLongDescription", errorInMethod);
-        EDDTableDownloadDataTooltip  =messages.getNotNothingString("EDDTableDownloadDataTooltip",   errorInMethod);
-        EDDTableTabularDatasetTooltip=messages.getNotNothingString("EDDTableTabularDatasetTooltip", errorInMethod);
-        EDDTableVariable           = messages.getNotNothingString("EDDTableVariable",           errorInMethod);
-        EDDTableCheckAll           = messages.getNotNothingString("EDDTableCheckAll",           errorInMethod);
-        EDDTableCheckAllTooltip    = messages.getNotNothingString("EDDTableCheckAllTooltip",    errorInMethod);
-        EDDTableUncheckAll         = messages.getNotNothingString("EDDTableUncheckAll",         errorInMethod);
-        EDDTableUncheckAllTooltip  = messages.getNotNothingString("EDDTableUncheckAllTooltip",  errorInMethod);
-        EDDTableMinimumTooltip     = messages.getNotNothingString("EDDTableMinimumTooltip",     errorInMethod);
-        EDDTableMaximumTooltip     = messages.getNotNothingString("EDDTableMaximumTooltip",     errorInMethod);
-        EDDTableCheckTheVariables  = messages.getNotNothingString("EDDTableCheckTheVariables",  errorInMethod);
-        EDDTableSelectAnOperator   = messages.getNotNothingString("EDDTableSelectAnOperator",   errorInMethod);
-        EDDTableFromEDDGridSummary = messages.getNotNothingString("EDDTableFromEDDGridSummary", errorInMethod);
-        EDDTableOptConstraint1Html = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
-        EDDTableOptConstraint2Html = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
-        EDDTableOptConstraintVar   = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
+        EDDTableConstraints             = messages.getNotNothingString("EDDTableConstraints",        errorInMethod);
+        EDDTableDapDescription          = messages.getNotNothingString("EDDTableDapDescription",     errorInMethod);
+        EDDTableDapLongDescription      = messages.getNotNothingString("EDDTableDapLongDescription", errorInMethod);
+        EDDTableDownloadDataTooltip     = messages.getNotNothingString("EDDTableDownloadDataTooltip",   errorInMethod);
+        EDDTableTabularDatasetTooltip   = messages.getNotNothingString("EDDTableTabularDatasetTooltip", errorInMethod);
+        EDDTableVariable                = messages.getNotNothingString("EDDTableVariable",           errorInMethod);
+        EDDTableCheckAll                = messages.getNotNothingString("EDDTableCheckAll",           errorInMethod);
+        EDDTableCheckAllTooltip         = messages.getNotNothingString("EDDTableCheckAllTooltip",    errorInMethod);
+        EDDTableUncheckAll              = messages.getNotNothingString("EDDTableUncheckAll",         errorInMethod);
+        EDDTableUncheckAllTooltip       = messages.getNotNothingString("EDDTableUncheckAllTooltip",  errorInMethod);
+        EDDTableMinimumTooltip          = messages.getNotNothingString("EDDTableMinimumTooltip",     errorInMethod);
+        EDDTableMaximumTooltip          = messages.getNotNothingString("EDDTableMaximumTooltip",     errorInMethod);
+        EDDTableCheckTheVariables       = messages.getNotNothingString("EDDTableCheckTheVariables",  errorInMethod);
+        EDDTableSelectAnOperator        = messages.getNotNothingString("EDDTableSelectAnOperator",   errorInMethod);
+        EDDTableFromEDDGridSummary      = messages.getNotNothingString("EDDTableFromEDDGridSummary", errorInMethod);
+        EDDTableOptConstraint1Html      = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
+        EDDTableOptConstraint2Html      = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
+        EDDTableOptConstraintVar        = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
         EDDTableNumericConstraintTooltip= messages.getNotNothingString("EDDTableNumericConstraintTooltip", errorInMethod);
         EDDTableStringConstraintTooltip = messages.getNotNothingString("EDDTableStringConstraintTooltip",  errorInMethod);
         EDDTableTimeConstraintTooltip   = messages.getNotNothingString("EDDTableTimeConstraintTooltip",    errorInMethod);
@@ -2262,9 +2269,9 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDTableMapExample         = messages.getNotNothingString("EDDTableMapExample",         errorInMethod);
         EDDTableMatlabPlotExample  = messages.getNotNothingString("EDDTableMatlabPlotExample",  errorInMethod);
 
-        EDDTableFromHttpGet.DATASET_DESCRIPTION   = messages.getNotNothingString("EDDTableFromHttpGetDescription", errorInMethod);
-        EDDTableFromHttpGet.AUTHOR_DESCRIPTION    = messages.getNotNothingString("EDDTableFromHttpGetAuthor",      errorInMethod);
-        EDDTableFromHttpGet.TIMESTAMP_DESCRIPTION = messages.getNotNothingString("EDDTableFromHttpGetTimestamp",   errorInMethod);
+        EDDTableFromHttpGetDatasetDescription   = messages.getNotNothingString("EDDTableFromHttpGetDatasetDescription",   errorInMethod);
+        EDDTableFromHttpGetAuthorDescription    = messages.getNotNothingString("EDDTableFromHttpGetAuthorDescription",    errorInMethod);
+        EDDTableFromHttpGetTimestampDescription = messages.getNotNothingString("EDDTableFromHttpGetTimestampDescription", errorInMethod);
 
         //admin provides EDDGrid...Example
         EDDTableErddapUrlExample   = setup.getString("EDDTableErddapUrlExample",   EDDTableErddapUrlExample);
@@ -3632,7 +3639,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append("Response Succeeded Time (since startup)                 ");
         sb.append(String2.getBriefDistributionStatistics(responseTimesDistributionTotal) + "\n");
 
-        synchronized(taskList) { //all task-related things synch on taskList
+        synchronized(taskList) {
             ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
             long tElapsedTime = taskThread == null? -1 : taskThread.elapsedTime();
             sb.append("TaskThread has finished " + (lastFinishedTask + 1) + " out of " + 
@@ -3641,6 +3648,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                    "Currently, no task is running.\n" : 
                    "The current task has been running for " + Calendar2.elapsedTimeString(tElapsedTime) + ".\n"));
         }
+
         sb.append("TaskThread Failed    Time (since last Daily Report)     ");
         sb.append(String2.getBriefDistributionStatistics(taskThreadFailedDistribution24) + "\n");
         sb.append("TaskThread Failed    Time (since startup)               ");
@@ -4193,7 +4201,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *    If false, taskThread will be null.
      */
     public static boolean isTaskThreadRunning() {
-        synchronized(taskList) { //all task-related things synch on taskList
+        synchronized(taskList) {
             if (taskThread == null)
                 return false;
 
@@ -4230,30 +4238,28 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     /** 
-     * This ensures the task thread is running if there are tasks to do
+     * This ensures the task thread is running if there are tasks to do.
+     * This won't throw an exception.
      */
     public static void ensureTaskThreadIsRunningIfNeeded() {
-        synchronized(taskList) { //all task-related things synch on taskList
-            try {
-                //this checks if it is running and not stalled
-                if (isTaskThreadRunning())
-                    return;
-                
-                //taskThread isn't running
-                //Are there no tasks to do? 
-                int nPending = taskList.size() - nextTask;
-                if (nPending <= 0) 
-                    return; //no need to start it
+        synchronized(taskList) {
+            //this checks if it is running and not stalled
+            if (isTaskThreadRunning())
+                return;
+            
+            //taskThread isn't running
+            //Are there no tasks to do? 
+            int nPending = taskList.size() - nextTask;
+            if (nPending <= 0) 
+                return; //no need to start it
 
-                //need to start a new taskThread
-                taskThread = new TaskThread(nextTask);
-                runningThreads.put(taskThread.getName(), taskThread); 
-                String2.log("\n*** new taskThread started at " + 
-                    Calendar2.getCurrentISODateTimeStringLocalTZ() + " nPendingTasks=" + nPending + "\n");
-                taskThread.start();
-                return;            
-            } catch (Throwable t) {
-            }
+            //need to start a new taskThread
+            taskThread = new TaskThread(nextTask);
+            runningThreads.put(taskThread.getName(), taskThread); 
+            String2.log("\n*** new taskThread started at " + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + " nPendingTasks=" + nPending + "\n");
+            taskThread.start();
+            return;            
         }
     }
 
@@ -4270,7 +4276,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *   or -1 if it was a duplicate task.
      */
     public static int addTask(Object taskOA[]) {
-        synchronized(taskList) { //all task-related things synch on taskList
+        synchronized(taskList) {
 
             //Note that all task creators check that
             //   EDStatic.lastFinishedTask >= lastAssignedTask(datasetID).  I.E., tasks are all done,
@@ -4561,7 +4567,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static Object[] luceneIndexSearcher() {
 
         //synchronize 
-        synchronized (luceneIndexReaderLock) {
+        synchronized(luceneIndexReaderLock) {
 
             //need a new indexReader?
             //(indexReader is thread-safe, but only need one)
@@ -4645,7 +4651,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         //queryParser is not thread-safe, so re-use it in a synchronized block
         //(It is fast, so synchronizing on one parser shouldn't be a bottleneck.
-        synchronized (luceneQueryParser) {
+        synchronized(luceneQueryParser) {
 
             try {
                 //long qTime = System.currentTimeMillis();

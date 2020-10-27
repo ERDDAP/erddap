@@ -27,6 +27,9 @@ import java.awt.Graphics;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
@@ -668,11 +671,14 @@ public class CompoundColorMap extends ColorMap {
         String paletteID = palette + "_" + scale + "_" + 
             String2.genEFormat6(minData) + "_" + String2.genEFormat6(maxData) + "_" + 
             nSections + "_" + continuous;
-        String fullResultCpt = resultDir + paletteID + ".cpt";
+        String fullResultCpt = String2.canonical(resultDir + paletteID + ".cpt");
 
         //thread-safe creation of the file 
         //(If there are almost simultaneous requests for the same one, only one thread will make it.)
-        synchronized(String2.canonical(fullResultCpt)) {
+        ReentrantLock lock = String2.canonicalLock(fullResultCpt);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock on CompoundColorMap fullResultCpt.");
+        try {
         
             //result file already exists?
             if (File2.touch(fullResultCpt)) {
@@ -830,6 +836,8 @@ public class CompoundColorMap extends ColorMap {
             File2.renameIfNewDoesntExist(fullResultCpt + randomInt, fullResultCpt); 
 
             return fullResultCpt;
+        } finally {
+            lock.unlock();
         }
 
     }

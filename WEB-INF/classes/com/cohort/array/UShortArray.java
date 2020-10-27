@@ -1601,7 +1601,6 @@ public class UShortArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** UShortArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         Test.ensureEqual(pack(     0),      0, "");
         Test.ensureEqual(pack( 32767),  32767, "");

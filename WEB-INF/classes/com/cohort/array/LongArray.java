@@ -1426,7 +1426,6 @@ public class LongArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** LongArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         //smallest long and biggest long which can round-trip to double:
         //9007199254740992 (~9e15) see https://www.mathworks.com/help/matlab/ref/flintmax.html

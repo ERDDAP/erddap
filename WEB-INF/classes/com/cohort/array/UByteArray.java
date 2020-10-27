@@ -1677,7 +1677,6 @@ public class UByteArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable {
         String2.log("*** UByteArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         byte b;
         short s;

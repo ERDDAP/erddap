@@ -40,6 +40,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 import java.text.MessageFormat;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 /** 
  * This class represents a grid dataset with Etopo bathymetry data.
@@ -299,10 +302,13 @@ public class EDDGridFromEtopo extends EDDGrid {
             //thread-safe creation of etopo grid.
             //If there are almost simultaneous requests for the same one, 
             //only one thread will make it.
-            //canonical is important for proper functioning of synchronized().
+            //canonical is important for proper functioning of canonicalLock().
             String cacheName = String2.canonical(cacheDirectory() +
                 String2.replaceAll(tConstraints.toString(), ", ", "_") + ".short");
-            synchronized(cacheName) {
+            ReentrantLock lock = String2.canonicalLock(cacheName);
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock on EDDGridFromEtopo cacheName.");
+            try {
 
                 //read from cache?
                 if (File2.isFile(cacheName)) {
@@ -366,6 +372,8 @@ public class EDDGridFromEtopo extends EDDGrid {
                 }
 
                 return results;
+            } finally {
+                lock.unlock();
             }
 
 
@@ -516,7 +524,6 @@ public class EDDGridFromEtopo extends EDDGrid {
     public static void testBasic(boolean doGraphicsTests) throws Throwable {
 
         String2.log("\n****************** EDDGridFromEtopo.test() *****************\n");
-/* for releases, this line should have open/close comment */
         verbose = true;
         reallyVerbose = true;
         GridDataAccessor.verbose = true;

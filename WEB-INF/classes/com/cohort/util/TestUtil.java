@@ -18,6 +18,7 @@ import java.io.Writer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.locks.Lock;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -1707,7 +1708,7 @@ public class TestUtil {
             bar = String2.stringToUtf8Bytes(os);
         }
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 250, 
+        Test.ensureTrue(time <= 270, 
             "Too slow!  Time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
 
         time = System.currentTimeMillis();
@@ -1715,8 +1716,8 @@ public class TestUtil {
             s = String2.utf8BytesToString(bar);
         }
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 200, 
-            "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 156)");
+        Test.ensureTrue(time <= 270, 
+            "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 203)");
 
         s = String2.stringToUtf8String(os);
         Test.ensureEqual(String2.annotatedString(s), 
@@ -2109,6 +2110,26 @@ public class TestUtil {
         Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "bb", "b", true).toString(), "AbabaB", "");
         sb = new StringBuilder("AbBbBaBBaB");
         Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "c",  "c", true).toString(), "AbBbBaBBaB", "");
+
+        //canonical
+        s = "twopart";
+        String s2 = "two";
+        s2 += "part";
+        Test.ensureEqual(s == s2, false, "first test");
+        s = String2.canonical(s);
+        s2 = String2.canonical(s2);
+        Test.ensureEqual(s == s2, true, "second test");
+
+        //canonicalLock
+        s = "twopart";
+        s2 = "two";
+        Lock lock1 = String2.canonicalLock(s);
+        Lock lock2 = String2.canonicalLock(s2 + "part");
+        Test.ensureEqual(lock1 == lock2, true, "first test");
+        lock1 = String2.canonicalLock(String2.canonical(s));
+        lock2 = String2.canonicalLock(String2.canonical(s2 + "part"));
+        Test.ensureEqual(lock1 == lock2, true, "second test");
+
 
         //combine spaces
         String2.log("test combineSpaces");
@@ -6576,30 +6597,25 @@ expected =
      */
     public static void testString2canonical2() throws Exception {
         String2.log("\n*** TestUtil.testString2canonical2()");
-        try {
-            String sar[] = new String[127];
+        String sar[] = new String[127];
 
-            //what is initial memory level?
-            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
-            long oMem = Math2.getMemoryInUse();
+        //what is initial memory level?
+        Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
+        long oMem = Math2.getMemoryInUse();
 
-            //just store first 5 chars large strings
-            for (int i = 32; i < 127; i++) {
-                String s = String2.makeString((char)i, 900000);
-                sar[i] = String2.canonical(s.substring(0, 5)); 
-            }            
+        //just store first 5 chars large strings
+        for (int i = 32; i < 127; i++) {
+            String s = String2.makeString((char)i, 900000);
+            sar[i] = String2.canonical(s.substring(0, 5)); 
+        }            
 
-            //what is final memory level?
-            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
-            long cMem = Math2.getMemoryInUse();
-            String2.log("oMem=" + oMem + "\n" +
-                        "cMem=" + cMem + "\n");
-            Test.ensureTrue(cMem - oMem < 100000, 
-                "canonical(substring(s,,)) is storing references to the parent string!!!");       
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "Unexpected TestUtil.testString2canonical2() error:"); 
-        }
+        //what is final memory level?
+        Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
+        long cMem = Math2.getMemoryInUse();
+        String2.log("oMem=" + oMem + "\n" +
+                    "cMem=" + cMem + "\n");
+        Test.ensureTrue(cMem - oMem < 100000, 
+            "canonical(substring(s,,)) is storing references to the parent string!!!");       
     }
 
     /** Test the speed of writing to hard drive. Does it block? No */

@@ -470,24 +470,24 @@ public class OpendapHelper  {
      */
     public static PrimitiveArray[] getPrimitiveArrays(DConnect dConnect, String query) 
             throws Exception {
-        long time = System.currentTimeMillis();
-        StringBuilder sb = new StringBuilder(query);
-        String2.replaceAll(sb, "[", "%5B"); 
-        String2.replaceAll(sb, "]", "%5D"); 
-        query = sb.toString();
-        if (verbose)
-            String2.log("    OpendapHelper.getPrimitiveArrays " + query
-            //+ "\n" + MustBe.stackTrace()
-            );
-        DataDDS dataDds = dConnect.getData(query, null);
-        if (verbose)
-            String2.log("    OpendapHelper.getPrimitiveArrays done. TIME=" + 
-                (System.currentTimeMillis() - time) + "ms");      
-        BaseType bt = (BaseType)dataDds.getVariables().nextElement(); //first element is always main array
         try {
+            long time = System.currentTimeMillis();
+            StringBuilder sb = new StringBuilder(query);
+            String2.replaceAll(sb, "[", "%5B"); 
+            String2.replaceAll(sb, "]", "%5D"); 
+            query = sb.toString();
+            if (verbose)
+                String2.log("    OpendapHelper.getPrimitiveArrays " + query
+                //+ "\n" + MustBe.stackTrace()
+                );
+            DataDDS dataDds = dConnect.getData(query, null);
+            if (verbose)
+                String2.log("    OpendapHelper.getPrimitiveArrays done. TIME=" + 
+                    (System.currentTimeMillis() - time) + "ms");      
+            BaseType bt = (BaseType)dataDds.getVariables().nextElement(); //first element is always main array
             return getPrimitiveArrays(bt);
         } catch (Exception e) {
-            throw new RuntimeException(String2.ERROR + " in getPrimitiveArrays query=" + query + "\n" +
+            throw new RuntimeException(String2.ERROR + " in getPrimitiveArrays for query=" + query + "\n" +
                 e.getMessage());
         }
 
@@ -1252,18 +1252,12 @@ public class OpendapHelper  {
         //2018-09-13 https: works in browser by not yet in Java. 2019-06-28 https works in Java
         url = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + url);
-        try {
-            dConnect = new DConnect(url, true, 1, 1);
-            dds = dConnect.getDDS(DEFAULT_TIMEOUT);
-            results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
-            expected = 
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+        expected = 
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
-            Test.ensureEqual(results, expected, "results=" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) +
-                "Fix this someday: Expected error (server timed out 2013-10-24, then connection cannot be opened 2019-11-25)");
-        }
+        Test.ensureEqual(results, expected, "results=" + results);
 
 
         //***** test of DGrid DAP dataset
@@ -1277,7 +1271,7 @@ public class OpendapHelper  {
         Test.ensureEqual(results, expected, "results=" + results);
 
         //***** test of NODC template dataset
-        try {
+/** 2020-10-26 disabled because source is unreliable 
         String2.log("\n*** test of NODC template dataset");
         url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
         dConnect = new DConnect(url, true, 1, 1);
@@ -1289,10 +1283,7 @@ public class OpendapHelper  {
 "conductivity_qc, turbidity_qc, fluorescence_qc, instrument1, instrument2, " +
 "instrument3, ht_wgs84, ht_mllw, crs";
         Test.ensureEqual(results, expected, "results=" + results);
-        } catch (Exception e) {
-            String2.log("2018-06-18 file gone? server down? server decommissioned? ");
-            String2.pressEnterToContinue();
-        }
+*/
 
         //***** test of sequence dataset  (no vars should be found
         String2.log("\n*** test of sequence dataset");
@@ -1319,7 +1310,6 @@ public class OpendapHelper  {
      * @param fullFileName the complete name (dir+name+extension) for the .nc file
      */
     public static void allDapToNc(String dapUrl, String fullFileName) throws Throwable {
-
 
         String beginError = "OpendapHelper.allDapToNc" +
             "\n  url=" + dapUrl + 
@@ -1584,29 +1574,26 @@ public class OpendapHelper  {
         String fileName;
         String url, results, expected;
 
+        if (true) Test.knownProblem("2020-10-22 OpendapHelper.allDapToNc is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
+
         if (whichTests == -1 || whichTests == 0) {
-            try {
-                //this tests numeric scalars, and  numeric and String 1D arrays
-                fileName = "pointKachemakBay.nc";
-                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
-                allDapToNc(url, dir + fileName);
-                results = NcHelper.dds(dir + fileName);
-                String2.log(results);
-                //expected = "zztop";
-                //Test.ensureEqual(results, expected, "");
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
+            //this tests numeric scalars, and  numeric and String 1D arrays
+            fileName = "pointKachemakBay.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
+            allDapToNc(url, dir + fileName);
+            results = NcHelper.dds(dir + fileName);
+            String2.log(results);
+            //expected = "zztop";
+            //Test.ensureEqual(results, expected, "");
         }
 
         if (whichTests == -1 || whichTests == 1) {
-            try {
-                //this tests numeric and String scalars, and  numeric 1D arrays
-                fileName = "timeSeriesBodegaMarineLabBuoy.nc";
-                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
-                allDapToNc(url, dir + fileName);
-                results = NcHelper.dds(dir + fileName);
-                expected = 
+            //this tests numeric and String scalars, and  numeric 1D arrays
+            fileName = "timeSeriesBodegaMarineLabBuoy.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
+            allDapToNc(url, dir + fileName);
+            results = NcHelper.dds(dir + fileName);
+            expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesBodegaMarineLabBuoy.nc {\n" +
 "  dimensions:\n" +
 "    time = 63242;\n" +
@@ -1634,21 +1621,17 @@ public class OpendapHelper  {
 "    int crs;\n" +
 "  // global attributes:\n" +
 "}\n";
-                Test.ensureEqual(results, expected, "results=\n" + results);
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
+            Test.ensureEqual(results, expected, "results=\n" + results);
         }
 
         if (whichTests == -1 || whichTests == 2) {
-            try {
-                //this tests numeric scalars, and    grids
-                fileName = "trajectoryAoml_tsg.nc";
-                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
-                allDapToNc(url, dir + fileName);
-                results = NcHelper.dds(dir + fileName);
-                String2.log(results);
-                expected = 
+            //this tests numeric scalars, and    grids
+            fileName = "trajectoryAoml_tsg.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
+            allDapToNc(url, dir + fileName);
+            results = NcHelper.dds(dir + fileName);
+            String2.log(results);
+            expected = 
 "netcdf c:/data/nodcTemplates/trajectoryAoml_tsg.nc {\n" +
 "  dimensions:\n" +
 "    trajectory = 1;\n" +
@@ -1682,22 +1665,18 @@ public class OpendapHelper  {
 "    byte crs(trajectory=1);\n" +
 "  // global attributes:\n" +
 "}\n";
-                Test.ensureEqual(results, expected, "");
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
+            Test.ensureEqual(results, expected, "");
         }
 
 
         if (whichTests == -1 || whichTests == 3) {
-            try {
-                //this tests numeric scalars, and   byte/numeric arrays
-                fileName = "trajectoryJason2_satelliteAltimeter.nc";
-                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
-                allDapToNc(url, dir + fileName);
-                results = NcHelper.dds(dir + fileName);
-                String2.log(results);
-                expected = 
+            //this tests numeric scalars, and   byte/numeric arrays
+            fileName = "trajectoryJason2_satelliteAltimeter.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
+            allDapToNc(url, dir + fileName);
+            results = NcHelper.dds(dir + fileName);
+            String2.log(results);
+            expected = 
 "netcdf c:/data/nodcTemplates/trajectoryJason2_satelliteAltimeter.nc {\n" +
 "  dimensions:\n" +
 "    trajectory = 1;\n" +
@@ -1721,10 +1700,7 @@ public class OpendapHelper  {
 "    short ssha(trajectory=1, obs=3);\n" +
 "  // global attributes:\n" +
 "}\n";
-                Test.ensureEqual(results, expected, "");
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
+            Test.ensureEqual(results, expected, "");
         }
 
 /*        if (whichTests == -1 || whichTests == 4) {
@@ -1749,14 +1725,13 @@ public class OpendapHelper  {
         }
 */
         if (whichTests == -1 || whichTests == 5) {
-            try {
-                //this tests numeric scalars, and numeric arrays
-                fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
-                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
-                allDapToNc(url, dir + fileName);
-                results = NcHelper.dds(dir + fileName);
-                String2.log(results);
-                expected = 
+            //this tests numeric scalars, and numeric arrays
+            fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
+            allDapToNc(url, dir + fileName);
+            results = NcHelper.dds(dir + fileName);
+            String2.log(results);
+            expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesProfileUsgs_internal_wave_timeSeries.nc {\n" +
 "  dimensions:\n" +
 "    station = 1;\n" +
@@ -1778,10 +1753,7 @@ public class OpendapHelper  {
 "    int crs;\n" +
 "  // global attributes:\n" +
 "}\n";
-                Test.ensureEqual(results, expected, "");
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
+            Test.ensureEqual(results, expected, "");
         }
 
 //currently no trajectoryProfile example
@@ -3073,7 +3045,7 @@ expected2 =
                     if (test ==  3) testFindVarsWithSharedDimensions();
                     if (test ==  4) testFindAllScalarOrMultiDimVars();
                     if (test ==  5) testDapToNcDGrid();
-                    if (test ==  6) testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
+                    if (test ==  6) testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test   
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

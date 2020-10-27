@@ -44,6 +44,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,20 +73,6 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     public final static byte INSERT_COMMAND = 0;
     public final static byte DELETE_COMMAND = 1;
     public final static String NO_PROCESS_COMMANDS[] = {">", ">=", "="};
-
-    public static String DATASET_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
-        "This is an unusual dataset in that the data files are actually log files. " +
-        "Normally, when you request data from this dataset, " +
-        "ERDDAP processes the insert (comand=0) and delete (command=1) commands " +
-        "in the log files to return data from the current version of this dataset. " +
-        "However, if you make a request which includes &timestamp<= , " +
-        "then ERDDAP will return the dataset as it was at that point in time. " +
-        "Or, if you make a request which includes &timestamp> (or >= or =), " +
-        "e.g., &timestamp>0, then ERDDAP will return the raw data from the log files.";
-    public static String AUTHOR_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
-        "The values in this column identify the author who added each row of data to the dataset.";
-    public static String TIMESTAMP_DESCRIPTION = //not final because EDStatic replaces it with info from messages.xml
-        "The values in this column are added by ERDDAP to identify when each row of data was added to the data file.";
 
     public final static String  NUMERIC_TIMESTAMP_REGEX = "numericTimestamp\":(\\d\\.\\d{2,12}E9),?\\n";
     public final static Pattern NUMERIC_TIMESTAMP_PATTERN = Pattern.compile(NUMERIC_TIMESTAMP_REGEX);
@@ -412,9 +401,14 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         Table table = new Table();
         //synchronized: don't read from file during a file write in insertOrDelete
         fullFileName = String2.canonical(fullFileName);
-        synchronized (fullFileName) {  //fullFileName is canonical: from ArrayString, so good to synchronize on
+        ReentrantLock lock = String2.canonicalLock(fullFileName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
+        try {
             //but probably not too bad if in middle of write
             table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
+        } finally {
+            lock.unlock();
         }
         //String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
         //table.saveAsDDS(System.out, "s");
@@ -1075,7 +1069,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 //There were rare problems when writing to file with 4+ threads
                 //  before switching to this system of full prep, then full write.
                 fullFileName = String2.canonical(fullFileName);
-                synchronized (fullFileName) { //it is canonical, so synchronizing on it works across threads
+                ReentrantLock lock = String2.canonicalLock(fullFileName);
+                if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                    throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
+                try {
                     BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(fullFileName, !fileIsNew)); //append?  
                     try {
                         fos.write(bar, 0, bar.length);  //entire write in 1 low level command
@@ -1087,6 +1084,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                             MustBe.throwableToString(e));
                         throw e;
                     }
+                } finally {
+                    lock.unlock();
                 }
 
                 //adjust min/max in fileTable
@@ -1151,7 +1150,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     }
 
                     //save statistics to fileTable
-                    synchronized (fileTable) {
+                    ReentrantLock lock2 = String2.canonicalLock(fileTable);
+                    if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                        throw new TimeoutException("Timeout waiting for lock on fileTable in EDDTableFromHttpGet.");
+                    try {
                         String fileDir  = File2.getDirectory(fullFileName);
                         String fileName = File2.getNameAndExtension(fullFileName);
 
@@ -1256,7 +1258,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                         }
                         fileTable.getColumn(FT_LAST_MOD_COL).setLong(fileTableRow, tLastMod);
                         fileTable.getColumn(FT_SIZE_COL    ).setLong(fileTableRow, tLength);
-                    } //end synchronized(fileTable)
+                    } finally {
+                        lock2.unlock();
+                    }
                 } 
 
 
@@ -1270,7 +1274,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             }
         }
 
-        //Don't ever change any of this (except adding somthing new to the end). 
+        //Don't ever change any of this (except adding something new to the end). 
         //Clients rely on it.
         return "{\n" +
             "\"status\":\"success\",\n" +
@@ -1832,16 +1836,17 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 destPA = new DoubleArray(sourcePA);
             } else if (colName.equals("timestamp")) {
                 destAtts.add("comment", 
-                    TIMESTAMP_DESCRIPTION + " " + EDStatic.note + " " + DATASET_DESCRIPTION);
+                    EDStatic.EDDTableFromHttpGetTimestampDescription + " " + EDStatic.note + " " + 
+                    EDStatic.EDDTableFromHttpGetDatasetDescription);
                 destAtts.add("units", Calendar2.SECONDS_SINCE_1970);
                 destAtts.add("time_precision", "1970-01-01T00:00:00.000Z");
                 destPA = new DoubleArray(sourcePA);
             } else if (colName.equals("author")) {
-                destAtts.add("comment", AUTHOR_DESCRIPTION);
+                destAtts.add("comment", EDStatic.EDDTableFromHttpGetAuthorDescription);
                 destAtts.add("ioos_category", "Identifier");
                 destPA = new StringArray(sourcePA);
             } else if (colName.equals("command")) {
-                destAtts.add("comment", DATASET_DESCRIPTION);
+                destAtts.add("comment", EDStatic.EDDTableFromHttpGetDatasetDescription);
                 destAtts.add("flag_values", new byte[]{0, 1});
                 destAtts.add("flag_meanings", "insert delete");
                 destAtts.add("ioos_category", "Other");
@@ -1902,7 +1907,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String ttSummary = getAddOrSourceAtt(addGlobalAtts, dataSourceTable.globalAttributes(), 
             "summary", "");
         addGlobalAtts.set("summary", String2.ifSomethingConcat(
-            ttSummary, "\n\n", EDStatic.note + " " + DATASET_DESCRIPTION));
+            ttSummary, "\n\n", EDStatic.note + " " + EDStatic.EDDTableFromHttpGetDatasetDescription));
         if (String2.isSomething(tHttpGetRequiredVariables))  {
             StringArray sa = StringArray.fromCSV(tHttpGetRequiredVariables);
             if (sa.size() > 0)
@@ -1970,33 +1975,32 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String dataDir = "/u00/data/points/testFromHttpGet/";
         String sampleFile = dataDir + "testFromHttpGet.jsonl";
 
-        try {
-            String results = generateDatasetsXml(
-                dataDir, sampleFile, 
-                "stationID, time",
-                "stationID/2months",
-                "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
-                "NOAA NMFS SWFSC ERD",
-                "This is my great summary.",
-                "My Great Title",
-                null) + "\n";
+        String results = generateDatasetsXml(
+            dataDir, sampleFile, 
+            "stationID, time",
+            "stationID/2months",
+            "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
+            "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
+            "NOAA NMFS SWFSC ERD",
+            "This is my great summary.",
+            "My Great Title",
+            null) + "\n";
 
-            String2.log(results);
+        String2.log(results);
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromHttpGet",
-                dataDir, sampleFile, 
-                "stationID, time",
-                "stationID/2months",
-                "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
-                "NOAA NMFS SWFSC ERD",
-                "This is my great summary.",
-                "My Great Title"}, 
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromHttpGet",
+            dataDir, sampleFile, 
+            "stationID, time",
+            "stationID/2months",
+            "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
+            "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html",
+            "NOAA NMFS SWFSC ERD",
+            "This is my great summary.",
+            "My Great Title"}, 
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
@@ -2135,25 +2139,20 @@ String expected =
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            String tDatasetID = "testFromHttpGet_25bf_9033_586b";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            //delete the data files (but not the seed data file)
-            File2.deleteAllFiles(dataDir + "station1", true, true);
-            File2.deleteAllFiles(dataDir + "station2", true, true);
+        String tDatasetID = "testFromHttpGet_25bf_9033_586b";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        //delete the data files (but not the seed data file)
+        File2.deleteAllFiles(dataDir + "station1", true, true);
+        File2.deleteAllFiles(dataDir + "station2", true, true);
 
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "My Great Title", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "stationID, time, airTemp, waterTemp, timestamp, author, command",
-                "");
-
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "My Great Title", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "stationID, time, airTemp, waterTemp, timestamp, author, command",
+            "");
 
     }
 

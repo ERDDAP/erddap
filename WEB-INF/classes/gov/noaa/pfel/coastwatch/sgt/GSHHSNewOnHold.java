@@ -19,6 +19,9 @@ import java.awt.geom.GeneralPath;
 import java.io.File;
 import java.io.*;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.Map;
 
 
@@ -144,7 +147,10 @@ public class GSHHSNewOnHold  {
             //  If there are almost simultaneous requests for the same one, 
             //  only one thread will make it.
             //Cache is thread-safe so synch on cachedName, not cache.
-            synchronized(cachedName) {
+            ReentrantLock lock = String2.canonicalLock(cachedName);
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock on GSHHS cachedName.");
+            try {
 
                 //*** is GeneralPath in cache?
                 path = (GeneralPath)cache.get(cachedName);
@@ -171,6 +177,8 @@ public class GSHHSNewOnHold  {
                     tSuccess = "*(already in cache)";
                     nSuccesses++;
                 }
+            } finally {
+                lock.unlock();
             }
         }
 

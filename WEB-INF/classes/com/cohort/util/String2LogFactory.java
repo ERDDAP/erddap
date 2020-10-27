@@ -72,7 +72,7 @@ public final class String2LogFactory extends LogFactory {
      * length array is returned.
      */
     public String[] getAttributeNames() {
-        synchronized (attributes) {
+        synchronized(attributes) {
             Vector names = new Vector();
             Enumeration keys = attributes.keys();
             while (keys.hasMoreElements()) {

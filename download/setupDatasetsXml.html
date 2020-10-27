@@ -75,6 +75,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
   <li><a rel="help" href="#differentDimensions">What if the grid variables in the source dataset DON'T share the 
       same axis variables?</a>
   <li><a rel="help" href="#projections">Projected Gridded Data</a>
+  <li><a rel="help" href="#dataTypes">Data Types</a>
   <li><a rel="help" href="#MediaFiles">Media Files</a>
   <li><a rel="help" href="#AwsS3Files">AWS S3 Files</a>
   <li><a rel="help" href="#NcML">NcML</a>
@@ -389,7 +390,7 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
       <li>Often, one of your answers won't be what GenerateDatasetsXml needs.
         You can then try again, with revised answers to the questions, 
         until GenerateDatasetsXml can successfully find and understand the source data.
-      <li>If you answer the questions correctly (or reasonably correctly), 
+      <li>If you answer the questions correctly (or sufficiently correctly), 
          GenerateDatasetsXml will connect
          to the dataset's source and gather basic information (for example, variable names and metadata).
          <br>For datasets that are from local NetCDF .nc and related files,
@@ -460,9 +461,15 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
           <br>We've made and continue to make a huge effort
           to make the output as ready-to-go as possible, but there are limits.
           Often, needed information is simply not available from the source metadata.
-          Even when it is available, it currently isn't possible for the software
-          to do a better job than a human. (That day may come, but it hasn't yet.)
-          Good metadata helps users understand the dataset and use it correctly.
+
+          <p>A fundamental problem is that we're asking a computer program (GenerateDatasetsXml) 
+          to do a task where, if you gave the same task to 100 people, 
+          you would get 100 different results. There is no single "right" answer. 
+          Obviously, the program comes closest to reading Bob's mind (not yours), 
+          but even so, it isn't an all-understanding AI program, 
+          just a bunch of heuristics cobbled together to do an AI-like task.
+          (That day of an all-understanding AI program may come, but it hasn't yet. 
+          If/when it does, we humans may have bigger problems. Be careful what you wish for.)          
 
         <li>For informational purposes, the output shows the global 
           sourceAttributes and variable sourceAttributes as comments.
@@ -1329,6 +1336,146 @@ Both of those things are on the To Do list.
 (If you want to help, notably with connecting ERDDAP to MapServer, 
 please email bob.simons at noaa.gov .)
 
+
+<li><strong><a class="selfLink" id="dataTypes" href="#dataTypes" rel="bookmark">Data Types</a></strong>
+<br>ERDDAP supports the following data types
+<br>(the names are case sensitive; 'u' prefix stands for "unsigned"; the number many of the names in other systems is the number of bits):
+<ul>
+<li>byte has signed integer values with a range of -128 to 127.
+  <br>In other systems, this is sometimes called int8. 
+  <br>This is called "tinyint" by SQL and Cassandra.
+  <br>ERDDAP converts <a rel="help" href="#booleanData">boolean</a> from some sources (e.g., SQL and Cassandra)
+    into bytes in ERDDAP with a value of 0=false, 1=true, and 127=missing_value.
+<li>ubyte has unsigned integer values with a range of 0 to 255.
+  <br>In other systems, this is sometimes called uint8.
+<li>short has signed integer values with a range of -32768 to 32767.
+  <br>In other systems, this is sometimes called int16.
+  <br>This is called "smallint" by SQL and Cassandra.
+<li>ushort has unsigned integer values with a range of 0 to 65535.
+  <br>In other systems, this is sometimes called uint16.
+<li>int has signed integer values with a range of -2147483648 to 2147483647.
+  <br>In other systems, this is sometimes called int32. 
+  <br>This is called "integer|numeric(?)" by SQL and "int" by Cassandra.
+<li>uint has unsigned integer values with a range of 0 to 4294967295.
+  <br>In other systems, this is sometimes called uint32. 
+<li>long has signed integer values with a range of -9223372036854775808 to 9223372036854775807.
+  <br>In other systems, this is sometimes called int64.
+  <br>This is called "bigint|numeric(?)" by SQL and "bigint" by Cassandra.
+<li>ulong has unsigned integer values with a range of 0 to 18446744073709551615
+  <br>In other systems, this is sometimes called uint64.
+<li>float is an IEEE 754 float with a range of approximately +/- 3.402823466e+38.
+  <br>In other systems, this is sometimes called float32. 
+  <br>This is called "real|float(?)|decimal(?)|numeric(?)" by SQL and "float" by Cassandra.
+  <br>The special value <kbd>NaN</kbd> means Not-a-Number.
+  ERDDAP converts positive and negative infinity values to NaN.
+<li>double is an IEEE 754 double with a range of approximately +/- 1.7976931348623157E+308.
+  <br>In other systems, this is sometimes called float64. 
+  <br>This is called "double precision|float(?)|decimal(?)|numeric(?)" by SQL and "double" by Cassandra.
+  <br>The special value <kbd>NaN</kbd> means Not-a-Number.
+  ERDDAP converts positive and negative infinity values to NaN.
+<li>char is a single, 2-byte (16-bit)
+  <a rel="help" href="https://en.wikipedia.org/wiki/UTF-16"
+      >Unicode UCS-2 character set<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+   character ranging from \u0000 through \uffff.
+  <br>\uffff's definition is Not-a-Character, analogous to a double value of NaN.
+<li>String is a sequence of 0 or more 16 bit Unicode characters.
+  <br>ERDDAP uses/interprets a 0-length string as a missing value. ERDDAP does not support a true null string.
+  <br>The theoretical maximum string length is 2147483647 characters, but are probably various problems
+  in various places even with somewhat shorter Strings.
+  <br>Use ERDDAP's String for SQL's character, varchar, character varying, binary, varbinary, interval, 
+    array, multiset, xml, and any other database data type that doesn't fit cleanly
+    with any other ERDDAP data type.
+  <br>Use ERDDAP's String for Cassandra's "text" and any other Cassandra data type 
+    that doesn't fit cleanly with any other ERDDAP data type.
+</ul>
+Before ERDDAP v2.10, ERDDAP did not support unsigned integer types internally
+  and offered limited support in its data readers and writers.
+
+<p>You can think of ERDDAP as a system which has virtual datasets,
+and which works by reading data from a dataset's source into an internal data model
+and writing data to various services (e.g., (OPeN)DAP, WMS) and file types in response to user requests.
+  <ul>
+  <li>Each input reader supports a subset of the data types that ERDDAP supports.
+     So reading data into ERDDAP's internal data structures isn't a problem.
+  <li>Each output writer also support a subset of data types. That's a problem because ERDDAP
+    has to squeeze, for example, long data into file types that don't support long data.
+  </ul>
+Below are explanations of the limitations (or none) of various output writers
+and how ERDDAP deals with the problems.
+Such complications are an inherent part of ERDDAP's goal of making disparate systems interoperable.
+  <ul>
+  <li><a class="selfLink" id="AsciiDataTypes" href="#AsciiDataTypes" rel="bookmark"
+    >ASCII (.csv, .tsv, etc.) text files</a> -
+    <br>All numeric data is written via its String representation
+    (with missing data values appearing as 0-length strings).
+    Char and String data are written via JSON Strings, which handle all Unicode/unusual characters
+    (e.g., the Euro character appears as "\u20ac".
+  <li><a class="selfLink" id="JsonDataTypes" href="#JsonDataTypes" rel="bookmark"
+    >JSON (.json, .jsonlCSV, etc.) text files</a> -
+    <br>All numeric data is written via its String representation.
+    <br>Char and String data are written via JSON Strings, which handle all unusual characters
+    (e.g., the Euro character appears as "\u20ac".
+    <br>Missing values for all data types appear as <kbd>null</kbd>.
+  <li><a class="selfLink" id="nc3DataTypes" href="#nc3DataTypes" rel="bookmark">.nc3 files</a> -
+    <br>.nc3 files don't natively support any unsigned integer data types. 
+      Before CF v1.9, CF did not support unsigned integer types.
+      To deal with this, ERDDAP 2.10+
+      follows the NUG standard and always adds an "_Unsigned" attribute with a value of "true" or "false"
+      to indicate if the data is from an unsigned or signed variable. All integer attributes
+      are written as signed attributes (e.g., byte) with signed values (e.g., a ubyte actual_range attribute
+      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the
+      two's compliment value of the out-of-range value). There is no easy way to know which (signed) integer
+      attributes should be read as unsigned attributes.
+      ERDDAP supports the "_Unsigned" attribute when it reads .nc3 files.
+    <p>.nc3 files don't support the long or ulong data types.
+      ERDDAP deals with this by temporarily converting them to be double variables.
+      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.
+      This is an imperfect solution. Unidata refuses to make a minor
+      upgrade to .nc3 to deal with this and related problems, citing .nc4 (a major change) as the solution.
+    <p>The CF specification (before v1.9) said it supports char 
+      but it is unclear if char is only supported as the building blocks of char arrays, which are effectively Strings.
+      Questions to their mailing list yielded only confusing answers.
+      Because of these complications, it is best to avoid char variables in ERDDAP and use String variables whenever possible.
+    <p>.nc3 files support strings with ASCII-encoded (7-bit, #0 - #127), characters.
+      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute "_Encoding" with a value of
+      "ISO-8859-1" (an extension of ASCII which defines all 256 values of each 8-bit character)
+      or "UTF-8" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.
+  <li><a class="selfLink" id="nc4DataTypes" href="#nc4DataTypes" rel="bookmark">.nc4 files</a>
+    support all of ERDDAP's data types.
+  <li><a class="selfLink" id="NccsvDataTypes" href="#NccsvDataTypes" rel="bookmark">NCCSV files</a> -
+    <br>NCCSV 1.0 files don't support any unsigned integer data types.
+    <br>NCCSV 1.1+ files support all unsigned integer data types.
+  <li><a class="selfLink" id="OpendapDataTypes" href="#OpendapDataTypes" rel="bookmark"
+    >(OPeN)DAP (.das, .dds, .asc ASCII files, and .dods binary files)</a> -
+    <br>(OPeN)DAP handles short, ushort, int, uint, float and double values correctly.
+    <p>(OPeN)DAP has a "byte" data type that it defines as unsigned, whereas historically,
+      THREDDS and ERDDAP have treated "byte" as signed. To deal with this, ERDDAP 2.10+
+      follows the NUG standard and always adds an "_Unsigned" attribute with a value of "true" or "false"
+      to indicate if the data is what ERDDAP calls byte or ubyte. All byte and ubyte attributes
+      are written as "byte" attributes with signed values (e.g., a ubyte actual_range attribute
+      with values 0 to 255, appears as a byte attribute with values 0 to -1 (the inverse of the
+      two's compliment value of the out-of-range value). There is no easy way to know which "byte"
+      attributes should be read as ubyte attributes.
+    <p>The (OPeN)DAP does not support signed or unsigned longs.
+      ERDDAP deals with this by temporarily converting them to be double variables and attributes.
+      Doubles can exactly represent all values up to 9,007,199,254,740,992 which is 2^53.
+      This is an imperfect solution. OPeNDAP (the organization) refuses to make a minor
+      upgrade to DAP 2.0 to deal with this and related problems, citing DAP4 (a major change) as the solution.
+    <p>The (OPeN)DAP specification supports strings with ASCII-encoded, characters.
+      NUG (and ERDDAP) extend that (starting ~2017) by including the attribute "_Encoding" with a value of
+     "ISO-8859-1" (an extension of ASCII which defines all 256 values of each 8-bit character)
+     or "UTF-8" to indicate how the String data is encoded. Other encodings may be legal but are discouraged.
+  </ul>           
+<a class="selfLink" id="dataTypesOtherComments" href="#dataTypesOtherComments" rel="bookmark">Other comments:</a>
+  <ul>
+  <li>Because of the variable support for long, ulong, and char data, we discourage their use in ERDDAP.
+  <li>Metadata - Because (OPeN)DAP's .das and .dds responses don't suport long or ulong data,
+     you may instead want to use ERDDAP's tabular representation of metadata as seen in the
+     http.../erddap/info/<i>datasetID</i>.html web page (or other file types),
+     which supports all data types in all situations.
+  </ul> 
 
 
 <li><strong><a class="selfLink" id="MediaFiles" href="#MediaFiles" rel="bookmark"
@@ -2350,7 +2497,8 @@ currently recommend
       <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
         aggregates data from NetCDF (v3 or v4) .nc files with several variables 
         with shared dimensions.
-        For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
+        It is fine to continue using this dataset type for existing datasets,
+        but for new datasets we recommend using EDDTableFromMultidimNcFiles instead.
       <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
         aggregates data from NetCDF (v3 or v4) .nc files which use one of the 
         file formats specified by the 
@@ -2529,7 +2677,8 @@ currently recommend
     <br><kbd>&lt;att name="axisValues" 
       <a rel="help" href="#attributeType">type="doubleList"</a>&gt;2, 2.5, 3, 
       3.5, 4&lt;/att&gt;</kbd>
-    <br>Note the use of a list data type.  Also, the type of list (for example, double),
+    <br>Note the use of a <a rel="help" href="#dataTypes">data type</a> plus the word <kbd>List</kbd>. 
+      Also, the type of list (for example, double),
       MUST match the dataType of the variable in the EDDTable and EDDGridFromEDDTable
       datasets.
   <li><kbd>axisValuesStartStrideStop</kbd> -- lets you specify a sequence of
@@ -3114,31 +3263,27 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     the value for the new dimension from each file. 
     <ul>
     <li>The format for the pseudo sourceName which gets the value from a filename (just filename.ext) is
-      <br><kbd>***fileName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
+      <br><kbd>***fileName,<i><a rel="help" href="#dataTypes">dataType</a></i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
     <li>The format for the pseudo sourceName which gets the value from a file's absolute path name is
-      <br><kbd>***pathName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
+      <br><kbd>***pathName,<i><a rel="help" href="#dataTypes">dataType</a></i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
       <br>[For this, the path name always uses '/' as the directory separator character, never '\'.]
     <li>The format for the pseudo sourceName which gets the value from a global attribute is
-      <br><kbd>***global:<i>attributeName</i>,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
+      <br><kbd>***global:<i>attributeName</i>,<i><a rel="help" href="#dataTypes">dataType</a></i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
     <li>This pseudo sourceName option works differently from the others: instead of creating a 
       new leftmost (first) axisVariable, this replaces the value of the current axisVariable
       with a value extracted the filename (just filename.ext). The format is
-      <br><kbd>***replaceFromFileName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
+      <br><kbd>***replaceFromFileName,<i><a rel="help" href="#dataTypes">dataType</a></i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
       <br>&nbsp;
     </ul>
     The descriptions of the parts you need to provide are:
     <ul>
     <li><i>attributeName</i> -- the name of the global attribute which
       is in each file and which contains the dimension value.
-    <li><i>dataType</i> -- This specifies the dataType
-      that will be used to store the values.  The allowed dataTypes are 
-      double (64-bit floating point), float (32-bit floating point), 
-      long (64-bit signed integer, discouraged), int (32-bit signed integer), 
-      short (16-bit signed integer), 
-      byte (8-bit signed integer), 
-      and char (essentially: 16-bit unsigned integer, strongly discouraged),
-      which is slightly different than the standard list of 
-      <a rel="help" href="#dataType">dataTypes</a> that ERDDAP supports.
+    <li><i>dataType</i> -- This specifies the data type
+      that will be used to store the values.  See the standard list of 
+      <a rel="help" href="#dataTypes">dataTypes</a> that ERDDAP supports,
+      except that <kbd>String</kbd> is not allowed here since
+      axis variables in ERDDAP can't be String variables.
 
       <p>There is an additional pseudo dataType, <kbd>timeFormat=<i>stringTimeFormat</i></kbd>, 
       which tells ERDDAP that the value is a String timeStamp  
@@ -4966,7 +5111,8 @@ deviceid,date
   tag for Cassandra dataVariables can include the regular 
   ERDDAP dataTypes (see above) plus several special dataTypes that can be used 
   for Cassandra list columns: booleanList, 
-  byteList, shortList, intList, longList, floatList, doubleList, 
+  byteList, ubyteList, shortList, ushortList, intList, uintList,
+  longList, ulongList, floatList, doubleList, 
   charList, StringList.
   When one of these list columns is in the results being passed to ERDDAP, 
   each row of source data will be expanded
@@ -5642,22 +5788,9 @@ handles data from one relational database table or
   Part of the problem is that different datasets use different terms
   for the various data types -- so always try to match the definitions, not
   just the names.
-  The standard ERDDAP dataTypes (and the most common corresponding SQL data types) 
-  are:
-  <ul>
-  <li><a rel="help" href="#booleanData">boolean</a> (boolean), which ERDDAP then stores as bytes
-  <li>byte (tinyint, if the range is -128 to 127)
-  <li>short (smallint, if the range is -32768 to 32767)
-  <li>int (integer, numeric(?), if the range is -2147483648 to 2147483647)
-  <li>long (bigint, numeric(?), if the range is -9223372036854775808 to 9223372036854775807)
-  <li>float (float(?), real, decimal(?), numeric(?))
-  <li>double (float(?), double precision, decimal (with possible loss of precision), 
-     numeric(?), date, timestamp)
-  <li>char (character, if it never has more than 1 character)
-  <li>String (character, varchar, character varying, binary, varbinary, interval, 
-    array, multiset, xml, and any other database data type that doesn't fit cleanly
-    with any other ERDDAP data type)
-  </ul>
+  See the description of the 
+  <a rel="help" href="#dataTypes">standard ERDDAP dataTypes</a>,
+  which includes references to the corresponding SQL data types. 
   <a rel="help" href="#databaseDate">Date and timestamp</a> are special cases: 
   use ERDDAP's double dataType.
   <br>&nbsp;
@@ -6111,10 +6244,7 @@ subclasses, this dataset type does not serve data from within the files.
       This works with: 
       <ul>
       <li>Unaggregated datasets in THREDDS, e.g., 
-      <br><a rel="help" href="https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"
-                             >https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/<img 
-            src="../images/external.png" alt=" (external link)" 
-            title="This link to an external website does not constitute an endorsement."></a>
+      <br>https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/ [2020-10-21 This server is no longer reliably available.]
       <li>Unaggregated datasets in Hyrax, e.g., 
       <br><a rel="help" href="https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"
                              >https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/<img 
@@ -6464,7 +6594,8 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
     (or <a rel="help" href="#NcML">.ncml</a>)
     files with several variables, 
     each with shared dimensions (for example, time, altitude (or depth), latitude, longitude).
-    For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
+        It is fine to continue using this dataset type for existing datasets,
+        but for new datasets we recommend using EDDTableFromMultidimNcFiles instead.
   <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
     aggregates data from NetCDF (v3 or v4) .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
@@ -6720,10 +6851,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
       of a remote dataset's files from a remote file list.
       <ul>
       <li>Unaggregated datasets in THREDDS, e.g., 
-      <br><a rel="help" href="https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"
-                             >https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/<img 
-            src="../images/external.png" alt=" (external link)" 
-            title="This link to an external website does not constitute an endorsement."></a>
+      <br>https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/ [2020-10-21 This server is no longer reliably available.]
       <li>Unaggregated datasets in Hyrax, e.g., 
       <br><a rel="help" href="https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"
                              >https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/<img 
@@ -6907,10 +7035,8 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
         because all of the partial and full path names must match the &lt;cachePartialPathRegex&gt;
         and because the &lt;cachePartialPathRegex&gt; must work with the remote URLs
         and the local directories. A real life example is:
-        <br>&lt;cacheFromUrl&gt;<a rel="bookmark" 
-          href="https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/"
-               >https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/</a>&lt;/cacheFromUrl&gt;
-          <br>&gt;!-- For most types of remote directories, omit the filename (e.g., contents.html for Hyrax). --&gt;
+        <br>&lt;cacheFromUrl&gt;https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/&lt;/cacheFromUrl&gt;
+          <br>&gt;!-- [2020-10-21 This server is no longer reliably available.] For most types of remote directories, omit the filename (e.g., contents.html for Hyrax). --&gt;
         <br>&lt;fileDir&gt;/u00/satellite/MUR41/&lt;/fileDir&gt;
         <br>&lt;fileNameRegex&gt;*\.nc&lt;/fileNameRegex&gt;
         <br>&lt;recursive&gt;true&lt;/recursive&gt;
@@ -6923,9 +7049,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
         <br>then has a series of nested capture groups where the first option is nothing
         <br>and the second option is a specific value.
         <p>The example above will only match directories for the second 10 days of 2018, e.g.,
-        <br><a rel="bookmark" 
-href="https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/"
-     >https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/</a>
+        <br>https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/ [2020-10-21 This server is no longer reliably available.]
         <br>and day 011, 012, ..., 019.
         <br>(See this <a rel="help"
           href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
@@ -7895,7 +8019,7 @@ for the response. This lets users search for datasets of interest in very powerf
   <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) Contiguous Ragged Array format<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
-  and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
+  and using <a href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> 
         (or <a href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>) 
   to serve the data.
   You can 
@@ -8989,11 +9113,7 @@ on how this class works and how to use this class.
   a sample_dimension attribute and doesn't follow the above rule.
  
  <p>Sample files for this dataset type can be found at 
-  <a rel="bookmark"
-        href="https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/"
-             >https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>. 
+  https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/ [2020-10-21 This server is no longer reliably available]. 
 
   <p>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
@@ -9213,6 +9333,7 @@ variables:
   The files may have character variables with an additional dimension (for example, STRING14).
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
+
 <ul>
 <li>If the .nc files use one of the  
   <a href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
@@ -9616,7 +9737,7 @@ Sensor Observation Service
 <li>The files may have character variables with an additional dimension (for example, nCharacters).
 <li>THREDDS servers can be identified by the "/thredds/" in the URLs.
   For example, 
-  <br>https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html
+  <br>https://www.ncei.noaa.gov/thredds/catalog/uv/6h_strs_agg/catalog.html
 <li>THREDDS servers have catalogs in various places. This class REQUIRES 
   that the URL include "/thredds/catalog/". You can usually find this 
   variable by starting in a browser in the root catalog, and then 
@@ -9631,7 +9752,7 @@ Sensor Observation Service
   THREDDS server,
   for example: 
   for this URL which may be used in a web browser,
-  <br>https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html ,
+  <br>https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html [2020-10-21 This server is no longer reliably available.],
   <br>use <kbd>&lt;sourceUrl&gt;<wbr>https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml<wbr>&lt;/sourceUrl&gt;</kbd>
   <br>(but put it on one line).
 <li>Since this class always downloads and makes a local copy of each remote
@@ -13528,21 +13649,9 @@ while processing each request.
           Other dataset types ignore this tag because they get the information from the source.
           <br>&nbsp;
 
-        <li>Valid values are: 
-          <br>byte (8-bit signed integer),
-          <br>short (16-bit signed integer), 
-          <br>int (32-bit signed integer), 
-          <br>long (64-bit signed integer), 
-          <br>float (32-bit floating point), 
-          <br>double (64-bit floating point),           
-          <br>boolean (which becomes a byte with values of 0 or 1), 
-          <br>char, and
-          <br>String (internally, a sequence of 2-byte characters that use the          
-          <a rel="help"
-          href="https://en.wikipedia.org/wiki/UTF-16"
-          >Unicode UCS-2 character set<img 
-          src="../images/external.png" alt=" (external link)" 
-          title="This link to an external website does not constitute an endorsement."></a>).
+        <li>Valid values are any of the standard 
+          <a rel="bookmark" href="#dataTypes">ERDDAP data types</a>
+          plus <kbd>boolean</kbd> (which becomes a byte with values of 0 or 1).
           <br>These are case-sensitive names.
           <br>&nbsp;
 
@@ -13556,7 +13665,7 @@ while processing each request.
             variables.
           <li>Specifying "boolean" for the dataType in datasets.xml will cause 
             boolean values to
-            be stored and represented as bytes: 0=false, 1=true.
+            be stored and represented as bytes: 0=false, 1=true, 127=missing_value.
           <li>Clients can specify constraints by using the numeric values 
             (for example, "isAlive=1").
             But ERDDAP administrators need to use the "boolean" dataType in datasets.xml
@@ -14335,8 +14444,8 @@ href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
             If none is defined, ERDDAP will interpret the value as the 
             default missing value for that data type, which is always
             the maximum value which can be held by that data type: 
-            127 for byte variables, 32767 for short, 2147483647 for int, 9223372036854775807 for long, 
-            255 for ubyte, 65535 for ushort, 4294967295 for uint, and 18446744073709551615 for ulong.
+            <br>127 for byte variables, 32767 for short, 2147483647 for int, 9223372036854775807 for long, 
+            <br>255 for ubyte, 65535 for ushort, 4294967295 for uint, and 18446744073709551615 for ulong.
         <li><a class="selfLink" id="addFillValueAttributes" href="#addFillValueAttributes" rel="bookmark">ADD _FillValue ATTRIBUTES?</a>                  
             <br>Each time ERDDAP loads a dataset, it checks if the variables 
             with integer source data types have a defined missing_value or
@@ -15158,7 +15267,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.02
+<p>ERDDAP, Version 2.10
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

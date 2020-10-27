@@ -699,7 +699,7 @@ public class EDDTableFromNOS extends EDDTable{
                         symbol = bodyElement.addChildElement(name);
                         GregorianCalendar gc = Calendar2.epochSecondsToGc(tRequestedBeginTime);
                         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-                        synchronized (simpleRequestDateFormat) {
+                        synchronized(simpleRequestDateFormat) {
                             symbol.addTextNode(simpleRequestDateFormat.format(gc.getTime()));
                         }
 
@@ -707,7 +707,7 @@ public class EDDTableFromNOS extends EDDTable{
                         symbol = bodyElement.addChildElement(name);
                         gc = Calendar2.epochSecondsToGc(tRequestedEndTime);
                         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-                        synchronized (simpleRequestDateFormat) {
+                        synchronized(simpleRequestDateFormat) {
                             symbol.addTextNode(simpleRequestDateFormat.format(gc.getTime()));
                         }
 
@@ -755,7 +755,7 @@ public class EDDTableFromNOS extends EDDTable{
                         //   Fine, but it also allows hh:mm, so then is more precise.
                         GregorianCalendar gc = Calendar2.epochSecondsToGc(tRequestedBeginTime);
                         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-                        synchronized (simpleRequestDateFormat) {
+                        synchronized(simpleRequestDateFormat) {
                             requestSB.append("    <beginDate xmlns=\"\">" + 
                                 simpleRequestDateFormat.format(gc.getTime()) +
                                 "</beginDate> \n");
@@ -763,7 +763,7 @@ public class EDDTableFromNOS extends EDDTable{
 
                         gc = Calendar2.epochSecondsToGc(tRequestedEndTime);
                         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-                        synchronized (simpleRequestDateFormat) {
+                        synchronized(simpleRequestDateFormat) {
                             requestSB.append("    <endDate xmlns=\"\">" + 
                                 simpleRequestDateFormat.format(gc.getTime()) +
                                 "</endDate> \n");
@@ -1469,7 +1469,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         symbol = bodyElement.addChildElement(name);
         GregorianCalendar gc = Calendar2.epochSecondsToGc(tRequestedBeginTime);
         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-        synchronized (simpleRequestDateFormat) {
+        synchronized(simpleRequestDateFormat) {
             symbol.addTextNode(simpleRequestDateFormat.format(gc.getTime()));
         }
 
@@ -1477,7 +1477,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         symbol = bodyElement.addChildElement(name);
         gc = Calendar2.epochSecondsToGc(tRequestedEndTime);
         //SimpleDateFormats are not thread-safe, so have to synchronize their use
-        synchronized (simpleRequestDateFormat) {
+        synchronized(simpleRequestDateFormat) {
             symbol.addTextNode(simpleRequestDateFormat.format(gc.getTime()));
         }
 

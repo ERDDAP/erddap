@@ -502,8 +502,11 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
             //I could get inputStream from catalogUrl, but then (via recursion) perhaps lots of streams open.
             //I think better to get the entire response (succeed or fail *now*).
+            //String2.log(">> catalogUrl=" + catalogUrl);
             byte bytes[] = SSR.getUrlResponseBytes(catalogUrl);
+            //String2.log(">> bytes=" + new String(bytes));
             SimpleXMLReader xmlReader = new SimpleXMLReader(new ByteArrayInputStream(bytes));
+            //String2.log(">> after bytes");
             try {
                 while (true) {
                     xmlReader.nextTag();
@@ -569,7 +572,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                             fileLastMod.add(Math2.roundToLong(epochSeconds * 1000));
                         }
 
-                    } else if (tags.equals("</catalog>")) {
+                    } else if (tags.equals("</catalog>")) {  //end of file
                         break;
                     }
                 }
@@ -1088,6 +1091,7 @@ String expected =
 
     /**
      * This tests the methods in this class.
+     * 2020-10-21 I stopped running this test because thredds randomly stalls when returning catalog.xml pages. 
      *
      * @throws Throwable if trouble
      */
@@ -1838,7 +1842,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 elev 0;\n" +
 "    String featureType \"Point\";\n" +
 "    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc)\\]\";\n" + //changes, so neutered
-"    String fsu_version \"301\";\n" +  //changes 
+"    String fsu_version \"...\";\n" +  //changes 300 to 301 to 300
 "    Float64 geospatial_lat_max 72.51;\n" +
 "    Float64 geospatial_lat_min -46.45;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -2128,7 +2132,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 3;
+            lastTest = interactive? -1 : 0;
         String msg = "\n^^^ EDDTableFromThreddsFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedInfo = false; //usually false, rarely true
@@ -2142,10 +2146,13 @@ expected =
                     //if (test ==  0) ...;
 
                 } else {
-                    if (test ==  0) testGetThreddsFileInfo();
-                    if (test ==  1) testGenerateDatasetsXml();
-                    if (test ==  2) testWcosTemp(deleteCachedInfo);  
-                    if (test ==  3) testShipWTEP(deleteCachedInfo);
+                    if (test ==  0) testShipWTEP(deleteCachedInfo);
+
+                    //2020-10-21 I disabled because https://data.nodc.noaa.gov/thredds randomly stalls when returning catalog.xml pages. 
+                    //if (test == 1000) testGetThreddsFileInfo();
+                    //if (test == 1001) testGenerateDatasetsXml();
+                    //if (test == 1002) testWcosTemp(deleteCachedInfo);  
+                
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

@@ -53,6 +53,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -689,7 +692,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
         //synchronize on canonical localFullName -- so only 1 thread works on this file
         localFullName = String2.canonical(localFullName);
-        synchronized (localFullName) {
+        ReentrantLock lock = String2.canonicalLock(localFullName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock in FileVisitorDNLS.ensureInCache.");
+        try {
             //localFullName may have been downloaded by another thread while this thread
             //waited for synch lock.
             if (RegexFilenameFilter.touchFileAndRelated(localFullName)) { //returns true if localFullName exists
@@ -704,6 +710,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             long fl = File2.length(localFullName);
             incrementPruneCacheDirSize(localDir, fl); 
             return fl;
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -761,7 +769,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
         //decompress the file
         cacheFullName = String2.canonical(cacheFullName); //so different threads will synch on same object
-        synchronized (cacheFullName) { 
+        ReentrantLock lock = String2.canonicalLock(cacheFullName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock to decompress cacheFullName in FileVisitorDNLS.");
+        try {
             //check again (since waiting for synch lock): decompressed file already exists? 
             if (File2.isFile(cacheFullName)) {
                 File2.touch(cacheFullName); //ignore whether successful or not
@@ -788,6 +799,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 (System.currentTimeMillis() - time) + "ms cacheSize=" + (cs/Math2.BytesPerMB) + "MB" + 
                 "\n    from " + sourceFullName + 
                 "\n      to " + cacheFullName); 
+        } finally {
+            lock.unlock();
         }
         return cacheFullName;
     }
@@ -858,7 +871,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
         //synchronize on canonical cacheDir -- so only 1 thread works on this dir
         cacheDir = String2.canonical(cacheDir);
-        synchronized (cacheDir) {
+        try {
+            ReentrantLock lock = String2.canonicalLock(cacheDir);
+            if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                throw new TimeoutException("Timeout waiting for lock on cacheDir in FileVisitorDNLS.pruneCache().");
             try {
                 //never delete if <PRUNE_CACHE_SAFE_SECONDS old
                 long goal = Math2.roundToLong(fraction * thresholdCacheSizeB);
@@ -905,7 +921,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
                     //be as thread-safe as reasonably possible
                     String localFullName = String2.canonical(dirSA.get(row) + nameSA.get(row));
-                    synchronized (localFullName) {
+                    ReentrantLock lock2 = String2.canonicalLock(localFullName);
+                    if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+                        throw new TimeoutException("Timeout waiting for lock on localFullName in FileVisitorDNLS.pruneCache().");
+                    try {
                         long lastMod = File2.getLastModified(localFullName);  //in case changed very recently
                         long currentTimeSafe = System.currentTimeMillis() - PRUNE_CACHE_SAFE_MILLIS; //up-to-date
                         if (lastMod < currentTimeSafe) {  //file is old
@@ -913,6 +932,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                             if (File2.simpleDelete(localFullName)) //simple because may be in use!
                                 currentCacheSizeB -= sizeAr[row];
                         }
+                    } finally {
+                        lock2.unlock();
                     }
                     row--;
                 }
@@ -922,14 +943,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     (reachedGoal? " FINISHED SUCCESSFULLY" : " WARNING: DIDN'T REACH GOAL") +
                     " goalMB=" + goal/Math2.BytesPerMB +
                     " currentMB=" + currentCacheSizeB/Math2.BytesPerMB);
-            } catch (Exception e) {
-                String2.log("Caught " + String2.ERROR + " in FileVisitorDNLS.pruneCache(" +
-                    cacheDir + "):\n" + 
-                    MustBe.throwableToString(e));
+            } finally {
+                lock.unlock();
             }
-            setPruneCacheDirSize(cacheDir, currentCacheSizeB);
-            return currentCacheSizeB;
+
+        } catch (Exception e) {
+            String2.log("Caught " + String2.ERROR + " in FileVisitorDNLS.pruneCache(" +
+                cacheDir + "):\n" + 
+                MustBe.throwableToString(e));
         }
+        setPruneCacheDirSize(cacheDir, currentCacheSizeB);
+        return currentCacheSizeB;
     }
 
 
@@ -1514,9 +1538,10 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         Test.ensureEqual(results, expected, "results=\n" + results);
 
       } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nThis changes periodically. If reasonable, just continue." +
-              "\n(there no more subtests in this test).");
+          String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
+              "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
+              "Was: This changes periodically. If reasonable, just continue.\n" +
+              "(there no more subtests in this test).");
       }
       }
 
@@ -2506,6 +2531,8 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = true;
 
+        if (true) Test.knownProblem("2020-10-22 FileVisitorDNLS.testThredds is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
+
         String url = "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/monthly/"; //catalog.html
         String fileNameRegex = "sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc";
         boolean recursive = true;
@@ -2801,7 +2828,6 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         String child = "CONUS/";
         String pathRegex = null;
 
-/* for releases, this line should have open/close comment */
         {
 
             //!recursive and dirToo
@@ -3138,7 +3164,9 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
             //test the sync 
             Table table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
-            String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
+            String2.pressEnterToContinue(
+                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
+                "Was: Check above to ensure these numbers:\n" +
                 "\"found nAlready=3 nAvailDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
             String results = table.dataToString();
             String expected = //the lastModified values change periodically
@@ -3150,7 +3178,9 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
             //no changes, do the sync again
             table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
-            String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
+            String2.pressEnterToContinue(
+                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
+                "Check above to ensure these numbers:\n" +
                 "\"found nAlready=5 nToDownload=0 nTooRecent=1 nExtraLocal=1\"\n");
             results = table.dataToString();
             expected = 
@@ -3159,7 +3189,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
         } catch (Exception e) {
             String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "Often, there are minor differences."); 
+                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
+                "Was: Often, there are minor differences."); 
 
         } finally {
             File2.setLastModified(name22560, time22560);

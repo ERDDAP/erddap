@@ -121,7 +121,7 @@ public class TestAll  {
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
 //      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"nesdisVHNkd490Daily", "-verbose"});
+//      DasDds.main(new String[]{"nmspWcosTemp", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -511,13 +511,13 @@ public class TestAll  {
         //Attributes externalAddGlobalAttributes) throws Throwable {
 
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
-/*  
+/* 
       s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        "/u00/data/points/AORC_ABRFC_4km/", ".*\\.nc4", "",
+        "/data/hsu/", ".*\\.nc", "",
         "", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
-        false, //removeMVRows  //often true
+        true, //removeMVRows  //often true
         "time", //sort files by    profile_time
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
@@ -526,7 +526,7 @@ public class TestAll  {
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
     // */
-//    Table.debugMode = true; DasDds.main(new String[]{"testLong2", "-verbose"});
+//    Table.debugMode = true; DasDds.main(new String[]{"id", "-verbose"});
 
 //    *** To update GTSPP (~10th of every month):
       //Don't add source_id or stream_ident: they are usually (always?) empty
@@ -548,7 +548,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 5, 2020, 8, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 2, 2020, 9, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -581,7 +581,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 5, 2020, 8); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 2, 2020, 9); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
@@ -1038,13 +1038,11 @@ TableWriterUnits twu;
 TaskThread tt;
 WaitThenTryAgainException wttae;
 
-//Shared.basicTest();
-
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
         boolean doSlowTestsToo = true;
 
-/* for releases, this line should have open/close comment */
+/* for releases, this line should have open/close comment  */
 // and all tests should be "0, -1" 
 
         //*** All of the unit tests for CWBrowsers and ERDDAP.

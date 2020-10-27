@@ -782,144 +782,138 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String tempDir = SSR.getTempDirectory();
         Table table = null;
 
-        try {
+        GridDataSetOpendap gdst = new GridDataSetOpendap(
+            "OGAssta", "GAssta", null, url, 
+            new String[]{"hday", "1day", "3day", "5day", "8day", "14day", "mday"}, 
+            new int[]{0, 24, 3*24, 5*24, 8*24, 14*24, 30*24, },
+            "Rainbow", "Linear", "8", "32", -1, "", null, //fgdc,
+            null,
+            "S", 1.8, 32, "degree_F", 45, 90);  
 
-            GridDataSetOpendap gdst = new GridDataSetOpendap(
-                "OGAssta", "GAssta", null, url, 
-                new String[]{"hday", "1day", "3day", "5day", "8day", "14day", "mday"}, 
-                new int[]{0, 24, 3*24, 5*24, 8*24, 14*24, 30*24, },
-                "Rainbow", "Linear", "8", "32", -1, "", null, //fgdc,
-                null,
-                "S", 1.8, 32, "degree_F", 45, 90);  
+        //*** test the GridDataSetOpendap version of getTimeSeries
+        //test individual makeGrid  to get the values tested below in getTimeSeries
+        double rLon = -128.975;
+        double rLat = 36.025;
 
-            //*** test the GridDataSetOpendap version of getTimeSeries
-            //test individual makeGrid  to get the values tested below in getTimeSeries
-            double rLon = -128.975;
-            double rLat = 36.025;
+        Grid grid = gdst.makeGrid("1 day", 
+            "2007-12-01 12:00:00",         
+            rLon, rLon, rLat, rLat, 1, 1);
+        Test.ensureEqual(grid.lon[0],   rLon,  "");
+        Test.ensureEqual(grid.lat[0],   rLat,  "");
+        Test.ensureEqual((float)grid.data[0],  16.35f,  "");
 
-            Grid grid = gdst.makeGrid("1 day", 
-                "2007-12-01 12:00:00",         
-                rLon, rLon, rLat, rLat, 1, 1);
-            Test.ensureEqual(grid.lon[0],   rLon,  "");
-            Test.ensureEqual(grid.lat[0],   rLat,  "");
-            Test.ensureEqual((float)grid.data[0],  16.35f,  "");
+        grid = gdst.makeGrid("1 day",
+            "2007-12-02 12:00:00",
+            rLon, rLon, rLat, rLat, 1, 1);
+        Test.ensureEqual(grid.lon[0],   rLon,  "");
+        Test.ensureEqual(grid.lat[0],   rLat,  "");
+        Test.ensureEqual((float)grid.data[0],  16.05f,  "");
 
-            grid = gdst.makeGrid("1 day",
-                "2007-12-02 12:00:00",
-                rLon, rLon, rLat, rLat, 1, 1);
-            Test.ensureEqual(grid.lon[0],   rLon,  "");
-            Test.ensureEqual(grid.lat[0],   rLat,  "");
-            Test.ensureEqual((float)grid.data[0],  16.05f,  "");
+        //first just test if it gets correct answers            
+        table = gdst.getTimeSeries(tempDir, rLon, rLat,
+            "2007-12-01 12:00:00", "2007-12-20 12:00:00", "1 day");
+        //String2.log("timeSeriesTable=" + table);
+        Test.ensureEqual(table.nRows(), 20, "");
+        Test.ensureEqual(table.nColumns(), 6, "");
+        Test.ensureEqual(table.getColumnName(0), "LON", "");
+        Test.ensureEqual(table.getColumnName(1), "LAT", "");
+        Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
+        Test.ensureEqual(table.getColumnName(3), "TIME", "");
+        Test.ensureEqual(table.getColumnName(4), "ID", "");
+        Test.ensureEqual(table.getColumnName(5), "OGAssta", "");
 
-            //first just test if it gets correct answers            
-            table = gdst.getTimeSeries(tempDir, rLon, rLat,
-                "2007-12-01 12:00:00", "2007-12-20 12:00:00", "1 day");
-            //String2.log("timeSeriesTable=" + table);
-            Test.ensureEqual(table.nRows(), 20, "");
-            Test.ensureEqual(table.nColumns(), 6, "");
-            Test.ensureEqual(table.getColumnName(0), "LON", "");
-            Test.ensureEqual(table.getColumnName(1), "LAT", "");
-            Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
-            Test.ensureEqual(table.getColumnName(3), "TIME", "");
-            Test.ensureEqual(table.getColumnName(4), "ID", "");
-            Test.ensureEqual(table.getColumnName(5), "OGAssta", "");
+        Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(1).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(2).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(3).elementTypeString(), "double", "");
+        Test.ensureEqual(table.getColumn(4).elementTypeString(), "String", "");
+        Test.ensureEqual(table.getColumn(5).elementTypeString(), "float", "");
 
-            Test.ensureEqual(table.getColumn(0).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(1).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(2).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(3).elementTypeString(), "double", "");
-            Test.ensureEqual(table.getColumn(4).elementTypeString(), "String", "");
-            Test.ensureEqual(table.getColumn(5).elementTypeString(), "float", "");
+        Test.ensureEqual(table.getDoubleData(0,0),  rLon,       "");
+        Test.ensureEqual(table.getDoubleData(1,0),  rLat,         "");
+        Test.ensureEqual(table.getDoubleData(2,0),  0,          "");
+        Test.ensureEqual(table.getDoubleData(3,0),  Calendar2.isoStringToEpochSeconds("2007-12-01 12:00:00"), "");
+        Test.ensureEqual(table.getStringData(4,0), "OGAssta",   "");
+        Test.ensureEqual(table.getFloatData(5,0),  16.35f,     "");
 
-            Test.ensureEqual(table.getDoubleData(0,0),  rLon,       "");
-            Test.ensureEqual(table.getDoubleData(1,0),  rLat,         "");
-            Test.ensureEqual(table.getDoubleData(2,0),  0,          "");
-            Test.ensureEqual(table.getDoubleData(3,0),  Calendar2.isoStringToEpochSeconds("2007-12-01 12:00:00"), "");
-            Test.ensureEqual(table.getStringData(4,0), "OGAssta",   "");
-            Test.ensureEqual(table.getFloatData(5,0),  16.35f,     "");
-
-            Test.ensureEqual(table.getDoubleData(0,1),  rLon,       "");
-            Test.ensureEqual(table.getDoubleData(1,1),  rLat,         "");
-            Test.ensureEqual(table.getDoubleData(2,1),  0,          "");
-            Test.ensureEqual(table.getDoubleData(3,1),  Calendar2.isoStringToEpochSeconds("2007-12-02 12:00:00"), "");
-            Test.ensureEqual(table.getStringData(4,1),  "OGAssta",  "");
-            Test.ensureEqual(table.getFloatData( 5,1),  16.05f,       "");
+        Test.ensureEqual(table.getDoubleData(0,1),  rLon,       "");
+        Test.ensureEqual(table.getDoubleData(1,1),  rLat,         "");
+        Test.ensureEqual(table.getDoubleData(2,1),  0,          "");
+        Test.ensureEqual(table.getDoubleData(3,1),  Calendar2.isoStringToEpochSeconds("2007-12-02 12:00:00"), "");
+        Test.ensureEqual(table.getStringData(4,1),  "OGAssta",  "");
+        Test.ensureEqual(table.getFloatData( 5,1),  16.05f,       "");
 
 
-            //HARDER TEST: data for all time    does it crash?      35s first run,  then 12s
-            //for (int i = 30; i <= 36; i++)
-            //    table = gdst.getTimeSeries(tempDir, rLon, i,
-            //        "1980-01-01", "2099-12-31", gdst.activeTimePeriodOptions[0]);
+        //HARDER TEST: data for all time    does it crash?      35s first run,  then 12s
+        //for (int i = 30; i <= 36; i++)
+        //    table = gdst.getTimeSeries(tempDir, rLon, i,
+        //        "1980-01-01", "2099-12-31", gdst.activeTimePeriodOptions[0]);
 
 
-            //*** test the GridDataSet (superclass) version of getTimeSeries
-            //this is the only test of superclass' getTimeSeries
-            table = null;
-            table = gdst.getSuperTimeSeries(tempDir, rLon, rLat,
-                "2007-12-01 12:00:00", "2007-12-20 12:00:00", "1 day");
-            //String2.log("super timeSeriesTable=" + table);
-            Test.ensureEqual(table.nRows(), 20, "");
-            Test.ensureEqual(table.nColumns(), 6, "");
-            Test.ensureEqual(table.getColumnName(0), "LON", "");
-            Test.ensureEqual(table.getColumnName(1), "LAT", "");
-            Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
-            Test.ensureEqual(table.getColumnName(3), "TIME", "");
-            Test.ensureEqual(table.getColumnName(4), "ID", "");
-            Test.ensureEqual(table.getColumnName(5), "OGAssta", "");
+        //*** test the GridDataSet (superclass) version of getTimeSeries
+        //this is the only test of superclass' getTimeSeries
+        table = null;
+        table = gdst.getSuperTimeSeries(tempDir, rLon, rLat,
+            "2007-12-01 12:00:00", "2007-12-20 12:00:00", "1 day");
+        //String2.log("super timeSeriesTable=" + table);
+        Test.ensureEqual(table.nRows(), 20, "");
+        Test.ensureEqual(table.nColumns(), 6, "");
+        Test.ensureEqual(table.getColumnName(0), "LON", "");
+        Test.ensureEqual(table.getColumnName(1), "LAT", "");
+        Test.ensureEqual(table.getColumnName(2), "DEPTH", "");
+        Test.ensureEqual(table.getColumnName(3), "TIME", "");
+        Test.ensureEqual(table.getColumnName(4), "ID", "");
+        Test.ensureEqual(table.getColumnName(5), "OGAssta", "");
 
-            Test.ensureEqual(table.getDoubleData(0,0),  rLon,       "");
-            Test.ensureEqual(table.getDoubleData(1,0),  rLat,         "");
-            Test.ensureEqual(table.getDoubleData(2,0),  0,          "");
-            Test.ensureEqual(table.getDoubleData(3,0),  Calendar2.isoStringToEpochSeconds("2007-12-01 12:00:00"), "");
-            Test.ensureEqual(table.getStringData(4,0), "OGAssta",   "");
-            Test.ensureEqual(table.getFloatData(5,0),  16.35f,        "");
+        Test.ensureEqual(table.getDoubleData(0,0),  rLon,       "");
+        Test.ensureEqual(table.getDoubleData(1,0),  rLat,         "");
+        Test.ensureEqual(table.getDoubleData(2,0),  0,          "");
+        Test.ensureEqual(table.getDoubleData(3,0),  Calendar2.isoStringToEpochSeconds("2007-12-01 12:00:00"), "");
+        Test.ensureEqual(table.getStringData(4,0), "OGAssta",   "");
+        Test.ensureEqual(table.getFloatData(5,0),  16.35f,        "");
 
-            Test.ensureEqual(table.getDoubleData(0,1),  rLon,       "");
-            Test.ensureEqual(table.getDoubleData(1,1),  rLat,         "");
-            Test.ensureEqual(table.getDoubleData(2,1),  0,          "");
-            Test.ensureEqual(table.getDoubleData(3,1),  Calendar2.isoStringToEpochSeconds("2007-12-02 12:00:00"), "");
-            Test.ensureEqual(table.getStringData(4,1),  "OGAssta",  "");
-            Test.ensureEqual(table.getFloatData(5,1),   16.05f,       "");
+        Test.ensureEqual(table.getDoubleData(0,1),  rLon,       "");
+        Test.ensureEqual(table.getDoubleData(1,1),  rLat,         "");
+        Test.ensureEqual(table.getDoubleData(2,1),  0,          "");
+        Test.ensureEqual(table.getDoubleData(3,1),  Calendar2.isoStringToEpochSeconds("2007-12-02 12:00:00"), "");
+        Test.ensureEqual(table.getStringData(4,1),  "OGAssta",  "");
+        Test.ensureEqual(table.getFloatData(5,1),   16.05f,       "");
 
-        
-            //*** test of centering time periods
-            //test individual makeGrid  to get the values tested below in getTimeSeries
-            grid = gdst.makeGrid("3 day", "2006-08-13 12:00:00", //centered time
-                -130.02, -130.02, 36.02, 36.02,  //close, not exact
-                1, 1);
-            Test.ensureEqual(grid.lon[0],   -130.025,  ""); //3 day grid is offset by .025!!
-            Test.ensureEqual(grid.lat[0],   36.025,  "");
-            Test.ensureEqual((float)grid.data[0],  19.8f,  "");
+    
+        //*** test of centering time periods
+        //test individual makeGrid  to get the values tested below in getTimeSeries
+        grid = gdst.makeGrid("3 day", "2006-08-13 12:00:00", //centered time
+            -130.02, -130.02, 36.02, 36.02,  //close, not exact
+            1, 1);
+        Test.ensureEqual(grid.lon[0],   -130.025,  ""); //3 day grid is offset by .025!!
+        Test.ensureEqual(grid.lat[0],   36.025,  "");
+        Test.ensureEqual((float)grid.data[0],  19.8f,  "");
 
-            grid = gdst.makeGrid("3 day", "2006-08-08 12:00:00", //centered time
-                -130.02, -130.02, 36.02, 36.02, 
-                1, 1);
-            Test.ensureEqual(grid.lon[0],   -130.025,  "");
-            Test.ensureEqual(grid.lat[0],   36.025,  "");
-            Test.ensureEqual((float)grid.data[0],  18.75f,  "");
+        grid = gdst.makeGrid("3 day", "2006-08-08 12:00:00", //centered time
+            -130.02, -130.02, 36.02, 36.02, 
+            1, 1);
+        Test.ensureEqual(grid.lon[0],   -130.025,  "");
+        Test.ensureEqual(grid.lat[0],   36.025,  "");
+        Test.ensureEqual((float)grid.data[0],  18.75f,  "");
 
-            //first just test if it gets correct answers            
-            table = gdst.getTimeSeries(tempDir, -130.02, 36.02,
-                "2006-08-08", "2006-08-14", //begin and end centered times
-                "3 day");
-            //String2.log("timeSeriesTable=" + table);
-            PrimitiveArray timePA = table.getColumn(3);
-            PrimitiveArray dataPA = table.getColumn(5);
+        //first just test if it gets correct answers            
+        table = gdst.getTimeSeries(tempDir, -130.02, 36.02,
+            "2006-08-08", "2006-08-14", //begin and end centered times
+            "3 day");
+        //String2.log("timeSeriesTable=" + table);
+        PrimitiveArray timePA = table.getColumn(3);
+        PrimitiveArray dataPA = table.getColumn(5);
 
-            //find the row corresponding to the desired time
-            double seconds = Calendar2.isoStringToEpochSeconds("2006-08-13 12:00:00"); //centered time
-            int row = timePA.binaryFindClosest(seconds);
-            Test.ensureEqual(timePA.getDouble(row), seconds, ""); //ensure exact match   2006-08-13T23:59:59
-            Test.ensureEqual(dataPA.getFloat(row), 19.8f, "");
+        //find the row corresponding to the desired time
+        double seconds = Calendar2.isoStringToEpochSeconds("2006-08-13 12:00:00"); //centered time
+        int row = timePA.binaryFindClosest(seconds);
+        Test.ensureEqual(timePA.getDouble(row), seconds, ""); //ensure exact match   2006-08-13T23:59:59
+        Test.ensureEqual(dataPA.getFloat(row), 19.8f, "");
 
-            seconds = Calendar2.isoStringToEpochSeconds("2006-08-08 12:00:00"); //centered time
-            row = timePA.binaryFindClosest(seconds);
-            Test.ensureEqual(timePA.getDouble(row), seconds, ""); //ensure exact match
-            Test.ensureEqual(dataPA.getFloat(row), 18.75f, "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.pressEnterToContinue("\nRecover from thredds failure?");
-        }
+        seconds = Calendar2.isoStringToEpochSeconds("2006-08-08 12:00:00"); //centered time
+        row = timePA.binaryFindClosest(seconds);
+        Test.ensureEqual(timePA.getDouble(row), seconds, ""); //ensure exact match
+        Test.ensureEqual(dataPA.getFloat(row), 18.75f, "");
     }
 
 
