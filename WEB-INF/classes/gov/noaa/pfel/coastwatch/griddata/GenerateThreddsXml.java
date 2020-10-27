@@ -75,7 +75,7 @@ public class GenerateThreddsXml {
      *   e.g., AT/ssta/1day.
      *   Some of this could be gotten around by making twoNameRegex and
      *   fourNameRegex parameters.
-     * <li>The xml directory structure must be [somthing]twoName/fourName,
+     * <li>The xml directory structure must be [something]twoName/fourName,
      *   e.g., aggregsatAT/ssta.
      * <li>Datasets with 'C' as the first letter of the twoName
      *   are assumed to be HF Radar datasets and their catalog.xml files are 

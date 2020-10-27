@@ -1764,8 +1764,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "2016-01-16 SOURCE IS GONE.");
+            throw new RuntimeException("2016-01-16 SOURCE IS GONE.", t);
         }
     }
 

@@ -3593,7 +3593,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //This is synchronized because all calls to HDFLibrary are static.
         //So I need to ensure that only one thread uses it at once.
-        synchronized (saveAsHDFLock) {
+        synchronized(saveAsHDFLock) {
             if (verbose) String2.log("Grid.saveAsHDF " + hdfFileName);
             String errorIn = String2.ERROR + " in HdfWriter.grdToHdf: ";
             

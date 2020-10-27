@@ -3487,11 +3487,6 @@ public class Calendar2 {
             formatAsISOYear(gc) + "-" +
             String2.zeroPad("" + (gc.get(MONTH) + 1), 2) + "-" +
             String2.zeroPad("" + gc.get(DATE), 2);
-
-        //this method is influenced by the format's timeZone
-        //synchronized (isoDateFormat) {
-        //    return isoDateFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3512,11 +3507,6 @@ public class Calendar2 {
             String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
             String2.zeroPad("" + gc.get(MINUTE), 2) + ":" +
             String2.zeroPad("" + gc.get(SECOND), 2);
-
-        //this method is influenced by the format's timeZone
-        //synchronized (isoDateTimeFormat) {
-        //    return isoDateTimeFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3720,11 +3710,6 @@ public class Calendar2 {
             String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
             String2.zeroPad("" + gc.get(MINUTE), 2) + ":" +
             String2.zeroPad("" + gc.get(SECOND), 2);
-
-        //this method is influenced by the format's timeZone
-        //synchronized (isoDateTimeFormat) {
-        //    return isoDateTimeFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3762,11 +3747,6 @@ public class Calendar2 {
             String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + 
             String2.zeroPad("" + gc.get(MINUTE), 2) +
             String2.zeroPad("" + gc.get(SECOND), 2);
-
-        //this method is influenced by the format's timeZone
-        //synchronized (CompactDateTimeFormat) {
-        //    return CompactDateTimeFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3829,11 +3809,6 @@ public class Calendar2 {
         return
             formatAsISOYear(gc) + 
             String2.zeroPad("" + gc.get(DAY_OF_YEAR), 3); 
-
-        //this method is influenced by the format's timeZone
-        //synchronized (YYYYDDDFormat) {
-        //    return YYYYDDDFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3848,11 +3823,6 @@ public class Calendar2 {
         return
             formatAsISOYear(gc) + 
             String2.zeroPad("" + (gc.get(MONTH) + 1), 2);
-        
-        //this method is influenced by the format's timeZone
-        //synchronized (YYYYMMFormat) {
-        //    return YYYYMMFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -3872,11 +3842,6 @@ public class Calendar2 {
             String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
             String2.zeroPad("" + gc.get(MINUTE), 2) + ":" +
             String2.zeroPad("" + gc.get(SECOND), 2);
-        
-        //this method is influenced by the format's timeZone
-        //synchronized (YYYYMMFormat) {
-        //    return YYYYMMFormat.format(gc.getTime());
-        //}
     }
 
     /**
@@ -4151,10 +4116,6 @@ public class Calendar2 {
         gc.set(MILLISECOND, ymdhmsmom[6]);
         gc.get(MONTH); //force recalculations
 
-        //synchronized (isoDateTimeFormat) {
-        //    gc.setTime(isoDateTimeFormat.parse(isoDateTimeString));
-        //}
-        //String2.log("  " + gc.getTimeInMillis() + " = " + formatAsISODateTimeT3Z(gc));
         return gc;
     }
 
@@ -4688,9 +4649,6 @@ public class Calendar2 {
         gc.set(MILLISECOND, 0);
         gc.get(MONTH); //force recalculations
 
-        //synchronized (isoDateTimeFormat) {
-        //    gc.setTime(isoDateTimeFormat.parse(isoDateTimeString));
-        //}
         return gc;
     }
 
@@ -4745,10 +4703,6 @@ public class Calendar2 {
         gc.set(MILLISECOND, 0);
         gc.get(MONTH); //force recalculations
 
-        //synchronized (CompactDateTimeFormat) {
-        //    gc.setTime(CompactDateTimeFormat.parse(s));
-        //}
-        //String2.log("parseCompactDateTime " + s + " -> " + formatAsISODateTimeT(gc));        
         return gc;
     }
 
@@ -4888,10 +4842,6 @@ public class Calendar2 {
         gc.set(MILLISECOND, 0);
         gc.get(MONTH); //force recalculations
 
-        //synchronized (YYYYDDDFormat) {
-        //    gc.setTime(YYYYDDDFormat.parse(YYYYDDDString));
-        //}
-        //String2.log("parseYYYYDDD " + s + " -> " + formatAsISODate(gc));
         return gc;
     }
 

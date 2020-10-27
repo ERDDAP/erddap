@@ -1513,7 +1513,6 @@ public class ShortArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** ShortArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         ShortArray anArray = ShortArray.fromCSV(    " -32768, -1, 0, 32766, ,      32767, 99999 ");
         Test.ensureEqual(anArray.toString(),         "-32768, -1, 0, 32766, 32767, 32767, 32767", "");

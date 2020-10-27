@@ -1621,7 +1621,6 @@ public class CharArray extends PrimitiveArray {
      */
     public static void basicTest() throws Throwable{
         String2.log("*** CharArray.basicTest");
-/* for releases, this line should have open/close comment */
 
         CharArray anArray = CharArray.fromCSV(       "\"\\t\", a, \"\\n\", \"\\u20AC\", ,  \"\\uffff\" ");
         Test.ensureEqual(anArray.toString(),         "\\t, a, \\n, \\u20ac, \\uffff, \\uffff", "");

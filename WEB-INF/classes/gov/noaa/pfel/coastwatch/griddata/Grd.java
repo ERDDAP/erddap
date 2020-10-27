@@ -95,7 +95,7 @@ public class Grd {
 
         //I'm not sure that GMT is thread safe
         //so be sure only one thread is doing this at once.
-        synchronized (lockForSubsampleGrdFile) {
+        synchronized(lockForSubsampleGrdFile) {
             String fullInNameGrd = workDir + inName + ".grd";
             String fullOutName   = workDir + outName;
 
@@ -210,7 +210,7 @@ public class Grd {
 
         //Dave's scripts are not thread safe (they often use one fixed temp file name)
         //so be sure only one thread is doing this at once.
-        synchronized (lockForMakeDataFile) {
+        synchronized(lockForMakeDataFile) {
             String fullGrdName    = grdDir + name + ".grd";
             String fullResultName = resultDir + name; //but without extension
             String ext = MakeExtensions[outType];
@@ -705,7 +705,7 @@ public class Grd {
         int gifWidth, int gifHeight,
         String customFileName) throws Exception {
 
-        //synchronized (lockForMakeGMTMap) 
+        //synchronized(lockForMakeGMTMap) 
         {
             //POLICY: because this procedure may be used in more than one thread,
             //do work on unique temp files names using randomInt, then rename to proper file name.

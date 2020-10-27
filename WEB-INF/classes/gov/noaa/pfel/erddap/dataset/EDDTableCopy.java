@@ -1474,13 +1474,14 @@ reallyVerbose=false;
                 if (interactive) {
                     //if (test ==  0) ...;
 
+                    //no longer active
+                    //if (test == 1000) testRepPostDet(true);  //checkSourceData 
+                    //if (test == 1001) testRepPostDet(false); //checkSourceData (faster)
+
                 } else {
                     if (test ==  0) testBasic();    //tests testTableCopy dataset on local erddap
                     if (test ==  1) testFiles();    
 
-                    //no longer active
-                    //if (test == 1000) testRepPostDet(true);  //checkSourceData 
-                    //if (test == 1001) testRepPostDet(false); //checkSourceData (faster)
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

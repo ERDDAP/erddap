@@ -1452,8 +1452,6 @@ public class SSR {
             false, false);  //requestCompression, touchMode
         InputStream in = (InputStream)oar[1];
         //it doesn't seem necessary to read even 1 byte (if available)
-        //if (in.available() > 0)
-        //    in.read();
         in.close();
     }
                                             
@@ -1471,9 +1469,9 @@ public class SSR {
      * @return an InputStream from the url
      * @throws Exception if trouble
      */
-    public static InputStream getUncompressedUrlBufferedInputStream(String urlString) 
+    public static BufferedInputStream getUncompressedUrlBufferedInputStream(String urlString) 
             throws Exception {
-        return (InputStream)getUrlConnBufferedInputStream(urlString, 120000, false)[1]; //2 minute timeout
+        return (BufferedInputStream)getUrlConnBufferedInputStream(urlString, 120000, false)[1]; //2 minute timeout
     } 
 
 
@@ -1581,7 +1579,7 @@ public class SSR {
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @param timeOutMillis the time out for opening a connection in milliseconds  
      *    (use -1 to get high default, currently 10 minutes)
-     * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) InputStream,
+     * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) BufferedInputStream,
      *   [2]=charset (will be valid)
      * @throws Exception if trouble
      */
@@ -1661,7 +1659,7 @@ public class SSR {
             }            
         }        
 
-        InputStream is = getBufferedInputStream(urlString, conn);
+        BufferedInputStream is = getBufferedInputStream(urlString, conn);
         String charset = getCharset(urlString, conn); 
 
         //String2.log(">>charset=" + charset);
@@ -1670,18 +1668,17 @@ public class SSR {
 
 
     /**
-     * This returns the inputStream from the connection, with a content decoder
+     * This returns the BufferedInputStream from the connection, with a content decoder
      * if needed.
      *
      * @param urlString for diagnostics only
      * @param con 
-     * @return the inputStream from the connection, with a content decoder
-     * if needed.
+     * @return the BufferedInputStream from the connection, with a content decoder if needed.
      */
-    public static InputStream getBufferedInputStream(String urlString, URLConnection con) throws Exception {
+    public static BufferedInputStream getBufferedInputStream(String urlString, URLConnection con) throws Exception {
         String encoding = con.getContentEncoding();
         try {
-            InputStream is = new BufferedInputStream(con.getInputStream());
+            BufferedInputStream is = new BufferedInputStream(con.getInputStream());
             //String2.log("url = " + urlString + "\n" +  //diagnostic
             //  "  headerFields=" + String2.toString(conn.getHeaderFields()));
             //    "encoding=" + encoding + "\n" +
@@ -1692,9 +1689,9 @@ public class SSR {
                 //    is = new ZipInputStream(is);
                 //else 
                 if (encoding.indexOf("gzip") >= 0)
-                    is = new GZIPInputStream(is);
+                    is = new BufferedInputStream(new GZIPInputStream(is));
                 else if (encoding.indexOf("deflate") >= 0)
-                    is = new InflaterInputStream(is);
+                    is = new BufferedInputStream(new InflaterInputStream(is));
             }
 
             return is;
@@ -1788,8 +1785,8 @@ public class SSR {
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      */
-    public static InputStream getUrlBufferedInputStream(String urlString) throws Exception {
-        return (InputStream)(getUrlConnBufferedInputStream(urlString, 120000)[1]); 
+    public static BufferedInputStream getUrlBufferedInputStream(String urlString) throws Exception {
+        return (BufferedInputStream)(getUrlConnBufferedInputStream(urlString, 120000)[1]); 
     }
 
     /** If you need a reader, this is better than starting with getUrlInputStream
@@ -1980,20 +1977,19 @@ public class SSR {
      */
     public static byte[] getUrlResponseBytes(String urlString) throws Exception {
         try {
+            //String2.log(">> SSR.getUrlResponseBytes(" + urlString + ")");
             long time = System.currentTimeMillis();
-            byte buffer[] = new byte[1024];
-            InputStream is = getUrlBufferedInputStream(urlString); 
+            byte buffer[] = new byte[8096];
+            BufferedInputStream is = getUrlBufferedInputStream(urlString); 
             try {
                 ByteArray ba = new ByteArray();
-                int available = is.available();
-                while (available >= 0) { //0 is ok
-                    int getN = is.read(buffer, 0, Math.min(1024, Math.max(1, available))); //1.. avail .. 1024
-                    if (getN == -1) //eof
-                        break;
-                    ba.add(buffer, 0, getN);
+                int gotN;
+                while ((gotN = is.read(buffer)) > 0) { //-1 = end of stream, but should block so gotN > 0
+                    //String2.log(">> gotN=" + gotN);
+                    ba.add(buffer, 0, gotN);
                 }
                 if (reallyVerbose) String2.log("  SSR.getUrlResponseBytes " + urlString + 
-                    " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
+                    " finished. nBytes=" + ba.size() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
                 return ba.toArray();
             } finally {
                 is.close();
@@ -2417,7 +2413,7 @@ public class SSR {
             writer.close();
         }
 
-        InputStream is = getBufferedInputStream(urlString, con);
+        BufferedInputStream is = getBufferedInputStream(urlString, con);
         String charset = getCharset(urlString, con);
         return new Object[]{con, is, charset};
     } 
@@ -2457,9 +2453,9 @@ public class SSR {
             source.startsWith("https://") ||  //untested.
             source.startsWith("ftp://")) {    //untested. presumably anonymous
             //URL
-            InputStream in = null;
+            BufferedInputStream in = null;
             try {
-                in = (InputStream)(getUrlConnBufferedInputStream(source, 
+                in = (BufferedInputStream)(getUrlConnBufferedInputStream(source, 
                     120000)[1]); //timeOutMillis. throws Exception
                 if (first > 0) {
                     File2.skipFully(in, first);
@@ -2480,30 +2476,6 @@ public class SSR {
             return File2.copy(source, out, first, last);
         }
     }
-
-
-    /** 
-     * A method to copy the info from an inputStream to an outputStream.
-     * Based on E.R. Harold's book "Java I/O".
-     *
-     * @param in Best if buffered. At the end, in ISN'T closed.
-     * @param out Best if Buffered. At the end, out is flushed, but not closed
-     * @throws IOException if trouble
-     */
-    public static void copy(InputStream in, OutputStream out) throws IOException {
-
-        // do not allow other threads to read from the
-        // input or write to the output while copying is taking place
-        synchronized (in) {
-            synchronized (out) {
-                byte[] buffer = new byte[8192]; //best if smaller than java buffered...stream sizes
-                int nRead;
-                while ((nRead = in.read(buffer)) >= 0) //0 shouldn't happen. -1=end of file
-                    out.write(buffer, 0, nRead);
-                out.flush();
-            }
-        }
-    } 
 
     /**
      * This checks that the links on the specified web page return error 200.

@@ -1046,29 +1046,25 @@ expected =
                 "\nTHIS TEST REQUIRES rMHchla8day TO BE ACTIVE ON THE localhost ERDDAP.");
 
             //ensure it is ready-to-use by making a dataset from it
-            try {
-                String tDatasetID = "localhost_b73a_a4a6_4f4a";
-                EDD.deleteCachedDatasetInfo(tDatasetID);
-                EDD edd = oneFromXmlFragment(null, results);    
-                String2.log(
-                    "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
-                    "title=" + edd.title() + "\n" +
-                    "datasetID=" + edd.datasetID() + "\n" +
-                    "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
-                Test.ensureEqual(edd.title(), 
-                    "Audio data from a local source.", "");
-                Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-                Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                    "channel_1", "");
-            } catch (Exception e) {
-                String2.pressEnterToContinue(MustBe.throwableToString(e));
-            }
+            String tDatasetID = "localhost_b73a_a4a6_4f4a";
+            EDD.deleteCachedDatasetInfo(tDatasetID);
+            EDD edd = oneFromXmlFragment(null, results);    
+            String2.log(
+                "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
+                "title=" + edd.title() + "\n" +
+                "datasetID=" + edd.datasetID() + "\n" +
+                "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
+            Test.ensureEqual(edd.title(), 
+                "Audio data from a local source.", "");
+            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+                "channel_1", "");
 
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl + 
-                "\nThis test requires |testGridWav|erdBAssta5day|rMHchla8day in the localhost ERDDAP.\n"); //in tests, always non-https url
+            throw new RuntimeException( 
+                "Error using generateDatasetsXml on " + EDStatic.erddapUrl + 
+                "\nThis test requires |testGridWav|erdBAssta5day|rMHchla8day in the localhost ERDDAP.", t); //in tests, always non-https url
         }
 
     }
@@ -1228,7 +1224,17 @@ expected2 =
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-            try {
+            tPo = results.indexOf("history \"NASA GSFC (OBPG)");
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
+                "\nresults=\n" + results);
+
+            tPo = results.indexOf("    String infoUrl ");
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+            Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
+
+            if (testLocalErddapToo) {
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
                 tPo = results.indexOf("history \"NASA GSFC (OBPG)");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
                 Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
@@ -1236,26 +1242,8 @@ expected2 =
 
                 tPo = results.indexOf("    String infoUrl ");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-            }
-
-            try {
-                if (testLocalErddapToo) {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
-                    tPo = results.indexOf("history \"NASA GSFC (OBPG)");
-                    Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                    Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
-                        "\nresults=\n" + results);
-
-                    tPo = results.indexOf("    String infoUrl ");
-                    Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                    Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, 
-                        "\nresults=\n" + results);
-                }
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+                Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, 
+                    "\nresults=\n" + results);
             }
 
             //*** test getting dds for entire dataset
@@ -1471,18 +1459,13 @@ expected2 =
 "}\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
-            try {
-                if (testLocalErddapToo) {
-                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".ncHeader?" + query);
-                    tPo = results.indexOf("  variables:\n");
-                    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-                    Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, 
-                        "\nresults=\n" + results);
-                    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
-                }
-            } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n*** THIS WILL FAIL UNTIL AFTER RELEASE 2.00."); 
+            if (testLocalErddapToo) {
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".ncHeader?" + query);
+                tPo = results.indexOf("  variables:\n");
+                Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+                Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, 
+                    "\nresults=\n" + results);
+                Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
             }
 
             //********************************************** test getting grid data
@@ -1731,9 +1714,10 @@ expected2 =
         /* */
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\n*** This EDDGridFromErddap test requires erdMHchla8day on coastwatch's erddap" +
-                (testLocalErddapToo? "\n    AND rMHchla8day on localhost's erddap." : "")); 
+            throw new RuntimeException( 
+                "*** This EDDGridFromErddap test requires erdMHchla8day on coastwatch's erddap" +
+                (testLocalErddapToo? "\n    AND rMHchla8day on localhost's erddap." : ""),
+                t); 
         }
     }
 

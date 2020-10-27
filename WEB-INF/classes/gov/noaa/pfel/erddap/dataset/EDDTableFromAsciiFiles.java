@@ -2898,9 +2898,9 @@ expected =
                     }
                 }
             } catch (Throwable t) {
-                String2.pressEnterToContinue(String2.ERROR + " while working with " + 
-                    tDataDir + tDataFileName + ":\n" +
-                    MustBe.throwableToString(t));
+                throw new RuntimeException(String2.ERROR + " while working with " + 
+                    tDataDir + tDataFileName,
+                    t);
             }
 
             //ensure all column have same number of values
@@ -6566,7 +6566,7 @@ String expected =
                 "testNThreads" + i, ".csv"); 
 
             long eTime = System.currentTimeMillis() - startTime;
-            String msg = "nThreads=" + eddTable.nThreads + " time=" + eTime + "\n";
+            String msg = "nThreads=" + eddTable.nThreads + " time=" + eTime + "ms\n";
             String2.log(msg);
             bigResults.append(msg);
             if (eTime > 18000)
@@ -6749,6 +6749,9 @@ nThreads=4 time=13
                 if (interactive) {
                     //if (test ==  0) ...;
 
+                    //not usually run
+                    if (test == 1000) testQuickRestart();
+
                 } else {
                     if (test ==  0) testBasic(deleteCachedDatasetInfo);
                     if (test ==  1) testGenerateDatasetsXml();
@@ -6768,8 +6771,6 @@ nThreads=4 time=13
                     if (test == 15) testFiles();
                     if (test == 16) testNThreads();
 
-                    //not usually run
-                    if (test == 1000) testQuickRestart();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

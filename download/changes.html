@@ -69,9 +69,9 @@ those great suggestions coming!
 -->
 
 
-<!-- ****************************************************************************** 
-<h2><a class="selfLink" id="changes2.03" href="#changes2.03" rel="bookmark">Changes</a> 
-in ERDDAP version 2.03 (released 2019-??-??)</h2>
+<!-- ****************************************************************************** -->
+<h2><a class="selfLink" id="changes2.10" href="#changes2.10" rel="bookmark">Changes</a> 
+in ERDDAP version 2.10 (released 2020-10-27)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -285,7 +285,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
       <br>&nbsp;
 
     <li>NEW: There is a new optional setting in setup.xml, &lt;defaultAccessibleViaFiles&gt;, 
-      which sets the default <accessibleViaFiles> for each of the datasets.
+      which sets the default &lt;accessibleViaFiles&gt; for each of the datasets.
       The default for this new tag is false, which mimics the previous ERDDAP behavior.
       
       <p>If you want to make all EDD...FromFiles datasets accessible via the files 
@@ -330,8 +330,8 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     </ul>
 
   <li>IMPROVED: Now, if a source dataset has CF grid_mapping information, 
-    generateDatasetsXml for gridded datasets will add the information to global <addAtts>,
-    and the information will be added to global <sourceAtts> everytime data is read from the file.
+    generateDatasetsXml for gridded datasets will add the information to global &lt;addAtts&gt;,
+    and the information will be added to global &lt;sourceAtts&gt; everytime data is read from the file.
     The information will appear in the dataset's global attributes as a set of attributes
     with the prefix grid_mapping_ .
     <br>&nbsp;
@@ -395,7 +395,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     EDDTableFromColumnarAsciiFilesdataset can 
     include a tag which tells ERDDAP to ignore all of the lines in the file
     which match the specified regular expression. For example,
-    <br><kbd>&lt;skipLinesRegex&gt;#.*&lt;/skipLinesRegex&gt;
+    <br><kbd>&lt;skipLinesRegex&gt;#.*&lt;/skipLinesRegex&gt;</kbd>
     <br>will skip all lines which start with "#".
     <br>Thanks to Eli Hunter.
     <br>&nbsp;
@@ -479,7 +479,7 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
     Thanks to Julien Paul.
     <br>&nbsp;
 
-  <liIMPROVED: GenerateDatasetsXml now makes the variable destinationNames unique
+  <li>IMPROVED: GenerateDatasetsXml now makes the variable destinationNames unique
     by added _2, _3, ..., as needed.
     Thanks to Julien Paul.
     <br>&nbsp;
@@ -528,7 +528,6 @@ in ERDDAP version 2.03 (released 2019-??-??)</h2>
 
   </ul>
 </ul>
--->
 
 <!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.02" href="#changes2.02" rel="bookmark">Changes</a> 
@@ -1094,11 +1093,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     of NetCDF (v3 or v4) .nc files which use 
     a specific, invalid, variant of the CF DSG Contiguous Ragged Array (CRA) files.
     Sample files for this dataset type can be found at 
-    <a rel="bookmark"
-        href="https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/"
-             >https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>. 
+    https://data.nodc.noaa.gov/thredds/catalog/ncei/wod/ [2020-10-21 This server is now not reliably available]. 
     Although ERDDAP supports this file type, it is an invalid file type 
     that no one should start using. Groups that currently use this file type are 
     strongly encouraged to use ERDDAP to generate valid CF DSG CRA files
@@ -6058,7 +6053,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.02
+<p>ERDDAP, Version 2.10
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

@@ -1833,7 +1833,6 @@ public class Attributes {
      */
     public static void basicTest() throws Exception {
         String2.log("\n*** Attributes.basicTest()");
-/* for releases, this line should have open/close comment */
 
         //set  and size
         Attributes atts = new Attributes();

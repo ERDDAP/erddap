@@ -847,8 +847,7 @@ String expected =
     public static void testGenerateDatasetsXml2() throws Throwable {
         testVerboseOn();
 
-        try {
-            String results = generateDatasetsXml(
+        String results = generateDatasetsXml(
 "https://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/contents.html", 
 "wod_002057.*\\.nc",
 "https://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/wod_002057989O.nc", 
@@ -862,41 +861,37 @@ dods.dap.DDSException:
 Parse Error on token: String
 In the dataset descriptor object:
 Expected a variable declaration (e.g., Int32 i;).
- at dods.dap.parser.DDSParser.error(DDSParser.java:710)
- at dods.dap.parser.DDSParser.NonListDecl(DDSParser.java:241)
- at dods.dap.parser.DDSParser.Declaration(DDSParser.java:155)
- at dods.dap.parser.DDSParser.Declarations(DDSParser.java:131)
- at dods.dap.parser.DDSParser.Dataset(DDSParser.java:97)
- at dods.dap.DDS.parse(DDS.java:442)
- at dods.dap.DConnect.getDDS(DConnect.java:388)
- at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.generateDatasetsXml(EDDTableFromHyraxFiles.java:570)
- at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.testGenerateDatasetsXml(EDDTableFromHyraxFiles.java:930)
- at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.test(EDDTableFromHyraxFiles.java:1069)
- at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1395)
- */
- String expected = 
+at dods.dap.parser.DDSParser.error(DDSParser.java:710)
+at dods.dap.parser.DDSParser.NonListDecl(DDSParser.java:241)
+at dods.dap.parser.DDSParser.Declaration(DDSParser.java:155)
+at dods.dap.parser.DDSParser.Declarations(DDSParser.java:131)
+at dods.dap.parser.DDSParser.Dataset(DDSParser.java:97)
+at dods.dap.DDS.parse(DDS.java:442)
+at dods.dap.DConnect.getDDS(DConnect.java:388)
+at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.generateDatasetsXml(EDDTableFromHyraxFiles.java:570)
+at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.testGenerateDatasetsXml(EDDTableFromHyraxFiles.java:930)
+at gov.noaa.pfel.erddap.dataset.EDDTableFromHyraxFiles.test(EDDTableFromHyraxFiles.java:1069)
+at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1395)
+*/
+String expected = 
 "<dataset zzz" +
 "\n";
 
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-            /* *** This doesn't work. Usually no files already downloaded. 
-            //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = "nasa_jpl_ae1a_8793_8b49";
-            EDD.deleteCachedDatasetInfo(tDatasetID);
-            EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "longitude, latitude, time, uwnd, vwnd, wspd, upstr, vpstr, nobs", "");
-            */
+        /* *** This doesn't work. Usually no files already downloaded. 
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = "nasa_jpl_ae1a_8793_8b49";
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+        Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+        Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "longitude, latitude, time, uwnd, vwnd, wspd, upstr, vpstr, nobs", "");
+        */
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
     }
 
     /**
@@ -943,11 +938,10 @@ Expected a variable declaration (e.g., Int32 i;).
                 eddTable = (EDDTable)oneFromDatasetsXml(null, id); //redownload the dataset
             }
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) +
-                "\n2019-05 This fails because source was .gz so created local files were called .gz\n" +
+            throw new RuntimeException("2019-05 This fails because source was .gz so created local files were called .gz\n" +
                 "even though they aren't .gz compressed.\n" +
-                "Solve this, or better: stop using EDDTableFromHyraxfiles");
-            return;
+                "Solve this, or better: stop using EDDTableFromHyraxfiles",
+                t);
         }
 
 
@@ -1233,16 +1227,17 @@ expected =
                 if (interactive) {
                     //if (test ==  0) ...;
 
-                } else {
-                    if (test ==  0) testGenerateDatasetsXml();
-
-
                     //2019-05-17 testJpl fails because remote source is named ...nc.gz
                     //  so local files are named .nc.gz even though they are .nc files.
                     //  This class should force .nc as local file type.
                     //  Or just get rid of it.
                     if (test == 1000) testJpl(true);   //deleteCachedInfoAndOneFile
                     if (test == 1001) testJpl(false);  
+
+                } else {
+                    if (test ==    0) testGenerateDatasetsXml();
+
+                    if (test == 1000) testGenerateDatasetsXml2();  //unfinished
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

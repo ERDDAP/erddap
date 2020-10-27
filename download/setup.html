@@ -165,16 +165,20 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="https://erddap.axiomdatascience.com/erddap/index.html">NOAA IOOS CeNCOOS</a> 
   (Central and Northern California Ocean Observing System, run by Axiom Data Science) 
   <!-- was 2015-03-18 Jennifer Patterson -->
-<li><a rel="bookmark" href="http://erddap.gcoos.org:8080/erddap/index.html">NOAA IOOS GCOOS Oceanographic Data</a> and 
-    <a rel="bookmark" href="http://erddap2.gcoos.org:8080/erddap/index.html">Non-Oceanographic Data</a> 
+<li><a rel="bookmark" href="https://erddap.gcoos.org/erddap/index.html"    >NOAA IOOS GCOOS Atmospheric and Oceanographic Data: Observing System</a> 
+<br><a rel="bookmark" href="https://gcoos5.geos.tamu.edu/erddap/index.html">NOAA IOOS GCOOS Atmospheric and Oceanographic Data: Historical Collections</a> 
+<br><a rel="bookmark" href="https://gcoos4.tamu.edu/erddap/index.html"     >NOAA IOOS GCOOS Biological and Socioeconomics</a> 
     (Gulf Coast Ocean Observing System) 
-  <!-- 2019-08-12 Felimon Gayanilo  -->
+  <!-- 2019-08-12 and 2020-10-21 Felimon Gayanilo  -->
 <li><a rel="bookmark" href="http://www.neracoos.org/erddap/index.html">NOAA IOOS NERACOOS</a> 
   (Northeastern Regional Association of Coastal and Ocean Observing Systems) 
   <!-- 2015-03-18 Eric Bridger -->
 <li><a rel="bookmark" href="https://data.ioos.us/gliders/erddap/index.html">NOAA IOOS NGDAC</a> 
   (National Glider Data Assembly Center) 
   <!-- 2015-03-17 Luke Campbell -->
+<li><a rel="bookmark" href="https://data.nanoos.org/erddap/index.html">NOAA IOOS NANOOS</a> 
+  (Northwest Association of Networked Ocean Observing Systems) 
+  <!-- 2020-10-16 Craig Risien -->
 <li><a rel="bookmark" href="https://pae-paha.pacioos.hawaii.edu/erddap/index.html">NOAA IOOS PacIOOS</a> 
   (Pacific Islands Ocean Observing System) at the University of Hawaii (UH) 
   <!-- 2015-03-16 John Maurer, 2015-03-17 James Potemra -->
@@ -210,10 +214,11 @@ Joint Research Centre of the European Commission)
 <li><a rel="bookmark" href="http://dap.onc.uvic.ca/erddap/index.html"
  >Ocean Networks Canada</a>
   <!-- 2015-03-17 Reyna Jenkyns -->
-<li><a rel="bookmark"
-  href="https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"
-  >Ocean Observatories Initiative (OOI) / Uncabled Data</a>
-  <!-- 2017-10-19 They made it public. -->
+<li><a rel="bookmark" href="https://erddap-goldcopy.dataexplorer.oceanobservatories.org/erddap/index.html"
+  >OOI / All Data</a> (Ocean Observatories Initiative)
+<br><a rel="bookmark" href="https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"
+  >OOI / Uncabled Data</a> 
+  <!-- 2017-10-19 They made it public. 2020-10-21 Jessica Austin -->
 <li><a rel="bookmark" href="https://members.oceantrack.org/erddap/index.html"
   >Ocean Tracking Network</a>
   <!-- 2017-05-15 Jonathan Pye -->
@@ -250,7 +255,7 @@ San Francisco Estuary Institute
 <li><a rel="bookmark" href="http://bmlsc.ucdavis.edu:8080/erddap/index.html"
  >University of California at Davis, Bodega Marine Laboratory</a>
   <!-- 2015-03-17 Marcel Losekoot -->
-<li><a rel="bookmark" href="http://basin.ceoe.udel.edu/erddap/index.html"
+<li><a rel="bookmark" href="https://basin.ceoe.udel.edu/erddap/index.html"
  >University of Delaware, Satellite Receiving Station</a>
   <!-- 2020-02-20  Matthew Shatley -->
 <li>University of Washington, Applied Physics Laboratory
@@ -1177,6 +1182,16 @@ Our plan to avoid problems is:
       then look in ERDDAP's <a rel="help" href="#log">log.txt file</a>
       to see what's going on.
       <br>&nbsp;
+
+  <li>Monitor ERDDAP via the <a rel="help" href="#dailyReport">Daily Report</a> email.
+    <br>&nbsp;
+
+  <li>Watch for out-of-date datasets via the <i>baseUrl</i>/erddap/outOfDateDatasets.html web page
+    which is based on the optional  
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+      >testOutOfDate</a> global attribute.
+    <br>&nbsp;
+
   <li><a class="selfLink" id="multipleSimultaneousRequests" href="#multipleSimultaneousRequests" rel="bookmark"
      ><strong>Blacklist users making multiple simultaneous requests!</strong></a>
     <br>If it is clear that some user is making more than one simultaneous request, 
@@ -1272,7 +1287,9 @@ Our plan to avoid problems is:
     That naturally slows down the number of requests coming in if each user 
     is just submitting one request at a time.
 
-  <p>If your ERDDAP gets some of its data from a THREDDS at your site,
+  <p><strong><a class="selfLink" id="ERDDAPGettingDataFromTHREDDS" href="#ERDDAPGettingDataFromTHREDDS" rel="bookmark"
+   >ERDDAP Getting Data From THREDDS</a></strong>
+   <br>If your ERDDAP gets some of its data from a THREDDS at your site,
    there are some advantages to making a copy of the THREDDS data files 
    (at least for the most popular datasets) on another RAID that ERDDAP has access
    to so that ERDDAP can serve data from the files directly.
@@ -1297,9 +1314,31 @@ Our plan to avoid problems is:
   <p>We find that THREDDS periodically gets in a state where requests just hang. 
     If your ERDDAP is getting data from a THREDDS and the THREDDS is in this state, 
     ERDDAP has a defense (it says the THREDDS-based dataset isn't available), 
-    but it is still troublesome for ERDDAP. 
+    but it is still troublesome for ERDDAP because ERDDAP has to wait until the timeout
+    each time it tries to reload a dataset from a hung THREDDS. 
     Some groups (including ERD) avoid this by proactively restarting THREDDS frequently 
     (e.g., nightly in a cron job). 
+
+  <p><strong><a class="selfLink" id="otherWaysToMonitorERDDAP" href="#otherWaysToMonitorERDDAP" rel="bookmark"
+    >Other Ways to Monitor ERDDAP</a></strong>
+    The methods listed above are ERDDAP's ways of monitoring itself.
+    It is also possible to make or use external systems to monitor your ERDDAP.
+    One project to do this is 
+        <a rel="help" href="https://github.com/axiom-data-science/erddap-metrics"
+                           >Axiom's erddap-metrics project<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This is a link to an external website."/></a>.
+    Such external systems have some advantages:
+    <ul>
+    <li>They can be customized to provide the information you want, displayed in the way you want.
+    <li>They can include information about ERDDAP that ERDDAP can't access easily or at all 
+       (for example, CPU usage, disk free space, ERDDAP response time as seen from the user's perspective,
+       ERDDAP uptime, 
+    <li>They can provide alerts (emails, phone calls, texts) to administrators when 
+       problems exceed some threshold.
+    </ul>
+
+
 
 <li><strong><a class="selfLink" id="respondingSlowly" href="#respondingSlowly" rel="bookmark">If ERDDAP Is Responding Slowly</a></strong> 
   or if just certain requests are responding slowly,
@@ -4914,7 +4953,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.02
+<p>ERDDAP, Version 2.10
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

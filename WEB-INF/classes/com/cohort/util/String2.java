@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -208,6 +209,8 @@ public class String2 {
             canonicalStringHolderMap[i] = new WeakHashMap();
         }
     }
+    private static Map canonicalLockMap = new WeakHashMap();
+    public static int longTimeoutSeconds = 300; //5 minutes. This is >= other timeouts in the system. This is used in places that previously waited forever.
 
     private static String webInfParentDirectory; //lazy creation by webInfParentDirectory()
 
@@ -2756,7 +2759,7 @@ public class String2 {
     /**
      * This creates an ArrayList with the objects from the enumeration.
      * WARNING: This does not have a sychronized block: if your enumeration
-     *    needs thread-safety, wrap this call in somthing like 
+     *    needs thread-safety, wrap this call in something like 
      *    <tt>synchronized(enum) {String2.toArrayList(enum); }</tt>.
      *
      * @param e an enumeration
@@ -2848,8 +2851,8 @@ public class String2 {
     /**
      * Generates a Comma-Space-Separated-Value (CSSV) string.  
      * <p>WARNING: This does not have a sychronized block: if your enumeration
-     *   needs thread-safety, wrap this call in somthing like 
-     *   <tt>synchronized (enum) {String2.toArrayList(enum); }</tt>.
+     *   needs thread-safety, wrap this call in something like 
+     *   <tt>synchronized(enum) {String2.toArrayList(enum); }</tt>.
      * <p>CHANGED: before 2011-03-06, this didn't do anything special for 
      *   strings with internal commas or quotes. Now it uses toJson for that string.
      * <p>CHANGED: before 2011-09-04, this was called toCSVString.
@@ -6492,10 +6495,10 @@ and zoom and pan with controls in
             ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
             ch0 < 'r'? 4 : 5];
        
-        //faster and logically better to synchronized(canonicalMap) once 
+        //faster and logically better to use synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalMap and lock/unlock twice
-        synchronized (tCanonicalMap) {
+        synchronized(tCanonicalMap) {
             WeakReference wr = (WeakReference)tCanonicalMap.get(s);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
             String canonical = wr == null? null : (String)(wr.get());
@@ -6540,10 +6543,10 @@ and zoom and pan with controls in
             b < 'r'? 4 : 5;
         Map tCanonicalStringHolderMap = canonicalStringHolderMap[which];
        
-        //faster and logically better to synchronized(canonicalStringHolderMap) once 
+        //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalStringHolderMap and lock/unlock twice
-        synchronized (tCanonicalStringHolderMap) {
+        synchronized(tCanonicalStringHolderMap) {
             WeakReference wr = (WeakReference)tCanonicalStringHolderMap.get(sh);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
             StringHolder canonical = wr == null? null : (StringHolder)(wr.get());
@@ -6551,6 +6554,36 @@ and zoom and pan with controls in
                 canonical = sh; //use this object
                 tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
                 //log("new canonical string: " + canonical);
+            }
+            return canonical;
+        }
+    }
+
+    /** 
+     * This returns a canonical ReentrantLock for the specified object.
+     * It uses a WeakHashMap so the canonical locks can be garbage collected.
+     * <br>This is thread safe.
+     * <br>It is fast: ~0.002ms per call.
+     *
+     * @param o an object. I think that, unlike canonical(s), when o is a String, this needen't be the canonical(o) string 
+     *   (i.e., equivalent strings will return the same lock), but to be safe, pass in the canonical string.
+     * @return the canonical ReentrantLock for the specified object
+     *    (or null if o is null).
+     */
+    public static ReentrantLock canonicalLock(Object o) {
+        if (o == null)
+            return null;
+       
+        //faster and logically better to use synchronized(canonicalLockMap) once 
+        //  (and use a few times in consistent state)
+        //than to synchronize canonicalMap and lock/unlock twice
+        synchronized(canonicalLockMap) {
+            WeakReference wr = (WeakReference)canonicalLockMap.get(o);
+            //wr won't be garbage collected, but reference might (making wr.get() return null)
+            ReentrantLock canonical = wr == null? null : (ReentrantLock)(wr.get());
+            if (canonical == null) {
+                canonical = new ReentrantLock(); 
+                canonicalLockMap.put(o, new WeakReference(canonical));
             }
             return canonical;
         }

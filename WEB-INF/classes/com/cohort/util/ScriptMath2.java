@@ -918,7 +918,7 @@ public class ScriptMath2  {
         //this is probably thread-safe
         //http://www.velocityreviews.com/forums/t367261-java-util-random-nextint-thread-safety.html
         //but synchronize it to be extra careful
-        synchronized (random) {
+        synchronized(random) {
             random.setSeed(seed);
         }
     }
@@ -936,7 +936,7 @@ public class ScriptMath2  {
         //this is probably thread-safe
         //http://www.velocityreviews.com/forums/t367261-java-util-random-nextint-thread-safety.html
         //but synchronize it to be extra careful
-        synchronized (random) {
+        synchronized(random) {
             return random.nextInt(max);
         }
     }

@@ -1618,7 +1618,7 @@ public class Math2 {
 
         //Random is threadsafe, but has issues in a multi threaded situation.
         //So synchronize it to be extra careful
-        synchronized (random) {
+        synchronized(random) {
             random.setSeed(seed);
         }
     }
@@ -1635,7 +1635,7 @@ public class Math2 {
 
         //Random is threadsafe, but has issues in a multi threaded situation.
         //So synchronize it to be extra careful
-        synchronized (random) {
+        synchronized(random) {
             return random.nextInt(max);
         }
     }

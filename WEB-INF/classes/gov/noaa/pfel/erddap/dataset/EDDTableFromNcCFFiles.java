@@ -626,40 +626,39 @@ String expected =
         testVerboseOn();
         //debugMode = true;
 
-        try {
-            //public static String generateDatasetsXml(
-            //    String tFileDir, String tFileNameRegex, String sampleFileName, 
-            //    int tReloadEveryNMinutes,
-            //    String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
-            //    String tColumnNameForExtract, 
-            //    String tSortFilesBySourceNames, 
-            //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
-            //    Attributes externalAddGlobalAttributes) throws Throwable {
+        //public static String generateDatasetsXml(
+        //    String tFileDir, String tFileNameRegex, String sampleFileName, 
+        //    int tReloadEveryNMinutes,
+        //    String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
+        //    String tColumnNameForExtract, 
+        //    String tSortFilesBySourceNames, 
+        //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
+        //    Attributes externalAddGlobalAttributes) throws Throwable {
 
-            //From Ajay Krishnan, NCEI/NODC, from
-            //https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
-            //See low level reading test: Table.testReadNcCF7SampleDims()
-            String dir = EDStatic.unitTestDataDir + "nccf/ncei/";
-            String regex = "ind199105_ctd\\.nc";
+        //From Ajay Krishnan, NCEI/NODC, from
+        //https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
+        //See low level reading test: Table.testReadNcCF7SampleDims()
+        String dir = EDStatic.unitTestDataDir + "nccf/ncei/";
+        String regex = "ind199105_ctd\\.nc";
 
-            String results = generateDatasetsXml(dir, regex, "",
-                1440,
-                "", "", "", "", //just for test purposes; station is already a column in the file
-                "WOD_cruise_identifier, time", 
-                "", "", "", "", 
-                -1, null, //defaultStandardizeWhat
-                null) + "\n";
+        String results = generateDatasetsXml(dir, regex, "",
+            1440,
+            "", "", "", "", //just for test purposes; station is already a column in the file
+            "WOD_cruise_identifier, time", 
+            "", "", "", "", 
+            -1, null, //defaultStandardizeWhat
+            null) + "\n";
 
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromNcCFFiles", dir, regex, "",
-                "1440",
-                "", "", "", "", //just for test purposes; station is already a column in the file
-                "WOD_cruise_identifier, time", 
-                "", "", "", "", "", 
-                "-1", ""}, //defaultStandardizeWhat
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDTableFromNcCFFiles", dir, regex, "",
+            "1440",
+            "", "", "", "", //just for test purposes; station is already a column in the file
+            "WOD_cruise_identifier, time", 
+            "", "", "", "", "", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
 "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"ncei_0f31_0d73_3891\" active=\"true\">\n" +
@@ -1395,14 +1394,10 @@ String expected =
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
-            //    expected, "");
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml."); 
-        }
 
     }
 
@@ -1646,335 +1641,327 @@ String expected =
         deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
-        try {
-            //.dds    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".dds"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            //String2.log(results);
-            expected = 
-    "Dataset {\n" +
-    "  Sequence {\n" +
-    "    String station;\n" +
-    "    Float32 longitude;\n" +
-    "    Float32 latitude;\n" +
-    "    Float32 depth;\n" +
-    "    Float64 time;\n" +
-    "    Float64 time_created;\n" +
-    "    Float64 time_modified;\n" +
-    "    Float32 significant_wave_height;\n" +
-    "    Byte significant_wave_height_qc;\n" +
-    "    Float32 dominant_wave_period;\n" +
-    "    Byte dominant_wave_period_qc;\n" +
-    "  } s;\n" +
-    "} s;\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        //.dds    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".dds"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String station;\n" +
+"    Float32 longitude;\n" +
+"    Float32 latitude;\n" +
+"    Float32 depth;\n" +
+"    Float64 time;\n" +
+"    Float64 time_created;\n" +
+"    Float64 time_modified;\n" +
+"    Float32 significant_wave_height;\n" +
+"    Byte significant_wave_height_qc;\n" +
+"    Float32 dominant_wave_period;\n" +
+"    Byte dominant_wave_period_qc;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            //.das    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            //String2.log(results);
-            expected = 
-    "Attributes \\{\n" +
-    " s \\{\n" +
-    "  station \\{\n" +
-    "    String cf_role \"timeseries_id\";\n" +
-    "    String ioos_category \"Unknown\";\n" +
-    "    String long_name \"B01\";\n" +
-    "    String name \"B01\";\n" +
-    "    String short_name \"B01\";\n" +
-    "    String standard_name \"station_name\";\n" +
-    "  \\}\n" +
-    "  longitude \\{\n" +
-    "    String _CoordinateAxisType \"Lon\";\n" +
-    "    Float32 actual_range -70.42779, -70.42755;\n" +
-    "    String axis \"X\";\n" +
-    "    Float64 colorBarMaximum 180.0;\n" +
-    "    Float64 colorBarMinimum -180.0;\n" +
-    "    String ioos_category \"Location\";\n" +
-    "    String long_name \"Longitude\";\n" +
-    "    String standard_name \"longitude\";\n" +
-    "    String units \"degrees_east\";\n" +
-    "  \\}\n" +
-    "  latitude \\{\n" +
-    "    String _CoordinateAxisType \"Lat\";\n" +
-    "    Float32 actual_range 43.18019, 43.18044;\n" +
-    "    String axis \"Y\";\n" +
-    "    Float64 colorBarMaximum 90.0;\n" +
-    "    Float64 colorBarMinimum -90.0;\n" +
-    "    String ioos_category \"Location\";\n" +
-    "    String long_name \"Latitude\";\n" +
-    "    String standard_name \"latitude\";\n" +
-    "    String units \"degrees_north\";\n" +
-    "  \\}\n" +
-    "  depth \\{\n" +
-    "    String _CoordinateAxisType \"Height\";\n" +
-    "    String _CoordinateZisPositive \"down\";\n" +
-    "    Float32 actual_range 0.0, 0.0;\n" +
-    "    String axis \"Z\";\n" +
-    "    Float64 colorBarMaximum 8000.0;\n" +
-    "    Float64 colorBarMinimum -8000.0;\n" +
-    "    String colorBarPalette \"TopographyDepth\";\n" +
-    "    String ioos_category \"Location\";\n" +
-    "    String long_name \"Depth\";\n" +
-    "    String positive \"down\";\n" +
-    "    String standard_name \"depth\";\n" +
-    "    String units \"m\";\n" +
-    "  \\}\n" +
-    "  time \\{\n" +
-    "    Int32 _ChunkSizes 1;\n" +
-    "    String _CoordinateAxisType \"Time\";\n" +
-    "    Float64 actual_range 1.0173492e\\+9, 1.3907502e\\+9;\n" +
-    "    String axis \"T\";\n" +
-    "    String calendar \"gregorian\";\n" +
-    "    String ioos_category \"Time\";\n" +
-    "    String long_name \"Time\";\n" +
-    "    String standard_name \"time\";\n" +
-    "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-    "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-    "  \\}\n" +
-    "  time_created \\{\n" +
-    "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    String ioos_category \"Time\";\n" +
-    "    String long_name \"Time Record Created\";\n" +
-    "    String short_name \"time_cr\";\n" +
-    "    String standard_name \"time\";\n" +
-    "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-    "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-    "    Float64 valid_range 0.0, 99999.0;\n" +
-    "  \\}\n" +
-    "  time_modified \\{\n" +
-    "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    String ioos_category \"Time\";\n" +
-    "    String long_name \"Time Record Last Modified\";\n" +
-    "    String short_name \"time_mod\";\n" +
-    "    String standard_name \"time\";\n" +
-    "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-    "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-    "    Float64 valid_range 0.0, 99999.0;\n" +
-    "  \\}\n" +
-    "  significant_wave_height \\{\n" +
-    "    Int32 _ChunkSizes 1;\n" +
-    "    Float32 _FillValue -999.0;\n" +
-    "    Float64 accuracy 0.5;\n" +
-    "    Float32 actual_range 0.009102137, 9.613417;\n" +
-    "    String ancillary_variables \"significant_wave_height_qc\";\n" +
-    "    Float64 colorBarMaximum 10.0;\n" +
-    "    Float64 colorBarMinimum 0.0;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    Int32 epic_code 4061;\n" +
-    "    String ioos_category \"Surface Waves\";\n" +
-    "    Float64 is_dead 0.0;\n" +
-    "    String long_name \"Significant Wave Height\";\n" +
-    "    String measurement_type \"Computed\";\n" +
-    "    Float64 precision 0.1;\n" +
-    "    String short_name \"SWH\";\n" +
-    "    String standard_name \"significant_height_of_wind_and_swell_waves\";\n" +
-    "    String units \"m\";\n" +
-    "    Float32 valid_range 0.0, 10.0;\n" +
-    "  \\}\n" +
-    "  significant_wave_height_qc \\{\n" +
-    "    Int32 _ChunkSizes 1;\n" +
-    "    Byte _FillValue -128;\n" +
-    "    Byte actual_range 0, 99;\n" +
-    "    Float64 colorBarMaximum 128.0;\n" +
-    "    Float64 colorBarMinimum 0.0;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    String flag_meanings \"quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt\";\n" +
-    "    Byte flag_values 0, 1, 2, 3;\n" +
-    "    String intent \"data_quality\";\n" +
-    "    String ioos_category \"Quality\";\n" +
-    "    String long_name \"Significant Wave Height Quality Control\";\n" +
-    "    String short_name \"SWHQC\";\n" +
-    "    String standard_name \"significant_height_of_wind_and_swell_waves data_quality\";\n" +
-    "    String units \"1\";\n" +
-    "    Byte valid_range -127, 127;\n" +
-    "  \\}\n" +
-    "  dominant_wave_period \\{\n" +
-    "    Int32 _ChunkSizes 1;\n" +
-    "    Float32 _FillValue -999.0;\n" +
-    "    Float64 accuracy 2.0;\n" +
-    "    Float32 actual_range 1.032258, 16.0;\n" +
-    "    String ancillary_variables \"dominant_wave_period_qc\";\n" +
-    "    Float64 colorBarMaximum 40.0;\n" +
-    "    Float64 colorBarMinimum 0.0;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    Int32 epic_code 4063;\n" +
-    "    String ioos_category \"Surface Waves\";\n" +
-    "    Float64 is_dead 0.0;\n" +
-    "    String long_name \"Dominant Wave Period\";\n" +
-    "    String measurement_type \"Computed\";\n" +
-    "    Float64 precision 1.0;\n" +
-    "    Float64 sensor_depth 0.0;\n" +
-    "    String short_name \"DWP\";\n" +
-    "    String standard_name \"period\";\n" +
-    "    String units \"s\";\n" +
-    "    Float32 valid_range 0.0, 32.0;\n" +
-    "  \\}\n" +
-    "  dominant_wave_period_qc \\{\n" +
-    "    Int32 _ChunkSizes 1;\n" +
-    "    Byte _FillValue -128;\n" +
-    "    Byte actual_range 0, 99;\n" +
-    "    Float64 colorBarMaximum 128.0;\n" +
-    "    Float64 colorBarMinimum 0.0;\n" +
-    "    String coordinates \"time lon lat depth\";\n" +
-    "    String flag_meanings \"quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt\";\n" +
-    "    Byte flag_values 0, 1, 2, 3;\n" +
-    "    String intent \"data_quality\";\n" +
-    "    String ioos_category \"Quality\";\n" +
-    "    String long_name \"Dominant Wave Period Quality\";\n" +
-    "    String short_name \"DWPQ\";\n" +
-    "    String standard_name \"period data_quality\";\n" +
-    "    String units \"1\";\n" +
-    "    Byte valid_range -127, 127;\n" +
-    "  \\}\n" +
-    " \\}\n" +
-    "  NC_GLOBAL \\{\n" +
-    "    String accelerometer_serial_number \"SUMAC0902A01107\";\n" +
-    "    String algorithm_ids \"Waves_SWH_DWP_1.12:  12-Jun-2013 15:15:53\";\n" +
-    "    Float64 averaging_period 17.07;\n" +
-    "    String averaging_period_units \"Minutes\";\n" +
-    "    Int32 breakout_id 7;\n" +
-    "    String buffer_type \"accelerometer\";\n" +
-    "    String cdm_data_type \"TimeSeries\";\n" +
-    "    String cdm_timeseries_variables \"station\";\n" +
-    "    String clock_time \"Center of period\";\n" +
-    "    String contact \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
-    "    String control_box_serial_number \"UMECB124\";\n" +
-    "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
-    "    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
-    "    String creator_name \"Neal Pettigrew\";\n" +
-    "    String creator_url \"http://gyre.umeoce.maine.edu\";\n" +
-    "    String depth_datum \"Sea Level\";\n" +
-    "    Float64 Easternmost_Easting -70.42755;\n" +
-    "    String featureType \"TimeSeries\";\n" +
-    "    Float64 geospatial_lat_max 43.18044;\n" +
-    "    Float64 geospatial_lat_min 43.18019;\n" +
-    "    String geospatial_lat_units \"degrees_north\";\n" +
-    "    Float64 geospatial_lon_max -70.42755;\n" +
-    "    Float64 geospatial_lon_min -70.42779;\n" +
-    "    String geospatial_lon_units \"degrees_east\";\n" +
-    "    Float64 geospatial_vertical_max 0.0;\n" +
-    "    Float64 geospatial_vertical_min 0.0;\n" +
-    "    String geospatial_vertical_positive \"down\";\n" +
-    "    String geospatial_vertical_units \"m\";\n" +
-    "    String goes_platform_id \"044250DC\";\n" +
-    "    String history \"2014-01-03 11:20:56:  Parameter dominant_wave_period marked as non-functional as of julian day 56660.395833 \\(2014-01-03 09:30:00\\)\n" +
-    "2014-01-03 11:20:46:  Parameter significant_wave_height marked as non-functional as of julian day 56660.395833 \\(2014-01-03 09:30:00\\)\n" +
-    "2013-06-25 11:57:07:  Modified \\[lon,lat\\] to \\[-70.427787,43.180192\\].\n" +
-    "Thu Jun 20 16:50:01 2013: /usr/local/bin/ncrcat -d time,56463.65625,56464.00 B0125.accelerometer.realtime.nc B0125.accelerometer.realtime.nc.new\n" +
-    "\n" +
-    today + "T.{8}Z \\(local files\\)\n" +
-    today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\";\n" +
-    "    String id \"B01\";\n" +
-    "    String infoUrl \"http://gyre.umeoce.maine.edu/\";\n" +
-    "    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
-    "    String institution_url \"http://gyre.umeoce.maine.edu\";\n" +
-    "    Int32 instrument_number 0;\n" +
-    "    String keywords \"accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Optics > Turbidity, Earth Science > Oceans > Ocean Pressure > Sea Level Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, Earth Science > Oceans > Ocean Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Density, Earth Science > Oceans > Salinity/Density > Salinity, height, level, maine, marine, name, o2, ocean, oceanography, oceans, optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds\";\n" +
-    "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
-    "    Float64 latitude 43.18019230109601;\n" +
-    "    String license \"The data may be used and redistributed for free but is not intended\n" +
-    "for legal use, since it may contain inaccuracies. Neither the data\n" +
-    "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
-    "of their employees or contractors, makes any warranty, express or\n" +
-    "implied, including warranties of merchantability and fitness for a\n" +
-    "particular purpose, or assumes any legal liability for the accuracy,\n" +
-    "completeness, or usefulness, of this information.\";\n" +
-    "    String long_name \"B01\";\n" +
-    "    Float64 longitude -70.42778651970477;\n" +
-    "    Float64 magnetic_variation -16.3;\n" +
-    "    String mooring_site_desc \"Western Maine Shelf\";\n" +
-    "    String mooring_site_id \"B0125\";\n" +
-    "    String mooring_type \"Slack\";\n" +
-    "    String naming_authority \"edu.maine\";\n" +
-    "    Int32 nco_openmp_thread_number 1;\n" +
-    "    String ndbc_site_id \"44030\";\n" +
-    "    Float64 Northernmost_Northing 43.18044;\n" +
-    "    Int32 number_observations_per_hour 2;\n" +
-    "    Int32 number_samples_per_observation 2048;\n" +
-    "    String position_datum \"WGS 84\";\n" +
-    "    String processing \"realtime\";\n" +
-    "    String project \"NERACOOS\";\n" +
-    "    String project_url \"http://www.neracoos.org\";\n" +
-    "    String publisher \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
-    "    String publisher_email \"info@neracoos.org\";\n" +
-    "    String publisher_name \"Northeastern Regional Association of Coastal and Ocean Observing Systems \\(NERACOOS\\)\";\n" +
-    "    String publisher_phone \"\\(603\\) 319 1785\";\n" +
-    "    String publisher_url \"http://www.neracoos.org/\";\n" +
-    "    String references \"http://gyre.umeoce.maine.edu/data/gomoos/buoy/doc/buoy_system_doc/buoy_system/book1.html\";\n" +
-    "    String short_name \"B01\";\n" +
-    "    String source \"Ocean Data Acquisition Systems \\(ODAS\\) Buoy\";\n" +
-    "    String sourceUrl \"\\(local files\\)\";\n" +
-    "    Float64 Southernmost_Northing 43.18019;\n" +
-    "    String standard_name_vocabulary \"CF-1.6\";\n" +
-    "    String station_name \"B01\";\n" +
-    "    String station_photo \"http://gyre.umeoce.maine.edu/gomoos/images/generic_buoy.png\";\n" +
-    "    String station_type \"Surface Mooring\";\n" +
-    "    String subsetVariables \"station\";\n" +
-    "    String summary \"Ocean observation data from the Northeastern Regional Association of Coastal &amp; Ocean Observing Systems \\(NERACOOS\\). The NERACOOS region includes the northeast United States and Canadian Maritime provinces, as part of the United States Integrated Ocean Observing System \\(IOOS\\).  These data are served by Unidata's Thematic Realtime Environmental Distributed Data Services \\(THREDDS\\) Data Server \\(TDS\\) in a variety of interoperable data services and output formats.\";\n" +
-    "    String time_coverage_end \"2014-01-26T15:30:00Z\";\n" +
-    "    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +
-    "    String time_zone \"UTC\";\n" +
-    "    String title \"University of Maine, B01 Accelerometer Buoy Sensor\";\n" +
-    "    String uscg_light_list_letter \"B\";\n" +
-    "    String uscg_light_list_number \"113\";\n" +
-    "    Int32 watch_circle_radius 45;\n" +
-    "    Float64 water_depth 62.0;\n" +
-    "    Float64 Westernmost_Easting -70.42779;\n" +
-    "  \\}\n" +
-    "\\}\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
+        //.das    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"Attributes \\{\n" +
+" s \\{\n" +
+"  station \\{\n" +
+"    String cf_role \"timeseries_id\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"B01\";\n" +
+"    String name \"B01\";\n" +
+"    String short_name \"B01\";\n" +
+"    String standard_name \"station_name\";\n" +
+"  \\}\n" +
+"  longitude \\{\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range -70.42779, -70.42755;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  \\}\n" +
+"  latitude \\{\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 43.18019, 43.18044;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  \\}\n" +
+"  depth \\{\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float32 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Float64 colorBarMaximum 8000.0;\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Depth\";\n" +
+"    String positive \"down\";\n" +
+"    String standard_name \"depth\";\n" +
+"    String units \"m\";\n" +
+"  \\}\n" +
+"  time \\{\n" +
+"    Int32 _ChunkSizes 1;\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0173492e\\+9, 1.3907502e\\+9;\n" +
+"    String axis \"T\";\n" +
+"    String calendar \"gregorian\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  \\}\n" +
+"  time_created \\{\n" +
+"    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time Record Created\";\n" +
+"    String short_name \"time_cr\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"    Float64 valid_range 0.0, 99999.0;\n" +
+"  \\}\n" +
+"  time_modified \\{\n" +
+"    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time Record Last Modified\";\n" +
+"    String short_name \"time_mod\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"    Float64 valid_range 0.0, 99999.0;\n" +
+"  \\}\n" +
+"  significant_wave_height \\{\n" +
+"    Int32 _ChunkSizes 1;\n" +
+"    Float32 _FillValue -999.0;\n" +
+"    Float64 accuracy 0.5;\n" +
+"    Float32 actual_range 0.009102137, 9.613417;\n" +
+"    String ancillary_variables \"significant_wave_height_qc\";\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    Int32 epic_code 4061;\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    Float64 is_dead 0.0;\n" +
+"    String long_name \"Significant Wave Height\";\n" +
+"    String measurement_type \"Computed\";\n" +
+"    Float64 precision 0.1;\n" +
+"    String short_name \"SWH\";\n" +
+"    String standard_name \"significant_height_of_wind_and_swell_waves\";\n" +
+"    String units \"m\";\n" +
+"    Float32 valid_range 0.0, 10.0;\n" +
+"  \\}\n" +
+"  significant_wave_height_qc \\{\n" +
+"    Int32 _ChunkSizes 1;\n" +
+"    Byte _FillValue -128;\n" +
+"    Byte actual_range 0, 99;\n" +
+"    Float64 colorBarMaximum 128.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    String flag_meanings \"quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt\";\n" +
+"    Byte flag_values 0, 1, 2, 3;\n" +
+"    String intent \"data_quality\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Significant Wave Height Quality Control\";\n" +
+"    String short_name \"SWHQC\";\n" +
+"    String standard_name \"significant_height_of_wind_and_swell_waves data_quality\";\n" +
+"    String units \"1\";\n" +
+"    Byte valid_range -127, 127;\n" +
+"  \\}\n" +
+"  dominant_wave_period \\{\n" +
+"    Int32 _ChunkSizes 1;\n" +
+"    Float32 _FillValue -999.0;\n" +
+"    Float64 accuracy 2.0;\n" +
+"    Float32 actual_range 1.032258, 16.0;\n" +
+"    String ancillary_variables \"dominant_wave_period_qc\";\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    Int32 epic_code 4063;\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    Float64 is_dead 0.0;\n" +
+"    String long_name \"Dominant Wave Period\";\n" +
+"    String measurement_type \"Computed\";\n" +
+"    Float64 precision 1.0;\n" +
+"    Float64 sensor_depth 0.0;\n" +
+"    String short_name \"DWP\";\n" +
+"    String standard_name \"period\";\n" +
+"    String units \"s\";\n" +
+"    Float32 valid_range 0.0, 32.0;\n" +
+"  \\}\n" +
+"  dominant_wave_period_qc \\{\n" +
+"    Int32 _ChunkSizes 1;\n" +
+"    Byte _FillValue -128;\n" +
+"    Byte actual_range 0, 99;\n" +
+"    Float64 colorBarMaximum 128.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"time lon lat depth\";\n" +
+"    String flag_meanings \"quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt\";\n" +
+"    Byte flag_values 0, 1, 2, 3;\n" +
+"    String intent \"data_quality\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Dominant Wave Period Quality\";\n" +
+"    String short_name \"DWPQ\";\n" +
+"    String standard_name \"period data_quality\";\n" +
+"    String units \"1\";\n" +
+"    Byte valid_range -127, 127;\n" +
+"  \\}\n" +
+" \\}\n" +
+"  NC_GLOBAL \\{\n" +
+"    String accelerometer_serial_number \"SUMAC0902A01107\";\n" +
+"    String algorithm_ids \"Waves_SWH_DWP_1.12:  12-Jun-2013 15:15:53\";\n" +
+"    Float64 averaging_period 17.07;\n" +
+"    String averaging_period_units \"Minutes\";\n" +
+"    Int32 breakout_id 7;\n" +
+"    String buffer_type \"accelerometer\";\n" +
+"    String cdm_data_type \"TimeSeries\";\n" +
+"    String cdm_timeseries_variables \"station\";\n" +
+"    String clock_time \"Center of period\";\n" +
+"    String contact \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
+"    String control_box_serial_number \"UMECB124\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
+"    String creator_name \"Neal Pettigrew\";\n" +
+"    String creator_url \"http://gyre.umeoce.maine.edu\";\n" +
+"    String depth_datum \"Sea Level\";\n" +
+"    Float64 Easternmost_Easting -70.42755;\n" +
+"    String featureType \"TimeSeries\";\n" +
+"    Float64 geospatial_lat_max 43.18044;\n" +
+"    Float64 geospatial_lat_min 43.18019;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -70.42755;\n" +
+"    Float64 geospatial_lon_min -70.42779;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String goes_platform_id \"044250DC\";\n" +
+"    String history \"2014-01-03 11:20:56:  Parameter dominant_wave_period marked as non-functional as of julian day 56660.395833 \\(2014-01-03 09:30:00\\)\n" +
+"2014-01-03 11:20:46:  Parameter significant_wave_height marked as non-functional as of julian day 56660.395833 \\(2014-01-03 09:30:00\\)\n" +
+"2013-06-25 11:57:07:  Modified \\[lon,lat\\] to \\[-70.427787,43.180192\\].\n" +
+"Thu Jun 20 16:50:01 2013: /usr/local/bin/ncrcat -d time,56463.65625,56464.00 B0125.accelerometer.realtime.nc B0125.accelerometer.realtime.nc.new\n" +
+"\n" +
+today + "T.{8}Z \\(local files\\)\n" +
+today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\";\n" +
+"    String id \"B01\";\n" +
+"    String infoUrl \"http://gyre.umeoce.maine.edu/\";\n" +
+"    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
+"    String institution_url \"http://gyre.umeoce.maine.edu\";\n" +
+"    Int32 instrument_number 0;\n" +
+"    String keywords \"accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Optics > Turbidity, Earth Science > Oceans > Ocean Pressure > Sea Level Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, Earth Science > Oceans > Ocean Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Density, Earth Science > Oceans > Salinity/Density > Salinity, height, level, maine, marine, name, o2, ocean, oceanography, oceans, optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    Float64 latitude 43.18019230109601;\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String long_name \"B01\";\n" +
+"    Float64 longitude -70.42778651970477;\n" +
+"    Float64 magnetic_variation -16.3;\n" +
+"    String mooring_site_desc \"Western Maine Shelf\";\n" +
+"    String mooring_site_id \"B0125\";\n" +
+"    String mooring_type \"Slack\";\n" +
+"    String naming_authority \"edu.maine\";\n" +
+"    Int32 nco_openmp_thread_number 1;\n" +
+"    String ndbc_site_id \"44030\";\n" +
+"    Float64 Northernmost_Northing 43.18044;\n" +
+"    Int32 number_observations_per_hour 2;\n" +
+"    Int32 number_samples_per_observation 2048;\n" +
+"    String position_datum \"WGS 84\";\n" +
+"    String processing \"realtime\";\n" +
+"    String project \"NERACOOS\";\n" +
+"    String project_url \"http://www.neracoos.org\";\n" +
+"    String publisher \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
+"    String publisher_email \"info@neracoos.org\";\n" +
+"    String publisher_name \"Northeastern Regional Association of Coastal and Ocean Observing Systems \\(NERACOOS\\)\";\n" +
+"    String publisher_phone \"\\(603\\) 319 1785\";\n" +
+"    String publisher_url \"http://www.neracoos.org/\";\n" +
+"    String references \"http://gyre.umeoce.maine.edu/data/gomoos/buoy/doc/buoy_system_doc/buoy_system/book1.html\";\n" +
+"    String short_name \"B01\";\n" +
+"    String source \"Ocean Data Acquisition Systems \\(ODAS\\) Buoy\";\n" +
+"    String sourceUrl \"\\(local files\\)\";\n" +
+"    Float64 Southernmost_Northing 43.18019;\n" +
+"    String standard_name_vocabulary \"CF-1.6\";\n" +
+"    String station_name \"B01\";\n" +
+"    String station_photo \"http://gyre.umeoce.maine.edu/gomoos/images/generic_buoy.png\";\n" +
+"    String station_type \"Surface Mooring\";\n" +
+"    String subsetVariables \"station\";\n" +
+"    String summary \"Ocean observation data from the Northeastern Regional Association of Coastal &amp; Ocean Observing Systems \\(NERACOOS\\). The NERACOOS region includes the northeast United States and Canadian Maritime provinces, as part of the United States Integrated Ocean Observing System \\(IOOS\\).  These data are served by Unidata's Thematic Realtime Environmental Distributed Data Services \\(THREDDS\\) Data Server \\(TDS\\) in a variety of interoperable data services and output formats.\";\n" +
+"    String time_coverage_end \"2014-01-26T15:30:00Z\";\n" +
+"    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +
+"    String time_zone \"UTC\";\n" +
+"    String title \"University of Maine, B01 Accelerometer Buoy Sensor\";\n" +
+"    String uscg_light_list_letter \"B\";\n" +
+"    String uscg_light_list_number \"113\";\n" +
+"    Int32 watch_circle_radius 45;\n" +
+"    Float64 water_depth 62.0;\n" +
+"    Float64 Westernmost_Easting -70.42779;\n" +
+"  \\}\n" +
+"\\}\n";
+        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
 
-            //.csv    for start time time
-            //"    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +
-            userDapQuery = "&time<=2002-03-28T22:00:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger1", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            //String2.log(results);
-            expected = 
-    "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
-    ",degrees_east,degrees_north,m,UTC,UTC,UTC,m,1,s,1\n" +
-    "B01,-70.42755,43.18044,0.0,2002-03-28T21:00:00Z,,,2.605597,0,10.66667,0\n" +
-    "B01,-70.42755,43.18044,0.0,2002-03-28T22:00:00Z,,,1.720958,0,10.66667,0\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+        //.csv    for start time time
+        //"    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +
+        userDapQuery = "&time<=2002-03-28T22:00:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger1", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
+",degrees_east,degrees_north,m,UTC,UTC,UTC,m,1,s,1\n" +
+"B01,-70.42755,43.18044,0.0,2002-03-28T21:00:00Z,,,2.605597,0,10.66667,0\n" +
+"B01,-70.42755,43.18044,0.0,2002-03-28T22:00:00Z,,,1.720958,0,10.66667,0\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        try {    
-            //.csv    for end time
-            //"    String time_coverage_end \"2014-01-26T15:30:00Z\";\n" +
-            userDapQuery = "&time>=2014-01-26T15:00:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger2", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            //String2.log(results);
-            expected = 
-    "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
-    ",degrees_east,degrees_north,m,UTC,UTC,UTC,m,1,s,1\n" +
-    "B01,-70.42779,43.18019,0.0,2014-01-26T15:00:00Z,2014-01-26T15:12:04Z,2014-01-26T15:12:04Z,1.3848689,0,4.0,0\n" +
-    "B01,-70.42779,43.18019,0.0,2014-01-26T15:30:00Z,2014-01-26T15:39:05Z,2014-01-26T15:39:05Z,1.3212088,0,4.0,0\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        //.csv    for end time
+        //"    String time_coverage_end \"2014-01-26T15:30:00Z\";\n" +
+        userDapQuery = "&time>=2014-01-26T15:00:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger2", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
+",degrees_east,degrees_north,m,UTC,UTC,UTC,m,1,s,1\n" +
+"B01,-70.42779,43.18019,0.0,2014-01-26T15:00:00Z,2014-01-26T15:12:04Z,2014-01-26T15:12:04Z,1.3848689,0,4.0,0\n" +
+"B01,-70.42779,43.18019,0.0,2014-01-26T15:30:00Z,2014-01-26T15:39:05Z,2014-01-26T15:39:05Z,1.3212088,0,4.0,0\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            //.csv    only outer vars
-            userDapQuery = "station&distinct()";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger3", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            //String2.log(results);
-            expected = 
-    "station\n" +
-    "\n" +
-    "B01\n"; 
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+        //.csv    only outer vars
+        userDapQuery = "station&distinct()";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger3", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"station\n" +
+"\n" +
+"B01\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromNcCFFiles.testBridger() finished.");
     }
@@ -2018,13 +2005,12 @@ String expected =
         deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
-        try {
-            //.dds    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                testCacheDir, eddTable.className() + "_7SampleDimensions", ".dds"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.dds    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            testCacheDir, eddTable.className() + "_7SampleDimensions", ".dds"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
 "    Int32 wod_unique_cast;\n" +
@@ -2049,14 +2035,14 @@ String expected =
 "    Int16 WODfd;\n" +
 "  } s;\n" +
 "} s;\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-            //.das    
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                testCacheDir, eddTable.className() + "_7SampleDimensions", ".das"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.das    
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            testCacheDir, eddTable.className() + "_7SampleDimensions", ".das"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "Attributes {\n" +
 " s {\n" +
 "  wod_unique_cast {\n" +
@@ -2211,13 +2197,13 @@ String expected =
 "    String grid_mapping_name \"latitude_longitude\";\n" +
 "    Float32 grid_mapping_semi_major_axis 6378137.0;\n" +
 "    String history";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
 //        "2016-06-10T18:38:03Z (local files)
 //2016-06-10T18:38:03Z http://localhost:8080/cwexperimental/tabledap/testNcCF7SampleDimensions.das";
 expected =
-    "String id \"ind199105_ctd.nc\";\n" +
+"String id \"ind199105_ctd.nc\";\n" +
 "    String infoUrl \"https://www.nodc.noaa.gov/OC5/WOD/pr_wod.html\";\n" +
 "    String institution \"National Oceanographic Data Center(NODC), NOAA\";\n" +
 "    String keywords \"temperature\";\n" +
@@ -2245,16 +2231,16 @@ expected =
 "    String title \"Test WOD .ncCF file\";\n" +
 "  }\n" +
 "}\n";
-            int po = Math.max(0, results.indexOf(expected.substring(0, 20)));
-            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+        int po = Math.max(0, results.indexOf(expected.substring(0, 20)));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
-            //.csv     all vars
-            userDapQuery = "&time=1991-05-02T02:08:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_7SampleDimensions_all", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv     all vars
+        userDapQuery = "&time=1991-05-02T02:08:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_7SampleDimensions_all", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute," +
 "Cast_Tow_number,Temperature_WODprofileFlag,Temperature_Scale,Temperature_instrument," +
 "Temperature,Temperature_sigfigs,Temperature_WODflag,Temperature_origflag,crs,WODf,WODfp,WODfd\n" +
@@ -2268,70 +2254,67 @@ expected =
 "3390310,NaN,NaN,1991-05-02T02:08:00Z,841,WORLD OCEAN CIRCULATION EXPERIMENT (WOCE)," +
 "MARION DUFRESNE (C.s.FNGB;built 1972;decomm-d 1995;renamed Fres;IMO7208388)," +
 "NATIONAL MUSEUM OF NATURAL HISTORY (PARIS),1,NaN,,,7.713,5,0,-32767,-2147483647,-32767,-32767,-32767\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv     outer and inner vars
-            userDapQuery = "wod_unique_cast,latitude,longitude,time,Temperature" + scalarVars + 
-                "&time=1991-05-02T02:08:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_7SampleDimensions_outerInner", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv     outer and inner vars
+        userDapQuery = "wod_unique_cast,latitude,longitude,time,Temperature" + scalarVars + 
+            "&time=1991-05-02T02:08:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_7SampleDimensions_outerInner", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "wod_unique_cast,latitude,longitude,time,Temperature,crs,WODf,WODfd\n" +
 ",degrees_north,degrees_east,UTC,degree_C,,,\n" +
 "3390310,NaN,NaN,1991-05-02T02:08:00Z,7.738,-2147483647,-32767,-32767\n" +
 "3390310,NaN,NaN,1991-05-02T02:08:00Z,7.74,-2147483647,-32767,-32767\n" +
 "3390310,NaN,NaN,1991-05-02T02:08:00Z,7.713,-2147483647,-32767,-32767\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv    outer vars only
-            userDapQuery = "wod_unique_cast,latitude,longitude,time" + scalarVars + 
-                "&time=1991-05-02T02:08:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_7SampleDimensions_outer", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv    outer vars only
+        userDapQuery = "wod_unique_cast,latitude,longitude,time" + scalarVars + 
+            "&time=1991-05-02T02:08:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_7SampleDimensions_outer", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "wod_unique_cast,latitude,longitude,time,crs,WODf,WODfd\n" +
 ",degrees_north,degrees_east,UTC,,,\n" +
 "3390310,NaN,NaN,1991-05-02T02:08:00Z,-2147483647,-32767,-32767\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "results=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
 
-            //.csv    scalar vars only
-            userDapQuery = "crs,WODf,WODfd" + 
-                "&time=1991-05-02T02:08:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                testCacheDir, eddTable.className() + "_7SampleDimensions_scalar", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv    scalar vars only
+        userDapQuery = "crs,WODf,WODfd" + 
+            "&time=1991-05-02T02:08:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+            testCacheDir, eddTable.className() + "_7SampleDimensions_scalar", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "crs,WODf,WODfd\n" +
 ",,\n" +
 "-2147483647,-32767,-32767\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //.csv   inner vars vars only
-            userDapQuery = "Temperature" +
-                "&time=1991-05-02T02:08:00Z";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
-                testCacheDir, eddTable.className() + "_7SampleDimensions_inner", ".csv"); 
-            results = String2.directReadFrom88591File(testCacheDir + tName);
-            //String2.log(results);
-            expected = 
+        //.csv   inner vars vars only
+        userDapQuery = "Temperature" +
+            "&time=1991-05-02T02:08:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+            testCacheDir, eddTable.className() + "_7SampleDimensions_inner", ".csv"); 
+        results = String2.directReadFrom88591File(testCacheDir + tName);
+        //String2.log(results);
+        expected = 
 "Temperature\n" +
 "degree_C\n" +
 "7.738\n" +
 "7.74\n" +
 "7.713\n"; 
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                "\nresults=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromNcCFFiles.test7SampleDimensions() finished.");
     }
@@ -2348,12 +2331,11 @@ expected =
             "/data/medrano/CTZ-T500-MCT-NS5649-Z408-INS12-REC14";
         String results, expected;
         Table table;
-        try {
 
-            //ncdump the .nc file
-            String2.log("Here's the ncdump of " + baseName + ".nc:");
-            results = NcHelper.ncdump(baseName + ".nc", "-h");
-            expected = 
+        //ncdump the .nc file
+        String2.log("Here's the ncdump of " + baseName + ".nc:");
+        results = NcHelper.ncdump(baseName + ".nc", "-h");
+        expected = 
 "netcdf CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc {\n" +
 "  dimensions:\n" +
 "    time = UNLIMITED;   // (101 currently)\n" +
@@ -2425,12 +2407,12 @@ expected =
 "  :Creation_date = \"06-Aug-2014 12:22:59\";\n" +
 "  :NCO = \"\\\"4.5.2\\\"\";\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //ncdump the .ncml file
-            String2.log("\nHere's the ncdump of " + baseName + ".ncml:");
-            results = NcHelper.ncdump(baseName + ".ncml", "-h");
-            expected = 
+        //ncdump the .ncml file
+        String2.log("\nHere's the ncdump of " + baseName + ".ncml:");
+        results = NcHelper.ncdump(baseName + ".ncml", "-h");
+        expected = 
 "netcdf CTZ-T500-MCT-NS5649-Z408-INS12-REC14.ncml {\n" +
 "  dimensions:\n" +
 "    time = 101;\n" +
@@ -2526,15 +2508,15 @@ expected =
 "  :date_created = \"06-Aug-2014 12:22:59\";\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //read the .ncml via table.readNcCF
-            table = new Table();
-            table.readNcCF(baseName + ".ncml", null, 0, //standardizeWhat
-                null, null, null);
-            results = table.toString(5);
-            results = String2.replaceAll(results, '\t', ' ');
-            expected = 
+        //read the .ncml via table.readNcCF
+        table = new Table();
+        table.readNcCF(baseName + ".ncml", null, 0, //standardizeWhat
+            null, null, null);
+        results = table.toString(5);
+        results = String2.replaceAll(results, '\t', ' ');
+        expected = 
 "{\n" +
 "dimensions:\n" +
 " row = 101 ;\n" +
@@ -2625,24 +2607,21 @@ expected =
 "3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0.0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
 "3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0.0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
 "...\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-            //read the .ncml via table.readNcCF -- just station info
-            table = new Table();
-            table.readNcCF(baseName + ".ncml", 
-                StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), 
-                0, //standardizeWhat
-                null, null, null);
-            results = table.dataToString();
-            results = String2.replaceAll(results, '\t', ' ');
-            expected = 
+        //read the .ncml via table.readNcCF -- just station info
+        table = new Table();
+        table.readNcCF(baseName + ".ncml", 
+            StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), 
+            0, //standardizeWhat
+            null, null, null);
+        results = table.dataToString();
+        results = String2.replaceAll(results, '\t', ' ');
+        expected = 
 "station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres\n" +
 "0.0,18.843666666666667,-94.81761666666667,406.0,408.0,500.0,498.0,1.0\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
 
         String2.log("\n*** EDDTableFromNcCFFiles.testNcml() finished.");
     }
@@ -2659,7 +2638,6 @@ expected =
         String sampleName = "biology_JP14323.nc";
         String results, expected;
         Table table;
-        try {
 
             //ncdump the .nc file
             String2.log("Here's the ncdump of " + dir + sampleName);
@@ -3004,9 +2982,6 @@ expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
 */
 
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
         String2.log("\n*** EDDTableFromNcCFFiles.testJP14323() finished.");
     }
     
@@ -3049,7 +3024,7 @@ expected =
                     if (test ==  9) test7SampleDimensions();
 
                     //not usually run
-                    if (test == 1000) testJP14323();
+                    //if (test == 1000) testJP14323();  //not finished
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

@@ -19,6 +19,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This does a series of tasks.
@@ -237,7 +240,7 @@ public class TaskThread extends Thread {
             }
 
             //whether succeeded or failed
-            synchronized(EDStatic.taskList) { //all task-related things synch on taskList
+            synchronized(EDStatic.taskList) {
                 EDStatic.lastFinishedTask = EDStatic.nextTask - 1;
                 EDStatic.taskList.set(EDStatic.nextTask - 1, null);  //throw away the task info (gc)
             }
