@@ -441,10 +441,11 @@ public class EDDGridFromEDDTable extends EDDGrid {
             tryToSubscribeToChildFromErddap(eddTable);
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromEDDTable " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)
@@ -962,7 +963,7 @@ String expected =
 "        <att name=\"summary\">Variations in large-scale atmospheric forcing influence upwelling dynamics and ecosystem productivity in the California Current System (CCS). In this paper, we characterize interannual variability of the North Pacific High over 40 years and investigate how variation in its amplitude and position affect upwelling and biology. We develop a winter upwelling &quot;pre-conditioning&quot; index and demonstrate its utility to understanding biological processes. Variation in the winter NPH can be well described by its areal extent and maximum pressure, which in turn is predictive of winter upwelling. Our winter pre-conditioning index explained 64&#37; of the variation in biological responses (fish and seabirds). Understanding characteristics of the NPH in winter is therefore critical to predicting biological responses in the CCS.</att>\n" +
 "        <att name=\"time_coverage_end\">2014-01-16</att>\n" +
 "        <att name=\"time_coverage_start\">1967-01-16</att>\n" +
-"        <att name=\"title\">North Pacific High, 1967 - present</att>\n" +
+"        <att name=\"title\">North Pacific High, 1967 - 2014</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"double\">201.3</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -1002,6 +1003,7 @@ String expected =
 "        <sourceName>year</sourceName>\n" +
 "        <destinationName>year</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
 "            <att name=\"actual_range\" type=\"shortList\">1967 2014</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Year</att>\n" +
@@ -1013,6 +1015,7 @@ String expected =
 "        <sourceName>month</sourceName>\n" +
 "        <destinationName>month</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"actual_range\" type=\"byteList\">1 12</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Month (1 - 12)</att>\n" +

@@ -273,7 +273,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     }
 
     /**
-     * This returns an empty table with columns suitable for the instance table or oneStep.
+     * This returns an empty table with Dir,Name,LastMod,Size columns suitable for the instance table or oneStep.
      */
     public static Table makeEmptyTable() {
         Table table = new Table();

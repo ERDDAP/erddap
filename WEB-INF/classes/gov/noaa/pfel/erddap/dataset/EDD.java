@@ -12451,10 +12451,14 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         //save changed dxLines 
         dxLines.toFile(datasetsXmlFileName + "temp");
 
-        //save errors to file
+        //save errors to file and write to console
         String errorLogName = File2.getDirectory(csvChangesFileName) + "addFillValueAttributesErrors" + compactDateTime + ".txt";
-        if (errors.length() > 0) 
+        if (errors.length() > 0) {
+            String2.log(errors.toString());
             String2.writeToFile(errorLogName, errors.toString());
+        } else {
+            String2.log("0 errors");
+        }
 
         //rename files
         File2.rename(datasetsXmlFileName,          datasetsXmlFileName + compactDateTime); //exception if trouble

@@ -222,10 +222,11 @@ public class EDDGridFromEtopo extends EDDGrid {
         ensureValid();
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromEtopo " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)
@@ -486,8 +487,8 @@ public class EDDGridFromEtopo extends EDDGrid {
             //return the one file
             Table table = new Table();
             table.addColumn("Name",          new StringArray(new String[]{File2.getNameAndExtension(fileName)}));
-            table.addColumn("Last modified", new LongArray(  new long[]  {File2.getLastModified(    fileName)}));
-            table.addColumn("Size",          new LongArray(  new long[]  {File2.length(             fileName)}));            
+            table.addColumn("Last modified", new LongArray(  new long[]  {File2.getLastModified(    fileName)}).setMaxIsMV(true));
+            table.addColumn("Size",          new LongArray(  new long[]  {File2.length(             fileName)}).setMaxIsMV(true));            
             table.addColumn("Description",   new StringArray(new String[]{""}));
             StringArray subDirs = new StringArray();
             return new Object[]{table, subDirs.toStringArray(), null};

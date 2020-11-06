@@ -2803,8 +2803,12 @@ Fortunately, there are lots of software tools for working with the various file 
     and is a free download for Windows.
   <li><a rel="help" href="https://ardour.org/">Ardour<img
     src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
-    title="This link to an external website does not constitute an endorsement."></a>,
-    an open source program to record, edit, and max on Linux, Mac OSX, and Windows.
+    title="This link to an external website does not constitute an endorsement."></a>
+    and
+    <a rel="help" href="https://www.audacityteam.org">Audacity<img
+    src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
+    title="This link to an external website does not constitute an endorsement."></a>
+    are open source programs to record, edit, mix, and master audio on Linux, Mac OSX, and Windows.
   <li>See the  
    <a rel="help" href="https://en.wikipedia.org/wiki/Comparison_of_audio_player_software"
     >Wikipedia Comparison Of Audio Player Software<img
@@ -2999,8 +3003,8 @@ Fortunately, there are lots of software tools for working with the various file 
     src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
     title="This link to an external website does not constitute an endorsement."></a>. 
   <li>See the  
-   <a rel="help" href="https://en.wikipedia.org/wiki/Comparison_of_video_player_software"
-    >Wikipedia Comparison Of Video Player Software<img
+   <a rel="help" href="https://en.wikipedia.org/wiki/Comparison_of_video_editing_software"
+    >Wikipedia Comparison Of Video Editing Software<img
     src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
     title="This link to an external website does not constitute an endorsement."></a>. 
   <li>And many, many more. Use your favorite search engine to search for what you want.
@@ -4580,7 +4584,7 @@ or via the source files or database.
 Then, people will have another way to access your data
 and will be able to download the data in additional file formats
 or as graphs or maps.
-ERDDAP has been installed by over 60 organizations worldwide.
+ERDDAP has been installed by over 85 organizations in at least 14 countries.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5705,7 +5709,7 @@ please include that in the citation you create.
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">How to Cite ERDDAP in a Paper</a></strong>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
 <br><kbd>
-Simons, R.A. 2019. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+Simons, R.A. 2020. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">What does the acronym "ERDDAP" stand for?</a></strong>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.
@@ -6481,6 +6485,9 @@ https://podaac-opendap.jpl.nasa.gov
 http://polar.ncep.noaa.gov
 https://polar.ncep.noaa.gov
 
+http://pubs.usgs.gov
+https://pubs.usgs.gov
+
 http://pydap.org
 https://www.pydap.org
 
@@ -6576,6 +6583,9 @@ https://whatismyipaddress.com
 
 http://wiki.esipfed.org 
 https://wiki.esipfed.org 
+
+http://chg-wiki.geog.ucsb.edu/wiki/CHIRPS_FAQ
+https://wiki.chc.ucsb.edu/CHIRPS_FAQ
 
 http://winds.jpl.nasa.gov
 https://winds.jpl.nasa.gov

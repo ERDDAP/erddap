@@ -172,7 +172,7 @@ public class EDStatic {
      * <br>2.00 released on 2019-06-26
      * <br>2.01 released on 2019-07-02
      * <br>2.02 released on 2019-08-21
-     * <br>2.10 released on 2020-10-27 (version jump because of new PATypes)
+     * <br>2.10 released on 2020-11-05 (version jump because of new PATypes)
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -3469,17 +3469,32 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static String email(String emailAddresses[], String subject, String content) {
 
-        //write the email to the log
-        String emailAddressesCSSV = String2.toCSSVString(emailAddresses);
-        String localTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-        boolean logIt = !subject.startsWith(DONT_LOG_THIS_EMAIL);
-        if (!logIt) 
-            subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
-        subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + 
-            String2.replaceAll(subject, '\n', ' ');
-
-        //almost always write to emailLog
+        String emailAddressesCSSV = "";
         try {
+            //ensure all email addresses are valid
+            StringArray emailAddressesSA = new StringArray(emailAddresses);
+            BitSet keep = new BitSet(emailAddressesSA.size());  //all false
+            for (int i = 0; i < emailAddressesSA.size(); i++) { 
+                String err = subscriptions.testEmailValid(emailAddressesSA.get(i));  //tests syntax and blacklist             
+                if (err.length() == 0) {
+                    keep.set(i);
+                } else {
+                    String2.log("EDStatic.email caught an invalid email address: " + err);
+                }
+            }
+            emailAddressesSA.justKeep(keep);  //it's okay if 0 remain. email will still be written to log below.
+            emailAddresses = emailAddressesSA.toArray();
+
+            //write the email to the log
+            emailAddressesCSSV = String2.toCSSVString(emailAddresses);
+            String localTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
+            boolean logIt = !subject.startsWith(DONT_LOG_THIS_EMAIL);
+            if (!logIt) 
+                subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
+            subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + 
+                String2.replaceAll(subject, '\n', ' ');
+
+            //almost always write to emailLog
             //Always note that email sent in regular log.
             String2.log("Emailing \"" + subject + "\" to " + emailAddressesCSSV);
 
@@ -3541,23 +3556,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         //send email
         String errors = "";
         try {
-            //catch common problem: sending email to one invalid address
-            if (emailAddresses.length == 1 &&
-                (!String2.isEmailAddress(emailAddresses[0]) ||
-                 emailAddresses[0].startsWith("nobody@") || 
-                 emailAddresses[0].startsWith("your.name") || 
-                 emailAddresses[0].startsWith("your.email"))) {
-                errors = "Error in EDStatic.email: invalid emailAddresses=" + emailAddressesCSSV;
-                String2.log(errors);
-            }
-
-            if (errors.length() == 0)
 //??? THREAD SAFE? SYNCHRONIZED? 
 //I don't think use of this needs to be synchronized. I could be wrong. I haven't tested.
-                SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                    emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
-                    subject, 
-                    preferredErddapUrl + " reports:\n" + content);
+            SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
+                emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
+                subject, 
+                preferredErddapUrl + " reports:\n" + content);
         } catch (Throwable t) {
             String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";
             try {String2.log(MustBe.throwable(msg, t));

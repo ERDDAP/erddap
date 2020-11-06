@@ -493,7 +493,7 @@ extends java.lang.Object</pre>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>baseSeconds</code> - from getTimeBaseAndFactor[0]</dd>
 <dd><code>factorToGetSeconds</code> - from getTimeBaseAndFactor[1]</dd>
-<dd><code>unitsSince</code> - a numeric time value in the source units</dd>
+<dd><code>unitsSince</code> - a numeric time value in source units "<i>units</i> since <i>baseTime</i>"</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>seconds since 1970-01-01 (or NaN if unitsSince is NaN)</dd>
 </dl>
@@ -512,11 +512,11 @@ extends java.lang.Object</pre>
  This properly handles 'special' factorToGetSeconds values (for month and year).</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>baseSeconds</code> - </dd>
-<dd><code>factorToGetSeconds</code> - </dd>
-<dd><code>epochSeconds</code> - </dd>
+<dd><code>baseSeconds</code> - from getTimeBaseAndFactor[0]</dd>
+<dd><code>factorToGetSeconds</code> - from getTimeBaseAndFactor[1]</dd>
+<dd><code>epochSeconds</code> - seconds since 1970-01-01 (or NaN if epochSeconds is NaN)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>seconds since 1970-01-01 (or NaN if epochSeconds is NaN)</dd>
+<dd>a numeric time value in source units "<i>units</i> since <i>baseTime</i>"</dd>
 </dl>
 </li>
 </ul>

@@ -296,14 +296,15 @@ first.
 <a rel="bookmark" href="https://hub.docker.com/u/axiom/">ERDDAP in a Docker container<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-    <br>If you already use Docker, you might prefer the Docker version. 
+    <br>It's the standard ERDDAP installation, but Axiom has put it in a docker container. 
+    <br>If you already use Docker, you will probably prefer the Docker version. 
     <br>If you don't already use Docker, we generally don't recommend this. 
     <br>If you chose to install ERDDAP via Docker, we don't offer any support
       for the installation process.
     <br>We haven't worked with Docker yet. If you work with this, please send us your comments.
 
-<li><strong>Linux and Macs</strong> -- ERDDAP works great on Linux and Mac computers. 
-<li><strong>Windows</strong> -- Windows is fine for testing ERDDAP and for personal use, 
+<li><strong>Linux and Macs</strong> -- ERDDAP works great on Linux and Mac computers. See the instructions below.
+<li><strong>Windows</strong> -- Windows is fine for testing ERDDAP and for personal use (see the instructions below), 
 but we don't recommend using it for public ERDDAPs. 
 Running ERDDAP on Windows may have problems: 
 notably, ERDDAP may be unable to delete 
@@ -315,7 +316,7 @@ antivirus software's settings may partially alleviate the problem. Or consider u
 or Mac server instead.
 </ul>
 
-<p><strong>The standard ERDDAP installation instructions are:</strong>
+<p><strong>The standard ERDDAP installation instructions for Linux, Macs, and Windows computers are:</strong>
 <ol>
 <li><a class="selfLink" id="java" href="#java" rel="bookmark">Set up Java 8 (also known as 1.8).</a>  
     <br>For security reasons, it is almost always best to use the latest version of Java 8.
@@ -324,7 +325,7 @@ or Mac server instead.
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
-    <br><kbd>/usr/local/jdk8u242-b08/jre/bin/java -version</kbd> <!-- javaVersion -->
+    <br><kbd>/usr/local/jdk8u265-b01/jre/bin/java -version</kbd> <!-- javaVersion -->
 
     <p>ERDDAP works with Java from other sources, but we recommend AdoptOpenJDK because it is the 
     main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
@@ -366,7 +367,8 @@ or Mac server instead.
     <ul>
 
     <li>Download Tomcat and unpack it on your server or PC.
-      <br>For security reasons, it is almost always best to use the latest version of Tomcat 8 <!-- tomcatVersion -->
+      <br>For security reasons, it is almost always best to use the latest version of 
+      Tomcat 9 (although 8.5+ is fine too) <!-- tomcatVersion -->
       which is designed to work with Java 8 (1.8). <!-- javaVersion -->
       Below, the Tomcat directory will be referred to as <i>tomcat</i>.
       <p>Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
@@ -376,19 +378,19 @@ or Mac server instead.
       and shouldn't have to contend with other applications for memory.
       <ul>
       <li>On Linux,                                     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a> 
         and unpack it. We recommend unpacking it in /usr/local.
       <li>On a Mac, Tomcat is probably already installed in /Library/Tomcat,
-        but you may want to update it to the latest version of Tomcat 8. <!-- tomcatVersion -->
+        but you may want to update it to the latest version of Tomcat 9. <!-- tomcatVersion -->
         <br>If you download it,     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>         
         and unpack it in /Library/Tomcat. 
       <li>On Windows, you can                     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-80.cgi">download the "Core" "zip" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "zip" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>
         (which doesn't mess with the Windows registry and which you control from a DOS command line)
@@ -397,7 +399,7 @@ or Mac server instead.
         We make a <kbd>/programs</kbd> directory and unpack it there.)
         Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features.
         If the distribution is a Windows installer, it will probably put Tomcat 
-        in, for example, <kbd>/Program Files/apache-tomcat-8.5.51</kbd> . <!-- tomcatVersion -->
+        in, for example, <kbd>/Program Files/apache-tomcat-9.0.39</kbd> . <!-- tomcatVersion -->
         <br>&nbsp;
       </ul>
 
@@ -493,17 +495,17 @@ or Mac server instead.
       <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
         <ul>
         <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
-          <br><kbd>chown -R tomcat apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chown -R tomcat apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
           <br>(but substitute the actual name of your tomcat directory). 
         <li>Change the "group" to be tomcat, your username, 
           or the name of a small group that includes tomcat and 
           all the administrators of Tomcat/ERDDAP, e.g., 
-          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
         <li>Change permissions so that tomcat and the group have 
           read, write, execute privileges, e.g,. 
-          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
         <li>Remove "other" user's permissions to read, write, or execute:
-          <br><kbd>chmod -R o-rwx apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R o-rwx apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
           <br>This is important, because it prevents other users from
             reading possibly sensitive information in ERDDAP setup files.
         </ul>
@@ -517,14 +519,14 @@ or Mac server instead.
       
       <p>On Linux and Macs:
       <br>Create a file <i>tomcat</i>/bin/setenv.sh
-      (or in Red Hat Enterprise Linux [RHEL], edit ~tomcat/conf/tomcat8.conf) <!-- tomcatVersion -->
+      (or in Red Hat Enterprise Linux [RHEL], edit ~tomcat/conf/tomcat9.conf) <!-- tomcatVersion -->
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<kbd>
-      <br>export JAVA_HOME=/usr/local/jdk8u242-b08/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk8u265-b01/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.5.51</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.5.51</i></kbd>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>9.0.39</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -534,10 +536,10 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<kbd>
-      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u242-b08\jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u265-b01\jre"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
-      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>8.5.51</i>"         <!-- tomcatVersion -->
-      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>8.5.51</i>"</kbd>  <!-- tomcatVersion -->
+      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"         <!-- tomcatVersion -->
+      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"</kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).
       <br>If this is just for local testing, remove "-server".      
       <br>(If you previously set JRE_HOME, you can remove that.)
@@ -726,7 +728,7 @@ or Mac server instead.
     unzip erddapContent.zip into ~tomcat (or some other directory to which only tomcat has access)
     and set the system property 
     <kbd>erddapContentDirectory=~tomcat/content/erddap</kbd>
-    in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the content directory.
+    in ~tomcat/conf/tomcat9.conf <!-- tomcatVersion --> so ERDDAP can find the content directory.
     
   <p>[Some previous versions are also available:  
     <br><a rel="bookmark"
@@ -754,8 +756,8 @@ or Mac server instead.
     setup.xml is the file with all of the settings which specify how your ERDDAP behaves.
     <br>For the initial setup, you MUST at least change these settings:
       <kbd>&lt;bigParentDirectory&gt;, &lt;emailEverythingTo&gt;, &lt;baseUrl&gt;,
-      &lt;baseHttpsUrl&gt;, &lt;email.*&gt;, &lt;admin.*&gt;</kbd> 
-      (and <kbd>&lt;fontFamily&gt;</kbd> if you are using Bitstream Vera Sans fonts).
+      &lt;email.*&gt;, &lt;admin.*&gt;</kbd> 
+      (and <kbd>&lt;baseHttpsUrl&gt;</kbd> when you set up https).
 
     <p>When you create the bigParentDirectory, from the parent directory of
       bigParentDirectory:
@@ -1175,13 +1177,16 @@ Our plan to avoid problems is:
   <ul>
   <li>Monitor ERDDAP via the 
     <a rel="help" href="#statusPage">status.html web page</a>. 
-    <br>If the status page responds slowly, or you see that a huge number of requests are coming in,
+    <br>It has tons of useful information. 
+    If you see that a huge number of requests are coming in,
       or tons of memory being used, or tons of failed requests, 
       or each Major LoadDatasets is taking a long time,
       or see any sign of things getting bogged down and responding slowly, 
       then look in ERDDAP's <a rel="help" href="#log">log.txt file</a>
       to see what's going on.
-      <br>&nbsp;
+    <p>It's also useful to simply note how fast the status page responds.
+    If it responds slowly, that is an important indicator that 
+    ERDDAP is very busy.
 
   <li>Monitor ERDDAP via the <a rel="help" href="#dailyReport">Daily Report</a> email.
     <br>&nbsp;
@@ -1191,6 +1196,26 @@ Our plan to avoid problems is:
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
       >testOutOfDate</a> global attribute.
     <br>&nbsp;
+
+  <li><a class="selfLink" id="ExternalMonitors" href="#ExternalMonitors" rel="bookmark"
+    >External Monitors</a>
+    <br>The methods listed above are ERDDAP's ways of monitoring itself.
+    It is also possible to make or use external systems to monitor your ERDDAP.
+    One project to do this is 
+        <a rel="help" href="https://github.com/axiom-data-science/erddap-metrics"
+                           >Axiom's erddap-metrics project<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This is a link to an external website."/></a>.
+    Such external systems have some advantages:
+    <ul>
+    <li>They can be customized to provide the information you want, displayed in the way you want.
+    <li>They can include information about ERDDAP that ERDDAP can't access easily or at all 
+       (for example, CPU usage, disk free space, ERDDAP response time as seen from the user's perspective,
+       ERDDAP uptime, 
+    <li>They can provide alerts (emails, phone calls, texts) to administrators when 
+       problems exceed some threshold.
+       <br>&nbsp;
+    </ul>
 
   <li><a class="selfLink" id="multipleSimultaneousRequests" href="#multipleSimultaneousRequests" rel="bookmark"
      ><strong>Blacklist users making multiple simultaneous requests!</strong></a>
@@ -1275,6 +1300,8 @@ Our plan to avoid problems is:
         <br>&nbsp;
       </ul>
       So users: Don't make multiple simultaneous requests or you will be blacklisted!      
+        <br>&nbsp;
+
   </ul>
 
   <p>Clearly, it is best if your server has a lot of cores, a lot of memory
@@ -1318,26 +1345,6 @@ Our plan to avoid problems is:
     each time it tries to reload a dataset from a hung THREDDS. 
     Some groups (including ERD) avoid this by proactively restarting THREDDS frequently 
     (e.g., nightly in a cron job). 
-
-  <p><strong><a class="selfLink" id="otherWaysToMonitorERDDAP" href="#otherWaysToMonitorERDDAP" rel="bookmark"
-    >Other Ways to Monitor ERDDAP</a></strong>
-    The methods listed above are ERDDAP's ways of monitoring itself.
-    It is also possible to make or use external systems to monitor your ERDDAP.
-    One project to do this is 
-        <a rel="help" href="https://github.com/axiom-data-science/erddap-metrics"
-                           >Axiom's erddap-metrics project<img 
-          src="../images/external.png" alt=" (external link)" 
-          title="This is a link to an external website."/></a>.
-    Such external systems have some advantages:
-    <ul>
-    <li>They can be customized to provide the information you want, displayed in the way you want.
-    <li>They can include information about ERDDAP that ERDDAP can't access easily or at all 
-       (for example, CPU usage, disk free space, ERDDAP response time as seen from the user's perspective,
-       ERDDAP uptime, 
-    <li>They can provide alerts (emails, phone calls, texts) to administrators when 
-       problems exceed some threshold.
-    </ul>
-
 
 
 <li><strong><a class="selfLink" id="respondingSlowly" href="#respondingSlowly" rel="bookmark">If ERDDAP Is Responding Slowly</a></strong> 
@@ -1759,6 +1766,12 @@ If you repeatedly use Tomcat Manager to <kbd>Reload</kbd> (or <kbd>Stop</kbd> an
       You can control how much information is logged with 
       <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#logLevel"><kbd>&lt;logLevel&gt;</kbd></a>
       datasets.xml.
+    <li>Dataset reloads and user responses that take &gt;10 seconds to finish (successfully or unsuccessfully) are
+      marked with "(&gt;10s!)". Thus, you can search the log.txt file for this phrase to find
+      the datasets that were slow to reload or the request number of the requests that were slow to finish. You can then 
+      look higher in the log.txt file to see what the dataset problem was or what the user request was and who it was from.
+      These slow dataset loads and user requests are sometimes taxing on ERDDAP. So knowing more about these
+      requests can help you identify and solve problems.
     </ul>
   <li>Information is written to the log file on the disk drive in fairly big chunks. 
     The advantage is that this is very efficient -- ERDDAP will never block
@@ -4353,16 +4366,16 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use AdoptOpenJDK's javac jdk8u242-b08 <!-- javaVersion --> to compile gov.noaa.pfeg.coastwatch.TestAll  
+  <li>We currently use AdoptOpenJDK's javac jdk8u265-b01 <!-- javaVersion --> to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and AdoptOpenJDK's java jdk8u242-b08 <!-- javaVersion --> to run the tests.  
+     and AdoptOpenJDK's java jdk8u265-b01 <!-- javaVersion --> to run the tests.  
      For security reasons, it is almost always best to use the latest versions of Java 8 and Tomcat 8. <!-- javaVersion -->
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
      <li><a class="selfLink" id="classpath" href="#classpath" rel="bookmark">Our javac and java classpath</a> (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><kbd>
-./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-jexl.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;</kbd>
+./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-jexl.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;lib/aws-java-sdk.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar</kbd>
        <br>If you get error messages about classes not found
          when you compile or run ERDDAP or one of its tools, 
          compare your command line's classpath to the classpath above
@@ -4382,7 +4395,9 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
      and have modified them slightly to avoid problems compiling with Java 8 (1.8). <!-- javaVersion -->
      We have often made other slight modifications (notably to Dods) for other reasons.
   <li>Most classes have test methods. We run lots of tests via TestAll. 
-     Unfortunately, many of the tests are specific to our set up.  (Sorry.)
+     Unfortunately, many of the tests are specific to our set up.  
+     (Sorry. We're working to move all test files to the erddapTest and erddapTestBig directories
+     which are managed by Git and available at GitHub.)
   <br>&nbsp;
   </ul>
 
@@ -4482,7 +4497,7 @@ that has made this project possible and enabled its growth.
 <p>The bulk of the funding for work on ERDDAP has come from NOAA,
 in that it pays Bob Simons' salary (he is a full time government employee with 
 "hard"-money/full funding).
-For the two years of ERDDAP, when he was a government contractor, 
+For the first two years of ERDDAP, when he was a government contractor, 
 funding came from the
 <a rel="bookmark" href="https://coastwatch.noaa.gov/">NOAA CoastWatch<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4922,7 +4937,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
       title="This link to an external website does not constitute an endorsement."></a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2019, NOAA.
+ERDDAP, Copyright 2020, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
