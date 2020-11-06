@@ -600,11 +600,12 @@ public class EDDTableFromDatabase extends EDDTable{
         //ensure the setup is valid
         ensureValid();
 
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) 
             String2.log(
                 (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromDatabase " + datasetID + " constructor finished. TIME=" + 
-                (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+                cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
     /**

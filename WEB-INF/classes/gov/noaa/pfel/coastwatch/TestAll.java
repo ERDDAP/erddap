@@ -119,14 +119,15 @@ public class TestAll  {
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
-//      String2.log(tFileName + "\n" + NcHelper.ncdump(tFileName, "-h"));  
+//      String2.log(NcHelper.ncdump("/u00/soda3/soda3_ice/soda3.3.1_mn_ice_reg_2014.ncml", "-v time"));  
 
-//      DasDds.main(new String[]{"nmspWcosTemp", "-verbose"});
+//      DasDds.main(new String[]{"erdSoda331icemday", "-verbose"});
+//      DasDds.main(new String[]{"erdSoda331oceanmday", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
 //          0, "", null));
-//    GenerateDatasetsXml.main(new String[0]); //interactive 
+//      GenerateDatasetsXml.main(new String[0]); //interactive 
 
 //    { //find file in dataset with insane min_time  
 //        Table table = new Table();
@@ -266,7 +267,9 @@ public class TestAll  {
 //    os.close();
 //
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
-//        "/data/melanie/", ".*.nc", "", "", -1, "", null);
+//        "/u00/soda3/soda3_ice/", "soda3.3.1_mn_ice_reg_....\\.ncml", "", 
+//        "", "", //group, dimensionsCSV
+//        -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
 //    DasDds.main(new String[]{"access_r2", "-verbose"});
 
@@ -637,7 +640,7 @@ public class TestAll  {
 
          EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3();  //slow!
          EDDGridFromNcFiles.testGenerateDatasetsXmlCopy();  //requires erdMWchla1day in localhost erddap
-         EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles();  
+         //EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles();  //inactive, because source is unreliable
          EDDGridFromNcFiles.testGenerateDatasetsXml5();
          EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml();
          EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog(); 
@@ -680,7 +683,7 @@ public class TestAll  {
          EDDTableFromSOS.testGenerateDatasetsXml(true); //useCachedInfo); 
          EDDTableFromSOS.testGenerateDatasetsXmlFromOneIOOS(true); //useCachedInfo); 
          EDDTableFromSOS.testGenerateDatasetsXmlFromIOOS(true); //useCachedInfo); 
-         EDDTableFromThreddsFiles.testGenerateDatasetsXml();
+         //EDDTableFromThreddsFiles.testGenerateDatasetsXml();  //source is unreliable
          EDDTableFromWFSFiles.testGenerateDatasetsXml(true);  //developmentMode (read from file, not source)
 /* */
 
@@ -739,7 +742,7 @@ public class TestAll  {
 //    DasDds.main(new String[]{"erdMWpp3day", "-verbose"});
 
 //    SimpleXMLReader.testValidity(
-//        "/programs/_tomcat/content/erddap/datasetsFED31UAF.xml", "erddapDatasets");
+//        "/programs/_tomcat/content/erddap/datasetsFEDCW.xml", "erddapDatasets");
 
 //    SSR.downloadFile(
 //        "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",

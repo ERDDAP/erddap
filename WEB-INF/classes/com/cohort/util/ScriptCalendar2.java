@@ -85,10 +85,10 @@ public class ScriptCalendar2  {
      * This converts an epochSeconds value into a unitsSince value.
      * This properly handles 'special' factorToGetSeconds values (for month and year).
      *
-     * @param baseSeconds
-     * @param factorToGetSeconds
-     * @param epochSeconds
-     * @return seconds since 1970-01-01 (or NaN if epochSeconds is NaN)
+     * @param baseSeconds from getTimeBaseAndFactor[0]
+     * @param factorToGetSeconds from getTimeBaseAndFactor[1]
+     * @param epochSeconds seconds since 1970-01-01 (or NaN if epochSeconds is NaN)
+     * @return a numeric time value in source units "<i>units</i> since <i>baseTime</i>"
      */
     public static double epochSecondsToUnitsSince(double baseSeconds, 
         double factorToGetSeconds, double epochSeconds)  {

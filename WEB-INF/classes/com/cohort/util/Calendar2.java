@@ -2334,9 +2334,11 @@ public class Calendar2 {
             "EEE, d MMM yyyy HH:mm:ss'Z'",  
         "[a-zA-Z]{3}, [0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012][0-9]:[0-5][0-9]:[0-5][0-9]",  
             "EEE, d MMM yyyy HH:mm:ss",  
-        //Tue Dec 6 17:36:16 2017
-        "[a-zA-Z]{3} [a-zA-Z]{3} [0123]?[0-9] [012][0-9]:[0-5][0-9]:[0-5][0-9] [0-9]{4}",  
-            "EEE MMM d HH:mm:ss yyyy",
+        //Tue Dec 6 17:36:16 2017  some variety in how single digit date and hour are written
+        "[a-zA-Z]{3} [a-zA-Z]{3} [ 0123][0-9] [ 012][0-9]:[0-5][0-9]:[0-5][0-9] [0-9]{4}",  //2 digits 
+            "EEE MMM dd HH:mm:ss yyyy",
+        "[a-zA-Z]{3} [a-zA-Z]{3} [0123]?[0-9] [012]?[0-9]:[0-5][0-9]:[0-5][0-9] [0-9]{4}",  //variable nDigits
+            "EEE MMM d H:mm:ss yyyy",
             
         //                 "Sun, 06 November 1994 08:49:37 GMT"  
         //GMT is literal. java.time.format.DateTimeFormatter (was Joda) doesn't parse z
@@ -4521,12 +4523,17 @@ public class Calendar2 {
                 } else {
                     //get specified number of digits
                     for (int i = 0; i < nCh; i++) {
-                        if (sPo >= sLength)
+                        if (sPo >= sLength) 
                             throw new RuntimeException(
                                 parseErrorUnexpectedEndOfContent(s, format));
-                        else if (!String2.isDigit(s.charAt(sPo)))
+
+                        char tch = s.charAt(sPo);
+                        if (tch == ' ' && i == 0 && nCh == 2 && "dHh".indexOf(ch) >= 0) {  //first 'digit' of dd, HH, hh may be a space
+                            ospo++;
+                        } else if (!String2.isDigit(tch)) {
                             throw new RuntimeException(
                                 parseErrorUnexpectedContent(s, format, sPo));
+                        }
                         sPo++;
                     }
                 }

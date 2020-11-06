@@ -3400,17 +3400,21 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(
                                                   "Sun, 20 Nov 1994 08:49:37 -0800"),   
                                                   "EEE, d MMM yyyy HH:mm:ss xx", ""); 
-        dtfr = DateTimeFormatter.ofPattern(        "EEE, d MMM yyyy HH:mm:ss xx");
-        dtfr.parse(                                "Sun, 20 Nov 1994 08:49:37 -0800");
+        dtfr = DateTimeFormatter.ofPattern(       "EEE, d MMM yyyy HH:mm:ss xx");
+        dtfr.parse(                               "Sun, 20 Nov 1994 08:49:37 -0800");
         Test.ensureEqual(Calendar2.tryToIsoString("Sun, 20 Nov 1994 08:49:37 -0800"), "1994-11-20T16:49:37Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("sun, 06 nov 1994 08:49:37 -0800"), "1994-11-06T16:49:37Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("SUN, 6 NOV 1994 08:49:37 -0800"),  "1994-11-06T16:49:37Z", "");
 
+        Test.ensureEqual(Calendar2.tryToIsoString("Fri Jun 5 2:22:20 2020"),    "2020-06-05T02:22:20Z", "");  //variable nDigits
+        Test.ensureEqual(Calendar2.tryToIsoString("Fri Jun  5  2:22:20 2020"),  "2020-06-05T02:22:20Z", "");  //2 digits (first may be ' ')
+        Test.ensureEqual(Calendar2.tryToIsoString("Fri Jun 15 10:22:20 2020"),  "2020-06-15T10:22:20Z", "");
+
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(
                                                   "Wed Dec 20 17:36:16 2017"),   
-                                                  "EEE MMM d HH:mm:ss yyyy", ""); 
-        dtfr = DateTimeFormatter.ofPattern(        "EEE MMM d HH:mm:ss yyyy");
-        dtfr.parse(                                "Wed Dec 20 17:36:16 2017");
+                                                  "EEE MMM dd HH:mm:ss yyyy", ""); 
+        dtfr = DateTimeFormatter.ofPattern(       "EEE MMM dd HH:mm:ss yyyy");
+        dtfr.parse(                               "Wed Dec 20 17:36:16 2017");
         Test.ensureEqual(Calendar2.tryToIsoString("Wed Dec 20 17:36:16 2017"), "2017-12-20T17:36:16Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("WED DEC 06 17:36:16 2017"), "2017-12-06T17:36:16Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("wed dec 6 17:36:16 2017"),  "2017-12-06T17:36:16Z", "");
@@ -4204,9 +4208,9 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sun, 06 Nov 1994 08:49:37 -08:00"),
                                                          "EEE, d MMM yyyy HH:mm:ss xxx", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sun Nov 20 17:36:16 1994"),
-                                                         "EEE MMM d HH:mm:ss yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sun Nov 6 17:36:16 1994"),
-                                                         "EEE MMM d HH:mm:ss yyyy", ""); 
+                                                         "EEE MMM dd HH:mm:ss yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sun Nov 6 7:36:16 1994"),
+                                                         "EEE MMM d H:mm:ss yyyy", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sunday, 06 November 1994 08:49:37 GMT"),   
                                                          "EEEE, d MMMM yyyy HH:mm:ss 'GMT'", ""); 

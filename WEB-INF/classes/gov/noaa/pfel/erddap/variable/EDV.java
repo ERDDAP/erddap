@@ -1581,9 +1581,9 @@ will show NaN).
                 if (String2.isSomething(combinedAttributes.getString(attName)))
                 throw new IllegalArgumentException(
                     String2.ERROR + " in datasets.xml for datasetID=\"" + tDatasetID + 
-                    "\", for variable sourceName=" + String2.toJson(sourceName) + 
-                    ": AxisVariables can't have missing values. If there actually " +
-                    "are missing values, you need to fix that problem; " +
+                    "\": axisVariable sourceName=" + String2.toJson(sourceName) + 
+                    " has a " + attName + " attribute!  AxisVariables can't have fill or missing values. If there actually " +
+                    "are fill or missing values, you need to fix that problem; " +
                     "otherwise, in the variable's <addAttributes>, add <att name=\"" + attName + "\">null</att> .");
             }
             return;
