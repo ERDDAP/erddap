@@ -401,6 +401,7 @@ if (lonIndex < nAv - 1)
             tryToSubscribeToChildFromErddap(oChildDataset);
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() +
                  "dloni180=" + dloni180 + " dloni359=" + dloni359 + 
@@ -408,7 +409,7 @@ if (lonIndex < nAv - 1)
                 " dloni0=" + dloni0 + " dloni179=" + dloni179 + "\n": "") + 
             "localChildDatasetID=" + localChildDatasetID + "\n" +
             "\n*** EDDGridLonPM180 " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)

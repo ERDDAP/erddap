@@ -384,10 +384,11 @@ public class EDDGridSideBySide extends EDDGrid {
                 tryToSubscribeToChildFromErddap(childDatasets[c]);
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridSideBySide " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)
@@ -625,8 +626,8 @@ public class EDDGridSideBySide extends EDDGrid {
             if (nextPath.length() == 0) {
                 Table table = new Table();
                 table.addColumn("Name",          new StringArray());
-                table.addColumn("Last modified", new LongArray());
-                table.addColumn("Size",          new LongArray());            
+                table.addColumn("Last modified", new LongArray().setMaxIsMV(true));
+                table.addColumn("Size",          new LongArray().setMaxIsMV(true));            
                 table.addColumn("Description",   new StringArray());
                 StringArray subDirs = new StringArray();
                 for (int child = 0; child < nChild; child++) {

@@ -534,10 +534,11 @@ public class EDDGridFromDap extends EDDGrid {
         }
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromDap " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)
@@ -7954,17 +7955,21 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); //2020-08-20 this is now failing with Http 502 Bad Gateway error after a delay
-        userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-        expected = 
+        try {      
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); //2020-08-20 this now often fails with Http 502 Bad Gateway error after a delay
+            userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
+            tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+                EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            expected = 
 "time,altitude,latitude,longitude,u\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
 //2020-05-28 data is all NaNs. I emailed Charles Carleton.
 "0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n"; //2018-05-17 was 12-15, 2018-01-25 was 12-13?! 
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        } catch (Exception e) {
+            Test.knownProblem("2020-08-20 this now often fails with Http 502 Bad Gateway error after a delay.", e);
+        }
     }
 
 

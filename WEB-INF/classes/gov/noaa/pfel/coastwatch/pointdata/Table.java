@@ -31116,6 +31116,8 @@ String2.log(table.dataToString());
         PrimitiveArray modifiedPA    = getColumn(1);
         PrimitiveArray sizePA        = getColumn(2);
         PrimitiveArray descriptionPA = getColumn(3);
+        modifiedPA.setMaxIsMV(true);
+        sizePA.setMaxIsMV(true);
 
         //ensure column types are as expected
         String tcssv = getColumn(0).elementTypeString() + ", " +
@@ -32917,22 +32919,22 @@ expected =
 "\t\tabund_m3:units = \"count m-3\" ;\n" +
 "\tfloat latitude(row) ;\n" +
 "\t\tlatitude:_CoordinateAxisType = \"Lat\" ;\n" +
-"\t\tlatitude:_FillValue = NaNf ;\n" +
+"\t\tlatitude:_FillValue = 214748.36f ;\n" +
 "\t\tlatitude:actual_range = 42.4733f, 44.6517f ;\n" +
 "\t\tlatitude:axis = \"Y\" ;\n" +
 "\t\tlatitude:ioos_category = \"Location\" ;\n" +
 "\t\tlatitude:long_name = \"Latitude\" ;\n" +
-"\t\tlatitude:missing_value = NaNf ;\n" +
+"\t\tlatitude:missing_value = 214748.36f ;\n" +
 "\t\tlatitude:standard_name = \"latitude\" ;\n" +
 "\t\tlatitude:units = \"degrees_north\" ;\n" +
 "\tfloat longitude(row) ;\n" +
 "\t\tlongitude:_CoordinateAxisType = \"Lon\" ;\n" +
-"\t\tlongitude:_FillValue = NaNf ;\n" +
+"\t\tlongitude:_FillValue = 214748.36f ;\n" +
 "\t\tlongitude:actual_range = -125.1167f, -124.175f ;\n" +
 "\t\tlongitude:axis = \"X\" ;\n" +
 "\t\tlongitude:ioos_category = \"Location\" ;\n" +
 "\t\tlongitude:long_name = \"Longitude\" ;\n" +
-"\t\tlongitude:missing_value = NaNf ;\n" +
+"\t\tlongitude:missing_value = 214748.36f ;\n" +
 "\t\tlongitude:standard_name = \"longitude\" ;\n" +
 "\t\tlongitude:units = \"degrees_east\" ;\n" +
 "\n" +

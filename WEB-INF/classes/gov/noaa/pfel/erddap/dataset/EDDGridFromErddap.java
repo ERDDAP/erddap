@@ -246,7 +246,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     "/.csv");
                 try {is.close();} catch (Exception e2) {}
             } catch (Exception e) {
-                String2.log("accessibleViaFiles=false because remote ERDDAP is <v2.10 (no support for /files/.csv):\n" +
+                String2.log("accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ (or is <v2.10 so no support for /files/.csv):\n" +
                     MustBe.throwableToString(e));
                 accessibleViaFiles = false;
             }
@@ -458,10 +458,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset, localSourceUrl);
 
         //finally
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromErddap " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)

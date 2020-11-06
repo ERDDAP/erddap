@@ -741,11 +741,12 @@ public class EDDTableFromCassandra extends EDDTable{
         //set after subsetVariablesTable has been made 
         maxRequestFraction = tMaxRequestFraction;
 
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) 
             String2.log(
                 (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromCassandra " + datasetID + " constructor finished. TIME=" + 
-                (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+                cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
 

@@ -362,16 +362,19 @@ public class Subscriptions {
             preferredErddapUrl + "/" + LIST_HTML + "?email=" + email + "\n"; 
     }
 
-    /** This tests that an email address is valid.
+    /** This tests that an email address is valid (syntax and blacklist).
      *
      * @param email
      * @return an error message or "" if no error.
      */
     public synchronized String testEmailValid(String email) {
-        if (!String2.isEmailAddress(email)) 
+        if (!String2.isEmailAddress(email) || 
+            email.startsWith("nobody@") || 
+            email.startsWith("your.name") || 
+            email.startsWith("your.email")) 
             return String2.ERROR + ": \"" + email + "\" is in not a valid email address.";
         if (email.length() > EMAIL_LENGTH) 
-            return String2.ERROR + ": email=" + email + " has more than " + 
+            return String2.ERROR + ": emailAddress=" + email + " has more than " + 
                 EMAIL_LENGTH + " characters.";
         int atPo = email.indexOf('@');
         //String2.log(">>email=" + email + "\n>>emailBlacklist=" + emailBlacklist.toString());

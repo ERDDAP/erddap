@@ -942,7 +942,7 @@ public class EDDTableFromSOS extends EDDTable{
         stationHasObsProp = new boolean[tStationHasObsPropAL.size()][];
         for (int i = 0; i < tStationHasObsPropAL.size(); i++)
             stationHasObsProp[i] = (boolean[])tStationHasObsPropAL.get(i);
-        String2.log("Station Table=\n" + stationTable.saveAsJsonString(stationBeginTimeCol, true));
+        if (reallyVerbose) String2.log("Station Table=\n" + stationTable.saveAsJsonString(stationBeginTimeCol, true));
 
         //cdm_data_type 
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type"); 
@@ -1058,11 +1058,12 @@ public class EDDTableFromSOS extends EDDTable{
         ensureValid();
 
         //done
+        long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableFromSOS " + datasetID + 
             " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
+            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
     }
 
