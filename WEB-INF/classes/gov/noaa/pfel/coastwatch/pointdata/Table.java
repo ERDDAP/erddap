@@ -31408,7 +31408,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
             "This dataset is a product of the TAO Project Office at NOAA/PMEL.", 
             ncHeader);
-        Test.repeatedlyTestLinesMatch(table.globalAttributes.get("history").getString(2), 
+        Test.ensureLinesMatch(table.globalAttributes.get("history").getString(2), 
             "20\\d{2}-\\d{2}-\\d{2} Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) " +
             "fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  " +
             "Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.", 

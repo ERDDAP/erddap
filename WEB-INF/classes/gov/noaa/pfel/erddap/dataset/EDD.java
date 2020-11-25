@@ -553,6 +553,8 @@ public abstract class EDD {
                 } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
                 } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
                 } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
+                } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
+                } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
                 } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
                 } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
                 } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {

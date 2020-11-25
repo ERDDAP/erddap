@@ -1400,6 +1400,18 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         expected =           //2019-11-22 ~2 dozen small changes to centerline, precision, instrument, qcindex, ...
 "Attributes \\{\n" +
 " s \\{\n" +
+"  ID \\{\n" +
+"    String cf_role \"trajectory_id\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Call Sign\";\n" +
+"  \\}\n" +
+"  site \\{\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Ship Name\";\n" +
+"  \\}\n" +
+"  IMO \\{\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  \\}\n" +
 "  cruise_id \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
 "  \\}\n" +
@@ -1409,19 +1421,10 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  facility \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
 "  \\}\n" +
-"  ID \\{\n" +
-"    String ioos_category \"Identifier\";\n" +
-"  \\}\n" +
-"  IMO \\{\n" +
-"    String ioos_category \"Identifier\";\n" +
-"  \\}\n" +
 "  platform \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
 "  \\}\n" +
 "  platform_version \\{\n" +
-"    String ioos_category \"Identifier\";\n" +
-"  \\}\n" +
-"  site \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
 "  \\}\n" +
 "  time \\{\n" +
@@ -1825,7 +1828,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +
-"    String cdm_data_type \"Point\";\n" +
+"    String cdm_data_type \"Trajectory\";\n" +
+"    String cdm_trajectory_variables \"ID, site\";\n" +
 //"    String commit_hash \"7524017926524418e6907515721436930f2eb50b\";\n" + //disappeared 2020-09-17
 "    String contact_email \"samos@coaps.fsu.edu\";\n" +
 "    String contact_info \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
@@ -1840,7 +1844,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String defaultGraphQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"&\\.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
-"    String featureType \"Point\";\n" +
+"    String featureType \"Trajectory\";\n" +
 "    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc)\\]\";\n" + //changes, so neutered
 "    String fsu_version \"...\";\n" +  //changes 300 to 301 to 300
 "    Float64 geospatial_lat_max 72.51;\n" +
@@ -1880,7 +1884,7 @@ expected =
 "    String sourceUrl \"https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
-"    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
+"    String subsetVariables \"ID, site, IMO, cruise_id, expocode, facility, platform, platform_version\";\n" +
 "    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data " +
     "\\(delayed ~10 days for quality control\\) are from the Shipboard " +
     "Automated Meteorological and Oceanographic System \\(SAMOS\\) program.\n" +
@@ -1909,7 +1913,7 @@ expected =
 "\\}\n";
             tPo = results.indexOf(expected.substring(0, 17));
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-            Test.repeatedlyTestLinesMatch(results.substring(tPo), expected, "results=\n" + results);
+            Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
             throw new RuntimeException("This often has small metadata changes.", t); 
         }
@@ -1922,14 +1926,14 @@ expected =
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
+"    String ID;\n" +
+"    String site;\n" +
+"    String IMO;\n" +
 "    String cruise_id;\n" +
 "    String expocode;\n" +
 "    String facility;\n" +
-"    String ID;\n" +
-"    String IMO;\n" +
 "    String platform;\n" +
 "    String platform_version;\n" +
-"    String site;\n" +
 "    Float64 time;\n" +
 "    Float32 latitude;\n" +
 "    Float32 longitude;\n" +

@@ -1495,7 +1495,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=-180 to 540 map. */
     public static String[] myTwoClickMap540Big(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 785, 278, //2019-10-18 was 412, 155,  //image w, h
@@ -1506,7 +1506,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=-180 to 180 map. */
     public static String[] myTwoClickMap180Big(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 285, 155,
@@ -1517,7 +1517,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=0 to 360 map. */
     public static String[] myTwoClickMap360Big(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 284, 155,
@@ -1528,7 +1528,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=-180 to 540 map. */
     public static String[] myTwoClickMap540(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 293, 113,
@@ -1539,7 +1539,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=-180 to 180 map. */
     public static String[] myTwoClickMap180(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
@@ -1550,7 +1550,7 @@ sb.append(
 
     /** A common use of twoClickMap to show a lon=0 to 360 map. */
     public static String[] myTwoClickMap360(String formName, String imageUrl, 
-        String debugInBrowser) {
+        boolean debugInBrowser) {
         return twoClickMap(
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
@@ -1583,8 +1583,7 @@ sb.append(
      * @param latRange usually 180
      * @param latMax   usually 90
      * @param tooltip use null for the default tooltip
-     * @param debugInBrowser  if this is FF, IE, or Opera, debug code will be generated
-     *    for that browser.  (use null or "" for no debugging)
+     * @param debugInBrowser  if true, debug code (using console.log() ) will be generated
      * @return [0] is the string to be put in the form (rowSpan=5)
      *    [1] is the string with the map (usually right after [0])
      *    and [2] is the string to be put after the end of the form.
@@ -1594,13 +1593,7 @@ sb.append(
          String imageUrl, int imageWidth, int imageHeight,
          int mapX, int mapY, int mapWidth, int mapHeight,
          int lonRange, int lonMin, int latRange, int latMax,
-         String tooltip, String debugInBrowser) {
-
-if (debugInBrowser != null &&
-    !debugInBrowser.equals("FF") &&
-    !debugInBrowser.equals("IE") &&
-    !debugInBrowser.equals("Opera"))
-    debugInBrowser = null;
+         String tooltip, boolean debugInBrowser) {
 
 if (tooltip == null) 
     tooltip = twoClickMapDefaultTooltip;
@@ -1646,15 +1639,6 @@ sb2.append(
 "var tcCy = new Array(0,0);\n" +
 "\n");
 
-if (debugInBrowser != null) 
-    sb2.append(
-"function log(msg) {\n" +
-(debugInBrowser.equals("FF")?    "  console.debug(msg);\n"   : "") +
-(debugInBrowser.equals("IE")?    "  alert(msg);\n"           : "") +
-(debugInBrowser.equals("Opera")? "  opera.postError(msg);\n" : "") +
-"}\n" +
-"\n");
-
 sb2.append(
 //basically, this finds the offsetXY of an element by adding up the offsets of all parent elements
 //was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n" +  but that's gone
@@ -1678,8 +1662,8 @@ sb2.append(
 "}\n" +
 "\n" +
 "function rubber(clicked, evt) {\n" +
-(debugInBrowser == null? "" : 
-"  log(\"click=\" + clicked);\n") +
+(debugInBrowser?  
+"  console.log(\"click=\" + clicked);\n" : "") +
 "  if (!clicked && tcNextI == 0)\n" +
 "    return true;\n" +
 "  var cx = tcCx;\n" +  //local cx should now point to global tcCx array
@@ -1703,8 +1687,8 @@ sb2.append(
 "  ty = Math.min(ty, imy + " + mapY + " + " + (mapHeight - 1) + ")\n" +
 "  cx[tcNextI] = tx;\n" +
 "  cy[tcNextI] = ty;\n" +
-(debugInBrowser == null? "" : 
-"  log(\"  \" + (IE?\"\":\"non-\") + \"IE: tcNextI=\" + tcNextI + \" cx=\" + tx + \" cy=\" + ty);\n") +
+(debugInBrowser? 
+"  console.log(\"  \" + (IE?\"\":\"non-\") + \"IE: tcNextI=\" + tcNextI + \" cx=\" + tx + \" cy=\" + ty);\n" : "") +
 "  if (clicked) {\n" +
 "    tcNextI = tcNextI == 0? 1 : 0;\n" +
 "    if (tcNextI == 1) {\n" +
@@ -1718,8 +1702,8 @@ sb2.append(
 "  document." + formName + "." + maxLonTF + ".value = Math.round(((Math.max(cx[0], cx[1]) - (imx + " + mapX + ")) / " + (mapWidth - 1)  + ") * " + lonRange  + " + " + lonMin + ");\n" +
 "  document." + formName + "." + minLatTF + ".value = Math.round(((Math.max(cy[0], cy[1]) - (imy + " + mapY + ")) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
 "  document." + formName + "." + maxLatTF + ".value = Math.round(((Math.min(cy[0], cy[1]) - (imy + " + mapY + ")) / " + (mapHeight - 1) + ") * " + -latRange + " + " + latMax + ");\n" +
-(debugInBrowser == null? "" : 
-"  log(\"  done\");\n") +
+(debugInBrowser? 
+"  console.log(\"  done\");\n" : "") +
 "  return true;\n" +
 "}\n" +
 "\n" +
@@ -1740,11 +1724,12 @@ sb2.append(
 "  var initLat1 = parseFloat(document." + formName + "." + maxLatTF + ".value);\n" +
 "  if (isFinite(initLon0) && isFinite(initLon1) &&\n" +
 "      isFinite(initLat0) && isFinite(initLat1)) {\n" +
-(debugInBrowser == null? "" : 
-"    log(\"initRubber\");\n") +
+(debugInBrowser? 
+"    console.log(\"initRubber\");\n" : "") +
 "    var im = document.all? document.all.worldImage : document.getElementById('worldImage');\n" +
-"    var imx = findPosX(im);\n" +
-"    var imy = findPosY(im);\n" +
+"    var posxy = findPosXY(im);\n" + //upper left of image
+"    var imx = posxy[0];\n" +
+"    var imy = posxy[1];\n" +
 "    var lon0 = Math.min(1, Math.max(0, (initLon0 - " + lonMin + ") / " + lonRange  + "));\n" +
 "    var lon1 = Math.min(1, Math.max(0, (initLon1 - " + lonMin + ") / " + lonRange  + "));\n" +
 "    var lat0 = Math.min(1, Math.max(0, (initLat0 - " + latMax + ") / " + -latRange + "));\n" +
@@ -1754,16 +1739,16 @@ sb2.append(
 "    tcCy[0] = Math.round(lat0 * " + (mapHeight - 1) + " + " + mapY + " + imy);\n" +
 "    tcCy[1] = Math.round(lat1 * " + (mapHeight - 1) + " + " + mapY + " + imy);\n" +
 "    updateRubber();\n" +
-(debugInBrowser == null? "" : 
-"    log(\"  init cx=\" + tcCx[0] + \", \" + tcCx[1] + \" cy=\" + tcCy[0] + \", \" + tcCy[1]);\n") +
+(debugInBrowser? 
+"    console.log(\"  init cx=\" + tcCx[0] + \", \" + tcCx[1] + \" cy=\" + tcCy[0] + \", \" + tcCy[1]);\n" : "") +
 "  }\n" +
 "}\n" +
 "\n" +
 "try {\n" +
 "  initRubber(); \n" +
 "} catch (ex) {\n" + 
-(debugInBrowser == null? "" : 
-"  log('initRubber exception: ' + ex.toString());\n") +
+(debugInBrowser? 
+"  console.log('initRubber exception: ' + ex.toString());\n" : "") +
 "}\n" +
 "--> \n" +
 "</script>\n" +
@@ -2158,10 +2143,10 @@ widgets.slider(5, bgWidth, "") + //was "style=\"text-align:left\"") +
 "</table>\n");
 
 //twoClickMap
-//String twoClickMap[] = myTwoClickMap540(formName, imageDir + "world540.png", null); // "FF"); //debugInBrowser   e.g., null, FF, IE, Opera
-//String twoClickMap[] = myTwoClickMap180Big(formName, imageDir + "worldPM180Big.png", null); // "FF"); //debugInBrowser   e.g., null, FF, IE, Opera
-//String twoClickMap[] = myTwoClickMap360Big(formName, imageDir + "world0360Big.png", null); // "FF"); //debugInBrowser   e.g., null, FF, IE, Opera
-String twoClickMap[] = myTwoClickMap540Big(formName, imageDir + "world540Big.png", null); // "FF"); //debugInBrowser   e.g., null, FF, IE, Opera
+//String twoClickMap[] = myTwoClickMap540(formName, imageDir + "world540.png", false); // debugInBrowser
+//String twoClickMap[] = myTwoClickMap180Big(formName, imageDir + "worldPM180Big.png", false); // "debugInBrowser
+//String twoClickMap[] = myTwoClickMap360Big(formName, imageDir + "world0360Big.png", false); // debugInBrowser 
+String twoClickMap[] = myTwoClickMap540Big(formName, imageDir + "world540Big.png", false); // debugInBrowser 
 
 sb.append(
 "<table class=\"compact\">\n" +

@@ -1952,7 +1952,6 @@ String expected =
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-        //Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results); //not suitable for non-interactive testing
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv
@@ -2139,7 +2138,6 @@ String expected =
 "    String title \"File Names from Amazon AWS S3 NASA NEX tasmin Files\";\n" +
 "  }\n" +
 "}\n";
-        //Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);  //not suitable for non-interactive testing
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv

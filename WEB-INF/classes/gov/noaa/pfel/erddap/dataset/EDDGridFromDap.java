@@ -1715,7 +1715,7 @@ public class EDDGridFromDap extends EDDGrid {
         int po2 = resultsAr[1].indexOf("<att name=\"history\">NASA GSFC (OBPG)", po + 80);
         String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
         String2.log("");  //ensure previous is written
-        Test.repeatedlyTestLinesMatch(resultsAr[1].substring(po, po2 + 36), expected, "");
+        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 36), expected, "");
 
 /*"2010-01-08T00:51:12Z NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD</att>\n" +
 "        <att name=\"id\">LMHchlaSmday_20091216120000</att>\n" +
@@ -1872,7 +1872,7 @@ String expected2 =
         po2 = resultsAr[1].indexOf("</dataset>", po + 80);
         if (po < 0 || po2 < 0) 
             String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
-        Test.repeatedlyTestLinesMatch(resultsAr[1].substring(po, po2 + 10), expected2, 
+        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 10), expected2, 
             "results=\n" + resultsAr[1]);
 
         String2.log("\ntestGenerateDatasetsXmlFromThreddsCatalog passed the test.");
@@ -2184,7 +2184,7 @@ String expected2 =
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.repeatedlyTestLinesMatch(String2.split(error, '\n')[0],  //last # changes frequently.   Was 500.
+        Test.ensureLinesMatch(String2.split(error, '\n')[0],  //last # changes frequently.   Was 500.
             "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
                 "Constraint=\"\\[\\(2007-02-06\\)\\[\\]\": Stop=\"\" is invalid\\.  " +
                 "It must be an integer between 0 and \\d{3}\\.", 
@@ -2484,7 +2484,7 @@ String expected2 =
 "      Float64 longitude\\[longitude = 8640\\];\n" +
 "  \\} chlorophyll;\n" +
 "\\} erdMHchla8day;\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
@@ -2538,7 +2538,7 @@ String expected2 =
 "      Float64 longitude\\[longitude = 8640\\];\n" +
 "  } chlorophyll;\n" +
 "} erdMHchla8day;\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
 
     }
@@ -4695,7 +4695,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "  :history = \"NASA GSFC \\(OBPG\\)\n";  //important test   re netcdf 4.0
                 int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
                 Test.ensureTrue(po > 0, "RESULTS=\n" + results);
-                Test.repeatedlyTestLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
+                Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
 
                 expected = 
 "  :satellite = \"Aqua\";\n" +
@@ -4710,7 +4710,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "}\n";
-                Test.repeatedlyTestLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
+                Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
                 attributes.clear();
                 NcHelper.getGlobalAttributes(nc, attributes);
@@ -8463,7 +8463,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "    <attribute name=\"units\" value=\"degree_C\" />\n" +
 "  </variable>\n" +
 "</netcdf>\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "RESULTS=\n" + results);
+        Test.ensureLinesMatch(results, expected, "RESULTS=\n" + results);
 
     }
 
@@ -8578,7 +8578,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  :history = \"NASA GSFC \\(OBPG\\)";
             int po = results.indexOf(":history = \"NASA GSFC (OBPG)");
             Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-            Test.repeatedlyTestLinesMatch(results.substring(0, po + 28), expected, "RESULTS=\n" + results);
+            Test.ensureLinesMatch(results.substring(0, po + 28), expected, "RESULTS=\n" + results);
 
             expected = 
 "  :satellite = \"Aqua\";\n" +
@@ -8594,7 +8594,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
 "\\}\n";
-            Test.repeatedlyTestLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
+            Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
             attributes.clear();
             NcHelper.getGlobalAttributes(nc, attributes);
@@ -10253,7 +10253,7 @@ expected =
 "        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
 "        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
 "        <att name=\"start_time\">00:00:00 UTC</att>\n" +
-"        <att name=\"stop_date\">2020-08-12 UTC</att>\n" +
+"        <att name=\"stop_date\">2020-09-21 UTC</att>\n" +  //changes 
 "        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
 "        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
 "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
@@ -10301,7 +10301,7 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-//"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 gone because end date now long ago
+"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
 "        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2002-present</att>\n" +
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
@@ -10412,22 +10412,22 @@ expected =
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 828];\n" +
+"  Float64 time[time = 833];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 828][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = 833][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 828];\n" +
+"      Float64 time[time = 833];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 828][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"      UInt16 qual_sst4[time = 833][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
 "    MAPS:\n" +
-"      Float64 time[time = 828];\n" +
+"      Float64 time[time = 833];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
@@ -10444,7 +10444,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.5971904e+9;\n" +
+"    Float64 actual_range 1.0257408e+9, 1.6006464e+9;\n" +  //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -10578,8 +10578,8 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-//"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //because it was changed above in datasets.xml fragment  //2020-10-21 gone because end date now long ago
-"    String time_coverage_end \"2020-08-12T00:00:00Z\";\n" +  //2020-10-02 fixed. Was wrong at source: 2022-02-18 I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
+"    String time_coverage_end \"2020-09-21T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +

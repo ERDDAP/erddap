@@ -1595,7 +1595,7 @@ String expected =
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
-            Test.repeatedlyTestLinesMatch(msg, 
+            Test.ensureLinesMatch(msg, 
 "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.", 
                 "");
         }
@@ -1605,7 +1605,7 @@ String expected =
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
-            Test.repeatedlyTestLinesMatch(msg, 
+            Test.ensureLinesMatch(msg, 
 "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.", 
                 "");
         }
@@ -1921,7 +1921,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
 "    Float64 Westernmost_Easting -70.42779;\n" +
 "  \\}\n" +
 "\\}\n";
-        Test.repeatedlyTestLinesMatch(results, expected, "results=\n" + results);
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //.csv    for start time time
         //"    String time_coverage_start \"2002-03-28T21:00:00Z\";\n" +

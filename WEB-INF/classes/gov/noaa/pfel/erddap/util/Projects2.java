@@ -369,10 +369,5 @@ public class Projects2  {
             String2.returnLoggingToSystemOut();
     }
 
-    public static void touchUsgs() throws Throwable {
-SSR.touchUrl("https://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=usgs_waterservices_0125_011b_2920&flagKey=780628796", 60000);
-    }
-
-
 }
 

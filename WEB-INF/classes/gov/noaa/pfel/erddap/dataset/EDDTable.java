@@ -6280,6 +6280,7 @@ public abstract class EDDTable extends EDD {
      * (or Bob's c:/programs/odv/odv4Guide.pdf).
      * <br>The data must have longitude, latitude, and time columns.
      * <br>Longitude can be any values (e.g., -180 or 360).
+     * <p>ODV user who is willing to review sample files: shaun.bell at noaa.gov .
      * 
      * @param outputStreamSource
      * @param twawm  all the results data, with missingValues stored as destinationMissingValues
@@ -6387,11 +6388,12 @@ public abstract class EDDTable extends EDD {
         if (tCol >= 0) { //it may have become "time_ISO8601" above)
             table.moveColumn(tCol, 0);
             table.setColumnName(0, "yyyy-mm-ddThh:mm:ss.sss");
+            table.columnAttributes(0).add("long_name", "Time");
         } else { 
             //make empty column
             table.addColumn(0, "yyyy-mm-ddThh:mm:ss.sss", 
                 PrimitiveArray.factory(PAType.DOUBLE, nRows, ""), 
-                new Attributes());
+                new Attributes().add("long_name", "Time"));
         }
         metavariables.add(table.getColumnName(0));
 
@@ -6399,7 +6401,8 @@ public abstract class EDDTable extends EDD {
         tCol = table.findColumnNumber("Type");
         if (tCol >= 0)
             table.setColumnName(tCol, "OriginalType"); //so not 2 cols named Type
-        table.addColumn(0, "Type", PrimitiveArray.factory(PAType.CHAR, nRows, "*"), new Attributes());
+        table.addColumn(0, "Type", PrimitiveArray.factory(PAType.CHAR, nRows, "*"), 
+            new Attributes());
         metavariables.add(table.getColumnName(0));
 
         //required Station column
@@ -6412,7 +6415,8 @@ public abstract class EDDTable extends EDD {
             table.setColumnName(0, "Station");
         } else {
             //make empty column since this is required
-            table.addColumn(0, "Station", new StringArray(nRows, true), new Attributes());
+            table.addColumn(0, "Station", new StringArray(nRows, true), 
+                new Attributes());
         }
         metavariables.add(table.getColumnName(0));
 
@@ -6426,7 +6430,8 @@ public abstract class EDDTable extends EDD {
             table.setColumnName(0, "Cruise");
         } else {
             //make empty column since this is required
-            table.addColumn(0, "Cruise", new StringArray(nRows, true), new Attributes());
+            table.addColumn(0, "Cruise", new StringArray(nRows, true), 
+                new Attributes());
         }
         metavariables.add(table.getColumnName(0));
 
@@ -6468,6 +6473,7 @@ public abstract class EDDTable extends EDD {
         // (e.g., depth for profiles, or a decimal time var for timeseries and trajectory)
         int nCols = table.nColumns();
         PrimitiveArray pas[] = new PrimitiveArray[nCols];
+        StringBuilder colNameLine = new StringBuilder();
         for (int col = 0; col < nCols; col++) {
             Attributes atts = table.columnAttributes(col);
             pas[col] = table.getColumn(col);
@@ -6489,11 +6495,16 @@ public abstract class EDDTable extends EDD {
                 units = String2.replaceAll(units, ']', ')');
                 colName += " [" + units + "]";
             }
+            colNameLine.append(colName + (col < nCols-1? "\t" : "\n"));
 
             String tag = isMeta? "MetaVariable" : "DataVariable";
             String comment = atts.getString("comment");
-            if (comment == null)
-                comment = "";
+            if (comment == null) {
+                comment = atts.getString("long_name");
+                if (comment == null) //vars created above don't have long_name attributes
+                    comment = "";
+            }
+
             //See Table 3-5 /programs/odv/odvGuide5.2.1.pdf : make ODV type  BYTE, SHORT, ... , TEXT:81
             //16.3.3 says station labels can be numeric or TEXT
             PAType paType = table.getColumn(col).elementType();
@@ -6514,13 +6525,14 @@ public abstract class EDDTable extends EDD {
                 "No odvDataType specified for type=" + pas[col].elementTypeString() + ".");
 
             writer.write("//<" + tag + ">label=" + String2.toJson65536(colName) +  
-                " value_Type=\"" + odvType + "\" " +
-                "qf_schema=\"\" " +  //!!! I don't support the ODV system of quality flag variables 
-                //"significant_digits=\"???\" " +
+                " value_type=\"" + odvType + "\" " +
+                //"qf_schema=\"\" " +  //!!! I don't support the ODV system of quality flag variables. ODV can't read the file if ="".
+                //"significant_digits=\"???\" " +  //I don't reliably have that information
                 "is_primary_variable=\"" + (colName.equals(primaryVar)? "T" : "F") + "\" " +  
-                "comment=" + String2.toJson65536(comment) +  
-                " </" + tag + ">\n");
+                (String2.isSomething(comment)? "comment=" + String2.toJson65536(comment) + " " : "") +  
+                "</" + tag + ">\n");
         }
+        writer.write(colNameLine.toString());
 
         //write data
         int iso8601Col = table.findColumnNumber("time_ISO8601");
@@ -8873,7 +8885,9 @@ public abstract class EDDTable extends EDD {
 "    or when the response is too large for the requested file type.\n" +
 "    Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
 "  <li>416 Range Not Satisfiable - for invalid byte range requests. Note that ERDDAP's\n" +
-"    \"files\" system does not allow byte range requests to the individual .nc or .hdf files\n" +
+"    \"files\" system does not allow byte range requests to the individual\n" +
+"    .nc, .hdf, .bz2, .gz, .gzip, .tar, .tgz, .z, and .zip files\n" +
+"    (although the exact list may vary for different ERDDAP installations)\n" +
 "    because that approach is horribly inefficient (tens/hundreds/thousands of requests and\n" +
 "    the transfer of tons of data unnecessarily) and some of the client software is buggy in a way\n" +
 "    that causes problems for ERDDAP (tens/hundreds/thousands of open/broken sockets). Instead, either download the entire\n" +

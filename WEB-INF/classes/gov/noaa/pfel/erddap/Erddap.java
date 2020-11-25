@@ -476,24 +476,8 @@ public class Erddap extends HttpServlet {
 
             String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
             String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
+            ipAddress = EDStatic.getIPAddress(request);
             //String2.log("requestURL=" + requestUrl); 
-
-            //get requester's ip addresses (x-forwarded-for)
-            //getRemoteHost(); returns our proxy server (never changes)
-            //For privacy reasons, don't tally full individual IP address; the 4th ip number is removed.
-            ipAddress = request.getHeader("x-forwarded-for");  
-            if (ipAddress == null) {
-                ipAddress = "";
-            } else {
-                //if csv, get last part
-                //see https://en.wikipedia.org/wiki/X-Forwarded-For
-                int cPo = ipAddress.lastIndexOf(',');
-                if (cPo >= 0)
-                    ipAddress = ipAddress.substring(cPo + 1);
-            }
-            ipAddress = ipAddress.trim();
-            if (ipAddress.length() == 0)
-                ipAddress = "(unknownIPAddress)";
 
             //get userQuery
             String userQuery = request.getQueryString(); //may be null;  leave encoded
@@ -534,7 +518,7 @@ public class Erddap extends HttpServlet {
                     if (EDStatic.slowDownTroubleMillis > 0)
                         Math2.sleep(EDStatic.slowDownTroubleMillis);
                     EDStatic.lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                        MessageFormat.format(EDStatic.blacklistMsg, EDStatic.adminEmail));
+                        EDStatic.blacklistMsg);
                     return;
                 }
             }
@@ -678,27 +662,6 @@ public class Erddap extends HttpServlet {
                 else slowdown = EDStatic.slowDownTroubleMillis;
 
                 //"failure" includes clientAbort and there is no data
-                String msg = t.getMessage();
-                if (msg == null) {
-                } else if (msg.indexOf(Math2.memoryArraySize) >= 0) {
-                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since last daily report)",       ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Array Size), IP Address (since startup)",                 ipAddress);
-                } else if (msg.indexOf("OutOfMemoryError") >= 0 ||  //java's words
-                           msg.indexOf(Math2.memoryThanCurrentlySafe) >= 0) {
-                    EDStatic.dangerousMemoryFailures++;
-                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since last daily report)",       ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Too Big), IP Address (since startup)",                 ipAddress);
-                } else if (msg.indexOf(MustBe.OutOfMemoryError) >= 0 || 
-                           msg.indexOf(Math2.memoryThanSafe)    >= 0 ||
-                           msg.indexOf(Math2.memoryTooMuchData) >= 0) {
-                    //catchall for remaining possibilities
-                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since last daily report)",       ipAddress);
-                    EDStatic.tally.add("OutOfMemory (Way Too Big), IP Address (since startup)",                 ipAddress);
-                }
-
                 long responseTime = System.currentTimeMillis() - doGetTime;
                 EDStatic.tally.add("Requester's IP Address (Failed) (since last Major LoadDatasets)", ipAddress);
                 EDStatic.tally.add("Requester's IP Address (Failed) (since last daily report)",       ipAddress);
@@ -11189,7 +11152,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 String lonTooltip    = mapTooltip + EDStatic.advancedSearchLonTooltip;
                 String timeTooltip   = EDStatic.advancedSearchTimeTooltip;
                 String twoClickMap[] = HtmlWidgets.myTwoClickMap540Big(formName, 
-                    widgets.imageDirUrl + "world540Big.png", null); //debugInBrowser
+                    widgets.imageDirUrl + "world540Big.png", false); //debugInBrowser
 
                 writer.write(
                     //blank row
