@@ -68,6 +68,53 @@ those great suggestions coming!
 
 -->
 
+<!-- ****************************************************************************** -->
+<h2><a class="selfLink" id="changes2.10" href="#changes2.10" rel="bookmark">Changes</a> 
+in ERDDAP version 2.11 (released 2020-11-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>BUG FIX: OrderByMean threw a NullPointerException if a variable had just one of _FillValue or missing_Value defined.
+    Now it handles the situation correctly.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+  <li>BUG FIX: There were problems with the ODV text files created by ERDDAP in v2.10.
+    Those problems are fixed.
+    Thanks to Shaun Bell.
+    <br>&nbsp;
+  <li>BUG FIX: Just in ERDDAP v2.10: If the lat lon bounds were specified in the URL,
+    the bounding box wasn't drawn on the world map. Now it is again.
+    Thanks to John Maurer.
+    <br>&nbsp;
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>BUG FIX: Just in ERDDAP v2.10: The script files for ArchiveADataset, GenerateDatasetsXml and DasDds 
+    didn't work because they didn't have the changes to the classpath which were added with ERDDAP v2.10. Now they do.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+  <li>NEW: In datasets.xml, you may now have the tag:
+    <br><kbd>&lt;emailDiagnosticsToErdData&gt;&lt;/emailDiagnosticsToErdData&gt;  &lt;!-- true (the default) or false --&gt;</kbd>
+    <br>Currently, if <kbd>true</kbd> (or if the tag is empty, or if the tag isn't in the file), 
+    when a user's request leads to a NullPointerException, 
+    ERDDAP will email the stack trace to erd.data at noaa.gov (the ERDDAP development team).
+    This should be safe and secure since no confidential information (e.g., the requestUrl) is included in the email.
+    This should make it possible to catch any obscure, totally unexpected bugs that lead to NullPointerExceptions.
+    Otherwise, the user sees the exceptions, but the ERDDAP developers don't, so we don't know there is a problem that needs to be fixed.
+    <p>It is possible that this tag will lead to other, similar diagnostic information being emailed to 
+    erd.data at noaa.gov in the future. 
+    The email's content will always be minimal and related to bugs, and not, for example, usage information.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+  <li>CHANGED: Now, common compressed file types (.bz2, .gz, .gzip, .tar, .tgz, .z, .zip)
+    are also forbidden for byte range requests.
+    This is specified via &lt;extensionsNoRangeRequests&gt; in messages.xml.
+    <br>&nbsp;
+
+  </ul>
+</ul>
+
+
 
 <!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.10" href="#changes2.10" rel="bookmark">Changes</a> 
@@ -75,6 +122,21 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
+  <li>NEW: The new <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.html"
+        >Interpolate</a> converter efficiently interpolates values from a gridded dataset's values. 
+        As such, it is particularly useful for researchers working with 
+        animal track data. 
+        This converter takes in a table with latitude, longitude, and time columns
+        (and perhaps other columns) and returns a table with additional columns 
+        with interpolated values.
+        Thus, this is similar to the popular 
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/xtracto">Xtractomatic</a> 
+        script originally created by Dave Foley, but offers the advantage
+        of processing up to 100 points per request.
+        Thanks to Dave Foley and Jordan Watson (NFMS).
+    <br>&nbsp;
+
   <li>IMPROVED: Advanced Search is now strict for non-.html requests. 
     It will now throw exceptions for requests that have permanent errors
     (e.g., requests where minLat &gt; maxLat) or temporary errors
@@ -576,7 +638,11 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
     in ERDDAP web pages, so there should now be very few broken links (at least
     as of each release date -- new broken links arise often).
     <br>&nbsp;
-    
+
+  <li>BUG FUX: EDDTableFromHttpGet failed with certain types of requests. Now it doesn't.    
+    Thanks to Emma at BODC.
+    <br>&nbsp;
+  
   <li>BUG FIX: To handle some requests, EDDTable made a temporary file for each
     requested variable, with a file name ending in the variable's name.
     If the variable's name was also a type of compression (e.g., .Z), ERDDAP

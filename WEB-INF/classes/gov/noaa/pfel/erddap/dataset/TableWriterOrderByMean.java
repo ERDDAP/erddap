@@ -134,7 +134,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
             PrimitiveArray fv = atts.get("_FillValue");
             PrimitiveArray mv = atts.get("missing_value");
             if (fv != null || mv != null) 
-                table.getColumn(col).convertToStandardMissingValues(fv.getString(0), mv.getString(0));
+                table.getColumn(col).convertToStandardMissingValues(fv == null? null : fv.getString(0), mv == null? null : mv.getString(0));  
             //note that metadata hasn't been changed yet
         }
 

@@ -541,6 +541,13 @@ public class LoadDatasets extends Thread {
                     EDStatic.drawLandMask = tnt < 1? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt]; 
                     String2.log("drawLandMask=" + EDStatic.drawLandMask);
 
+                } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
+                } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
+                    String ts = xmlReader.content();
+                    boolean ted = String2.isSomething(ts)? String2.parseBoolean(ts) : true;  //the default
+                    EDStatic.emailDiagnosticsToErdData = ted;
+                    String2.log("emailDiagnosticsToErdData=" + ted);
+
                 } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
                 } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
                     String ts = xmlReader.content();

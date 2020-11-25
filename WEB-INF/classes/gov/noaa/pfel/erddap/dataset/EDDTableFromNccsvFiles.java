@@ -2887,24 +2887,25 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.10</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>Trajectories</DataType>[10]\n" +
-"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<DataVariable>label=\"time_ISO8601\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"T\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"status\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"From http://some.url.gov/someProjectDocument , Table C\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"testByte [1]\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"testUByte [1]\" value_Type=\"BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"testLong [1]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"testULong [1]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"sst [degree_C]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Ship\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"status\" value_type=\"TEXT:2\" is_primary_variable=\"F\" comment=\"From http://some.url.gov/someProjectDocument , Table C\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"testByte [1]\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"testUByte [1]\" value_type=\"BYTE\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"testLong [1]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Test of Longs\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"testULong [1]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Test ULong\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"sst [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Surface Temperature\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]time_ISO8601[9]status[9]testByte [1][9]testUByte [1][9]testLong [1][9]testULong [1][9]sst [degree_C][10]\n" +
 " a\\t~[252],\\n'z\\\"[8364][9][9]*[9][9]-130.2576[9]28.0002[9]2017-03-23T00:45:00.000Z[9]A[9]-128[9]0[9]-9223372036854775808[9]0[9]10.9[10]\n" +
 " a\\t~[252],\\n'z\\\"[8364][9][9]*[9][9]-130.3472[9]28.0003[9]2017-03-23T01:45:00.000Z[9][8364][9]0[9]127[9]-9007199254740992[9]9223372036854775807[9]10.0[10]\n" +
 " a\\t~[252],\\n'z\\\"[8364][9][9]*[9][9]-130.4305[9]28.0001[9]2017-03-23T02:45:00.000Z[9]\\t[9]126[9]254[9]9223372036854775806[9]18446744073709551614[9][10]\n" +

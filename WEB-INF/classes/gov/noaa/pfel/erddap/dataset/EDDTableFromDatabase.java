@@ -1799,7 +1799,6 @@ expected =
 "    String title \"mydatabase myschema mytable\";\n" +
 "  }\n" +
 "}\n";
-        //Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results); //not suitable for non-interactive testing
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dds 

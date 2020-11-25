@@ -147,14 +147,16 @@ Joint Research Centre of the European Commission)
 <li>Marine Instruments S.A. (Spain)
   <!-- 2015-03-25 Iago Tejeda Pérez -->
 <li><a rel="bookmark" href="http://nrm-erddap.nci.org.au/erddap/index.html">NCI</a> (Australia's National Computational Infrastructure)</li>
-<li><a rel="bookmark" href="https://cwcgom.aoml.noaa.gov/erddap/index.html">NOAA CW CGOM</a>  
-  (CoastWatch Caribbean/Gulf of Mexico Node)
+<li><a rel="bookmark" href="https://coastwatch.noaa.gov/erddap/index.html">NOAA CoastWatch</a>  
+  (central) <!-- 2020-11-18 Michael Soracco -->
+<li><a rel="bookmark" href="https://cwcgom.aoml.noaa.gov/erddap/index.html">NOAA CoastWatch CGOM</a>  
+  (Caribbean/Gulf of Mexico Node)
   <!-- assumed public, Joaquin Trinanes -->
-<li><a rel="bookmark" href="https://coastwatch.glerl.noaa.gov/erddap/index.html">NOAA CW GLERL</a>  
-  (CoastWatch Great Lakes Node)
+<li><a rel="bookmark" href="https://coastwatch.glerl.noaa.gov/erddap/index.html">NOAA CoastWatch GLERL</a>  
+  (Great Lakes Node)
   <!-- 2019-08-13 assumed public -->
-<li><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA CW WC</a>  
-  (CoastWatch West Coast Node) which is co-located with and works with 
+<li><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA CoastWatch West Coast</a>  
+  which is co-located with and works with 
   <!-- 2015-03-17 Bob Simons-->
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA ERD</a>  
   (Environmental Research Division of SWFSC of NMFS)
@@ -190,8 +192,8 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-27 Jeremy Cothran -->
 <li><a rel="bookmark" href="https://www.ncei.noaa.gov/erddap/index.html">NOAA NCEI</a> 
   (National Centers for Environmental Information) 
-  <!-- 2019-08-13 I assumed public. Tim Boyer? Charles Carleton?  -->
-<li><a rel="bookmark" href="https://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI</a> 
+  <!-- 2019-08-13 I assumed public. Tim Boyer?  was Charles Carleton  -->
+  <!-- 2020-11-25 gone?   <li><a rel="bookmark" href="https://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI</a> 
   (National Centers for Environmental Information) / NCDDC 
   <!-- 2015-03-17 (was NCDDC) Glenn Rutledge, Charles Carleton -->
 <li>NOAA NGDC STP (National Geophysical Data Center, Solar -- Terrestrial Physics)
@@ -719,8 +721,8 @@ or Mac server instead.
   <br>On Linux, Mac, and Windows, download
      <!-- Use: md5 erddapContent1.82.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddapContent.zip">erddapContent.zip</a>
-    (version 2.02, 19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-08-21)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddapContent.zip">erddapContent.zip</a>
+    (version 2.10, 19,731 bytes, MD5=D9B2987E1349F7FC40D7FC2E4C49E856, dated 2020-11-05)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
@@ -746,6 +748,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.01/erddapContent.zip">2.01</a>
     (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-07-02)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddapContent.zip">2.02</a>
+    (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-08-21)
     ]
 
   <p>Then,
@@ -807,10 +812,10 @@ or Mac server instead.
     <!-- use: c:\content\bat\md5.bat erddap1.80.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.02, 514,469,280 bytes, MD5=E181BAF2F46B978FE93748A4C1B2DE3D, dated
-    <span class="N">2019-08-21</span>)
+    <br>(version 2.10, 664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated
+    <span class="N">2020-11-05</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -830,6 +835,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.01/erddap.war">2.01</a>
     (512,870,608 bytes, MD5=C6F73778DE68082C71EA76B1D2AFA254, dated 2019-07-02)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddap.war">2.02</a>
+    (514,469,280 bytes, MD5=E181BAF2F46B978FE93748A4C1B2DE3D, dated 2019-08-21)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1016,10 +1024,11 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.02, 514,469,280 bytes, MD5=E181BAF2F46B978FE93748A4C1B2DE3D, dated
-    <span class="N">2019-08-21</span>)
+    <br>(version 2.10, 664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated
+    <span class="N">2020-11-05</span>)
+
 
   <br>&nbsp;
 
@@ -3919,7 +3928,12 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA
   <i>tomcat</i>/webapps/erddap/WEB-INF directory. 
   There is a shell script (ArchiveADataset.sh) for Linux/Unix 
   and a batch file (ArchiveADataset.bat) for Windows. 
-  When you run ArchiveADataset, it will ask you a series of questions. 
+
+  <p>On Windows, the first time you run ArchiveADataset, you need to edit the 
+  ArchiveADataset.bat file with a text editor to change the path to the java.exe file
+  so that Windows can find Java.
+
+  <p>When you run ArchiveADataset, it will ask you a series of questions. 
   For each question, type a response, then press Enter. 
   Or press ^C to exit a program at any time.
 
@@ -4193,6 +4207,14 @@ Government or the National Oceanic and Atmospheric Administration.</strong>
 <p>Presentations By Other People:
 <ul>
 <li><a rel="help"
+  href="https://www.youtube.com/watch?v=kdBTgNEp5TA&ab_channel=GOOSIOC"
+  >A FAIR based tool for improving Global Data sharing<img 
+  style="vertical-align:middle" alt="YouTube" src="../images/youtube.png" ><img 
+  src="../images/external.png" alt=" (external link)" 
+  title="This is a link to an external website."/></a>
+  <br>by Kevin O'Brien at the Global Ocean Observing System (GOOS) Webinar / Observation Coordination Group (OCG) Series / 1, November 12, 2020. 
+
+<li><a rel="help"
   href="https://www.youtube.com/watch?v=MF-WH01Qw0g"
   >Building Your Own Weather App Using NOAA Open Data and Jupyter Notebooks<img 
   style="vertical-align:middle" alt="YouTube" src="../images/youtube.png" ><img 
@@ -4263,11 +4285,14 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
 
 <li><strong><a class="selfLink" id="sourceCode" href="#sourceCode" rel="bookmark">Source Code</a></strong> 
   <ul>
-  <li>The source code for the current version of ERDDAP is always in the current erddap.war file.
+  <li><strong>Via erddap.war</strong>
+    <br>The source code for the current version of ERDDAP is always in the current erddap.war file.
     So when you install ERDDAP in tomcat, all of the source code is unpacked
     and installed on the server. If you just want to read the source code,
     this is the easiest option.
-  <li>The source code for recent public versions and in-development versions 
+    <br>&nbsp;
+  <li><strong>Via Source Code on GitHub</strong>
+    <br>The source code for recent public versions and in-development versions 
     is also available via <a rel="help" href="https://github.com/BobSimons">GitHub<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
@@ -4277,14 +4302,17 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     for that project. 
     If you want to modify the source code (and possibly have the changes incorporated
     into the standard ERDDAP distribution), this is the recommended approach.
-    One file is missing from the GitHub version of the code because it is too big. 
+
+    <p><strong>One file is missing from the GitHub version</strong>
+    of the code because it is too big. 
     To get it, go to 
     <a rel="help" href="https://aws.amazon.com/sdk-for-java/">https://aws.amazon.com/sdk-for-java/<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
       download the latest SDK v1.11, and save the .jar file 
       in tomcat/webapps/erddap/WEB-INF/lib as aws-java-sdk.jar .
-  <li>ERDDAP and its subcomponents have very liberal, open-source <a rel="license" href="#license">licenses</a>,
+  <li><strong>Open Source</strong>
+    <br>ERDDAP and its subcomponents have very liberal, open-source <a rel="license" href="#license">licenses</a>,
     so you can use and modify the source code for any purpose, for-profit or not-for-profit.
     Note that ERDDAP and many subcomponents have licenses that require that you 
     acknowledge the source of the code that you are using. See

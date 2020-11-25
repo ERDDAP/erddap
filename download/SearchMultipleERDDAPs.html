@@ -26,13 +26,14 @@
     "https://data.ioos.us/gliders/erddap/",
     "https://pae-paha.pacioos.hawaii.edu/erddap/",
     "https://catalogue.hakai.org/erddap/",
-    "https://sccoos.org/erddap/",
+    //"https://sccoos.org/erddap/",   ERDDAP v1.82 causes problems
     "https://erddap.secoora.org/erddap/",
     "https://ecowatch.ncddc.noaa.gov/erddap/",
     "http://osmc.noaa.gov/erddap/",
+    "https://coastwatch.noaa.gov/erddap/",
     "http://dap.onc.uvic.ca/erddap/",
     "https://oceanwatch.pifsc.noaa.gov/erddap/",
-    "https://erddap-goldcopy.dataexplorer.oceanobservatories.org/erddap/index.html",
+    "https://erddap-goldcopy.dataexplorer.oceanobservatories.org/erddap/",
     "https://members.oceantrack.org/erddap/",
     "http://www.myroms.org:8080/erddap/",
     "http://tds.marine.rutgers.edu/erddap/",
@@ -46,7 +47,7 @@
     "https://salishsea.eos.ubc.ca/erddap/",
     "https://erddap.ichec.ie/erddap/",
     "https://www.smartatlantic.ca/erddap/",
-    "http://bmlsc.ucdavis.edu:8080/erddap/",
+    //"http://bmlsc.ucdavis.edu:8080/erddap/", ERDDAP v1.82 causes problems
     "https://erddap.griidc.org/erddap/",
     "https://geoport.usgs.esipfed.org/erddap/",
     "https://upwell.pfeg.noaa.gov/erddap/", 
@@ -157,7 +158,7 @@ function convertJsonToTable(jsonTable) {
 }
 </script>
 
-<h1>Search Multiple ERDDAPs <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg" alt="?" onmouseover="Tip('<div class=&quot;standard_max_width&quot;><strong>Information About This Web Page</strong><ul><li>This web page let\'s you search ~25 ERDDAPs for matching datasets.<li>The results from each ERDDAP will be appended at the bottom of the page, in separate tables, in the order that they arrive.<li>This is a stand-alone web page. All the work is done in your browser, by your browser.<li>If an error occurs (e.g., an ERDDAP doesn\'t respond or has no matching datasets), this web page doesn\'t display the error.<li>You can download and modify this web page in a text editor.<br>Notably, you can modify the list of ERDDAPs that are searched <br>(see \'var urls\' near the top).<br>You can then use your copy of this web page by opening it in your browser<br>(^O in Chrome).<li>Comments/questions/suggestions? Email them to bob.simons @ noaa.gov .</ul>v2.02.00</div>')" onmouseout="UnTip()" ></h1>
+<h1>Search Multiple ERDDAPs <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg" alt="?" onmouseover="Tip('<div class=&quot;standard_max_width&quot;><strong>Information About This Web Page</strong><ul><li>This web page let\'s you search ~35 ERDDAPs for matching datasets.<li>The results from each ERDDAP will be appended at the bottom of the page, in separate tables, in the order that they arrive.<li>This is a stand-alone web page. All the work is done in your browser, by your browser.<li>If an error occurs (e.g., an ERDDAP doesn\'t respond or has no matching datasets), this web page doesn\'t display the error.<li>You can download and modify this web page in a text editor.<br>Notably, you can modify the list of ERDDAPs that are searched <br>(see \'var urls\' near the top).<br>You can then use your copy of this web page by opening it in your browser<br>(^O in Chrome).<li>Comments/questions/suggestions? Email them to bob.simons @ noaa.gov .</ul>v2.02.00</div>')" onmouseout="UnTip()" ></h1>
 
 <form name="form1" method="GET"
   action="javascript:void(0);"  >
