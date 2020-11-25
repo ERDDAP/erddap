@@ -357,6 +357,9 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
 
       <p>When you use the GenerateDatasetsXml program:
       <ul>
+      <li>On Windows, the first time you run GenerateDatasetsXml, you need to edit the 
+        GenerateDatasetsXml.bat file with a text editor to change the path to the java.exe file
+        so that Windows can find Java.
       <li>GenerateDatasetsXml first asks you to specify the EDDType 
         (Erd Dap Dataset Type)
         of the dataset.  See the 
@@ -853,6 +856,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
       With DasDds, you can repeatedly test and refine the XML.
       When you use the DasDds program:
       <ol>
+      <li>On Windows, the first time you run DasDds, you need to edit the 
+        DasDds.bat file with a text editor to change the path to the java.exe file
+        so that Windows can find Java.
       <li>DasDds asks you for the datasetID for the dataset you are working on.
       <li>DasDds tries to create the dataset with that datasetID.
         <ul>
@@ -942,6 +948,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
   <a rel="help" href="#decompressedCacheMaxGB">&lt;decompressedCacheMaxGB&gt;</a>...&lt;/decompressedCacheMaxGB&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#decompressedCacheMaxMinutesOld">&lt;decompressedCacheMaxMinutesOld&gt;</a>...&lt;/decompressedCacheMaxMinutesOld&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#drawLandMask">&lt;drawLandMask&gt;</a>...&lt;/drawLandMask&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#emailDiagnosticsToErdData">&lt;emailDiagnosticsToErdData&gt;</a>...&lt;/emailDiagnosticsToErdData&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#graphBackgroundColor">&lt;graphBackgroundColor&gt;</a>...&lt;/graphBackgroundColor&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#loadDatasetsMinMinutes">&lt;loadDatasetsMinMinutes&gt;</a>...&lt;/loadDatasetsMinMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#loadDatasetsMaxMinutes">&lt;loadDatasetsMaxMinutes&gt;</a>...&lt;/loadDatasetsMaxMinutes&gt; &lt;!-- 0 or 1 --&gt;
@@ -3160,7 +3167,7 @@ allowing those would lead to inconsistencies:
     for restricting access to some datasets to some users.
   <br>&nbsp;
 
-<li>Starting with ERDDAP v2.03, EDDGridFromErddap and EDDTableFromErddap support the 
+<li>Starting with ERDDAP v2.10, EDDGridFromErddap and EDDTableFromErddap support the 
   <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a> tag. 
   Unlike other types of datasets, the default is true, 
   but the dataset's files will be accessibleViaFiles only if the source dataset 
@@ -4078,7 +4085,7 @@ for general information on how this class works and how to use this class.
         title="This link to an external website does not constitute an endorsement."></a> 
   files, which are from the 
   <a rel="bookmark"
-  href="https://trmm.gsfc.nasa.gov/">Tropical Rainfall Measuring Mission (TRMM)<img
+  href="https://trmm.gsfc.nasa.gov">Tropical Rainfall Measuring Mission (TRMM)<img
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>,
   which is a joint mission between NASA and the Japan Aerospace Exploration Agency (JAXA).
@@ -5685,7 +5692,7 @@ handles data from one relational database table or
     <li>Okay Option:
       <br>You set up a new database on a different computer with just the
       denormalized table.
-      <br>Since that database can be a free and open source database like PostgreSQL,
+      <br>Since that database can be a free and open source database like MariaDB, MySQL, and PostgreSQL,
       this option needn't cost a lot.
       <p>The big advantage here is that ERDDAP will be able to handle user requests
       for data without any further effort by your current database.
@@ -5800,7 +5807,13 @@ handles data from one relational database table or
         title="This link to an external website does not constitute an endorsement."></a>.
     <br>The <kbd>&lt;driverName&gt;</kbd> to use in datasets.xml (see below) is probably <kbd>net.sourceforge.jtds.jdbc.Driver</kbd> .
   </ul>
-  Unfortunately, JDBC is sometimes the source of trouble. In its role as intermediary between
+  After you put the JDBC driver .jar in ERDDAP lib directory, you need to 
+  add a reference to that .jar file in the .bat and/or .sh script files for 
+  GenerateDatasetsXml, DasDds, and ArchiveADataset which are in the
+  <i>tomcat</i>/webapps/erddap/WEB-INF/ directory; 
+  otherwise, you'll get a ClassNotFoundException when you run those scripts.
+
+  <p>Unfortunately, JDBC is sometimes the source of trouble. In its role as intermediary between
   ERDDAP and the database, it sometimes makes subtle changes to the standard/generic database SQL request
   that ERDDAP creates, thereby causing problems (for example, related to 
   <a rel="help" href="#databaseQuotes">upper/lowercase identifiers</a>
@@ -5811,7 +5824,7 @@ handles data from one relational database table or
     <br>Or, you can join the <a rel="help"
         href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
         and post your question there.
-  <br>&nbsp;
+
 
 <li><a class="selfLink" id="databaseConnectionProperty" href="#databaseConnectionProperty" rel="bookmark">&lt;connectionProperty&gt;</a>  -- In the datasets.xml for your dataset, 
   you must define several connectionProperty tags to tell ERDDAP how to connect
@@ -7738,9 +7751,9 @@ to actually make changes to the files so that the files are consistent.
 <li><a class="selfLink" id="SeparateColumnsForYearMonthDateHourMinuteSecond" href="#SeparateColumnsForYearMonthDateHourMinuteSecond" rel="bookmark"><strong>Separate Columns for Year, Month, Date, Hour, Minute, Second</strong></a> -- 
 <br>It is fairly common for tabular data files to have separate columns for 
 year, month, date, hour, minute, second. 
-Before ERDDAP v2.03, the only solution was to edit the data file to combine those columns
+Before ERDDAP v2.10, the only solution was to edit the data file to combine those columns
 into a unified time column.
-With ERDDAP 2.03+, you can use the 
+With ERDDAP 2.10+, you can use the 
 <br><a href="sourceName" rel="help">&lt;sourceName&gt;=<i>expression</i>&lt;sourceName&gt;</a>
 to tell ERDDAP how to combine the source columns to make unified time column,
 so you no longer have to edit the source file.
@@ -10359,6 +10372,17 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <li>"off" doesn't draw anything.
     <br>&nbsp;
   </ul>
+
+<li><a class="selfLink" id="emailDiagnosticsToErdData" href="#emailDiagnosticsToErdData" rel="bookmark"
+  ><kbd><strong>&lt;emailDiagnosticsToErdData&gt;</strong></kbd></a>
+  is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml. 
+  The tag's value can be <kbd>true</kbd> (the default) or <kbd>false</kbd>.
+  If <kbd>true</kbd>, ERDDAP will email the stack trace to erd.data@noaa.gov (the ERDDAP development team).
+  This should be safe and secure since no confidential information (e.g., the requestUrl) is included in the email.
+  This should make it possible to catch any obscure, totally unexpected bugs that lead to NullPointerExceptions.
+  Otherwise, the user sees the exceptions, but the ERDDAP development team doesn't 
+  (so we don't know there is a problem that needs to be fixed).
+  <br>&nbsp;
 
 <li><a class="selfLink" id="graphBackgroundColor" href="#graphBackgroundColor" rel="bookmark"
   ><kbd><strong>&lt;graphBackgroundColor&gt;</strong></kbd></a>
@@ -13426,7 +13450,7 @@ while processing each request.
         <br>&nbsp;
 
         <p><a class="selfLink" id="scriptSourceNames" href="#scriptSourceNames" rel="bookmark"><strong>Script SourceNames / Derived Variables</strong> --</a> 
-        <br>Starting with ERDDAP v2.03, in an 
+        <br>Starting with ERDDAP v2.10, in an 
         <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
         <a rel="help" href="#EDDTableFromDatabase">EDDTableFromDatabase</a>, or 
         <a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a> 

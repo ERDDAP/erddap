@@ -10422,7 +10422,9 @@ Attributes {
 "    or when the response is too large for the requested file type.\n" +
 "    Often, these can be fixed by making a request for less data, e.g., a shorter time period.\n" +
 "  <li>416 Range Not Satisfiable - for invalid byte range requests. Note that ERDDAP's\n" +
-"    \"files\" system does not allow byte range requests to the individual .nc or .hdf files\n" +
+"    \"files\" system does not allow byte range requests to the individual\n" +
+"    .nc, .hdf, .bz2, .gz, .gzip, .tar, .tgz, .z, and .zip files\n" +
+"    (although the exact list may vary for different ERDDAP installations)\n" +
 "    because that approach is horribly inefficient (tens/hundreds/thousands of requests and\n" +
 "    the transfer of tons of data unnecessarily) and some of the client software is buggy in a way\n" +
 "    that causes problems for ERDDAP (tens/hundreds/thousands of open/broken sockets). Instead, either download the entire\n" +

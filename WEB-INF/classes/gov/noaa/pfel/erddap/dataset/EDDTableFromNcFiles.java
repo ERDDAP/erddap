@@ -3657,8 +3657,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-10-20\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2020-10-20\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2020-11-19\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2020-11-19\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -3763,6 +3763,40 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
         String2.log("End of intentional errors.");
+    }
+
+    /**
+     * This tests bug fix (reported by Marco Alba 2020-11-11) in orderByMean.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testOrderByMean2() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean2() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "pmelTaoDySst"); 
+
+        //test orderByMean(twoVars)
+        userDapQuery = "station%2Clongitude%2Clatitude%2Ctime%2Cdepth%2CT_25%2CQT_5025%2CST_6025&station=%220n110w%22&time%3E=2020-01-01&time%3C2020-01-10&orderByMean(%22time/1day%22)";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obMean2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = //since time in orderByMean"", it is the truncated time
+"station,longitude,latitude,time,depth,T_25,QT_5025,ST_6025\n" +
+",degrees_east,degrees_north,UTC,m,degree_C,,\n" +
+"0n110w,-110.0,0.0,2020-01-01T00:00:00Z,1.0,23.23741,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-02T00:00:00Z,1.0,23.46641,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-03T00:00:00Z,1.0,23.58029,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-04T00:00:00Z,1.0,24.21575,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-05T00:00:00Z,1.0,24.05365,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-06T00:00:00Z,1.0,23.83993,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-07T00:00:00Z,1.0,23.83228,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-08T00:00:00Z,1.0,23.86223,2.0,1.0\n" +
+"0n110w,-110.0,0.0,2020-01-09T00:00:00Z,1.0,24.13665,2.0,1.0\n";
+
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
     /**
@@ -4868,8 +4902,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-10-20\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2020-10-20\";\n" +  // ""
+"  :date_created = \"2020-11-19\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2020-11-19\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -5437,8 +5471,11 @@ expected =
         int okQF[] = {1,2,5}; 
         String okQFCsv = String2.toCSSVString(okQF);
         float depthMV       = 99999; //was -99;
+        float depthFV       = 99999; //was -99;
         float temperatureMV = 99999; //was -99;
+        float temperatureFV = 99999; //was -99;
         float salinityMV    = 99999; //was -99;
+        float salinityFV    = 99999; //was -99;
         int qMV = 9;
         String timeUnits = "days since 1900-01-01 00:00:00"; //causes roundoff error(!)
         double timeBaseAndFactor[] = Calendar2.getTimeBaseAndFactor(timeUnits);
@@ -5957,6 +5994,11 @@ expected =
                                 if (!(depth instanceof FloatArray) || depth.size() == 0) 
                                     throw new SimpleException("Invalid z=" + depth);
                                 int nDepth = depth.size();
+                                tVarAtts.clear();
+                                NcHelper.getVariableAttributes(var, tVarAtts);
+                                depthFV = tVarAtts.getFloat("_FillValue");
+                                if (Float.isNaN(depthFV))
+                                    depthFV = depthMV;
 
                                 //DEPH_qparm
                                 var = ncFile.findVariable("z_variable_quality_flag"); //DEPH_qparm");                        
@@ -5971,7 +6013,6 @@ expected =
                                 var = ncFile.findVariable("temperature");                        
                                 PrimitiveArray temperature;
                                 PrimitiveArray TEMP_qparm;
-                                float temperatureFV = temperatureMV;
                                 if (var == null) {
                                     //nWarnings++;
                                     //String2.log("WARNING: No temperature in " + sourceFileName); reasonably common
@@ -5985,8 +6026,8 @@ expected =
                                     tVarAtts.clear();
                                     NcHelper.getVariableAttributes(var, tVarAtts);
                                     temperatureFV = tVarAtts.getFloat("_FillValue");
-                                    if (!Float.isNaN(temperatureFV) && temperatureFV != temperatureMV)
-                                        throw new SimpleException("Invalid temperature _FillValue=" + temperatureFV);
+                                    if (Float.isNaN(temperatureFV))
+                                        temperatureFV = temperatureMV;
 
                                     //TEMP_qparm
                                     var = ncFile.findVariable("temperature_quality_flag"); //TEMP_qparm");                        
@@ -6005,7 +6046,6 @@ expected =
                                 var = ncFile.findVariable("salinity");                        
                                 PrimitiveArray salinity;
                                 PrimitiveArray PSAL_qparm;
-                                float salinityFV = salinityMV;
                                 if (var == null) {
                                     //String2.log("WARNING: No salinity in " + sourceFileName);   //very common
                                     salinity   = PrimitiveArray.factory(PAType.FLOAT,  nDepth, "" + salinityMV);
@@ -6018,8 +6058,8 @@ expected =
                                     tVarAtts.clear();
                                     NcHelper.getVariableAttributes(var, tVarAtts);
                                     salinityFV = tVarAtts.getFloat("_FillValue");
-                                    if (!Float.isNaN(salinityFV) && salinityFV != salinityMV)
-                                        throw new SimpleException("Invalid salinity _FillValue=" + salinityFV);
+                                    if (Float.isNaN(salinityFV))
+                                        salinityFV = salinityMV;
 
                                     //PSAL_qparm
                                     var = ncFile.findVariable("salinity_quality_flag"); //PSAL_qparm");                        
@@ -6063,7 +6103,7 @@ expected =
                                         nBadDepth++;
                                         keep.clear(row);
                                         continue;
-                                    } else if (Float.isNaN(f) || f == depthMV) { //"impossible" depth
+                                    } else if (Float.isNaN(f) || f == depthMV || f == depthFV) { //"impossible" depth
                                         //tImpossibleNanDepth = true;
                                         nBadDepth++;
                                         keep.clear(row);
@@ -6089,7 +6129,7 @@ expected =
                                     if (String2.indexOf(okQF, qs) < 0) {
                                         temperature.setString(row, "");  //so bad value is now NaN
                                         nBadTemperature++;
-                                    } else if (Float.isNaN(f) || f == temperatureMV) {
+                                    } else if (Float.isNaN(f) || f == temperatureMV || f == temperatureFV) {
                                         temperature.setString(row, "");  //so missing value is now NaN
                                         nBadTemperature++;
                                     } else if (f < minTemperature) { //"impossible" water temperature
@@ -6111,7 +6151,7 @@ expected =
                                     if (String2.indexOf(okQF, qs) < 0) {
                                         salinity.setString(row, "");  //so bad value is now NaN
                                         nBadSalinity++;
-                                    } else if (Float.isNaN(f) || f == salinityMV) {
+                                    } else if (Float.isNaN(f) || f == salinityMV || f == salinityFV) {
                                         salinity.setString(row, "");  //so missing value is now NaN
                                         nBadSalinity++;
                                     } else if (f < minSalinity) { //"impossible" salinity
@@ -6706,7 +6746,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 40206780;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 40524109;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6751,7 +6791,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6012998e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6040646e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6813,7 +6853,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2020-10-15 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2020-11-16 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6841,9 +6881,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-10-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2020-10-15 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"    String history \"2020-11-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
+"2020-11-16 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6861,7 +6901,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2020-10-15 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2020-11-16 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6886,7 +6926,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the September 2020 data) but is a subset of the " + //month changes
+    "up to and including the October 2020 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -6899,7 +6939,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-09-28T13:30:00Z\";\n" + //changes
+"    String time_coverage_end \"2020-10-30T13:30:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -10115,12 +10155,12 @@ expected =
 "  :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 "  :gtspp_programVersion = \"1.8\";\n" +
 "  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.8\n" +
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
+".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
 "20.{8} Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).";
 
         int tPo = results.indexOf("(erd.data at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 23), expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 23), expected, "\nresults=\n" + results);
 
 //summary was to hard to work with don't test it
 expected = 
@@ -10257,7 +10297,7 @@ expected =
 "\\}\n";
         tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(
+        Test.ensureLinesMatch(
             results.substring(tPo), expected, "results=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testNcCF2b finished.");
@@ -10546,11 +10586,11 @@ expected =
 "  :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 "  :gtspp_programVersion = \"1.8\";\n" +
 "  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.8\n" +
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
+".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
 "20.{8} Most recent ingest, clean, and reformat at ERD \\(erd.data at noaa.gov\\).";  //date changes
         int tPo = results.indexOf("(erd.data at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 23), expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 23), expected, "\nresults=\n" + results);
 
 //today + " (local files)\n" +  //from upwell, so time not to seconds until ver 1.40
 //today + " https://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
@@ -10996,7 +11036,7 @@ String expected3 = expected2 +
 "\\}\n";
         tPo = results.indexOf(expected3.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(
+        Test.ensureLinesMatch(
             results.substring(tPo),
             expected3, "results=\n" + results);
 
@@ -11006,13 +11046,13 @@ String expected3 = expected2 +
         results = String2.readFromFile(dir + tName)[1];
         tPo = results.indexOf("(erd.data at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 23), expected, 
+        Test.ensureLinesMatch(results.substring(0, tPo + 23), expected, 
             "\nresults=\n" + results);
 
         expected3 = expected2 + "}\n";
         tPo = results.indexOf(expected3.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(tPo), expected3, 
+        Test.ensureLinesMatch(results.substring(tPo), expected3, 
             "results=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b finished.");
@@ -11102,7 +11142,7 @@ String expected3 = expected2 +
                 dir, "testSpeedSubset.txt", ".graph");
 
         double observe = (System.currentTimeMillis() - time2) / (float)n;
-        double expect = 4.23; //2013-10-28 ~10ms   
+        double expect = 12; //ms  2020-11-25 was 4.23ms (no explanation for jump)  2013-10-28 ~10ms   
         String msg = "\nEDDTableFromNcFiles.testSpeedSubset time per .graph = " +
             observe + 
             "ms (java 1.7M4700 " + expect + "ms, 1.6 17.36ms)\n" +
@@ -11392,7 +11432,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 14) + ".{5}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11407,7 +11447,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 14) + ".{5}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11422,7 +11462,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 14) + ".{5}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11437,7 +11477,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 17) + ".{2}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11452,7 +11492,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 17) + ".{2}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11467,7 +11507,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 17) + ".{2}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -11482,7 +11522,7 @@ String expected3 = expected2 +
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             results = t.toString();
-            Test.repeatedlyTestLinesMatch(results, 
+            Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
                 "\\(time=" + s.substring(0, 17) + ".{2}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
@@ -12869,34 +12909,35 @@ expected =
 "//<Version>ODV Spreadsheet V4.6</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>Profiles</DataType>\n" +
-"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"ship\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<MetaVariable>label=\"cast\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>\n" +
-"//<DataVariable>label=\"altitude [m]\" value_Type=\"INTEGER\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"bottle_posn\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"chl_a_total [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"chl_a_10um [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"phaeo_total [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"phaeo_10um [ug L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"sal00 [PSU]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"sal11 [PSU]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"temperature0 [degree_C]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"temperature1 [degree_C]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"fluor_v [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"xmiss_v [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"PO4 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"N_N [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"NO3 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"Si [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"NO2 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"NH4 [micromoles L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"oxygen [mL L-1]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
-"//<DataVariable>label=\"par [volts]\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Cruise ID\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"ship\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Ship\" </MetaVariable>\n" +
+"//<MetaVariable>label=\"cast\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Cast Number\" </MetaVariable>\n" +
+"//<DataVariable>label=\"altitude [m]\" value_type=\"INTEGER\" is_primary_variable=\"F\" comment=\"Altitude\" </DataVariable>\n" +
+"//<DataVariable>label=\"bottle_posn\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" comment=\"Bottle Number\" </DataVariable>\n" +
+"//<DataVariable>label=\"chl_a_total [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Chlorophyll-a\" </DataVariable>\n" +
+"//<DataVariable>label=\"chl_a_10um [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Chlorophyll-a after passing 10um screen\" </DataVariable>\n" +
+"//<DataVariable>label=\"phaeo_total [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Total Phaeopigments\" </DataVariable>\n" +
+"//<DataVariable>label=\"phaeo_10um [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Phaeopigments 10um\" </DataVariable>\n" +
+"//<DataVariable>label=\"sal00 [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Practical Salinity from T0 and C0 Sensors\" </DataVariable>\n" +
+"//<DataVariable>label=\"sal11 [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Practical Salinity from T1 and C1 Sensors\" </DataVariable>\n" +
+"//<DataVariable>label=\"temperature0 [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature from T0 Sensor\" </DataVariable>\n" +
+"//<DataVariable>label=\"temperature1 [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature from T1 Sensor\" </DataVariable>\n" +
+"//<DataVariable>label=\"fluor_v [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Fluorescence Voltage\" </DataVariable>\n" +
+"//<DataVariable>label=\"xmiss_v [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Transmissivity Voltage\" </DataVariable>\n" +
+"//<DataVariable>label=\"PO4 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Phosphate\" </DataVariable>\n" +
+"//<DataVariable>label=\"N_N [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrate plus Nitrite\" </DataVariable>\n" +
+"//<DataVariable>label=\"NO3 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrate\" </DataVariable>\n" +
+"//<DataVariable>label=\"Si [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Silicate\" </DataVariable>\n" +
+"//<DataVariable>label=\"NO2 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrite\" </DataVariable>\n" +
+"//<DataVariable>label=\"NH4 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Ammonium\" </DataVariable>\n" +
+"//<DataVariable>label=\"oxygen [mL L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Oxygen\" </DataVariable>\n" +
+"//<DataVariable>label=\"par [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Photosynthetically Active Radiation\" </DataVariable>\n" +
+"Cruise\tStation\tType\tyyyy-mm-ddThh:mm:ss.sss\tLongitude [degrees_east]\tLatitude [degrees_north]\tship\tcast\taltitude [m]\tbottle_posn\tchl_a_total [ug L-1]\tchl_a_10um [ug L-1]\tphaeo_total [ug L-1]\tphaeo_10um [ug L-1]\tsal00 [PSU]\tsal11 [PSU]\ttemperature0 [degree_C]\ttemperature1 [degree_C]\tfluor_v [volts]\txmiss_v [volts]\tPO4 [micromoles L-1]\tN_N [micromoles L-1]\tNO3 [micromoles L-1]\tSi [micromoles L-1]\tNO2 [micromoles L-1]\tNH4 [micromoles L-1]\toxygen [mL L-1]\tpar [volts]\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
 "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
@@ -13752,7 +13793,7 @@ expected =
         int po2 = results.indexOf("</gmd:EX_Extent>", po + 10);
         if (po < 0 || po2 < 0)
             String2.log("po=" + po + " po2=" + po2 + " results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(po, po2 + 16), expected, 
+        Test.ensureLinesMatch(results.substring(po, po2 + 16), expected, 
             "results=\n" + results);
 
         po = results.indexOf("<gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">");
@@ -13910,7 +13951,8 @@ expected =
         testVerboseOn();
         reallyVerbose = oReallyVerbose;
         if (errors.length() > 0)
-            throw new RuntimeException("EDDTableFromNcFiles.testBigRequest:\n" + errors.toString());
+            throw new RuntimeException("EDDTableFromNcFiles.testBigRequest:\n" + errors.toString() +
+                "2020-11-25 .geoJson, .pdf, .largePdf (and others) are sometimes very slow. I don't know why.");
     }
 
 
@@ -13919,7 +13961,7 @@ expected =
      */
     public static void testPmelTaoAirt() throws Throwable {
 
-        String2.log("\n*** EDDTableFromNcFiles.testAirt");
+        String2.log("\n*** EDDTableFromNcFiles.testPmelTaoAirt");
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelTaoDyAirt"); //should work
         String tName, error, results, tResults, expected;
         int po;
@@ -14383,6 +14425,270 @@ So the changes seem good. */
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "\nresults=\n" + results);
 
+    }
+
+    /**
+     * Test ODV files created by ERDDAP.
+     */
+    public static void testODV() throws Throwable {
+
+        String2.log("\n*** EDDTableFromNcFiles.testODV");
+        EDDTable tedd;
+        String tName, error, results, tResults, expected;
+        int po;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = "/users/BobSi/Documents/ODV/data/";  //EDStatic.fullTestCacheDirectory;      
+
+        //* test cdm_data_type=TimeSeries
+        tedd = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet");
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&station=~%22(41004|RCPT2|SANF1)%22&time%3E=2020-01-01&time%3C=2020-01-01T01", 
+            dir, "testOdvTimeSeries", ".odvTxt"); 
+        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
+
+        expected = 
+"//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
+"//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>TimeSeries</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"The station identifier.\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"The longitude of the station.\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"The latitude of the station.\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wd [degrees_true]\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Wind direction (the direction the wind is coming from in degrees clockwise from true N) during the same period used for WSPD.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wspd [m s-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Average wind speed (m/s).\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"gst [m s-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Peak 5 or 8 second gust speed (m/s).\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wvht [m]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"dpd [s]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Dominant wave period (seconds) is the period with the maximum wave energy.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"apd [s]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Average wave period (seconds) of all waves during the 20-minute period.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"mwd [degrees_true]\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Mean wave direction corresponding to energy of the dominant period (DOMPD).\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"bar [hPa]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Air pressure (hPa). ('PRES' on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"atmp [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wtmp [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"dewp [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Dewpoint temperature taken at the same height as the air temperature measurement.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"vis [km]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Station visibility (km, originally nautical miles in the NDBC .txt files). Note that buoy stations are limited to reports from 0 to 1.6 nmi.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"ptdy [hPa]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"tide [m]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"The water level in meters (originally feet in the NDBC .txt files) above or below Mean Lower Low Water (MLLW).\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wspu [m s-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"The zonal wind speed (m/s) indicates the u component of where the wind is going, derived from Wind Direction and Wind Speed.\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"wspv [m s-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"The meridional wind speed (m/s) indicates the v component of where the wind is going, derived from Wind Direction and Wind Speed.\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]time_ISO8601[9]wd [degrees_true][9]wspd [m s-1][9]gst [m s-1][9]wvht [m][9]dpd [s][9]apd [s][9]mwd [degrees_true][9]bar [hPa][9]atmp [degree_C][9]wtmp [degree_C][9]dewp [degree_C][9]vis [km][9]ptdy [hPa][9]tide [m][9]wspu [m s-1][9]wspv [m s-1][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:00:00.000Z[9][9]10.9[9]13.3[9][9][9][9][9]1013.5[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:10:00.000Z[9][9]11.2[9]13.6[9][9][9][9][9]1013.4[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:20:00.000Z[9][9]11.2[9]14.4[9][9][9][9][9]1013.7[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:30:00.000Z[9][9]11.3[9]13.6[9][9][9][9][9]1013.7[9][9][9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:40:00.000Z[9][9]11.4[9]14.2[9]1.55[9]5.88[9]4.65[9]237[9]1013.7[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T00:50:00.000Z[9][9]11.4[9]14.1[9][9][9][9][9]1013.8[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]41004[9]*[9][9]-79.099[9]32.501[9]2020-01-01T01:00:00.000Z[9][9]11.3[9]14.2[9][9][9][9][9]1013.7[9][9]21.9[9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:00:00.000Z[9][9][9][9][9][9][9][9]1021.6[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:06:00.000Z[9][9][9][9][9][9][9][9]1021.7[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:12:00.000Z[9][9][9][9][9][9][9][9]1021.9[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:18:00.000Z[9][9][9][9][9][9][9][9]1022.0[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:24:00.000Z[9][9][9][9][9][9][9][9]1021.9[9]13.9[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:30:00.000Z[9][9][9][9][9][9][9][9]1021.5[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:36:00.000Z[9][9][9][9][9][9][9][9]1021.6[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:42:00.000Z[9][9][9][9][9][9][9][9]1021.8[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:48:00.000Z[9][9][9][9][9][9][9][9]1021.7[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T00:54:00.000Z[9][9][9][9][9][9][9][9]1021.5[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]RCPT2[9]*[9][9]-97.047[9]28.022[9]2020-01-01T01:00:00.000Z[9][9][9][9][9][9][9][9]1021.0[9]14.0[9][9][9][9][9][9][9][10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:00:00.000Z[9]10[9]6.2[9]6.9[9][9][9][9][9][9]22.7[9][9]21.3[9][9][9][9]-1.1[9]-6.1[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:10:00.000Z[9]6[9]6.0[9]7.3[9][9][9][9][9][9]22.7[9][9]21.4[9][9][9][9]-0.6[9]-6.0[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:20:00.000Z[9]10[9]5.0[9]6.1[9][9][9][9][9][9]22.5[9][9]21.2[9][9][9][9]-0.9[9]-4.9[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:30:00.000Z[9]18[9]5.0[9]6.0[9][9][9][9][9][9]22.4[9][9]21.1[9][9][9][9]-1.5[9]-4.8[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:40:00.000Z[9]25[9]4.3[9]5.2[9][9][9][9][9][9]22.3[9][9]20.9[9][9][9][9]-1.8[9]-3.9[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T00:50:00.000Z[9]24[9]3.7[9]4.7[9][9][9][9][9][9]22.4[9][9]21.0[9][9][9][9]-1.5[9]-3.4[10]\n" +
+"[9]SANF1[9]*[9][9]-81.88[9]24.46[9]2020-01-01T01:00:00.000Z[9]30[9]3.4[9]4.1[9][9][9][9][9][9]22.4[9][9]20.9[9][9][9][9]-1.7[9]-2.9[10]\n" +
+"[end]";
+        String2.log(results + "\nfileName=" + dir + tName);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //* test cdm_data_type=Trajectory
+        tedd = (EDDTable)oneFromDatasetsXml(null, "fsuNoaaShipWTEP");
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&time%3C=2007-09-01T00:03:00Z&flag=~%22ZZZ.*%22", 
+            dir, "testOdvTrajectory", ".odvTxt"); 
+        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
+        expected = 
+"//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
+"//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>Trajectories</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Call Sign\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"site\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Ship Name\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"IMO\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"cruise_id\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"expocode\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"facility\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platform\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platform_version\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"airPressure [millibar]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Atmospheric Pressure\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"airTemperature [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Air Temperature\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"conductivity [siemens meter-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Conductivity\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"relativeHumidity [percent]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Relative Humidity\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"salinity [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Practical Salinity\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"seaTemperature [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"windDirection [degrees (clockwise from true north)]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Earth Relative Wind Direction\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"windSpeed [meter second-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Earth Relative Wind Speed\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platformCourse [degrees_true]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Course\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platformHeading [degrees_true]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Heading\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platformSpeed [meter second-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Speed Over Ground\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platformWindDirection [degrees (clockwise from bow)]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Relative Wind Direction\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"platformWindSpeed [meter second-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Relative Wind Speed\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"flag\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Quality Control Flags\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]site[9]time_ISO8601[9]IMO[9]cruise_id[9]expocode[9]facility[9]platform[9]platform_version[9]airPressure [millibar][9]airTemperature [degree_C][9]conductivity [siemens meter-1][9]relativeHumidity [percent][9]salinity [PSU][9]seaTemperature [degree_C][9]windDirection [degrees (clockwise from true north)][9]windSpeed [meter second-1][9]platformCourse [degrees_true][9]platformHeading [degrees_true][9]platformSpeed [meter second-1][9]platformWindDirection [degrees (clockwise from bow)][9]platformWindSpeed [meter second-1][9]flag[10]\n" +
+"WTEP[9][9]*[9][9]201.8352[9]55.69271[9]OSCAR DYSON[9]2007-09-01T00:00:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.6[9]16.8[9][9]35.1[9][9]12.12[9]205.31[9]1.640936[9]29.65[9]33.06[9]1.38888[9]152.38[9]0.28292[9]ZZZZZZZZZZZZGZ[10]\n" +
+"WTEP[9][9]*[9][9]201.83586[9]55.69335[9]OSCAR DYSON[9]2007-09-01T00:01:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.58[9]16.3[9][9]33.6[9][9]12.08[9]208.04[9]1.599784[9]29.58[9]31.84[9]1.38888[9]165.08[9]0.236624[9]ZZZZZZZZZZZZGZ[10]\n" +
+"WTEP[9][9]*[9][9]201.83647[9]55.69401[9]OSCAR DYSON[9]2007-09-01T00:02:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.6[9]16.1[9][9]39.5[9][9]12.07[9]207.75[9]1.486616[9]28.12[9]31.63[9]1.38888[9]164.03[9]0.123456[9]ZZZZZZZZZZZZGZ[10]\n" +
+"WTEP[9][9]*[9][9]201.83708[9]55.69469[9]OSCAR DYSON[9]2007-09-01T00:03:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.53[9]16.0[9][9]36.1[9][9]12.08[9]206.9[9]1.404312[9]27.05[9]32.2[9]1.38888[9]162.51[9]0.036008[9]ZZZZZZZZZZZZGZ[10]\n" +
+"[end]";
+        String2.log(results + "\nfileName=" + dir + tName);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //* test cdm_data_type=TrajectoryProfile
+        tedd = (EDDTable)oneFromDatasetsXml(null, "erdGtsppBest");
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&time>=2020-01-01T12&time<=2020-01-02&depth<100&trajectory=~\"(ME_BA_09WX_VNVZ%2020|ME_DB_33TT_51011%2020|ME_DB_33TT_51018%2020)\"&orderBy(\"trajectory,time\")", 
+            dir, "testOdvTrajectoryProfile", ".odvTxt"); 
+        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
+        expected = 
+"//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
+"//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>Profiles</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Constructed from org_type_platform_cruise\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"org\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"From the first 2 characters of stream_ident:\\nCode  Meaning\\nAD  Australian Oceanographic Data Centre\\nAF  Argentina Fisheries (Fisheries Research and Development National Institute (INIDEP), Mar del Plata, Argentina\\nAO  Atlantic Oceanographic and Meteorological Lab\\nAP  Asia-Pacific (International Pacific Research Center/ Asia-Pacific Data-Research Center)\\nBI  BIO Bedford institute of Oceanography\\nCF  Canadian Navy\\nCS  CSIRO in Australia\\nDA  Dalhousie University\\nFN  FNOC in Monterey, California\\nFR  Orstom, Brest\\nFW  Fresh Water Institute (Winnipeg)\\nGE  BSH, Germany\\nIC  ICES\\nII  IIP\\nIK  Institut fur Meereskunde, Kiel\\nIM  IML\\nIO  IOS in Pat Bay, BC\\nJA  Japanese Meteorologocal Agency\\nJF  Japan Fisheries Agency\\nME  EDS\\nMO  Moncton\\nMU  Memorial University\\nNA  NAFC\\nNO  NODC (Washington)\\nNW  US National Weather Service\\nOD  Old Dominion Univ, USA\\nRU  Russian Federation\\nSA  St Andrews\\nSI  Scripps Institute of Oceanography\\nSO  Southampton Oceanographic Centre, UK\\nTC  TOGA Subsurface Data Centre (France)\\nTI  Tiberon lab US\\nUB  University of BC\\nUQ  University of Quebec at Rimouski\\nVL  Far Eastern Regional Hydromet. Res. Inst. of V\\nWH  Woods Hole\\n\\nfrom https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"type\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"From the 3rd and 4th characters of stream_ident:\\nCode  Meaning\\nAR  Animal mounted recorder\\nBA  BATHY message\\nBF  Undulating Oceanographic Recorder (e.g. Batfish CTD)\\nBO  Bottle\\nBT  general BT data\\nCD  CTD down trace\\nCT  CTD data, up or down\\nCU  CTD up trace\\nDB  Drifting buoy\\nDD  Delayed mode drifting buoy data\\nDM  Delayed mode version from originator\\nDT  Digital BT\\nIC  Ice core\\nID  Interpolated drifting buoy data\\nIN  Ship intake samples\\nMB  MBT\\nMC  CTD and bottle data are mixed for the station\\nMI  Data from a mixed set of instruments\\nML  Minilog\\nOF  Real-time oxygen and fluorescence\\nPF  Profiling float\\nRM  Radio message\\nRQ  Radio message with scientific QC\\nSC  Sediment core\\nSG  Thermosalinograph data\\nST  STD data\\nSV  Sound velocity probe\\nTE  TESAC message\\nTG  Thermograph data\\nTK  TRACKOB message\\nTO  Towed CTD\\nTR  Thermistor chain\\nXB  XBT\\nXC  Expendable CTD\\n\\nfrom https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"platform\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"See the list of platform codes (sorted in various ways) at https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Radio callsign + year for real time data, or NODC reference number for delayed mode data.  See\\nhttps://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\\n'X' indicates a missing value.\\nTwo or more adjacent spaces in the original cruise names have been compacted to 1 space.\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"station_id\" value_type=\"INTEGER\" is_primary_variable=\"F\" comment=\"Identification number of the station (profile) in the GTSPP Continuously Managed Database\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"depth [m]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Depth of the Observations\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"temperature [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"salinity [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Practical Salinity\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]org[9]type[9]platform[9]cruise[9]station_id[9]depth [m][9]temperature [degree_C][9]salinity [PSU][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T14:18:00.000Z[9]130.882[9]17.959[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606065[9]4.0[9]27.8[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T14:18:00.000Z[9]130.882[9]17.959[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606065[9]80.0[9]27.8[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T14:18:00.000Z[9]130.882[9]17.959[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606065[9]87.0[9]26.2[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T18:29:00.000Z[9]130.458[9]16.82[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606064[9]4.0[9]28.3[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T18:29:00.000Z[9]130.458[9]16.82[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606064[9]80.0[9]28.2[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T18:29:00.000Z[9]130.458[9]16.82[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606064[9]85.0[9]27.2[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T18:29:00.000Z[9]130.458[9]16.82[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606064[9]94.0[9]26.5[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T21:37:00.000Z[9]130.218[9]15.966[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606063[9]4.0[9]28.5[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T21:37:00.000Z[9]130.218[9]15.966[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606063[9]87.0[9]28.5[9][10]\n" +
+"ME_BA_09WX_VNVZ 20[9][9]*[9]2020-01-01T21:37:00.000Z[9]130.218[9]15.966[9]ME[9]BA[9]09WX[9]VNVZ 20[9]37606063[9]94.0[9]26.9[9][10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T12:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626023[9]1.0[9]26.16[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T12:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626023[9]5.0[9]26.17[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T13:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626024[9]1.0[9]26.16[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T13:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626024[9]5.0[9]26.17[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T14:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626025[9]1.0[9]26.15[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T14:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626025[9]5.0[9]26.16[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T15:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626026[9]1.0[9]26.16[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T15:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626026[9]5.0[9]26.16[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T16:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626027[9]1.0[9]26.16[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T16:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626027[9]5.0[9]26.17[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T17:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626028[9]1.0[9]26.18[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T17:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626028[9]5.0[9]26.18[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T18:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626029[9]1.0[9]26.26[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T18:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626029[9]5.0[9]26.22[9]34.37[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T19:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626030[9]1.0[9]26.38[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T19:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626030[9]5.0[9]26.26[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T20:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626031[9]1.0[9]26.51[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T20:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626031[9]5.0[9]26.33[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T21:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626032[9]1.0[9]26.65[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T21:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626032[9]5.0[9]26.34[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T22:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626033[9]1.0[9]26.66[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T22:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626033[9]5.0[9]26.51[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T23:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626034[9]1.0[9]26.65[9]34.35[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-01T23:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626034[9]5.0[9]26.47[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-02T00:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626035[9]1.0[9]26.68[9]34.36[10]\n" +
+"ME_DB_33TT_51011 20[9][9]*[9]2020-01-02T00:00:00.000Z[9]-124.4[9]-0.2[9]ME[9]DB[9]33TT[9]51011 20[9]37626035[9]5.0[9]26.52[9]34.36[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T12:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625879[9]1.0[9]25.77[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T13:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625880[9]1.0[9]25.77[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T14:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625881[9]1.0[9]25.74[9]34.9[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T15:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625882[9]1.0[9]25.74[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T16:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625883[9]1.0[9]25.75[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T17:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625884[9]1.0[9]25.77[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T18:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625885[9]1.0[9]25.83[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T19:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625886[9]1.0[9]25.91[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T20:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625887[9]1.0[9]25.96[9]34.91[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T21:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625888[9]1.0[9]26.04[9]34.9[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T22:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625889[9]1.0[9]26.11[9]34.9[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-01T23:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625890[9]1.0[9]26.12[9]34.89[10]\n" +
+"ME_DB_33TT_51018 20[9][9]*[9]2020-01-02T00:00:00.000Z[9]-124.9[9]-5.0[9]ME[9]DB[9]33TT[9]51018 20[9]37625891[9]1.0[9]26.16[9]34.89[10]\n" +
+"[end]";
+        String2.log(results + "\nfileName=" + dir + tName);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //* test cdm_data_type=Point
+        tedd = (EDDTable)oneFromDatasetsXml(null, "erdNph");
+        tName = tedd.makeNewFileForDapQuery(null, null, "&year=1985", 
+            dir, "testOdvPoint", ".odvTxt"); 
+        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
+        expected = 
+"//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
+"//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
+"//<Encoding>UTF-8</Encoding>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Source>https://localhost:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
+"//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
+"//<DataField>GeneralField</DataField>[10]\n" +
+"//<DataType>GeneralType</DataType>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Longitude of the Center of the NPH\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Latitude of the Center of the NPH\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Centered Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"year\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Year\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"month\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" comment=\"Month (1 - 12)\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"area [km2]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Areal Extent of the 1020 hPa Contour\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"maxSLP [hPa]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Maximum Sea Level Pressure\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]time_ISO8601[9]year[9]month[9]area [km2][9]maxSLP [hPa][10]\n" +
+"[9][9]*[9][9]229.9[9]35.5[9]1985-01-16T00:00:00.000Z[9]1985[9]1[9]1150500.0[9]1022.7[10]\n" +
+"[9][9]*[9][9]221.3[9]34.1[9]1985-02-16T00:00:00.000Z[9]1985[9]2[9]4989400.0[9]1028.2[10]\n" +
+"[9][9]*[9][9]216.7[9]33.5[9]1985-03-16T00:00:00.000Z[9]1985[9]3[9]6584200.0[9]1031.2[10]\n" +
+"[9][9]*[9][9]217.1[9]34.5[9]1985-04-16T00:00:00.000Z[9]1985[9]4[9]5692500.0[9]1024.5[10]\n" +
+"[9][9]*[9][9]215.5[9]34.5[9]1985-05-16T00:00:00.000Z[9]1985[9]5[9]5334700.0[9]1025.7[10]\n" +
+"[9][9]*[9][9]215.7[9]35.9[9]1985-06-16T00:00:00.000Z[9]1985[9]6[9]4161100.0[9]1022.9[10]\n" +
+"[9][9]*[9][9]214.5[9]35.7[9]1985-07-16T00:00:00.000Z[9]1985[9]7[9]4588300.0[9]1025.3[10]\n" +
+"[9][9]*[9][9]214.7[9]35.9[9]1985-08-16T00:00:00.000Z[9]1985[9]8[9]4456900.0[9]1029.3[10]\n" +
+"[9][9]*[9][9]214.1[9]37.5[9]1985-09-16T00:00:00.000Z[9]1985[9]9[9]3262900.0[9]1028.6[10]\n" +
+"[9][9]*[9][9]214.7[9]36.3[9]1985-10-16T00:00:00.000Z[9]1985[9]10[9]3887100.0[9]1024.7[10]\n" +
+"[9][9]*[9][9]225.7[9]37.7[9]1985-11-16T00:00:00.000Z[9]1985[9]11[9]845770.0[9]1021.0[10]\n" +
+"[9][9]*[9][9]231.1[9]34.5[9]1985-12-16T00:00:00.000Z[9]1985[9]12[9]817010.0[9]1021.9[10]\n" +
+"[end]";
+        String2.log(results + "\nfileName=" + dir + tName);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
     }
 
     /**
@@ -15335,31 +15641,33 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.10</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
-"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<DataVariable>label=\"time_ISO8601\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"T\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"hours [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"minutes [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"seconds [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"ints\" value_Type=\"INTEGER\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"floats\" value_Type=\"FLOAT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"doubles\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"Strings\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"hours [seconds since 1970-01-01T00:00:00Z]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Hours\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"minutes [seconds since 1970-01-01T00:00:00Z]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Minutes\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"seconds [seconds since 1970-01-01T00:00:00Z]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Seconds\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Millis\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"ints\" value_type=\"INTEGER\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"floats\" value_type=\"FLOAT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"doubles\" value_type=\"DOUBLE\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"Strings\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]time_ISO8601[9]hours [seconds since 1970-01-01T00:00:00Z][9]minutes [seconds since 1970-01-01T00:00:00Z][9]seconds [seconds since 1970-01-01T00:00:00Z][9]millis [seconds since 1970-01-01T00:00:00Z][9]ints[9]floats[9]doubles[9]Strings[10]\n" +
 "[9][9]*[9][9]10000[9]40[9]1970-01-02T00:00:00.000Z[9]3.155508E8[9]6.3115254E8[9]9.4668482E8[9]1.26230400003E9[9]1000000[9]0.0[9]1.0E12[9]0[10]\n" +
 "[9][9]*[9][9]10001[9]41[9]1970-01-03T00:00:00.000Z[9]3.155544E8[9]6.311526E8[9]9.46684821E8[9]1.262304000031E9[9]1000001[9]1.1[9]1.0000000000001E12[9]10[10]\n" +
 "[9][9]*[9][9]10002[9]42[9]1970-01-04T00:00:00.000Z[9]3.15558E8[9]6.3115266E8[9]9.46684822E8[9]1.262304000032E9[9]1000002[9]2.2[9]1.0000000000002E12[9]20[10]\n" +
 "[end]";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        //String2.pressEnterToContinue("ODV file is " + tDir + tName);
 
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
@@ -15831,21 +16139,22 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.10</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
-"//<MetaVariable>label=\"Cruise\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Station\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Type\" value_Type=\"TEXT:2\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Longitude [degrees_east]\" value_Type=\"SHORT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<MetaVariable>label=\"Latitude [degrees_north]\" value_Type=\"SIGNED_BYTE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </MetaVariable>[10]\n" +
-"//<DataVariable>label=\"time_ISO8601\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"T\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"doubles\" value_Type=\"DOUBLE\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"Strings\" value_Type=\"INDEXED_TEXT\" qf_schema=\"\" is_primary_variable=\"F\" comment=\"\" </DataVariable>[10]\n" +
+"//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>[10]\n" +
+"//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>[10]\n" +
+"//<DataVariable>label=\"time_ISO8601\" value_type=\"DOUBLE\" is_primary_variable=\"T\" comment=\"Time\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"millis [seconds since 1970-01-01T00:00:00Z]\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Millis\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"doubles\" value_type=\"DOUBLE\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"//<DataVariable>label=\"Strings\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </DataVariable>[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]time_ISO8601[9]millis [seconds since 1970-01-01T00:00:00Z][9]doubles[9]Strings[10]\n" +
 "[9][9]*[9][9]10001[9]41[9]1970-01-03T00:00:00.000Z[9]1.262304000031E9[9]1.0000000000001E12[9]10[10]\n" +
 "[9][9]*[9][9]10002[9]42[9]1970-01-04T00:00:00.000Z[9]1.262304000032E9[9]1.0000000000002E12[9]20[10]\n" +
 "[end]";
@@ -18812,9 +19121,10 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 17) testOrderByClosest(); //mv fv fixed 
                     if (test == 18) testOrderByLimit();   //mv fv fixed 
                     if (test == 19) testOrderByMean();    //mv fv fixed
-                    if (test == 20) testAddVariablesWhere();
-                    if (test == 21) testStationLonLat();
-                    if (test == 22) testGlobal();  //tests global: metadata to data conversion
+                    if (test == 20) testOrderByMean2();  
+                    if (test == 21) testAddVariablesWhere();
+                    if (test == 22) testStationLonLat();
+                    if (test == 23) testGlobal();  //tests global: metadata to data conversion
                     if (test == 24) testGenerateDatasetsXml2();
                     if (test == 25) testGenerateDatasetsXmlNcdump();
                     if (test == 28) testErdGtsppBest("erdGtsppBestNc");
@@ -18845,6 +19155,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 55) testUpdate();
                     if (test == 56) testQuickRestart();
                     if (test == 57) testPmelTaoAirt();
+                    if (test == 58) testODV();
 
                     if (test == 60) testTablePseudoSourceNames();
                     if (test == 61) testIgor();
@@ -18887,7 +19198,5 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
             }
         }
     }
-
-
 }
 

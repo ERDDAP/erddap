@@ -1227,23 +1227,23 @@ expected2 =
 "}\n";
             tPo = results.indexOf("history \"NASA GSFC (OBPG)");
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-            Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
+            Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
                 "\nresults=\n" + results);
 
             tPo = results.indexOf("    String infoUrl ");
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-            Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
+            Test.ensureLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
                 tPo = results.indexOf("history \"NASA GSFC (OBPG)");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 25), expected, 
+                Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
                     "\nresults=\n" + results);
 
                 tPo = results.indexOf("    String infoUrl ");
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-                Test.repeatedlyTestLinesMatch(results.substring(tPo), expected2, 
+                Test.ensureLinesMatch(results.substring(tPo), expected2, 
                     "\nresults=\n" + results);
             }
 
@@ -1268,11 +1268,11 @@ expected2 =
     "      Float64 longitude\\[longitude = 8640\\];\n" +
     "  \\} chlorophyll;\n" +
     "\\} rMHchla8day;\n";
-            Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+            Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseStringUnchanged(localUrl + ".dds");
-                Test.repeatedlyTestLinesMatch(results, expected, "\nresults=\n" + results);
+                Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
             }
 
             //********************************************** test getting axis data
@@ -1650,7 +1650,7 @@ expected2 =
 "  :history = \"NASA GSFC \\(OBPG\\)";
         tPo = results.indexOf(":history = \"NASA GSFC (OBPG)");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.repeatedlyTestLinesMatch(results.substring(0, tPo + 28), expected, "RESULTS=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 28), expected, "RESULTS=\n" + results);
 
         expected = //note original missing values
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
@@ -1711,7 +1711,7 @@ expected2 =
             if (tPo < 0 || tPo2 < 0)
                 String2.log("tPo=" + tPo + " tPo2=" + tPo2 + " results=\n" + results);
 
-            Test.repeatedlyTestLinesMatch(results.substring(tPo, tPo2 + 9), expected, "RESULTS=\n" + results);
+            Test.ensureLinesMatch(results.substring(tPo, tPo2 + 9), expected, "RESULTS=\n" + results);
         /* */
 
         } catch (Throwable t) {

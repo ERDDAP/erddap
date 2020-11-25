@@ -12296,7 +12296,7 @@ expected =
 "    String sea_name \"World-Wide Distribution\";\n" +
 "    String sensor \"AVHRR-2\";\n" +
 "    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
-"    String sourceUrl \"https://data.nodc.noaa.gov/pathfinder/Version5.3/L3C/\";\n" +
+"    String sourceUrl \"https://www.ncei.noaa.gov/thredds-ocean/catalog/pathfinder/Version5.3/L3C/catalog.html\";\n" +
 "    Float64 Southernmost_Northing -89.97916;\n" +
 "    String spatial_resolution \"0.0416667 degree\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +

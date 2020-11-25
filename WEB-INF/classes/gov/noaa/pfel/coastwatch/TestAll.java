@@ -119,7 +119,8 @@ public class TestAll  {
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
-//      String2.log(NcHelper.ncdump("/u00/soda3/soda3_ice/soda3.3.1_mn_ice_reg_2014.ncml", "-v time"));  
+//      String2.log(NcHelper.ncdump("/data/gtspp/gtspp_13635162_te_111.nc", "-h"));  
+//      String2.log(NcHelper.ncdump("/data/gtspp/gtspp_40268168_te_111.nc", "-v temperature"));  
 
 //      DasDds.main(new String[]{"erdSoda331icemday", "-verbose"});
 //      DasDds.main(new String[]{"erdSoda331oceanmday", "-verbose"});
@@ -140,6 +141,8 @@ public class TestAll  {
 //            StringArray.fromCSV("1480854360"));
 //        String2.log(table.dataToString());
 //    }
+
+//      Erddap.makeErddapContentZip("c:/programs/_tomcat/samples/", "c:/backup/");
 
       /*
       String c9 = //SSR.getUrlResponseStringNewline(
@@ -267,7 +270,7 @@ public class TestAll  {
 //    os.close();
 //
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
-//        "/u00/soda3/soda3_ice/", "soda3.3.1_mn_ice_reg_....\\.ncml", "", 
+//        "/u00/data/points/woa18/temperature/", ".*\\.nc", "", 
 //        "", "", //group, dimensionsCSV
 //        -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
@@ -535,7 +538,7 @@ public class TestAll  {
       //Don't add source_id or stream_ident: they are usually (always?) empty
 //    1) (overnight?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=[my email address])
-//      from GTSPP dir: /pub/gtspp/best_nc to my local: c:/data/gtspp/bestNcZip
+//      from GTSPP dir: /pub/data.nodc/gtspp/bestcopy/netcdf to my local: c:/data/gtspp/bestNcZip
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
 
@@ -550,8 +553,8 @@ public class TestAll  {
 //           was 2 days 14 hours on old Dell Opti).
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
-//      !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 2, 2020, 9, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 7, 2020, 10, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -584,7 +587,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 2, 2020, 9); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 7, 2020, 10); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
@@ -605,8 +608,8 @@ public class TestAll  {
 //    12) Update rtofs (Python/ #2=updateDatasetsXml.py), 
 //        then copy datasetsFEDCW.xml to coastwatch and rename to datasets.xml
 //    13) Ping the gtspp flag url on ERDDAP (it is in "flag" bookmarks)
-//       https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=24d16ff156b7751d5248047253ea0fc246674aa880b14bb9eb84e101d5676d62
-//       and make sure the new data and metadata are visible (hence, new dataset has loaded)
+//       and make sure the new data files and metadata are visible (hence, new dataset has loaded).
+//       Metadata: https://coastwatch.pfeg.noaa.gov/erddap/info/erdGtsppBest/index.html
 
 //    String2.log(EDDTableFromSOS.generateDatasetsXml(
 //        "http://data.gcoos.org:8080/52nSOS/sos/kvp", "1.0.0", "IOOS_52N"));
@@ -1043,9 +1046,9 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = true;
+        boolean doSlowTestsToo = false;
 
-/* for releases, this line should have open/close comment  */
+/* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
 
         //*** All of the unit tests for CWBrowsers and ERDDAP.

@@ -186,7 +186,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.10"; //see comment above
+    public static String erddapVersion = "2.11"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -291,6 +291,7 @@ public static boolean developmentMode = false;
     public final static int    DEFAULT_unusualActivity         = 10000;
     public static long   cacheMillis            = DEFAULT_cacheMinutes           * Calendar2.MILLIS_PER_MINUTE;
     public static String drawLandMask           = DEFAULT_drawLandMask;    
+    public static boolean emailDiagnosticsToErdData = true;
     public static Color  graphBackgroundColor   = new Color(DEFAULT_graphBackgroundColorInt, true); //hasAlpha
     public static long   loadDatasetsMinMillis  = DEFAULT_loadDatasetsMinMinutes * Calendar2.MILLIS_PER_MINUTE;
     public static long   loadDatasetsMaxMillis  = DEFAULT_loadDatasetsMaxMinutes * Calendar2.MILLIS_PER_MINUTE;
@@ -2852,6 +2853,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         zoomIn                     = messages.getNotNothingString("zoomIn",                     errorInMethod); 
         zoomOut                    = messages.getNotNothingString("zoomOut",                    errorInMethod); 
 
+        blacklistMsg = MessageFormat.format(blacklistMsg, adminEmail);
         standardShortDescriptionHtml = messages.getNotNothingString("standardShortDescriptionHtml",errorInMethod);
         standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&convertTimeReference;", convertersActive? convertTimeReference : "");
         standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&wmsManyDatasets;", wmsActive? wmsManyDatasets : "");
@@ -3454,9 +3456,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * <br>This method always prepends the subject and content with [erddapUrl],
      *   so that it will be clear which ERDDAP this came from 
      *   (in case you administer multiple ERDDAPs).
-     * <br>This method always logs that an email was sent: to whom and the subject, 
+     * <br>This method logs (to log.txt) that an email was sent: to whom and the subject, 
      *   but not the content.
-     * <br>This method logs all emails to the email log, e.g., 
+     * <br>This method logs the entire email to the email log, e.g., 
      *   (bigParentDirectory)/emailLog2009-01.txt
      *
      * @param emailAddresses   each e.g., john.doe@company.com
@@ -3920,6 +3922,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
                     datasetID);
 
+            if (slowDownTroubleMillis > 0)
+                Math2.sleep(slowDownTroubleMillis);
             lowSendError(response, HttpServletResponse.SC_UNAUTHORIZED, message);
 
         } catch (Throwable t2) {
@@ -5178,6 +5182,29 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     /**
+     * This returns the requester's ip addresses (from x-forwarded-for)
+     * or "(unknownIPAddress)".
+     */
+    public static String getIPAddress(HttpServletRequest request) {
+
+        //getRemoteHost(); always returns our proxy server (never changes)
+        String ipAddress = request.getHeader("x-forwarded-for");  
+        if (ipAddress == null) {
+            ipAddress = "";
+        } else {
+            //if csv, get last part
+            //see https://en.wikipedia.org/wiki/X-Forwarded-For
+            int cPo = ipAddress.lastIndexOf(',');
+            if (cPo >= 0)
+                ipAddress = ipAddress.substring(cPo + 1);
+        }
+        ipAddress = ipAddress.trim();
+        if (ipAddress.length() == 0)
+            ipAddress = "(unknownIPAddress)";
+        return ipAddress;
+    }
+
+    /**
      * Given a throwable t, this sends an appropriate HTTP error code and a DAP-formatted dods-error response message.
      * Most users will call return in their method after calling this since the response is committed and closed.
      */
@@ -5190,7 +5217,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         try {
             if (isClientAbortException(t)) {
-                String2.log("*** sendErrorCode caught " + String2.ERROR + "=ClientAbortException");
+                String2.log("*** sendError caught " + String2.ERROR + "=ClientAbortException");
                 return; //do nothing
             }
 
@@ -5203,31 +5230,69 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             //log the error            
             String tErrorLC = tError.toLowerCase();
-            if      (tError.indexOf(resourceNotFound) >= 0 ||
-                     tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0)  //check this first, since may also be Query error
+            if (tError.indexOf(resourceNotFound) >= 0 ||
+                tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) { //check this first, since may also be Query error
                 errorNo = HttpServletResponse.SC_NOT_FOUND;  //http error 404  (might succeed later)
                 //I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for these codes
-            else if (tError.indexOf(queryError) >= 0) 
+
+            } else if (tError.indexOf(queryError) >= 0) {
                 errorNo = HttpServletResponse.SC_BAD_REQUEST; //http error 400 (won't succeed later)
-            else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) 
+
+            } else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) {
                 errorNo = HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE; //http error 416
-            else if (tError.indexOf(Math2.memoryTooMuchData) >= 0 ||
-                     tError.indexOf(Math2.memoryThanCurrentlySafe) >= 0 ||
-                     tError.indexOf(Math2.memoryThanSafe) >= 0 ||
-                     tError.indexOf(Math2.memoryArraySize) >= 0 ||
-                     tError.indexOf(MustBe.OutOfMemoryError) >= 0 ||
-                     tError.indexOf("OutOfMemoryError") >= 0) //Java error wording
+
+            } else if (tError.indexOf(Math2.memoryArraySize) >= 0) {
+                errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
+                String ipAddress = EDStatic.getIPAddress(request);
+                tally.add("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)",  ipAddress);
+                tally.add("OutOfMemory (Array Size), IP Address (since last daily report)",        ipAddress);
+                tally.add("OutOfMemory (Array Size), IP Address (since startup)",                  ipAddress);
+
+            } else if (tError.indexOf("OutOfMemoryError") >= 0 ||  //java's words
+                       tError.indexOf(Math2.memoryThanCurrentlySafe) >= 0) {
+                errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
+                dangerousMemoryFailures++;
+                String ipAddress = EDStatic.getIPAddress(request);
+                tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)",     ipAddress);
+                tally.add("OutOfMemory (Too Big), IP Address (since last daily report)",           ipAddress);
+                tally.add("OutOfMemory (Too Big), IP Address (since startup)",                     ipAddress);
+
+            } else if (tError.indexOf(MustBe.OutOfMemoryError) >= 0 || 
+                       tError.indexOf(Math2.memoryThanSafe)    >= 0 ||
+                       tError.indexOf(Math2.memoryTooMuchData) >= 0) {
+                //catchall for remaining possibilities
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large)
-            else if (tErrorLC.indexOf("unauthorized") >= 0) 
+                String ipAddress = EDStatic.getIPAddress(request);
+                tally.add("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
+                tally.add("OutOfMemory (Way Too Big), IP Address (since last daily report)",       ipAddress);
+                tally.add("OutOfMemory (Way Too Big), IP Address (since startup)",                 ipAddress);
+
+            } else if (tErrorLC.indexOf("unauthorized") >= 0) {
                 errorNo = HttpServletResponse.SC_UNAUTHORIZED; //http error 401
-            else if (tErrorLC.indexOf("forbidden") >= 0) 
+
+            } else if (tErrorLC.indexOf("forbidden") >= 0) {
                 errorNo = HttpServletResponse.SC_FORBIDDEN; //http error 403
-            else if (tErrorLC.indexOf("timeout") >= 0 ||
-                     tErrorLC.indexOf("time out") >= 0 ||
-                     tErrorLC.indexOf("timed out") >= 0) //testDescendingAxisGeotif sees this  
+
+            } else if (tErrorLC.indexOf("timeout") >= 0 ||
+                       tErrorLC.indexOf("time out") >= 0 ||
+                       tErrorLC.indexOf("timed out") >= 0) { //testDescendingAxisGeotif sees this  
                 errorNo = HttpServletResponse.SC_REQUEST_TIMEOUT; //http error 408
-            else //everything else
+
+            } else {
+                //everything else
+                if (tError.indexOf("NullPointerException") >= 0 && emailDiagnosticsToErdData) {
+                    //email stack trace for all NullPointerExceptions to erd.data@noaa.gov (i.e., ERDDAP development team)
+                    email("erd.data@noaa.gov", 
+                        "java.lang.NullPointerException in ERDDAP v" + erddapVersion, 
+                        //I debated emailing the requestUrl, too. There are security and privacy issues. so don't do it.
+                        //"request=" + 
+                        //(baseHttpsUrl.startsWith("(")? baseUrl : baseHttpsUrl) + //request may actually have been to http or https (I'm too lazy to write proper code / doesn't seem necessary)
+                        //(tRequest.indexOf("login.html?") >= 0? tRequestURI + "?[CONFIDENTIAL]" : tRequest) + "\n\n" + //don't show passwords, nonces, etc
+                        MustBe.throwableToString(t));
+                } 
                 errorNo = HttpServletResponse.SC_INTERNAL_SERVER_ERROR; //http error 500
+            }
+
             String2.log(
                 "*** sendErrorCode " + errorNo + " for " + tRequest + //not decoded
                 "\n" + MustBe.throwableToString(t).trim());  //always log full stack trace
