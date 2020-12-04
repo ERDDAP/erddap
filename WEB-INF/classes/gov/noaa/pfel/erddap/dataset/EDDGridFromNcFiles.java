@@ -10955,7 +10955,7 @@ expected =
             "\n  partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes + 
                 " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 4320 * 8640, EDStatic.partialRequestMaxBytes) +
-            "\n  expected size=" + expectedBytes + "  expected time=" + expectedTimeS + "s but it can be 10x slower\n";
+            "\n  expected size=" + expectedBytes + "  expected time~=" + expectedTimeS + "s but it can be 10x slower\n";
         String2.log(msg);
         StringBuilder results = new StringBuilder(msg);
 
@@ -10979,7 +10979,7 @@ expected =
                 tName = eddGrid.makeNewFileForDapQuery(null, null, query,
                     dir, eddGrid.className() + "_testBigRequest2", fileType); 
                 msg = "  nThreads=" + eddGrid.nThreads + " size=" + File2.length(dir + tName) +  
-                    " time=" + (System.currentTimeMillis() - time)/1000 + "ms\n";
+                    " time=" + (System.currentTimeMillis() - time)/1000 + "s\n";
                 String2.log(msg);
                 results.append(msg);
             } catch (Throwable t) {
@@ -14393,7 +14393,7 @@ expected =
                     if (test == 46) testBadNcFile(false);  //runIncrediblySlowTest?
                     if (test == 47) testInvalidShortenedNcFile();
 
-                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 20); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
+                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
                     if (test == 51 && doSlowTestsToo) testNThreads(3);
                     if (test == 52 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
                     if (test == 53 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?

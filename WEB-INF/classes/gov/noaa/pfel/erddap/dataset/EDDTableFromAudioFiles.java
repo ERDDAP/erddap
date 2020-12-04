@@ -535,6 +535,7 @@ String expected =
 "    String units \"seconds\";\n" +
 "  }\n" +
 "  channel_1 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range -32768, 24572;\n" +
 "    Float64 colorBarMaximum 33000.0;\n" +
 "    Float64 colorBarMinimum -33000.0;\n" +
