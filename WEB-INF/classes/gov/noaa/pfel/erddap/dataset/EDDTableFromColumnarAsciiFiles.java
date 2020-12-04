@@ -1851,10 +1851,10 @@ boolean columnar = false;  // are there any? how detect?
             String goodStringDateName = null;          //next best: just date
             String goodStringMonthName = null;         //next best: just yyyy-MM
             String goodStringYearName = null;          //next best: just yyyy
-            boolean hasyyCol = false;
-            boolean hasMMCol = false;
-            boolean hasddCol = false;
-            boolean hasHHCol = false;
+            int yyCol = -1;  //will be >=0 if found
+            int MMCol = -1;
+            int ddCol = -1;
+            int HHCol = -1;
             StringArray timeUnitsList = new StringArray();
             for (col = 0; col < sourceTable.nColumns(); col++) {
                 String tColName   = addTable.getColumnName(col);
@@ -1865,13 +1865,13 @@ boolean columnar = false;  // are there any? how detect?
                     tUnits = "";
                 //some vars don't qualify as isTimeUnits, but do have time info
                 if (tUnits.indexOf("yyyy") >= 0 || tUnits.indexOf("uuuu") >= 0 ||  //was "yy"
-                    tColNameLC.indexOf("year") >= 0) hasyyCol = true;
+                    tColNameLC.indexOf("year") >= 0) yyCol = col;
                 if (tUnits.indexOf("MM") >= 0 ||
-                    tColNameLC.indexOf("month") >= 0) hasMMCol = true;
+                    tColNameLC.indexOf("month") >= 0) MMCol = col;
                 if (tUnits.indexOf("dd") >= 0 ||
                     (tColNameLC.indexOf("day") >= 0 && tColNameLC.indexOf("per day") < 0 && tUnits.indexOf("per day") < 0) || //knb_lter_sbc_58_t1
-                    tColNameLC.indexOf("date") >= 0) hasddCol = true;
-                if (tUnits.indexOf("HH") >= 0) hasHHCol = true;
+                    tColNameLC.indexOf("date") >= 0) ddCol = col;
+                if (tUnits.indexOf("HH") >= 0) HHCol = col;
 
                 if (tUnits.indexOf("yyyy") >= 0 || tUnits.indexOf("uuuu") >= 0 ||  //was "yy"
                     tUnits.indexOf("MM") >= 0 ||
@@ -1998,20 +1998,26 @@ boolean columnar = false;  // are there any? how detect?
                 goodZuluStringDateTimeName  != null? goodZuluStringDateTimeName :
                 goodLocalNumericTimeName    != null? goodLocalNumericTimeName :
                 goodLocalStringDateTimeName != null? goodLocalStringDateTimeName :
-                goodStringDateName  != null && !hasHHCol? goodStringDateName  : //date  col and no time col
-                goodStringMonthName != null && !hasHHCol && !hasddCol? 
+                goodStringDateName  != null && HHCol<0? goodStringDateName  : //date  col and no time col
+                goodStringMonthName != null && HHCol<0 && ddCol<0? 
                     goodStringMonthName : //month col and no date/time col
-                goodStringYearName  != null && !hasHHCol && !hasddCol && !hasMMCol? 
+                goodStringYearName  != null && HHCol<0 && ddCol<0 && MMCol<0? 
                     goodStringYearName  : //year  col and no month/date/time col
                 null;
 
-            //Reject tables with date or time but no goodTimeName
-            if (goodTimeName == null && (hasyyCol || hasHHCol))
-                throw new SimpleException(
-                    "NO GOOD DATE(TIME) VARIABLE in datasetID=" + datasetID + " dataFileNme=" + dataFileName + ":\n" + 
-                    "ERDDAP is rejecting this dataTable because it only seems to have dateTime variables with\n" +
-                    "unknown time zone or only seperate date and time variables. The file has variables with name (units):\n" +
-                    timeUnitsList.toString());
+            //2020-11-30 was: Reject tables with date or time but no goodTimeName
+            //But now, admin can create a unified column by hand via Derived Variables 
+            //if (goodTimeName == null && (yyCol>=0 || hasHHCol>=0))
+            //    throw new SimpleException(
+            //        "NO GOOD DATE(TIME) VARIABLE in datasetID=" + datasetID + " dataFileNme=" + dataFileName + ":\n" + 
+            //        "ERDDAP is rejecting this dataTable because it only seems to have dateTime variables with\n" +
+            //        "unknown time zone or only seperate date and time variables. The file has variables with name (units):\n" +
+            //        timeUnitsList.toString());
+            //!!! Ideally, this method could make the Derived Variable,
+            //  but it is hard because lots of possibilites for what is in various
+            //  date/month/day/year/time/hour/minute/second columns (e.g., numbers vs text, formats...)
+            //  Leave it to the admin to sort out. 
+            //  Note that dataset may not load in ERDDAP if a column is called "time" but isn't date+time.
 
             //If we have an goodTimeName, remove any other columns with numeric time 
             //or string time (yy, HH, mm) time units.

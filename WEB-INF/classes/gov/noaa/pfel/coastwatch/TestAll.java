@@ -1046,7 +1046,8 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = false;
+        boolean doSlowTestsToo = true;
+
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

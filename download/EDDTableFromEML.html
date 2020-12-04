@@ -44,7 +44,8 @@
 
 
 [This web page will only be of interest to ERDDAP administrators who work
-with EML files.  Last edit: 2020-11-24 ]
+with EML files.
+<br>This document was originally created in 2016. It was last edited on 2020-11-30. ]
 
 <p><a rel="help" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"><strong>ERDDAP</strong></a>
@@ -175,17 +176,16 @@ the academic / NSF-funded realm and scientists in the federal agency (NOAA, NASA
 <h2><a class="selfLink" id="designDetails" href="#designDetails" rel="bookmark">Design Details</a></h2>
 
 Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml.
-<br>Some are related to differences in how EML and ERDDAP do things and how the 
-  converter deals with these problems.
-<br>If one of these was a problem, it is now mostly dealt with/solved.
+<br>Some are related to differences in how EML and ERDDAP do things and how  
+  GenerateDatasetsXml deals with these problems.
 
 <ul>
-<li><a class="selfLink" id="oneDataTable" href="#oneDataTable" rel="bookmark">One dataTable = One ERDDAP Dataset</a>
+<li><a class="selfLink" id="oneDataTable" href="#oneDataTable" rel="bookmark">One dataTable Becomes One ERDDAP Dataset</a>
   <br>One EML file may have multiple &lt;dataTable&gt;s. ERDDAP makes
   one ERDDAP dataset per EML dataTable. The datasetID for the dataset is 
-  EMLName_t[tableNumber] (e.g., for SBC where EMLname isn't just a number) or
-  [system]_EMLName_t[tableNumber] (e.g., for NTL). 
-  For example, table #1 in the file knb-lter-sbc.28, 
+  <br><kbd><i>EMLName</i>_t<i>tableNumber</i></kbd> (when EMLname is text) or
+  <br><kbd><i>system_EMLName</i>_t<i>tableNumber</i></kbd> (when EMLname is a number). 
+  <br>For example, table #1 in the file knb-lter-sbc.28, 
   becomes ERDDAP datasetID=knb_lter_sbc_28_t1,
   <br>&nbsp;
 
@@ -212,15 +212,15 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
 
 <li><a class="selfLink" id="smallChanges" href="#smallChanges" rel="bookmark">Small Changes</a>
   <br>ERDDAP makes a lot small changes. For example, ERDDAP uses the 
-  EML non-DOI alternateIdentifier plus a dataTable number as the 
-  ERDDAP datasetID, but slightly changes alternateIdentifier to make 
+  EML non-DOI <kbd>alternateIdentifier</kbd> plus a dataTable number as the 
+  ERDDAP datasetID, but slightly changes <kbd>alternateIdentifier</kbd> to make 
   it a valid variable name in most computer languages,
   e.g., knb-lter-sbc.33 dataTable #1 becomes knb_lter_sbc_33_t1.
   <br>&nbsp;
 
 <li><a class="selfLink" id="docBook" href="#docBook" rel="bookmark">DocBook</a>
-  <br>EML uses DocBook's markup system to provide structure to blocks of text.
-  CF and ACDD assume plain text. So GenerateDatasetsXml converts the marked up
+  <br>EML uses DocBook's markup system to provide structure to blocks of text in EML files.
+  CF and ACDD require that metadata be plain text. So GenerateDatasetsXml converts the marked up
   text into plain text that looks like the formatted version of the text.
   The inline tags are sanitized with square brackets, e.g., [emphasized],
   and left in the plain text.
@@ -271,20 +271,29 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   moved the variable's comment attribute.]
   <br>&nbsp;
 
+<li><a class="selfLink" id="units" href="#units" rel="bookmark">EML version 2.1.1</a>
+  <br>This support for EML v2.1.1 files was added to GenerateDatasetsXml in 2016 with the 
+  hope that there would be some uptake in the EML community. As of 2020, that has not happened.
+  The ERDDAP developers would be happy to add support for more recent versions of EML, but only 
+  if the new features will actually be used. Please email
+  bob.simons at noaa.gov if you want support for more recent versions of EML 
+  and will actually use this feature.
+  <br>&nbsp;
+
 </ul>
 
 
 <!-- ********************************************** -->
 <h2><a class="selfLink" id="issues" href="#issues" rel="bookmark">Issues with the EML Files</a></h2>
 
-Here are some issues/problems with the EML files that cause problems
+There are some issues/problems with the EML files that cause problems
   when a software client (such as the EDDTableFromEML option in GenerateDatasetsXML)
   tries to interpret/process the EML files.
 <ul>
 <li>Although there are several issues listed here, they are mostly small, 
   solveable problems. In general, EML is a great system and it has been my
   pleasure to work with it.  
-<li>These are roughly sorted from worst/most common to least bad / less common.
+<li>These are roughly sorted from worst / most common to least bad / less common.
 <li>Most are related to small problems in specific EML files 
   (which are not EML's fault).
 <li>Most can be fixed by simple changes to the EML
@@ -298,12 +307,25 @@ Here are the issues:
 <ul>
 <li><a class="selfLink" id="separateDateAndTimeColumns" href="#separateDateAndTimeColumns" rel="bookmark">Separate Date and Time Columns</a>
 <br>Some data files have separate columns for date and for time, but no
-date+time column. 
-Since it is an important part of ERDDAP that the time column
-display the unified date+time, ERDDAP currently rejects these datasets.
-<br>A solution is to make a new column in the datafile (and describe it in the EML) 
-where the date and time columns are merged into one column.
-<br>&nbsp;
+unified date+time column. 
+Currently, GenerateDatasetsXml creates a dataset with these separate columns,
+but it isn't ideal because: 
+<ul>
+<li>It is best if datasets in ERDDAP have a combined date+time column called "time".
+<li>Often the dataset won't load in ERDDAP because the "time" column doesn't have date+time data.
+</ul>
+There are two possible solutions:
+<ol>
+<li>Edit the source data file to add a new column in the datafile (and describe it in the EML) 
+  where the date and time columns are merged into one column. Then rerun GenerateDatasetsXml
+  so it finds the new column.
+<li>Use the <a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#scriptSourceNames"
+  >Derived Variables</a> feature in ERDDAP to define a new variable in datasets.xml
+  which is created by concatenating the date and the time columns. One of the examples
+  deals specifically with this situation.
+  <br>&nbsp;
+</ol>
 
 <li><a class="selfLink" id="inconsistentColumnNames" href="#inconsistentColumnNames" rel="bookmark">Inconsistent Column Names</a>
 <br>The EML files list the data file's columns and their names.
@@ -317,7 +339,7 @@ When it can't (which is common), it will stop, show you the EML/data filename pa
 and ask if they are correctly aligned. If you enter 's' to skip
 a table, GeneratedDatasetsXml will print an error message
 and go on to the next table.
-<br>The solution is to change the column names in the EML file
+<br>The solution is to change the erroneous column names in the EML file
 to match the column names in the data file.
 <br>&nbsp;
 
@@ -351,7 +373,7 @@ to match the column names in the data file.
   They are obvious because the unmatched source col names are all data values.
   And if there are files that incorrectly have numHeaderLines=0,
   my system doesn't make it obvious.
-  EXAMPLE in SBC LTER failures file: 
+  Here's an example from the SBC LTER failures file: 
   <pre>
   &lt;-- SKIPPED (USUALLY BECAUSE THE COLUMN NAMES IN THE DATAFILE ARE IN
   A DIFFERENT ORDER OR HAVE DIFFERENT UNITS THAN IN THE EML file):
@@ -364,7 +386,11 @@ to match the column names in the data file.
     2.27                 = discharge_lps
     -999.0               = water_temperature_celsius
   --&gt;</pre>
-
+  So the error may appear as if GenerateDatasetsXml thinks that the first
+  line with data in the file (e.g., with <kbd>2008-10-01T00:00</kbd> etc.) 
+  is the line with column names (as if <kbd>2008-10-01T00:00</kbd> were
+  a column name).
+  
   <p>It would be nice if the EML checker checked the numHeaderLines value.
 
 <li><a class="selfLink" id="numHeaderLines0" href="#numHeaderLines0" rel="bookmark">numHeaderLines = 0</a>
@@ -373,7 +399,8 @@ to match the column names in the data file.
 
   <p>In my opinion: this seems very dangerous. There could be columns 
   in a different order or with different units (see below) 
-  and there is no way to catch those problems.
+  and there is no way to catch those problems. It is much better if
+  all ASCII data files have a row with column names.
 
 <li><a class="selfLink" id="dateTimeFormatStrings" href="#dateTimeFormatStrings" rel="bookmark">DateTime Format Strings</a>
 <br>EML has a standard way to describe date time formats. 
@@ -390,13 +417,16 @@ to match the column names in the data file.
   There are several instances with incorrect case,
   and/or incorrect duplication of a letter,
   and/or non-standard formatting.
-  That puts the burden on clients, especially software clients.
+  That puts an unreasonable burden on clients, especially software clients like GenerateDatasetsXml.
   GenerateDatasetsXml tries to convert the incorrectly defined
-  formats in the EML files into the Java/Joda time format
-  that ERDDAP requires.
+  formats in the EML files into 
+  <br><a rel="help" 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#stringTimeUnits"
+    >the date/time format that ERDDAP requires</a>, which is almost
+  identical to for Java/Joda time format specification, but is slightly more forgiving.
 
-  <p>It would be nice if the EML checker required strict adherence to this 
-  specification and verified that date time values in the data table
+  <p>It would be nice if the EML checker required strict adherence to the 
+  Java/Joda/ERDDAP time units specification and verified that date time values in the data table
   could be parsed correctly with the specified format.
 
 <li><a class="selfLink" id="noTimeZone" href="#noTimeZone" rel="bookmark">DateTime But No Time Zone</a>
@@ -541,7 +571,13 @@ to match the column names in the data file.
   When it occurs, the solution is to convert your files to EML 2.1.1, or
   send the EML file to bob.simons at noaa.gov, so I can make
   changes to GenerateDatasetsXml to deal with the differences.
-  <br>&nbsp;
+ 
+  <p>Bob added support for EML files to GenerateDatasetsXml in 2016 with the 
+  hope that there would be some uptake in the EML community. As of 2020, that has not happened.
+  Bob is happy to add support for more recent versions of EML, but only 
+  if the new features will actually be used. Please email
+  bob.simons at noaa.gov if you want support for more recent versions of EML 
+  and will actually use this feature.
 
 <li><a class="selfLink" id="troubleParsingTheDataFile" href="#troubleParsingTheDataFile" rel="bookmark">Trouble Parsing the Data File</a>
   <br>Rarely, a dataTable may be rejected with the error

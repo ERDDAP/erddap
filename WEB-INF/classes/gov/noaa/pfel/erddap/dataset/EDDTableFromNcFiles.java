@@ -579,8 +579,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2020-10-20</att>\n" +  //changes
-"        <att name=\"date_issued\">2020-10-20</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2020-11-19</att>\n" +  //changes
+"        <att name=\"date_issued\">2020-11-19</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -661,8 +661,8 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2020-10-20T17:10:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
-"        <att name=\"time_coverage_start\">2020-10-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"time_coverage_end\">2020-11-19T15:00:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_start\">2020-11-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -715,7 +715,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.6015104E9 1.6032138E9</att>\n" + //both change
+"            <att name=\"actual_range\" type=\"doubleList\">1.6041888E9 1.605798E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -724,8 +724,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.6035E9</att>\n" +  //changes
-"            <att name=\"colorBarMinimum\" type=\"double\">1.601E9</att>\n" + //changes
+"            <att name=\"colorBarMaximum\" type=\"double\">1.606E9</att>\n" +  //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.604E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -14121,7 +14121,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2020-11-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2020-12-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -17617,7 +17617,7 @@ nThreads=4 time=26
                 "testNThreads2_" + i, ".csv"); 
 
             String msg = "nThreads=" + i + 
-                " time=" + (System.currentTimeMillis() - startTime) + "ms\n";
+                " time=" + (System.currentTimeMillis() - startTime)/1000 + "s\n";
             String2.log(msg);
             bigResults.append(msg);
 
@@ -18448,7 +18448,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 40206780;\n" + //changes
+"    Int32 actual_range 1, 40524109;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18493,7 +18493,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6012998e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.6040646e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -18555,7 +18555,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2020-10-15 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2020-11-16 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +

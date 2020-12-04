@@ -173,6 +173,7 @@ public class EDStatic {
      * <br>2.01 released on 2019-07-02
      * <br>2.02 released on 2019-08-21
      * <br>2.10 released on 2020-11-05 (version jump because of new PATypes)
+     * <br>2.11 released on 2020-12-04
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 

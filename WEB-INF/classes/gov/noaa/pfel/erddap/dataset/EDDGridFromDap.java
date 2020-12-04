@@ -10301,7 +10301,7 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
+//"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
 "        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2002-present</att>\n" +
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
@@ -10578,7 +10578,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
+//"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
 "    String time_coverage_end \"2020-09-21T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
@@ -10659,6 +10659,9 @@ expected =
                                      "[DATE]");
         results = results.replaceAll("String _lastModified \".*\";", 
                                      "String _lastModified \"[TIME]\";");
+        results = results.replaceAll("String stop_date \".* UTC\";", 
+                                     "String stop_date \"[STOP_DATE] UTC\";");
+
         expected = 
 "Attributes {\n" +
 "    lon {\n" +
@@ -10773,7 +10776,7 @@ expected =
 "        Float32 data_maximum [DM];\n" +
 "        String start_date \"2002-07-04 UTC\";\n" +
 "        String start_time \"00:00:00 UTC\";\n" +
-"        String stop_date \"2020-08-12 UTC\";\n" +
+"        String stop_date \"[STOP_DATE] UTC\";\n" +  //varies
 "        String stop_time \"23:59:59 UTC\";\n" +
 "        String processing_control_software_name \"l3mapgen\";\n" +
 "        String processing_control_software_version \"2.2.0-V2019.4\";\n" +
@@ -10841,6 +10844,8 @@ expected =
                                      "2019-12-17T[TIME].000Z");
         results = results.replaceAll("AQUA_MODIS\\.\\d{8}_\\d{8}\\.L3", 
                                      "AQUA_MODIS.[DATE]_[DATE].L3");        
+        results = results.replaceAll("\\*GLOBAL\\*,time_coverage_end,.*Z", 
+                                     "*GLOBAL*,time_coverage_end,[TIME]Z");
 
 expected = 
 "*GLOBAL*,Conventions,\"CF-1.6 ACDD-1.3, COARDS, NCCSV-1.1\"\n" +
@@ -10923,13 +10928,13 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v36\n" +
 "*GLOBAL*,summary,Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\n" +
 "*GLOBAL*,temporal_range,8-day\n" +
-"*GLOBAL*,time_coverage_end,2020-08-12T00:00:00Z\n" +
+"*GLOBAL*,time_coverage_end,[TIME]Z\n" +
 "*GLOBAL*,time_coverage_start,2002-07-04T00:00:00Z\n" +
 "*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\\u00b0, 2002-present\"\n" +
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,2002-07-04T00:00:00Z\\n2020-08-12T00:00:00Z\n" +
+"time,actual_range,2002-07-04T00:00:00Z\\n2020-09-21T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +
@@ -10990,12 +10995,16 @@ expected =
                                      "String date_created \"[DC]\";");
         results = results.replaceAll("String _lastModified \".*\";", 
                                      "String _lastModified \"[LM]\";");
+        results = results.replaceAll("Float64 actual_range 1.0257408e\\+9, .*;", 
+                                     "Float64 actual_range 1.0257408e+9, [TIME];");
+        results = results.replaceAll("String time_coverage_end \".*\";", 
+                                     "String time_coverage_end \"[TCE]\";");
 
         expected = 
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.5971904e+9;\n" +
+"    Float64 actual_range 1.0257408e+9, [TIME];\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -11130,7 +11139,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +
-"    String time_coverage_end \"2020-08-12T00:00:00Z\";\n" +
+"    String time_coverage_end \"[TCE]\";\n" +
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +

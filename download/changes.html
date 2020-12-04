@@ -70,7 +70,7 @@ those great suggestions coming!
 
 <!-- ****************************************************************************** -->
 <h2><a class="selfLink" id="changes2.10" href="#changes2.10" rel="bookmark">Changes</a> 
-in ERDDAP version 2.11 (released 2020-11-??)</h2>
+in ERDDAP version 2.11 (released 2020-12-04)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -109,6 +109,10 @@ in ERDDAP version 2.11 (released 2020-11-??)</h2>
   <li>CHANGED: Now, common compressed file types (.bz2, .gz, .gzip, .tar, .tgz, .z, .zip)
     are also forbidden for byte range requests.
     This is specified via &lt;extensionsNoRangeRequests&gt; in messages.xml.
+    <br>&nbsp;
+  <li>KNOWN PROBLEM: As with ERDDAP 2.10, .ncml files which try to change an attribute, 
+    don't change the attribute. This is a known bug in netcdf-java which I have
+    reported and they say will be fixed in the next release of netcdf-java. 
     <br>&nbsp;
 
   </ul>
@@ -633,6 +637,11 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
 
   <li>IMPROVED: When Calendar2.parseDateTime parses dd, hh, or HH, the first 'digit' 
     may now be a space.
+
+  <li>KNOWN PROBLEM: Starting with ERDDAP 2.10, .ncml files which try to change an attribute, 
+    don't change the attribute. This is a known bug in netcdf-java which I have
+    reported and they say will be fixed in the next release of netcdf-java. 
+    <br>&nbsp;
 
   <li>BROKEN LINKS FIX: I made a proper system for testing for broken links
     in ERDDAP web pages, so there should now be very few broken links (at least
