@@ -20,10 +20,6 @@
 # updated 2014-02-13  Bob Simons bob.simons@noaa.gov
 #
 
-commandLine=$0
-thisDir=`echo $commandLine | dirname $0`
-cp0="classes:lib/netcdfAll-latest.jar:lib/slf4j.jar"
-
-java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable "$@"
+java -cp classes:../../../lib/servlet-api.jar:lib/* -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable "$@"
 
 # finished 

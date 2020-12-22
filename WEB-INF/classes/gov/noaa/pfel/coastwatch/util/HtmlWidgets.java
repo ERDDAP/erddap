@@ -355,8 +355,8 @@ public class HtmlWidgets {
     /** 
      * This creates the html for an image ('?') with a cssTooltip with a 
      * deferred-load second image.
-     * This is based on the idea for
-     *   CSS-only image tooltip at https://codepen.io/electricalbah/pen/eJRLVd
+     * This is based on CSS-only image tooltip at 
+     *   https://codepen.io/electricalbah/pen/eJRLVd (URL works in browser but not in link tests)
      *
      * @param img1Url for the image for the user to hover over, e.g., questionMarkImageUrl.
      *   It must be in the images directory.
@@ -448,8 +448,8 @@ public class HtmlWidgets {
     /** 
      * This creates the html for an image ('?') with a cssTooltip with a 
      * deferred-load video player.
-     * This is based on 
-     *   CSS-only image tooltip at https://codepen.io/electricalbah/pen/eJRLVd
+     * This is based on CSS-only image tooltip at 
+     *   https://codepen.io/electricalbah/pen/eJRLVd (URL works in browser but not in link tests)
      *
      * @param imgUrl for the image for the user to hover over, e.g., questionMarkImageUrl 
      * @param imgAlt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.
@@ -473,8 +473,8 @@ public class HtmlWidgets {
     /** 
      * This creates the html for an image ('?') with a cssTooltip with a 
      * deferred-load audio player.
-     * This is based on 
-     *   CSS-only image tooltip at https://codepen.io/electricalbah/pen/eJRLVd
+     * This is based on CSS-only image tooltip at 
+     *   https://codepen.io/electricalbah/pen/eJRLVd (URL works in browser but not in link tests)
      *
      * @param imgUrl for the image for the user to hover over, e.g., questionMarkImageUrl
      * @param imgAlt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.

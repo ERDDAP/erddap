@@ -6851,6 +6851,7 @@ Dataset {
         //get information
         NetcdfFile ncFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
+        StringArray varsNotFound = new StringArray();
         try {
             //load the global metadata
             NcHelper.getGlobalAttributes(ncFile, globalAttributes());
@@ -6868,7 +6869,7 @@ Dataset {
                     if (variable == null) {
                         Dimension dim = ncFile.findDimension(loadVariableNames[i]);
                         if (dim == null) {
-                            if (verbose) String2.log("  var=" + loadVariableNames[i] + " not found");
+                            if (verbose) varsNotFound.add(loadVariableNames[i]); 
                         } else {
                             dimList.add(dim);
                         }
@@ -6880,8 +6881,11 @@ Dataset {
                 loadDims = NcHelper.dimensionListToArray(dimList);
                 if (loadVariables.length == 0) {
                     int nDims = loadDims.length;
-                    if (nDims == 0)
+                    if (nDims == 0) {
+                        if (verbose && varsNotFound.size() > 0) 
+                            String2.log("  vars not found: " + varsNotFound.toString());
                         return; //empty table
+                    }
                     //just load dimensions that aren't variables
                     int shape[] = new int[nDims];
                     IntArray iaa[] = new IntArray[nDims];
@@ -6899,6 +6903,8 @@ Dataset {
                     decodeCharsAndStrings();
                     convertToUnsignedPAs();
                     //no metadata so no unpack
+                    if (verbose && varsNotFound.size() > 0) 
+                        String2.log("  vars not found: " + varsNotFound.toString());
                     return;
                 } 
             }
@@ -7182,6 +7188,8 @@ Dataset {
             }
             decodeCharsAndStrings();
             convertToUnsignedPAs();
+            if (verbose && varsNotFound.size() > 0) 
+                String2.log("  vars not found: " + varsNotFound.toString());
             if (reallyVerbose) msg += " finished. nRows=" + nRows() + 
                 " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms";
 
@@ -9524,22 +9532,17 @@ Dataset {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test 4D but request axis vars only, with constraints
-        fiName = "/u00/data/points/ndbcMetOldStyle/NDBC_51001_met.nc"; //implied c:
+        fiName = "/u00/data/points/ndbcMet2/historical/NDBC_51001_met.nc"; //implied c:
         table.readNDNc(fiName, new String[]{"LON", "LAT", "TIME"}, 0,  //standardizeWhat=0
             "TIME", 1.2051936e9, 1.20528e9);
         results = table.dataToString(4);
         expected = 
-//"LON, LAT, TIME\n" +   //pre 2011-07-28
-//"-162.21, 23.43, 1.2051828E9\n" +
-//"-162.21, 23.43, 1.2051864E9\n" +
-//"-162.21, 23.43, 1.20519E9\n" +
-//"-162.21, 23.43, 1.2051936E9\n";
 "LON,LAT,TIME\n" +
-"-162.279,23.445,1.20519E9\n" +    //pre 2013-06-20 last 9 was 828
-"-162.279,23.445,1.2051936E9\n" +  //and 936 was 864
-"-162.279,23.445,1.2051972E9\n" +  //and 972 was 9
-"-162.279,23.445,1.2052008E9\n" +
-"...\n";   //and 2008 was 1936
+"-162.279,23.445,1.2051894E9\n" +
+"-162.279,23.445,1.205193E9\n" +
+"-162.279,23.445,1.2051966E9\n" +
+"-162.279,23.445,1.2052002E9\n" +
+"...\n";  
         Test.ensureEqual(results, expected, "results=\n" + results);
        
     }

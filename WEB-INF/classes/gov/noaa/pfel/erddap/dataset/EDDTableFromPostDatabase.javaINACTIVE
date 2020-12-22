@@ -106,7 +106,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
         long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             "\n*** EDDTableFromPostDatabase " + datasetID + " constructor finished. TIME=" + 
-                cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n");
+                cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n");
     }
 
     /**

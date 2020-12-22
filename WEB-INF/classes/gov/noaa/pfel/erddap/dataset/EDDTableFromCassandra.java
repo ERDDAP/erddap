@@ -746,7 +746,7 @@ public class EDDTableFromCassandra extends EDDTable{
             String2.log(
                 (debugMode? "\n" + toString() : "") +
                 "\n*** EDDTableFromCassandra " + datasetID + " constructor finished. TIME=" + 
-                cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+                cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
 

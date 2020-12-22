@@ -64,18 +64,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-//these need access to the mail.jar (from JavaMail api; I'm using 1.5.1 (Nov 2013, latest as of June 2014))
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimePart;
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimePart;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
 
 
 /**
@@ -739,7 +738,7 @@ public class SSR {
      * Any existing files of the same name are overwritten.
      *
      * @param fullZipName (with .zip at end)
-     * @param baseDir (with slash at end)
+     * @param baseDir The destination base directory (with slash at end).
      * @param ignoreZipDirectories if true, the directories (if any)
      *    of the files in the .zip file are ignored, and
      *    all files are stored in baseDir itself.

@@ -1063,7 +1063,7 @@ public class EDDTableFromSOS extends EDDTable{
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableFromSOS " + datasetID + 
             " constructor finished. TIME=" + 
-            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+            cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
     }
 
