@@ -68,8 +68,41 @@ those great suggestions coming!
 
 -->
 
+<!-- ****************************************************************************** 
+<h2><a class="selfLink" id="changes2.12" href="#changes2.12" rel="bookmark">Changes</a> 
+in ERDDAP version 2.12 (released 202?-??-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>BUG FIX: 
+    <br>&nbsp;
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>CHANGED: I switched to using Maven to detect/gather dependencies (the .jar files in /lib).
+    The change to v2 of the AWS SDK necessitated this. It will be needed for
+    other imported code in the future.
+    A huge thanks to Kyle Wilcox who provided the pom.xml he created and uses, 
+    which solved several problems for me.
+    <br>&nbsp;
+  <li>CHANGED: The classpath used in GenerateDatasetXml and other small programs and 
+    in the advice to programmers is now much simpler and shouldn't ever change again
+    since it refers to the directory, not the individual files:
+    <br><tt>-cp classes;C:\programs\_tomcat\lib\servlet-api.jar;lib\*</tt>
+    <br>(or ':' instead of ';' for Linux and Macs).
+    <br>(I should have done this years ago when it became an option.)
+2020-12-21
+
+* CHANGE: FileVisitorDNLS.testAWSS3() and FileVisitorSubdir.testAWSS3(); 
+  now use AWS v2 SDK.
+  So now the Git distribution is complete (not missing the massive v1 AWS SDK jar).
+
+  </ul>
+</ul>
+
+
 <!-- ****************************************************************************** -->
-<h2><a class="selfLink" id="changes2.10" href="#changes2.10" rel="bookmark">Changes</a> 
+<h2><a class="selfLink" id="changes2.11" href="#changes2.11" rel="bookmark">Changes</a> 
 in ERDDAP version 2.11 (released 2020-12-04)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
@@ -117,7 +150,6 @@ in ERDDAP version 2.11 (released 2020-12-04)</h2>
 
   </ul>
 </ul>
-
 
 
 <!-- ****************************************************************************** -->
@@ -4371,7 +4403,7 @@ in ERDDAP version 1.40 (released 2012-10-25)</h2>
       title="This link to an external website does not constitute an endorsement."></a> 
      Multidimensional Array options,
     and which therefore conforms to the 
-    <a href="https://www.nodc.noaa.gov/data/formats/netcdf/">NODC templates<img 
+    <a href="https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/">NODC templates<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     for storing this type of data.
@@ -6216,7 +6248,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.10
+<p>ERDDAP, Version 2.11
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

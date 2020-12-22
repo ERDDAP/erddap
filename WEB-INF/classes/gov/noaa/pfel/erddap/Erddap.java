@@ -650,7 +650,7 @@ public class Erddap extends HttpServlet {
             String2.distribute(responseTime, EDStatic.responseTimesDistribution24);
             String2.distribute(responseTime, EDStatic.responseTimesDistributionTotal);
             if (verbose) String2.log("}}}}#" + requestNumber + " SUCCESS. TIME=" + responseTime + "ms" + 
-                (responseTime >= 10000? "  (>10s!)" : "") + "\n");
+                (responseTime >= 600000? "  (>10m!)" : responseTime >= 10000? "  (>10s!)" : "") + "\n");
 
         } catch (Throwable t) {
 
@@ -672,7 +672,7 @@ public class Erddap extends HttpServlet {
                 if (slowdown > 0) //before log FAILURE, so sendErrorCode logged info is close by
                     Math2.sleep(slowdown);
                 if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime + "ms" + 
-                    (responseTime >= 10000? "  (>10s!)" : "") + "");
+                    (responseTime >= 600000? "  (>10m!)" : responseTime >= 10000? "  (>10s!)" : "") + "");
 
             } catch (Throwable t2) {
                 String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
@@ -683,7 +683,7 @@ public class Erddap extends HttpServlet {
 
             long tTime = System.currentTimeMillis() - doGetTime;
             if (verbose) String2.log("}}}}#" + requestNumber + " sendErrorCode done. Total TIME=" + 
-                tTime + "ms" + (tTime >= 10000? "  (>10s!)" : "") + "\n");
+                tTime + "ms" + (tTime >= 600000? "  (>10m!)" : tTime >= 10000? "  (>10s!)" : "") + "\n");
         }
 
     }
