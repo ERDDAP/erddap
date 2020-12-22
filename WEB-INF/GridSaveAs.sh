@@ -19,10 +19,7 @@
 
 commandLine=$0
 tDir=`echo $commandLine | dirname $0`
-cp1="classes:lib/netcdfAll-latest.jar:lib/slf4j.jar"
-cp2=":lib/lucene-core.jar:lib/mail.jar"
-cp0="$cp1$cp2"
 
-java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs "$@"
+java -cp classes:../../../lib/servlet-api.jar:lib/* -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs "$@"
 
 # finished 

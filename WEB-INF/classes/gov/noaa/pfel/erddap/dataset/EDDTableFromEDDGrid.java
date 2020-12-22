@@ -320,7 +320,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableFromEDDGrid " + datasetID + " constructor finished. TIME=" + 
-            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+            cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
     }
 

@@ -4902,8 +4902,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-11-19\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2020-11-19\";\n" +  // ""
+"  :date_created = \"2020-12-17\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2020-12-17\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4922,9 +4922,9 @@ expected =
 "      {1.325379E9, 1.3253898E9, 1.3254042E9}\n" +
 "    station = \"41004\", \"41004\", \"41004\"\n" +
 "    wd = \n" +
-"      {252, 32767, 288}\n" +         //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted)
+"      {252, 32767, 288}\n" +         //a test that missing_values are intact (although these weren't keyColumns, so weren't temporarily converted)
 "    atmp = \n" +
-"      {19.4, -9999999.0, 19.0}\n" +  //note that missing_values are intact (although these weren't keyColumns so weren't temporarily converted)
+"      {19.4, -9999999.0, 19.0}\n" +  //a test that missing_values are intact (although these weren't keyColumns, so weren't temporarily converted)
 "    wtmp = \n" +
 "      {20.1, -9999999.0, 20.2}\n" +
 "}\n";
@@ -6746,7 +6746,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 40524109;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 40769499;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6791,7 +6791,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6040646e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6064784e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6853,7 +6853,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2020-11-16 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2020-12-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6881,9 +6881,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-11-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2020-12-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2020-11-16 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2020-12-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6901,7 +6901,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2020-11-16 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2020-12-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6926,7 +6926,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the October 2020 data) but is a subset of the " + //month changes
+    "up to and including the November 2020 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -6939,7 +6939,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-10-30T13:30:00Z\";\n" + //changes
+"    String time_coverage_end \"2020-11-27T12:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -14451,7 +14451,7 @@ So the changes seem good. */
 "//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14521,7 +14521,7 @@ So the changes seem good. */
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14574,7 +14574,7 @@ So the changes seem good. */
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14657,7 +14657,7 @@ So the changes seem good. */
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -15641,7 +15641,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16139,7 +16139,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.11</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +

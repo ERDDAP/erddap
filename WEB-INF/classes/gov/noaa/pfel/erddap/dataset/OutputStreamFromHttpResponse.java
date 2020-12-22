@@ -11,6 +11,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
@@ -72,6 +74,669 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
     }
 
 
+    /**
+     * This returns info related to a fileType.
+     *
+     * @param request the user's request
+     * @param fileType the ERDDAP fileType, e.g., .htmlTable
+     * @param extension the extension of the file that will be returned to the user, e.g., .html .
+     * @return an Object[] with {String contentType, HashMap headerMap, 
+     *     Boolean genericCompressed, Boolean otherCompressed).
+     *     contentType will always be something.
+     *     headerMap may be empty.
+     */
+    public static Object[] getFileTypeInfo(HttpServletRequest request, String fileType, String extension) {
+
+        //see mime type list at http://www.webmaster-toolkit.com/mime-types.shtml
+        // or http://html.megalink.com/programmer/pltut/plMimeTypes.html
+        // or http://www.freeformatter.com/mime-types-list.html#mime-types-list
+        String extensionLC = extension.toLowerCase();
+        String contentType = null;
+        HashMap headerMap = new HashMap();
+        boolean genericCompressed = false;  //true for generic compressed files, e.g., .zip
+        boolean otherCompressed = false;    //true for app specific compressed (but not audio/ image/ video)
+
+        if (extension.equals(".3gp")) {
+            contentType = "video/3gpp";  
+
+        } else if (extension.equals(".7z")) {
+            contentType = "application/x-7z-compressed"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".ai")) {
+            contentType = "application/postscript"; 
+
+        } else if (extension.equals(".aif") ||
+                   extension.equals(".aiff") ||
+                   extension.equals(".aifc")) {
+            contentType = "audio/x-aiff"; 
+
+        } else if (extension.equals(".asc")) { 
+            //There are a couple of fileNameTypes that lead to .asc.
+            //If DODS, ...
+            if (fileType.equals(".asc"))
+                headerMap.put("Content-Description", "dods-data"); //DAP 2.0, 7.1.1  //pre 2019-03-29 was "content-description" "dods_data" 
+            else if (fileType.equals(".timeGaps"))
+                headerMap.put("Content-Description", "time_gap_information"); //pre 2019-03-29 was "content-description" 
+            contentType = "text/plain"; 
+
+        } else if (extension.equals(".au")) {
+            contentType = "audio/basic"; 
+
+        } else if (extension.equals(".bin")) {
+            contentType = "application/octet-stream"; 
+
+        } else if (extension.equals(".bmp")) {
+            contentType = "image/bmp"; 
+
+        } else if (extension.equals(".bz")) {
+            contentType = "application/x-bzip"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".bz2")) {
+            contentType = "application/x-bzip2"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".chm")) {
+            contentType = "application/vnd.ms-htmlhelp"; 
+
+        } else if (extension.equals(".css")) {
+            contentType = "text/css"; 
+
+        } else if (extension.equals(".csv")) {
+            contentType = "text/csv"; 
+
+        } else if (extension.equals(".das")) {
+            contentType = "text/plain";
+            headerMap.put("Content-Description", "dods-das"); //DAP 2.0, 7.1.1  ???!!!DConnect (that's JPL -- ignore it) has 'c' 'd', BUT spec (follow the spec) and THREDDS have 'C' 'D'-- but HTTP header names are case-insensitive
+            //until ERDDAP v1.84, was "content-description", "dods_das": c d _ !
+            
+        } else if (extension.equals(".dds")) {
+            contentType = "text/plain";
+            headerMap.put("Content-Description", "dods-dds"); //DAP 2.0, 7.1.1
+
+        } else if (extension.equals(".der")) {
+            contentType = "application/x-x509-ca-cert"; 
+         
+        } else if (extension.equals(".doc")) {
+            contentType = "application/msword"; 
+
+        } else if (extension.equals(".docx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"; 
+            otherCompressed = true;
+
+        } else if (extension.equals(".dods")) {
+            //see dods.servlet.DODSServlet.doGetDODS for example
+            contentType = "application/octet-stream";
+            headerMap.put("Content-Description", "dods-data"); //DAP 2.0, 7.1.1
+
+        } else if (extension.equals(".dotx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.template"; 
+
+        } else if (extension.equals(".f4v")) {
+            contentType = "video/x-f4v";                                 
+
+        } else if (extension.equals(".flac")) {
+            contentType = "audio/flac";     
+
+        } else if (extension.equals(".flv")) {
+            contentType = "video/x-flv";                                 
+
+        } else if (extension.equals(".gif")) {
+            contentType = "image/gif";                                 
+
+        } else if (extension.equals(".gtar")) {
+            contentType = "application/x-gtar";                                 
+            genericCompressed = true;
+
+        } else if (extension.equals(".gz")) {
+            contentType = "application/x-gzip";                                 
+            genericCompressed = true;
+
+        } else if (extension.equals(".gzip")) {
+            contentType = "application/x-gzip";                                 
+            genericCompressed = true;
+
+        } else if (extension.equals(".h261")) {
+            contentType = "video/h261";                                 
+
+        } else if (extension.equals(".h263")) {
+            contentType = "video/h263";                                 
+
+        } else if (extension.equals(".h264")) {
+            contentType = "video/h264";                                 
+
+        } else if (extension.equals(".hdf")) { 
+            contentType = "application/x-hdf"; 
+
+        } else if (extension.equals(".html")) { //ERDDAP always writes as String2.UTF_8
+            contentType = HTML_MIME_TYPE; 
+
+        } else if (extension.equals(".ief")) { 
+            contentType = "image/ief"; 
+
+        } else if (extension.equals(".jar")) { 
+            contentType = "application/java-archive";  
+            otherCompressed = true;
+
+        } else if (extension.equals(".jpg") ||
+                   extension.equals(".jpeg")) {
+            contentType = "image/jpeg";                                 
+
+        } else if (extension.equals(".jpgv")) {
+            contentType = "video/jpeg";                                 
+
+        } else if (extension.equals(".js")) { 
+            contentType = "application/x-javascript"; 
+
+        } else if (extension.equals(".json")) { 
+            contentType = 
+                fileType.equals(".jsonp")?  //pseudo fileType
+                    "application/javascript" : //see https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
+                fileType.equals(".jsonText")? 
+                    "text/plain" : //ESRI Geoservices REST uses this
+                    "application/json"; //http://dret.net/biblio/reference/rfc4627
+
+        } else if (extension.equals(".jsonl")) { 
+            contentType = 
+                fileType.equals(".jsonp")?  //pseudo fileType
+                    "application/javascript" : //see https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
+                    "application/x-jsonlines";  //no definitive answer. https://github.com/wardi/jsonlines/issues/9  I like x-jsonlines because it is descriptive.
+
+        } else if (extension.equals(".kml")) {
+            //see https://developers.google.com/kml/documentation/kml_tut
+            //which lists both of these content types (in different places)
+            //application/keyhole is used by the pydap example that works
+            //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
+            //contentType = "application/vnd.google-earth.kml+xml"; 
+            //Opera says handling program is "Opera"!  So I manually added this mime type to Opera.
+            contentType = KML_MIME_TYPE; 
+
+        } else if (extension.equals(".kmz")) {
+            contentType = "application/vnd.google-earth.kmz"; 
+            otherCompressed = true;
+
+        } else if (extension.equals(".latex")) {
+            contentType = "application/x-latex"; 
+
+        } else if (extension.equals(".lha")) {
+            contentType = "application/lha"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".lzh")) {
+            contentType = "application/x-lzh"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".lzma")) {
+            contentType = "application/x-lzma"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".lzx")) {
+            contentType = "application/x-lzx"; 
+            genericCompressed = true;
+
+        } else if (extension.equals(".log")) {
+            contentType = "text/plain"; 
+
+        } else if (extension.equals(".m21")) {
+            contentType = "application/mp21"; 
+
+        } else if (extension.equals(".mdb")) {
+            contentType = "application/x-msaccess"; 
+
+        } else if (extension.equals(".mid")) {
+            contentType = "audio/midi"; 
+
+        } else if (extension.equals(".mov")) {
+            contentType = "video/quicktime"; 
+
+        } else if (extension.equals(".movie")) {
+            contentType = "video/x-sgi-movie"; 
+
+        } else if (extension.equals(".mpeg")) {
+            contentType = "video/mpeg"; 
+
+        } else if (extension.equals(".mpg")) {
+            contentType = "audio/mpeg"; 
+
+        } else if (extension.equals(".mpga")) {
+            contentType = "audio/mpeg"; 
+
+        } else if (extension.equals(".mp3")) {
+            contentType = "audio/mpeg3"; 
+
+        } else if (extension.equals(".mp4a")) {
+            contentType = "audio/mp4"; 
+
+        } else if (extension.equals(".mp4")) {
+            contentType = "video/mp4"; 
+
+        } else if (extension.equals(".mpp")) {
+            contentType = "application/vnd.ms-project"; 
+
+        } else if (extension.equals(".nc") || 
+                   extension.equals(".cdf")) {
+            contentType = "application/x-netcdf"; 
+
+        } else if (extension.equals(".odb")) {
+            contentType = "application/vnd.oasis.opendocument.database"; 
+
+        } else if (extension.equals(".odc")) {
+            contentType = "application/vnd.oasis.opendocument.chart"; 
+
+        } else if (extension.equals(".otc")) {
+            contentType = "application/vnd.oasis.opendocument.chart-template";
+
+        } else if (extension.equals(".odf")) {
+            contentType = "application/vnd.oasis.opendocument.formula"; 
+
+        } else if (extension.equals(".odg")) {
+            contentType = "application/vnd.oasis.opendocument.graphics"; 
+
+        } else if (extension.equals(".odi")) {
+            contentType = "application/vnd.oasis.opendocument.image"; 
+
+        } else if (extension.equals(".odp")) {
+            contentType = "application/vnd.oasis.opendocument.presentation"; 
+
+        } else if (extension.equals(".ods")) {
+            contentType = "application/vnd.oasis.opendocument.spreadsheet"; 
+            //contentType = "application/oda"; 
+
+        } else if (extension.equals(".odt")) {
+            contentType = "application/vnd.oasis.opendocument.text"; 
+
+        } else if (extension.equals(".oga")) {
+            contentType = "audio/ogg"; 
+
+        } else if (extension.equals(".ogg")) {
+            contentType = "audio/ogg"; 
+
+        } else if (extension.equals(".ogv")) {
+            contentType = "video/ogg"; 
+
+        } else if (extension.equals(".ogx")) {
+            contentType = "application/ogg"; 
+            otherCompressed = true;
+
+        } else if (extension.equals(".onetoc")) {
+            contentType = "application/onenote"; 
+
+        } else if (extension.equals(".opf")) {
+            contentType = "application/oebps-package+xm"; 
+
+        } else if (extension.equals(".otf")) {
+            contentType = "application/x-font-otf"; 
+
+        } else if (extension.equals(".otg")) {
+            contentType = "application/vnd.oasis.opendocument.graphics-template"; 
+
+        } else if (extension.equals(".oth")) {
+            contentType = "application/vnd.oasis.opendocument.text-web"; 
+
+        } else if (extension.equals(".oti")) {
+            contentType = "application/vnd.oasis.opendocument.image-template"; 
+
+        } else if (extension.equals(".otp")) {
+            contentType = "application/vnd.oasis.opendocument.presentation-template"; 
+
+        } else if (extension.equals(".ots")) {
+            contentType = "application/vnd.oasis.opendocument.spreadsheet-template"; 
+
+        } else if (extension.equals(".pbm")) {
+            contentType = "image/x-portable-bitmap"; 
+
+        } else if (extension.equals(".pcx")) {
+            contentType = "image/x-pcx"; 
+
+        } else if (extension.equals(".pdf")) {
+            contentType = "application/pdf"; 
+
+        } else if (extension.equals(".pfr")) {
+            contentType = "application/font-tdpfr"; 
+
+        } else if (extension.equals(".pgm")) {
+            contentType = "image/x-portable-graymap"; 
+
+        } else if (extension.equals(".pic") ||
+                   extension.equals(".pict")) {
+            contentType = "image/pict"; 
+
+        } else if (extension.equals(".png")) {
+            contentType = "image/png"; 
+
+        } else if (extension.equals(".pnm")) {
+            contentType = "image/x-portable-anymap"; 
+
+        } else if (extension.equals(".pot")) {
+            contentType = "application/mspowerpoint"; 
+
+        } else if (extension.equals(".ppm")) {
+            contentType = "image/x-portable-pixmap"; 
+
+        } else if (extension.equals(".potx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.presentationml.template"; 
+
+        } else if (extension.equals(".ppsm")) {
+            contentType = "application/vnd.ms-powerpoint.slideshow.macroenabled.12"; 
+
+        } else if (extension.equals(".ppsx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.presentationml.slideshow"; 
+
+        } else if (extension.equals(".ppt")) {
+            contentType = "application/mspowerpoint"; 
+
+        } else if (extension.equals(".pptm")) {
+            contentType = "application/vnd.ms-powerpoint.presentation.macroenabled.12"; 
+
+        } else if (extension.equals(".pptx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"; 
+
+        } else if (extension.equals(".psd")) {
+            contentType = "image/vnd.adobe.photoshop"; 
+
+        } else if (extension.equals(".pub")) {
+            contentType = "application/x-mspublisher"; 
+
+        } else if (extension.equals(".qt")) {
+            contentType = "video/quicktime"; 
+
+        } else if (extension.equals(".py")) {
+            contentType = "text/x-script.phyton"; 
+
+        } else if (extension.equals(".pyc")) {
+            contentType = "application/x-bytecode.python"; 
+
+        } else if (extension.equals(".qt")) {
+            contentType = "video/quicktime"; 
+
+        } else if (extension.equals(".ra")) {
+            contentType = "audio/x-realaudio"; 
+
+        } else if (extension.equals(".ram")) {
+            contentType = "audio/x-pn-realaudio"; 
+
+        } else if (extension.equals(".rar")) {
+            contentType = "application/x-rar-compressed"; 
+            otherCompressed = true;
+
+        } else if (extension.equals(".rgb")) {
+            contentType = "image/x-rgb"; 
+
+        } else if (extension.equals(".rm")) {
+            contentType = "application/vnd.rn-realmedia"; 
+            otherCompressed = true;
+
+        } else if (extension.equals(".rq")) {
+            contentType = "application/sparql-query"; 
+
+        } else if (extension.equals(".rt")) {
+            contentType = "text/richtext"; 
+
+        } else if (extension.equals(".rtf")) {
+            contentType = "application/rtf"; 
+
+        } else if (extension.equals(".rtx")) {
+            contentType = "text/richtext"; 
+
+        } else if (extension.equals(".rss")) {
+            contentType = "application/rss+xml"; 
+
+        } else if (extension.equals(".sbml")) {
+            contentType = "application/sbml+xml"; 
+
+        } else if (extension.equals(".scd")) {
+            contentType = "application/x-msschedule"; 
+
+        } else if (extension.equals(".sgml")) {
+            contentType = "text/sgml"; 
+
+        } else if (extension.equals(".sldm")) {
+            contentType = "application/vnd.ms-powerpoint.slide.macroenabled.12"; 
+
+        } else if (extension.equals(".sldx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.presentationml.slide"; 
+
+        } else if (extension.equals(".srx")) {
+            contentType = "application/sparql-results+xml"; 
+
+        } else if (extension.equals(".ssml")) {
+            contentType = "application/ssml+xml"; 
+
+        } else if (extension.equals(".stc")) {
+            contentType = "application/vnd.sun.xml.calc.template"; 
+
+        } else if (extension.equals(".std")) {
+            contentType = "application/vnd.sun.xml.draw.template"; 
+
+        } else if (extension.equals(".sti")) {
+            contentType = "application/vnd.sun.xml.impress.template"; 
+
+        } else if (extension.equals(".stw")) {
+            contentType = "application/vnd.sun.xml.writer.template"; 
+
+        } else if (extension.equals(".svg")) {
+            contentType = "image/svg+xml"; 
+
+        } else if (extension.equals(".sxc")) {
+            contentType = "application/vnd.sun.xml.calc"; 
+
+        } else if (extension.equals(".sxd")) {
+            contentType = "application/vnd.sun.xml.draw"; 
+
+        } else if (extension.equals(".sxi")) {
+            contentType = "application/vnd.sun.xml.impress"; 
+
+        } else if (extension.equals(".sxm")) {
+            contentType = "application/vnd.sun.xml.math"; 
+
+        } else if (extension.equals(".sxw")) {
+            contentType = "application/vnd.sun.xml.writer"; 
+
+        } else if (extension.equals(".sxg")) {
+            contentType = "application/vnd.sun.xml.writer.global"; 
+
+        } else if (extension.equals(".tar")) {
+            contentType = "application/x-tar"; 
+            genericCompressed = true;
+         
+        } else if (extension.equals(".tcl")) {
+            contentType = "application/x-tcl"; 
+         
+        } else if (extension.equals(".tei")) {
+            contentType = "application/tei+xml"; 
+         
+        } else if (extension.equals(".tex")) {
+            contentType = "application/x-tex"; 
+         
+        } else if (extension.equals(".tfm")) {
+            contentType = "application/x-tex-tfm"; 
+         
+        } else if (extension.equals(".tif") ||
+                   extension.equals(".tiff")) {
+            contentType = "image/tiff"; 
+         
+        } else if (extension.equals(".tsv")) {
+            contentType = "text/tab-separated-values"; 
+         
+        } else if (extension.equals(".ttf")) {
+            contentType = "application/x-font-ttf"; 
+         
+        } else if (extension.equals(".ttl")) {
+            contentType = "text/turtle"; 
+         
+        } else if (extension.equals(".txt")) {
+            //ODV uses .txt but doesn't have a distinct mime type (as far as I can tell) see 2010-06-15 notes
+            contentType = "text/plain"; 
+
+        } else if (extension.equals(".uoml")) {
+            contentType = "application/vnd.uoml+xml"; 
+         
+        } else if (extension.equals(".ufd")) {
+            contentType = "application/vnd.ufdl"; 
+         
+        } else if (extension.equals(".vcf")) {
+            contentType = "text/x-vcard"; 
+         
+        } else if (extension.equals(".vcs")) {
+            contentType = "text/x-vcalendar"; 
+         
+        } else if (extension.equals(".vsd")) {
+            contentType = "application/vnd.visio"; 
+         
+        } else if (extension.equals(".vxml")) {
+            contentType = "application/voicexml+xml"; 
+         
+        } else if (extension.equals(".war")) {
+            contentType = "application/zip.war"; 
+            genericCompressed = true;
+            
+        } else if (extension.equals(".wav") || 
+                   extension.equals(".wave")) {
+            contentType = "audio/wav"; //I've seen audio/x-wav
+         
+        } else if (extension.equals(".weba")) {
+            contentType = "audio/webm"; 
+
+        } else if (extension.equals(".webm")) {
+            contentType = "video/webm"; 
+
+        } else if (extension.equals(".webp")) {
+            contentType = "image/webp"; 
+         
+        } else if (extension.equals(".wm")) {
+            contentType = "video/x-ms-wm"; 
+         
+        } else if (extension.equals(".wma")) {
+            contentType = "audio/x-ms-wma"; 
+         
+        } else if (extension.equals(".wmv")) {
+            contentType = "video/x-ms-wmv"; 
+         
+        } else if (extension.equals(".wps")) {
+            contentType = "application/vnd.ms-works"; 
+         
+        } else if (extension.equals(".wri")) {
+            contentType = "application/x-mswrite"; 
+         
+        } else if (extension.equals(".wsdl")) {
+            contentType = "application/wsdl+xml"; 
+         
+        } else if (extension.equals(".xbm")) {
+            contentType = "image/x-xbitmap"; 
+         
+        } else if (extension.equals(".xhtml")) { 
+            //PROBLEM: MS Internet Explorer doesn't display .xhtml files.
+            //It just shows endless series of "Save As..." dialog boxes.
+            //"application/xhtml+xml" is proper mime type, 
+            //  see http://keystonewebsites.com/articles/mime_type.php
+            //Lots of websites serve xhtml successfully using this
+            //  e.g., in firefox, see Tools : Page Info for 
+            //  https://www.w3.org/MarkUp/Forms/2003/xforms-for-html-authors
+            //see https://www.w3.org/TR/xhtml1/#guidelines
+            //But they do something else.
+            //
+            //I did:
+            //"<p>XHTML and Internet Explorer - Attempts to view .xhtml files in Internet Explorer on Windows XP \n" +
+            //"<br>often leads to an endless series of \"Save As...\" dialog boxes. The problem seems to be that \n" +
+            //"<br>Windows XP has no registry entry for the standard XHTML mime type: application/xhtml+xml.\n" +
+            //"<br>See <a href=\"http://www.peterprovost.org/archive/2004/10/22/2003.aspx\">this blog</a> for a possible solution.\n" +
+            //But that is not a good solution for ERDDAP clients (too risky).
+            //
+            //SOLUTION from http://www.ibm.com/developerworks/xml/library/x-tipapachexhtml/index.html
+            //if request is from Internet Explorer, use mime type text/html.
+            String userAgent = request.getHeader("user-agent"); //case-insensitive
+            if (userAgent != null && userAgent.indexOf("MSIE") >= 0) {
+                 contentType = "text/html"; //the hack
+                 if (verbose) String2.log(".xhtml request from user-agent=MSIE: using mime=text/html");
+            } else contentType = "application/xhtml+xml"; //the right thing for everyone else
+
+        } else if (extension.equals(".xif")) {
+            contentType = "image/vnd.xiff"; 
+         
+        } else if (extension.equals(".xls")) {
+            contentType = "application/vnd.ms-excel"; 
+
+        } else if (extension.equals(".xlsb")) {
+            contentType = "application/vnd.ms-excel.sheet.binary.macroenabled.12"; 
+
+        } else if (extension.equals(".xlsm")) {
+            contentType = "application/vnd.ms-excel.sheet.macroenabled.12"; 
+
+        } else if (extension.equals(".xlsx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; 
+
+        } else if (extension.equals(".xltm")) {
+            contentType = "application/vnd.ms-excel.template.macroenabled.12"; 
+
+        } else if (extension.equals(".xltx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.template"; 
+
+        } else if (extension.equals(".xml")) { 
+            //special case for SOS (see EDDTable.sosResponseFormats): 
+            //"text/xml;schema=\"ioos/0.6.1\"", "application/ioos+xml;version=0.6.1",
+            contentType = 
+                fileType.startsWith("custom:") ?  
+                    fileType.substring(7) :
+                fileType.indexOf("ioos") >= 0 ||           //IOOS SOS types
+                fileType.equals("text/xml; subtype=\"om/1.0.0\"")?    //Oostethys SOS type
+                    fileType :   //the SOS mime type
+                    //"text/xml"; //text/plain allows viewing in browser
+                    "application/xml"; //official
+
+        } else if (extension.equals(".xpm")) {
+            contentType = "image/x-xpixmap"; 
+         
+        } else if (extension.equals(".xslt")) {
+            contentType = "application/xslt+xml"; 
+         
+        } else if (extension.equals(".xwd")) {
+            contentType = "image/x-xwindowdump"; 
+         
+        } else if (extensionLC.equals(".z")) { 
+            contentType = "application/x-compress";  
+            genericCompressed = true;
+
+        } else if (extension.equals(".zip")) { 
+            contentType = "application/zip";  
+            genericCompressed = true;
+
+        } else { //.mat
+            contentType = "application/x-download";  //or "application/octet" ?
+            //how specify file name in popup window that user is shown? see below
+            //see http://forum.java.sun.com/thread.jspa?threadID=696263&messageID=4043287
+        }
+        return new Object[]{
+            contentType, 
+            headerMap,
+            new Boolean(genericCompressed),
+            new Boolean(otherCompressed)};
+    }
+
+
+    /** 
+     * This determines if a response should encourage showing File Save As dialog box in user's browser.
+     */
+    public static boolean showFileSaveAs(boolean genericCompressed, 
+        String fileType, String extension) {        
+
+        return genericCompressed ||         //include all genericCompressed types
+            extension.equals(".cdf")  || 
+            extension.equals(".csv")  || 
+            extension.equals(".itx")  || 
+            extension.equals(".js")   || 
+             fileType.equals(".json") || //not .jsonText
+            extension.equals(".jsonl") || 
+            extension.equals(".kml")  || 
+            extension.equals(".mat")  || 
+            extension.equals(".nc")   ||
+             fileType.equals(".odvTxt") ||  //don't force Save As for other .txt, but do for .odvTxt
+            extension.equals(".pdf")  ||
+            extension.equals(".tif")  ||
+            extension.equals(".tsv")  ||
+            extension.equals(".xml");
+    }
+
     public OutputStream outputStream(String characterEncoding) throws Throwable {
         return outputStream(characterEncoding, -1);
     }
@@ -114,647 +779,31 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         //setContentType(mimeType)
         //User won't want hassle of saving file (changing fileType, ...).
 
-        //see mime type list at http://www.webmaster-toolkit.com/mime-types.shtml
-        // or http://html.megalink.com/programmer/pltut/plMimeTypes.html
-        // or http://www.freeformatter.com/mime-types-list.html#mime-types-list
-        String extensionLC = extension.toLowerCase();
-        boolean genericCompressed = false;  //true for generic compressed files, e.g., .zip
-        boolean otherCompressed = false;    //true for app specific compressed (but not audio/ image/ video)
-
-        if (extension.equals(".3gp")) {
-            response.setContentType("video/3gpp");  
-
-        } else if (extension.equals(".7z")) {
-            response.setContentType("application/x-7z-compressed"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".ai")) {
-            response.setContentType("application/postscript"); 
-
-        } else if (extension.equals(".aif") ||
-                   extension.equals(".aiff") ||
-                   extension.equals(".aifc")) {
-            response.setContentType("audio/x-aiff"); 
-
-        } else if (extension.equals(".asc")) { 
-            //There are a couple of fileNameTypes that lead to .asc.
-            //If DODS, ...
-            if (fileType.equals(".asc"))
-                response.setHeader("Content-Description", "dods-data"); //DAP 2.0, 7.1.1  //pre 2019-03-29 was "content-description" "dods_data" 
-            else if (fileType.equals(".timeGaps"))
-                response.setHeader("Content-Description", "time_gap_information"); //pre 2019-03-29 was "content-description" 
-            response.setContentType("text/plain"); 
-
-        } else if (extension.equals(".au")) {
-            response.setContentType("audio/basic"); 
-
-        } else if (extension.equals(".bin")) {
-            response.setContentType("application/octet-stream"); 
-
-        } else if (extension.equals(".bmp")) {
-            response.setContentType("image/bmp"); 
-
-        } else if (extension.equals(".bz")) {
-            response.setContentType("application/x-bzip"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".bz2")) {
-            response.setContentType("application/x-bzip2"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".chm")) {
-            response.setContentType("application/vnd.ms-htmlhelp"); 
-
-        } else if (extension.equals(".css")) {
-            response.setContentType("text/css"); 
-
-        } else if (extension.equals(".csv")) {
-            response.setContentType("text/csv"); 
-
-        } else if (extension.equals(".das")) {
-            response.setContentType("text/plain");
-            response.setHeader("Content-Description", "dods-das"); //DAP 2.0, 7.1.1  ???!!!DConnect (that's JPL -- ignore it) has 'c' 'd', BUT spec (follow the spec) and THREDDS have 'C' 'D'-- but HTTP header names are case-insensitive
-            //until ERDDAP v1.84, was "content-description", "dods_das": c d _ !
-            
-        } else if (extension.equals(".dds")) {
-            response.setContentType("text/plain");
-            response.setHeader("Content-Description", "dods-dds"); //DAP 2.0, 7.1.1
-
-        } else if (extension.equals(".der")) {
-            response.setContentType("application/x-x509-ca-cert"); 
-         
-        } else if (extension.equals(".doc")) {
-            response.setContentType("application/msword"); 
-
-        } else if (extension.equals(".docx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"); 
-            otherCompressed = true;
-
-        } else if (extension.equals(".dods")) {
-            //see dods.servlet.DODSServlet.doGetDODS for example
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-Description", "dods-data"); //DAP 2.0, 7.1.1
-
-        } else if (extension.equals(".dotx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.template"); 
-
-        } else if (extension.equals(".f4v")) {
-            response.setContentType("video/x-f4v");                                 
-
-        } else if (extension.equals(".flac")) {
-            response.setContentType("audio/flac");     
-
-        } else if (extension.equals(".flv")) {
-            response.setContentType("video/x-flv");                                 
-
-        } else if (extension.equals(".gif")) {
-            response.setContentType("image/gif");                                 
-
-        } else if (extension.equals(".gtar")) {
-            response.setContentType("application/x-gtar");                                 
-            genericCompressed = true;
-
-        } else if (extension.equals(".gz")) {
-            response.setContentType("application/x-gzip");                                 
-            genericCompressed = true;
-
-        } else if (extension.equals(".gzip")) {
-            response.setContentType("application/x-gzip");                                 
-            genericCompressed = true;
-
-        } else if (extension.equals(".h261")) {
-            response.setContentType("video/h261");                                 
-
-        } else if (extension.equals(".h263")) {
-            response.setContentType("video/h263");                                 
-
-        } else if (extension.equals(".h264")) {
-            response.setContentType("video/h264");                                 
-
-        } else if (extension.equals(".hdf")) { 
-            response.setContentType("application/x-hdf"); 
-
-        } else if (extension.equals(".html")) { //ERDDAP always writes as String2.UTF_8
-            response.setContentType(HTML_MIME_TYPE); 
-
-        } else if (extension.equals(".ief")) { 
-            response.setContentType("image/ief"); 
-
-        } else if (extension.equals(".jar")) { 
-            response.setContentType("application/java-archive");  
-            otherCompressed = true;
-
-        } else if (extension.equals(".jpg") ||
-                   extension.equals(".jpeg")) {
-            response.setContentType("image/jpeg");                                 
-
-        } else if (extension.equals(".jpgv")) {
-            response.setContentType("video/jpeg");                                 
-
-        } else if (extension.equals(".js")) { 
-            response.setContentType("application/x-javascript"); 
-
-        } else if (extension.equals(".json")) { 
-            response.setContentType(
-                fileType.equals(".jsonp")?  //pseudo fileType
-                    "application/javascript" : //see https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
-                fileType.equals(".jsonText")? 
-                    "text/plain" : //ESRI Geoservices REST uses this
-                    "application/json"); //http://dret.net/biblio/reference/rfc4627
-
-        } else if (extension.equals(".jsonl")) { 
-            response.setContentType(
-                fileType.equals(".jsonp")?  //pseudo fileType
-                    "application/javascript" : //see https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
-                    "application/x-jsonlines");  //no definitive answer. https://github.com/wardi/jsonlines/issues/9  I like x-jsonlines because it is descriptive.
-
-        } else if (extension.equals(".kml")) {
-            //see https://developers.google.com/kml/documentation/kml_tut
-            //which lists both of these content types (in different places)
-            //application/keyhole is used by the pydap example that works
-            //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-            //response.setContentType("application/vnd.google-earth.kml+xml"); 
-            //Opera says handling program is "Opera"!  So I manually added this mime type to Opera.
-            response.setContentType(KML_MIME_TYPE); 
-
-        } else if (extension.equals(".kmz")) {
-            response.setContentType("application/vnd.google-earth.kmz"); 
-            otherCompressed = true;
-
-        } else if (extension.equals(".latex")) {
-            response.setContentType("application/x-latex"); 
-
-        } else if (extension.equals(".lha")) {
-            response.setContentType("application/lha"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".lzh")) {
-            response.setContentType("application/x-lzh"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".lzma")) {
-            response.setContentType("application/x-lzma"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".lzx")) {
-            response.setContentType("application/x-lzx"); 
-            genericCompressed = true;
-
-        } else if (extension.equals(".log")) {
-            response.setContentType("text/plain"); 
-
-        } else if (extension.equals(".m21")) {
-            response.setContentType("application/mp21"); 
-
-        } else if (extension.equals(".mdb")) {
-            response.setContentType("application/x-msaccess"); 
-
-        } else if (extension.equals(".mid")) {
-            response.setContentType("audio/midi"); 
-
-        } else if (extension.equals(".mov")) {
-            response.setContentType("video/quicktime"); 
-
-        } else if (extension.equals(".movie")) {
-            response.setContentType("video/x-sgi-movie"); 
-
-        } else if (extension.equals(".mpeg")) {
-            response.setContentType("video/mpeg"); 
-
-        } else if (extension.equals(".mpg")) {
-            response.setContentType("audio/mpeg"); 
-
-        } else if (extension.equals(".mpga")) {
-            response.setContentType("audio/mpeg"); 
-
-        } else if (extension.equals(".mp3")) {
-            response.setContentType("audio/mpeg3"); 
-
-        } else if (extension.equals(".mp4a")) {
-            response.setContentType("audio/mp4"); 
-
-        } else if (extension.equals(".mp4")) {
-            response.setContentType("video/mp4"); 
-
-        } else if (extension.equals(".mpp")) {
-            response.setContentType("application/vnd.ms-project"); 
-
-        } else if (extension.equals(".nc") || 
-                   extension.equals(".cdf")) {
-            response.setContentType("application/x-netcdf"); 
-
-        } else if (extension.equals(".odb")) {
-            response.setContentType("application/vnd.oasis.opendocument.database"); 
-
-        } else if (extension.equals(".odc")) {
-            response.setContentType("application/vnd.oasis.opendocument.chart"); 
-
-        } else if (extension.equals(".otc")) {
-            response.setContentType("application/vnd.oasis.opendocument.chart-template");
-
-        } else if (extension.equals(".odf")) {
-            response.setContentType("application/vnd.oasis.opendocument.formula"); 
-
-        } else if (extension.equals(".odg")) {
-            response.setContentType("application/vnd.oasis.opendocument.graphics"); 
-
-        } else if (extension.equals(".odi")) {
-            response.setContentType("application/vnd.oasis.opendocument.image"); 
-
-        } else if (extension.equals(".odp")) {
-            response.setContentType("application/vnd.oasis.opendocument.presentation"); 
-
-        } else if (extension.equals(".ods")) {
-            response.setContentType("application/vnd.oasis.opendocument.spreadsheet"); 
-            //response.setContentType("application/oda"); 
-
-        } else if (extension.equals(".odt")) {
-            response.setContentType("application/vnd.oasis.opendocument.text"); 
-
-        } else if (extension.equals(".oga")) {
-            response.setContentType("audio/ogg"); 
-
-        } else if (extension.equals(".ogg")) {
-            response.setContentType("audio/ogg"); 
-
-        } else if (extension.equals(".ogv")) {
-            response.setContentType("video/ogg"); 
-
-        } else if (extension.equals(".ogx")) {
-            response.setContentType("application/ogg"); 
-            otherCompressed = true;
-
-        } else if (extension.equals(".onetoc")) {
-            response.setContentType("application/onenote"); 
-
-        } else if (extension.equals(".opf")) {
-            response.setContentType("application/oebps-package+xm"); 
-
-        } else if (extension.equals(".otf")) {
-            response.setContentType("application/x-font-otf"); 
-
-        } else if (extension.equals(".otg")) {
-            response.setContentType("application/vnd.oasis.opendocument.graphics-template"); 
-
-        } else if (extension.equals(".oth")) {
-            response.setContentType("application/vnd.oasis.opendocument.text-web"); 
-
-        } else if (extension.equals(".oti")) {
-            response.setContentType("application/vnd.oasis.opendocument.image-template"); 
-
-        } else if (extension.equals(".otp")) {
-            response.setContentType("application/vnd.oasis.opendocument.presentation-template"); 
-
-        } else if (extension.equals(".ots")) {
-            response.setContentType("application/vnd.oasis.opendocument.spreadsheet-template"); 
-
-        } else if (extension.equals(".pbm")) {
-            response.setContentType("image/x-portable-bitmap"); 
-
-        } else if (extension.equals(".pcx")) {
-            response.setContentType("image/x-pcx"); 
-
-        } else if (extension.equals(".pdf")) {
-            response.setContentType("application/pdf"); 
-
-        } else if (extension.equals(".pfr")) {
-            response.setContentType("application/font-tdpfr"); 
-
-        } else if (extension.equals(".pgm")) {
-            response.setContentType("image/x-portable-graymap"); 
-
-        } else if (extension.equals(".pic") ||
-                   extension.equals(".pict")) {
-            response.setContentType("image/pict"); 
-
-        } else if (extension.equals(".png")) {
-            response.setContentType("image/png"); 
-
-        } else if (extension.equals(".pnm")) {
-            response.setContentType("image/x-portable-anymap"); 
-
-        } else if (extension.equals(".pot")) {
-            response.setContentType("application/mspowerpoint"); 
-
-        } else if (extension.equals(".ppm")) {
-            response.setContentType("image/x-portable-pixmap"); 
-
-        } else if (extension.equals(".potx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.presentationml.template"); 
-
-        } else if (extension.equals(".ppsm")) {
-            response.setContentType("application/vnd.ms-powerpoint.slideshow.macroenabled.12"); 
-
-        } else if (extension.equals(".ppsx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.presentationml.slideshow"); 
-
-        } else if (extension.equals(".ppt")) {
-            response.setContentType("application/mspowerpoint"); 
-
-        } else if (extension.equals(".pptm")) {
-            response.setContentType("application/vnd.ms-powerpoint.presentation.macroenabled.12"); 
-
-        } else if (extension.equals(".pptx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"); 
-
-        } else if (extension.equals(".psd")) {
-            response.setContentType("image/vnd.adobe.photoshop"); 
-
-        } else if (extension.equals(".pub")) {
-            response.setContentType("application/x-mspublisher"); 
-
-        } else if (extension.equals(".qt")) {
-            response.setContentType("video/quicktime"); 
-
-        } else if (extension.equals(".py")) {
-            response.setContentType("text/x-script.phyton"); 
-
-        } else if (extension.equals(".pyc")) {
-            response.setContentType("application/x-bytecode.python"); 
-
-        } else if (extension.equals(".qt")) {
-            response.setContentType("video/quicktime"); 
-
-        } else if (extension.equals(".ra")) {
-            response.setContentType("audio/x-realaudio"); 
-
-        } else if (extension.equals(".ram")) {
-            response.setContentType("audio/x-pn-realaudio"); 
-
-        } else if (extension.equals(".rar")) {
-            response.setContentType("application/x-rar-compressed"); 
-            otherCompressed = true;
-
-        } else if (extension.equals(".rgb")) {
-            response.setContentType("image/x-rgb"); 
-
-        } else if (extension.equals(".rm")) {
-            response.setContentType("application/vnd.rn-realmedia"); 
-            otherCompressed = true;
-
-        } else if (extension.equals(".rq")) {
-            response.setContentType("application/sparql-query"); 
-
-        } else if (extension.equals(".rt")) {
-            response.setContentType("text/richtext"); 
-
-        } else if (extension.equals(".rtf")) {
-            response.setContentType("application/rtf"); 
-
-        } else if (extension.equals(".rtx")) {
-            response.setContentType("text/richtext"); 
-
-        } else if (extension.equals(".rss")) {
-            response.setContentType("application/rss+xml"); 
-
-        } else if (extension.equals(".sbml")) {
-            response.setContentType("application/sbml+xml"); 
-
-        } else if (extension.equals(".scd")) {
-            response.setContentType("application/x-msschedule"); 
-
-        } else if (extension.equals(".sgml")) {
-            response.setContentType("text/sgml"); 
-
-        } else if (extension.equals(".sldm")) {
-            response.setContentType("application/vnd.ms-powerpoint.slide.macroenabled.12"); 
-
-        } else if (extension.equals(".sldx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.presentationml.slide"); 
-
-        } else if (extension.equals(".srx")) {
-            response.setContentType("application/sparql-results+xml"); 
-
-        } else if (extension.equals(".ssml")) {
-            response.setContentType("application/ssml+xml"); 
-
-        } else if (extension.equals(".stc")) {
-            response.setContentType("application/vnd.sun.xml.calc.template"); 
-
-        } else if (extension.equals(".std")) {
-            response.setContentType("application/vnd.sun.xml.draw.template"); 
-
-        } else if (extension.equals(".sti")) {
-            response.setContentType("application/vnd.sun.xml.impress.template"); 
-
-        } else if (extension.equals(".stw")) {
-            response.setContentType("application/vnd.sun.xml.writer.template"); 
-
-        } else if (extension.equals(".svg")) {
-            response.setContentType("image/svg+xml"); 
-
-        } else if (extension.equals(".sxc")) {
-            response.setContentType("application/vnd.sun.xml.calc"); 
-
-        } else if (extension.equals(".sxd")) {
-            response.setContentType("application/vnd.sun.xml.draw"); 
-
-        } else if (extension.equals(".sxi")) {
-            response.setContentType("application/vnd.sun.xml.impress"); 
-
-        } else if (extension.equals(".sxm")) {
-            response.setContentType("application/vnd.sun.xml.math"); 
-
-        } else if (extension.equals(".sxw")) {
-            response.setContentType("application/vnd.sun.xml.writer"); 
-
-        } else if (extension.equals(".sxg")) {
-            response.setContentType("application/vnd.sun.xml.writer.global"); 
-
-        } else if (extension.equals(".tar")) {
-            response.setContentType("application/x-tar"); 
-            genericCompressed = true;
-         
-        } else if (extension.equals(".tcl")) {
-            response.setContentType("application/x-tcl"); 
-         
-        } else if (extension.equals(".tei")) {
-            response.setContentType("application/tei+xml"); 
-         
-        } else if (extension.equals(".tex")) {
-            response.setContentType("application/x-tex"); 
-         
-        } else if (extension.equals(".tfm")) {
-            response.setContentType("application/x-tex-tfm"); 
-         
-        } else if (extension.equals(".tif") ||
-                   extension.equals(".tiff")) {
-            response.setContentType("image/tiff"); 
-         
-        } else if (extension.equals(".tsv")) {
-            response.setContentType("text/tab-separated-values"); 
-         
-        } else if (extension.equals(".ttf")) {
-            response.setContentType("application/x-font-ttf"); 
-         
-        } else if (extension.equals(".ttl")) {
-            response.setContentType("text/turtle"); 
-         
-        } else if (extension.equals(".txt")) {
-            //ODV uses .txt but doesn't have a distinct mime type (as far as I can tell) see 2010-06-15 notes
-            response.setContentType("text/plain"); 
-
-        } else if (extension.equals(".uoml")) {
-            response.setContentType("application/vnd.uoml+xml"); 
-         
-        } else if (extension.equals(".ufd")) {
-            response.setContentType("application/vnd.ufdl"); 
-         
-        } else if (extension.equals(".vcf")) {
-            response.setContentType("text/x-vcard"); 
-         
-        } else if (extension.equals(".vcs")) {
-            response.setContentType("text/x-vcalendar"); 
-         
-        } else if (extension.equals(".vsd")) {
-            response.setContentType("application/vnd.visio"); 
-         
-        } else if (extension.equals(".vxml")) {
-            response.setContentType("application/voicexml+xml"); 
-         
-        } else if (extension.equals(".war")) {
-            response.setContentType("application/zip.war"); 
-            genericCompressed = true;
-            
-        } else if (extension.equals(".wav") || 
-                   extension.equals(".wave")) {
-            response.setContentType("audio/wav"); //I've seen audio/x-wav
-         
-        } else if (extension.equals(".weba")) {
-            response.setContentType("audio/webm"); 
-
-        } else if (extension.equals(".webm")) {
-            response.setContentType("video/webm"); 
-
-        } else if (extension.equals(".webp")) {
-            response.setContentType("image/webp"); 
-         
-        } else if (extension.equals(".wm")) {
-            response.setContentType("video/x-ms-wm"); 
-         
-        } else if (extension.equals(".wma")) {
-            response.setContentType("audio/x-ms-wma"); 
-         
-        } else if (extension.equals(".wmv")) {
-            response.setContentType("video/x-ms-wmv"); 
-         
-        } else if (extension.equals(".wps")) {
-            response.setContentType("application/vnd.ms-works"); 
-         
-        } else if (extension.equals(".wri")) {
-            response.setContentType("application/x-mswrite"); 
-         
-        } else if (extension.equals(".wsdl")) {
-            response.setContentType("application/wsdl+xml"); 
-         
-        } else if (extension.equals(".xbm")) {
-            response.setContentType("image/x-xbitmap"); 
-         
-        } else if (extension.equals(".xhtml")) { 
-            //PROBLEM: MS Internet Explorer doesn't display .xhtml files.
-            //It just shows endless series of "Save As..." dialog boxes.
-            //"application/xhtml+xml" is proper mime type, 
-            //  see http://keystonewebsites.com/articles/mime_type.php
-            //Lots of websites serve xhtml successfully using this
-            //  e.g., in firefox, see Tools : Page Info for 
-            //  https://www.w3.org/MarkUp/Forms/2003/xforms-for-html-authors
-            //see https://www.w3.org/TR/xhtml1/#guidelines
-            //But they do something else.
-            //
-            //I did:
-            //"<p>XHTML and Internet Explorer - Attempts to view .xhtml files in Internet Explorer on Windows XP \n" +
-            //"<br>often leads to an endless series of \"Save As...\" dialog boxes. The problem seems to be that \n" +
-            //"<br>Windows XP has no registry entry for the standard XHTML mime type: application/xhtml+xml.\n" +
-            //"<br>See <a href=\"http://www.peterprovost.org/archive/2004/10/22/2003.aspx\">this blog</a> for a possible solution.\n" +
-            //But that is not a good solution for ERDDAP clients (too risky).
-            //
-            //SOLUTION from http://www.ibm.com/developerworks/xml/library/x-tipapachexhtml/index.html
-            //if request is from Internet Explorer, use mime type text/html.
-            String userAgent = request.getHeader("user-agent"); //case-insensitive
-            if (userAgent != null && userAgent.indexOf("MSIE") >= 0) {
-                 response.setContentType("text/html"); //the hack
-                 if (verbose) String2.log(".xhtml request from user-agent=MSIE: using mime=text/html");
-            } else response.setContentType("application/xhtml+xml"); //the right thing for everyone else
-
-        } else if (extension.equals(".xif")) {
-            response.setContentType("image/vnd.xiff"); 
-         
-        } else if (extension.equals(".xls")) {
-            response.setContentType("application/vnd.ms-excel"); 
-
-        } else if (extension.equals(".xlsb")) {
-            response.setContentType("application/vnd.ms-excel.sheet.binary.macroenabled.12"); 
-
-        } else if (extension.equals(".xlsm")) {
-            response.setContentType("application/vnd.ms-excel.sheet.macroenabled.12"); 
-
-        } else if (extension.equals(".xlsx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); 
-
-        } else if (extension.equals(".xltm")) {
-            response.setContentType("application/vnd.ms-excel.template.macroenabled.12"); 
-
-        } else if (extension.equals(".xltx")) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.template"); 
-
-        } else if (extension.equals(".xml")) { 
-            //special case for SOS (see EDDTable.sosResponseFormats): 
-            //"text/xml;schema=\"ioos/0.6.1\"", "application/ioos+xml;version=0.6.1",
-            response.setContentType(
-                fileType.startsWith("custom:") ?  
-                    fileType.substring(7) :
-                fileType.indexOf("ioos") >= 0 ||           //IOOS SOS types
-                fileType.equals("text/xml; subtype=\"om/1.0.0\"")?    //Oostethys SOS type
-                    fileType :   //the SOS mime type
-                    //"text/xml"); //text/plain allows viewing in browser
-                    "application/xml"); //official
-
-        } else if (extension.equals(".xpm")) {
-            response.setContentType("image/x-xpixmap"); 
-         
-        } else if (extension.equals(".xslt")) {
-            response.setContentType("application/xslt+xml"); 
-         
-        } else if (extension.equals(".xwd")) {
-            response.setContentType("image/x-xwindowdump"); 
-         
-        } else if (extensionLC.equals(".z")) { 
-            response.setContentType("application/x-compress");  
-            genericCompressed = true;
-
-        } else if (extension.equals(".zip")) { 
-            response.setContentType("application/zip");  
-            genericCompressed = true;
-
-        } else { //.mat
-            response.setContentType("application/x-download");  //or "application/octet" ?
-            //how specify file name in popup window that user is shown? see below
-            //see http://forum.java.sun.com/thread.jspa?threadID=696263&messageID=4043287
+        //get and apply the fileTypeInfo
+        //2020-12-07 this is the section that was inline but now uses the static methods above
+        Object fileTypeInfo[] = getFileTypeInfo(request, fileType, extension);
+        String  contentType       =  (String) fileTypeInfo[0];
+        HashMap headerMap         =  (HashMap)fileTypeInfo[1];
+        boolean genericCompressed = ((Boolean)fileTypeInfo[2]).booleanValue();  //true for generic compressed files, e.g., .zip
+        boolean otherCompressed   = ((Boolean)fileTypeInfo[3]).booleanValue();  //true for app specific compressed (but not audio/ image/ video)
+
+        response.setContentType(contentType);  
+        Iterator it = headerMap.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String)it.next();
+            response.setHeader(key, (String)headerMap.get(key));
         }
+
 
         //set the characterEncoding
         if (characterEncoding != null && characterEncoding.length() > 0)
             response.setCharacterEncoding(characterEncoding);
 
-        //specify the file's name  (this may force show File Save As dialog box in user's browser)        
-        if (genericCompressed ||         //include all genericCompressed types
-            extension.equals(".cdf")  || 
-            extension.equals(".csv")  || 
-            extension.equals(".itx")  || 
-            extension.equals(".js")   || 
-             fileType.equals(".json") || //not .jsonText
-            extension.equals(".jsonl") || 
-            extension.equals(".kml")  || 
-            extension.equals(".mat")  || 
-            extension.equals(".nc")   ||
-             fileType.equals(".odvTxt") ||  //don't force Save As for other .txt, but do for .odvTxt
-            extension.equals(".pdf")  ||
-            extension.equals(".tif")  ||
-            extension.equals(".tsv")  ||
-            extension.equals(".xml")) {
+        //specify the file's name  (this encourages showing File Save As dialog box in user's browser)        
+        if (showFileSaveAs(genericCompressed, fileType, extension))
             response.setHeader("Content-Disposition","attachment;filename=" + 
                 fileName + extension);
-        }
+
 
         //Compress the output stream if user request says it is allowed.
         //See http://www.websiteoptimization.com/speed/tweak/compress/  (gone?!)

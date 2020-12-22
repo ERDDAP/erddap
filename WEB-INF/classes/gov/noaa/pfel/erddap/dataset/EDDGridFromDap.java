@@ -538,7 +538,7 @@ public class EDDGridFromDap extends EDDGrid {
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDGridFromDap " + datasetID + " constructor finished. TIME=" + 
-            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+            cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)

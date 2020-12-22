@@ -379,7 +379,7 @@ public class EDDTableAggregateRows extends EDDTable{
         if (verbose) String2.log(
             (debugMode? "\n" + toString() : "") +
             "\n*** EDDTableAggregateRows " + datasetID + " constructor finished. TIME=" + 
-            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+            cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
 

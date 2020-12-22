@@ -414,12 +414,11 @@ or Mac server instead.
       <ol>
       <li>(Recommended) Increase the <kbd>connectionTimeout</kbd> parameter value, perhaps to 
         300000 (milliseconds) (which is 5 minutes).
-      <li><!-- After v2.10 release: (Recommended) --> (Required) Add 
+      <li>(Recommended) Add 
         a new parameter: <kbd>relaxedQueryChars="[]|"</kbd> 
-        <!-- br>
         This is optional and slightly less secure, but removes the need for users to 
         percent-encode these characters when 
-        they occur in the parameters of a user's request URL. -->
+        they occur in the parameters of a user's request URL. 
         <br>&nbsp;
       </ol>
      
@@ -721,8 +720,8 @@ or Mac server instead.
   <br>On Linux, Mac, and Windows, download
      <!-- Use: md5 erddapContent1.82.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddapContent.zip">erddapContent.zip</a>
-    (version 2.10, 19,731 bytes, MD5=D9B2987E1349F7FC40D7FC2E4C49E856, dated 2020-11-05)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddapContent.zip">erddapContent.zip</a>
+    (version 2.11, 19,765 bytes, MD5=8EAE38587180C97279A59EFBE28045A5, dated 2020-12-04)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
@@ -751,6 +750,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddapContent.zip">2.02</a>
     (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-08-21)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddapContent.zip">2.10</a>
+    (19,731 bytes, MD5=D9B2987E1349F7FC40D7FC2E4C49E856, dated 2020-11-05)
     ]
 
   <p>Then,
@@ -812,10 +814,10 @@ or Mac server instead.
     <!-- use: c:\content\bat\md5.bat erddap1.80.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.10, 664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated
-    <span class="N">2020-11-05</span>)
+    <br>(version 2.11, 664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated
+    <span class="N">2020-12-04</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -838,6 +840,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.02/erddap.war">2.02</a>
     (514,469,280 bytes, MD5=E181BAF2F46B978FE93748A4C1B2DE3D, dated 2019-08-21)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">2.10</a>
+    (664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated 2020-11-05)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1024,11 +1029,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.10, 664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated
-    <span class="N">2020-11-05</span>)
-
+    <br>(version 2.11, 664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated
+    <span class="N">2020-12-04</span>)
 
   <br>&nbsp;
 
@@ -4081,17 +4085,21 @@ are Bob Simons' personal opinions and
 do not necessarily reflect any position of the 
 Government or the National Oceanic and Atmospheric Administration.</strong>
 
-<p>The Three Main Documents:
+<p>The Four Main Documents:
 <ul>
 <li><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTalk5.pptx"
   >The main introduction to ERDDAP (version 5)</a>.
-  You can also 
+  <br>You can also 
   <a rel="help" 
   href="https://www.youtube.com/watch?v=H541G1XXZrU&amp;t=4"
   >watch this video of Bob giving this talk<img 
+  style="vertical-align:middle" alt="YouTube" src="../images/youtube.png" ><img 
   src="../images/external.png" alt=" (external link)" 
   title="This is a link to an external website."/></a>.
+<li><a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/ERDDAP_OnePage.pdf"
+  >A One Page Description of ERDDAP (.pdf)</a>
 <li><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >ERDDAP: Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</a>
@@ -4391,19 +4399,20 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
       </ul>
     </ul>
   <li>Our development environment is just a programmer's editor (we're not saying which one).
-    (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
-    If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
+    <br>We don't use Eclipse, Ant, etc.; nor do we offer ERDDAP-related support for them.
+    <br>We do use Maven to compile the classes periodically in order to manage/gather the needed external .jar files.
+    If you need/want our pom.xml file, please email bob.simons at noaa.gov .
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use AdoptOpenJDK's javac jdk8u265-b01 <!-- javaVersion --> to compile gov.noaa.pfeg.coastwatch.TestAll  
+  <li>We currently use AdoptOpenJDK's javac jdk8u265-b01 <!-- javaVersion --> 
+     to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and AdoptOpenJDK's java jdk8u265-b01 <!-- javaVersion --> to run the tests.  
+     and run the tests.       
      For security reasons, it is almost always best to use the latest versions of Java 8 and Tomcat 8. <!-- javaVersion -->
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
-     <li><a class="selfLink" id="classpath" href="#classpath" rel="bookmark">Our javac and java classpath</a> (including some unnecessary items) is currently
+     <li><a class="selfLink" id="classpath" href="#classpath" rel="bookmark">Our javac and java classpath</a> (including some unnecessary items) is 
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
-       <br><kbd>
-./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-jexl.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;lib/aws-java-sdk.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar</kbd>
+       <br><kbd>classes;../../../lib/servlet-api.jar;lib/*</kbd>
        <br>If you get error messages about classes not found
          when you compile or run ERDDAP or one of its tools, 
          compare your command line's classpath to the classpath above
@@ -4996,7 +5005,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.10
+<p>ERDDAP, Version 2.11
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

@@ -409,7 +409,7 @@ if (lonIndex < nAv - 1)
                 " dloni0=" + dloni0 + " dloni179=" + dloni179 + "\n": "") + 
             "localChildDatasetID=" + localChildDatasetID + "\n" +
             "\n*** EDDGridLonPM180 " + datasetID + " constructor finished. TIME=" + 
-            cTime + "ms" + (cTime >= 10000? "  (>10s!)" : "") + "\n"); 
+            cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
         if (!dimensionValuesInMemory)

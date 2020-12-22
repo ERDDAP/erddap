@@ -119,11 +119,9 @@ public class TestAll  {
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
-//      String2.log(NcHelper.ncdump("/data/gtspp/gtspp_13635162_te_111.nc", "-h"));  
 //      String2.log(NcHelper.ncdump("/data/gtspp/gtspp_40268168_te_111.nc", "-v temperature"));  
 
-//      DasDds.main(new String[]{"erdSoda331icemday", "-verbose"});
-//      DasDds.main(new String[]{"erdSoda331oceanmday", "-verbose"});
+//      DasDds.main(new String[]{"nceiErsstv5_LonPM180", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -554,7 +552,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 7, 2020, 10, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 2, 2020, 11, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -587,7 +585,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 7, 2020, 10); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 2, 2020, 11); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
@@ -725,7 +723,6 @@ public class TestAll  {
 //    NDBC MONTHLY UPDATES.   NEXT TIME: be stricter and remove 99.9 and 98.7 data values.  
 //      !!!check pxoc1. make historic file if needed.
 //    NdbcMetStation.main(null);   //in gov/noaa/pfel/coastwatch/pointdata/
-
 
 //    String2.log(NcHelper.ncdump("C:/data/socat/06AQ20110715.nc", "-h"));
 //    String2.log(NcHelper.dds("c:/data/nodcTemplates/pointKachemakBay.nc"));
@@ -1012,6 +1009,8 @@ NoMoreDataPleaseException nmdpe;
 OpendapHelper oh;
 OutputStreamSource oss;
 OutputStreamFromHttpResponse osfhr;
+OutputStreamFromHttpResponseViaAwsS3 osfhrvas;
+OutputStreamViaAwsS3 osvas;
 PersistentTable pert;
 Projects2 proj2;
 RunLoadDatasets rld;
@@ -1046,7 +1045,7 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = true;
+        boolean doSlowTestsToo = false;
 
 
 /* for releases, this line should have open/close comment */
@@ -1225,7 +1224,7 @@ WaitThenTryAgainException wttae;
         //NetCheckTests
         //NetCheck.unitTest(); which does 3 tests:
         //HttpTest.unitTest(); 2016-02-23 needs work
-        OpendapTest.unitTest(); 
+        //OpendapTest.unitTest(); 
         //SftpTest.unitTest(); //orpheus Shell authentication started failing ~2010-06
 
 
@@ -1325,13 +1324,14 @@ WaitThenTryAgainException wttae;
 
         //Touch.thredds();  //run as needed to tell thredds to cache PISCO datasets?   or usually runs really fast?
 
-        //make ErdJava.zip  
+        //INACTIVE make ErdJava.zip  
         //for distribution of GridSaveAs, NetCheck, ConvertTable, and GenerateThreddsXml
         //see /classes/gov/noaa/pfel/coastwatch/pointData/MakeErdJavaZip
-        MakeErdJavaZip.main(null); //see C:\programs\_tomcat\webapps\cwexperimental\ErdJava.zip
+        //MakeErdJavaZip.main(null); //see C:\programs\_tomcat\webapps\cwexperimental\ErdJava.zip
+        //and the smaller version
         //MakeErdJavaZip.makeConvertTableJar("C:/pmelsvn/WebContent/WEB-INF/lib/"); //only do when working on LAS stuff
 
-        //make EMA.war
+        //INACTIVE: make EMA.war
         MakeEmaWar.main(null);
 
         String2.log(

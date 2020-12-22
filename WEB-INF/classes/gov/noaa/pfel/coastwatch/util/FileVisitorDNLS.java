@@ -4,15 +4,13 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.HeadBucketRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.CommonPrefix;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
@@ -61,6 +59,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
@@ -344,153 +343,135 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             //S3 gives precise file size and lastModified
             Matcher matcher = AWS_S3_PATTERN.matcher(File2.addSlash(tDir)); //force trailing slash
             if (matcher.matches()) {
-                //it matches with /, so actually add it (if not already there)
-                tDir = File2.addSlash(tDir);
-
-                //http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
-                //If files have file-system-like names, e.g., 
-                //  url=http://bucketname.s3.region.amazonaws.com/  key=dir1/dir2/fileName.ext
-                //  e.g., http://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
-                //  They are just object keys with internal slashes. 
-                //So specify prefix in request.
-                Pattern fileNameRegexPattern = Pattern.compile(tFileNameRegex);
-                Pattern pathRegexPattern = Pattern.compile(tPathRegex);
-                Table table = makeEmptyTable();
-                StringArray directoryPA    = (StringArray)table.getColumn(DIRECTORY);
-                StringArray namePA         = (StringArray)table.getColumn(NAME);
-                LongArray   lastModifiedPA = (  LongArray)table.getColumn(LASTMODIFIED);
-                LongArray   sizePA         = (  LongArray)table.getColumn(SIZE);
-
-                //results may be slow (>12 hours) and huge (>10GB).
-                //So, if >10000 files, accumulate results to a temporary jsonlCSV file 
-                //(not in memory) and read when done.
-                String dnlsFileName = FILE_VISITOR_DIRECTORY +
-                    String2.modifyToBeFileNameSafe(tDir) + 
-                    Calendar2.getCompactCurrentISODateTimeStringLocal() + "_" + 
-                    Math2.random(1000) + ".jsonlCsv";
-                boolean writtenToFile = false;
-
-                String bucketName = matcher.group(1); 
-                String region     = matcher.group(2); 
-                String prefix     = matcher.group(3); 
-                String baseURL = tDir.substring(0, matcher.start(3));
-                if (verbose) 
-                    String2.log("FileVisitorDNLS.oneStep getting info from AWS S3 at" + 
-                        "\nURL=" + tDir);
-                        //"\nbucket=" + bucketName + " prefix=" + prefix);
-
-                //This code is from https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
-                //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3ClientBuilder.html
-                AmazonS3 s3client = AmazonS3ClientBuilder.standard()
-                    .withCredentials(new ProfileCredentialsProvider())
-                    .withRegion(region)  //com.amazonaws.regions.Regions.DEFAULT_REGION) //since I want code to be able to run from anywhere
-                    .build();               
-
-                //I wanted to generate lastMod for dir based on lastMod of files
-                //but it would be inconsistent for different requests (recursive, fileNameRegex).
-                //so just a set of dir names.
-                //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/ListObjectsV2Request.html
-                HashSet<String> dirHashSet = new HashSet(); 
-                ListObjectsV2Request req = new ListObjectsV2Request()
-                    .withBucketName(bucketName)
-                    .withPrefix(prefix)
-                    //I read (not in these docs) 1000 is max. 
-                    //For me, 1000 or 100000 returns ~1000 for first few responses, then ~100 for subsequent !
-                    //so getting a big bucket's contents takes ~12 hours on a non-Amazon network
-                    .withMaxKeys(10000); //be optimistic
-
-                if (!tRecursive)
-                    req = req.withDelimiter("/"); //Using it just gets files in this dir (not subdir)
-
-                ListObjectsV2Result result = null;
-                int chunk = 0;
-
                 try {
-                    do {
-                        chunk++;
-                        int nTry = 0;
-                        while (nTry <= 3) {
-                            String msg = ">> calling s3client.listObjects chunk#" + chunk + " try#" + nTry;
-                            try {
-                                nTry++;
-                                if (debugMode) String2.log(msg);
-                                result = s3client.listObjectsV2(req);
-                                break;  //success
-                            } catch (Exception ev2) {
-                                //try again
-                                String2.log((debugMode? "" : msg + "\n") +
-                                    "Caught error for AWS S3 bucket=" + bucketName + " prefix=" + prefix + 
-                                    " region=" + region + " (will try again):\n" + 
-                                    MustBe.throwableToString(ev2));
-                                Math2.sleep(5000);
+                    //it matches with /, so actually add it (if not already there)
+                    tDir = File2.addSlash(tDir);
+
+                    //http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+                    //If files have file-system-like names, e.g., 
+                    //  url=http://bucketname.s3.region.amazonaws.com/  key=dir1/dir2/fileName.ext
+                    //  e.g., http://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+                    //  They are just object keys with internal slashes. 
+                    //So specify prefix in request.
+                    Pattern fileNameRegexPattern = Pattern.compile(tFileNameRegex);
+                    Pattern pathRegexPattern = Pattern.compile(tPathRegex);
+                    Table table = makeEmptyTable();
+                    StringArray directoryPA    = (StringArray)table.getColumn(DIRECTORY);
+                    StringArray namePA         = (StringArray)table.getColumn(NAME);
+                    LongArray   lastModifiedPA = (  LongArray)table.getColumn(LASTMODIFIED);
+                    LongArray   sizePA         = (  LongArray)table.getColumn(SIZE);
+
+                    //results may be slow (>12 hours) and huge (>10GB).
+                    //So, if >10000 files, accumulate results to a temporary jsonlCSV file 
+                    //(not in memory) and read when done.
+                    String dnlsFileName = FILE_VISITOR_DIRECTORY +
+                        String2.modifyToBeFileNameSafe(tDir) + 
+                        Calendar2.getCompactCurrentISODateTimeStringLocal() + "_" + 
+                        Math2.random(1000) + ".jsonlCsv";
+                    boolean writtenToFile = false;
+
+                    String bucketName = matcher.group(1); 
+                    String region     = matcher.group(2); 
+                    String prefix     = matcher.group(3); 
+                    String baseURL = tDir.substring(0, matcher.start(3));
+                    if (verbose) 
+                        String2.log("FileVisitorDNLS.oneStep getting info from AWS S3 at" + 
+                            "\nURL=" + tDir);
+                            //"\nbucket=" + bucketName + " prefix=" + prefix);
+
+                    //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
+                    //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
+                    S3Client s3client = S3Client.builder()
+    //                    .credentials(ProfileCredentialsProvider.create())
+                        .region(Region.of(region))  
+                        .build();               
+
+                    //I wanted to generate lastMod for dir based on lastMod of files
+                    //but it would be inconsistent for different requests (recursive, fileNameRegex).
+                    //so just a set of dir names.
+                    //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/ListObjectsV2Request.html
+                    HashSet<String> dirHashSet = new HashSet(); 
+                    ListObjectsRequest.Builder reqBuilder = ListObjectsRequest.builder()
+                        .bucket(bucketName)
+                        .prefix(prefix)
+                        //I read (not in these docs) 1000 is max. 
+                        //For me, 1000 or 100000 returns ~1000 for first few responses, then ~100 for subsequent !
+                        //so getting a big bucket's contents takes ~12 hours on a non-Amazon network
+                        .maxKeys(10000); //be optimistic
+
+                    if (!tRecursive)
+                        reqBuilder = reqBuilder.delimiter("/"); //Using it just gets files in this dir (not subdir)
+
+                    ListObjectsRequest req = reqBuilder.build();
+
+                    ListObjectsResponse response = s3client.listObjects(req);
+
+                    //get common prefixes
+                    if (tDirectoriesToo) {
+                        List<CommonPrefix> list = response.commonPrefixes();
+                        int tn = list.size();
+                        for (int i = 0; i < tn; i++) {
+                            String td2 = baseURL + list.get(i).prefix(); //list.get(i)= e.g., BCSD/
+                            dirHashSet.add(td2);
+                            //String2.log(">> add dir=" + td2);
+                        }                          
+                    }
+
+                    List<S3Object> objects = response.contents();
+                    for (ListIterator iterVals = objects.listIterator(); iterVals.hasNext(); ) {
+                        S3Object s3Object = (S3Object)iterVals.next();
+                        String keyFullName = s3Object.key();
+                        String keyDir = File2.getDirectory(baseURL + keyFullName);
+                        String keyName = File2.getNameAndExtension(keyFullName);
+                        boolean matchesPath = keyDir.startsWith(tDir) && //it should
+                            ((keyDir.length() == tDir.length() ||
+                              tRecursive && pathRegexPattern.matcher(keyDir).matches()));
+                        if (debugMode) String2.log(">> key=" + keyFullName);
+                            //+ "\n>> matchesPathRegex=" + matchesPath);
+                        if (matchesPath) {
+
+                            //store this dir
+                            if (tDirectoriesToo) {
+                                //S3 only returns object keys. I must infer/collect directories.
+                                //Store this dir and parents back to tDir.
+                                String choppedKeyDir = keyDir;
+                                while (choppedKeyDir.length() >= tDir.length()) {
+                                    if (!dirHashSet.add(choppedKeyDir)) 
+                                        break; //hash set already had this, so will already have parents
+
+                                    //chop off last subdirectory
+                                    choppedKeyDir = File2.getDirectory(
+                                        choppedKeyDir.substring(0, choppedKeyDir.length() - 1)); //remove trailing /
+                                }
+                            }
+
+                            //store this file's information
+                            //Sometimes directories appear as files named "" with size=0.
+                            //I don't store those as files.
+                            boolean matches = keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
+                            //if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" + matches);
+                            if (matches) {
+                                directoryPA.add(keyDir);
+                                namePA.add(keyName);
+                                lastModifiedPA.add(s3Object.lastModified().toEpochMilli()); 
+                                sizePA.add(s3Object.size()); //long
                             }
                         }
 
-                        //get common prefixes
-                        if (tDirectoriesToo) {
-                            List<String> list = result.getCommonPrefixes();
-                            int tn = list.size();
-                            for (int i = 0; i < tn; i++) {
-                                String td2 = baseURL + list.get(i); //list.get(i)= e.g., BCSD/
-                                dirHashSet.add(td2);
-                                //String2.log(">> add dir=" + td2);
-                            }                          
-                        }
-
-                        for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
-                            String keyFullName = objectSummary.getKey();
-                            String keyDir = File2.getDirectory(baseURL + keyFullName);
-                            String keyName = File2.getNameAndExtension(keyFullName);
-                            boolean matchesPath = keyDir.startsWith(tDir) && //it should
-                                ((keyDir.length() == tDir.length() ||
-                                  tRecursive && pathRegexPattern.matcher(keyDir).matches()));
-                            if (debugMode) String2.log(">> key=" + keyFullName);
-                                //+ "\n>> matchesPathRegex=" + matchesPath);
-                            if (matchesPath) {
-
-                                //store this dir
-                                if (tDirectoriesToo) {
-                                    //S3 only returns object keys. I must infer/collect directories.
-                                    //Store this dir and parents back to tDir.
-                                    String choppedKeyDir = keyDir;
-                                    while (choppedKeyDir.length() >= tDir.length()) {
-                                        if (!dirHashSet.add(choppedKeyDir)) 
-                                            break; //hash set already had this, so will already have parents
-
-                                        //chop off last subdirectory
-                                        choppedKeyDir = File2.getDirectory(
-                                            choppedKeyDir.substring(0, choppedKeyDir.length() - 1)); //remove trailing /
-                                    }
-                                }
-
-                                //store this file's information
-                                //Sometimes directories appear as files named "" with size=0.
-                                //I don't store those as files.
-                                boolean matches = keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
-                                //if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" + matches);
-                                if (matches) {
-                                    directoryPA.add(keyDir);
-                                    namePA.add(keyName);
-                                    lastModifiedPA.add(objectSummary.getLastModified().getTime()); //epoch millis
-                                    sizePA.add(objectSummary.getSize()); //long
-                                }
-                            }
-                        }
-                        String token = result.getNextContinuationToken();
-                        req.setContinuationToken(token);
-
+                        /*
                         //write a chunk to file?
-                        if ((result.isTruncated() && table.nRows() > 10000) ||  //write a chunk
-                            (!result.isTruncated() && writtenToFile)) {         //write final chunk
+                        if ((response.isTruncated() && table.nRows() > 10000) ||  //write a chunk
+                            (!response.isTruncated() && writtenToFile)) {         //write final chunk
                             if (!writtenToFile)
                                 File2.makeDirectory(File2.getDirectory(dnlsFileName));  //ensure dir exists
                             table.writeJsonlCSV(dnlsFileName, writtenToFile? true : false); //append
                             table.removeAllRows();
                             writtenToFile = true;
                         }
+                        */
+                    }
 
-                    } while (result.isTruncated());
-
+                    /*
                     //read the file
                     if (writtenToFile) {
                         table = new Table();
@@ -502,36 +483,25 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                         //if no error:
                         File2.delete(dnlsFileName);
                     } //else use table as is
+                    */
 
-                } catch (AmazonServiceException ase) {
-                    String msg = keepGoing + "AmazonServiceException: " + 
-                        ase.getErrorType() + " ERROR, HTTP Code=" + ase.getStatusCode() + 
-                        ": " + ase.getMessage();
-                    String2.log(MustBe.throwable(msg, ase));
-                    //Bob is testing: don't throw. Return what you have.
-                    //throw new IOException(, ase);
-                } catch (SdkClientException sce) {
-                    String2.log(MustBe.throwable(keepGoing + sce.getMessage(), sce));
-                    //Bob is testing: don't throw. Return what you have.
-                    //throw new IOException(keepGoing + sce.getMessage(), sce);
+                    //add directories to the table
+                    if (tDirectoriesToo) {
+                        Iterator<String> it = dirHashSet.iterator();
+                        while (it.hasNext()) {
+                            directoryPA.add(it.next());
+                            namePA.add("");
+                            lastModifiedPA.add(Long.MAX_VALUE); 
+                            sizePA.add(Long.MAX_VALUE);
+                        }
+                    }
+
+                    table.leftToRightSortIgnoreCase(2);
+                    return table;
+
                 } catch (Exception e) {
                     throw new IOException(e);
                 }
-
-                //add directories to the table
-                if (tDirectoriesToo) {
-                    Iterator<String> it = dirHashSet.iterator();
-                    while (it.hasNext()) {
-                        directoryPA.add(it.next());
-                        namePA.add("");
-                        lastModifiedPA.add(Long.MAX_VALUE); 
-                        sizePA.add(Long.MAX_VALUE);
-                    }
-                }
-
-                table.leftToRightSortIgnoreCase(2);
-                return table;
-
             }
 
             //HYRAX before THREDDS
