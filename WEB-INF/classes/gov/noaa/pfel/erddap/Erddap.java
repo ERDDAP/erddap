@@ -16,7 +16,6 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
@@ -47,7 +46,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -313,33 +311,6 @@ public class Erddap extends HttpServlet {
             EDStatic.subscriptions = new Subscriptions(
                 BPD + "subscriptionsV1.txt", 48, //maxHoursPending, 
                 EDStatic.preferredErddapUrl); //prefer https url                
-
-        //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
-        String imageFiles[] = RegexFilenameFilter.recursiveFullNameList(
-            EDStatic.contentDirectory + "images/", ".+", false);
-        for (int i = 0; i < imageFiles.length; i++) {
-            int tpo = imageFiles[i].indexOf("/images/");
-            if (tpo < 0) tpo = imageFiles[i].indexOf("\\images\\");
-            if (tpo < 0) {
-                String2.log("'/images/' not found in images/ file: " + imageFiles[i]);
-                continue;
-            }
-            String tName = imageFiles[i].substring(tpo + 8);
-            if (verbose) String2.log("  copying images/ file: " + tName);
-            File2.copy(EDStatic.contentDirectory + "images/" + tName,  EDStatic.imageDir + tName);
-        }
-
-        //ensure images exist and get their sizes
-        Image tImage = Image2.getImage(EDStatic.imageDir + 
-            EDStatic.lowResLogoImageFile, 10000, false);
-        EDStatic.lowResLogoImageFileWidth   = tImage.getWidth(null);
-        EDStatic.lowResLogoImageFileHeight  = tImage.getHeight(null);
-        tImage = Image2.getImage(EDStatic.imageDir + EDStatic.highResLogoImageFile, 10000, false);
-        EDStatic.highResLogoImageFileWidth  = tImage.getWidth(null);
-        EDStatic.highResLogoImageFileHeight = tImage.getHeight(null);
-        tImage = Image2.getImage(EDStatic.imageDir + EDStatic.googleEarthLogoFile, 10000, false);
-        EDStatic.googleEarthLogoFileWidth   = tImage.getWidth(null);
-        EDStatic.googleEarthLogoFileHeight  = tImage.getHeight(null);
 
         //make new catInfo with first level hashMaps
         int nCat = EDStatic.categoryAttributes.length;
@@ -1179,7 +1150,9 @@ public class Erddap extends HttpServlet {
                 throw new SimpleException(msg + "unexpected aud=" + aud);
             if (email != null)
                 email = email.toLowerCase(); //so case insensitive, to avoid trouble
-            EDStatic.subscriptions.ensureEmailValid(email); //checks validity and emailBlacklist, throws exception
+            if (EDStatic.subscriptions == null) 
+                 String2.ensureEmailAddress(email);
+            else EDStatic.subscriptions.ensureEmailValid(email); //checks validity and emailBlacklist, throws exception
             //Don't check list of users. Allow anyone to log in.
             //if (!EDStatic.onListOfUsers(email))        //ensure it is a registered user
             //    throw new SimpleException(
@@ -1485,7 +1458,9 @@ public class Erddap extends HttpServlet {
             //justPrintable is good security and makes EDStatic.loggedInAsSuperuser special
             if (email != null) email = String2.justPrintable(email).toLowerCase();  //so case insensitive, to avoid trouble
             if (nonce != null) nonce = String2.justPrintable(nonce);
-            String testEmailValid = EDStatic.subscriptions.testEmailValid(email);
+            String testEmailValid = EDStatic.subscriptions == null?
+                String2.testEmailAddress(email) :              //tests syntax
+                EDStatic.subscriptions.testEmailValid(email);  //tests syntax and blacklist             
 
             //FIRST STEP: Is user submitting is user requesting the invitation email?
             //use getParameter because form info may have been POST'd

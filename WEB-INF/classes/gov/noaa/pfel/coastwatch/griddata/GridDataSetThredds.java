@@ -286,8 +286,9 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
                     try {
                         //FUTURE: THIS COULD NOW BE DONE VIA OPENDAPHELPER,
                         //but not time critical, since just done once per GridDataSetThredds
+                        Group rootGroup = netcdfFile.getRootGroup();
 
-                        NcHelper.getGlobalAttributes(netcdfFile, globalAttributes);
+                        NcHelper.getGroupAttributes(rootGroup, globalAttributes);
                         //if (verbose) String2.log("\n// global attributes:\n" +
                         //    globalAttributes.toNcString("\t\t:", " ;"));
 

@@ -16,6 +16,7 @@ import com.cohort.util.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,11 +24,13 @@ import java.util.List;
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Put it in the classpath for the compiler and for Java.
  */
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
-import ucar.ma2.*;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /** The Java DAP classes.  */
 //import dods.dap.*;
@@ -71,22 +74,23 @@ public class SaveOpendap  {
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
+        //open the file (before 'try'); if it fails, no temp file to delete
         //DODSNetcdfFile in = new DODSNetcdfFile(url); //bug? showed no global attributes //but fixed in 2.2.16
-        //NetcdfFile in = NetcdfFile.open(url);  //this fails: The server does not support byte ranges.
-        NetcdfDataset in = NetcdfDataset.openDataset(url);  
+        //NetcdfFile in = NetcdfFiles.open(url);  //this fails: The server does not support byte ranges.
+        NetcdfDataset in = NetcdfDatasets.openDataset(url);     //2021: 's' is new API
         try {
 
-            //open the file (before 'try'); if it fails, no temp file to delete
-            NetcdfFileWriter out = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
+            NetcdfFormatWriter ncWriter = null;
             
             try {
-                Group outRootGroup = out.addGroup(null, "");
+                NetcdfFormatWriter.Builder out = NetcdfFormatWriter.createNewNetcdf3(
+                    fullName + randomInt);
+                Group.Builder outRootGroup = out.getRootGroup();
                 out.setFill(false);
 
                 //get the list of dimensions
-    //getDimensions is deprecated
-                List globalDimList = in.getDimensions();
+                Group inRootGroup = in.getRootGroup();
+                List globalDimList = inRootGroup.getDimensions();
 
                 //add the dimensions to 'out'
                 int nGlobalDim = globalDimList.size();
@@ -94,26 +98,26 @@ public class SaveOpendap  {
                 for (int i = 0; i < nGlobalDim; i++) {
                     Dimension dim = (Dimension)globalDimList.get(i);
                     String dimName = dim.getName();
-                    out.addDimension(outRootGroup, dimName, dim.getLength(), 
-                        dim.isUnlimited(), false);  //isVariableLength
+                    Dimension tDim = NcHelper.addDimension(outRootGroup, dimName, dim.getLength(), 
+                        true, dim.isUnlimited(), false);  //isShared, ..., isVariableLength
                     if (verbose) String2.log("    dimName" + i + "=" + dimName);
                 }
 
                 //get the list of opendap variables
-                List varList = in.getVariables();
+                List inVarList = in.getVariables();
 
                 //add the variables to .nc
-                int nVars = varList.size();
-                if (verbose) String2.log("  nVars=" + nVars);
-                Variable newVars[] = new Variable[nVars];
-                for (int v = 0; v < nVars; v++) {
+                int nInVars = inVarList.size();
+                if (verbose) String2.log("  nInVars=" + nInVars);
+                Variable.Builder newVars[] = new Variable.Builder[nInVars];
+                for (int v = 0; v < nInVars; v++) { 
                     //get the variable
-                    Variable var = (Variable)varList.get(v);
-                    String varName = var.getName();
+                    Variable inVar = (Variable)inVarList.get(v);
+                    String varName = inVar.getFullName();
                     if (verbose) String2.log("    varName" + v + "=" + varName);
 
                     //get nDimensions
-                    List tDimList = var.getDimensions();
+                    List tDimList = inVar.getDimensions();
                     int nTDim = tDimList.size();
 
                     //create dimension[] 
@@ -122,16 +126,14 @@ public class SaveOpendap  {
                         dimList.add((Dimension)tDimList.get(d));
 
                     //add the variable to 'out'
-                    newVars[v] = out.addVariable(outRootGroup, varName, 
-                        var.getDataType(), dimList); 
+                    newVars[v] = NcHelper.addVariable(outRootGroup, varName, 
+                        inVar.getDataType(), dimList); 
 
                     //write Attributes   (after adding variables)
-                    List attList = var.getAttributes();
-                    int nAtt = attList.size();
-                    for (int a = 0; a < nAtt; a++) {
-                        Attribute att = (Attribute)attList.get(a);
-                        newVars[v].addAttribute(att);
-                    }
+                    AttributeContainer attList = inVar.attributes();
+                    Iterator it = attList.iterator();
+                    while (it.hasNext())
+                        newVars[v].addAttribute((ucar.nc2.Attribute)it.next());
                 }
 
                 //global attributes
@@ -146,26 +148,27 @@ public class SaveOpendap  {
 
                 //leave "define" mode
                 if (verbose) String2.log("  leaving 'define' mode");
-                out.create();
+                ncWriter = out.build();
 
                 //write the data
-                for (int v = 0; v < nVars; v++) {
-                    Variable var = (Variable)varList.get(v);
-                    if (verbose) String2.log("  writing data var=" + var.getName());
+                for (int v = 0; v < nInVars; v++) {
+                    Variable inVar = (Variable)inVarList.get(v);
+                    if (verbose) String2.log("  writing data inVar=" + inVar.getFullName());
 
                     //write the data
-                    out.write(newVars[v], var.read());
+                    ncWriter.write(newVars[v].getFullName(), inVar.read());
                 }
 
                 //I care about this exception
-                out.close();
-                out = null;
+                ncWriter.close();
+                ncWriter = null;
 
             } catch (Exception e) {
-                try {
-                    if (out != null) out.abort(); //explicitly close it
-                } catch (Exception e2) {
-                    //don't care
+                String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+                if (ncWriter != null) {
+                    try {ncWriter.abort(); } catch (Exception e9) {}
+                    File2.delete(fullName + randomInt); 
+                    ncWriter = null;
                 }
                 throw e;
             }
@@ -375,7 +378,8 @@ String shouldBe =
 "  :station = \"31201\";\n" +
 "  :comment = \"Floripa, Brazil (109)\";\n" +
 "  :location = \"27.70 S 48.13 W \";\n" +
-"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
+"  :_CoordSysBuilder = \"ucar.nc2.internal.dataset.conv.CoardsConventions\";\n" + //2021-01-07 changed with netcdf-java 5.4.1
+//"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
 "}\n";
         Test.ensureEqual(info, shouldBe, "info=" + info);
         File2.delete(dir + name);

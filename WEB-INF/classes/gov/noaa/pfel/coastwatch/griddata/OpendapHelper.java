@@ -35,8 +35,8 @@ import ucar.ma2.ArrayString;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
-import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
  * This class has some static convenience methods related to Opendap and the 
@@ -1351,11 +1351,11 @@ public class OpendapHelper  {
         //*** make ncOut.    If createNew fails, no clean up needed.
         File2.makeDirectory(File2.getDirectory(fullFileName));
         boolean nc3Mode = true;
-        NetcdfFileWriter ncOut =
-            NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3,
-                fullFileName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         try {
-            Group rootGroup = ncOut.addGroup(null, "");
+            NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
+                fullFileName + randomInt);
+            Group.Builder rootGroup = ncOut.getRootGroup();
             ncOut.setFill(false);
 
             //define the data variables in ncOut
@@ -1364,7 +1364,7 @@ public class OpendapHelper  {
             ArrayList   dims     = new ArrayList(); //ucar.nc2.Dimension
             int         varShape[][] = new int[nVars][];
             boolean     isString[] = new boolean[nVars];  //all false
-            Variable newVars[] = new Variable[nVars];
+            Variable.Builder newVars[] = new Variable.Builder[nVars];
             for (int v = 0; v < nVars; v++) {
 
                 BaseType baseType = dds.getVariable(varNames[v]);
@@ -1392,7 +1392,8 @@ public class OpendapHelper  {
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, false, false)); //isUnlimited, isVariableLength
+                            Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
+                            dims.add(tDim);
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
@@ -1407,16 +1408,18 @@ public class OpendapHelper  {
                         int strlen = varAtts.getInt("DODS_strlen");
                         if (strlen <= 0 || strlen == Integer.MAX_VALUE) //netcdf-java doesn't like 0
                             strlen = 255;
-                        newVars[v] = ncOut.addStringVariable(rootGroup, varNames[v], tDims, strlen);
+                        newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varNames[v], tDims, strlen);
                     } else {
                         
                         //make numeric variable
-                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                             NcHelper.getNc3DataType(tPAType), tDims);
                     }
 
                 } else if (baseType instanceof DArray) {
                     //dArray is usually 1 dim, but may be multidimensional
+//2021-01-08 I think this is now incorrect with netcdf-java 5.4.1
+// I think there is no need to add extra dim here since NcHelper.addNc3StringVariable handles that.
                     DArray dArray = (DArray)baseType;
                     int nDims = dArray.numDimensions();    
                     ArrayList tDims = new ArrayList();
@@ -1431,7 +1434,8 @@ public class OpendapHelper  {
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, false, false)); //isUnlimited, isVariableLength
+                            Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize); 
+                            dims.add(tDim);
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
@@ -1446,11 +1450,11 @@ public class OpendapHelper  {
                         int strlen = varAtts.getInt("DODS_strlen");
                         if (strlen <= 0 || strlen == Integer.MAX_VALUE)
                             strlen = 255;
-                        newVars[v] = ncOut.addStringVariable(rootGroup, 
+                        newVars[v] = NcHelper.addNc3StringVariable(rootGroup,  
                             varNames[v], tDims, strlen);
                     } else {
                         //make numeric variable
-                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                             NcHelper.getNc3DataType(tPAType), tDims);
                     }
 
@@ -1476,20 +1480,20 @@ public class OpendapHelper  {
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(rootGroup, 
-                                dimName, dimSize, false, false)); //isUnlimited, isVariableLength
+                            Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize); 
+                            dims.add(tDim);
                         }
                         ArrayList tDims = new ArrayList();
                         tDims.add(dims.get(which));
                         varShape[v] = new int[1];
                         varShape[v][0] = dimSize;
-                        newVars[v] = ncOut.addStringVariable(rootGroup,
+                        newVars[v] = NcHelper.addNc3StringVariable(rootGroup, 
                             varNames[v], tDims, strlen);
 
                     } else {
                         //make numeric scalar variable
                         varShape[v] = new int[0];
-                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                             NcHelper.getNc3DataType(tPAType), new ArrayList());
                     }
                 }
@@ -1504,7 +1508,7 @@ public class OpendapHelper  {
             NcHelper.setAttributes(nc3Mode, rootGroup, gAtts);
 
             //leave "define" mode in ncOut
-            ncOut.create();
+            ncWriter = ncOut.build();
 
             //read and write the variables
             for (int v = 0; v < nVars; v++) {
@@ -1517,6 +1521,7 @@ public class OpendapHelper  {
                 pas[0].trimToSize(); //so underlying array is exact size
                 if (debug) String2.log("  pas[0].size=" + pas[0].size() + 
                     (pas[0].size() > 0? " #0=" + pas[0].getString(0) : ""));
+                Variable newVar = ncWriter.findVariable(newVars[v].getFullName()); //because newVars are Variable.Builder's
                 if (isString[v]) {
                     //String variable
                     int n = pas[0].size();
@@ -1524,10 +1529,10 @@ public class OpendapHelper  {
                     ArrayObject.D1 ta = (ArrayObject.D1)(Array.factory(DataType.STRING, new int[]{n})); 
                     for (int i = 0; i < n; i++)
                         ta.set(i, pas[0].getString(i));
-                    ncOut.writeStringData(newVars[v], ta);
+                    ncWriter.writeStringDataToChar(newVar, ta);
                 } else {
                     //non-String variable
-                    ncOut.write(newVars[v], 
+                    ncWriter.write(newVar, 
                         Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                             varShape[v], pas[0].toObjectArray()));
                 }
@@ -1537,8 +1542,8 @@ public class OpendapHelper  {
             }
 
             //if close throws Throwable, it is trouble
-            ncOut.close(); //it calls flush() and doesn't like flush called separately
-            ncOut = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -1549,15 +1554,12 @@ public class OpendapHelper  {
             //String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
         } catch (Throwable t) {
-            //try to close the file
-            try {
-                if (ncOut != null) ncOut.abort();
-            } catch (Throwable t2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullFileName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(fullFileName + randomInt);
 
             throw t;
         }
@@ -1915,12 +1917,13 @@ public class OpendapHelper  {
 
         //*Then* make ncOut.    If createNew fails, no clean up needed.
         File2.makeDirectory(File2.getDirectory(fullFileName));
-        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         boolean nc3Mode = true;
 
         try {
-            Group rootGroup = ncOut.addGroup(null, "");
+            NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
+                fullFileName + randomInt);
+            Group.Builder rootGroup = ncOut.getRootGroup();
             ncOut.setFill(false);
 
             //define the data variables in ncOut
@@ -1934,11 +1937,11 @@ public class OpendapHelper  {
             PAType dimPAType[] = new PAType[nDims];
             boolean isDGrid = true; //change if false
 
-            PAType dataPAType[] = new PAType[nVars]; 
-            boolean isStringVar[] = new boolean[nVars]; //all false
-            Variable newVars[] = new Variable[nVars];
-            Variable newDimVars[] = new Variable[nDims];
-            PAType dimPATypes[] = new PAType[nDims];
+            PAType dataPAType[]           = new PAType[nVars]; 
+            boolean isStringVar[]         = new boolean[nVars]; //all false
+            Variable.Builder newVars[]    = new Variable.Builder[nVars];
+            Variable.Builder newDimVars[] = new Variable.Builder[nDims];
+            PAType dimPATypes[]           = new PAType[nDims];
             for (int v = 0; v < nVars; v++) {
                 //String2.log("  create var=" + varNames[v]);
                 if (varNames[v] == null) 
@@ -1967,16 +1970,16 @@ public class OpendapHelper  {
                             int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
                             //String2.log("    dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
-                            dims.add(ncOut.addDimension(rootGroup, dimName, 
-                                dimSize, false, false)); //isUnlimited, isVariableLength
+                            Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
+                            dims.add(tDim);
                             PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
                             dimPATypes[d] = getElementPAType(pv);
-                            newDimVars[d] = ncOut.addVariable(rootGroup, dimName, 
+                            newDimVars[d] = NcHelper.addVariable(rootGroup, dimName, 
                                 NcHelper.getNc3DataType(dimPATypes[d]), 
                                 Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims.get(d).getFullName()))
+                            if (!dimName.equals(dims.get(d).getName()))  //the full name
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -1987,7 +1990,7 @@ public class OpendapHelper  {
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
                     dataPAType[v] = getElementPAType(pv);
                     //String2.log("v=" + v + " pv=" + pv.toString() + " dataPAType=" + dataPAType[v]);
-                    newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                    newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                         NcHelper.getNc3DataType(dataPAType[v]), dims);
 
                 } else if (baseType instanceof DArray) {
@@ -2012,12 +2015,12 @@ public class OpendapHelper  {
                             int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
                             //String2.log("    DArray dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
-                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, 
-                                false, false)); //isUnlimited, isVariableLength
+                            Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
+                            dims.add(tDim);
                             //don't make a related variable
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims.get(d).getFullName()))
+                            if (!dimName.equals(dims.get(d).getName())) //the full name
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -2040,16 +2043,16 @@ public class OpendapHelper  {
                             varNames[v] = null;
                             continue;
                         }
-                        tDims.add(ncOut.addDimension(rootGroup, 
-                            varNames[v] + NcHelper.StringLengthSuffix, 
-                            nChars, false, false));  //isUnlimited, isVariableLength
+                        Dimension tDim = NcHelper.addDimension(rootGroup, 
+                            varNames[v] + NcHelper.StringLengthSuffix, nChars);
+                        tDims.add(tDim);
 
-                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                             ucar.ma2.DataType.CHAR, tDims);
 
                     } else {
                         //a regular variable
-                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        newVars[v] = NcHelper.addVariable(rootGroup, varNames[v], 
                             NcHelper.getNc3DataType(dataPAType[v]), dims);
                     }
 
@@ -2068,7 +2071,7 @@ public class OpendapHelper  {
             //write dimension attributes in ncOut
             if (isDGrid) {
                 for (int d = 0; d < nDims; d++) {
-                    String dimName = dims.get(d).getFullName();               
+                    String dimName = dims.get(d).getName();  //the full name
                     tAtts.clear();
                     getAttributes(das, dimName, tAtts);
                     NcHelper.setAttributes(nc3Mode, newDimVars[d], tAtts, dimPATypes[d].isUnsigned());
@@ -2083,16 +2086,16 @@ public class OpendapHelper  {
             }
 
             //leave "define" mode in ncOut
-            ncOut.create();
+            ncWriter = ncOut.build();
 
             //read and write the dimensions
             if (isDGrid) {
                 for (int d = 0; d < nDims; d++) {
                     String tProjection = "[" + sss[d*3] + ":" + sss[d*3+1] + ":" + sss[d*3+2] + "]"; 
                     PrimitiveArray pas[] = getPrimitiveArrays(dConnect, 
-                        "?" + dims.get(d).getFullName() + tProjection); 
+                        "?" + dims.get(d).getName() + tProjection);  //the full name
                     pas[0].trimToSize(); //so underlying array is exact size
-                    ncOut.write(newDimVars[d], 
+                    ncWriter.write(newDimVars[d].getFullName(), 
                         NcHelper.get1DArray(pas[0].toObjectArray(), pas[0].isUnsigned()));
                 }
             }
@@ -2103,6 +2106,7 @@ public class OpendapHelper  {
                 if (varNames[v] == null)
                     continue;
                 long vTime = System.currentTimeMillis();
+                Variable newVar = ncWriter.findVariable(newVars[v].getFullName()); //because newVars are Variable.Builder's
 
                 if (jplMode) {
                     //read in chunks
@@ -2118,7 +2122,7 @@ public class OpendapHelper  {
                             dConnect, "?" + varNames[v] + tProjection); 
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
-                        ncOut.write(newVars[v], origin,
+                        ncWriter.write(newVar, origin,
                             ucar.ma2.Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                                 jplChunkShape, pas[0].toObjectArray()));
                     }
@@ -2136,10 +2140,10 @@ public class OpendapHelper  {
                         ArrayObject.D1 ta = (ArrayObject.D1)(Array.factory(DataType.STRING, new int[]{n})); 
                         for (int i = 0; i < n; i++)
                             ta.set(i, pas[0].getString(i));
-                        ncOut.writeStringData(newVars[v], ta);
+                        ncWriter.writeStringDataToChar(newVar, ta);
                     } else {
                         //non-String variable
-                        ncOut.write(newVars[v], 
+                        ncWriter.write(newVar, 
                             Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                                 shape, pas[0].toObjectArray()));
                     }
@@ -2151,8 +2155,8 @@ public class OpendapHelper  {
             }
 
             //if close throws Throwable, it is trouble
-            ncOut.close(); //it calls flush() and doesn't like flush called separately
-            ncOut = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -2163,15 +2167,12 @@ public class OpendapHelper  {
             //String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
         } catch (Throwable t) {
-            //try to close the file
-            try {
-                if (ncOut != null) ncOut.abort(); 
-            } catch (Throwable t2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullFileName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(fullFileName + randomInt);
 
             throw t;
         }
@@ -2229,7 +2230,7 @@ public class OpendapHelper  {
 
     /** This tests dapToNc DArray. */
     public static void testDapToNcDArray() throws Throwable {
-        String2.log("\n\n*** OpendapHelper.testDapToNcDArray");
+        String2.log("\n\n*** OpendapHelper.testDapToNcDArray()");
         String fileName, expected, results;      
         String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
@@ -2360,7 +2361,7 @@ public class OpendapHelper  {
 "      {235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.94, 235.94, 235.94, 235.94, 235.94, 235.93, 235.93, 235.93, 235.92, 235.92, 235.92, 235.91, 235.91, 235.91, 235.9, 235.9, 235.9, 235.89, 235.89, 235.88, 235.88, 235.88, 235.88, 235.88, 235.88, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.84, 235.84, 235.84, 235.84, 235.84, 235.84, 235.83, 235.83, 235.83, 235.83, 235.83, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82}\n" +
 "    PL_HD = \n" +
 "      {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
-"    flag = \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\"\n" +
+"    flag =   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZEZZSZZZZ\",   \"ZZZZZEZZSZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\"\n" +
 "}\n";
             Test.ensureEqual(results, expected, "results=" + results);
             File2.delete(fileName);

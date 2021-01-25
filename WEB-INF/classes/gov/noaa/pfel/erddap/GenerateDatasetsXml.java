@@ -187,8 +187,9 @@ public class GenerateDatasetsXml {
                 "EDDTableFromThreddsFiles",
                 "EDDTableFromWFSFiles",
                 "EDDsFromFiles",
-                "ncdump",
-                "addFillValueAttributes"};
+                "addFillValueAttributes",
+                "findDuplicateTime",
+                "ncdump"};
             StringBuilder sb = new StringBuilder();
             int net = eddTypes.length;
             int net2 = Math2.hiDiv(net, 2);
@@ -294,7 +295,7 @@ public class GenerateDatasetsXml {
                         s1  = get(args,  1,  s1, "Parent directory");
                         s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
                         s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
-                        s4  = get(args,  4,  s4, "Group (or \"\" for all/any or \"[root]\" for the root group)");                                         
+                        s4  = get(args,  4,  s4, "Group (without trailing slash) (or \"\" for all/any or \"[root]\" for just the root group)");   
                         s5  = get(args,  5,  s5, "DimensionsCSV (or \"\" for default)");                       
                         s6  = get(args,  6,  s6, reloadEveryNMinutesMessage);
                         s7  = get(args,  7,  s7, cacheFromUrlPrompt);
@@ -308,7 +309,7 @@ public class GenerateDatasetsXml {
                         s1  = get(args,  1,  s1, "Parent directory");
                         s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
                         s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
-                        s4  = get(args,  4,  s4, "Group (or \"\" for all/any or \"[root]\" for the root group)");                                         
+                        s4  = get(args,  4,  s4, "Group (without trailing slash) (or \"\" for all/any or \"[root]\" for just the root group)"); 
                         s5  = get(args,  5,  s5, "DimensionsCSV (or \"\" for default)");                       
                         s6  = get(args,  6,  s6, reloadEveryNMinutesMessage);
                         s7  = get(args,  7,  s7, cacheFromUrlPrompt);
@@ -798,6 +799,19 @@ public class GenerateDatasetsXml {
                         String2.log("working...");
                         printToBoth(EDD.generateDatasetsXmlFromFiles(s1));
 
+                    } else if (eddType.equals("addFillValueAttributes")) {
+                        s1  = get(args,  1,  s1, "datasets.xml file name");
+                        s2  = get(args,  2,  s2, "addFillValueAttributes .csv file name");
+                        String2.log("working...");
+                        printToBoth(EDD.addFillValueAttributes(s1, s2));
+
+                    } else if (eddType.equals("findDuplicateTime")) {
+                        s1  = get(args,  1,  s1, "Starting directory");
+                        s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
+                        s3  = get(args,  3,  s3, "Name of time variable");
+                        String2.log("working...");
+                        printToBoth(FindDuplicateTime.findDuplicateTime(s1, s2, s3));
+
                     } else if (eddType.equals("ncdump")) {
                         s1  = get(args,  1,  s1, "File name");
                         s2  = get(args,  2,  s2, 
@@ -806,12 +820,6 @@ public class GenerateDatasetsXml {
     //"\"-k\" (type), \"-t\" (human-readable times), )\n"); //don't work!?
                         String2.log("working...");
                         printToBoth(NcHelper.ncdump(s1, s2));
-
-                    } else if (eddType.equals("addFillValueAttributes")) {
-                        s1  = get(args,  1,  s1, "datasets.xml file name");
-                        s2  = get(args,  2,  s2, "addFillValueAttributes .csv file name");
-                        String2.log("working...");
-                        printToBoth(EDD.addFillValueAttributes(s1, s2));
 
                     } else {
                         String2.log("ERROR: eddType=" + eddType + " is not an option.");

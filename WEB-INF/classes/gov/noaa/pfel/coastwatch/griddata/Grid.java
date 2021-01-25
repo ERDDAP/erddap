@@ -50,8 +50,7 @@ import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
 import ucar.nc2.util.*;
-import ucar.unidata.geoloc.LatLonRect;
-import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /** import ncsa.... See the comments for initialize and saveAsHDFViaNCSA. 
    The file was jhdf.jar (Windows and Linux variants and related 
@@ -833,7 +832,7 @@ public class Grid  {
         if (verbose) String2.log("Grid.grdHasData: " + fullFileName);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFile grdFile = NetcdfFile.open(fullFileName);
+        NetcdfFile grdFile = NetcdfFiles.open(fullFileName);
         try {
             long time = System.currentTimeMillis();
 
@@ -1962,6 +1961,7 @@ switch to finally clause
             //if (verbose) NcHelper.ncdump("Start of Grid.readNetCDF", fullFileName, "-h");
 
             long time = System.currentTimeMillis();
+            Group rootGroup = ncFile.getRootGroup();
 
             //find the lat, lon, and data variables
             //[COARDS] says "A longitude coordinate variable is identifiable 
@@ -2015,7 +2015,6 @@ try {
             Variable dataVariable = null;
             if (dataName == null) {
                 //find first variable which uses lonVariable and latVariable
-                Group rootGroup = ncFile.getRootGroup();
                 List rootGroupVariables = rootGroup.getVariables(); 
                 Dimension latDim = (Dimension)latVariable.getDimensions().get(0);
                 Dimension lonDim = (Dimension)lonVariable.getDimensions().get(0);
@@ -2030,7 +2029,7 @@ try {
                         if (tDimensions.get(dim) == lonDim) lonUsed = true;
                     }
                     if (latUsed && lonUsed) { //spaces are useful for GenerateThreddsXml
-                        if (verbose) String2.log("  Grid.readNetCDF grid variable found: " + dataVariable.getName());
+                        if (verbose) String2.log("  Grid.readNetCDF grid variable found: " + dataVariable.getFullName());
                         break;
                     } else {
                         dataVariable = null; 
@@ -2244,7 +2243,7 @@ try {
             DataHelper.scale(data, scale, offset);
 
             //read the attributes
-            NcHelper.getGlobalAttributes(ncFile, globalAttributes);
+            NcHelper.getGroupAttributes(rootGroup, globalAttributes);
             NcHelper.getVariableAttributes(latVariable, latAttributes);
             NcHelper.getVariableAttributes(lonVariable, lonAttributes);
             NcHelper.getVariableAttributes(dataVariable, dataAttributes);
@@ -3178,49 +3177,50 @@ try {
 
         //write the data
         //items determined by looking at a .grd file; items written in that order 
-        NetcdfFileWriter grd = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, directory + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         boolean nc3Mode = true;
         boolean success = false;
         try {
-            Group rootGroup = grd.addGroup(null, "");
+            NetcdfFormatWriter.Builder grd = NetcdfFormatWriter.createNewNetcdf3(
+                directory + randomInt);
+            Group.Builder rootGroup = grd.getRootGroup();
             grd.setFill(false);
             int nLat = lat.length;
             int nLon = lon.length;
 
-            Dimension sideDimension    = grd.addDimension(rootGroup, "side", 2);
-            Dimension xysizeDimension  = grd.addDimension(rootGroup, "xysize", nLon * nLat);
+            Dimension sideDimension   = NcHelper.addDimension(rootGroup, "side", 2);
+            Dimension xysizeDimension = NcHelper.addDimension(rootGroup, "xysize", nLon * nLat);
             List<Dimension> sideDimList   = Arrays.asList(sideDimension);
             List<Dimension> xysizeDimList = Arrays.asList(xysizeDimension);
 
             ArrayDouble.D1 x_range = new ArrayDouble.D1(2);
             x_range.set(0, lon[0]);
             x_range.set(1, lon[nLon - 1]);
-            Variable xRangeVar = grd.addVariable(rootGroup, "x_range", 
+            Variable.Builder xRangeVar = NcHelper.addVariable(rootGroup, "x_range", 
                 DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 y_range = new ArrayDouble.D1(2);
             y_range.set(0, lat[0]);
             y_range.set(1, lat[nLat - 1]);
-            Variable yRangeVar = grd.addVariable(rootGroup, "y_range", 
+            Variable.Builder yRangeVar = NcHelper.addVariable(rootGroup, "y_range", 
                 DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 z_range = new ArrayDouble.D1(2);
             z_range.set(0, minData);
             z_range.set(1, maxData);
-            Variable zRangeVar = grd.addVariable(rootGroup, "z_range", 
+            Variable.Builder zRangeVar = NcHelper.addVariable(rootGroup, "z_range", 
                 DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 spacing = new ArrayDouble.D1(2);
             spacing.set(0, nLon <= 1? Double.NaN : lonSpacing);  //if not really know, grd seems to use NaN
             spacing.set(1, nLat <= 1? Double.NaN : latSpacing);
-            Variable spacingVar = grd.addVariable(rootGroup, "spacing", 
+            Variable.Builder spacingVar = NcHelper.addVariable(rootGroup, "spacing", 
                 DataType.DOUBLE, sideDimList); 
 
             ArrayInt.D1 dimension = new ArrayInt.D1(2, false); //isUnsigned
             dimension.set(0, lon.length);
             dimension.set(1, lat.length);
-            Variable dimensionVar = grd.addVariable(rootGroup, "dimension", 
+            Variable.Builder dimensionVar = NcHelper.addVariable(rootGroup, "dimension", 
                 DataType.INT, sideDimList); 
 
             //write values from left to right, starting with the top row
@@ -3229,7 +3229,7 @@ try {
             for (int tLat = nLat - 1; tLat >= 0; tLat--) 
                 for (int tLon = 0; tLon < nLon; tLon++) 
                     tData.set(po++, (float)getData(tLon, tLat));
-            Variable zVar = grd.addVariable(rootGroup, "z", 
+            Variable.Builder zVar = NcHelper.addVariable(rootGroup, "z", 
                 DataType.FLOAT, xysizeDimList); //grd files use "z" for the data
 
             xRangeVar.addAttribute(new Attribute("units", "user_x_unit"));
@@ -3243,20 +3243,20 @@ try {
             rootGroup.addAttribute(new Attribute("source", "CoastWatch West Coast Node"));
 
             //leave "define" mode
-            grd.create();
+            ncWriter = grd.build();
 
             //then add data  (about 70% of time is here; so hard to speed up)
             long tTime = System.currentTimeMillis();
-            grd.write(xRangeVar,    x_range);
-            grd.write(yRangeVar,    y_range);
-            grd.write(zRangeVar,    z_range);
-            grd.write(spacingVar,   spacing);
-            grd.write(dimensionVar, dimension);
-            grd.write(zVar,         tData);
+            ncWriter.write(xRangeVar.getFullName(),    x_range);
+            ncWriter.write(yRangeVar.getFullName(),    y_range);
+            ncWriter.write(zRangeVar.getFullName(),    z_range);
+            ncWriter.write(spacingVar.getFullName(),   spacing);
+            ncWriter.write(dimensionVar.getFullName(), dimension);
+            ncWriter.write(zVar.getFullName(),         tData);
 
             //make sure the file is closed
-            grd.close();
-            grd = null;
+            ncWriter.close();
+            ncWriter = null;
 
             String2.log("  write data time=" + (System.currentTimeMillis() - tTime));
 
@@ -3264,18 +3264,12 @@ try {
             File2.rename(directory, randomInt + "", name + ext);
 
         } catch (Exception e) {
-            try {
-                if (grd != null) grd.abort(); //make sure it is explicitly closed
-            } catch (Exception e2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(directory + randomInt); 
+                ncWriter = null;
             }
-
-            try {
-                File2.delete(directory + randomInt);
-            } catch (Exception e2) {
-                //don't care
-            }
-
             throw e;
         }
 
@@ -4177,22 +4171,23 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //write the data
         //items determined by looking at a .nc file; items written in that order 
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, directory + randomInt); 
+        NetcdfFormatWriter ncWriter = null;
         boolean nc3Mode = true;
 
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                directory + randomInt); 
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
 
             int nLat = lat.length;
             int nLon = lon.length;
 
             //define the dimensions
-            Dimension timeDimension      = nc.addDimension(rootGroup, "time", 1);
-            Dimension altitudeDimension  = nc.addDimension(rootGroup, "altitude", 1);
-            Dimension latDimension       = nc.addDimension(rootGroup, "lat", nLat);
-            Dimension lonDimension       = nc.addDimension(rootGroup, "lon", nLon);
+            Dimension timeDimension     = NcHelper.addDimension(rootGroup, "time", 1);
+            Dimension altitudeDimension = NcHelper.addDimension(rootGroup, "altitude", 1);
+            Dimension latDimension      = NcHelper.addDimension(rootGroup, "lat", nLat);
+            Dimension lonDimension      = NcHelper.addDimension(rootGroup, "lon", nLon);
 
             //create the variables (and gather the data) 
             String endString = globalAttributes.getString("time_coverage_end");
@@ -4235,24 +4230,24 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
             ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
             tTime.set(0, hasTime? centeredTimeDouble : 0);
-            Variable timeVar = nc.addVariable(rootGroup, "time", DataType.DOUBLE, 
+            Variable.Builder timeVar = NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, 
                 Arrays.asList(timeDimension)); 
             
             ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
             tAltitude.set(0, 0);  //I treat all as altitude=0 !!!!
-            Variable altitudeVar = nc.addVariable(rootGroup, "altitude", DataType.DOUBLE, 
+            Variable.Builder altitudeVar = NcHelper.addVariable(rootGroup, "altitude", DataType.DOUBLE, 
                 Arrays.asList(altitudeDimension)); 
             
             ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
             for (int i = 0; i < nLat; i++)
                 tLat.set(i, lat[i]);
-            Variable latVar = nc.addVariable(rootGroup, "lat", DataType.DOUBLE, 
+            Variable.Builder latVar = NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, 
                 Arrays.asList(latDimension)); 
 
             ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
             for (int i = 0; i < nLon; i++)
                 tLon.set(i, lon[i]);
-            Variable lonVar = nc.addVariable(rootGroup, "lon", DataType.DOUBLE, 
+            Variable.Builder lonVar = NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, 
                 Arrays.asList(lonDimension)); 
             
             //write values to ArrayFloat.D4
@@ -4267,7 +4262,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             //order of dimensions is specified by the
             //coards standard (https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html)
             //see the topics "Number of dimensions" and "Order of dimensions"
-            Variable dataVar = nc.addVariable(rootGroup, dataName, DataType.FLOAT, 
+            Variable.Builder dataVar = NcHelper.addVariable(rootGroup, dataName, DataType.FLOAT, 
                 Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
 
             //setStatsAttributes
@@ -4282,16 +4277,17 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                     // lon = a*row + c*col + e
                     // lat = b*row + d*col + f
                     double matrix[] = {0, latSpacing, lonSpacing, 0, lon[0], lat[0]}; //right side up
-                    rootGroup.addAttribute(new Attribute("et_affine", 
+                    rootGroup.addAttribute(NcHelper.newAttribute("et_affine", 
                         NcHelper.get1DArray(matrix, false))); //float64[] {a, b, c, d, e, f}
                 } else {
-                    rootGroup.addAttribute(NcHelper.createAttribute(nc3Mode, names[i], globalAttributes.get(names[i])));
+                    rootGroup.addAttribute(NcHelper.newAttribute(nc3Mode,
+                        names[i], globalAttributes.get(names[i])));
                 }
             }
 
             //time attributes
             if (hasTime) 
-                timeVar.addAttribute(new Attribute("actual_range", 
+                timeVar.addAttribute(NcHelper.newAttribute("actual_range", 
                     NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble}, false)));     
             timeVar.addAttribute(new Attribute("fraction_digits",     new Integer(0)));     
             timeVar.addAttribute(new Attribute("long_name", hasTime? "Centered Time" : "Place Holder for Time"));
@@ -4303,7 +4299,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 timeVar.addAttribute(new Attribute("calendar",        calendar));
 
             //altitude attributes
-            altitudeVar.addAttribute(new Attribute("actual_range",    
+            altitudeVar.addAttribute(NcHelper.newAttribute("actual_range",    
                 NcHelper.get1DArray(new double[]{0, 0}, false)));     
             altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
             altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
@@ -4326,18 +4322,18 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             NcHelper.setAttributes(nc3Mode, dataVar, dataAttributes, false);  //unsigned=false because it is a float
 
             //leave "define" mode
-            nc.create();
+            ncWriter = nc.build();
 
             //then add data
-            nc.write(timeVar,     tTime);
-            nc.write(altitudeVar, tAltitude);
-            nc.write(latVar,      tLat);
-            nc.write(lonVar,      tLon);
-            nc.write(dataVar,     tGrid);
+            ncWriter.write(timeVar.getFullName(),     tTime);
+            ncWriter.write(altitudeVar.getFullName(), tAltitude);
+            ncWriter.write(latVar.getFullName(),      tLat);
+            ncWriter.write(lonVar.getFullName(),      tLon);
+            ncWriter.write(dataVar.getFullName(),     tGrid);
 
             //if close throws exception, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(directory, randomInt + "", name + ext);
@@ -4348,16 +4344,12 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
-            //try to close the file
-            try {
-                if (nc != null) nc.abort(); 
-            } catch (Exception e2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(directory + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(directory + randomInt);
-
             throw e;
         }
 

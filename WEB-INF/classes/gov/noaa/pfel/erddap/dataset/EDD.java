@@ -567,6 +567,8 @@ public abstract class EDD {
                 } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
                 } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
                 } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
+                } else if (tags.equals("<erddapDatasets><palettes>")) {
+                } else if (tags.equals("<erddapDatasets></palettes>")) {
                 } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
                 } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
                 } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
@@ -4944,7 +4946,7 @@ public abstract class EDD {
         String infoUrl = null;
         HashSet toRemove = new HashSet(Arrays.asList( 
             //Enter them lowercase here. The search for them is case-insensitive.
-            "_ncproperties", //If I write this, netcdf nc4 code later throws Exception when it writes its own version
+            "_ncproperties", //If I write this, netcdf nc4 code later throws Exception when it writes its own version 
             "cols", "columns", "cpu", 
             "cwhdf_version",
             "data_bins", "data_center", "data_maximum", "data_minimum", "day",
@@ -10938,7 +10940,7 @@ public abstract class EDD {
                     NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
                     try {
                         Attributes gAtts = new Attributes();
-                        NcHelper.getGlobalAttributes(ncFile, gAtts);
+                        NcHelper.getGroupAttributes(ncFile.getRootGroup(), gAtts);
                         featureType = gAtts.getString("featureType"); 
                         if (featureType == null) //cdm allows these aliases
                             featureType = gAtts.getString("CF:featureType");

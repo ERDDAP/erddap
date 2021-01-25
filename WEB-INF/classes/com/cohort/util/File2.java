@@ -239,7 +239,7 @@ public class File2 {
      *
      * @param fullName the full name of the file
      * @return true if the file existed and was successfully deleted; 
-     *    otherwise returns false.
+     *    otherwise returns false. This won't throw an exception.
      */
     public static boolean delete(String fullName) {
         //This can have problems if another thread is reading the file, so try repeatedly.
@@ -1292,17 +1292,32 @@ public class File2 {
      * This adds a slash (matching the other slashes in the dir) 
      * to the end of the dir (if one isn't there already).
      *
-     * @param dir with or without a slash at the end
-     * @return dir with a slash (matching the other slashes) at the end
+     * @param dir with or without a slash at the end.
+     * @return dir with a slash (matching the other slashes) at the end.
+     *    If dir is "", this does nothing.
      */
     public static String addSlash(String dir) {
-        if ("\\/".indexOf(dir.charAt(dir.length() - 1)) >= 0)
+        if (dir.length() == 0 ||
+            "\\/".indexOf(dir.charAt(dir.length() - 1)) >= 0)
             return dir;
         int po = dir.indexOf('\\');
         if (po < 0) 
             po = dir.indexOf('/');
         char slash = po < 0? '/' : dir.charAt(po);
         return dir + slash;
+    }
+
+    /**
+     * This removes the slash at the end of the dir (if there is one).
+     *
+     * @param dir with or without a slash at the end
+     * @return dir with a slash (matching the other slashes) at the end
+     */
+    public static String removeSlash(String dir) {
+        if (dir.length() == 0 ||
+            "\\/".indexOf(dir.charAt(dir.length() - 1)) < 0)
+            return dir;
+        return dir.substring(0, dir.length() - 1);
     }
 
 }

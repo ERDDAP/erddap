@@ -269,6 +269,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                     //*** get the first dataVariable  and its dimensions
                     //(other variables use this info and must match this info)
                     //tTime = System.currentTimeMillis();
+                    Group rootGroup = ncFile.getRootGroup();
                     Variable dataVariable = ncFile.findVariable(inFileVariableNames[0]);  //null if not found
                     Test.ensureNotNull(dataVariable, //errorInMethod added below
                         inFileVariableNames[0] + 
@@ -330,7 +331,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                     NcHelper.getVariableAttributes(yVariable, yAttributes);
                     NcHelper.getVariableAttributes(xVariable, xAttributes);
                     if (station == 0) 
-                        NcHelper.getGlobalAttributes(ncFile, globalAttributes); 
+                        NcHelper.getGroupAttributes(rootGroup, globalAttributes); 
 
                     //rarely used but useful diagnostics...
                     if (inDevelopment) {

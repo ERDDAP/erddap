@@ -1432,7 +1432,11 @@ public class StringArray extends PrimitiveArray {
      * to the beginning.
      */
     public void sort() {
-        Arrays.sort(array, 0, size, stringHolderComparator);
+        //see switchover point and speed comparison in 
+        //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
+        if (size < 8192)
+             Arrays.sort(array, 0, size, stringHolderComparator);
+        else Arrays.parallelSort(array, 0, size, stringHolderComparator);
     }
 
     /** 
@@ -1443,7 +1447,11 @@ public class StringArray extends PrimitiveArray {
      * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      */
     public void sortIgnoreCase() {
-        Arrays.sort(array, 0, size, stringHolderComparatorIgnoreCase);
+        //see switchover point and speed comparison in 
+        //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
+        if (size < 8192)
+             Arrays.sort(array, 0, size, stringHolderComparatorIgnoreCase);
+        else Arrays.parallelSort(array, 0, size, stringHolderComparatorIgnoreCase);
     }
 
     /**

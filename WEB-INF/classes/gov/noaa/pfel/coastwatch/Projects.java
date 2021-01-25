@@ -56,11 +56,13 @@ import java.time.format.*;
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Put it in the classpath for the compiler and for Java.
  */
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
-import ucar.ma2.*;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 
 
@@ -2803,441 +2805,440 @@ variables:
         //get a list of files
         String tempDir = "c:/programs/";
         String[] fileNames = RegexFilenameFilter.list(oldDir, "(.+cdf|.+cdf.gz)");
-        NetcdfFile oldFile = null;
-        NetcdfFileWriter newFile = null;
-        try {
 
-            //for each file
-            for (int fn = 0; fn < fileNames.length; fn++) { 
-            //for (int fn = 0; fn < 1; fn++) { 
-                String2.log("converting " + fileNames[fn]); //e.g., SODA_1.4.2_195806.cdf
-    
-                int po = fileNames[fn].lastIndexOf('_');
-                int year  = String2.parseInt(fileNames[fn].substring(po + 1, po + 5));
-                int month = String2.parseInt(fileNames[fn].substring(po + 5, po + 7)); //1..
-                int months = (year - 1950) * 12 + month - 1;
+        //for each file
+        for (int fn = 0; fn < fileNames.length; fn++) { 
+        //for (int fn = 0; fn < 1; fn++) { 
+            String2.log("converting " + fileNames[fn]); //e.g., SODA_1.4.2_195806.cdf
+
+            int po = fileNames[fn].lastIndexOf('_');
+            int year  = String2.parseInt(fileNames[fn].substring(po + 1, po + 5));
+            int month = String2.parseInt(fileNames[fn].substring(po + 5, po + 7)); //1..
+            int months = (year - 1950) * 12 + month - 1;
 //if (year < 2007) continue;
 //if (year == 2007 && month < 2) continue;
-                String2.log("  year=" + year + " month=" + month + " monthsSinceJan1950=" + months);
+            String2.log("  year=" + year + " month=" + month + " monthsSinceJan1950=" + months);
 
-                //if .gz, make a temp file
-                String cdfDir = oldDir;
-                String cdfName = oldDir + fileNames[fn];
-                boolean gzipped = cdfName.endsWith(".gz");
-                if (gzipped) {
-                    SSR.unGzip(oldDir + fileNames[fn], tempDir, true, 90);
-                    cdfDir = tempDir;
-                    cdfName = fileNames[fn].substring(0, fileNames[fn].length() - 3);
-                }                    
+            //if .gz, make a temp file
+            String cdfDir = oldDir;
+            String cdfName = oldDir + fileNames[fn];
+            boolean gzipped = cdfName.endsWith(".gz");
+            if (gzipped) {
+                SSR.unGzip(oldDir + fileNames[fn], tempDir, true, 90);
+                cdfDir = tempDir;
+                cdfName = fileNames[fn].substring(0, fileNames[fn].length() - 3);
+            }                    
 
-                if (fn == 0) String2.log("\noldFile=" + NcHelper.ncdump(cdfDir + cdfName, "-h") + "\n");
+            if (fn == 0) String2.log("\noldFile=" + NcHelper.ncdump(cdfDir + cdfName, "-h") + "\n");
 
-                //open the old file
-                String newName = cdfName.substring(0, cdfName.length() - 3) + "nc";
-                oldFile = NcHelper.openFile(cdfDir + cdfName);
-                try {
+            //open the old file
+            String newName = cdfName.substring(0, cdfName.length() - 3) + "nc";
+            NetcdfFile oldFile = NcHelper.openFile(cdfDir + cdfName);
+            NetcdfFormatWriter ncWriter = null;
+            try {
 
-                    //open the new file
-                    newFile = NetcdfFileWriter.createNew(
-                        NetcdfFileWriter.Version.netcdf3, newDir + newName);
-                    try {
-                        boolean nc3Mode = true;
-                        Group rootGroup = newFile.addGroup(null, "");
+                Group inRootGroup = oldFile.getRootGroup();
 
-                        //find old dimensions
-                        Dimension oldTimeDimension  = oldFile.findDimension("time");
-                        Dimension oldDepthDimension = oldFile.findDimension("depth");
-                        Dimension oldLatDimension   = oldFile.findDimension("lat");
-                        Dimension oldLonDimension   = oldFile.findDimension("lon");
+                //open the new file
+                NetcdfFormatWriter.Builder newFile = NetcdfFormatWriter.createNewNetcdf3(newDir + newName);
+                boolean nc3Mode = true;
+                Group.Builder outRootGroup = newFile.getRootGroup();
 
-                        //find variables
-                        List<Variable> oldVars = oldFile.getVariables();
+                //find old dimensions
+                Dimension oldTimeDimension  = oldFile.findDimension("time");
+                Dimension oldDepthDimension = oldFile.findDimension("depth");
+                Dimension oldLatDimension   = oldFile.findDimension("lat");
+                Dimension oldLonDimension   = oldFile.findDimension("lon");
 
-                        //create the dimensions
-                        Dimension timeDimension  = newFile.addDimension(rootGroup, "time", 1);
-                        Dimension depthDimension = newFile.addDimension(rootGroup, "depth", oldDepthDimension.getLength());
-                        Dimension latDimension   = newFile.addDimension(rootGroup, "lat",   oldLatDimension.getLength());
-                        Dimension lonDimension   = newFile.addDimension(rootGroup, "lon",   oldLonDimension.getLength());
+                //find variables
+                List<Variable> oldVars = oldFile.getVariables();
 
-                        //define each variable
-                        double minLon = Double.NaN, maxLon = Double.NaN, lonSpacing = Double.NaN;
-                        double minLat = Double.NaN, maxLat = Double.NaN, latSpacing = Double.NaN;
-                        double minDepth = Double.NaN, maxDepth = Double.NaN;
+                //create the dimensions
+                Dimension timeDimension  = NcHelper.addDimension(outRootGroup, "time", 1);
+                Dimension depthDimension = NcHelper.addDimension(outRootGroup, "depth", oldDepthDimension.getLength());
+                Dimension latDimension   = NcHelper.addDimension(outRootGroup, "lat",   oldLatDimension.getLength());
+                Dimension lonDimension   = NcHelper.addDimension(outRootGroup, "lon",   oldLonDimension.getLength());
 
-                        Variable newVars[] = new Variable[oldVars.size()];
-                        for (int v = 0; v < oldVars.size(); v++) {
-                            Variable oldVar = oldVars.get(v);
-                            String varName = oldVar.getName();
-                            Attributes atts = new Attributes(); 
-                            NcHelper.getVariableAttributes(oldVar, atts);
-                            ArrayList<Dimension> dimensions = new ArrayList();
-                            DataType dataType = oldVar.getDataType();
+                //define each variable
+                double minLon = Double.NaN, maxLon = Double.NaN, lonSpacing = Double.NaN;
+                double minLat = Double.NaN, maxLat = Double.NaN, latSpacing = Double.NaN;
+                double minDepth = Double.NaN, maxDepth = Double.NaN;
 
-                            //if lon 
-                            if (varName.equals("lon")) {
-                                dimensions.add(oldVar.getDimension(0));
+                Variable.Builder newVars[] = new Variable.Builder[oldVars.size()];
+                for (int v = 0; v < oldVars.size(); v++) {
+                    Variable oldVar = oldVars.get(v);
+                    String varName = oldVar.getFullName();
+                    Attributes atts = new Attributes(); 
+                    NcHelper.getVariableAttributes(oldVar, atts);
+                    ArrayList<Dimension> dimensions = new ArrayList();
+                    DataType dataType = oldVar.getDataType();
 
-                                PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
-                                minLon = pa.getDouble(0);
-                                maxLon = pa.getDouble(pa.size() - 1);
-                                if (pa.isEvenlySpaced().length() == 0)
-                                    lonSpacing = (maxLon - minLon) / (pa.size() - 1);
+                    //if lon 
+                    if (varName.equals("lon")) {
+                        dimensions.add(oldVar.getDimension(0));
 
-                                atts.add("_CoordinateAxisType", "Lon");
-                                atts.add("actual_range", new DoubleArray(new double[]{minLon, maxLon}));
-                                atts.add("axis", "X");
-                                atts.add("coordsys", "geographic");
-                                atts.add("long_name", "Longitude");
-                                atts.add("standard_name", "longitude");
-                                atts.add("units", "degrees_east");
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
+                        minLon = pa.getDouble(0);
+                        maxLon = pa.getDouble(pa.size() - 1);
+                        if (pa.isEvenlySpaced().length() == 0)
+                            lonSpacing = (maxLon - minLon) / (pa.size() - 1);
 
-                            //if lat 
-                            } else if (varName.equals("lat")) {
-                                dimensions.add(oldVar.getDimension(0));
+                        atts.add("_CoordinateAxisType", "Lon");
+                        atts.add("actual_range", new DoubleArray(new double[]{minLon, maxLon}));
+                        atts.add("axis", "X");
+                        atts.add("coordsys", "geographic");
+                        atts.add("long_name", "Longitude");
+                        atts.add("standard_name", "longitude");
+                        atts.add("units", "degrees_east");
 
-                                PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
-                                minLat = pa.getDouble(0);
-                                maxLat = pa.getDouble(pa.size() - 1);
-                                if (pa.isEvenlySpaced().length() == 0)
-                                    latSpacing = (maxLat - minLat) / (pa.size() - 1);
+                    //if lat 
+                    } else if (varName.equals("lat")) {
+                        dimensions.add(oldVar.getDimension(0));
 
-                                atts.add("_CoordinateAxisType", "Lat");
-                                atts.add("actual_range", new DoubleArray(new double[]{minLat, maxLat}));
-                                atts.add("axis", "Y");
-                                atts.add("coordsys", "geographic");
-                                atts.add("long_name", "Latitude");
-                                atts.add("standard_name", "latitude");
-                                atts.add("units", "degrees_north");                    
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
+                        minLat = pa.getDouble(0);
+                        maxLat = pa.getDouble(pa.size() - 1);
+                        if (pa.isEvenlySpaced().length() == 0)
+                            latSpacing = (maxLat - minLat) / (pa.size() - 1);
 
-                            //if depth
-                            } else if (varName.equals("depth")) {
-                                dimensions.add(oldVar.getDimension(0));
+                        atts.add("_CoordinateAxisType", "Lat");
+                        atts.add("actual_range", new DoubleArray(new double[]{minLat, maxLat}));
+                        atts.add("axis", "Y");
+                        atts.add("coordsys", "geographic");
+                        atts.add("long_name", "Latitude");
+                        atts.add("standard_name", "latitude");
+                        atts.add("units", "degrees_north");                    
 
-                                PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
-                                minDepth = pa.getDouble(0);
-                                maxDepth = pa.getDouble(pa.size() - 1);
+                    //if depth
+                    } else if (varName.equals("depth")) {
+                        dimensions.add(oldVar.getDimension(0));
 
-                                atts.add("_CoordinateAxisType", "Height");
-                                atts.add("_CoordinateZisPositive", "down");
-                                atts.add("actual_range", new DoubleArray(new double[]{minDepth, maxDepth}));
-                                atts.add("axis", "Z");
-                                atts.add("long_name", "Depth");
-                                atts.add("positive", "down");
-                                atts.add("standard_name", "depth");
-                                atts.add("units", "m");
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
+                        minDepth = pa.getDouble(0);
+                        maxDepth = pa.getDouble(pa.size() - 1);
 
-                            //if time
-                            } else if (varName.equals("time")) {
-                                dimensions.add(timeDimension);
+                        atts.add("_CoordinateAxisType", "Height");
+                        atts.add("_CoordinateZisPositive", "down");
+                        atts.add("actual_range", new DoubleArray(new double[]{minDepth, maxDepth}));
+                        atts.add("axis", "Z");
+                        atts.add("long_name", "Depth");
+                        atts.add("positive", "down");
+                        atts.add("standard_name", "depth");
+                        atts.add("units", "m");
 
-                                dataType = DataType.INT; //the only oldVar that changes dataType
+                    //if time
+                    } else if (varName.equals("time")) {
+                        dimensions.add(timeDimension);
 
-                                //ensure time size == 1;
-                                PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
-                                if (pa.size() != 1)
-                                    throw new Exception("time size=" + pa.size() + "\n" + pa);
+                        dataType = DataType.INT; //the only oldVar that changes dataType
 
-                                atts.add("_CoordinateAxisType", "Time");
-                                atts.add("axis", "T");
-                                atts.add("long_name", "Time");
-                                atts.add("standard_name", "time");
-                                atts.add("time_origin", "15-JAN-1950 00:00:00");
-                                atts.add("units", "months since 1950-01-15T00:00:00Z");                    
+                        //ensure time size == 1;
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
+                        if (pa.size() != 1)
+                            throw new Exception("time size=" + pa.size() + "\n" + pa);
 
-                            //other variables
+                        atts.add("_CoordinateAxisType", "Time");
+                        atts.add("axis", "T");
+                        atts.add("long_name", "Time");
+                        atts.add("standard_name", "time");
+                        atts.add("time_origin", "15-JAN-1950 00:00:00");
+                        atts.add("units", "months since 1950-01-15T00:00:00Z");                    
+
+                    //other variables
+                    } else {
+
+                        //add time dimension
+                        int rank = oldVar.getRank();
+                        dimensions.add(timeDimension);
+                        for (int r = 0; r < rank; r++)
+                            dimensions.add(oldVar.getDimension(r));
+
+                        atts.add("missing_value", atts.getFloat("_FillValue"));
+                        if (varName.equals("temp")) {
+                            Test.ensureEqual(atts.getString("units"), "deg. C", "");
+                            atts.add("long_name", "Sea Water Temperature");
+                            atts.add("standard_name", "sea_water_temperature");
+                            atts.add("units", "degree_C");
+
+                        } else if (varName.equals("salt")) {
+                            if (atts.getString("units").equals("frac. by wt. less")) {
+                                //atts.add("units", "frac. by wt. less"); //???
+                            } else if (atts.getString("units").equals("g/kg")) {
+                                atts.add("units", "g kg-1"); //???
                             } else {
-
-                                //add time dimension
-                                int rank = oldVar.getRank();
-                                dimensions.add(timeDimension);
-                                for (int r = 0; r < rank; r++)
-                                    dimensions.add(oldVar.getDimension(r));
-
-                                atts.add("missing_value", atts.getFloat("_FillValue"));
-                                if (varName.equals("temp")) {
-                                    Test.ensureEqual(atts.getString("units"), "deg. C", "");
-                                    atts.add("long_name", "Sea Water Temperature");
-                                    atts.add("standard_name", "sea_water_temperature");
-                                    atts.add("units", "degree_C");
-
-                                } else if (varName.equals("salt")) {
-                                    if (atts.getString("units").equals("frac. by wt. less")) {
-                                        //atts.add("units", "frac. by wt. less"); //???
-                                    } else if (atts.getString("units").equals("g/kg")) {
-                                        atts.add("units", "g kg-1"); //???
-                                    } else {
-                                        Test.error("Unexpected salt units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Salinity");
-                                    atts.add("standard_name", "sea_water_salinity");
-
-                                } else if (varName.equals("u")) {
-                                    if (atts.getString("units").equals("cm/sec")) {
-                                        atts.add("units", "cm s-1");
-                                    } else if (atts.getString("units").equals("m/sec")) {
-                                        atts.add("units", "m s-1");
-                                    } else {
-                                        Test.error("Unexpected u units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Zonal Velocity");
-                                    atts.add("standard_name", "sea_water_x_velocity");
-
-                                } else if (varName.equals("v")) {
-                                    if (atts.getString("units").equals("cm/sec")) {
-                                        atts.add("units", "cm s-1");
-                                    } else if (atts.getString("units").equals("m/sec")) {
-                                        atts.add("units", "m s-1");
-                                    } else {
-                                        Test.error("Unexpected v units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Meridional Velocity");
-                                    atts.add("standard_name", "sea_water_y_velocity");
-
-                                } else if (varName.equals("w")) {
-                                    if (atts.getString("units").equals("cm/sec")) {
-                                        atts.add("units", "cm s-1");
-                                    } else if (atts.getString("units").equals("m/sec")) {
-                                        atts.add("units", "m s-1");
-                                    } else {
-                                        Test.error("Unexpected w units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Vertical Velocity");
-                                    atts.add("standard_name", "sea_water_z_velocity"); //not offical standard name, but direct extension of x and y
-
-
-                                } else if (varName.equals("utrans")) {
-                                    if (atts.getString("units").equals("degC/sec")) {
-                                        atts.add("units", "degree_C s-1");
-                                    } else {
-                                        Test.error("Unexpected utrans units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Zonal Temperature Transport");  //TEMP-> Temperature???
-                                    atts.add("standard_name", "eastward_ocean_heat_transport"); //???
-
-                                } else if (varName.equals("vtrans")) {
-                                    if (atts.getString("units").equals("degC/sec")) {
-                                        atts.add("units", "degree_C s-1");
-                                    } else {
-                                        Test.error("Unexpected vtrans units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Meridional Temperature Transport"); //TEMP-> Temperature???
-                                    atts.add("standard_name", "northward_ocean_heat_transport"); //???
-
-                                } else if (varName.equals("hflx")) {
-                                    if (atts.getString("units").equals("watts/m^2")) {
-                                        atts.add("units", "watt m-2");
-                                    } else {
-                                        Test.error("Unexpected hflx units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Surface Heat Flux");  
-                                    atts.add("standard_name", "surface_downward_heat_flux_in_sea_water"); //???
-
-                                } else if (varName.equals("wflx")) {
-                                    if (atts.getString("units").equals("m/year")) {
-                                        atts.add("units", "m year-1");
-                                    } else {
-                                        Test.error("Unexpected wflx units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Surface Water Flux");
-                                    atts.add("standard_name", "surface_downward_water_flux"); //???
-
-                                } else if (varName.equals("CFC11")) {
-                                    if (atts.getString("units").equals("mmol/m**3")) {
-                                        atts.add("units", "mmole m-3");
-                                    } else {
-                                        Test.error("Unexpected vtrans units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "CFC11 Concentration"); 
-                                    atts.add("standard_name", "mole_concentration"); //not standard!!! but close
-
-                                } else if (varName.equals("taux")) {
-                                    if (atts.getString("units").equals("dynes/cm^2")) {
-                                        atts.add("units", "dynes cm-2");  //convert to Pa???
-                                    } else if (atts.getString("units").equals("N/m^2")) {
-                                        atts.add("units", "N m-2");
-                                    } else {
-                                        Test.error("Unexpected taux units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Zonal Wind Stress"); //???
-                                    atts.add("standard_name", "surface_downward_eastward_stress"); //???
-
-                                } else if (varName.equals("tauy")) {
-                                    if (atts.getString("units").equals("dynes/cm^2")) {
-                                        atts.add("units", "dynes cm-2");  //convert to Pa???
-                                    } else if (atts.getString("units").equals("N/m^2")) {
-                                        atts.add("units", "N m-2");
-                                    } else {
-                                        Test.error("Unexpected tauy units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Meridional Wind Stress"); //???
-                                    atts.add("standard_name", "surface_downward_northward_stress"); //???
-
-                                } else if (varName.equals("ssh")) {
-                                    if (atts.getString("units").equals("cm")) {
-                                    } else if (atts.getString("units").equals("m")) {
-                                    } else {
-                                        Test.error("Unexpected ssh units=" + atts.getString("units"));
-                                    }
-                                    atts.add("long_name", "Sea Surface Height");
-                                    atts.add("standard_name", "sea_surface_height_above_geoid"); //???
-                                } else {
-                                    throw new Exception("Unexpected varName=" + varName);
-                                }
+                                Test.error("Unexpected salt units=" + atts.getString("units"));
                             }
+                            atts.add("long_name", "Salinity");
+                            atts.add("standard_name", "sea_water_salinity");
 
-                            //define newVar in new file
-                            newVars[v] = newFile.addVariable(rootGroup, varName, dataType, dimensions); 
-                            NcHelper.setAttributes(nc3Mode, newVars[v], atts, NcHelper.isUnsigned(dataType));
-                        }
-
-                        //define GLOBAL metadata 
-                        Attributes gatts = new Attributes();
-                        String cDate = Calendar2.getCurrentISODateStringZulu();
-                        NcHelper.getGlobalAttributes(oldFile, gatts);
-                        gatts.add("acknowledgement", "NSF, NASA, NOAA"); //from https://www.atmos.umd.edu/~ocean/reanalysis.pdf
-                        gatts.add("cdm_data_type", "Grid");
-                        gatts.add("composite", "true");
-                        gatts.add("contributor_name", "World Ocean Atlas, Expendable Bathythermograph Archive, " +
-                            "TOGA-TAO thermistor array, Soviet SECTIONS tropical program, " +
-                            "and Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon.");
-                        gatts.add("contributor_role", "source data");
-                        gatts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
-                        gatts.add("creator_email", "carton@umd.edu");
-                        gatts.add("creator_name", "SODA");
-                        gatts.add("creator_url", "https://www.atmos.umd.edu/~ocean/");
-                        gatts.add("date_created", cDate);
-                        gatts.add("date_issued", cDate);
-                        gatts.add("Easternmost_Easting", maxLon);
-                        gatts.add("geospatial_lat_max", maxLat);
-                        gatts.add("geospatial_lat_min", minLat);
-                        if (!Double.isNaN(latSpacing)) gatts.add("geospatial_lat_resolution", latSpacing);
-                        gatts.add("geospatial_lat_units", "degrees_north");
-                        gatts.add("geospatial_lon_max", maxLon);
-                        gatts.add("geospatial_lon_min", minLon);
-                        if (!Double.isNaN(lonSpacing)) gatts.add("geospatial_lon_resolution", lonSpacing);
-                        gatts.add("geospatial_lon_units", "degrees_east");
-                        gatts.add("geospatial_vertical_max", maxDepth);
-                        gatts.add("geospatial_vertical_min", minDepth);
-                        gatts.add("geospatial_vertical_positive", "down");
-                        gatts.add("geospatial_vertical_units", "m");
-                        gatts.add("history", "http://dsrs.atmos.umd.edu/\n" +
-                            cDate + " NOAA SWFSC ERD added metadata and time dimension");
-                        gatts.add("infoUrl", "https://www.atmos.umd.edu/~ocean/");
-                        gatts.add("institution", "TAMU/UMD"); //from title
-                        gatts.add("keywords", "Oceans > Ocean Temperature > Water Temperature");
-                        gatts.add("keywords_vocabulary", "GCMD Science Keywords");
-                        gatts.add("license", "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Creator, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.");
-                        gatts.add("naming_authority", "SODA");
-                        gatts.add("Northernmost_Northing", maxLat);
-                        //gatts.add("origin", "TAMU/UMD"); cwhdf attribute, see institution instead
-                        gatts.add("processing_level", "4 (model)");
-                        gatts.add("project", "SODA (https://www.atmos.umd.edu/~ocean/)");
-                        gatts.add("projection", "geographic");
-                        gatts.add("projection_type", "mapped");
-                        gatts.add("references", //from http://www.met.rdg.ac.uk/~swr02ldc/SODA.html
-                            "Carton, J. A., Chepurin, G., Cao, X. H. and Giese, B. (2000). " +
-                            "A Simple Ocean Data Assimilation analysis of the global upper ocean 1950-95. " +
-                            "Part I: Methodology. Journal of Physical Oceanography, 30, 2, pp294-309. " +
-                            "Carton, J. A., Chepurin, G. and Cao, X. H. (2000). A Simple Ocean Data " +
-                            "Assimilation analysis of the global upper ocean 1950-95. Part II: Results. " +
-                            "Journal of Physical Oceanography, 30, 2, pp311-326. " +
-                            "See also https://www.atmos.umd.edu/~ocean/reanalysis.pdf .");
-                        //gatts.add("satellite", "POES");   cwhdf attribute, not appropriate here
-                        //gatts.add("sensor", "AVHRR GAC"); cwhdf attribute, not appropriate here
-                        gatts.add("source", "model; SODA " + sodaVersion);
-                        gatts.add("Southernmost_Northing", minLat);
-                        gatts.add("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
-                        gatts.add("summary", 
-                            "Simple Ocean Data Assimilation (SODA) version " + sodaVersion + " - A reanalysis of ocean climate. " +
-                            //from http://www.met.rdg.ac.uk/~swr02ldc/SODA.html
-                            "SODA uses the GFDL modular ocean model version 2.2. The model is forced by observed " +
-                            "surface wind stresses from the COADS data set (from 1958 to 1992) and from NCEP (after 1992). " +
-                            "Note that the wind stresses were detrended before use due to inconsistencies with " +
-                            "observed sea level pressure trends. The model is also constrained by constant assimilation " +
-                            "of observed temperatures, salinities, and altimetry using an optimal data assimilation " +
-                            "technique. The observed data comes from: " +
-                            "1) The World Ocean Atlas 1994 which contains ocean temperatures and salinities from " +
-                            "mechanical bathythermographs, expendable bathythermographs and conductivity-temperature-depth probes. " +
-                            "2) The expendable bathythermograph archive " +
-                            "3) The TOGA-TAO thermistor array " +
-                            "4) The Soviet SECTIONS tropical program " +
-                            "5) Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon. \n" +
-                            //from https://www.atmos.umd.edu/~ocean/history.html
-                            "We are now exploring an eddy-permitting reanalysis based on the Parallel Ocean Program " +
-                            "POP-1.4 model with 40 levels in the vertical and a 0.4x0.25 degree displaced pole grid " +
-                            "(25 km resolution in the western North Atlantic).  The first version of this we will release " +
-                            "is SODA1.2, a reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended " +
-                            "to the current year using available altimetry). ");
-                        //has title
-                        gatts.add("Westernmost_Easting", minLon);
-                        //set the globalAttributes
-                        NcHelper.setAttributes(nc3Mode, rootGroup, gatts);
-                    
-                        //leave define mode
-                        newFile.create();
-
-                        //write data for each variable
-                        for (int v = 0; v < oldVars.size(); v++) {
-                            Variable oldVar = oldVars.get(v);
-                            String name = oldVar.getName();
-
-                            //if lon, lat, depth
-                            if (name.equals("lon") || name.equals("lat") || name.equals("depth")) {
-                                //just read it and write it unchanged
-                                newFile.write(newVars[v], oldVar.read());
-
-                            //if time
-                            } else if (name.equals("time")) {
-                                //just read it and write it unchanged
-                                newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months}, false)); 
-
-                            //if other variables
+                        } else if (varName.equals("u")) {
+                            if (atts.getString("units").equals("cm/sec")) {
+                                atts.add("units", "cm s-1");
+                            } else if (atts.getString("units").equals("m/sec")) {
+                                atts.add("units", "m s-1");
                             } else {
-                                //read it
-                                Array array = oldVar.read();
-                                //add time dimension
-                                int oldShape[] = array.getShape();
-                                int newShape[] = new int[oldShape.length + 1];
-                                newShape[0] = 1;
-                                System.arraycopy(oldShape, 0, newShape, 1, oldShape.length);
-                                array = array.reshape(newShape);
-                                //write it
-                                newFile.write(newVars[v], array);
+                                Test.error("Unexpected u units=" + atts.getString("units"));
                             }
-                        }
-                        newFile.close();
-                        newFile = null;
+                            atts.add("long_name", "Zonal Velocity");
+                            atts.add("standard_name", "sea_water_x_velocity");
 
-                    } finally {
-                        try {oldFile.close(); } catch (Exception e) {}
-                        oldFile = null;
+                        } else if (varName.equals("v")) {
+                            if (atts.getString("units").equals("cm/sec")) {
+                                atts.add("units", "cm s-1");
+                            } else if (atts.getString("units").equals("m/sec")) {
+                                atts.add("units", "m s-1");
+                            } else {
+                                Test.error("Unexpected v units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Meridional Velocity");
+                            atts.add("standard_name", "sea_water_y_velocity");
+
+                        } else if (varName.equals("w")) {
+                            if (atts.getString("units").equals("cm/sec")) {
+                                atts.add("units", "cm s-1");
+                            } else if (atts.getString("units").equals("m/sec")) {
+                                atts.add("units", "m s-1");
+                            } else {
+                                Test.error("Unexpected w units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Vertical Velocity");
+                            atts.add("standard_name", "sea_water_z_velocity"); //not offical standard name, but direct extension of x and y
+
+
+                        } else if (varName.equals("utrans")) {
+                            if (atts.getString("units").equals("degC/sec")) {
+                                atts.add("units", "degree_C s-1");
+                            } else {
+                                Test.error("Unexpected utrans units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Zonal Temperature Transport");  //TEMP-> Temperature???
+                            atts.add("standard_name", "eastward_ocean_heat_transport"); //???
+
+                        } else if (varName.equals("vtrans")) {
+                            if (atts.getString("units").equals("degC/sec")) {
+                                atts.add("units", "degree_C s-1");
+                            } else {
+                                Test.error("Unexpected vtrans units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Meridional Temperature Transport"); //TEMP-> Temperature???
+                            atts.add("standard_name", "northward_ocean_heat_transport"); //???
+
+                        } else if (varName.equals("hflx")) {
+                            if (atts.getString("units").equals("watts/m^2")) {
+                                atts.add("units", "watt m-2");
+                            } else {
+                                Test.error("Unexpected hflx units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Surface Heat Flux");  
+                            atts.add("standard_name", "surface_downward_heat_flux_in_sea_water"); //???
+
+                        } else if (varName.equals("wflx")) {
+                            if (atts.getString("units").equals("m/year")) {
+                                atts.add("units", "m year-1");
+                            } else {
+                                Test.error("Unexpected wflx units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Surface Water Flux");
+                            atts.add("standard_name", "surface_downward_water_flux"); //???
+
+                        } else if (varName.equals("CFC11")) {
+                            if (atts.getString("units").equals("mmol/m**3")) {
+                                atts.add("units", "mmole m-3");
+                            } else {
+                                Test.error("Unexpected vtrans units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "CFC11 Concentration"); 
+                            atts.add("standard_name", "mole_concentration"); //not standard!!! but close
+
+                        } else if (varName.equals("taux")) {
+                            if (atts.getString("units").equals("dynes/cm^2")) {
+                                atts.add("units", "dynes cm-2");  //convert to Pa???
+                            } else if (atts.getString("units").equals("N/m^2")) {
+                                atts.add("units", "N m-2");
+                            } else {
+                                Test.error("Unexpected taux units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Zonal Wind Stress"); //???
+                            atts.add("standard_name", "surface_downward_eastward_stress"); //???
+
+                        } else if (varName.equals("tauy")) {
+                            if (atts.getString("units").equals("dynes/cm^2")) {
+                                atts.add("units", "dynes cm-2");  //convert to Pa???
+                            } else if (atts.getString("units").equals("N/m^2")) {
+                                atts.add("units", "N m-2");
+                            } else {
+                                Test.error("Unexpected tauy units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Meridional Wind Stress"); //???
+                            atts.add("standard_name", "surface_downward_northward_stress"); //???
+
+                        } else if (varName.equals("ssh")) {
+                            if (atts.getString("units").equals("cm")) {
+                            } else if (atts.getString("units").equals("m")) {
+                            } else {
+                                Test.error("Unexpected ssh units=" + atts.getString("units"));
+                            }
+                            atts.add("long_name", "Sea Surface Height");
+                            atts.add("standard_name", "sea_surface_height_above_geoid"); //???
+                        } else {
+                            throw new Exception("Unexpected varName=" + varName);
+                        }
                     }
-                } finally {
-                    try { if (newFile != null) newFile.abort(); } catch (Exception e) {}
-                    newFile = null;
+
+                    //define newVar in new file
+                    newVars[v] = NcHelper.addVariable(outRootGroup, varName, dataType, dimensions); 
+                    NcHelper.setAttributes(nc3Mode, newVars[v], atts, NcHelper.isUnsigned(dataType));
+                }
+
+                //define GLOBAL metadata 
+                Attributes gatts = new Attributes();
+                String cDate = Calendar2.getCurrentISODateStringZulu();
+                NcHelper.getGroupAttributes(inRootGroup, gatts);
+                gatts.add("acknowledgement", "NSF, NASA, NOAA"); //from https://www.atmos.umd.edu/~ocean/reanalysis.pdf
+                gatts.add("cdm_data_type", "Grid");
+                gatts.add("composite", "true");
+                gatts.add("contributor_name", "World Ocean Atlas, Expendable Bathythermograph Archive, " +
+                    "TOGA-TAO thermistor array, Soviet SECTIONS tropical program, " +
+                    "and Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon.");
+                gatts.add("contributor_role", "source data");
+                gatts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
+                gatts.add("creator_email", "carton@umd.edu");
+                gatts.add("creator_name", "SODA");
+                gatts.add("creator_url", "https://www.atmos.umd.edu/~ocean/");
+                gatts.add("date_created", cDate);
+                gatts.add("date_issued", cDate);
+                gatts.add("Easternmost_Easting", maxLon);
+                gatts.add("geospatial_lat_max", maxLat);
+                gatts.add("geospatial_lat_min", minLat);
+                if (!Double.isNaN(latSpacing)) gatts.add("geospatial_lat_resolution", latSpacing);
+                gatts.add("geospatial_lat_units", "degrees_north");
+                gatts.add("geospatial_lon_max", maxLon);
+                gatts.add("geospatial_lon_min", minLon);
+                if (!Double.isNaN(lonSpacing)) gatts.add("geospatial_lon_resolution", lonSpacing);
+                gatts.add("geospatial_lon_units", "degrees_east");
+                gatts.add("geospatial_vertical_max", maxDepth);
+                gatts.add("geospatial_vertical_min", minDepth);
+                gatts.add("geospatial_vertical_positive", "down");
+                gatts.add("geospatial_vertical_units", "m");
+                gatts.add("history", "http://dsrs.atmos.umd.edu/\n" +
+                    cDate + " NOAA SWFSC ERD added metadata and time dimension");
+                gatts.add("infoUrl", "https://www.atmos.umd.edu/~ocean/");
+                gatts.add("institution", "TAMU/UMD"); //from title
+                gatts.add("keywords", "Oceans > Ocean Temperature > Water Temperature");
+                gatts.add("keywords_vocabulary", "GCMD Science Keywords");
+                gatts.add("license", "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Creator, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.");
+                gatts.add("naming_authority", "SODA");
+                gatts.add("Northernmost_Northing", maxLat);
+                //gatts.add("origin", "TAMU/UMD"); cwhdf attribute, see institution instead
+                gatts.add("processing_level", "4 (model)");
+                gatts.add("project", "SODA (https://www.atmos.umd.edu/~ocean/)");
+                gatts.add("projection", "geographic");
+                gatts.add("projection_type", "mapped");
+                gatts.add("references", //from http://www.met.rdg.ac.uk/~swr02ldc/SODA.html
+                    "Carton, J. A., Chepurin, G., Cao, X. H. and Giese, B. (2000). " +
+                    "A Simple Ocean Data Assimilation analysis of the global upper ocean 1950-95. " +
+                    "Part I: Methodology. Journal of Physical Oceanography, 30, 2, pp294-309. " +
+                    "Carton, J. A., Chepurin, G. and Cao, X. H. (2000). A Simple Ocean Data " +
+                    "Assimilation analysis of the global upper ocean 1950-95. Part II: Results. " +
+                    "Journal of Physical Oceanography, 30, 2, pp311-326. " +
+                    "See also https://www.atmos.umd.edu/~ocean/reanalysis.pdf .");
+                //gatts.add("satellite", "POES");   cwhdf attribute, not appropriate here
+                //gatts.add("sensor", "AVHRR GAC"); cwhdf attribute, not appropriate here
+                gatts.add("source", "model; SODA " + sodaVersion);
+                gatts.add("Southernmost_Northing", minLat);
+                gatts.add("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
+                gatts.add("summary", 
+                    "Simple Ocean Data Assimilation (SODA) version " + sodaVersion + " - A reanalysis of ocean climate. " +
+                    //from http://www.met.rdg.ac.uk/~swr02ldc/SODA.html
+                    "SODA uses the GFDL modular ocean model version 2.2. The model is forced by observed " +
+                    "surface wind stresses from the COADS data set (from 1958 to 1992) and from NCEP (after 1992). " +
+                    "Note that the wind stresses were detrended before use due to inconsistencies with " +
+                    "observed sea level pressure trends. The model is also constrained by constant assimilation " +
+                    "of observed temperatures, salinities, and altimetry using an optimal data assimilation " +
+                    "technique. The observed data comes from: " +
+                    "1) The World Ocean Atlas 1994 which contains ocean temperatures and salinities from " +
+                    "mechanical bathythermographs, expendable bathythermographs and conductivity-temperature-depth probes. " +
+                    "2) The expendable bathythermograph archive " +
+                    "3) The TOGA-TAO thermistor array " +
+                    "4) The Soviet SECTIONS tropical program " +
+                    "5) Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon. \n" +
+                    //from https://www.atmos.umd.edu/~ocean/history.html
+                    "We are now exploring an eddy-permitting reanalysis based on the Parallel Ocean Program " +
+                    "POP-1.4 model with 40 levels in the vertical and a 0.4x0.25 degree displaced pole grid " +
+                    "(25 km resolution in the western North Atlantic).  The first version of this we will release " +
+                    "is SODA1.2, a reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended " +
+                    "to the current year using available altimetry). ");
+                //has title
+                gatts.add("Westernmost_Easting", minLon);
+                //set the globalAttributes
+                NcHelper.setAttributes(nc3Mode, outRootGroup, gatts);
+            
+                //leave define mode
+                ncWriter = newFile.build();
+
+                //write data for each variable
+                for (int v = 0; v < oldVars.size(); v++) {
+                    Variable oldVar = oldVars.get(v);
+                    String name = oldVar.getFullName();
+
+                    //if lon, lat, depth
+                    if (name.equals("lon") || name.equals("lat") || name.equals("depth")) {
+                        //just read it and write it unchanged
+                        ncWriter.write(newVars[v].getFullName(), oldVar.read());
+
+                    //if time
+                    } else if (name.equals("time")) {
+                        //just read it and write it unchanged
+                        ncWriter.write(newVars[v].getFullName(), NcHelper.get1DArray(new int[]{months}, false)); 
+
+                    //if other variables
+                    } else {
+                        //read it
+                        Array array = oldVar.read();
+                        //add time dimension
+                        int oldShape[] = array.getShape();
+                        int newShape[] = new int[oldShape.length + 1];
+                        newShape[0] = 1;
+                        System.arraycopy(oldShape, 0, newShape, 1, oldShape.length);
+                        array = array.reshape(newShape);
+                        //write it
+                        ncWriter.write(newVars[v].getFullName(), array);
+                    }
+                }
+                ncWriter.close();
+                ncWriter = null;
+
+            //don't catch exception -- caller will see exception
+            } catch (Exception e9) {
+                String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+                throw e9;
+
+            } finally {
+                try {oldFile.close(); } catch (Exception e9) {}
+                oldFile = null;
+
+                if (ncWriter != null) {
+                    try {ncWriter.abort(); } catch (Exception e9) {}
+                    File2.delete(newDir + newName); 
+                    ncWriter = null;
                 }
 
                 if (gzipped) 
                     File2.delete(tempDir + cdfName);
+            }
 
-                String2.log("newFile=" + NcHelper.ncdump(newDir + newName, "-h"));
+            String2.log("newFile=" + NcHelper.ncdump(newDir + newName, "-h"));
 
-            } //end file loop
+        } //end file loop
 
-            String2.log("Projects.soda finished converting " + oldDir + " successfully.");
-
-        } catch (Exception e) {
-            try {oldFile.close();} catch (Exception e2) {}
-            try {newFile.close();} catch (Exception e2) {}
-            String2.log(MustBe.throwableToString(e));
-        }
+        String2.log("Projects.soda finished converting " + oldDir + " successfully.");
     }
 
     /** Can netcdf-java write longs (64bit integers) into a nc3 file? 
      * 2017-02-08:
 java.lang.IllegalArgumentException: illegal dataType: long not supported in netcdf-3
- at ucar.nc2.NetcdfFileWriter.addVariable(NetcdfFileWriter.java:538)
- at ucar.nc2.NetcdfFileWriter.addVariable(NetcdfFileWriter.java:518)
+ at ucar.nc2.write.NetcdfFormatWriter.addVariable(NetcdfFormatWriter.java:538)
+ at ucar.nc2.write.NetcdfFormatWriter.addVariable(NetcdfFormatWriter.java:518)
  at gov.noaa.pfel.coastwatch.Projects.testLongInNc3(Projects.java:3237)    +5
  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:442)
      */
@@ -3246,15 +3247,16 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
 
         //get a list of files
         String dirFileName = "/data/ethan/testLongInNc3.nc";
-        NetcdfFileWriter newFile = newFile = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, dirFileName);
+        NetcdfFormatWriter ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder newFile = NetcdfFormatWriter.createNewNetcdf3(
+                dirFileName);
             
             boolean nc3Mode = true;
-            Group rootGroup = newFile.addGroup(null, "");
+            Group.Builder rootGroup = newFile.getRootGroup();
 
             //create the dimensions
-            Dimension dim = newFile.addDimension(rootGroup, "row", 5);
+            Dimension dim = NcHelper.addDimension(rootGroup, "row", 5);
             ArrayList<Dimension> dims = new ArrayList();
             dims.add(dim);
 
@@ -3264,7 +3266,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             Attributes atts = new Attributes();
             atts.set("units", "count");
 
-            Variable var = newFile.addVariable(rootGroup, "longs", dataType, dims); 
+            Variable.Builder var = NcHelper.addVariable(rootGroup, "longs", dataType, dims); 
             NcHelper.setAttributes(nc3Mode, var, atts, NcHelper.isUnsigned(dataType));
 
             //define GLOBAL metadata 
@@ -3273,7 +3275,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             NcHelper.setAttributes(nc3Mode, rootGroup, gatts);
         
             //leave define mode
-            newFile.create();
+            ncWriter = newFile.build();
 
             ArrayLong.D1 array = new ArrayLong.D1(5, false); //isUnsigned
             array.set(0, Long.MIN_VALUE);
@@ -3282,16 +3284,22 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
             array.set(0, 999);
             array.set(0, Long.MAX_VALUE);
 
-            newFile.write(var, array);
+            ncWriter.write(var.getFullName(), array);
 
-            newFile.close(); newFile = null;
+            ncWriter.close(); 
+            ncWriter = null;
 
             String2.log("newFile=" + NcHelper.ncdump(dirFileName, ""));
 
             String2.log("\n*** Projects.testLongInNc3 finished successfully.");
 
         } catch (Exception e) {
-            try {if (newFile != null) newFile.abort();} catch (Exception e2) {}
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(dirFileName); 
+                ncWriter = null;
+            }
             String2.log(MustBe.throwableToString(e));
         }
     }
@@ -3336,7 +3344,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
         //SdsReader sr = new SdsReader(fileName);
 
         //the netcdf-java way
-        ucar4.nc2.NetcdfFile nc = ucar4.nc2.NetcdfFile.open(fileName);
+        ucar4.nc2.NetcdfFile nc = ucar4.nc2.NetcdfFiles.open(fileName);
         try {
             String2.log(nc.toString());
             ucar4.nc2.Variable v = nc.findVariable("avhrr_ch1");
@@ -3350,7 +3358,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
         // /* 
         //the netcdf-java way
         String fileName = "c:/data/seawifs/L3bin/S20010012001008.L3b_8D_CHL.main";
-        NetcdfFile nc = NetcdfFile.open(fileName);
+        NetcdfFile nc = NetcdfFiles.open(fileName);
         try {
             String2.log(nc.toString());
             //ucar4.nc2.Variable v = nc.findVariable("avhrr_ch1");
@@ -3412,8 +3420,8 @@ public static void testJanino() throws Exception {
     public static void testGetNcGrids() throws Exception {
         if (true) { 
             //getGrids test
-            //NetcdfDataset ncd = NetcdfDataset.openDataset("c:/temp/cwsamples/MODSCW_P2008045_P2008105_D61_GM05_closest_chlora.nc");
-            NetcdfDataset ncd = NetcdfDataset.openDataset("c:/temp/cwsamples/MODSCW_P2008073_2010_D61_P2007351_P2008046_GM03_closest_R667ANOMALY.nc");
+            //NetcdfDataset ncd = NetcdfDatasets.openDataset("c:/temp/cwsamples/MODSCW_P2008045_P2008105_D61_GM05_closest_chlora.nc");  //2021: 's' is new API
+            NetcdfDataset ncd = NetcdfDatasets.openDataset("c:/temp/cwsamples/MODSCW_P2008073_2010_D61_P2007351_P2008046_GM03_closest_R667ANOMALY.nc");  //2021: 's' is new API 
             try {
                 List list = ncd.getCoordinateSystems();
                 System.out.println("nCoordSystems=" + list.size());
@@ -3436,10 +3444,10 @@ public static void testJanino() throws Exception {
         //String2.log(" -5%4=" + (-5%4) + " 5%-4=" + (5%-4) + " -5%-4=" + (-5%-4));
         if (false) {
             //ucar.nc2.util.DebugFlags.set("DODS/serverCall", true);
-            //NetcdfFile nc = NetcdfDataset.openFile("http://apdrc.soest.hawaii.edu/dapper/godae/argo_all.cdp", null);
-            //NetcdfFile nc = NetcdfDataset.openFile("https://coastwatch.pfeg.noaa.gov/erddap2/tabledap/cwwcNDBCMet", null);
-            NetcdfFile nc = NetcdfDataset.openFile("http://localhost/cwexperimental/tabledap/cwwcNDBCMet", null);
-            //NetcdfFile nc = NetcdfDataset.openFile("https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
+            //NetcdfFile nc = NetcdfDatasets.openFile("http://apdrc.soest.hawaii.edu/dapper/godae/argo_all.cdp", null);  
+            //NetcdfFile nc = NetcdfDatasets.openFile("https://coastwatch.pfeg.noaa.gov/erddap2/tabledap/cwwcNDBCMet", null);
+            NetcdfFile nc = NetcdfDatasets.openFile("http://localhost/cwexperimental/tabledap/cwwcNDBCMet", null);  //2021: 's' is the new API
+            //NetcdfFile nc = NetcdfDatasets.openFile("https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
             String2.log(nc.toString());
             nc.close();
         }
@@ -7114,18 +7122,19 @@ project)
         Dimension dims[] = new Dimension[nDims];
         int shape[] = new int[nDims];
 
-        //*Then* make ncOut.    If this fails, no clean up needed.
-        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
+        //*Then* make ncOut.   
+        NetcdfFormatWriter ncWriter = null;
         boolean nc3Mode = true;
         try {
-            Group rootGroup = ncOut.addGroup(null, "");
+            NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
+                fullFileName + randomInt);
+            Group.Builder rootGroup = ncOut.getRootGroup();
             ncOut.setFill(false);
 
             //define the data variables in ncOut
             int nVars = vars.length;
-            Variable newDimVars[] = new Variable[nDims];
-            Variable newVars[] = new Variable[nVars];
+            Variable.Builder newDimVars[] = new Variable.Builder[nDims];
+            Variable.Builder newVars[]    = new Variable.Builder[nVars];
             for (int v = 0; v < nVars; v++) {
                 //String2.log("  create var=" + vars[v]);
                 BaseType baseType = dds.getVariable(vars[v]);
@@ -7142,8 +7151,8 @@ project)
                                 tSize = jplLatSize;
                             shape[d] = tSize;
                             //String2.log("    dim#" + d + "=" + tName + " size=" + tSize);
-                            dims[d] = ncOut.addDimension(rootGroup, tName, tSize, true, false, false);
-                            newDimVars[d] = ncOut.addVariable(rootGroup, tName, 
+                            dims[d] = NcHelper.addDimension(rootGroup, tName, tSize, true, false, false);
+                            newDimVars[d] = NcHelper.addVariable(rootGroup, tName, 
                                 NcHelper.getNc3DataType(pas[d + 1].elementType()), 
                                 Arrays.asList(dims[d])); 
                         }
@@ -7152,7 +7161,7 @@ project)
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); 
                     PAType tType = OpendapHelper.getElementPAType(pv);
                     //String2.log("pv=" + pv.toString() + " tType=" + tType);
-                    newVars[v] = ncOut.addVariable(rootGroup, vars[v], 
+                    newVars[v] = NcHelper.addVariable(rootGroup, vars[v], 
                         NcHelper.getNc3DataType(tType), dims);
 
                 } else {
@@ -7183,8 +7192,7 @@ project)
             }
 
             //leave "define" mode in ncOut
-            ncOut.create();
-
+            ncWriter = ncOut.build();
 
             //read/write the data variables
             for (int v = 0; v < nVars; v++) {
@@ -7196,7 +7204,7 @@ project)
                     for (int d = 0; d < nDims; d++) {
                         PrimitiveArray tpa = jplMode && d == jplLatDim? 
                             jplLatPa : pas[d + 1];
-                        ncOut.write(newDimVars[d], Array.factory(tpa.toObjectArray()));
+                        ncWriter.write(newDimVars[d].getFullName(), Array.factory(tpa.toObjectArray()));
                     }
                 }
 
@@ -7204,7 +7212,7 @@ project)
                     //chunk 0 was read above
                     int origin[] = {0, 0, 0};
                     pas[0].trimToSize(); //so underlying array is exact size
-                    ncOut.write(newVars[v], origin,
+                    ncWriter.write(newVars[v].getFullName(), origin,
                         Array.factory(NcHelper.getNc3DataType(pas[0].elementType()),
                             jplChunkShape, pas[0].toObjectArray()));
 
@@ -7218,7 +7226,7 @@ project)
                         pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + tProjection); 
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
-                        ncOut.write(newVars[v], origin,
+                        ncWriter.write(newVars[v].getFullName(), origin,
                             Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                                 jplChunkShape, pas[0].toObjectArray()));
                     }
@@ -7227,7 +7235,7 @@ project)
                         pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + projection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     //String2.log("pas[0]=" + pas[0].toString());
-                    ncOut.write(newVars[v], 
+                    ncWriter.write(newVars[v].getFullName(), 
                         Array.factory(NcHelper.getNc3DataType(pas[0].elementType()), 
                             shape, pas[0].toObjectArray()));
                 }
@@ -7237,8 +7245,8 @@ project)
             }
 
             //if close throws Throwable, it is trouble
-            ncOut.close(); //it calls flush() and doesn't like flush called separately
-            ncOut = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -7249,15 +7257,12 @@ project)
             //String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
         } catch (Throwable t) {
-            //try to close the file
-            try {  if (ncOut != null) ncOut.abort(); 
-            } catch (Throwable t2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullFileName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(fullFileName + randomInt);
-
             throw t;
         }
     }
@@ -8146,26 +8151,27 @@ towTypesDescription);
         double inc = 0.041666666666666666666666666;
 
         if (create) {
-            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, dir + fileName);
+            NetcdfFormatWriter ncWriter = null;
             boolean nc3Mode = true;
             try {
-                Group rootGroup = nc.addGroup(null, "");
+                NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                    dir + fileName);
+                Group.Builder rootGroup = nc.getRootGroup();
                 nc.setFill(false);
 
                 Attributes atts = new Attributes();
 
                 //lat
                 atts.add("units", "degrees_north");
-                Dimension latDim = nc.addDimension(rootGroup, latName, nLat);
-                Variable latVar = nc.addVariable(rootGroup, latName, 
+                Dimension latDim = NcHelper.addDimension(rootGroup, latName, nLat);
+                Variable.Builder latVar = NcHelper.addVariable(rootGroup, latName, 
                     NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(latDim)); 
                 NcHelper.setAttributes(nc3Mode, latVar, atts, false);  //isUnsigned
 
                 //lon
                 atts.add("units", "degrees_east");
-                Dimension lonDim = nc.addDimension(rootGroup, lonName, nLon);
-                Variable lonVar = nc.addVariable(rootGroup, lonName, 
+                Dimension lonDim = NcHelper.addDimension(rootGroup, lonName, nLon);
+                Variable.Builder lonVar = NcHelper.addVariable(rootGroup, lonName, 
                     NcHelper.getNc3DataType(PAType.DOUBLE), Arrays.asList(lonDim)); 
                 NcHelper.setAttributes(nc3Mode, lonVar, atts, false); //isUnsigned
 
@@ -8173,31 +8179,37 @@ towTypesDescription);
                 //NcHelper.setAttributes(nc3Mode, nc, "NC_GLOBAL", ada.globalAttributes());
 
                 //leave "define" mode
-                nc.create();
+                ncWriter = nc.build();
 
                 //write the lat values  (top to bottom!)
                 DoubleArray da = new DoubleArray();
                 for (int i = 0; i < nLat; i++)
                     da.add(lat0 - i * inc);
-                nc.write(latVar, NcHelper.get1DArray(da));
+                ncWriter.write(latVar.getFullName(), NcHelper.get1DArray(da));
 
                 //write the lon values
                 da = new DoubleArray();
                 for (int i = 0; i < nLon; i++)
                     da.add(lon0 + i * inc);
-                nc.write(lonVar, NcHelper.get1DArray(da));
+                ncWriter.write(lonVar.getFullName(), NcHelper.get1DArray(da));
 
                 //if close throws Throwable, it is trouble
-                nc.close(); //it calls flush() and doesn't like flush called separately
-                nc = null;
+                ncWriter.close(); //it calls flush() and doesn't like flush called separately
+                ncWriter = null;
 
                 //diagnostic
                 String2.log("  createViirsLatLon finished successfully\n");
 
-            } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
+            } catch (Exception e9) {
+                String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+                throw e9;
+
             } finally {
-                if (nc != null) nc.abort();
+                if (ncWriter != null) {
+                    try {ncWriter.abort(); } catch (Exception e9) {}
+                    File2.delete(dir + fileName); 
+                    ncWriter = null;
+                }
             }
         }
 
@@ -9658,7 +9670,7 @@ towTypesDescription);
         String2.log("\n*** Projects.unGz finished. nTry=" + fileNames.length + " nFail=" + nFail);
     }
 
-    /** This is a 2020-04-10 test that NetcdfFileWriter.abort() succeeds and closes the file. */
+    /** This is a 2020-04-10 test that NetcdfFormatWriter.abort() succeeds and closes the file. */
     public static void testNcAbort() throws Exception {
 
         String fullName = "/downloads/testNcAbort.nc";
@@ -9673,46 +9685,43 @@ towTypesDescription);
 
         //open the file (before 'try'); if it fails, no temp file to delete
         System.out.println("createNew file=" + fullName);  
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName);
+        NetcdfFormatWriter ncWriter = null;
         
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                fullName);
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
 
             //define the dimensions
             int nX = 3;
-            Dimension aDimension  = nc.addDimension(rootGroup, "x", nX);
+            Dimension aDimension = NcHelper.addDimension(rootGroup, "x", nX);
 
             //add the variables
-            Variable var = nc.addVariable(rootGroup, "var0", DataType.BYTE, Arrays.asList(aDimension)); 
+            Variable.Builder var = NcHelper.addVariable(rootGroup, "var0", DataType.BYTE, Arrays.asList(aDimension)); 
 
-            rootGroup.addAttribute(new ucar.nc2.Attribute("testAttribute", 
+            rootGroup.addAttribute(NcHelper.newAttribute("testAttribute", 
                 Array.factory(DataType.UBYTE, new int[]{4}, new byte[]{2,4,6,8})));
 
-            nc.create();
+            ncWriter = nc.build();
 
             Array ar = Array.factory(DataType.UBYTE, new int[]{nX}, new byte[]{1,2,3});
-            nc.write(var, ar);
+            ncWriter.write(var.getFullName(), ar);
 
             //if close throws exception, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             System.out.println("shouldn't get here");
 
         } catch (Exception e) {
-            System.out.println("caught Exception e (before abort):");
-            e.printStackTrace();
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
             try {
-                if (nc != null) { 
-                    nc.abort(); 
-                    nc = null; //so this isn't excuse for file not being deleted later
+                if (ncWriter != null) { 
+                    ncWriter.abort(); 
+                    ncWriter = null; 
                 }
-            } catch (Exception e2) {
-                System.out.println("caught Exception e2 (caused by abort):");
-                e2.printStackTrace();
-            }
+            } catch (Exception e2) {}
 
             //delete the partial file
             file = new File(fullName);
@@ -9752,12 +9761,13 @@ towTypesDescription);
 */
 
         //open the new file
-        NetcdfFileWriter newFile = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, destFullName);
+        NetcdfFormatWriter ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder newFile = NetcdfFormatWriter.createNewNetcdf3(
+                destFullName);
             boolean nc3Mode = true;
             DataType dataType = DataType.DOUBLE;
-            Group rootGroup = newFile.addGroup(null, "");
+            Group.Builder rootGroup = newFile.getRootGroup();
             String cDate = Calendar2.getCurrentISODateStringZulu();
 
             int nRows = table.nRows();
@@ -9765,12 +9775,12 @@ towTypesDescription);
             int nCols1 = nCols - 1;
             ArrayList<Dimension> dimensions = new ArrayList();
             Attributes atts; 
-            Variable newVars[] = new Variable[3];
+            Variable.Builder newVars[] = new Variable.Builder[3];
             Array array[] = new Array[3];
 
             //create the time dimension and variable
             //??? what is the meaning of the column name, e.g., 1213?
-            Dimension timeDimension = newFile.addDimension(rootGroup, "timeStamp", nRows);
+            Dimension timeDimension = NcHelper.addDimension(rootGroup, "timeStamp", nRows);
             dimensions.clear();
             dimensions.add(timeDimension);
             PrimitiveArray pa = table.getColumn(0);
@@ -9782,11 +9792,11 @@ towTypesDescription);
             atts.add("long_name", "Time Stamp");
             atts.add("standard_name", "time");
             atts.add("units", "seconds");
-            newVars[0] = newFile.addVariable(rootGroup, "timeStamp", dataType, dimensions); 
+            newVars[0] = NcHelper.addVariable(rootGroup, "timeStamp", dataType, dimensions); 
             NcHelper.setAttributes(nc3Mode, newVars[0], atts, NcHelper.isUnsigned(dataType));
 
             //create the freq dimension
-            Dimension freqDimension = newFile.addDimension(rootGroup, "frequency", nCols1);
+            Dimension freqDimension = NcHelper.addDimension(rootGroup, "frequency", nCols1);
             dimensions.clear();
             dimensions.add(freqDimension);
             DoubleArray da = new DoubleArray();
@@ -9800,7 +9810,7 @@ towTypesDescription);
             atts.add("long_name", "frequency");
             atts.add("standard_name", "sound_frequency");
             atts.add("units", "s-1");
-            newVars[1] = newFile.addVariable(rootGroup, "frequency", dataType, dimensions); 
+            newVars[1] = NcHelper.addVariable(rootGroup, "frequency", dataType, dimensions); 
             NcHelper.setAttributes(nc3Mode, newVars[1], atts, NcHelper.isUnsigned(dataType));
 
             //create the acoustic variable
@@ -9819,7 +9829,7 @@ towTypesDescription);
             atts.add("long_name", "Acoustic Amplitude");
             atts.add("standard_name", "sound_intensity_level_in_water");
             atts.add("units", "dB");
-            newVars[2] = newFile.addVariable(rootGroup, "acoustic", dataType, dimensions); 
+            newVars[2] = NcHelper.addVariable(rootGroup, "acoustic", dataType, dimensions); 
             NcHelper.setAttributes(nc3Mode, newVars[2], atts, NcHelper.isUnsigned(dataType));
 
             //define newVar in new file
@@ -9876,18 +9886,23 @@ towTypesDescription);
             NcHelper.setAttributes(nc3Mode, rootGroup, gatts);
         
             //leave define mode
-            newFile.create();
+            ncWriter = newFile.build();
 
             //write data for each variable
-            for (int v = 0; v < 3; v++) {
-                Variable var = newVars[v];
-                newFile.write(newVars[v], array[v]);
-            }
-            newFile.close();
-            newFile = null;
+            for (int v = 0; v < 3; v++) 
+                ncWriter.write(newVars[v].getFullName(), array[v]);
+            ncWriter.close();
+            ncWriter = null;
+
+        } catch (Exception e9) {
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+            throw e9;
 
         } finally {
-            try {if (newFile != null) newFile.abort(); } catch (Exception e) {}
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(destFullName); 
+            }
         }
     }
 

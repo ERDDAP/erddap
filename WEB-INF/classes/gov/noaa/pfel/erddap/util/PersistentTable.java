@@ -724,7 +724,7 @@ public class PersistentTable {
             modeTime = System.currentTimeMillis() - modeTime;
             Test.ensureTrue(modeTime < 2 * expected[mode], 
                 modes[mode] + " TOTAL time to read " + n + " items=" + 
-                modeTime + "   (" + expected[mode] + "ms)\n" +
+                modeTime + "ms  (" + expected[mode] + "ms)\n" +
                 "That is too slow!"); 
 
             pt.close();

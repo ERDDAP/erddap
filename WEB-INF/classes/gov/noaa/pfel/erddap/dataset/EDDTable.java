@@ -88,11 +88,13 @@ import org.apache.commons.jexl3.MapContext;
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Put it in the classpath for the compiler and for Java.
  */
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
-import ucar.ma2.*;
+import ucar.nc2.write.NetcdfFileFormat;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /** 
  * This class represents a dataset where the results can be presented as a table.
@@ -3125,7 +3127,7 @@ public abstract class EDDTable extends EDD {
                 //(and it is the better file to cache)
                 twawm = getTwawmForDapQuery(loggedInAs, requestUrl, userDapQuery);
 
-                saveAsFlatNc(NetcdfFileWriter.Version.netcdf3,
+                saveAsFlatNc(NetcdfFileFormat.NETCDF3,
                     cacheFullName, twawm); //internally, it writes to temp file, then renames to cacheFullName
                 boolean nc3Mode = true;
 
@@ -3141,7 +3143,7 @@ public abstract class EDDTable extends EDD {
                 //(and it is the better file to cache)
                 twawm = getTwawmForDapQuery(loggedInAs, requestUrl, userDapQuery);
 
-                saveAsFlatNc(NetcdfFileWriter.Version.netcdf4,
+                saveAsFlatNc(NetcdfFileFormat.NETCDF4,
                     cacheFullName, twawm); //internally, it writes to temp file, then renames to cacheFullName
 
                 File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
@@ -5132,20 +5134,20 @@ public abstract class EDDTable extends EDD {
      * <br>!!!Missing values should be destinationMissingValues or 
      *   destinationFillValues and aren't changed.
      * 
-     * @param ncVersion either NetcdfFileWriter.Version.netcdf3 or netcdf4. 
+     * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4. 
      * @param fullName the full file name (dir+name+ext)
      * @param twawm provides access to all of the data
      * @throws Throwable if trouble (e.g., TOO_MUCH_DATA)
      */
-    public void saveAsFlatNc(NetcdfFileWriter.Version ncVersion, 
+    public void saveAsFlatNc(NetcdfFileFormat ncVersion, 
         String fullName, TableWriterAllWithMetadata twawm) throws Throwable {
         if (reallyVerbose) String2.log("  EDDTable.saveAsFlatNc " + fullName); 
         long time = System.currentTimeMillis();
 
-        if (ncVersion != NetcdfFileWriter.Version.netcdf3 &&
-            ncVersion != NetcdfFileWriter.Version.netcdf4)
+        if (ncVersion != NetcdfFileFormat.NETCDF3 &&
+            ncVersion != NetcdfFileFormat.NETCDF4)
             throw new RuntimeException("ERROR: unsupported ncVersion=" + ncVersion);
-        boolean nc3Mode = ncVersion == NetcdfFileWriter.Version.netcdf3;
+        boolean nc3Mode = ncVersion == NetcdfFileFormat.NETCDF3;
 
         //delete any existing file
         File2.delete(fullName);
@@ -5166,34 +5168,34 @@ public abstract class EDDTable extends EDD {
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(ncVersion, 
-            fullName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder nc = ncVersion == NetcdfFileFormat.NETCDF3?
+                NetcdfFormatWriter.createNewNetcdf3(fullName + randomInt) :
+                NetcdfFormatWriter.createNewNetcdf4(ncVersion, fullName + randomInt, null); //null=default chunker
             nc.setFill(false);
-            Group rootGroup = nc.addGroup(null, "");
+            Group.Builder rootGroup = nc.getRootGroup();
         
             //items determined by looking at a .nc file; items written in that order 
 
             //define the dimensions
-            Dimension dimension  = nc.addDimension(rootGroup, ROW_NAME, nRows);
+            Dimension rowDimension = NcHelper.addDimension(rootGroup, ROW_NAME, nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = new Dimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
-            Variable newVars[] = new Variable[nColumns];
+            Variable.Builder newVars[] = new Variable.Builder[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 PAType type = twawm.columnType(col);
                 String tColName = twawm.columnName(col);
                 if (nc3Mode && type == PAType.STRING) {
                     int max = Math.max(1, twawm.columnMaxStringLength(col)); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension = nc.addDimension(rootGroup, 
-                        tColName + NcHelper.StringLengthSuffix, max);
-                    newVars[col] = nc.addVariable(rootGroup, tColName, DataType.CHAR, 
-                        Arrays.asList(dimension, lengthDimension)); 
+                    newVars[col] = NcHelper.addNc3StringVariable(rootGroup, tColName,  
+                        Arrays.asList(rowDimension), max); 
                 } else {
-                    newVars[col] = nc.addVariable(rootGroup, tColName, 
-                        NcHelper.getDataType(nc3Mode, type), ROW_NAME); 
+                    newVars[col] = NcHelper.addVariable(rootGroup, tColName, 
+                        NcHelper.getDataType(nc3Mode, type), rowDimension); 
                 }
             }
 
@@ -5218,7 +5220,7 @@ public abstract class EDDTable extends EDD {
             }
 
             //leave "define" mode
-            nc.create();
+            ncWriter = nc.build();
 
             //write the data
             for (int col = 0; col < nColumns; col++) {
@@ -5245,12 +5247,13 @@ public abstract class EDDTable extends EDD {
                         if (debugMode) String2.log(">> col=" + col + " nToGo=" + nToGo + 
                             " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
                             " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
+                        Variable newVar = ncWriter.findVariable(newVars[col].getFullName()); //because newVars are Variable.Builder's
                         if (nc3Mode && pa instanceof StringArray) {
                             //pa is temporary, so ok to change strings
                             array = Array.factory(NcHelper.getNc3DataType(colType),      
                                 new int[]{bufferSize}, 
                                 ((StringArray)pa).toIso88591().toObjectArray());
-                            nc.writeStringData(newVars[col], new int[]{ncOffset}, array);
+                            ncWriter.writeStringDataToChar(newVar, new int[]{ncOffset}, array);
 
                         } else {
                             if (nc3Mode && 
@@ -5268,7 +5271,7 @@ public abstract class EDDTable extends EDD {
                                 array = Array.factory(NcHelper.getNc3DataType(colType), 
                                     new int[]{bufferSize}, pa.toObjectArray());
                             }
-                            nc.write(newVars[col], new int[]{ncOffset}, array);
+                            ncWriter.write(newVar, new int[]{ncOffset}, array);
                         }
                                 
                         nToGo -= bufferSize;
@@ -5281,8 +5284,8 @@ public abstract class EDDTable extends EDD {
             }
 
             //if close throws Throwable, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(fullName + randomInt, fullName);
@@ -5293,15 +5296,12 @@ public abstract class EDDTable extends EDD {
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Throwable t) {
-            //try to close the file
-            try {
-                if (nc != null) nc.abort(); //this fails, so file can't be deleted below
-            } catch (Throwable t2) {
-                String2.log("Caught: " + MustBe.throwableToString(t2));
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(fullName + randomInt);
 
             throw t;
         }
@@ -5388,7 +5388,7 @@ public abstract class EDDTable extends EDD {
         }
 
         //save as .nc (it writes to randomInt temp file, then to fullName)
-        saveAsFlatNc(NetcdfFileWriter.Version.netcdf3,
+        saveAsFlatNc(NetcdfFileFormat.NETCDF3,
             ncCFName, twawm);
     }
 
@@ -5444,8 +5444,10 @@ public abstract class EDDTable extends EDD {
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
-        NetcdfFileWriter ncCF = null;
+        NetcdfFormatWriter ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder ncCF = null;
+
             //get info from twawm
             //Note: this uses "feature" as stand-in for profile|timeseries|trajectory
             String ncColNames[] = twawm.columnNames();
@@ -5511,18 +5513,17 @@ public abstract class EDDTable extends EDD {
 //do a fileSize check here.  <2GB?
 
             //** Create the .ncCF file
-            ncCF = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, ncCFName + randomInt);
-            Group rootGroup = ncCF.addGroup(null, "");
+            ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
+            Group.Builder rootGroup = ncCF.getRootGroup();
             ncCF.setFill(false);
             //define the dimensions
-            Dimension featureDimension = ncCF.addDimension(rootGroup, lcCdmType, nFeatures);
-            Dimension obsDimension     = ncCF.addDimension(rootGroup, "obs", 
+            Dimension featureDimension = NcHelper.addDimension(rootGroup, lcCdmType, nFeatures);
+            Dimension obsDimension     = NcHelper.addDimension(rootGroup, "obs", 
                 nodcMode? maxFeatureNRows : totalNObs);
 
             //add the feature variables, then the obs variables
-            Variable newVars[] = new Variable[ncNCols];
-            Variable rowSizeVar = null;
+            Variable.Builder newVars[] = new Variable.Builder[ncNCols];
+            Variable.Builder rowSizeVar = null;
             for (int so = 0; so < 2; so++) {  //0=feature 1=obs
                 for (int col = 0; col < ncNCols; col++) {
                     if (( isFeatureVar[col] && so == 0) || //is var in currently desired group?
@@ -5554,10 +5555,10 @@ public abstract class EDDTable extends EDD {
                         tDimsList.add(isFeatureVar[col]? featureDimension : obsDimension);
                     }
                     if (type == PAType.STRING) {
-                        newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
+                        newVars[col] = NcHelper.addNc3StringVariable(rootGroup, tColName, 
                             tDimsList, maxStringLength);
                     } else {
-                        newVars[col] = ncCF.addVariable(rootGroup, tColName, 
+                        newVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                             NcHelper.getNc3DataType(type), tDimsList); 
                     }
 
@@ -5576,7 +5577,7 @@ public abstract class EDDTable extends EDD {
 
                 //at end of feature vars, add the rowSize variable
                 if (!nodcMode && so == 0) {
-                    rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
+                    rowSizeVar = NcHelper.addVariable(rootGroup, rowSizeName, 
                         NcHelper.getNc3DataType(PAType.INT), 
                         Arrays.asList(featureDimension)); 
                     //String2.log("  rowSize variable added");
@@ -5645,7 +5646,7 @@ public abstract class EDDTable extends EDD {
 
             //** leave "define" mode
             //If offset to last var is >2GB, netcdf-java library will throw an exception here.
-            ncCF.create();
+            ncWriter = ncCF.build();
 
             //write the variables  
             //One var at a time makes it reasonably memory efficient.
@@ -5653,6 +5654,7 @@ public abstract class EDDTable extends EDD {
             for (int col = 0; col < ncNCols; col++) {
                 EDV tEdv = colEdv[col];
                 double tSafeMV = tEdv.safeDestinationMissingValue();
+                Variable newVar = ncWriter.findVariable(newVars[col].getFullName()); //because newVars has Variable.Builders
                 PrimitiveArray pa = twawm.column(col);
                 //first re-order
                 pa.reorder(rank);
@@ -5665,7 +5667,7 @@ public abstract class EDDTable extends EDD {
                 if (isFeatureVar[col]) {
                     //write featureVar[feature]
                     pa.justKeep(featureKeep);
-                    NcHelper.write(nc3Mode, ncCF, newVars[col], 0, pa); 
+                    NcHelper.write(nc3Mode, ncWriter, newVar, 0, pa); 
 
                 } else if (nodcMode) {
                     //write nodc obsVar[feature][obs]
@@ -5679,7 +5681,7 @@ public abstract class EDDTable extends EDD {
                         int tNRows   = featureNRows.get(feature);
                         int stopRow  = firstRow + tNRows - 1;
                         subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
-                        NcHelper.write(nc3Mode, ncCF, newVars[col], 
+                        NcHelper.write(nc3Mode, ncWriter, newVar, 
                             origin, new int[]{1, tNRows}, subsetPa);         
 
                         //and write missing values
@@ -5696,24 +5698,24 @@ public abstract class EDDTable extends EDD {
                                 subsetPa.addNStrings(tNRows, "");
                             else
                                 subsetPa.addNDoubles(tNRows, tSafeMV);
-                            NcHelper.write(nc3Mode, ncCF, newVars[col], 
+                            NcHelper.write(nc3Mode, ncWriter, newVar, 
                                 origin, new int[]{1, tNRows}, subsetPa);         
                         }
                     }
 
                 } else {
                     //write obsVar[obs]
-                    NcHelper.write(nc3Mode, ncCF, newVars[col], 0, pa); 
+                    NcHelper.write(nc3Mode, ncWriter, newVar, 0, pa); 
                 }
             }
 
             //write the rowSize values
             if (!nodcMode)
-                NcHelper.write(nc3Mode, ncCF, rowSizeVar, 0, featureNRows); 
+                NcHelper.write(nc3Mode, ncWriter, ncWriter.findVariable(rowSizeVar.getFullName()), 0, featureNRows); 
 
             //if close throws Throwable, it is trouble
-            ncCF.close(); //it calls flush() and doesn't like flush called separately
-            ncCF = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(ncCFName + randomInt, ncCFName);
@@ -5724,8 +5726,12 @@ public abstract class EDDTable extends EDD {
             //String2.log("  .ncCF File created:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { if (ncCF != null) ncCF.abort(); } catch (Exception e) {}
-            File2.delete(ncCFName + randomInt);
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(ncCFName + randomInt); 
+                ncWriter = null;
+            }
 
             throw t;
         }
@@ -5795,8 +5801,10 @@ public abstract class EDDTable extends EDD {
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
-        NetcdfFileWriter ncCF = null;
+        NetcdfFormatWriter ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder ncCF = null;
+
             //get info from twawm
             //Note: this uses 'feature' as stand-in for timeseries|trajectory 
             String ncColNames[] = twawm.columnNames();
@@ -5911,21 +5919,20 @@ public abstract class EDDTable extends EDD {
             pidPA = null;
 
             //** Create the .ncCF file
-            ncCF = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, ncCFName + randomInt);
-            Group rootGroup = ncCF.addGroup(null, "");
+            ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
+            Group.Builder rootGroup = ncCF.getRootGroup();
             ncCF.setFill(false);
             //define the dimensions
-            Dimension featureDimension = ncCF.addDimension(rootGroup, olcCdmName, nFeatures);
-            Dimension profileDimension = ncCF.addDimension(rootGroup, "profile",  
+            Dimension featureDimension = NcHelper.addDimension(rootGroup, olcCdmName, nFeatures);
+            Dimension profileDimension = NcHelper.addDimension(rootGroup, "profile",  
                 nodcMode? maxProfilesPerFeature : nProfiles);
-            Dimension obsDimension     = ncCF.addDimension(rootGroup, "obs",
+            Dimension obsDimension     = NcHelper.addDimension(rootGroup, "obs",
                 nodcMode? maxObsPerProfile : tTableNRows);
 
             //add the feature variables, then profile variables, then obs variables
-            Variable newVars[] = new Variable[ncNCols]; 
-            Variable indexVar = null;
-            Variable rowSizeVar = null;
+            Variable.Builder newVars[] = new Variable.Builder[ncNCols]; 
+            Variable.Builder indexVar = null;
+            Variable.Builder rowSizeVar = null;
             for (int opo = 0; opo < 3; opo++) {  //0=feature 1=profile 2=obs
                 for (int col = 0; col < ncNCols; col++) {
                     if (( isFeatureVar[col] && opo == 0) ||   //is var in currently desired group?
@@ -5975,12 +5982,11 @@ public abstract class EDDTable extends EDD {
                     }
 
                     if (type == PAType.STRING) {
-                        newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
+                        newVars[col] = NcHelper.addNc3StringVariable(rootGroup, tColName, 
                             tDimsList, maxStringLength);
                     } else {
-                        newVars[col] = ncCF.addVariable(rootGroup, tColName, 
-                            NcHelper.getNc3DataType(type),
-                            tDimsList); 
+                        newVars[col] = NcHelper.addVariable(rootGroup, tColName, 
+                            NcHelper.getNc3DataType(type), tDimsList); 
                     }
 
                     //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
@@ -5997,10 +6003,10 @@ public abstract class EDDTable extends EDD {
 
                 //at end of profile vars, add 'feature'Index and rowSize variables
                 if (!nodcMode && opo == 1) {
-                    indexVar = ncCF.addVariable(rootGroup, indexName, 
+                    indexVar = NcHelper.addVariable(rootGroup, indexName, 
                         NcHelper.getNc3DataType(PAType.INT), 
                         Arrays.asList(profileDimension)); //yes, profile, since there is one for each profile
-                    rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
+                    rowSizeVar = NcHelper.addVariable(rootGroup, rowSizeName, 
                         NcHelper.getNc3DataType(PAType.INT),
                         Arrays.asList(profileDimension)); 
                     //String2.log("  featureIndex and rowSize variable added");
@@ -6075,12 +6081,13 @@ public abstract class EDDTable extends EDD {
 
             //** leave "define" mode
             //If offset to last var is >2GB, netcdf-java library will throw an exception here.
-            ncCF.create();
+            ncWriter = ncCF.build();
 
             //write the variables  
             //One var at a time makes it reasonably memory efficient.
             //This needs to reorder the values, which needs all values at once, so can't do in chunks.
             for (int col = 0; col < ncNCols; col++) {
+                Variable newVar = ncWriter.findVariable(newVars[col].getFullName()); //because newVars has Variable.Builders
                 PrimitiveArray pa = twawm.column(col);
                 EDV tEdv = colEdv[col];
                 double tSafeMV = tEdv.safeDestinationMissingValue();
@@ -6094,7 +6101,7 @@ public abstract class EDDTable extends EDD {
                 if (isFeatureVar[col]) {
                     //write featureVar[feature]
                     pa.justKeep(featureKeep);
-                    NcHelper.write(nc3Mode, ncCF, newVars[col], 0, pa);
+                    NcHelper.write(nc3Mode, ncWriter, newVar, 0, pa);
 
                 } else if (isProfileVar[col]) {
                     pa.justKeep(profileKeep);
@@ -6112,7 +6119,7 @@ public abstract class EDDTable extends EDD {
                             firstRow = lastRow + 1;
                             lastRow = firstRow + tnProfiles - 1;
                             tpa = pa.subset(tpa, firstRow, 1, lastRow);                        
-                            NcHelper.write(nc3Mode, ncCF, newVars[col], 
+                            NcHelper.write(nc3Mode, ncWriter, newVar, 
                                 origin, new int[]{1, tnProfiles}, tpa);   
                             
                             //write fill values
@@ -6127,13 +6134,13 @@ public abstract class EDDTable extends EDD {
                                     tpa.addNStrings(nmv, "");
                                 else
                                     tpa.addNDoubles(nmv, tSafeMV);
-                                NcHelper.write(nc3Mode, ncCF, newVars[col], 
+                                NcHelper.write(nc3Mode, ncWriter, newVar, 
                                     origin, new int[]{1, nmv}, tpa);         
                             }
                         }
                     } else {
                         //write ragged array var[profile]
-                        NcHelper.write(nc3Mode, ncCF, newVars[col], 
+                        NcHelper.write(nc3Mode, ncWriter, newVar, 
                             new int[]{0}, new int[]{pa.size()}, pa);         
                     }
 
@@ -6150,7 +6157,7 @@ public abstract class EDDTable extends EDD {
                         origin[0] = feature;
                         for (int profile = 0; profile < maxProfilesPerFeature; profile++) { 
                             origin[1] = profile;
-                            NcHelper.write(nc3Mode, ncCF, newVars[col],
+                            NcHelper.write(nc3Mode, ncWriter, newVar,
                                 origin, shape, subsetPa);
                         }
                     }
@@ -6165,24 +6172,24 @@ public abstract class EDDTable extends EDD {
                         int stopRow  = firstRow + tNRows - 1;
                         subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
                         shape[2] = tNRows;
-                        NcHelper.write(nc3Mode, ncCF, newVars[col], origin, shape, subsetPa);         
+                        NcHelper.write(nc3Mode, ncWriter, newVar, origin, shape, subsetPa);         
                     }
 
                 } else {
                     //write obsVar[obs] as Contiguous Ragged Array
-                    NcHelper.write(nc3Mode, ncCF, newVars[col], 0, pa);
+                    NcHelper.write(nc3Mode, ncWriter, newVar, 0, pa);
                 }
             }
 
             if (!nodcMode) {
                 //write the featureIndex and rowSize values
-                NcHelper.write(nc3Mode, ncCF, indexVar,   0, featureIndex); 
-                NcHelper.write(nc3Mode, ncCF, rowSizeVar, 0, nObsPerProfile); 
+                NcHelper.write(nc3Mode, ncWriter, ncWriter.findVariable(  indexVar.getFullName()), 0, featureIndex); 
+                NcHelper.write(nc3Mode, ncWriter, ncWriter.findVariable(rowSizeVar.getFullName()), 0, nObsPerProfile); 
             }
 
             //if close throws Throwable, it is trouble
-            ncCF.close(); //it calls flush() and doesn't like flush called separately
-            ncCF = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(ncCFName + randomInt, ncCFName);
@@ -6193,8 +6200,12 @@ public abstract class EDDTable extends EDD {
             //String2.log("  .ncCF File:\n" + NcHelper.ncdump(ncCFName, "-h"));
 
         } catch (Throwable t) {
-            try { if (ncCF != null) ncCF.abort(); } catch (Exception e) {}
-            File2.delete(ncCFName + randomInt);
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(ncCFName + randomInt); 
+                ncWriter = null;
+            }
 
             throw t;
         } 
@@ -7721,9 +7732,11 @@ public abstract class EDDTable extends EDD {
             "    <li>Open that local .nc file (which has the data in a grid format)\n" +
             "      with one of the NetCDF libraries or tools.\n" +
             "      With NetCDF-Java for example, use:\n" +
-            "      <br><kbd>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");</kbd>\n" +
+            "      <br><kbd>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1</kbd>\n" +
+            "      <br><kbd>NetcdfFile nc = NetcdfFiles.open(\"c:\\downloads\\theDownloadedFile.nc\"); //v5.4.1+</kbd>\n" +
+            "      <br><kbd>NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1</kbd>\n" +
             "      <br>or\n" +
-            "      <br><kbd>NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");</kbd>\n" +
+            "      <br><kbd>NetcdfDataset nc = NetcdfDatasets.openDataset(\"c:\\downloads\\theDownloadedFile.nc\"); //v5.4.1+</kbd>\n" +
             "      <br>(NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "      In both cases, you can then do what you want with the <kbd>nc</kbd> object, for example,\n" +
             "      request metadata or request a subset of a variable's data as you would with any other\n" +

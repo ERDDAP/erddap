@@ -32,7 +32,8 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.GregorianCalendar;
 
-import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.write.NetcdfFileFormat;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
  * This is a command line program to run ArchiveADataset.
@@ -390,7 +391,7 @@ public class ArchiveADataset {
                     } else {
                         try {
                             String fullName = archiveDataDir + fileName + ".nc";
-                            eddGrid.saveAsNc(NetcdfFileWriter.Version.netcdf3,
+                            eddGrid.saveAsNc(NetcdfFileFormat.NETCDF3,
                                 "ArchiveADataset", //pseudo ipAddress
                                 baseRequestUrl + ".nc", query.toString(),                        
                                 fullName, true, 0); //keepUnusedAxes, lonAdjust

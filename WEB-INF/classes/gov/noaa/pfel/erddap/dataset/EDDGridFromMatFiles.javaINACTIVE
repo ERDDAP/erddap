@@ -104,7 +104,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
         String getWhat = "globalAttributes";
         try {
-            NcHelper.getGlobalAttributes(ncFile, sourceGlobalAttributes);
+            NcHelper.getGroupAttributes(ncFile.getRootGroup(), sourceGlobalAttributes);
 
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 getWhat = "axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi);
@@ -339,7 +339,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             StringBuilder sb = new StringBuilder();
 
             //get source global attributes
-            NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
+            NcHelper.getGroupAttributes(ncFile.getRootGroup(), axisSourceTable.globalAttributes());
 
             //look at all variables with dimensions, find ones which share same max nDim
             List allVariables = ncFile.getVariables(); 

@@ -79,6 +79,10 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>CHANGED: FileVisitorDNLS.testAWSS3() and FileVisitorSubdir.testAWSS3(); 
+    now use AWS v2 SDK.
+    So now the Git distribution no longer needs you to add the massive v1 AWS SDK jar file.
+    <br>&nbsp;
   <li>CHANGED: I switched to using Maven to detect/gather dependencies (the .jar files in /lib).
     The change to v2 of the AWS SDK necessitated this. It will be needed for
     other imported code in the future.
@@ -91,11 +95,25 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     <br><tt>-cp classes;C:\programs\_tomcat\lib\servlet-api.jar;lib\*</tt>
     <br>(or ':' instead of ';' for Linux and Macs).
     <br>(I should have done this years ago when it became an option.)
-2020-12-21
-
-* CHANGE: FileVisitorDNLS.testAWSS3() and FileVisitorSubdir.testAWSS3(); 
-  now use AWS v2 SDK.
-  So now the Git distribution is complete (not missing the massive v1 AWS SDK jar).
+    <br>&nbsp;
+  <li>NEW: GenerateDatasetsXml has a new utility option: findDuplicateTime
+    which will search through a collection of gridded .nc (and related) files
+    to find files with duplicate time values. See 
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#findDuplicateTime">findCuplicateTime</a>
+    <br>&nbsp;
+  <li>NEW: datasets.xml can now include a <palettes> tag which overrides 
+      the <palettes> tag value from messages.xml (or reverts to the messages.xml
+      value if it is empty). 
+      Also, if you have a cptfiles subdirectory in the ERDDAP content directory, 
+      ERDDAP will copy all the *.cpt files in that directory
+      into the [tomcat]/webapps/erddap/WEB-INF/cptfiles directory each time ERDDAP starts up.
+      This lets you change the list of available palettes while ERDDAP is running. 
+      It also lets you make a change and have it persist when you install a new version of ERDDAP.
+      See the <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#palettes">palettes documentation</a>
+      <br>Thanks to Jennifer Sevadjian and perhaps other CoastWatch people.
+    <br>&nbsp;
 
   </ul>
 </ul>

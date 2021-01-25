@@ -125,7 +125,7 @@ public class TableDataSet4DNc extends TableDataSet {
                     Variable v4DVars[] = NcHelper.find4DVariables(ncFile, null);
                     for (int v = 0; v < v4DVars.length; v++) {
                         Variable variable = v4DVars[v];
-                        String name = variable.getName();
+                        String name = variable.getFullName();
                         String reject = "  " + tFileNames[f] + " reject variable=" + name + 
                                 " because\n";
 
@@ -238,7 +238,7 @@ public class TableDataSet4DNc extends TableDataSet {
 
                             //things are looking good, get global attributes
                             globalAttributes = new Attributes();
-                            NcHelper.getGlobalAttributes(ncFile, globalAttributes);
+                            NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes);
                             courtesy = globalAttributes.getString("contributor_name");
                             if (courtesy == null)
                                 courtesy = globalAttributes.getString("acknowledgement"); //ACDD
