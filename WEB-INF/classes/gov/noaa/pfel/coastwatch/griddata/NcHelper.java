@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -25,11 +26,13 @@ import java.util.List;
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Put it in the classpath for the compiler and for Java.
  */
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
-import ucar.ma2.*;
+import ucar.nc2.write.*;
 
 
 /**
@@ -77,6 +80,8 @@ public class NcHelper  {
     public final static String originally_a_LongArray  = "originally a LongArray";
     public final static String originally_a_ULongArray = "originally a ULongArray";
 
+    public final static String ERROR_WHILE_CREATING_NC_FILE = "Error while creating .nc file:\n";
+
     /**
      * If saving longs or ulongs as Strings, this is the maxStringLength.
      */
@@ -86,9 +91,11 @@ public class NcHelper  {
      * Tell netcdf-java to object if a file is truncated 
      *  (e.g., didn't get completely copied over)
      * See email from Christian Ward-Garrison Nov 2, 2016
+     * and new location in email from support-netcdf-java (Sean Arms) 2021-01-07.
      */
     static {
-        ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = true;
+        //2021-01-07 was ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = true;
+        ucar.nc2.internal.iosp.netcdf3.N3headerNew.disallowFileTruncation = true;
     }
 
     /**
@@ -114,8 +121,8 @@ public class NcHelper  {
      public static String ncdump(NetcdfFile nc, String cmd) throws Exception{
         try {  
             StringWriter sw = new StringWriter();
-            //-vall is NCdumpW version of default for ncdump
-            NCdumpW.print(nc, String2.isSomething(cmd)? cmd : "-vall", sw, null); 
+            //-vall is Ncdump version of default for ncdump
+            Ncdump.ncdump(nc, String2.isSomething(cmd)? cmd : "-vall", sw, null); 
             return decodeNcDump(sw.toString());
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
@@ -191,6 +198,97 @@ public class NcHelper  {
         return sar;
     }
 
+    /**
+     * This mimics the old way of creating and adding a dimension.
+     * The implied isUnlimited and variableLength are false.
+     *
+     * @param name
+     * @param size
+     * @return the new dimension
+     */
+    public static Dimension addDimension(Group.Builder group, String name, int size) {
+        Dimension dim = new Dimension(name, size);
+        group.addDimension(dim);
+        return dim;
+    }
+
+    /**
+     * This mimics the pre-2021 way of creating and adding a dimension.
+     *
+     * @param name
+     * @param size
+     * @param isShared  For me, usually true.
+     * @param isUnlimited
+     * @param isVariableLength
+     * @return the new dimension
+     */
+    public static Dimension addDimension(Group.Builder group, String name, int size,
+        boolean isShared, boolean isUnlimited, boolean isVariableLength) {
+        Dimension dim = new Dimension(name, size, isShared, isUnlimited, isVariableLength);
+        group.addDimension(dim);
+        return dim;
+    }
+
+    /**
+     * This mimics the pre-2021 way of creating a variable (if just one dimension).
+     *
+     * @param group the Group.Builder
+     * @param shortName the short name for the var
+     * @param dataType the data type
+     * @param dim   
+     * @return the Variable.Builder
+     */
+    public static Variable.Builder addVariable(Group.Builder group, String shortName, 
+        DataType dataType, Dimension dim) {
+        return addVariable(group, shortName, dataType, Arrays.asList(dim));
+    }
+
+
+    /**
+     * This mimics the pre-2021 way of creating a variable.
+     *
+     * @param group the Group.Builder
+     * @param shortName the short name for the var
+     * @param dataType the data type
+     * @param dims the list of dimensions
+     * @return the Variable.Builder
+     */
+    public static Variable.Builder addVariable(Group.Builder group, String shortName, 
+        DataType dataType, List<Dimension> dims) {
+
+        Variable.Builder varBuilder = Variable.builder()
+            .setName(shortName)
+            .setDataType(dataType)
+            .addDimensions(dims);
+        group.addVariable(varBuilder);
+        return varBuilder;
+    }
+
+    /**
+     * This mimics the pre-2021 way of creating a String (actually char) variable in an .nc3 file.
+     *
+     * @param group the Group.Builder
+     * @param shortName the short name for the var
+     * @param dims the list of dimensions  (not including a stringLength dim)
+     * @param maxStringLength
+     * @return the Variable.Builder
+     */
+    public static Variable.Builder addNc3StringVariable(Group.Builder group, String shortName, 
+        List<Dimension> dims, int maxStringLength) {
+
+        //add a dimension for stringLength
+        Dimension dim = new Dimension(shortName + StringLengthSuffix, maxStringLength);
+        group.addDimension(dim);
+        ArrayList<Dimension> al = new ArrayList(dims);
+        al.add(dim); 
+
+        Variable.Builder varBuilder = Variable.builder()
+            .setName(shortName)
+            .setDataType(DataType.CHAR)
+            .addDimensions(al);
+        group.addVariable(varBuilder);
+        return varBuilder;
+    }
 
     /**
      * This converts a ArrayXxx.D1 (of any numeric type) into a double[].
@@ -225,6 +323,19 @@ public class NcHelper  {
 
     }
 
+
+    /**
+     * This mimics the pre-2021 way of creating an attribute from a ucar Array.
+     *
+     * @param attName
+     * @param value  WARNING: for nc3 files, Array MUSTN'T be an unsigned array.
+     * @return the new attribute
+     */
+    public static Attribute newAttribute(String attName, Array value) {
+        return Attribute.builder().setName(attName).setValues(value).build();
+    }
+
+
     /** 
      * This creates an netcdf Attribute from a PrimitiveArray.
      *
@@ -232,7 +343,7 @@ public class NcHelper  {
      * @param pa 
      * @return an Attribute
      */
-    public static Attribute createAttribute(boolean nc3Mode, String name, PrimitiveArray pa) {
+    public static Attribute newAttribute(boolean nc3Mode, String name, PrimitiveArray pa) {
         if (pa.elementType() == PAType.STRING) {
             if (nc3Mode) {
                 //String2.log("***getAttribute nStrings=" + pa.size());
@@ -255,8 +366,9 @@ public class NcHelper  {
         else if (nc3Mode && pa.isUnsigned())
              ar = get1DArray(pa.toObjectArray(), false);  //2020-04-10 attributes in nc3 can't be unsigned
         else ar = get1DArray(pa);
-        Attribute att = new Attribute(name, ar);
-        //String2.log(">> NcHelper.createAttribute(" + name + ", " + pa.elementType() + ", " + pa + ") -> " + att.toString());
+
+        Attribute att = Attribute.builder().setName(name).setValues(ar).build();
+        //String2.log(">> NcHelper.newAttribute(" + name + ", " + pa.elementType() + ", " + pa + ") -> " + att.toString());
         return att;
     }
 
@@ -331,7 +443,10 @@ public class NcHelper  {
             //String2.log(">> as doubles=" + String2.toCSSVString((double[])o));
         }
         if (o instanceof float[])  return Array.factory(DataType.FLOAT,  new int[]{((float[])o).length}, o);
-        if (o instanceof double[]) return Array.factory(DataType.DOUBLE, new int[]{((double[])o).length}, o);
+        if (o instanceof double[]) {
+            //String2.log(">> double o = " + String2.toCSSVString((double[])o));
+            return Array.factory(DataType.DOUBLE, new int[]{((double[])o).length}, o);
+        }
         if (o instanceof String[]) {
             //make ArrayChar.D2
             String[] sar = (String[])o;
@@ -551,10 +666,16 @@ public class NcHelper  {
          if (elementPAType == PAType.LONG)    return DataType.DOUBLE;  // long -> double in .nc3
          if (elementPAType == PAType.SHORT)   return DataType.SHORT;
          if (elementPAType == PAType.STRING)  return DataType.STRING;
-         if (elementPAType == PAType.UBYTE)   return DataType.UBYTE;
-         if (elementPAType == PAType.UINT)    return DataType.UINT;
+
+//2021-01-07 changed to signed for netcdf-java-5.4.1  (utypes worked in 5.3.3)
+//         if (elementPAType == PAType.UBYTE)   return DataType.UBYTE;  
+//         if (elementPAType == PAType.USHORT)  return DataType.USHORT;
+//         if (elementPAType == PAType.UINT)    return DataType.UINT;
+         if (elementPAType == PAType.UBYTE)   return DataType.BYTE;
+         if (elementPAType == PAType.USHORT)  return DataType.SHORT;
+         if (elementPAType == PAType.UINT)    return DataType.INT;
+
          if (elementPAType == PAType.ULONG)   return DataType.DOUBLE; // ulong -> double in .nc3
-         if (elementPAType == PAType.USHORT)  return DataType.USHORT;
          //STRUCTURE not converted
          Test.error(String2.ERROR + " in NcHelper.getNc3DataType:\n" +
              " unrecognized ElementType: " + elementPAType);
@@ -708,8 +829,8 @@ public class NcHelper  {
      * @throws Exception if trouble
      */
     public static NetcdfFile openFile(String fullName) throws Exception {
-        return fullName.endsWith(".ncml")? NetcdfDataset.openDataset(fullName) : 
-            NetcdfFile.open(fullName);
+        return fullName.endsWith(".ncml")? NetcdfDatasets.openDataset(fullName) : //'s' is the new API
+            NetcdfFiles.open(fullName);  //'s' is the new API
     }
 
     /** 
@@ -719,13 +840,7 @@ public class NcHelper  {
      * @return a Variable[]  (or null if list is null)
      */
     public static Variable[] variableListToArray(List list) {
-        if (list == null)
-            return null;
-        int nVars = list.size();
-        Variable vars[] = new Variable[nVars];
-        for (int v = 0; v < nVars; v++) 
-            vars[v] = (Variable)list.get(v);
-        return vars;
+        return (Variable[])(list == null? null : list.toArray(new Variable[0]));
     }
 
     /** 
@@ -735,13 +850,7 @@ public class NcHelper  {
      * @return a Dimensione[]  (or null if list is null)
      */
     public static Dimension[] dimensionListToArray(List list) {
-        if (list == null)
-            return null;
-        int nDims = list.size();
-        Dimension dims[] = new Dimension[nDims];
-        for (int d = 0; d < nDims; d++) 
-            dims[d] = (Dimension)list.get(d);
-        return dims;
+        return (Dimension[])(list == null? null : list.toArray(new Dimension[0]));
     }
 
     /**
@@ -798,7 +907,7 @@ public class NcHelper  {
 
         //look for unlimited dimension
         if (mainDimension == null) {
-            List dimensions = netcdfFile.getDimensions(); //next nc version: getRootGroup().getDimensions();  //was netcdfFile.getDimensions()
+            List dimensions = rootGroup.getDimensions(); //next nc version: getRootGroup().getDimensions();  //was netcdfFile.getDimensions()
             if (dimensions.size() == 0)
                 Test.error(String2.ERROR + " in NcHelper.findVariables: the file has no dimensions.");
             for (int i = 0; i < dimensions.size(); i++) {
@@ -807,7 +916,7 @@ public class NcHelper  {
                     mainDimension = tDimension;
                     if (reallyVerbose) 
                         String2.log("    NcHelper.findVariables found an unlimited dimension: " + 
-                            mainDimension.getFullName());
+                            mainDimension.getName());  //the full name
                     break;
                 }
             }
@@ -824,7 +933,7 @@ public class NcHelper  {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) 
                         String2.log("    NcHelper.findVariables found a time variable with dimension: " + 
-                            mainDimension.getFullName());
+                            mainDimension.getName());  //the full name
                     break;
                 }
             }
@@ -838,7 +947,7 @@ public class NcHelper  {
                 if (dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) {
-                        String fName = mainDimension.getFullName();
+                        String fName = mainDimension.getName();  //the full name
                         if (!"row".equals(fName)) //may be null
                             String2.log("    NcHelper.findVariables found an outer dimension: " + fName);
                     }
@@ -872,8 +981,8 @@ public class NcHelper  {
      * and then finds all similar variables.
      *
      * @param groupName the name of the group (e.g., "" for any group, 
-     *    "somegroup/someSubGroup
-     *    "[root]" if you want to limit the search to the root group.
+     *    "somegroup/someSubGroup", or 
+     *    "[root]" if you want to limit the search to the root group).
      * @return the similar variables 
      * @throws RuntimeException if trouble (e.g., group doesn't exist or no vars with dimensions)
      */
@@ -905,16 +1014,16 @@ public class NcHelper  {
                 dimNames = new String[tnDim];
                 for (int d = 0; d < tnDim; d++) {
                     Dimension tDim = variable.getDimension(d);
-                    dimNames[d] = tDim == null || tDim.getFullName() == null? 
-                        "size=" + variable.getShape(d) : tDim.getFullName();
+                    dimNames[d] = tDim == null || tDim.getName() == null?  //the full name
+                        "size=" + variable.getShape(d) : tDim.getName();   //the full name
                 }
             } else if (tnDim > 0 && tnDim == dimNames.length) {
                 //a similar variable?
                 boolean ok = true;
                 for (int d = 0; d < tnDim; d++) {
                     Dimension tDim = variable.getDimension(d);
-                    String tName = tDim == null || tDim.getFullName() == null?
-                        "size=" + variable.getShape(d) : tDim.getFullName();
+                    String tName = tDim == null || tDim.getName() == null?  //the full name  
+                        "size=" + variable.getShape(d) : tDim.getName();    //the full name
                     if (!dimNames[d].equals(tName)) {
                         ok = false;
                         break;
@@ -990,13 +1099,13 @@ public class NcHelper  {
                 if (foundDimensionNames == null) {
                     foundDimensionNames = new String[4];
                     for (int i = 0; i < 4; i++)
-                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getFullName();               
+                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getName();  //the full name
                 }
 
                 //does it match foundDimensions
                 boolean matches = true;
                 for (int i = 0; i < 4; i++) {
-                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getFullName())) {
+                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getName())) {   //the full name
                         matches = false;
                         break;
                     }
@@ -1029,10 +1138,10 @@ public class NcHelper  {
     /**
      * This adds global (group) attributes to a netcdf file's group.
      *
-     * @param group usually the rootGroup
+     * @param groupBuilder usually the rootGroup Builder
      * @param attributes the Attributes that will be set
      */
-    public static void setAttributes(boolean nc3Mode, Group group, Attributes attributes) {
+    public static void setAttributes(boolean nc3Mode, Group.Builder groupBuilder, Attributes attributes) {
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) { 
             String tName = names[ni];
@@ -1042,20 +1151,22 @@ public class NcHelper  {
             PrimitiveArray tValue = attributes.get(tName);
             if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) 
                 continue; //do nothing
-            group.addAttribute(createAttribute(nc3Mode, tName, tValue));
+            groupBuilder.addAttribute(newAttribute(nc3Mode, tName, tValue));
         }
     }
 
     /**
      * This adds attributes to a variable in preparation for writing a .nc file.
      *
-     * @param var  e.g., from findVariable(netcdfFile, varName)
+     * @param nc3Mode 
+     * @param var  e.g., from addVariable()
      * @param attributes the Attributes that will be set
+     * @param unsigned  If nc3Mode and unsigned, this method adds an _Unsigned=true attribute
      */
-    public static void setAttributes(boolean nc3Mode, Variable var, Attributes attributes, boolean unsigned) {
+    public static void setAttributes(boolean nc3Mode, Variable.Builder var, Attributes attributes, boolean unsigned) {
         String names[] = attributes.getNames();
         if (nc3Mode && unsigned)
-            var.addAttribute(createAttribute(nc3Mode, "_Unsigned", new StringArray(new String[]{"true"})));
+            var.addAttribute(newAttribute(nc3Mode, "_Unsigned", new StringArray(new String[]{"true"})));
         for (int ni = 0; ni < names.length; ni++) { 
             String tName = names[ni];
             if (!String2.isSomething(tName)) 
@@ -1064,14 +1175,14 @@ public class NcHelper  {
             if (tValue == null || tValue.size() == 0 || 
                 (tValue.elementType() == PAType.STRING && tValue.toString().length() == 0)) 
                 continue; //do nothing
-            var.addAttribute(createAttribute(nc3Mode, tName, tValue));
+            var.addAttribute(newAttribute(nc3Mode, tName, tValue));
         }
     }
 
 
 
     /**
-     * Given an attribute, this adds the value to the attributes.
+     * This gets the PA value from the attribute.
      * If there is trouble, this lots a warning message and returns null.
      * This is low level and isn't usually called directly.
      *
@@ -1084,25 +1195,25 @@ public class NcHelper  {
             //if (debugMode)
             //    String2.log("Warning: NcHelper.getAttributePA varName=" + varName + " att=null"); // + MustBe.stackTrace());
             return null;
-        } else if (String2.isSomething(att.getFullName())) {
+        } else if (String2.isSomething(att.getName())) {   //the full name
             try {
                 //decodeAttribute added with switch to netcdf-java 4.0
                 Array values = att.getValues();
                 if (values == null) {
-                    String2.log("Warning: varName=" + varName + " attribute=" + att.getFullName() + " has values=null");
+                    String2.log("Warning: varName=" + varName + " attribute=" + att.getName() + " has values=null");   //the full name
                     return null;
                 }
                 return PrimitiveArray.factory(decodeAttribute(getArray(values))); 
             } catch (Throwable t) {
                 String2.log("Warning: NcHelper caught an exception while reading varName='" + 
-                    varName + "' attribute=" + att.getFullName() + "\n" +
+                    varName + "' attribute=" + att.getName() + "\n" +  //the full name
                     MustBe.throwableToString(t));
                 return null;
             }
         } else {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.getAttributePA varName=" + varName + 
-                    " att.getFullName()=" + String2.annotatedString(att.getFullName()));
+                    " att.getName()=" + String2.annotatedString(att.getName()));  //the full name
             return null;
         }
     }
@@ -1121,27 +1232,27 @@ public class NcHelper  {
     }
 
     /**
-     * This gets one global attribute from a netcdf variable.
+     * This gets one attribute from a netcdf group.
      *
-     * @param netcdfFile
+     * @param group
      * @param attributeName
      * @return the attribute (or null if none)
      */
-    public static PrimitiveArray getGlobalAttribute(NetcdfFile netcdfFile, 
+    public static PrimitiveArray getGroupAttribute(Group group, 
         String attributeName) {
-        return getAttributePA("global", netcdfFile.findGlobalAttribute(attributeName)); 
+        return getAttributePA(group.getFullName(), group.findAttribute(attributeName)); 
     }
 
     /**
-     * This gets the first element of one global attribute as a String.
+     * This gets the first element of one group attribute as a String.
      *
-     * @param netcdfFile
+     * @param group
      * @param attributeName
      * @return the attribute (or null if none)
      */
-    public static String getStringGlobalAttribute(NetcdfFile netcdfFile, 
+    public static String getStringGroupAttribute(Group group, 
         String attributeName) {
-        PrimitiveArray pa = getGlobalAttribute(netcdfFile, attributeName);
+        PrimitiveArray pa = getGroupAttribute(group, attributeName);
         if (pa == null || pa.size() == 0)
             return null;
         return pa.getString(0);
@@ -1179,7 +1290,7 @@ public class NcHelper  {
                 String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
             return;
         }
-        String tName = att.getFullName(); //It is the short name! It doesn't include the groupName.
+        String tName = att.getName(); //It is the short name! It doesn't include the groupName.
         if (!String2.isSomething(tName)) {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.addAttribute " + varName + 
@@ -1193,54 +1304,39 @@ public class NcHelper  {
     }
 
     /**
-     * This reads the global attributes from a netcdf file.
+     * This reads the attributes for the group and all its parent groups in a netcdf file.
      *
-     * @param netcdfFile
-     * @param attributes the Attributes that will be added to.
-     */
-    public static void getGlobalAttributes(NetcdfFile netcdfFile, Attributes attributes) {
-        getGlobalAttributes(netcdfFile, "", attributes);
-    }
-
-    /**
-     * This reads the global attributes for the group and all its parent groups in a netcdf file.
-     *
-     * @param netcdfFile
-     * @param groupName  a specific groupName, or "" or null for the root group
+     * @param group   without trailing slash. Use "" for root group.
      * @param attributes the Attributes that will be added to.
      *     If group was specified but found, this just returns the root group atts.
      *     If group was specified, the group's (and parent groups) global attributes 
      *     are not marked with the name of the group -- it's as if all the global atts
      *     from all levels were thrown in together (with preference for lower level).
      */
-    public static void getGlobalAttributes(NetcdfFile netcdfFile, String groupName, Attributes attributes) {
-        Group group = String2.isSomething(groupName)?
-            netcdfFile.findGroup(groupName) :
-            netcdfFile.getRootGroup();
-        if (group == null)
-            group = netcdfFile.getRootGroup();
-        while (true) {
-            getGlobalAttributes(group.getAttributes(), attributes);
+    public static void getGroupAttributes(Group group, Attributes attributes) {
+        while (group != null) {
+            getAttributes(group.attributes(), attributes);
             group = group.getParentGroup(); //returns null if this is root group
-            if (group == null) 
-                return;
         }
     }
 
     /**
-     * This reads the global attributes from a netcdf file.
+     * This is the low level method to add the attributes (as is) from ncAtts to attributes.
      *
-     * @param globalAttList
-     * @param attributes the Attributes that will be added to.
+     * @param ncAtts global or variable attributes from a nc file
+     * @param attributes the attributes that will be added to.
      */
-    public static void getGlobalAttributes(List globalAttList, Attributes attributes) {
+    public static void getAttributes(AttributeContainer ncAtts, Attributes attributes) {
 
-        //read the globalAttributes
-        if (globalAttList == null)
+        //read the sourcglobalAttributes
+        if (ncAtts == null)
             return;
-        int nAtt = globalAttList.size();
-        for (int att = 0; att < nAtt; att++)  //there is also a dods.dap.Attribute                        
-            addAttribute("global", (ucar.nc2.Attribute)globalAttList.get(att), attributes, false);
+        Iterator it = ncAtts.iterator();
+        while (it.hasNext()) { //there is also a dods.dap.Attribute                        
+            Attribute att = (Attribute)it.next();            
+            String name = att.getName();
+            attributes.add(name, getAttributePA(name, att));
+        }
     }
 
     /**
@@ -1252,14 +1348,7 @@ public class NcHelper  {
     public static void getVariableAttributes(Variable variable, Attributes attributes) {
         if (variable == null)
             return;
-        String variableName = variable.getFullName();
-
-        //add the attributes
-        List variableAttList = variable.getAttributes();
-        if (variableAttList == null) 
-            return;
-        for (int att = 0; att < variableAttList.size(); att++) 
-            addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
+        getAttributes(variable.attributes(), attributes);
 
         //in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
         //String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" + attributes.getString("_Unsigned"));
@@ -1824,7 +1913,7 @@ public class NcHelper  {
     }
 
     /**
-     * This writes values to a 1D netcdf variable in a NetcdfFileWriter.
+     * This writes values to a 1D netcdf variable in a NetcdfFormatWriter.
      * This works with all PrimitiveArray types, but in nc3mode:
      * <br>LongArray and ULongArray is stored as doubles, so retrieve with 
      * <br>pa = new LongArray(pa) or new ULongArray(pa), and
@@ -1837,7 +1926,7 @@ public class NcHelper  {
      * @param pa will be converted to the appropriate numeric type
      * @throws Exception if trouble
      */
-    public static void write(boolean nc3Mode, NetcdfFileWriter netcdfFileWriter, 
+    public static void write(boolean nc3Mode, NetcdfFormatWriter netcdfFileWriter, 
         Variable var, int firstRow, PrimitiveArray pa) throws Exception {
 
         write(nc3Mode, netcdfFileWriter, 
@@ -1845,7 +1934,7 @@ public class NcHelper  {
     }
 
     /** 
-     * This is a thin wrapper to call netcdfFileWriter.writeStringData (for StringArray)
+     * This is a thin wrapper to call netcdfFileWriter.writeStringDataToChar (for StringArray)
      * or netcdfFileWriter.write to write the pa to the file.
      *
      * <p>This will convert CharArray to ShortArray and LongArray to StringArray, 
@@ -1859,25 +1948,29 @@ public class NcHelper  {
      *    Don't include StringLength dimension.
      * @param pa   the data to be written 
      */
-    public static void write(boolean nc3Mode, NetcdfFileWriter netcdfFileWriter, 
+    public static void write(boolean nc3Mode, NetcdfFormatWriter netcdfFileWriter, 
         Variable var, int origin[], int shape[], PrimitiveArray pa) throws Exception {
 
         PAType paType = pa.elementType();
-        if (nc3Mode) {
+        if (paType == PAType.CHAR)
+            //netcdf-java 3 & 4 just write 1 byte chars 
+            //(but nc4 will writes strings as utf-8 encoded
+            pa = (new CharArray(pa)).toIso88591();   
+        else if (nc3Mode) {
             if (paType == PAType.LONG ||
                 paType == PAType.ULONG)
                 pa = new DoubleArray(pa);
             else if (paType == PAType.CHAR)
-                pa = (new CharArray(pa)).toIso88591(); //netcdf-java just writes low byte
+                pa = (new CharArray(pa)).toIso88591();   //netcdf-java 3 just writes low byte
             else if (paType == PAType.STRING)
-                pa = (new StringArray(pa)).toIso88591(); //netcdf-java just writes low byte
+                pa = (new StringArray(pa)).toIso88591(); //netcdf-java 3 just writes low byte
         }
 
-        if (paType == PAType.STRING) {
-            netcdfFileWriter.writeStringData(var, origin, 
+        if (nc3Mode && paType == PAType.STRING) {
+            netcdfFileWriter.writeStringDataToChar(var, origin, 
                 Array.factory(DataType.STRING, shape, pa.toObjectArray()));         
         } else {
-            netcdfFileWriter.write(var, origin, 
+            netcdfFileWriter.write(var.getFullName(), origin, 
                 Array.factory(getNc3DataType(paType),
                     shape, pa.toObjectArray()));         
         }
@@ -1896,7 +1989,7 @@ public class NcHelper  {
      * @throws Exception if trouble
      */
     public static NetcdfDataset openOpendapAsNetcdfDataset(String url) throws Exception {
-        return NetcdfDataset.openDataset(url);
+        return NetcdfDatasets.openDataset(url);   //2021: 's' is new API
     }
 
 
@@ -1983,14 +2076,15 @@ public class NcHelper  {
         PrimitiveArray tpas[] = new PrimitiveArray[nVars]; 
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                fullName + randomInt);
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
 
             //add the variables
-            Variable newVars[] = new Variable[nVars];
+            Variable.Builder newVars[] = new Variable.Builder[nVars];
             for (int var = 0; var < nVars; var++) {
                 String name = varNames.get(var);
                 tpas[var] = pas[var];
@@ -2020,12 +2114,11 @@ public class NcHelper  {
                 }
 
                 PAType type = tpas[var].elementType();
-                Dimension dimension  = nc.addDimension(rootGroup, name, tpas[var].size());
+                Dimension dimension = NcHelper.addDimension(rootGroup, name, tpas[var].size());
                 if (type == PAType.STRING) {
                     int max = Math.max(1, ((StringArray)tpas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension  = nc.addDimension(rootGroup, 
-                        name + StringLengthSuffix, max);
-                    newVars[var] = nc.addVariable(rootGroup, name, DataType.CHAR, 
+                    Dimension lengthDimension = NcHelper.addDimension(rootGroup, name + StringLengthSuffix, max);
+                    newVars[var] = NcHelper.addVariable(rootGroup, name, DataType.CHAR, 
                         Arrays.asList(dimension, lengthDimension)); 
                     if (pas[var].elementType() == PAType.LONG) 
                         newVars[var].addAttribute(new Attribute("NcHelper", originally_a_LongArray)); 
@@ -2034,7 +2127,7 @@ public class NcHelper  {
                     else if (pas[var].elementType() == PAType.STRING) 
                         newVars[var].addAttribute(new Attribute("NcHelper", "JSON encoded")); 
                 } else {
-                    newVars[var] = nc.addVariable(rootGroup, name, getNc3DataType(type),
+                    newVars[var] = NcHelper.addVariable(rootGroup, name, getNc3DataType(type),
                         Arrays.asList(dimension)); 
                     if (pas[var].elementType() == PAType.CHAR) 
                         newVars[var].addAttribute(new Attribute("NcHelper", originally_a_CharArray)); 
@@ -2042,16 +2135,16 @@ public class NcHelper  {
             }
 
             //leave "define" mode
-            nc.create();
+            ncWriter = nc.build();
 
             //write the data
             for (int var = 0; var < nVars; var++) {
-                nc.write(newVars[var], get1DArray(tpas[var]));
+                ncWriter.write(newVars[var].getFullName(), get1DArray(tpas[var]));
             }
 
             //if close throws exception, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             File2.rename(fullName + randomInt, fullName);
 
@@ -2061,15 +2154,12 @@ public class NcHelper  {
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
-            //try to close the file
-            try {
-                if (nc != null) nc.abort(); 
-            } catch (Exception e2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete any partial or pre-existing file
-            File2.delete(fullName + randomInt);
            
             if (!reallyVerbose) String2.log(msg);
 
@@ -2304,50 +2394,54 @@ String2.log(pas13.toString());
         String testUnlimitedFileName = "/temp/unlimited.nc";
         String2.log("\n* Projects.testUnlimited() " + testUnlimitedFileName);
         int strlen = 6;
-        NetcdfFileWriter file = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, testUnlimitedFileName);
+        int row = -1;
+        String results, expected;
+        NetcdfFormatWriter ncWriter = null;
         try {
-            Group rootGroup = file.addGroup(null, "");
+            NetcdfFormatWriter.Builder file = NetcdfFormatWriter.createNewNetcdf3(
+                testUnlimitedFileName);
+            Group.Builder rootGroup = file.getRootGroup();
 
-            // define dimensions, including unlimited
-            Dimension timeDim = file.addUnlimitedDimension("time");
+            //add the unlimited time dimension
+            //Dimension timeDim = file.addUnlimitedDimension("time");
+
+            //alternative way to add the unlimited dimension
+            Dimension timeDim = Dimension.builder().setName("time").setIsUnlimited(true).setLength(0).build();
+            rootGroup.addDimension(timeDim);
+
             ArrayList dims = new ArrayList();
             dims.add(timeDim);
 
             // define Variables
-            Variable timeVar = file.addVariable(rootGroup, "time", DataType.DOUBLE, dims);
+            Variable.Builder timeVar = NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, dims);
             timeVar.addAttribute(new Attribute("units", "seconds since 1970-01-01"));
 
-            Variable latVar = file.addVariable(rootGroup, "lat", DataType.DOUBLE, dims);
+            Variable.Builder latVar = NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, dims);
             latVar.addAttribute(new Attribute("units", "degrees_north"));
 
-            Variable lonVar = file.addVariable(rootGroup, "lon", DataType.DOUBLE, dims);
+            Variable.Builder lonVar = NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, dims);
             lonVar.addAttribute(new Attribute("units", "degrees_east"));
 
-            Variable sstVar = file.addVariable(rootGroup, "sst", DataType.DOUBLE, dims);
+            Variable.Builder sstVar = NcHelper.addVariable(rootGroup, "sst", DataType.DOUBLE, dims);
             sstVar.addAttribute(new Attribute("units", "degree_C"));
 
-            Variable commentVar = file.addStringVariable(rootGroup, "comment", dims, strlen); 
+            Variable.Builder commentVar = NcHelper.addNc3StringVariable(rootGroup, "comment", dims, strlen); 
 
             // create the file
-            file.create();
-            file.close();
-            file = null;
+            ncWriter = file.build();
 
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-        } finally {
-            //ensure file is closed
-            try { if (file != null) file.abort();
-            } catch (Exception t2) { }
-        }
+            //optional
+            ncWriter.close();
+            ncWriter = null;
 
-        String results, expected;
-        try {
-            for (int row = 0; row < 5; row++) {
+            //ncdump it
+            String2.log("\nInitially:\n" + NcHelper.ncdump(testUnlimitedFileName, ""));
+
             //write 1 row at a time to the file
+            for (row = 0; row < 5; row++) {
                 Math2.sleep(20);
-                file = NetcdfFileWriter.openExisting(testUnlimitedFileName);
+                if (ncWriter == null)
+                    ncWriter = NetcdfFormatWriter.openExisting(testUnlimitedFileName).build();
                 String2.log("writing row=" + row);
 
                 int[] origin1 = new int[] {row};    
@@ -2356,13 +2450,18 @@ String2.log(pas13.toString());
                 ArrayChar.D2 ac = new ArrayChar.D2(1, strlen);
 
                 double cTime = System.currentTimeMillis() / 1000.0;
-                array = get1DArray(new double[] {row},             false); file.write(file.findVariable("time"),    origin1, array);
-                array = get1DArray(new double[] {33.33},           false); file.write(file.findVariable("lat"),     origin1, array);
-                array = get1DArray(new double[] {-123.45},         false); file.write(file.findVariable("lon"),     origin1, array);
-                array = get1DArray(new double[] {10 + row / 10.0}, false); file.write(file.findVariable("sst"),     origin1, array);
-                ac.setString(0, row + " comment");                         file.write(file.findVariable("comment"), origin2, ac);
-                file.flush(); //force file update
+                array = get1DArray(new double[] {row},             false); ncWriter.write(ncWriter.findVariable("time"),    origin1, array);
+                String2.log(">> array=" + array.toString());                
+                array = get1DArray(new double[] {33.33},           false); ncWriter.write(ncWriter.findVariable("lat"),     origin1, array);
+                array = get1DArray(new double[] {-123.45},         false); ncWriter.write(ncWriter.findVariable("lon"),     origin1, array);
+                array = get1DArray(new double[] {10 + row / 10.0}, false); ncWriter.write(ncWriter.findVariable("sst"),     origin1, array);
+                ac.setString(0, row + " comment");                         ncWriter.write(ncWriter.findVariable("comment"), origin2, ac);
+                ncWriter.close();   
+                ncWriter = null;   
 
+                String2.log("\nrow=" + row + ":\n" + NcHelper.ncdump(testUnlimitedFileName, ""));
+
+                /*
                 if (row == 1) { 
                     results = NcHelper.ncdump(testUnlimitedFileName, "");
                     String2.log(results);
@@ -2399,19 +2498,26 @@ String2.log(pas13.toString());
 "    comment = \"0 comm\", \"1 comm\"\n" +
 "}\n";
                     if (!results.equals(expected)) {
-                        file.close();
-                        file = null;
+                        ncWriter.close();
+                        ncWriter = null;
                         Test.ensureEqual(results, expected, "trouble when i==1");
                     }
                 }
+                */
             }
                 
 
-            //NOTE: instead of closing the file to write changes to disk, you can use file.flush().
+            //NOTE: instead of closing the ncWriter to write changes to disk, you can use ncWriter.flush().
+        } catch (Exception e9) {
+            String2.log("row=" + row + " " + NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+            throw e9;
+
         } finally {
-            //ensure file is closed
-            if (file != null) 
-                file.close(); //writes changes to file
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(testUnlimitedFileName); 
+                ncWriter = null;
+            }
         }
 
         results = NcHelper.ncdump(testUnlimitedFileName, "");
@@ -2448,7 +2554,12 @@ String2.log(pas13.toString());
 "      {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
 "    comment = \"0 comm\", \"1 comm\", \"2 comm\", \"3 comm\", \"4 comm\"\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "");
+        try {
+            Test.ensureEqual(results, expected, "");
+        } catch (Exception e) {
+            Test.knownProblem("I reported this (nc fill value of 9.969209968386869E36 in all by last value of each array) to Sean Arms 2021-01-11", e);
+
+        }
 
     }
 
@@ -2457,7 +2568,7 @@ String2.log(pas13.toString());
      * An experiment with NetcdfDataset accessing a DAP sequence dataset.
      */
     public static void testSequence() throws Throwable {
-        NetcdfDataset ncd = NetcdfDataset.openDataset(
+        NetcdfDataset ncd = NetcdfDatasets.openDataset(   //2021: 's' is new API
             "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
         try {
             String2.log(ncd.toString());
@@ -2650,83 +2761,46 @@ String2.log(pas13.toString());
         //test if defining >2GB throws exception
         fullName = "c:/temp/TooBig.nc";
         File2.delete(fullName);
-        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName);
-        try {
-            //"define" mode    2vars * 3000*50000*8bytes = 2,400,000,000
-            Group rootGroup = ncOut.addGroup(null, "");
-            ncOut.setFill(false);
-
-            Dimension dim0 = ncOut.addDimension(rootGroup, "dim0", 3000);
-            Dimension dim1 = ncOut.addDimension(rootGroup, "dim1", 50000);
-            List<Dimension> dims = Arrays.asList(dim0, dim1);
-            ncOut.addVariable(rootGroup, "d1", DataType.DOUBLE, dims); 
-            ncOut.addVariable(rootGroup, "d2", DataType.DOUBLE, dims); 
-
-            //define a var above 2GB  (This is what causes the problem)
-            ncOut.addVariable(rootGroup, "b3", DataType.BYTE, 
-                Arrays.asList(dim0)); 
-
-            //"create" mode   (and error isn't triggered till here)
-            ncOut.create();
-            ncOut.close(); //it calls flush() and doesn't like flush called separately
-            ncOut = null;
-            File2.delete(fullName);
-            if (true)
-                throw new RuntimeException("Shouldn't get here.");
-
-        } catch (Throwable t) {
-            try { 
-                if (ncOut != null) {
-                    ncOut.close(); 
-                }
-            } catch (Exception e) {
-            }
-            File2.delete(fullName);
-
-            String msg = t.toString();
-            String2.log("Intentional error:\n" + msg);
-
-            if (!msg.equals(
-                "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
-                "may not exceed 2147483647"))
-                throw t;
-        }
-
-        //test writing Strings to nc files
-        //Must the char[][] be the exact right size?  What if too long?
+        NetcdfFormatWriter ncWriter = null;
+    
+        //*** test writing Strings to nc files
         fullName = "c:/temp/StringsInNc.nc";
         File2.delete(fullName);
-        ncOut = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName);
+        ncWriter = null;
         try {
+            NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(fullName);
             //"define" mode
-            Group rootGroup = ncOut.addGroup(null, "");
+            Group.Builder rootGroup = ncOut.getRootGroup();
             ncOut.setFill(false);
-            Dimension dim0 = ncOut.addDimension(rootGroup, "dim0", 2);
-            Dimension dim1 = ncOut.addDimension(rootGroup, "dim1", 3);
+            Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
+            Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
             ArrayList dims = new ArrayList();
             dims.add(dim0);
             dims.add(dim1);
-            Variable s1Var = ncOut.addStringVariable(rootGroup, "s1", dims, 
-                4); //test strLength not long enough for all strings!
+            NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); //test strLength not long enough for all strings!
             Array ar;
 
             //"create" mode
-            ncOut.create();
-            String sa6[] = {"", "a", "abcde", "abc", "abcd", "abcde"};
+            ncWriter = ncOut.build();
+            String sa6[] = {"", "a", "abcd", "abc", "abcd", "abcd"};
+            Variable s1Var = ncWriter.findVariable("s1");
 
-            //this fails: so origin and ar must be correct nDimensions and size
+            //this fails (as expected and desired):
+            //  so origin and ar must be correct nDimensions and size
             //ar = Array.factory(DataType.STRING, new int[]{6}, sa6);         
-            //ncOut.writeStringData("s1", new int[]{0}, ar);
+            //ncOut.writeStringDataToChar(s1, new int[]{0}, ar);
 
             ar = Array.factory(DataType.STRING, new int[]{2,3}, sa6);         
-            ncOut.writeStringData(s1Var, new int[]{0, 0}, ar);
-            ncOut.close();
-            ncOut = null;
+            ncWriter.writeStringDataToChar(s1Var, new int[]{0, 0}, ar);
+            ncWriter.close();
+            ncWriter = null;
         } catch (Exception e) {
-            try { if (ncOut != null) ncOut.abort();
-            } catch (Exception e2) {}
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName); 
+                ncWriter = null;
+            }
         }
 
         //Strings are truncated to maxCharLength specified in "define" mode.
@@ -2743,15 +2817,129 @@ String2.log(pas13.toString());
 "\n" +
 "  data:\n" +
 "    s1 = \n" +
-"      {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" + 
+"      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n" + 
+"      }\n" +
+"}\n";
+        String2.log("results=\n" + results);
+        Test.ensureEqual(results, expected, "");
+        File2.delete(fullName);
+
+
+        //*** test writing too-long Strings to nc files
+        //Must the char[][] be the exact right size?  What if too long?
+        fullName = "c:/temp/StringsInNc2.nc";
+        File2.delete(fullName);
+        ncWriter = null;
+        try {
+            NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(fullName);
+            //"define" mode
+            Group.Builder rootGroup = ncOut.getRootGroup();
+            ncOut.setFill(false);
+            Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
+            Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
+            ArrayList dims = new ArrayList();
+            dims.add(dim0);
+            dims.add(dim1);
+            NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); //test strLength not long enough for all strings!
+            Array ar;
+
+            //"create" mode
+            ncWriter = ncOut.build();
+            String sa6[] = {"", "a", "abcde", "abc", "abcd", "abcde"};
+            Variable s1Var = ncWriter.findVariable("s1");
+
+            //this fails (as expected and desired):
+            //  so origin and ar must be correct nDimensions and size
+            //ar = Array.factory(DataType.STRING, new int[]{6}, sa6);         
+            //ncOut.writeStringDataToChar(s1, new int[]{0}, ar);
+
+            ar = Array.factory(DataType.STRING, new int[]{2,3}, sa6);         
+            ncWriter.writeStringDataToChar(s1Var, new int[]{0, 0}, ar);
+            ncWriter.close();
+            ncWriter = null;
+        } catch (Exception e) {
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName); 
+                ncWriter = null;
+            }
+        }
+
+        //Strings are truncated to maxCharLength specified in "define" mode.
+        results = ncdump(fullName, ""); 
+        expected = 
+"netcdf StringsInNc2.nc {\n" + 
+"  dimensions:\n" +
+"    dim0 = 2;\n" +
+"    dim1 = 3;\n" +
+"    s1_strlen = 4;\n" +
+"  variables:\n" +
+"    char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
+"\n" +
+"\n" +
+"  data:\n" +
+"    s1 = \n" +
+"      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n" + 
 "      }\n" +
 "}\n";
         String2.log("results=\n" + results);
         Test.ensureEqual(results, expected, "");
 
+
         //nc chars are essentially unsigned bytes!
         String2.log(File2.hexDump(fullName, 1000000)); 
         File2.delete(fullName);
+
+        //2021-01-06 This worked (ie netcdf-java refused to create the file) 
+        //  until netcdf-java v5.4.1. I reported to Sean Arms.
+        if (true) {  //this is normally true
+            try {
+                NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
+                    fullName)
+                    .setFormat(NetcdfFileFormat.NETCDF3) //this is default. I'm just testing.
+                    .setFill(false);
+
+                //"define" mode    2vars * 3000*50000*8bytes = 2,400,000,000
+                Group.Builder rootGroup = ncOut.getRootGroup();
+
+                Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 3000);
+                Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 50000);
+                List<Dimension> dims = Arrays.asList(dim0, dim1);
+                NcHelper.addVariable(rootGroup, "d1", DataType.DOUBLE, dims); 
+                NcHelper.addVariable(rootGroup, "d2", DataType.DOUBLE, dims); 
+
+                //define a var above 2GB  (This causes the exception.)
+                NcHelper.addVariable(rootGroup, "b3", DataType.BYTE, Arrays.asList(dim0)); 
+
+                //"create" mode   (and error isn't triggered till here)
+                ncWriter = ncOut.build();
+
+                ncWriter.close(); //it calls flush() and doesn't like flush called separately
+                ncWriter = null;
+                if (true)
+                    throw new RuntimeException("Shouldn't get here (It let me create nc3 file >2GB!) . fileSize=" + File2.length(fullName));
+
+            } catch (Throwable t) {
+                String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+                if (ncWriter != null) {
+                    try {ncWriter.abort(); } catch (Exception e9) {}
+                    File2.delete(fullName); 
+                    ncWriter = null;
+                }
+
+                String msg = t.toString();
+                String2.log("Intentional error (should be: not allowed to create nc3 file >2GB):\n" + msg);
+
+                if (!msg.equals(
+                    "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
+                    "may not exceed 2147483647"))
+                    Test.knownProblem("netcdf-java 5.4.1 now allows creation of nc3 files >2GB!\n" +
+                        "I reported this to Sean Arms 2021-01-06.", t);
+            } finally {
+                File2.delete(fullName);
+            }
+        }
 
     }
 

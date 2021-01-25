@@ -821,9 +821,8 @@ public class UByteArray extends PrimitiveArray {
         if (array.length == size)
             return array;
         Math2.ensureMemoryAvailable(1L * size, "UByteArray.toArray");
-        byte[] tArray = new byte[size];
-        System.arraycopy(array, 0, tArray, 0, size);
-        return tArray;
+        //this is faster than making array then arraycopy because it doesn't have to fill the initial array with 0's
+        return Arrays.copyOfRange(array, 0, size);
     }
    
     /**
@@ -1305,7 +1304,23 @@ public class UByteArray extends PrimitiveArray {
      * to the beginning.
      */
     public void sort() {
-        Arrays.sort(array, 0, size);
+        //Sorting unsigned PrimitiveArrays is more complicated.
+        //First, sort the signed values in array:
+        //see switchover point and speed comparison in 
+        //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
+        if (size < 8192)
+             Arrays.sort(array, 0, size);
+        else Arrays.parallelSort(array, 0, size);
+
+        //Then find the first value >=0, and move it and subsequent to beginning of array.
+        //You can't use PrimitiveArray.binarySearch because it works on unsigned values
+        //  (via PAOne) and the array is sorted according to the signed values.
+        //This is not ideal, but this is rarely used.
+        //[Future: you could use Arrays.binarySearch() with extra effort to find *first* value >=0.]
+        int which = 0;
+        while (which < size && array[which] < 0)
+            which++;
+        move(which, size, 0);
     }
 
     /**
@@ -2094,6 +2109,11 @@ public class UByteArray extends PrimitiveArray {
         Test.ensureEqual((new UByteArray(new byte[] {127  })).tryToFindNumericMissingValue(), null, "");
         Test.ensureEqual((new UByteArray(new short[]{255  })).tryToFindNumericMissingValue(),        255, "");
         Test.ensureEqual((new UByteArray(new byte[] {1, 99})).tryToFindNumericMissingValue(),         99, "");
+
+        //sort
+        anArray = new UByteArray(new short[]{255, 128, 0, 5, 127});
+        anArray.sort();
+        Test.ensureEqual(anArray.toString(), "0, 5, 127, 128, 255", "");
 
         /* */
     }

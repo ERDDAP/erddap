@@ -115,7 +115,7 @@ String2.log("  fullName=" + fullName);
             table.saveAsFlatNc(fullName, "row");
 
             //return the file            
-            return NetcdfFile.open(fullName);
+            return NetcdfFiles.open(fullName);
         } catch (Exception e) {
             //??? different errors for different situations?
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

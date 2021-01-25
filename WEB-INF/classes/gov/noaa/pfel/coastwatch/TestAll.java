@@ -95,7 +95,7 @@ public class TestAll  {
         File2.deleteAllFiles(EDStatic.fullPublicDirectory, true, false);  //recursive, deleteEmptySubdirectories 
         File2.deleteAllFiles(EDStatic.fullCacheDirectory,  true, false);  
 
-//ONE TIME TESTS -- ~alphabetical by class name
+//INDIVIDUAL TESTS (for convenience) -- ~alphabetical by class name
 
         /* 
         ByteArray.basicTest();
@@ -119,9 +119,9 @@ public class TestAll  {
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
 //      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
-//      String2.log(NcHelper.ncdump("/data/gtspp/gtspp_40268168_te_111.nc", "-v temperature"));  
+//      String2.log(NcHelper.ncdump("/data/hsu/gcoos_ioos-station-wmo-42043_2020_01.nc", "-h"));  
 
-//      DasDds.main(new String[]{"nceiErsstv5_LonPM180", "-verbose"});
+//      DasDds.main(new String[]{"etopo180", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -268,11 +268,12 @@ public class TestAll  {
 //    os.close();
 //
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
-//        "/u00/data/points/woa18/temperature/", ".*\\.nc", "", 
-//        "", "", //group, dimensionsCSV
+//        "/u00/FNMOC/NAVGEM/onedegree/pressure/", //10mWinds 20mWinds 500MbHeight pressure
+//        "US.*", //US.*wnd_ucmp,  or vcmp, or ""
+//        "", "", "", //sampleFile, group, dimensionsCSV
 //        -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
-//    DasDds.main(new String[]{"access_r2", "-verbose"});
+//    DasDds.main(new String[]{"erdNavgem05DPres", "-verbose"});
 
 //tests of _Unsigned=true, maxIsMV, addFillValueAttributes, EDD.addMvFvAttsIfNeeded, EDV.suggestAddFillValue:
 //  and of course all of the tests of GenerateDatasetsXml.
@@ -530,7 +531,7 @@ public class TestAll  {
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
     // */
-//    Table.debugMode = true; DasDds.main(new String[]{"id", "-verbose"});
+    //Table.debugMode = true; DasDds.main(new String[]{"hsu2", "-verbose"});
 
 //    *** To update GTSPP (~10th of every month):
       //Don't add source_id or stream_ident: they are usually (always?) empty
@@ -543,7 +544,7 @@ public class TestAll  {
 //    1b) Ensure Ramdisk r: exists.
 //      If not, run c:/Program Files/ImDisk/RamDiskUI.exe to create 100MB ram disk
 
-//    2) Overnight (still! because it's still sluggish)
+//    2) Overnight (or over lunch if just a few months of data) (still! because it's still sluggish)
 //       unzip and consolidate the profiles 
 //       Full run takes 16 hours with ramdisk (about 5 min to process 1 month's data,
 //           or 132K source files (in one tgz) in ~200 seconds = ~ 660 files/second)
@@ -552,7 +553,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 2, 2020, 11, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 10, 2020, 12, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -566,7 +567,7 @@ public class TestAll  {
 //       to the date I started processing in step 2 above. 
 //       (If processed in chunks, use date of start of last chunk.)
 //    4) Run:  (should fail at current calendar month)
-//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2020);
+//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2021);
 //    5) * In [tomcat]/content/erddap/subset/
 //          delete erdGtsppBestNc.json and erdGtsppBest.json
 //       * Load erdGtsppBestNc in localHost ERDDAP.     (20-40 minutes)
@@ -585,10 +586,10 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 2, 2020, 11); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 10, 2020, 12); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
-//       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2020);
+//       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
 //    9) * Load erdGtsppBest in localHost ERDDAP.  (1-10 minutes)
 //       * Generate .json file from
 //         http://localhost:8080/cwexperimental/tabledap/erdGtsppBest.json?trajectory,org,type,platform,cruise&distinct()
@@ -727,7 +728,7 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("C:/data/socat/06AQ20110715.nc", "-h"));
 //    String2.log(NcHelper.dds("c:/data/nodcTemplates/pointKachemakBay.nc"));
 //    test validity of a file:
-//        NetcdfDataset ncd = NetcdfDataset.openDataset( //file or DAP baseUrl
+//        NetcdfDataset ncd = NetcdfDatasets.openDataset( //file or DAP baseUrl    //2021: 's' is new API
 //            "http://oos.soest.hawaii.edu/thredds/dodsC/hioos/roms_forec/hiog/ROMS_Oahu_Regional_Ocean_Model_best.ncd");
 //        System.out.println("netcdfDataset=" + ncd.toString());
 //        System.out.println("featureType=" + FeatureDatasetFactoryManager.findFeatureType(ncd).toString());
@@ -853,7 +854,7 @@ RegexFilenameFilter rff;
 ResourceBundle2 rb2;
 RowComparator rc;
 RowComparatorIgnoreCase rcic;
-String2LogFactory s2lf;
+SaveOpendap so;
 SdsReader sr;
 SgtGraph sgtGraph; 
 SgtMap sgtMap;     
@@ -910,6 +911,7 @@ ShortArray sha;
 SimpleXMLReader sxr;
 SSR ssr;
 String2 s2;
+String2LogFactory s2lf;
 StringArray sa;
 StringComparatorIgnoreCase scic;
 StringHolder sh;
@@ -997,6 +999,7 @@ EDVTimeStamp edvts;
 EDVTimeStampGridAxis edvtsga;
 Erddap erddap;       
 ErddapRedirect erddapRedirect;       
+FindDuplicateTime findDuplicateTime;
 FishBase fb;
 GenerateDatasetsXml gdx;
 GridDataAccessor gda;
@@ -1014,6 +1017,7 @@ OutputStreamViaAwsS3 osvas;
 PersistentTable pert;
 Projects2 proj2;
 RunLoadDatasets rld;
+
 Subscriptions sub;
 TableWriter tw;
 TableWriterAll twa;
@@ -1151,6 +1155,7 @@ WaitThenTryAgainException wttae;
         FileVisitorDNLS.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         FileVisitorSubdir.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
         WatchDirectory.test(             errorSB, interactive, doSlowTestsToo, 0, -1); 
+        FindDuplicateTime.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         //give antivirus a chance to get caught up
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll

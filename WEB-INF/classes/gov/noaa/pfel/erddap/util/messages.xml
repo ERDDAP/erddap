@@ -3902,6 +3902,7 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
      There must be a .cpt file for each in the erddap/WEB-INF/cptfiles directory.
   The standard palettes are listed in 'palettes' in Bob's messages.xml,
   EDDTable.java, EDDGrid.java, and setupDatasetsXml.html.
+  If a <palettes> tag is in datasets.xml, it has preference.
 -->
 <palettes>BlackBlueWhite, BlackGreenWhite, BlackRedWhite, BlackWhite, BlueWhiteRed,
 BlueWideWhiteRed, LightRainbow, Ocean, OceanDepth, Rainbow, Rainbow2, Rainfall, ReverseRainbow,

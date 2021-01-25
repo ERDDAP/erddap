@@ -145,7 +145,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 getWhat = "axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi);
 
-                //try to find the lowest level group
+                //try to find the lowest level group (most levels)
                 String tGroup = File2.getDirectory(sourceAxisNames.get(avi));
                 if (tGroup.length() > 0) {
                     int tGroupSlashCount = String2.countAll(tGroup, "/");
@@ -174,7 +174,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
                 getWhat = "dataAttributes for dvi=" + dvi + " name=" + sourceDataNames.get(dvi);
 
-                //try to find the lowest level group
+                //try to find the lowest level group (most levels)
                 String tGroup = File2.getDirectory(sourceDataNames.get(dvi));
                 if (tGroup.length() > 0) {
                     int tGroupSlashCount = String2.countAll(tGroup, "/");
@@ -197,7 +197,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 }
             }
 
-            NcHelper.getGlobalAttributes(ncFile, group, sourceGlobalAttributes);
+            //get group atts and all higher groups (up to root)            
+            NcHelper.getGroupAttributes(ncFile.findGroup(group), sourceGlobalAttributes);
 
             //I care about this exception
             ncFile.close();
@@ -420,7 +421,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param tFileNameRegex  the regex that each filename (no directory info) must match 
      *    (e.g., ".*\\.nc")  (usually only 1 backslash; 2 here since it is Java code). 
      * @param sampleFileName full file name of one of the files in the collection
-     * @param tGroup the name of the group to be used (else "" for all/any)
+     * @param tGroup the name of the group to be used (else "" for all/any or "[root]" for just root) (without trailing slash)
      * @param externalAddGlobalAttributes  These are given priority. Use null if none available.
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
@@ -492,34 +493,41 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     useDims.add(tDim);
                 }
             } else {
-                Variable maxDVariables[] = NcHelper.findMaxDVariables(ncFile, tGroup); //throws exception if no such group or no vars with dimensions
+                Variable maxDVariables[] = NcHelper.findMaxDVariables(ncFile, tGroup); //handles "[root]". throws exception if no such group or no vars with dimensions
                 useDims = maxDVariables[0].getDimensions(); //what is getDimensionsAll()?               
                 if (!String2.isSomething(tGroup)) {
                     //look for a group (so global atts includes that group below)
                     for (int i = 0; i < maxDVariables.length; i++) {
                         tGroup = File2.getDirectory(maxDVariables[0].getFullName());
-                        if (String2.isSomething(tGroup))
+                        if (String2.isSomething(tGroup)) {
+                            tGroup = File2.removeSlash(tGroup);
                             break;
+                        }
                     }
                 }
             }
             int nUseDims = useDims.size();
+            if (tGroup.equals("[root]"))
+                tGroup = "";
 
             //get source global Attributes
             Attributes globalSourceAtts = axisSourceTable.globalAttributes();
-            NcHelper.getGlobalAttributes(ncFile, tGroup, globalSourceAtts);
+            NcHelper.getGroupAttributes(ncFile.findGroup(tGroup), globalSourceAtts);
 
             //create the axisVariables for those dimensions
             StringArray dimNames = new StringArray();
             for (int avi = 0; avi < nUseDims; avi++) {
                 Dimension tDim = useDims.get(avi);
-                //work-around bug in netcdf-java: for anonymous dim,
-                //  getName() returns null, but getFullName() throws Exception. [huh?]
-                String axisName = tDim.getFullName();
-                if (axisName == null) 
-                    axisName = tDim.getFullName();  
+                //2021-01-07 I'm not sure that it is always true that I can use tGroup as prefix
+                //  If trouble, make sure NcHelper.findMaxDVariables() above always returns
+                //  vars from same group.
+                String dimName = tDim.getName();  //getName is the short name! (full name not available)
+                //dimName will be null (or ""?) for unnamed dimensions, e.g., in .hdf files
+                //String2.pressEnterToContinue(">> avi#" + avi + " name=" + dimName);
+                String axisName = String2.ifSomethingConcat(tGroup, "/", 
+                    String2.isSomething(dimName)? dimName : "axis" + avi);
                 Attributes sourceAtts = new Attributes();
-                if (axisName != null) {
+                if (String2.isSomething(dimName)) {  //dimName, not axisName which is always something
                     Variable axisVar = ncFile.findVariable(axisName);
                     if (axisVar != null) {//it will be null for dimension without same-named coordinate axis variable
                         NcHelper.getVariableAttributes(axisVar, sourceAtts);
@@ -541,8 +549,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         }
                     }
                 }
-                if (axisName == null)
-                    axisName = "axis" + avi;
                 dimNames.add(axisName);
                 axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
                     sourceAtts); 
@@ -560,8 +566,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             for (int v = 0; v < allVariables.size(); v++) {
                 Variable var = (Variable)allVariables.get(v);
                 String varName = var.getFullName();
-                int slashPo = varName.lastIndexOf('/');
-                String groupName = slashPo < 0? "" : varName.substring(0, slashPo + 1);
+                String groupName = File2.removeSlash(File2.getDirectory(varName));
 
                 //does it use the same dimensions?
                 List<Dimension> dimensions = var.getDimensions();
@@ -572,19 +577,22 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     varName.equals(dimNames.get(0)))
                     continue;
                 PAType tPAType = NcHelper.getElementPAType(var);
-                if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
-                else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
-                int nDim = dimensions.size() - (tPAType == PAType.STRING? 1 : 0);
+                int nDim = dimensions.size() - (tPAType == PAType.CHAR? 1 : 0);
                 if (nDim > 1)  //don't skip if nDim==1, since dataset might serve it.
                     nGridsAtSource++;
                 if (nDim != nUseDims) 
                     continue;
+                //now switch to type that will be used for PrimitiveArray
+                if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
+                else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
                 PrimitiveArray sourcePA = PrimitiveArray.factory(tPAType, 1, false);
                 boolean allMatch = true;
                 for (int avi = 0; avi < nUseDims; avi++) {
                     if (debugMode) String2.log(">> varName=" + varName + 
-                        " dim check: " + useDims.get(avi).getFullName() + " == " + dimensions.get(avi).getFullName() + " ?");
-                    if (!useDims.get(avi).equals(dimensions.get(avi))) {
+                        " dim check: " + useDims.get(avi).getName() + " == " + dimensions.get(avi).getName() + " ?");  //the short name
+                    //.equals says true for unnamed dims with same size. That's trouble
+                    //but it is better to find too many vars (which might all be desired), than to find 0
+                    if (!useDims.get(avi).equals(dimensions.get(avi))) { 
                         allMatch = false;
                         break;
                     }

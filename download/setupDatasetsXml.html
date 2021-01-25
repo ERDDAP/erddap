@@ -823,6 +823,24 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
         Please give ERDDAP a try. If you need help, please email bob.simons at noaa.gov .
         <br>&nbsp;
 
+      <li>addFillValueAttributes
+          <br>This special EDDType option isn't a dataset type. It is a tool 
+          which can add _FillValue attributes to some variables in some datasets.
+          See 
+          <a href="#addFillValueAttributes" rel="bookmark">addFillValueAttributes</a>.
+        <br>&nbsp;
+
+      <li><a class="selfLink" id="findDuplicateTime" href="#findDuplicateTime" rel="bookmark">findDuplicateTime</a>
+          <br>This special EDDType option isn't a dataset type. 
+          Instead, it tells GenerateDatasetsXml to search through a collection of 
+          gridded .nc (and related) files to find and print out a list of files with duplicate time values.
+          When it looks at the time values, it converts them from the original units 
+          to "seconds since 1970-01-01" in case different files use different units strings.
+          You need to provide the starting directory (with or without the trailing slash),
+          the file name regular expression (e.g., .*\.nc ), and the name of the 
+          time variable in the files.
+        <br>&nbsp;
+
       <li><a class="selfLink" id="ncdump" href="#ncdump" rel="bookmark">ncdump</a>
           <br>This special EDDType option isn't a dataset type. 
           Instead, it tells GenerateDatasetsXml to print an 
@@ -955,6 +973,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
   <a rel="help" href="#logLevel">&lt;logLevel&gt;</a>...&lt;/logLevel&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#nGridThreads">&lt;nGridThreads&gt;</a>...&lt;/nGridThreads&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#nTableThreads">&lt;nTableThreads&gt;</a>...&lt;/nTableThreads&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#palettes">&lt;palettes&gt;</a>...&lt;/palettes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#partialRequestMaxBytes">&lt;partialRequestMaxBytes&gt;</a>...&lt;/partialRequestMaxBytes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#partialRequestMaxCells">&lt;partialRequestMaxCells&gt;</a>...&lt;/partialRequestMaxCells&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#requestBlacklist">&lt;requestBlacklist&gt;</a>...&lt;/requestBlacklist&gt; &lt;!-- 0 or 1 --&gt;
@@ -2491,10 +2510,10 @@ currently recommend
       <li><a rel="help" href="#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
         aggregates data from a group of local MergeIR .gz files.
       <li><a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a> 
-        aggregates data from a group of local NetCDF (v3 or v4) .nc files.
+        aggregates data from a group of local NetCDF (v3 or v4) .nc and related files.
       <li><a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a> 
         is a variant if EDDGridFromNcFiles which also aggregates data from a 
-        group of local NetCDF (v3 or v4) .nc files, which ERDDAP unpacks at a low level.
+        group of local NetCDF (v3 or v4) .nc and related files, which ERDDAP unpacks at a low level.
       <li><a rel="help" href="#EDDGridLonPM180">EDDGridLonPM180</a> 
         modifies the longitude values of a child EDDGrid so that they are in 
         the range -180 to 180.
@@ -3771,7 +3790,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     files named:
     <br>&nbsp;&nbsp;dirTable.nc (which holds a list of unique directory names),
     <br>&nbsp;&nbsp;fileTable.nc (which holds the table with each valid file's information),
-    <br>&nbsp;&nbsp;badFiles.json (which holds the table with each bad file's information).
+    <br>&nbsp;&nbsp;badFiles.nc (which holds the table with each bad file's information).
   <li>To speed up access to an EDDGridFromFiles dataset (but at the expense of using more memory),
     you can use
     <br><a rel="help" href="#fileTableInMemory"><kbd>&lt;fileTableInMemory&gt;true&lt;/fileTableInMemory&gt;</kbd></a>
@@ -4137,7 +4156,8 @@ for general information on how this class works and how to use this class.
 <br>&nbsp;
 
 
-<p><a class="selfLink" id="EDDGridFromNcFiles" href="#EDDGridFromNcFiles" rel="bookmark"><strong>EDDGridFromNcFiles</strong></a> aggregates data from local, gridded, 
+<p><a class="selfLink" id="EDDGridFromNcFiles" href="#EDDGridFromNcFiles" rel="bookmark"
+  ><strong>EDDGridFromNcFiles</strong></a> aggregates data from local, gridded, 
     <a rel="help" href="https://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> files,
@@ -4164,6 +4184,16 @@ on how this class works and how to use this class.
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
 
+  <p><a class="selfLink" id="GroupsInGriddedNcFiles" href="#GroupsInGriddedNcFiles" rel="bookmark"
+  >Netcdf4 files can contain groups.</a> 
+  ERDDAP just makes a dataset
+  from the variables in one group and all of its parent groups.
+  You can specify a specific group name in GenerateDatasetsXml
+  (omit the trailing slash), or use "" to have GenerateDatasetsXml 
+  search all groups for the variables that use the most dimensions,
+  or use "[root]" to have GenerateDatasets just look for variables
+  in the root group.
+
   <p>The first thing GenerateDatasetsXml does for this type of dataset 
   after you answer the questions is print the ncdump-like structure of the sample file.
   So if you enter a few goofy answers for the first loop through GenerateDatasetsXml,
@@ -4173,7 +4203,8 @@ on how this class works and how to use this class.
 
 </ul>
 
-<p><a class="selfLink" id="EDDGridFromNcFilesUnpacked" href="#EDDGridFromNcFilesUnpacked" rel="bookmark"><strong>EDDGridFromNcFilesUnpacked</strong></a> 
+<p><a class="selfLink" id="EDDGridFromNcFilesUnpacked" href="#EDDGridFromNcFilesUnpacked" rel="bookmark"
+  ><strong>EDDGridFromNcFilesUnpacked</strong></a> 
 is a variant of 
 <a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a>
 which aggregates data from local, gridded NetCDF (v3 or v4) .nc and related files.
@@ -4210,6 +4241,9 @@ related attributes.
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
+
+  <p>Netcdf4 files can contain groups.
+  See <a href="#GroupsInGriddedNcFiles" rel="bookmark">this documentation</a>. 
 
   <p>The first thing GenerateDatasetsXml does for this type of dataset 
   after you answer the questions is print the ncdump-like structure of the sample file
@@ -4892,8 +4926,7 @@ Cassandra is a NoSQL database.
 
 <li><a class="selfLink" id="CassandraConnectionProperty" href="#CassandraConnectionProperty" rel="bookmark">&lt;connectionProperty&gt;</a>   
     <br>Cassandra has connection properties which can be specified in datasets.xml. 
-    Many of these will affect the performance
-    of the Cassandra-ERDDAP connection. 
+    Many of these will affect the performance of the Cassandra-ERDDAP connection. 
     Unfortunately, Cassandra properties must be set programmatically in Java,
     so ERDDAP must have code for each property ERDDAP supports.
     Currently, ERDDAP supports these properties:
@@ -4908,7 +4941,7 @@ Cassandra is a NoSQL database.
     <br>&lt;connectionProperty 
     name="<strong>credentials</strong>"&gt;<i>username/password</i>&lt;/connectionProperty&gt; (that's a literal '/')
     <br>&lt;connectionProperty 
-    name="<strong>metrics</strong>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;   (default=true)
+    name="<strong>metrics</strong>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;   (2021-01-25 was default=true, now ignored and always false)
     <br>&lt;connectionProperty 
     name="<strong>port</strong>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;   (default for native binary protocol=9042)
     <br>&lt;connectionProperty 
@@ -7754,7 +7787,7 @@ year, month, date, hour, minute, second.
 Before ERDDAP v2.10, the only solution was to edit the data file to combine those columns
 into a unified time column.
 With ERDDAP 2.10+, you can use the 
-<br><a href="sourceName" rel="help">&lt;sourceName&gt;=<i>expression</i>&lt;sourceName&gt;</a>
+<br><a href="#sourceName" rel="help">&lt;sourceName&gt;=<i>expression</i>&lt;sourceName&gt;</a>
 to tell ERDDAP how to combine the source columns to make unified time column,
 so you no longer have to edit the source file.
 
@@ -9114,8 +9147,8 @@ cumbersome approach given the way the tools have evolved.
 <li><a class="selfLink" id="HttpGetThanks" href="#HttpGetThanks" rel="bookmark"
 >Thanks to CHORDS for the basic idea.</a>
 <br>The basic idea for EDDTableFromHttpGet (i.e., using an HTTP GET request
-to add data to a dataset) is from UCAR's
-<a rel="help" href="http://portal.chordsrt.com/about"
+to add data to a dataset) is from UCAR's (NCAR's?)
+<a rel="help" href="https://github.com/earthcubeprojects-chords"
 >Cloud-Hosted Real-time Data Services (CHORDS)<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> project.
@@ -9124,7 +9157,7 @@ is the same standard format that is used by HTML forms on web pages.
 It is a simple and brilliant idea  
 and even more so because it meshes so perfectly with 
 ERDDAP's existing system for dealing with tabular data.
-The idea is obvious in hindsight, but I (Bob) sure didn't think of it.
+The idea is obvious in hindsight, but I (Bob) didn't think of it.
 EDDTableFromHttpGet uses that basic idea, 
 combined with our ideas of how to implement it, 
 to make a system in ERDDAP for uploading data.
@@ -11546,6 +11579,37 @@ while processing each request.
       >grid/cluster/federation of ERDDAPs</a>.
     </ul>
 
+<li><a class="selfLink" id="palettes" href="#palettes" rel="bookmark"
+      ><kbd><strong>&lt;palettes&gt;</strong></kbd></a> -- 
+      Starting with ERDDAP version 2.12, datasets.xml can include a &lt;palettes&gt; tag which overrides 
+      the &lt;palettes&gt; tag value from messages.xml (or reverts to the messages.xml
+      value if the tag in datasets.xml is empty). 
+      This lets you change the list of available palettes while ERDDAP is running. 
+      It also lets you make a change and have it persist when you install a new version of ERDDAP.
+      <br>WARNING: The palettes listed in datasets.xml must be a superset of 
+      the palettes listed in messages.xml; otherwise ERDDAP will throw an exception
+      and stop processing datasets.xml. 
+      This ensures that all ERDDAP installations at least support the same core palettes.
+      <br>WARNING: ERDDAP checks that the palettes files specified in messages.xml
+        actually exist, but it doesn't check the palette files listed in datasets.xml. 
+        It's your responsibility to ensure the files are present.
+
+      <p>Also starting with ERDDAP version 2.12, if you make a cptfiles subdirectory
+      in the ERDDAP content directory, ERDDAP will copy all the *.cpt files in that directory
+      into the [tomcat]/webapps/erddap/WEB-INF/cptfiles directory each time ERDDAP starts up.
+      Thus, if you put custom cpt files in that directory, those files will be 
+      used by ERDDAP, with no extra effort on your part, even when you install
+      a new version of ERDDAP.
+
+      <p>WARNING: If you add custom palettes to your ERDDAP and you have EDDGridFromErddap 
+      and/or EDDTableFromErddap datasets in your ERDDAP, then users will see
+      your custom palette options on the ERDDAP Make A Graph web pages, but
+      if the user tries to use them, they'll get a graph with the default (usually Rainbow)
+      palette. This is because the image is made by the remote ERDDAP which 
+      doesn't have the custom palette. The only solution now is to ask the
+      remote ERDDAP administrator to add your custom palettes to his/her ERDDAP.
+
+
 <li><a class="selfLink" id="onChange" href="#onChange" rel="bookmark"><kbd><strong>&lt;onChange&gt;</strong></kbd></a>
   is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag that specifies an action which 
   will be done when this dataset is created (when ERDDAP is restarted) and whenever 
@@ -13406,12 +13470,12 @@ while processing each request.
         This is REQUIRED.
 
         <p><a class="selfLink" id="Groups" href="#Groups" rel="bookmark"><strong>Groups</strong> --</a> 
-        Currently (2019), NetCDF tools support putting variables into groups in a .nc file, 
+        Currently (2020), NetCDF tools support putting variables into groups in a .nc file, 
         even though the CF standard doesn't yet support this (so the files are 
         technically not CF compliant). 
         In practice, this just means that the variables have a long name 
-        which identifies the group(s) and the variable name, for example, group1a.group2c.varName ).
-        ERDDAP supports groups by converting the "."'s in the variable's &lt;sourceName&gt;
+        which identifies the group(s) and the variable name, for example, group1a/group2c/varName ).
+        ERDDAP supports groups by converting the "/"'s in the variable's &lt;sourceName&gt;
         into "_"'s in the variable's &lt;destinationName&gt;, for example, 
         group1a_group2c_varName . 
         (When you see that, you should realize that groups are not much more than a syntax convention.) 
@@ -13420,6 +13484,10 @@ while processing each request.
         [If ERDDAP, notably GenerateDatasetsXml, doesn't perform as well as it could
         with source files that have groups, please email a sample file
         to bob.simons at noaa.gov .]
+
+        <p>EDDTableFromFiles datasets can use some specially-encoded, pseudo sourceNames
+        to do some define new data variables, e.g., to promote a global attribute to be a data variable.
+        See <a rel="help" href="#EDDTableFromFiles_PseudoSourceNames">this documentation</a>.        
 
         <p><a class="selfLink" id="fixedValue" href="#fixedValue" rel="bookmark"><strong>Fixed Value SourceNames</strong> --</a> 
         <br>In an EDDTable dataset, if you want to create a variable (with a single, fixed value)

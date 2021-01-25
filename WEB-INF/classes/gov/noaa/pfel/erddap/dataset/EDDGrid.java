@@ -79,10 +79,12 @@ import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
-import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.write.NetcdfFileFormat;
+import ucar.nc2.write.NetcdfFormatWriter;
 import ucar.nc2.Variable;
 import ucar.unidata.geoloc.LatLonRect;
 
@@ -2572,7 +2574,7 @@ public abstract class EDDGrid extends EDD {
 
                 } else if (fileTypeName.equals(".nc") || fileTypeName.equals(".ncHeader")) {
                     //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-                    saveAsNc(NetcdfFileWriter.Version.netcdf3, ipAddress,
+                    saveAsNc(NetcdfFileFormat.NETCDF3, ipAddress,
                         requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
                     File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
@@ -2582,7 +2584,7 @@ public abstract class EDDGrid extends EDD {
                         throw new SimpleException(EDStatic.queryError + EDStatic.accessibleViaNC4);
         
                     //if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
-                    saveAsNc(NetcdfFileWriter.Version.netcdf4, ipAddress,
+                    saveAsNc(NetcdfFileFormat.NETCDF4, ipAddress,
                         requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
                     File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
@@ -5451,7 +5453,7 @@ Attributes {
         //???The GeotiffWriter seems to be detecting lat and lon and reacting accordingly.
         String ncFullName = directory + fileName + "_tiff.nc";  //_tiff is needed because unused axes aren't saved
         if (!File2.isFile(ncFullName))
-            saveAsNc(NetcdfFileWriter.Version.netcdf3, ipAddress, requestUrl, userDapQuery, ncFullName, 
+            saveAsNc(NetcdfFileFormat.NETCDF3, ipAddress, requestUrl, userDapQuery, ncFullName, 
                 false, //keepUnusedAxes=false  this is necessary 
                 lonAdjust);
         //String2.log(NcHelper.ncdump(ncFullName, "-h"));
@@ -7909,12 +7911,12 @@ Attributes {
     }
 
     /**
-     * Save the grid data in a netCDF .nc file.
+     * Save the grid data in a netCDF .nc3 file.
      * This overwrites any existing file of the specified name.
      * This makes an effort not to create a partial file if there is an error.
      * If no exception is thrown, the file was successfully created.
      * 
-     * @param ncVersion either NetcdfFileWriter.Version.netcdf3 or netcdf4. 
+     * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4. 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded 
      *   (shouldn't be null). 
@@ -7925,17 +7927,17 @@ Attributes {
      * @param lonAdjust the value to be added to all lon values (e.g., 0 or -360).
      * @throws Throwable 
      */
-    public void saveAsNc(NetcdfFileWriter.Version ncVersion, 
+    public void saveAsNc(NetcdfFileFormat ncVersion, 
         String ipAddress, String requestUrl, String userDapQuery, 
         String fullFileName, boolean keepUnusedAxes,
         double lonAdjust) throws Throwable {
         if (reallyVerbose) String2.log("  EDDGrid.saveAsNc"); 
         long time = System.currentTimeMillis();
 
-        if (ncVersion != NetcdfFileWriter.Version.netcdf3 &&
-            ncVersion != NetcdfFileWriter.Version.netcdf4)
+        if (ncVersion != NetcdfFileFormat.NETCDF3 &&
+            ncVersion != NetcdfFileFormat.NETCDF4)
             throw new RuntimeException("ERROR: unsupported ncVersion=" + ncVersion);
-        boolean nc3Mode = ncVersion == NetcdfFileWriter.Version.netcdf3;
+        boolean nc3Mode = ncVersion == NetcdfFileFormat.NETCDF3;
 
         //delete any existing file
         File2.delete(fullFileName);
@@ -7953,29 +7955,30 @@ Attributes {
 
             //write the data
             //items determined by looking at a .nc file; items written in that order 
-            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-                ncVersion, fullFileName + randomInt);
+            NetcdfFormatWriter ncWriter = null;
             try {
-                Group rootGroup = nc.addGroup(null, "");
+                NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                    fullFileName + randomInt);
+                Group.Builder rootGroup = nc.getRootGroup();
                 nc.setFill(false);
 
                 //define the dimensions
                 Array axisArrays[] = new Array[nRAV];
-                Variable newAxisVars[] = new Variable[nRAV];
+                Variable.Builder newAxisVars[] = new Variable.Builder[nRAV];
                 for (int av = 0; av < nRAV; av++) {
                     String destName = ada.axisVariables(av).destinationName();
                     PrimitiveArray pa = ada.axisValues(av);
                     if (nc3Mode && 
                         (pa instanceof LongArray || pa instanceof ULongArray))
                         pa = new DoubleArray(pa);
-                    Dimension dimension = nc.addDimension(rootGroup, destName, pa.size());
+                    Dimension dimension = NcHelper.addDimension(rootGroup, destName, pa.size());
                     axisArrays[av] = Array.factory(
                         NcHelper.getNc3DataType(pa.elementType()),
                         new int[]{pa.size()},
                         pa.toObjectArray());
-                    if (ncVersion == NetcdfFileWriter.Version.netcdf3)
+                    if (ncVersion == NetcdfFileFormat.NETCDF3)
                         String2.log("HELP");
-                    newAxisVars[av] = nc.addVariable(rootGroup, destName, 
+                    newAxisVars[av] = NcHelper.addVariable(rootGroup, destName, 
                         NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long & ulong->double done above. No Strings as axes.
                         Arrays.asList(dimension)); 
 
@@ -7995,15 +7998,15 @@ Attributes {
                 NcHelper.setAttributes(nc3Mode, rootGroup, ada.globalAttributes());
 
                 //leave "define" mode
-                nc.create();
+                ncWriter = nc.build();
 
                 //write the axis values
                 for (int av = 0; av < nRAV; av++) 
-                    nc.write(newAxisVars[av], axisArrays[av]);
+                    ncWriter.write(newAxisVars[av].getFullName(), axisArrays[av]);
 
                 //if close throws Throwable, it is trouble
-                nc.close(); //it calls flush() and doesn't like flush called separately
-                nc = null;
+                ncWriter.close(); //it calls flush() and doesn't like flush called separately
+                ncWriter = null;
 
                 //rename the file to the specified name
                 File2.rename(fullFileName + randomInt, fullFileName);
@@ -8013,12 +8016,12 @@ Attributes {
                 //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
             } catch (Throwable t) {
-                //try to close the file
-                try { if (nc != null) nc.abort(); 
-                } catch (Throwable t2) { }
-
-                //delete the partial file
-                File2.delete(fullFileName + randomInt);
+                String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+                if (ncWriter != null) {
+                    try {ncWriter.abort(); } catch (Exception e9) {}
+                    File2.delete(fullFileName + randomInt); 
+                    ncWriter = null;
+                }
 
                 throw t;
             }
@@ -8055,10 +8058,11 @@ Attributes {
 
         //write the data
         //items determined by looking at a .nc file; items written in that order 
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                fullFileName + randomInt);
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
 
             //find active axes
@@ -8072,7 +8076,7 @@ Attributes {
             int nActiveAxes = activeAxes.size();
             ArrayList<Dimension> axisDimensionList = new ArrayList();
             Array axisArrays[] = new Array[nActiveAxes];
-            Variable newAxisVars[] = new Variable[nActiveAxes];
+            Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
             int stdShape[] = new int[nActiveAxes];
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
@@ -8083,7 +8087,8 @@ Attributes {
                     (pa instanceof LongArray || pa instanceof ULongArray))
                     pa = new DoubleArray(pa);
                 stdShape[a] = pa.size();
-                axisDimensionList.add(nc.addDimension(rootGroup, avName, pa.size()));
+                Dimension tDim = NcHelper.addDimension(rootGroup, avName, pa.size());
+                axisDimensionList.add(tDim);
                 if (av == lonIndex)
                     pa.scaleAddOffset(1, lonAdjust);
                 axisArrays[a] = Array.factory(
@@ -8091,30 +8096,26 @@ Attributes {
                     new int[]{pa.size()},
                     pa.toObjectArray());
                 //if (reallyVerbose) String2.log(" create var=" + avName);
-                newAxisVars[a] = nc.addVariable(rootGroup, avName, 
+                newAxisVars[a] = NcHelper.addVariable(rootGroup, avName, 
                     NcHelper.getNc3DataType(pa.elementType()), //nc3Mode long->double done above. No Strings as axes.
                     Arrays.asList(axisDimensionList.get(a)));
             }            
 
             //define the data variables
-            Variable newVars[] = new Variable[tDataVariables.length];
+            Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 String destName = tDataVariables[dv].destinationName();
                 PAType destPAType = tDataVariables[dv].destinationDataPAType();
                 //if (reallyVerbose) String2.log(" create var=" + destName);
 
-                //nc3 String data? need to create a strlen dimension for this variable
+                //nc3 String data? need to create specially (so there's a strlen dimension for this variable)
                 if (nc3Mode && destPAType == PAType.STRING) {
                     StringArray tsa = (StringArray)gdaa.getPrimitiveArray(dv);
-                    ArrayList<Dimension> tDimList = new ArrayList(axisDimensionList);
-                    tDimList.add(nc.addDimension(rootGroup, 
-                        destName + NcHelper.StringLengthSuffix, //"_strlen"
-                        tsa.maxStringLength()));
-                    newVars[dv] = nc.addVariable(rootGroup, destName, 
-                        DataType.CHAR, tDimList);
+                    newVars[dv] = NcHelper.addNc3StringVariable(rootGroup, destName, 
+                        axisDimensionList, tsa.maxStringLength());
 
                 } else {
-                    newVars[dv] = nc.addVariable(rootGroup, destName, 
+                    newVars[dv] = NcHelper.addVariable(rootGroup, destName, 
                         NcHelper.getDataType(nc3Mode, destPAType), 
                         axisDimensionList);
                 }
@@ -8151,12 +8152,12 @@ Attributes {
             }
 
             //leave "define" mode
-            nc.create();
+            ncWriter = nc.build();
 
             //write the axis variables
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
-                nc.write(newAxisVars[a], axisArrays[a]);
+                ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
             }
 
             //write the data variables
@@ -8171,16 +8172,17 @@ Attributes {
                     pa = new DoubleArray(pa);
                 Array array = Array.factory(NcHelper.getNc3DataType(edvPAType), 
                     stdShape, pa.toObjectArray());
+                Variable newVar = ncWriter.findVariable(newVars[dv].getFullName()); //because newVars are Variable.Builder's
                 if (nc3Mode && edvPAType == PAType.STRING) {
-                    nc.writeStringData(newVars[dv], array);
+                    ncWriter.writeStringDataToChar(newVar, array);
                 } else {
-                    nc.write(newVars[dv], array);
+                    ncWriter.write(newVar, array);
                 }
             }
 
             //if close throws Throwable, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -8191,12 +8193,12 @@ Attributes {
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Throwable t) {
-            //try to close the file
-            try {  if (nc != null) nc.abort(); 
-            } catch (Throwable t2) {}
-
-            //delete the partial file
-            File2.delete(fullFileName + randomInt);
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullFileName + randomInt); 
+                ncWriter = null;
+            }
 
             throw t;
         } finally {
@@ -8213,7 +8215,7 @@ Attributes {
      * <p>This gives up a few things (e.g., actual_range) 
      * in order to make this a streaming response (not write file then transfer file).
      *
-     * @param ncVersion either NetcdfFileWriter.Version.netcdf3 or netcdf4. 
+     * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4. 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded 
      *   (shouldn't be null). 
@@ -9541,9 +9543,13 @@ Attributes {
             "  virtual file.)  Instead, use one of these two options:\n" +
             "  <ul>\n" +
             "  <li>Most situations: Open the ERDDAP dataset as an OPeNDAP dataset.  For example:\n" +
-            "    <pre>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);</pre>\n" +
-            "    (don't use <kbd>NetcdfFile.open</kbd>; it is for local files only) or\n" +
-            "    <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");</pre>\n" +
+            "    <pre>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);  //pre v5.4.1 </pre>\n" +
+            "    or\n" +
+            "    <pre>NetcdfFile nc = NetcdfDatasets.openFile(\"" + datasetBase + "\", null); //v5.4.1+ </pre>\n" +
+            "    (don't use <kbd>NetcdfFiles.open</kbd>; it is for local files only) or\n" +
+            "    <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");  //pre v5.4.1</pre>\n" +
+            "    or\n" +
+            "    <pre>NetcdfDataset nc = NetcdfDatasets.openDataset(\"" + datasetBase + "\");  //v5.4.1+</pre>\n" +
             "    (NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "    <br>Don't use a file extension (e.g., .nc) at the end of the dataset's name.\n" +
             "    <br>And don't specify a variable or a subset of the dataset at this stage.\n" +
@@ -9551,9 +9557,11 @@ Attributes {
             "    <a rel=\"help\" href=\"#curl\">curl</a>, download a .nc file\n" +
             "    with a subset of the dataset.  Then, use NetCDF-Java to open and access the data in\n" +
             "    that local file, e.g.,\n" +
-            "    <pre>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");</pre>\n" +
+            "    <pre>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1\n" +
+            "    NetcdfFile nc = NetcdfFiles.open(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+\n" +
+            "    NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1</pre>\n" +
             "    or\n" +
-            "    <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");</pre>\n" +
+            "    <pre>NetcdfDataset nc = NetcdfDatasets.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+</pre>\n" +
             "    (NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "    <br>This approach makes more sense if you want a local copy of the data subset, so\n" +
             "    that you can access it repeatedly (today, tomorrow, next week, ...) and quickly.\n" +
@@ -9626,9 +9634,13 @@ Attributes {
             "  of a variable's data.\n" +
             "\n" +
             "  <p>For example, with the NetCDF-Java library, you can use:\n" +
-            "  <pre>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);</pre>\n" +
+            "  <pre>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);  //pre v5.4.1</pre>\n" +
+            "  or\n" +
+            "  <pre>NetcdfFile nc = NetcdfDatasets.openFile(\"" + datasetBase + "\", null); //v5.4.1+</pre>\n" +
             "  (don't use <kbd>NetcdfFile.open</kbd>; it is for local files only) or\n" +
-            "  <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");</pre>\n" +
+            "  <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");  //pre v5.4.1</pre>\n" +
+            "  or\n" +
+            "  <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");  //v5.4.1+</pre>\n" +
             "  (NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "  <br>Once you have the <kbd>nc</kbd> object, you can request metadata or a subset of a\n" +
             "  variable's data.\n" +

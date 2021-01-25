@@ -738,9 +738,8 @@ public class ByteArray extends PrimitiveArray {
         if (array.length == size)
             return array;
         Math2.ensureMemoryAvailable(1L * size, "ByteArray.toArray");
-        byte[] tArray = new byte[size];
-        System.arraycopy(array, 0, tArray, 0, size);
-        return tArray;
+        //this is faster than making array then arraycopy because it doesn't have to fill the initial array with 0's
+        return Arrays.copyOfRange(array, 0, size);
     }
    
     /**
@@ -1216,7 +1215,11 @@ public class ByteArray extends PrimitiveArray {
      * to the beginning.
      */
     public void sort() {
-        Arrays.sort(array, 0, size);
+        //see switchover point and speed comparison in 
+        //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
+        if (size < 8192)
+             Arrays.sort(array, 0, size);
+        else Arrays.parallelSort(array, 0, size);
     }
 
     /**
